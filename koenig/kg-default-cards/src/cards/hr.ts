@@ -1,4 +1,6 @@
-module.exports = {
+import type {Card} from '../types.js';
+
+const hrCard: Card = {
     name: 'hr',
     type: 'dom',
 
@@ -6,3 +8,5 @@ module.exports = {
         return dom.createElement('hr');
     }
 };
+
+export default hrCard;

@@ -1,10 +1,11 @@
-const {
+import {
     htmlAbsoluteToRelative,
     htmlRelativeToAbsolute,
     htmlToTransformReady
-} = require('@tryghost/url-utils/lib/utils');
+} from '@tryghost/url-utils/lib/utils';
+import type {Card} from '../types.js';
 
-module.exports = {
+const emailCard: Card = {
     name: 'email',
     type: 'dom',
 
@@ -16,25 +17,27 @@ module.exports = {
         // wrap the replacement %%{replacement}%% so that when performing replacements
         // it's less likely for code samples to be mistaken for our replacement strings
         // NOTE: must be plain text rather than a custom element so that it's not removed by html->plaintext conversion
-        payload.html = payload.html.replace(/\{(\w*?)(?:,? *"(.*?)")?\}/g, '%%$&%%');
+        payload.html = (payload.html as string).replace(/\{(\w*?)(?:,? *"(.*?)")?\}/g, '%%$&%%');
 
         // use the SimpleDOM document to create a raw HTML section.
         // avoids parsing/rendering of potentially broken or unsupported HTML
-        return dom.createRawHTMLSection(payload.html);
+        return dom.createRawHTMLSection(payload.html as string);
     },
 
     absoluteToRelative(payload, options) {
-        payload.html = payload.html && htmlAbsoluteToRelative(payload.html, options.siteUrl, options);
+        payload.html = payload.html && htmlAbsoluteToRelative(payload.html as string, options.siteUrl, options);
         return payload;
     },
 
     relativeToAbsolute(payload, options) {
-        payload.html = payload.html && htmlRelativeToAbsolute(payload.html, options.siteUrl, options.itemUrl, options);
+        payload.html = payload.html && htmlRelativeToAbsolute(payload.html as string, options.siteUrl, options.itemUrl ?? '', options);
         return payload;
     },
 
     toTransformReady(payload, options) {
-        payload.html = payload.html && htmlToTransformReady(payload.html, options.siteUrl, options);
+        payload.html = payload.html && htmlToTransformReady(payload.html as string, options.siteUrl, options);
         return payload;
     }
 };
+
+export default emailCard;

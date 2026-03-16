@@ -1,10 +1,28 @@
-const isLocalContentImage = require('./is-local-content-image');
-const getAvailableImageWidths = require('./get-available-image-widths');
-const isUnsplashImage = require('./is-unsplash-image');
+import type {CardRenderOptions} from '../types.js';
+import isLocalContentImage from './is-local-content-image.js';
+import getAvailableImageWidths from './get-available-image-widths.js';
+import isUnsplashImage from './is-unsplash-image.js';
+
+interface SrcsetArgs {
+    src: string;
+    width: number;
+    options: CardRenderOptions;
+}
+
+interface ImageInfo {
+    src: string;
+    width: number;
+}
+
+interface SimpleDomElement {
+    tagName: string;
+    getAttribute(name: string): string | null;
+    setAttribute(name: string, value: string): void;
+}
 
 // default content sizes: [600, 1000, 1600, 2400]
 
-const getSrcsetAttribute = function ({src, width, options}) {
+export const getSrcsetAttribute = function ({src, width, options}: SrcsetArgs): string | undefined {
     if (!options.imageOptimization || options.imageOptimization.srcsets === false || !width || !options.imageOptimization.contentImageSizes) {
         return;
     }
@@ -17,8 +35,12 @@ const getSrcsetAttribute = function ({src, width, options}) {
 
     // apply srcset if this is a relative image that matches Ghost's image url structure
     if (isLocalContentImage(src, options.siteUrl)) {
-        const [, imagesPath, filename] = src.match(/(.*\/content\/images)\/(.*)/);
-        const srcs = [];
+        const match = src.match(/(.*\/content\/images)\/(.*)/);
+        if (!match) {
+            return;
+        }
+        const [, imagesPath, filename] = match;
+        const srcs: string[] = [];
 
         srcsetWidths.forEach((srcsetWidth) => {
             if (srcsetWidth === width) {
@@ -38,10 +60,10 @@ const getSrcsetAttribute = function ({src, width, options}) {
     // apply srcset if this is an Unsplash image
     if (isUnsplashImage(src)) {
         const unsplashUrl = new URL(src);
-        const srcs = [];
+        const srcs: string[] = [];
 
         srcsetWidths.forEach((srcsetWidth) => {
-            unsplashUrl.searchParams.set('w', srcsetWidth);
+            unsplashUrl.searchParams.set('w', String(srcsetWidth));
             srcs.push(`${unsplashUrl.href} ${srcsetWidth}w`);
         });
 
@@ -49,7 +71,7 @@ const getSrcsetAttribute = function ({src, width, options}) {
     }
 };
 
-const setSrcsetAttribute = function (elem, image, options) {
+export const setSrcsetAttribute = function (elem: SimpleDomElement, image: ImageInfo, options: CardRenderOptions): void {
     if (!elem || !['IMG', 'SOURCE'].includes(elem.tagName) || !elem.getAttribute('src') || !image) {
         return;
     }
@@ -60,9 +82,4 @@ const setSrcsetAttribute = function (elem, image, options) {
     if (srcset) {
         elem.setAttribute('srcset', srcset);
     }
-};
-
-module.exports = {
-    getSrcsetAttribute,
-    setSrcsetAttribute
 };

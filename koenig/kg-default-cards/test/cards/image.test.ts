@@ -1,16 +1,14 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('../utils');
+import '../utils/index.js';
 
-const card = require('../../lib/cards/image');
-const SimpleDom = require('simple-dom');
-const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
+import card from '../../src/cards/image.js';
+import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
+const serializer = new HTMLSerializer(voidMap);
 
 describe('Image card', function () {
     it('renders an image', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 src: 'https://www.ghost.org/image.png'
@@ -21,9 +19,9 @@ describe('Image card', function () {
     });
 
     it('renders an image with caption', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 src: 'https://www.ghost.org/image.png',
@@ -35,9 +33,9 @@ describe('Image card', function () {
     });
 
     it('renders an image with alt text', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 src: 'https://www.ghost.org/image.png',
@@ -49,9 +47,9 @@ describe('Image card', function () {
     });
 
     it('renders an image with blank alt text', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 src: 'https://www.ghost.org/image.png'
@@ -62,9 +60,9 @@ describe('Image card', function () {
     });
 
     it('renders an image with title attribute', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 src: 'https://www.ghost.org/image.png',
@@ -76,9 +74,9 @@ describe('Image card', function () {
     });
 
     it('renders an image with a link', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 src: 'https://www.ghost.org/image.png',
@@ -91,9 +89,9 @@ describe('Image card', function () {
     });
 
     it('renders nothing with no src', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 src: '',
@@ -106,9 +104,9 @@ describe('Image card', function () {
 
     describe('sizes', function () {
         it('standard', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: 'https://www.ghost.org/image.png',
@@ -121,9 +119,9 @@ describe('Image card', function () {
         });
 
         it('wide', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: 'https://www.ghost.org/image.png',
@@ -136,9 +134,9 @@ describe('Image card', function () {
         });
 
         it('full', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: 'https://www.ghost.org/image.png',
@@ -153,9 +151,9 @@ describe('Image card', function () {
 
     describe('image dimensions', function () {
         it('includes width and height when available', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2021/02/four-point-oh.png',
@@ -169,9 +167,9 @@ describe('Image card', function () {
         });
 
         it('omits width and height when not available', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2021/02/four-point-oh.png'
@@ -185,9 +183,9 @@ describe('Image card', function () {
         });
 
         it('uses resized width and height when there\'s a max width', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2021/02/four-point-oh.png',
@@ -207,9 +205,9 @@ describe('Image card', function () {
         });
 
         it('uses original width and height when transform is not available', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2021/02/four-point-oh.png',
@@ -231,9 +229,9 @@ describe('Image card', function () {
 
     describe('srcset attribute', function () {
         it('is included when src is relative', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -257,9 +255,9 @@ describe('Image card', function () {
         });
 
         it('is included when src is __GHOST_URL__ relative', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '__GHOST_URL__/content/images/2020/06/image.png',
@@ -283,9 +281,9 @@ describe('Image card', function () {
         });
 
         it('is included for absolute images', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: 'https://localhost:2368/content/images/2020/06/image.png',
@@ -310,9 +308,9 @@ describe('Image card', function () {
         });
 
         it('is included for absolute images when siteUrl has trailing slash', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: 'https://localhost:2368/content/images/2020/06/image.png',
@@ -337,9 +335,9 @@ describe('Image card', function () {
         });
 
         it('is omitted when target === email', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -364,9 +362,9 @@ describe('Image card', function () {
         });
 
         it('is omitted when no contentImageSizes are passed as options', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -381,9 +379,9 @@ describe('Image card', function () {
         });
 
         it('is omitted when `srcsets: false` is passed in as an option', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -410,9 +408,9 @@ describe('Image card', function () {
         it('is omitted when canTransformImages is provided and returns false', function () {
             const canTransformImage = () => false;
 
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -437,9 +435,9 @@ describe('Image card', function () {
         });
 
         it('is omitted when no width is provided', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -462,9 +460,9 @@ describe('Image card', function () {
         });
 
         it('is omitted when image is smaller than minimum responsive width', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -488,9 +486,9 @@ describe('Image card', function () {
         });
 
         it('omits sizes larger than image width and includes original image width if smaller than largest responsive width', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -514,9 +512,9 @@ describe('Image card', function () {
         });
 
         it('works correctly with subdirectories', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/subdir/content/images/2020/06/image.png',
@@ -540,9 +538,9 @@ describe('Image card', function () {
         });
 
         it('works correctly for absolute subdirectories', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: 'https://localhost:2368/blog/content/images/2020/06/image.png',
@@ -567,9 +565,9 @@ describe('Image card', function () {
         });
 
         it('is included when src is an Unsplash image', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: 'https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=2000&fit=max&ixid=eyJhcHBfaWQiOjExNzczfQ',
@@ -594,9 +592,9 @@ describe('Image card', function () {
         });
 
         it('has same size omission behaviour for Unsplash as local files', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: 'https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=2000&fit=max&ixid=eyJhcHBfaWQiOjExNzczfQ',
@@ -622,9 +620,9 @@ describe('Image card', function () {
 
     describe('sizes attribute', function () {
         it('is added for standard images', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -647,9 +645,9 @@ describe('Image card', function () {
         });
 
         it('is added for __GHOST_URL__ relative images', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '__GHOST_URL__/content/images/2020/06/image.png',
@@ -672,9 +670,9 @@ describe('Image card', function () {
         });
 
         it('is added for absolute images', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: 'https://localhost:2368/content/images/2020/06/image.png',
@@ -698,9 +696,9 @@ describe('Image card', function () {
         });
 
         it('is added for absolute images when siteUrl has trailing slash', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: 'https://localhost:2368/content/images/2020/06/image.png',
@@ -724,9 +722,9 @@ describe('Image card', function () {
         });
 
         it('is added for wide images', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -750,9 +748,9 @@ describe('Image card', function () {
         });
 
         it('is omitted when srcset is not added', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -776,9 +774,9 @@ describe('Image card', function () {
         });
 
         it('is omitted when width is missing', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -801,9 +799,9 @@ describe('Image card', function () {
         });
 
         it('is included when only height is missing', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -826,9 +824,9 @@ describe('Image card', function () {
         });
 
         it('is omitted for standard images when width is less than 720', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -851,9 +849,9 @@ describe('Image card', function () {
         });
 
         it('is omitted for wide images when width is less than 1200', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -877,9 +875,9 @@ describe('Image card', function () {
         });
 
         it('is omitted for full images', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -905,9 +903,9 @@ describe('Image card', function () {
 
     describe('email target', function () {
         it('adds width/height and uses resized local image', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -936,9 +934,9 @@ describe('Image card', function () {
         });
 
         it('adds width/height and uses resized unsplash image', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: 'https://images.unsplash.com/test.jpg',
@@ -958,9 +956,9 @@ describe('Image card', function () {
         });
 
         it('adds width/height and uses original src when local image can\'t be transformed', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -990,9 +988,9 @@ describe('Image card', function () {
         });
 
         it('uses original image if size is smaller than "retina" size', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -1021,9 +1019,9 @@ describe('Image card', function () {
         });
 
         it('uses original image width/height if image is smaller than 600px wide', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
@@ -1052,9 +1050,9 @@ describe('Image card', function () {
         });
 
         it('skips width/height and resize if payload is missing dimensions', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png'
@@ -1081,9 +1079,9 @@ describe('Image card', function () {
         });
 
         it('resizes Unsplash images even if width/height data is missing', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     src: 'https://images.unsplash.com/test.jpg'
@@ -1109,32 +1107,32 @@ describe('Image card', function () {
     });
 
     it('transforms urls absolute to relative', function () {
-        let payload = {
+        const payload = {
             src: 'http://127.0.0.1:2369/content/images/2018/08/NatGeo01-9.jpg',
             caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
         };
 
-        const transformed = card.absoluteToRelative(payload, {siteUrl: 'http://127.0.0.1:2369/'});
+        const transformed = card.absoluteToRelative!(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
-        transformed.src
+        (transformed.src as string)
             .should.equal('/content/images/2018/08/NatGeo01-9.jpg');
 
-        transformed.caption
+        (transformed.caption as string)
             .should.equal('A link to <a href="/post">an internal post</a>');
     });
 
     it('transforms urls relative to absolute', function () {
-        let payload = {
+        const payload = {
             src: '/content/images/2018/08/NatGeo01-9.jpg',
             caption: 'A link to <a href="/post">an internal post</a>'
         };
 
-        const transformed = card.relativeToAbsolute(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
+        const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
 
-        transformed.src
+        (transformed.src as string)
             .should.equal('http://127.0.0.1:2369/content/images/2018/08/NatGeo01-9.jpg');
 
-        transformed.caption
+        (transformed.caption as string)
             .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
     });
 });

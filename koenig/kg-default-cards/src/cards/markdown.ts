@@ -1,20 +1,21 @@
-const markdownHtmlRenderer = require('@tryghost/kg-markdown-html-renderer');
-const {
+import {render as markdownHtmlRender} from '@tryghost/kg-markdown-html-renderer';
+import {
     markdownRelativeToAbsolute,
     markdownAbsoluteToRelative,
     markdownToTransformReady
-} = require('@tryghost/url-utils/lib/utils');
+} from '@tryghost/url-utils/lib/utils';
+import type {Card} from '../types.js';
 
-module.exports = {
+const markdownCard: Card = {
     name: 'markdown',
     type: 'dom',
     config: {
         commentWrapper: true
     },
 
-    render: function ({payload, env: {dom}, options}) {
+    render({payload, env: {dom}, options}) {
         // convert markdown to HTML ready for insertion into dom
-        let html = markdownHtmlRenderer.render(payload.markdown || '', options);
+        const html = markdownHtmlRender((payload.markdown as string) || '', options);
 
         if (!html) {
             return dom.createTextNode('');
@@ -26,30 +27,19 @@ module.exports = {
     },
 
     absoluteToRelative(payload, options) {
-        payload.markdown = payload.markdown && markdownAbsoluteToRelative(
-            payload.markdown,
-            options.siteUrl,
-            options
-        );
+        payload.markdown = payload.markdown && markdownAbsoluteToRelative(payload.markdown as string, options.siteUrl, options);
         return payload;
     },
 
     relativeToAbsolute(payload, options) {
-        payload.markdown = payload.markdown && markdownRelativeToAbsolute(
-            payload.markdown,
-            options.siteUrl,
-            options.itemUrl,
-            options
-        );
+        payload.markdown = payload.markdown && markdownRelativeToAbsolute(payload.markdown as string, options.siteUrl, options.itemUrl ?? '', options);
         return payload;
     },
 
     toTransformReady(payload, options) {
-        payload.markdown = payload.markdown && markdownToTransformReady(
-            payload.markdown,
-            options.siteUrl,
-            options
-        );
+        payload.markdown = payload.markdown && markdownToTransformReady(payload.markdown as string, options.siteUrl, options);
         return payload;
     }
 };
+
+export default markdownCard;

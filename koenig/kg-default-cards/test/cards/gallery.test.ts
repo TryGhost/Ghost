@@ -1,16 +1,15 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('../utils');
+import should from 'should';
+import '../utils/index.js';
 
-const card = require('../../lib/cards/gallery');
-const SimpleDom = require('simple-dom');
-const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
+import card from '../../src/cards/gallery.js';
+import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
+const serializer = new HTMLSerializer(voidMap);
 
 describe('Gallery card', function () {
     it('renders a gallery', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 images: [
@@ -82,9 +81,9 @@ describe('Gallery card', function () {
     });
 
     it('renders nothing with no images', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 images: [],
@@ -96,9 +95,9 @@ describe('Gallery card', function () {
     });
 
     it('renders nothing with no valid images', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 images: [{src: 'undefined'}],
@@ -110,9 +109,9 @@ describe('Gallery card', function () {
     });
 
     it('renders images with alt text', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 images: [
@@ -133,9 +132,9 @@ describe('Gallery card', function () {
     });
 
     it('renders images with blank alt text', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 images: [
@@ -155,9 +154,9 @@ describe('Gallery card', function () {
     });
 
     it('skips invalid images', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 images: [
@@ -189,9 +188,9 @@ describe('Gallery card', function () {
     });
 
     it('outputs width/height matching default max image width', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 images: [
@@ -240,9 +239,9 @@ describe('Gallery card', function () {
 
     describe('srcset', function () {
         it('is included when image src is relative or Unsplash', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     images: [{
@@ -281,9 +280,9 @@ describe('Gallery card', function () {
         });
 
         it('is included when image src is absolute or __GHOST_URL__', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     images: [{
@@ -317,9 +316,9 @@ describe('Gallery card', function () {
         });
 
         it('is omitted when target === email', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     images: [{
@@ -349,9 +348,9 @@ describe('Gallery card', function () {
         });
 
         it('is omitted when no contentImageSizes are passed as options', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     images: [{
@@ -370,9 +369,9 @@ describe('Gallery card', function () {
         });
 
         it('is omitted when `srcsets: false` is passed as an options', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     images: [{
@@ -403,9 +402,9 @@ describe('Gallery card', function () {
 
     describe('sizes', function () {
         it('is included for images over 720px', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     images: [{
@@ -443,16 +442,16 @@ describe('Gallery card', function () {
             const output = serializer.serialize(card.render(opts));
             const sizes = output.match(/sizes="(.*?)"/g);
 
-            sizes.length.should.equal(2);
+            sizes!.length.should.equal(2);
 
             output.should.match(/standard\.jpg 720w" sizes="\(min-width: 720px\) 720px"/);
             output.should.match(/photo\?w=2000 2000w" sizes="\(min-width: 720px\) 720px"/);
         });
 
         it('uses "wide" media query for large single-image galleries', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     images: [{
@@ -479,9 +478,9 @@ describe('Gallery card', function () {
         });
 
         it('uses "standard" media query for medium single-image galleries', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     images: [{
@@ -508,9 +507,9 @@ describe('Gallery card', function () {
         });
 
         it('is omitted when srcsets are not available', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     images: [{
@@ -555,9 +554,9 @@ describe('Gallery card', function () {
 
     describe('email target', function () {
         it('adds width/height and uses resized images', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     images: [{
@@ -603,7 +602,7 @@ describe('Gallery card', function () {
             const output = serializer.serialize(card.render(opts));
 
             // 3 images wider than 600px template width resized to fit
-            output.match(/width="600"/g).length.should.equal(3);
+            output.match(/width="600"/g)!.length.should.equal(3);
             // 1 image smaller than template width
             output.should.match(/width="300"/);
 
@@ -622,9 +621,9 @@ describe('Gallery card', function () {
         });
 
         it('resizes width/height attributes but uses original image when local image can\'t be transformed', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     images: [{
@@ -661,7 +660,7 @@ describe('Gallery card', function () {
     });
 
     it('transforms urls absolute to relative', function () {
-        let payload = {
+        const payload = {
             images: [
                 {
                     row: 0,
@@ -681,26 +680,27 @@ describe('Gallery card', function () {
             caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
         };
 
-        const transformed = card.absoluteToRelative(payload, {siteUrl: 'http://127.0.0.1:2369/'});
+        const transformed = card.absoluteToRelative!(payload, {siteUrl: 'http://127.0.0.1:2369/'});
+        const images = transformed.images as Record<string, string>[];
 
-        transformed.images[0].src
+        images[0].src
             .should.equal('/content/images/2018/08/NatGeo01-9.jpg');
 
-        transformed.images[0].caption
+        images[0].caption
             .should.equal('A link to <a href="/post">an internal post</a>');
 
-        transformed.images[1].src
+        images[1].src
             .should.equal('/content/images/2018/08/NatGeo02-10.jpg');
 
-        transformed.images[1].caption
+        images[1].caption
             .should.equal('A link to <a href="/post">an internal post</a>');
 
-        transformed.caption
+        (transformed.caption as string)
             .should.equal('A link to <a href="/post">an internal post</a>');
     });
 
     it('transforms urls relative to absolute', function () {
-        let payload = {
+        const payload = {
             images: [
                 {
                     row: 0,
@@ -718,15 +718,16 @@ describe('Gallery card', function () {
             caption: 'A link to <a href="/post">an internal post</a>'
         };
 
-        const transformed = card.relativeToAbsolute(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
+        const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
+        const images = transformed.images as Record<string, string>[];
 
-        transformed.images[0].src
+        images[0].src
             .should.equal('http://127.0.0.1:2369/content/images/2018/08/NatGeo01-9.jpg');
 
-        transformed.images[1].src
+        images[1].src
             .should.equal('http://127.0.0.1:2369/content/images/2018/08/NatGeo02-10.jpg');
 
-        transformed.caption
+        (transformed.caption as string)
             .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
     });
 });

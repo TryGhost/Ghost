@@ -1,4 +1,12 @@
-module.exports = function getAvailableImageWidths(image, imageSizes) {
+interface Image {
+    width: number;
+}
+
+interface ImageSizes {
+    [key: string]: { width: number };
+}
+
+export default function getAvailableImageWidths(image: Image, imageSizes: ImageSizes): number[] {
     // get a sorted list of the available responsive widths
     const imageWidths = Object.values(imageSizes)
         .map(({width}) => width)
@@ -17,4 +25,4 @@ module.exports = function getAvailableImageWidths(image, imageSizes) {
     }
 
     return availableImageWidths;
-};
+}

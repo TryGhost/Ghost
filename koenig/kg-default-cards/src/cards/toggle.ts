@@ -1,14 +1,12 @@
-const {
+import {
     htmlToTransformReady,
     htmlAbsoluteToRelative,
     htmlRelativeToAbsolute
-} = require('@tryghost/url-utils/lib/utils');
-const {
-    hbs,
-    dedent
-} = require('../utils');
+} from '@tryghost/url-utils/lib/utils';
+import {hbs, dedent} from '../utils/index.js';
+import type {Card} from '../types.js';
 
-module.exports = {
+const toggleCard: Card = {
     name: 'toggle',
     type: 'dom',
 
@@ -47,18 +45,20 @@ module.exports = {
     },
 
     absoluteToRelative(payload, options) {
-        payload.content = payload.content && htmlAbsoluteToRelative(payload.content, options.siteUrl, options);
+        payload.content = payload.content && htmlAbsoluteToRelative(payload.content as string, options.siteUrl, options);
         return payload;
     },
 
     relativeToAbsolute(payload, options) {
-        payload.content = payload.content && htmlRelativeToAbsolute(payload.content, options.siteUrl, options.itemUrl, options);
+        payload.content = payload.content && htmlRelativeToAbsolute(payload.content as string, options.siteUrl, options.itemUrl ?? '', options);
         return payload;
     },
 
     toTransformReady(payload, options) {
-        payload.heading = payload.heading && htmlToTransformReady(payload.heading, options.siteUrl, options);
-        payload.content = payload.content && htmlToTransformReady(payload.content, options.siteUrl, options);
+        payload.heading = payload.heading && htmlToTransformReady(payload.heading as string, options.siteUrl, options);
+        payload.content = payload.content && htmlToTransformReady(payload.content as string, options.siteUrl, options);
         return payload;
     }
 };
+
+export default toggleCard;

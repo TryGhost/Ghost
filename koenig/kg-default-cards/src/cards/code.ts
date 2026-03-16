@@ -1,10 +1,11 @@
-const {
+import {
     htmlAbsoluteToRelative,
     htmlRelativeToAbsolute,
     htmlToTransformReady
-} = require('@tryghost/url-utils/lib/utils');
+} from '@tryghost/url-utils/lib/utils';
+import type {Card} from '../types.js';
 
-module.exports = {
+const codeCard: Card = {
     name: 'code',
     type: 'dom',
 
@@ -13,23 +14,23 @@ module.exports = {
             return dom.createTextNode('');
         }
 
-        let pre = dom.createElement('pre');
-        let code = dom.createElement('code');
+        const pre = dom.createElement('pre');
+        const code = dom.createElement('code');
 
         if (payload.language) {
             code.setAttribute('class', `language-${payload.language}`);
         }
 
-        code.appendChild(dom.createTextNode(payload.code));
+        code.appendChild(dom.createTextNode(payload.code as string));
         pre.appendChild(code);
 
         if (payload.caption) {
-            let figure = dom.createElement('figure');
+            const figure = dom.createElement('figure');
             figure.setAttribute('class', 'kg-card kg-code-card');
             figure.appendChild(pre);
 
-            let figcaption = dom.createElement('figcaption');
-            figcaption.appendChild(dom.createRawHTMLSection(payload.caption));
+            const figcaption = dom.createElement('figcaption');
+            figcaption.appendChild(dom.createRawHTMLSection(payload.caption as string));
             figure.appendChild(figcaption);
 
             return figure;
@@ -39,17 +40,19 @@ module.exports = {
     },
 
     absoluteToRelative(payload, options) {
-        payload.caption = payload.caption && htmlAbsoluteToRelative(payload.caption, options.siteUrl, options);
+        payload.caption = payload.caption && htmlAbsoluteToRelative(payload.caption as string, options.siteUrl, options);
         return payload;
     },
 
     relativeToAbsolute(payload, options) {
-        payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption, options.siteUrl, options.itemUrl, options);
+        payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption as string, options.siteUrl, options.itemUrl ?? '', options);
         return payload;
     },
 
     toTransformReady(payload, options) {
-        payload.caption = payload.caption && htmlToTransformReady(payload.caption, options.siteUrl, options);
+        payload.caption = payload.caption && htmlToTransformReady(payload.caption as string, options.siteUrl, options);
         return payload;
     }
 };
+
+export default codeCard;

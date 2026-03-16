@@ -1,21 +1,34 @@
-const {
+import {
     absoluteToRelative,
     htmlAbsoluteToRelative,
     relativeToAbsolute,
     htmlRelativeToAbsolute,
     toTransformReady,
     htmlToTransformReady
-} = require('@tryghost/url-utils/lib/utils');
-const {
+} from '@tryghost/url-utils/lib/utils';
+import {
     hbs,
     dedent
-} = require('../utils');
+} from '../utils/index.js';
+import type {Card} from '../types.js';
 
-module.exports = {
+interface VideoPayload {
+    src?: string;
+    loop?: boolean;
+    width?: number;
+    height?: number;
+    cardWidth?: string;
+    caption?: string;
+    customThumbnailSrc?: string;
+    thumbnailSrc?: string;
+}
+
+const videoCard: Card = {
     name: 'video',
     type: 'dom',
 
-    render({payload, env: {dom}, options = {}}) {
+    render({payload: _payload, env: {dom}, options = {}}) {
+        const payload = _payload as VideoPayload;
         if (!payload.src) {
             return dom.createTextNode('');
         }
@@ -104,7 +117,7 @@ module.exports = {
             </figure>
         `;
 
-        let cardClasses = ['kg-card kg-video-card'];
+        const cardClasses = ['kg-card kg-video-card'];
         if (payload.cardWidth) {
             cardClasses.push(`kg-width-${payload.cardWidth}`);
         }
@@ -113,7 +126,7 @@ module.exports = {
         }
 
         const emailTemplateMaxWidth = 600;
-        const aspectRatio = payload.width / payload.height;
+        const aspectRatio = (payload.width || 0) / (payload.height || 1);
         const emailSpacerWidth = Math.round(emailTemplateMaxWidth / 4);
         const emailSpacerHeight = Math.round(emailTemplateMaxWidth / aspectRatio);
 
@@ -139,26 +152,31 @@ module.exports = {
     },
 
     absoluteToRelative(payload, options) {
-        payload.src = payload.src && absoluteToRelative(payload.src, options.siteUrl, options);
-        payload.thumbnailSrc = payload.thumbnailSrc && absoluteToRelative(payload.thumbnailSrc, options.siteUrl, options);
-        payload.customThumbnailSrc = payload.customThumbnailSrc && absoluteToRelative(payload.customThumbnailSrc, options.siteUrl, options);
-        payload.caption = payload.caption && htmlAbsoluteToRelative(payload.caption, options.siteUrl, options);
+        const p = payload as VideoPayload;
+        p.src = p.src && absoluteToRelative(p.src, options.siteUrl, options);
+        p.thumbnailSrc = p.thumbnailSrc && absoluteToRelative(p.thumbnailSrc, options.siteUrl, options);
+        p.customThumbnailSrc = p.customThumbnailSrc && absoluteToRelative(p.customThumbnailSrc, options.siteUrl, options);
+        p.caption = p.caption && htmlAbsoluteToRelative(p.caption, options.siteUrl, options);
         return payload;
     },
 
     relativeToAbsolute(payload, options) {
-        payload.src = payload.src && relativeToAbsolute(payload.src, options.siteUrl, options.itemUrl, options);
-        payload.thumbnailSrc = payload.thumbnailSrc && relativeToAbsolute(payload.thumbnailSrc, options.siteUrl, options.itemUrl, options);
-        payload.customThumbnailSrc = payload.customThumbnailSrc && relativeToAbsolute(payload.customThumbnailSrc, options.siteUrl, options.itemUrl, options);
-        payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption, options.siteUrl, options.itemUrl, options);
+        const p = payload as VideoPayload;
+        p.src = p.src && relativeToAbsolute(p.src, options.siteUrl, options.itemUrl ?? '', options);
+        p.thumbnailSrc = p.thumbnailSrc && relativeToAbsolute(p.thumbnailSrc, options.siteUrl, options.itemUrl ?? '', options);
+        p.customThumbnailSrc = p.customThumbnailSrc && relativeToAbsolute(p.customThumbnailSrc, options.siteUrl, options.itemUrl ?? '', options);
+        p.caption = p.caption && htmlRelativeToAbsolute(p.caption, options.siteUrl, options.itemUrl ?? '', options);
         return payload;
     },
 
     toTransformReady(payload, options) {
-        payload.src = payload.src && toTransformReady(payload.src, options.siteUrl, options.itemUrl, options);
-        payload.thumbnailSrc = payload.thumbnailSrc && toTransformReady(payload.thumbnailSrc, options.siteUrl, options.itemUrl, options);
-        payload.customThumbnailSrc = payload.customThumbnailSrc && toTransformReady(payload.customThumbnailSrc, options.siteUrl, options.itemUrl, options);
-        payload.caption = payload.caption && htmlToTransformReady(payload.caption, options.siteUrl, options.itemUrl, options);
+        const p = payload as VideoPayload;
+        p.src = p.src && toTransformReady(p.src, options.siteUrl, options.itemUrl ?? '', options);
+        p.thumbnailSrc = p.thumbnailSrc && toTransformReady(p.thumbnailSrc, options.siteUrl, options.itemUrl ?? '', options);
+        p.customThumbnailSrc = p.customThumbnailSrc && toTransformReady(p.customThumbnailSrc, options.siteUrl, options.itemUrl ?? '', options);
+        p.caption = p.caption && htmlToTransformReady(p.caption, options.siteUrl, options.itemUrl ?? '', options);
         return payload;
     }
 };
+
+export default videoCard;

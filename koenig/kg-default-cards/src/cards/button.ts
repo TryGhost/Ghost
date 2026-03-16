@@ -1,14 +1,12 @@
-const {
+import {
     absoluteToRelative,
     relativeToAbsolute,
     toTransformReady
-} = require('@tryghost/url-utils/lib/utils');
-const {
-    hbs,
-    dedent
-} = require('../utils');
+} from '@tryghost/url-utils/lib/utils';
+import {hbs, dedent} from '../utils/index.js';
+import type {Card} from '../types.js';
 
-module.exports = {
+const buttonCard: Card = {
     name: 'button',
     type: 'dom',
 
@@ -46,17 +44,19 @@ module.exports = {
     },
 
     absoluteToRelative(payload, options) {
-        payload.buttonUrl = payload.buttonUrl && absoluteToRelative(payload.buttonUrl, options.siteUrl, options);
+        payload.buttonUrl = payload.buttonUrl && absoluteToRelative(payload.buttonUrl as string, options.siteUrl, options);
         return payload;
     },
 
     relativeToAbsolute(payload, options) {
-        payload.buttonUrl = payload.buttonUrl && relativeToAbsolute(payload.buttonUrl, options.siteUrl, options.itemUrl, options);
+        payload.buttonUrl = payload.buttonUrl && relativeToAbsolute(payload.buttonUrl as string, options.siteUrl, options.itemUrl ?? '', options);
         return payload;
     },
 
     toTransformReady(payload, options) {
-        payload.buttonUrl = payload.buttonUrl && toTransformReady(payload.buttonUrl, options.siteUrl, options.itemUrl, options);
+        payload.buttonUrl = payload.buttonUrl && toTransformReady(payload.buttonUrl as string, options.siteUrl, options.itemUrl, options);
         return payload;
     }
 };
+
+export default buttonCard;

@@ -1,8 +1,6 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('../../utils');
+import '../../utils/index.js';
 
-const isLocalContentImage = require('../../../lib/utils/is-local-content-image');
+import isLocalContentImage from '../../../src/utils/is-local-content-image.js';
 
 describe('Utils: isLocalContentImage', function () {
     describe('relative url', function () {

@@ -1,4 +1,14 @@
-module.exports = function resizeImage(image, {width: desiredWidth, height: desiredHeight} = {}) {
+interface ImageDimensions {
+    width: number;
+    height: number;
+}
+
+interface ResizeOptions {
+    width?: number;
+    height?: number;
+}
+
+export default function resizeImage(image: ImageDimensions, {width: desiredWidth, height: desiredHeight}: ResizeOptions = {}): ImageDimensions {
     const {width, height} = image;
     const ratio = width / height;
 
@@ -19,4 +29,6 @@ module.exports = function resizeImage(image, {width: desiredWidth, height: desir
             height: desiredHeight
         };
     }
-};
+
+    return {width, height};
+}

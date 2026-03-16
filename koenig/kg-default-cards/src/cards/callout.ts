@@ -1,14 +1,12 @@
-const {
+import {
     htmlAbsoluteToRelative,
     htmlRelativeToAbsolute,
     htmlToTransformReady
-} = require('@tryghost/url-utils/lib/utils');
-const {
-    hbs,
-    dedent
-} = require('../utils');
+} from '@tryghost/url-utils/lib/utils';
+import {hbs, dedent} from '../utils/index.js';
+import type {Card} from '../types.js';
 
-module.exports = {
+const calloutCard: Card = {
     name: 'callout',
     type: 'dom',
 
@@ -36,17 +34,19 @@ module.exports = {
     },
 
     absoluteToRelative(payload, options) {
-        payload.calloutText = payload.calloutText && htmlAbsoluteToRelative(payload.calloutText, options.siteUrl, options);
+        payload.calloutText = payload.calloutText && htmlAbsoluteToRelative(payload.calloutText as string, options.siteUrl, options);
         return payload;
     },
 
     relativeToAbsolute(payload, options) {
-        payload.calloutText = payload.calloutText && htmlRelativeToAbsolute(payload.calloutText, options.siteUrl, options.itemUrl, options);
+        payload.calloutText = payload.calloutText && htmlRelativeToAbsolute(payload.calloutText as string, options.siteUrl, options.itemUrl ?? '', options);
         return payload;
     },
 
     toTransformReady(payload, options) {
-        payload.calloutText = payload.calloutText && htmlToTransformReady(payload.calloutText, options.siteUrl, options);
+        payload.calloutText = payload.calloutText && htmlToTransformReady(payload.calloutText as string, options.siteUrl, options);
         return payload;
     }
 };
+
+export default calloutCard;

@@ -1,16 +1,14 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('../utils');
+import '../utils/index.js';
 
-const card = require('../../lib/cards/video');
-const SimpleDom = require('simple-dom');
-const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
+import card from '../../src/cards/video.js';
+import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
+const serializer = new HTMLSerializer(voidMap);
 
 describe('Video card', function () {
     it('renders', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 src: 'https://example.com/video.mp4',
@@ -24,9 +22,9 @@ describe('Video card', function () {
     });
 
     it('renders for email target', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 src: 'https://example.com/video.mp4',
@@ -40,7 +38,7 @@ describe('Video card', function () {
             }
         };
 
-        let output = serializer.serialize(card.render(opts));
+        const output = serializer.serialize(card.render(opts));
         output.should.not.containEql('<video');
         output.should.containEql('<figure class="kg-card kg-video-card"');
         output.should.containEql('<a class="kg-video-preview" href="https://example.com/my-post"');
@@ -48,9 +46,9 @@ describe('Video card', function () {
     });
 
     it('renders nothing when src is undefined', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 src: undefined
@@ -61,9 +59,9 @@ describe('Video card', function () {
     });
 
     it('renders card width', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 src: 'https://example.com/video.mp4',
@@ -78,9 +76,9 @@ describe('Video card', function () {
     });
 
     it('renders loop attribute', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 src: 'https://example.com/video.mp4',
@@ -96,9 +94,9 @@ describe('Video card', function () {
     });
 
     it('renders caption when provided', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 src: 'https://example.com/video.mp4',
@@ -112,53 +110,53 @@ describe('Video card', function () {
     });
 
     it('transforms urls absolute to relative', function () {
-        let payload = {
+        const payload = {
             src: 'http://127.0.0.1:2369/video.mp4',
             thumbnailSrc: 'http://127.0.0.1:2369/video.png',
             customThumbnailSrc: 'http://127.0.0.1:2369/custom.png',
             caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
         };
 
-        const transformed = card.absoluteToRelative(payload, {siteUrl: 'http://127.0.0.1:2369/'});
+        const transformed = card.absoluteToRelative!(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
-        transformed.src.should.equal('/video.mp4');
-        transformed.thumbnailSrc.should.equal('/video.png');
-        transformed.customThumbnailSrc.should.equal('/custom.png');
-        transformed.caption
+        (transformed.src as string).should.equal('/video.mp4');
+        (transformed.thumbnailSrc as string).should.equal('/video.png');
+        (transformed.customThumbnailSrc as string).should.equal('/custom.png');
+        (transformed.caption as string)
             .should.equal('A link to <a href="/post">an internal post</a>');
     });
 
     it('transforms urls relative to absolute', function () {
-        let payload = {
+        const payload = {
             src: '/video.mp4',
             thumbnailSrc: '/video.png',
             customThumbnailSrc: '/custom.png',
             caption: 'A link to <a href="/post">an internal post</a>'
         };
 
-        const transformed = card.relativeToAbsolute(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
+        const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
 
-        transformed.src.should.equal('http://127.0.0.1:2369/video.mp4');
-        transformed.thumbnailSrc.should.equal('http://127.0.0.1:2369/video.png');
-        transformed.customThumbnailSrc.should.equal('http://127.0.0.1:2369/custom.png');
-        transformed.caption
+        (transformed.src as string).should.equal('http://127.0.0.1:2369/video.mp4');
+        (transformed.thumbnailSrc as string).should.equal('http://127.0.0.1:2369/video.png');
+        (transformed.customThumbnailSrc as string).should.equal('http://127.0.0.1:2369/custom.png');
+        (transformed.caption as string)
             .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
     });
 
     it('transforms urls to transform-ready', function () {
-        let payload = {
+        const payload = {
             src: 'http://127.0.0.1:2369/video.mp4',
             thumbnailSrc: 'http://127.0.0.1:2369/video.png',
             customThumbnailSrc: 'http://127.0.0.1:2369/custom.png',
             caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
         };
 
-        const transformed = card.toTransformReady(payload, {siteUrl: 'http://127.0.0.1:2369/'});
+        const transformed = card.toTransformReady!(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
-        transformed.src.should.equal('__GHOST_URL__/video.mp4');
-        transformed.thumbnailSrc.should.equal('__GHOST_URL__/video.png');
-        transformed.customThumbnailSrc.should.equal('__GHOST_URL__/custom.png');
-        transformed.caption
+        (transformed.src as string).should.equal('__GHOST_URL__/video.mp4');
+        (transformed.thumbnailSrc as string).should.equal('__GHOST_URL__/video.png');
+        (transformed.customThumbnailSrc as string).should.equal('__GHOST_URL__/custom.png');
+        (transformed.caption as string)
             .should.equal('A link to <a href="__GHOST_URL__/post">an internal post</a>');
     });
 });

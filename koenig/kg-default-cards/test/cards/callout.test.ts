@@ -1,16 +1,14 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('../utils');
+import '../utils/index.js';
 
-const card = require('../../lib/cards/callout');
-const SimpleDom = require('simple-dom');
-const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
+import card from '../../src/cards/callout.js';
+import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
+const serializer = new HTMLSerializer(voidMap);
 
 describe('Callout card', function () {
     describe('front-end render', function () {
         it('renders the callout nodes with card wrapper element', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     calloutEmoji: '⚠️',
                     calloutText: 'This is a callout'
@@ -21,8 +19,8 @@ describe('Callout card', function () {
         });
 
         it('renders the callout nodes without the emoji element', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     calloutEmoji: '',
                     calloutText: 'This is a callout'
@@ -37,7 +35,7 @@ describe('Callout card', function () {
     // describe('email render', function () {
     //     it('generates an email-friendly callout in a paragraph', function () {
     //         let opts = {
-    //             env: {dom: new SimpleDom.Document()},
+    //             env: {dom: new SimpleDomDocument()},
     //             payload: {
     //                 calloutEmoji: '⚠️',
     //                 calloutText: 'This is a callout'
@@ -51,8 +49,8 @@ describe('Callout card', function () {
     // });
 
     it('renders nothing if calloutText is missing', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
+        const opts = {
+            env: {dom: new SimpleDomDocument()},
             payload: {
                 calloutEmoji: '⚠️',
                 calloutText: ''
@@ -63,35 +61,35 @@ describe('Callout card', function () {
     });
 
     it('transforms callout urls absolute to relative', function () {
-        let payload = {
+        const payload = {
             calloutEmoji: '⚠️',
             calloutText: '<a href="https://ghost.org/">Home</a>'
         };
 
-        const transformed = card.absoluteToRelative(payload, {siteUrl: 'https://ghost.org'});
+        const transformed = card.absoluteToRelative!(payload, {siteUrl: 'https://ghost.org'});
 
-        transformed.calloutText.should.equal('<a href="/">Home</a>');
+        (transformed.calloutText as string).should.equal('<a href="/">Home</a>');
     });
 
     it('transforms callout urls relative to absolute', function () {
-        let payload = {
+        const payload = {
             calloutEmoji: '⚠️',
             calloutText: '<a href="/#/portal/signup">Sign up</a>'
         };
 
-        const transformed = card.relativeToAbsolute(payload, {siteUrl: 'https://ghost.org'});
+        const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'https://ghost.org'});
 
-        transformed.calloutText.should.equal('<a href="https://ghost.org/#/portal/signup">Sign up</a>');
+        (transformed.calloutText as string).should.equal('<a href="https://ghost.org/#/portal/signup">Sign up</a>');
     });
 
     it('transforms callout urls to transform ready', function () {
-        let payload = {
+        const payload = {
             calloutEmoji: '⚠️',
             calloutText: '<a href="/#/portal/signup">Sign up</a>'
         };
 
-        const transformed = card.toTransformReady(payload, {siteUrl: 'https://ghost.org'});
+        const transformed = card.toTransformReady!(payload, {siteUrl: 'https://ghost.org'});
 
-        transformed.calloutText.should.equal('<a href="__GHOST_URL__/#/portal/signup">Sign up</a>');
+        (transformed.calloutText as string).should.equal('<a href="__GHOST_URL__/#/portal/signup">Sign up</a>');
     });
 });

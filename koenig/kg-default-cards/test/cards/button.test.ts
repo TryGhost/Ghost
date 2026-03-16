@@ -1,16 +1,14 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('../utils');
+import '../utils/index.js';
 
-const card = require('../../lib/cards/button');
-const SimpleDom = require('simple-dom');
-const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
+import card from '../../src/cards/button.js';
+import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
+const serializer = new HTMLSerializer(voidMap);
 
 describe('Button card', function () {
     describe('front-end render', function () {
         it('generates an anchor element with card wrapper element', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     buttonUrl: 'https://ghost.org/',
                     buttonText: 'Click me!'
@@ -21,8 +19,8 @@ describe('Button card', function () {
         });
 
         it('adds center classes when center aligned', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     buttonUrl: 'https://ghost.org/',
                     buttonText: 'Click me!',
@@ -36,8 +34,8 @@ describe('Button card', function () {
 
     describe('email render', function () {
         it('generates an email-friendly button in a paragraph', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     buttonUrl: 'https://ghost.org/',
                     buttonText: 'Click me!'
@@ -51,8 +49,8 @@ describe('Button card', function () {
         });
 
         it('handles center alignment', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     buttonUrl: 'https://ghost.org/',
                     buttonText: 'Click me!',
@@ -68,8 +66,8 @@ describe('Button card', function () {
     });
 
     it('renders nothing if buttonUrl is missing', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
+        const opts = {
+            env: {dom: new SimpleDomDocument()},
             payload: {
                 buttonUrl: '',
                 buttonText: 'Click me!'
@@ -80,8 +78,8 @@ describe('Button card', function () {
     });
 
     it('renders nothing if buttonText is missing', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
+        const opts = {
+            env: {dom: new SimpleDomDocument()},
             payload: {
                 buttonUrl: 'https://ghost.org/',
                 buttonText: ''
@@ -92,35 +90,35 @@ describe('Button card', function () {
     });
 
     it('transforms button url absolute to relative', function () {
-        let payload = {
+        const payload = {
             buttonUrl: 'https://ghost.org/',
             buttonText: 'Testing'
         };
 
-        const transformed = card.absoluteToRelative(payload, {siteUrl: 'https://ghost.org'});
+        const transformed = card.absoluteToRelative!(payload, {siteUrl: 'https://ghost.org'});
 
-        transformed.buttonUrl.should.equal('/');
+        (transformed.buttonUrl as string).should.equal('/');
     });
 
     it('transforms button url relative to absolute', function () {
-        let payload = {
+        const payload = {
             buttonUrl: '/#/portal/signup',
             buttonText: 'Testing'
         };
 
-        const transformed = card.relativeToAbsolute(payload, {siteUrl: 'https://ghost.org'});
+        const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'https://ghost.org'});
 
-        transformed.buttonUrl.should.equal('https://ghost.org/#/portal/signup');
+        (transformed.buttonUrl as string).should.equal('https://ghost.org/#/portal/signup');
     });
 
     it('transforms button url to transform ready', function () {
-        let payload = {
+        const payload = {
             buttonUrl: '/#/portal/signup',
             buttonText: 'Testing'
         };
 
-        const transformed = card.toTransformReady(payload, {siteUrl: 'https://ghost.org'});
+        const transformed = card.toTransformReady!(payload, {siteUrl: 'https://ghost.org'});
 
-        transformed.buttonUrl.should.equal('__GHOST_URL__/#/portal/signup');
+        (transformed.buttonUrl as string).should.equal('__GHOST_URL__/#/portal/signup');
     });
 });

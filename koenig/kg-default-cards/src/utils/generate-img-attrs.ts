@@ -1,17 +1,25 @@
-const isLocalContentImage = require('./is-local-content-image');
-const isUnsplashImage = require('./is-unsplash-image');
-const resizeImage = require('./resize-image');
-const {getSrcsetAttribute} = require('./srcset-attribute');
-const getAvailableImageWidths = require('./get-available-image-widths');
+import type {CardRenderOptions} from '../types.js';
+import isLocalContentImage from './is-local-content-image.js';
+import isUnsplashImage from './is-unsplash-image.js';
+import resizeImage from './resize-image.js';
+import {getSrcsetAttribute} from './srcset-attribute.js';
+import getAvailableImageWidths from './get-available-image-widths.js';
 
-const escapeExpression = (str = '') => {
+const escapeExpression = (str: string | number = ''): string => {
     if (typeof str === 'number') {
         str = str.toString();
     }
     return str.replace(/&/g, '&amp;');
 };
 
-const getMaxResizedImgDimensions = function ({src, width, height, options = {}} = {}) {
+interface ImgDimensionArgs {
+    src?: string;
+    width?: number;
+    height?: number;
+    options?: CardRenderOptions;
+}
+
+const getMaxResizedImgDimensions = function ({src, width, height, options = {}}: ImgDimensionArgs = {}): {width?: number; height?: number} {
     const originalWidth = width;
     const originalHeight = height;
 
@@ -19,12 +27,15 @@ const getMaxResizedImgDimensions = function ({src, width, height, options = {}} 
     const {defaultMaxWidth} = options.imageOptimization || {};
     if (
         defaultMaxWidth &&
-        originalWidth > defaultMaxWidth &&
-        isLocalContentImage(src, options.siteUrl) &&
+        originalWidth && originalWidth > defaultMaxWidth &&
+        src && isLocalContentImage(src, options.siteUrl) &&
         canTransformImage &&
         canTransformImage(src)
     ) {
-        ({width, height} = resizeImage({width: originalWidth, height: originalHeight}, {width: defaultMaxWidth}));
+        const resized = resizeImage({width: originalWidth, height: originalHeight!}, {width: defaultMaxWidth});
+        if (resized) {
+            ({width, height} = resized);
+        }
     }
 
     return {
@@ -33,12 +44,19 @@ const getMaxResizedImgDimensions = function ({src, width, height, options = {}} 
     };
 };
 
-const generateImgSrcAttrs = function ({src, width, height, options = {}} = {}) {
+interface GenerateImgAttrsArgs {
+    src?: string;
+    width?: number;
+    height?: number;
+    options?: CardRenderOptions;
+}
+
+const generateImgSrcAttrs = function ({src, width, height, options = {}}: GenerateImgAttrsArgs = {}): string | undefined {
     if (!src) {
         return;
     }
 
-    const attrs = {
+    const attrs: Record<string, string | number | undefined> = {
         src,
         width,
         height
@@ -53,7 +71,7 @@ const generateImgSrcAttrs = function ({src, width, height, options = {}} = {}) {
 
     // add srcset unless it's an email, email clients do not have good support for srcset or sizes
     if (options.target !== 'email') {
-        const srcset = getSrcsetAttribute({src, width, options});
+        const srcset = getSrcsetAttribute({src, width: width!, options});
 
         attrs.srcset = srcset;
 
@@ -80,7 +98,10 @@ const generateImgSrcAttrs = function ({src, width, height, options = {}} = {}) {
                 height: height
             };
             if (width >= 600) {
-                imageDimensions = resizeImage(imageDimensions, {width: 600});
+                const resized = resizeImage(imageDimensions, {width: 600});
+                if (resized) {
+                    imageDimensions = resized;
+                }
             }
 
             attrs.width = imageDimensions.width;
@@ -88,14 +109,17 @@ const generateImgSrcAttrs = function ({src, width, height, options = {}} = {}) {
 
             if (isLocalContentImage(src, options.siteUrl) && options.canTransformImage && options.canTransformImage(src)) {
                 // find available image size next up from 2x600 so we can use it for the "retina" src
-                const availableImageWidths = getAvailableImageWidths({width}, options.imageOptimization.contentImageSizes);
+                const availableImageWidths = getAvailableImageWidths({width}, options.imageOptimization!.contentImageSizes!);
                 const srcWidth = availableImageWidths.find(availableImageWidth => availableImageWidth >= 1200);
 
                 if (!srcWidth || srcWidth === width) {
                     // do nothing, width is smaller than retina or matches the original payload src
                 } else {
-                    const [, imagesPath, filename] = src.match(/(.*\/content\/images)\/(.*)/);
-                    attrs.src = `${imagesPath}/size/w${srcWidth}/${filename}`;
+                    const match = src.match(/(.*\/content\/images)\/(.*)/);
+                    if (match) {
+                        const [, imagesPath, filename] = match;
+                        attrs.src = `${imagesPath}/size/w${srcWidth}/${filename}`;
+                    }
                 }
             }
         }
@@ -104,16 +128,16 @@ const generateImgSrcAttrs = function ({src, width, height, options = {}} = {}) {
         // Outlook when we don't have width/height data available
         if (isUnsplashImage(src)) {
             const unsplashUrl = new URL(src);
-            unsplashUrl.searchParams.set('w', 1200);
+            unsplashUrl.searchParams.set('w', '1200');
 
             attrs.src = unsplashUrl.href;
         }
     }
 
     return Object.keys(attrs)
-        .map(key => attrs[key] !== undefined && `${key}="${escapeExpression(attrs[key])}"`)
+        .map(key => attrs[key] !== undefined && `${key}="${escapeExpression(attrs[key]!)}"`)
         .filter(Boolean)
         .join(' ');
 };
 
-module.exports = generateImgSrcAttrs;
+export default generateImgSrcAttrs;

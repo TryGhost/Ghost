@@ -1,11 +1,22 @@
-const {
+import {
     absoluteToRelative,
     relativeToAbsolute,
     toTransformReady
-} = require('@tryghost/url-utils/lib/utils');
-const {escapeHtml} = require('@tryghost/string');
+} from '@tryghost/url-utils/lib/utils';
+import {
+    escapeHtml
+} from '@tryghost/string';
+import type {Card} from '../types.js';
 
-function bytesToSize(bytes) {
+interface FilePayload {
+    src?: string;
+    fileTitle?: string;
+    fileCaption?: string;
+    fileName?: string;
+    fileSize?: number;
+}
+
+function bytesToSize(bytes: number) {
     if (!bytes) {
         return '0 Byte';
     }
@@ -13,21 +24,22 @@ function bytesToSize(bytes) {
     if (bytes === 0) {
         return '0 Byte';
     }
-    const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return Math.round((bytes / Math.pow(1024, i))) + ' ' + sizes[i];
 }
 
-module.exports = {
+const fileCard: Card = {
     name: 'file',
     type: 'dom',
 
-    render({payload, env: {dom}, options = {}}) {
+    render({payload: _payload, env: {dom}, options = {}}) {
+        const payload = _payload as FilePayload;
         if (!payload.src) {
             return dom.createTextNode('');
         }
 
         let classNames = '';
-        let emailStyles = {
+        const emailStyles = {
             icon: 'height: 24px; width: 24px; max-width: 24px; margin-top: 8px;'
         };
 
@@ -46,8 +58,8 @@ module.exports = {
                     ${payload.fileTitle ? `<div class="kg-file-card-title">${escapeHtml(payload.fileTitle)}</div>` : ``}
                     ${payload.fileCaption ? `<div class="kg-file-card-caption">${escapeHtml(payload.fileCaption)}</div>` : ``}
                     <div class="kg-file-card-metadata">
-                        <div class="kg-file-card-filename">${escapeHtml(payload.fileName)}</div>
-                        <div class="kg-file-card-filesize">${bytesToSize(payload.fileSize)}</div>
+                        <div class="kg-file-card-filename">${escapeHtml(payload.fileName || '')}</div>
+                        <div class="kg-file-card-filesize">${bytesToSize(payload.fileSize || 0)}</div>
                     </div>
                 </div>
                 <div class="kg-file-card-icon">
@@ -78,7 +90,7 @@ module.exports = {
                                     </td></tr></table>
                                     ` : ``}
                                     <table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td>
-                                        <a href="${escapeHtml(postUrl)}" class="kg-file-meta"><span class="kg-file-name">${escapeHtml(payload.fileName)}</span> &bull; ${bytesToSize(payload.fileSize)}</a>
+                                        <a href="${escapeHtml(postUrl)}" class="kg-file-meta"><span class="kg-file-name">${escapeHtml(payload.fileName || '')}</span> &bull; ${bytesToSize(payload.fileSize || 0)}</a>
                                     </td></tr></table>
                                 </td>
                                 <td width="80" valign="middle" class="kg-file-thumbnail">
@@ -97,17 +109,22 @@ module.exports = {
     },
 
     absoluteToRelative(payload, options) {
-        payload.src = payload.src && absoluteToRelative(payload.src, options.siteUrl, options);
+        const p = payload as FilePayload;
+        p.src = p.src && absoluteToRelative(p.src, options.siteUrl, options);
         return payload;
     },
 
     relativeToAbsolute(payload, options) {
-        payload.src = payload.src && relativeToAbsolute(payload.src, options.siteUrl, options.itemUrl, options);
+        const p = payload as FilePayload;
+        p.src = p.src && relativeToAbsolute(p.src, options.siteUrl, options.itemUrl ?? '', options);
         return payload;
     },
 
     toTransformReady(payload, options) {
-        payload.src = payload.src && toTransformReady(payload.src, options.siteUrl, options);
+        const p = payload as FilePayload;
+        p.src = p.src && toTransformReady(p.src, options.siteUrl, options);
         return payload;
     }
 };
+
+export default fileCard;

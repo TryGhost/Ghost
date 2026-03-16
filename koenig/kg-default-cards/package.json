@@ -1,14 +1,26 @@
 {
   "name": "@tryghost/kg-default-cards",
   "version": "10.2.10",
-  "repository": "https://github.com/TryGhost/Koenig/tree/master/packages/kg-default-cards",
+  "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-default-cards",
   "author": "Ghost Foundation",
   "license": "MIT",
-  "main": "index.js",
+  "main": "build/cjs/index.js",
+  "module": "build/esm/index.js",
+  "types": "build/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/esm/index.d.ts",
+      "import": "./build/esm/index.js",
+      "require": "./build/cjs/index.js"
+    }
+  },
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha './test/**/*.test.js'",
-    "lint": "eslint . --cache",
+    "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
+    "prepare": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
+    "pretest": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json && tsc -p tsconfig.test.json",
+    "test": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha --require tsx './test/**/*.test.ts'",
+    "lint": "eslint --cache .",
     "posttest": "yarn lint"
   },
   "engines": {
@@ -17,25 +29,33 @@
   "files": [
     "LICENSE",
     "README.md",
-    "lib/"
+    "build"
   ],
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
+    "@eslint/js": "9.39.4",
+    "@types/mocha": "10.0.10",
+    "@types/node": "24.12.0",
+    "@types/should": "^13.0.0",
+    "@types/sinon": "21.0.0",
     "c8": "11.0.0",
     "mocha": "11.7.5",
     "should": "13.2.3",
     "simple-dom": "1.4.0",
-    "sinon": "21.0.3"
+    "sinon": "21.0.3",
+    "tsx": "4.21.0",
+    "typescript": "5.8.3",
+    "typescript-eslint": "8.57.0"
   },
   "dependencies": {
     "@tryghost/kg-markdown-html-renderer": "7.1.9",
+    "@tryghost/kg-utils": "1.0.41",
     "@tryghost/string": "0.2.21",
     "@tryghost/url-utils": "5.1.2",
     "handlebars": "^4.7.6",
     "juice": "^10.0.0",
-    "lodash": "^4.17.21",
     "luxon": "^3.5.0"
   }
 }

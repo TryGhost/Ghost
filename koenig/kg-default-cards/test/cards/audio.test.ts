@@ -1,16 +1,14 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('../utils');
+import '../utils/index.js';
 
-const card = require('../../lib/cards/audio');
-const SimpleDom = require('simple-dom');
-const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
+import card from '../../src/cards/audio.js';
+import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
+const serializer = new HTMLSerializer(voidMap);
 
 describe('Audio card', function () {
     describe('front-end render', function () {
         it('renders the audio nodes with card wrapper element', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     src: 'https://ghost.org/uploads/2017/11/file_example_MP3.mp3',
                     title: 'Sample audio',
@@ -24,8 +22,8 @@ describe('Audio card', function () {
 
     describe('email render', function () {
         it('generates an email-friendly audio in a paragraph', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     src: 'https://ghost.org/uploads/2017/11/file_example_MP3.mp3',
                     title: 'Sample audio',
@@ -40,8 +38,8 @@ describe('Audio card', function () {
     });
 
     it('renders nothing if src is missing', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
+        const opts = {
+            env: {dom: new SimpleDomDocument()},
             payload: {
                 src: '',
                 title: 'Sample audio',
@@ -53,38 +51,38 @@ describe('Audio card', function () {
     });
 
     it('transforms content urls absolute to relative', function () {
-        let payload = {
+        const payload = {
             src: 'https://ghost.org/uploads/2017/11/file_example_MP3.mp3',
             title: 'Sample audio',
             duration: 130
         };
 
-        const transformed = card.absoluteToRelative(payload, {siteUrl: 'https://ghost.org'});
+        const transformed = card.absoluteToRelative!(payload, {siteUrl: 'https://ghost.org'});
 
-        transformed.src.should.equal('/uploads/2017/11/file_example_MP3.mp3');
+        (transformed.src as string).should.equal('/uploads/2017/11/file_example_MP3.mp3');
     });
 
     it('transforms content urls relative to absolute', function () {
-        let payload = {
+        const payload = {
             src: '/uploads/2017/11/file_example_MP3.mp3',
             title: 'Sample audio',
             duration: 130
         };
 
-        const transformed = card.relativeToAbsolute(payload, {siteUrl: 'https://ghost.org'});
+        const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'https://ghost.org'});
 
-        transformed.src.should.equal('https://ghost.org/uploads/2017/11/file_example_MP3.mp3');
+        (transformed.src as string).should.equal('https://ghost.org/uploads/2017/11/file_example_MP3.mp3');
     });
 
     it('transforms content urls to transform ready', function () {
-        let payload = {
+        const payload = {
             src: '/uploads/2017/11/file_example_MP3.mp3',
             title: 'Sample audio',
             duration: 130
         };
 
-        const transformed = card.toTransformReady(payload, {siteUrl: 'https://ghost.org'});
+        const transformed = card.toTransformReady!(payload, {siteUrl: 'https://ghost.org'});
 
-        transformed.src.should.equal('__GHOST_URL__/uploads/2017/11/file_example_MP3.mp3');
+        (transformed.src as string).should.equal('__GHOST_URL__/uploads/2017/11/file_example_MP3.mp3');
     });
 });

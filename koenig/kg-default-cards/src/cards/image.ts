@@ -1,24 +1,37 @@
-const {
+import {
     isLocalContentImage,
     isUnsplashImage,
     getAvailableImageWidths,
     setSrcsetAttribute,
     resizeImage
-} = require('../utils');
-const {
+} from '../utils/index.js';
+import {
     absoluteToRelative,
     relativeToAbsolute,
     htmlAbsoluteToRelative,
     htmlRelativeToAbsolute,
     htmlToTransformReady,
     toTransformReady
-} = require('@tryghost/url-utils/lib/utils');
+} from '@tryghost/url-utils/lib/utils';
+import type {Card} from '../types.js';
 
-module.exports = {
+interface ImagePayload {
+    src: string;
+    width: number;
+    height: number;
+    cardWidth?: string;
+    caption?: string;
+    alt?: string;
+    title?: string;
+    href?: string;
+}
+
+const imageCard: Card = {
     name: 'image',
     type: 'dom',
 
-    render({payload, env: {dom}, options = {}}) {
+    render({payload: _payload, env: {dom}, options = {}}) {
+        const payload = _payload as unknown as ImagePayload;
         if (!payload.src) {
             return dom.createTextNode('');
         }
@@ -57,9 +70,9 @@ module.exports = {
             canTransformImage &&
             canTransformImage(payload.src)
         ) {
-            const {width, height} = resizeImage(payload, {width: defaultMaxWidth});
-            img.setAttribute('width', width);
-            img.setAttribute('height', height);
+            const resized = resizeImage(payload, {width: defaultMaxWidth});
+            img.setAttribute('width', resized.width);
+            img.setAttribute('height', resized.height);
         }
 
         // add srcset unless it's an email, email clients do not have good support for srcset or sizes
@@ -82,7 +95,7 @@ module.exports = {
         // so we add that at the expected size in emails (600px) and use a higher
         // resolution image to keep images looking good on retina screens
         if (options.target === 'email' && payload.width && payload.height) {
-            let imageDimensions = {
+            let imageDimensions: {width: number; height: number} = {
                 width: payload.width,
                 height: payload.height
             };
@@ -94,14 +107,17 @@ module.exports = {
 
             if (isLocalContentImage(payload.src, options.siteUrl) && options.canTransformImage && options.canTransformImage(payload.src)) {
                 // find available image size next up from 2x600 so we can use it for the "retina" src
-                const availableImageWidths = getAvailableImageWidths(payload, options.imageOptimization.contentImageSizes);
+                const availableImageWidths = getAvailableImageWidths(payload, options.imageOptimization!.contentImageSizes!);
                 const srcWidth = availableImageWidths.find(width => width >= 1200);
 
                 if (!srcWidth || srcWidth === payload.width) {
                     // do nothing, width is smaller than retina or matches the original payload src
                 } else {
-                    const [, imagesPath, filename] = payload.src.match(/(.*\/content\/images)\/(.*)/);
-                    img.setAttribute('src', `${imagesPath}/size/w${srcWidth}/${filename}`);
+                    const srcMatch = payload.src.match(/(.*\/content\/images)\/(.*)/);
+                    if (srcMatch) {
+                        const [, imagesPath, filename] = srcMatch;
+                        img.setAttribute('src', `${imagesPath}/size/w${srcWidth}/${filename}`);
+                    }
                 }
             }
         }
@@ -110,7 +126,7 @@ module.exports = {
         // Outlook when we don't have width/height data available
         if (options.target === 'email' && isUnsplashImage(payload.src)) {
             const unsplashUrl = new URL(payload.src);
-            unsplashUrl.searchParams.set('w', 1200);
+            unsplashUrl.searchParams.set('w', '1200');
             img.setAttribute('src', unsplashUrl.href);
         }
 
@@ -134,20 +150,25 @@ module.exports = {
     },
 
     absoluteToRelative(payload, options) {
-        payload.src = payload.src && absoluteToRelative(payload.src, options.siteUrl, options);
-        payload.caption = payload.caption && htmlAbsoluteToRelative(payload.caption, options.siteUrl, options);
+        const p = payload as unknown as ImagePayload;
+        p.src = p.src && absoluteToRelative(p.src, options.siteUrl, options);
+        p.caption = p.caption && htmlAbsoluteToRelative(p.caption, options.siteUrl, options);
         return payload;
     },
 
     relativeToAbsolute(payload, options) {
-        payload.src = payload.src && relativeToAbsolute(payload.src, options.siteUrl, options.itemUrl, options);
-        payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption, options.siteUrl, options.itemUrl, options);
+        const p = payload as unknown as ImagePayload;
+        p.src = p.src && relativeToAbsolute(p.src, options.siteUrl, options.itemUrl ?? '', options);
+        p.caption = p.caption && htmlRelativeToAbsolute(p.caption, options.siteUrl, options.itemUrl ?? '', options);
         return payload;
     },
 
     toTransformReady(payload, options) {
-        payload.src = payload.src && toTransformReady(payload.src, options.siteUrl, options);
-        payload.caption = payload.caption && htmlToTransformReady(payload.caption, options.siteUrl, options);
+        const p = payload as unknown as ImagePayload;
+        p.src = p.src && toTransformReady(p.src, options.siteUrl, options);
+        p.caption = p.caption && htmlToTransformReady(p.caption, options.siteUrl, options);
         return payload;
     }
 };
+
+export default imageCard;

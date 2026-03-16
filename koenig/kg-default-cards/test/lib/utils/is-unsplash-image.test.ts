@@ -1,8 +1,6 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('../../utils');
+import '../../utils/index.js';
 
-const isUnsplashImage = require('../../../lib/utils/is-unsplash-image');
+import isUnsplashImage from '../../../src/utils/is-unsplash-image.js';
 
 describe('Utils: isUnsplashImage', function () {
     it('returns true when url matches unsplash url', function () {

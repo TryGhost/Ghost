@@ -1,4 +1,6 @@
-module.exports = {
+import type {Card} from '../types.js';
+
+const paywallCard: Card = {
     name: 'paywall',
     type: 'dom',
 
@@ -6,3 +8,5 @@ module.exports = {
         return dom.createComment('members-only');
     }
 };
+
+export default paywallCard;

@@ -1,17 +1,16 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('../utils');
+import '../utils/index.js';
 
-const card = require('../../lib/cards/hr');
-const SimpleDom = require('simple-dom');
-const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
+import card from '../../src/cards/hr.js';
+import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
+const serializer = new HTMLSerializer(voidMap);
 
 describe('HR card', function () {
     it('generates a horizontal rule', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
-            }
+                dom: new SimpleDomDocument()
+            },
+            payload: {}
         };
 
         serializer.serialize(card.render(opts)).should.match('<hr>');

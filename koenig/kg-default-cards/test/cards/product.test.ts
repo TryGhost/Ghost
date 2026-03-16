@@ -1,16 +1,14 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('../utils');
+import '../utils/index.js';
 
-const card = require('../../lib/cards/product');
-const SimpleDom = require('simple-dom');
-const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
+import card from '../../src/cards/product.js';
+import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
+const serializer = new HTMLSerializer(voidMap);
 
 describe('Product card', function () {
     describe('front-end render', function () {
         it('renders the product nodes with card wrapper element', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     productButton: 'Click me',
                     productButtonEnabled: true,
@@ -31,8 +29,8 @@ describe('Product card', function () {
 
     describe('render requirements', function () {
         it('renders nothing if title, description, and button is missing', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     productTitle: '',
                     productDescription: ''
@@ -43,8 +41,8 @@ describe('Product card', function () {
         });
 
         it('renders if only title is present', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     productTitle: 'Just a title'
                 }
@@ -54,8 +52,8 @@ describe('Product card', function () {
         });
 
         it('renders if only description is present', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     productTitle: 'Just a description'
                 }
@@ -65,8 +63,8 @@ describe('Product card', function () {
         });
 
         it('renders if only button is present', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     productButtonEnabled: true,
                     productButton: 'Just a button',
@@ -80,8 +78,8 @@ describe('Product card', function () {
 
     describe('image dimensions', function () {
         it('includes width and height when available', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     productButton: 'Click me',
                     productButtonEnabled: true,
@@ -101,8 +99,8 @@ describe('Product card', function () {
         });
 
         it('omits width and height when not available', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     productButton: 'Click me',
                     productButtonEnabled: true,
@@ -124,9 +122,9 @@ describe('Product card', function () {
         });
 
         it('uses resized width and height when there\'s a max width', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -148,9 +146,9 @@ describe('Product card', function () {
         });
 
         it('uses original width and height when transform is not available', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -174,9 +172,9 @@ describe('Product card', function () {
 
     describe('srcset attribute', function () {
         it('is included when src is relative', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -202,9 +200,9 @@ describe('Product card', function () {
         });
 
         it('is included when src is __GHOST_URL__ relative', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -230,9 +228,9 @@ describe('Product card', function () {
         });
 
         it('is included for absolute images', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -259,9 +257,9 @@ describe('Product card', function () {
         });
 
         it('is included for absolute images when siteUrl has trailing slash', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -288,9 +286,9 @@ describe('Product card', function () {
         });
 
         it('is omitted when target === email', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -317,9 +315,9 @@ describe('Product card', function () {
         });
 
         it('is omitted when no contentImageSizes are passed as options', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -336,9 +334,9 @@ describe('Product card', function () {
         });
 
         it('is omitted when `srcsets: false` is passed in as an option', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -367,9 +365,9 @@ describe('Product card', function () {
         it('is omitted when canTransformImages is provided and returns false', function () {
             const canTransformImage = () => false;
 
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -396,9 +394,9 @@ describe('Product card', function () {
         });
 
         it('is omitted when no width is provided', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -423,9 +421,9 @@ describe('Product card', function () {
         });
 
         it('is omitted when image is smaller than minimum responsive width', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -451,9 +449,9 @@ describe('Product card', function () {
         });
 
         it('omits sizes larger than image width and includes original image width if smaller than largest responsive width', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -479,9 +477,9 @@ describe('Product card', function () {
         });
 
         it('works correctly with subdirectories', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -507,9 +505,9 @@ describe('Product card', function () {
         });
 
         it('works correctly for absolute subdirectories', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -536,9 +534,9 @@ describe('Product card', function () {
         });
 
         it('is included when src is an Unsplash image', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -565,9 +563,9 @@ describe('Product card', function () {
         });
 
         it('has same size omission behaviour for Unsplash as local files', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -595,9 +593,9 @@ describe('Product card', function () {
 
     describe('sizes attribute', function () {
         it('is added for standard images', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -623,9 +621,9 @@ describe('Product card', function () {
         });
 
         it('is added for __GHOST_URL__ relative images', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -651,9 +649,9 @@ describe('Product card', function () {
         });
 
         it('is added for absolute images', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -680,9 +678,9 @@ describe('Product card', function () {
         });
 
         it('is added for absolute images when siteUrl has trailing slash', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -709,9 +707,9 @@ describe('Product card', function () {
         });
 
         it('is omitted when srcset is not added', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -742,9 +740,9 @@ describe('Product card', function () {
         });
 
         it('is omitted when width is missing', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -774,9 +772,9 @@ describe('Product card', function () {
         });
 
         it('is included when only height is missing', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -802,9 +800,9 @@ describe('Product card', function () {
         });
 
         it('is omitted for standard images when width is less than 720', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -835,8 +833,8 @@ describe('Product card', function () {
 
     describe('email render', function () {
         it('generates an email-friendly product card', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     productButton: 'Click me',
                     productButtonEnabled: true,
@@ -858,8 +856,8 @@ describe('Product card', function () {
         });
 
         it('generates the same card when the star-rating is disabled', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     productButton: 'Click me',
                     productButtonEnabled: true,
@@ -880,8 +878,8 @@ describe('Product card', function () {
         });
 
         it('allows disabling the button', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     productButtonEnabled: false,
                     productDescription: 'This product is ok',
@@ -900,8 +898,8 @@ describe('Product card', function () {
         });
 
         it('renders without an image if the attribute isn\'t there', function () {
-            let opts = {
-                env: {dom: new SimpleDom.Document()},
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
                 payload: {
                     productButtonEnabled: false,
                     productDescription: 'This product is ok',
@@ -919,9 +917,9 @@ describe('Product card', function () {
         });
 
         it('adds image width/height and uses resized local image', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -952,9 +950,9 @@ describe('Product card', function () {
         });
 
         it('adds image width/height and uses resized unsplash image', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -976,9 +974,9 @@ describe('Product card', function () {
         });
 
         it('adds image width/height and uses original src when local image can\'t be transformed', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -1010,9 +1008,9 @@ describe('Product card', function () {
         });
 
         it('uses original image src if size is smaller than "retina" size', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -1043,9 +1041,9 @@ describe('Product card', function () {
         });
 
         it('uses original image width/height if image is smaller than 600px wide', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -1076,9 +1074,9 @@ describe('Product card', function () {
         });
 
         it('skips image width/height and resize if payload is missing dimensions', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -1107,9 +1105,9 @@ describe('Product card', function () {
         });
 
         it('resizes Unsplash images even if width/height data is missing', function () {
-            let opts = {
+            const opts = {
                 env: {
-                    dom: new SimpleDom.Document()
+                    dom: new SimpleDomDocument()
                 },
                 payload: {
                     productTitle: 'Product title!',
@@ -1137,7 +1135,7 @@ describe('Product card', function () {
     });
 
     it('transforms product urls absolute to relative', function () {
-        let payload = {
+        const payload = {
             productButton: 'Click me',
             productButtonEnabled: false,
             productDescription: '<a href="https://ghost.org/">Home</a>',
@@ -1147,16 +1145,16 @@ describe('Product card', function () {
             productUrl: 'https://ghost.org/'
         };
 
-        const transformed = card.absoluteToRelative(payload, {siteUrl: 'https://ghost.org'});
+        const transformed = card.absoluteToRelative!(payload, {siteUrl: 'https://ghost.org'});
 
-        transformed.productTitle.should.equal('<a href="/">Home</a>');
-        transformed.productDescription.should.equal('<a href="/">Home</a>');
-        transformed.productUrl.should.equal('/');
-        transformed.productImageSrc.should.equal('/');
+        (transformed.productTitle as string).should.equal('<a href="/">Home</a>');
+        (transformed.productDescription as string).should.equal('<a href="/">Home</a>');
+        (transformed.productUrl as string).should.equal('/');
+        (transformed.productImageSrc as string).should.equal('/');
     });
 
     it('transforms product urls relative to absolute', function () {
-        let payload = {
+        const payload = {
             productButton: 'Click me',
             productButtonEnabled: false,
             productDescription: '<a href="/">Home</a>',
@@ -1166,16 +1164,16 @@ describe('Product card', function () {
             productUrl: '/'
         };
 
-        const transformed = card.relativeToAbsolute(payload, {siteUrl: 'https://ghost.org'});
+        const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'https://ghost.org'});
 
-        transformed.productTitle.should.equal('<a href="https://ghost.org/">Home</a>');
-        transformed.productDescription.should.equal('<a href="https://ghost.org/">Home</a>');
-        transformed.productUrl.should.equal('https://ghost.org/');
-        transformed.productImageSrc.should.equal('https://ghost.org/');
+        (transformed.productTitle as string).should.equal('<a href="https://ghost.org/">Home</a>');
+        (transformed.productDescription as string).should.equal('<a href="https://ghost.org/">Home</a>');
+        (transformed.productUrl as string).should.equal('https://ghost.org/');
+        (transformed.productImageSrc as string).should.equal('https://ghost.org/');
     });
 
     it('transforms product urls to transform ready', function () {
-        let payload = {
+        const payload = {
             productButton: 'Click me',
             productButtonEnabled: false,
             productDescription: '<a href="/">Home</a>',
@@ -1185,11 +1183,11 @@ describe('Product card', function () {
             productUrl: '/'
         };
 
-        const transformed = card.toTransformReady(payload, {siteUrl: 'https://ghost.org'});
+        const transformed = card.toTransformReady!(payload, {siteUrl: 'https://ghost.org'});
 
-        transformed.productTitle.should.equal('<a href="__GHOST_URL__/">Home</a>');
-        transformed.productDescription.should.equal('<a href="__GHOST_URL__/">Home</a>');
-        transformed.productUrl.should.equal('__GHOST_URL__/');
-        transformed.productImageSrc.should.equal('__GHOST_URL__/');
+        (transformed.productTitle as string).should.equal('<a href="__GHOST_URL__/">Home</a>');
+        (transformed.productDescription as string).should.equal('<a href="__GHOST_URL__/">Home</a>');
+        (transformed.productUrl as string).should.equal('__GHOST_URL__/');
+        (transformed.productImageSrc as string).should.equal('__GHOST_URL__/');
     });
 });

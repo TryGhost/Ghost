@@ -1,10 +1,16 @@
-const {
+import {
     htmlAbsoluteToRelative,
     htmlRelativeToAbsolute,
     htmlToTransformReady
-} = require('@tryghost/url-utils/lib/utils');
+} from '@tryghost/url-utils/lib/utils';
+import type {Card} from '../types.js';
 
-module.exports = {
+interface BeforeAfterImage {
+    src: string;
+    width: number;
+}
+
+const beforeAfterCard: Card = {
     name: 'before-after',
     type: 'dom',
 
@@ -14,10 +20,13 @@ module.exports = {
             0,
             Math.min(
                 100,
-                Number.isNaN(parseInt(payload.startingPosition)) ? 50 : parseInt(payload.startingPosition)
+                Number.isNaN(parseInt(payload.startingPosition as string)) ? 50 : parseInt(payload.startingPosition as string)
             )
         );
-        const caption = payload.caption;
+        const caption = payload.caption as string | undefined;
+
+        const beforeImage = payload.beforeImage as BeforeAfterImage;
+        const afterImage = payload.afterImage as BeforeAfterImage;
 
         const figure = dom.createElement('figure');
         figure.setAttribute(
@@ -28,10 +37,10 @@ module.exports = {
         let html = `
             <div class="kg-before-after-card-slider">
                 <div class="kg-before-after-card-image-after">
-                    <img src="${payload.afterImage.src}" width="${payload.afterImage.width}"/>
+                    <img src="${afterImage.src}" width="${afterImage.width}"/>
                 </div>
                 <div class="kg-before-after-card-image-before">
-                    <img src="${payload.beforeImage.src}" width="${payload.beforeImage.width}"/>
+                    <img src="${beforeImage.src}" width="${beforeImage.width}"/>
                 </div>
                 <input class="kg-before-after-card-slider-input" type="range" min="0" max="100" value="${startingPosition}"/>
                 <span class="kg-before-after-card-slider-handle"></span>
@@ -46,7 +55,7 @@ module.exports = {
         figure.appendChild(dom.createRawHTMLSection(html));
 
         if (caption) {
-            let figcaption = dom.createElement('figcaption');
+            const figcaption = dom.createElement('figcaption');
             figcaption.appendChild(dom.createRawHTMLSection(caption));
             figure.appendChild(figcaption);
         }
@@ -55,17 +64,19 @@ module.exports = {
     },
 
     absoluteToRelative(payload, options) {
-        payload.caption = payload.caption && htmlAbsoluteToRelative(payload.caption, options.siteUrl, options);
+        payload.caption = payload.caption && htmlAbsoluteToRelative(payload.caption as string, options.siteUrl, options);
         return payload;
     },
 
     relativeToAbsolute(payload, options) {
-        payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption, options.siteUrl, options.itemUrl, options);
+        payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption as string, options.siteUrl, options.itemUrl ?? '', options);
         return payload;
     },
 
     toTransformReady(payload, options) {
-        payload.html = payload.html && htmlToTransformReady(payload.html, options.siteUrl, options);
+        payload.html = payload.html && htmlToTransformReady(payload.html as string, options.siteUrl, options);
         return payload;
     }
 };
+
+export default beforeAfterCard;

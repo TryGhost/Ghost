@@ -1,22 +1,37 @@
-const {
+import {
     absoluteToRelative,
     htmlAbsoluteToRelative,
     relativeToAbsolute,
     htmlRelativeToAbsolute,
     toTransformReady,
     htmlToTransformReady
-} = require('@tryghost/url-utils/lib/utils');
-const {slugify} = require('@tryghost/kg-utils');
-const {
+} from '@tryghost/url-utils/lib/utils';
+import {
+    slugify
+} from '@tryghost/kg-utils';
+import {
     hbs,
     dedent
-} = require('../utils');
+} from '../utils/index.js';
+import type {Card} from '../types.js';
 
-module.exports = {
+interface HeaderPayload {
+    header?: string;
+    subheader?: string;
+    buttonEnabled?: boolean;
+    buttonUrl?: string;
+    buttonText?: string;
+    size?: string;
+    style?: string;
+    backgroundImageSrc?: string;
+}
+
+const headerCard: Card = {
     name: 'header',
     type: 'dom',
 
-    render({payload, env: {dom}, options: {ghostVersion} = {}}) {
+    render({payload: _payload, env: {dom}, options: {ghostVersion} = {}}) {
+        const payload = _payload as HeaderPayload;
         if (!payload.header && !payload.subheader && (!payload.buttonEnabled || (!payload.buttonUrl || !payload.buttonText))) {
             return dom.createTextNode('');
         }
@@ -44,11 +59,11 @@ module.exports = {
             buttonUrl: payload.buttonUrl,
             buttonText: payload.buttonText,
             header: payload.header,
-            headerSlug: slugify(payload.header, {ghostVersion}),
+            headerSlug: slugify(payload.header || '', {ghostVersion}),
             subheader: payload.subheader,
-            subheaderSlug: slugify(payload.subheader, {ghostVersion}),
+            subheaderSlug: slugify(payload.subheader || '', {ghostVersion}),
             hasHeader: payload.header && true,
-            hasSubheader: payload.subheader && Boolean(payload.subheader.replace(/(<br>)+$/g).trim()),
+            hasSubheader: payload.subheader && Boolean(payload.subheader.replace(/(<br>)+$/g, '').trim()),
             backgroundImageStyle: payload.style === 'image' ? `background-image: url(${payload.backgroundImageSrc})` : '',
             backgroundImageSrc: payload.backgroundImageSrc
         };
@@ -59,29 +74,34 @@ module.exports = {
     },
 
     absoluteToRelative(payload, options) {
-        payload.buttonUrl = payload.buttonUrl && absoluteToRelative(payload.buttonUrl, options.siteUrl, options);
-        payload.backgroundImageSrc = payload.backgroundImageSrc && absoluteToRelative(payload.backgroundImageSrc, options.siteUrl, options);
+        const p = payload as HeaderPayload;
+        p.buttonUrl = p.buttonUrl && absoluteToRelative(p.buttonUrl, options.siteUrl, options);
+        p.backgroundImageSrc = p.backgroundImageSrc && absoluteToRelative(p.backgroundImageSrc, options.siteUrl, options);
 
-        payload.header = payload.header && htmlAbsoluteToRelative(payload.header, options.siteUrl, options);
-        payload.subheader = payload.subheader && htmlAbsoluteToRelative(payload.subheader, options.siteUrl, options);
+        p.header = p.header && htmlAbsoluteToRelative(p.header, options.siteUrl, options);
+        p.subheader = p.subheader && htmlAbsoluteToRelative(p.subheader, options.siteUrl, options);
         return payload;
     },
 
     relativeToAbsolute(payload, options) {
-        payload.buttonUrl = payload.buttonUrl && relativeToAbsolute(payload.buttonUrl, options.siteUrl, options.itemUrl, options);
-        payload.backgroundImageSrc = payload.backgroundImageSrc && relativeToAbsolute(payload.backgroundImageSrc, options.siteUrl, options.itemUrl, options);
+        const p = payload as HeaderPayload;
+        p.buttonUrl = p.buttonUrl && relativeToAbsolute(p.buttonUrl, options.siteUrl, options.itemUrl ?? '', options);
+        p.backgroundImageSrc = p.backgroundImageSrc && relativeToAbsolute(p.backgroundImageSrc, options.siteUrl, options.itemUrl ?? '', options);
 
-        payload.header = payload.header && htmlRelativeToAbsolute(payload.header, options.siteUrl, options.itemUrl, options);
-        payload.subheader = payload.subheader && htmlRelativeToAbsolute(payload.subheader, options.siteUrl, options.itemUrl, options);
+        p.header = p.header && htmlRelativeToAbsolute(p.header, options.siteUrl, options.itemUrl ?? '', options);
+        p.subheader = p.subheader && htmlRelativeToAbsolute(p.subheader, options.siteUrl, options.itemUrl ?? '', options);
         return payload;
     },
 
     toTransformReady(payload, options) {
-        payload.buttonUrl = payload.buttonUrl && toTransformReady(payload.buttonUrl, options.siteUrl, options.itemUrl, options);
-        payload.backgroundImageSrc = payload.backgroundImageSrc && toTransformReady(payload.backgroundImageSrc, options.siteUrl, options.itemUrl, options);
+        const p = payload as HeaderPayload;
+        p.buttonUrl = p.buttonUrl && toTransformReady(p.buttonUrl, options.siteUrl, options.itemUrl ?? '', options);
+        p.backgroundImageSrc = p.backgroundImageSrc && toTransformReady(p.backgroundImageSrc, options.siteUrl, options.itemUrl ?? '', options);
 
-        payload.header = payload.header && htmlToTransformReady(payload.header, options.siteUrl, options.itemUrl, options);
-        payload.subheader = payload.subheader && htmlToTransformReady(payload.subheader, options.siteUrl, options.itemUrl, options);
+        p.header = p.header && htmlToTransformReady(p.header, options.siteUrl, options.itemUrl ?? '', options);
+        p.subheader = p.subheader && htmlToTransformReady(p.subheader, options.siteUrl, options.itemUrl ?? '', options);
         return payload;
     }
 };
+
+export default headerCard;

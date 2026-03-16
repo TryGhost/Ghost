@@ -1,15 +1,14 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('../utils');
+import '../utils/index.js';
 
-const card = require('../../lib/cards/bookmark');
-const SimpleDom = require('simple-dom');
-const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
+import should from 'should';
+import card from '../../src/cards/bookmark.js';
+import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
+const serializer = new HTMLSerializer(voidMap);
 
 describe('Bookmark card', function () {
     it('renders', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
+        const opts = {
+            env: {dom: new SimpleDomDocument()},
             payload: {
                 url: 'http://example.com',
                 metadata: {
@@ -30,8 +29,8 @@ describe('Bookmark card', function () {
     });
 
     it('renders email target', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
+        const opts = {
+            env: {dom: new SimpleDomDocument()},
             payload: {
                 url: 'http://example.com',
                 metadata: {
@@ -55,9 +54,9 @@ describe('Bookmark card', function () {
     });
 
     it('renders nothing when payload is empty', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {}
         };
@@ -65,8 +64,8 @@ describe('Bookmark card', function () {
     });
 
     it('uses payload.url as href rather than payload.metadata.url', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
+        const opts = {
+            env: {dom: new SimpleDomDocument()},
             payload: {
                 url: 'http://example.com?utm=12345',
                 metadata: {
@@ -87,8 +86,8 @@ describe('Bookmark card', function () {
     });
 
     it('keeps description element when description is blank', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
+        const opts = {
+            env: {dom: new SimpleDomDocument()},
             payload: {
                 url: 'http://example.com',
                 metadata: {
@@ -104,8 +103,8 @@ describe('Bookmark card', function () {
     });
 
     it('skips icon when missing', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
+        const opts = {
+            env: {dom: new SimpleDomDocument()},
             payload: {
                 url: 'http://example.com',
                 metadata: {
@@ -126,8 +125,8 @@ describe('Bookmark card', function () {
     });
 
     it('skips thumbnail when missing', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
+        const opts = {
+            env: {dom: new SimpleDomDocument()},
             payload: {
                 url: 'http://example.com',
                 metadata: {
@@ -148,8 +147,8 @@ describe('Bookmark card', function () {
     });
 
     it('skips author when missing', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
+        const opts = {
+            env: {dom: new SimpleDomDocument()},
             payload: {
                 url: 'http://example.com',
                 metadata: {
@@ -170,8 +169,8 @@ describe('Bookmark card', function () {
     });
 
     it('skips publisher when missing', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
+        const opts = {
+            env: {dom: new SimpleDomDocument()},
             payload: {
                 url: 'http://example.com',
                 metadata: {
@@ -192,8 +191,8 @@ describe('Bookmark card', function () {
     });
 
     it('skips caption when missing', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
+        const opts = {
+            env: {dom: new SimpleDomDocument()},
             payload: {
                 url: 'http://example.com',
                 metadata: {
@@ -214,8 +213,8 @@ describe('Bookmark card', function () {
     });
 
     it('renders nothing when payload is undefined', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
+        const opts = {
+            env: {dom: new SimpleDomDocument()},
             payload: {
                 metadata: undefined
             }
@@ -226,8 +225,8 @@ describe('Bookmark card', function () {
     });
 
     it('renders nothing when payload metadata is empty', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
+        const opts = {
+            env: {dom: new SimpleDomDocument()},
             payload: {
                 metadata: {}
             }
@@ -238,8 +237,8 @@ describe('Bookmark card', function () {
     });
 
     it('renders nothing when url is missing', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
+        const opts = {
+            env: {dom: new SimpleDomDocument()},
             payload: {
                 url: null,
                 metadata: {
@@ -255,8 +254,8 @@ describe('Bookmark card', function () {
     });
 
     it('renders nothing when title is missing', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
+        const opts = {
+            env: {dom: new SimpleDomDocument()},
             payload: {
                 url: 'http://example.com',
                 metadata: {
@@ -272,7 +271,7 @@ describe('Bookmark card', function () {
     });
 
     it('transforms urls absolute to relative', function () {
-        let payload = {
+        const payload = {
             url: 'http://127.0.0.1:2369/post',
             metadata: {
                 url: 'http://127.0.0.1:2369/post'
@@ -280,20 +279,20 @@ describe('Bookmark card', function () {
             caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
         };
 
-        const transformed = card.absoluteToRelative(payload, {siteUrl: 'http://127.0.0.1:2369/'});
+        const transformed = card.absoluteToRelative!(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
-        transformed.url
+        (transformed.url as string)
             .should.equal('/post');
 
-        transformed.metadata.url
+        (transformed.metadata as Record<string, string>).url
             .should.equal('/post');
 
-        transformed.caption
+        (transformed.caption as string)
             .should.equal('A link to <a href="/post">an internal post</a>');
     });
 
     it('transforms urls relative to absolute', function () {
-        let payload = {
+        const payload = {
             url: '/post',
             metadata: {
                 url: '/post'
@@ -301,21 +300,21 @@ describe('Bookmark card', function () {
             caption: 'A link to <a href="/post">an internal post</a>'
         };
 
-        const transformed = card.relativeToAbsolute(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
+        const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
 
-        transformed.url
+        (transformed.url as string)
             .should.equal('http://127.0.0.1:2369/post');
 
-        transformed.metadata.url
+        (transformed.metadata as Record<string, string>).url
             .should.equal('http://127.0.0.1:2369/post');
 
-        transformed.caption
+        (transformed.caption as string)
             .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
     });
 
     it('absoluteToRelative handles missing payload', function () {
         const payload = {};
-        const transformed = card.absoluteToRelative(payload, {siteUrl: 'http://127.0.0.1:2369/'});
+        const transformed = card.absoluteToRelative!(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
         should.not.exist(transformed.url);
         should.not.exist(transformed.metadata);
@@ -323,7 +322,7 @@ describe('Bookmark card', function () {
 
     it('relativeToAbsolute handles missing payload', function () {
         const payload = {};
-        const transformed = card.relativeToAbsolute(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
+        const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
 
         should.not.exist(transformed.url);
         should.not.exist(transformed.metadata);

@@ -1,44 +1,24 @@
-const juice = require('juice');
-const {
+import juice from 'juice';
+import {
     absoluteToRelative,
     relativeToAbsolute,
     htmlAbsoluteToRelative,
     htmlRelativeToAbsolute,
     htmlToTransformReady,
     toTransformReady
-} = require('@tryghost/url-utils/lib/utils');
-const {
-    hbs,
-    dedent
-} = require('../utils');
+} from '@tryghost/url-utils/lib/utils';
+import {hbs, dedent} from '../utils/index.js';
+import type {Card} from '../types.js';
 
-/**
-<figure class="kg-card kg-bookmark-card">
-  <a href="[URL]" class="kg-bookmark-container">
-    <div class="kg-bookmark-content">
-      <div class="kg-bookmark-title">[TITLE]</div>
-      <div class="kg-bookmark-description">[DESCRIPTION]</div>
-      <div class="kg-bookmark-metadata">
-        <img src="[ICON]" class="kg-bookmark-icon">
-        <span class="kg-bookmark-author">[AUTHOR]</span>
-        <span class="kg-bookmark-publisher">[PUBLISHER]</span>
-      </div>
-    </div>
-    <div class="kg-bookmark-thumbnail">
-      <img src="[THUMBNAIL]">
-    </div>
-  </a>
-</figure>
- */
+let template: Handlebars.TemplateDelegate | undefined;
 
-let template;
-
-module.exports = {
+const bookmarkCard: Card = {
     name: 'bookmark',
     type: 'dom',
 
     render({payload, env: {dom}, options = {}}) {
-        if (!payload.metadata || !payload.url || !payload.metadata.title) {
+        const metadata = payload.metadata as Record<string, unknown> | undefined;
+        if (!metadata || !payload.url || !(metadata as Record<string, unknown>).title) {
             return dom.createTextNode('');
         }
 
@@ -168,46 +148,51 @@ module.exports = {
 
     absoluteToRelative(payload, options) {
         if (payload.url) {
-            payload.url = payload.url && absoluteToRelative(payload.url, options.siteUrl, options);
+            payload.url = payload.url && absoluteToRelative(payload.url as string, options.siteUrl, options);
         }
-        if (payload.metadata) {
+        const metadata = payload.metadata as Record<string, string> | undefined;
+        if (metadata) {
             ['url', 'icon', 'thumbnail'].forEach((attr) => {
-                if (payload.metadata[attr]) {
-                    payload.metadata[attr] = absoluteToRelative(payload.metadata[attr], options.siteUrl, options);
+                if (metadata[attr]) {
+                    metadata[attr] = absoluteToRelative(metadata[attr], options.siteUrl, options);
                 }
             });
         }
-        payload.caption = payload.caption && htmlAbsoluteToRelative(payload.caption, options.siteUrl, options);
+        payload.caption = payload.caption && htmlAbsoluteToRelative(payload.caption as string, options.siteUrl, options);
         return payload;
     },
 
     relativeToAbsolute(payload, options) {
         if (payload.url) {
-            payload.url = payload.url && relativeToAbsolute(payload.url, options.siteUrl, options.itemUrl, options);
+            payload.url = payload.url && relativeToAbsolute(payload.url as string, options.siteUrl, options.itemUrl ?? '', options);
         }
-        if (payload.metadata) {
+        const metadata = payload.metadata as Record<string, string> | undefined;
+        if (metadata) {
             ['url', 'icon', 'thumbnail'].forEach((attr) => {
-                if (payload.metadata[attr]) {
-                    payload.metadata[attr] = relativeToAbsolute(payload.metadata[attr], options.siteUrl, options.itemUrl, options);
+                if (metadata[attr]) {
+                    metadata[attr] = relativeToAbsolute(metadata[attr], options.siteUrl, options.itemUrl ?? '', options);
                 }
             });
         }
-        payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption, options.siteUrl, options.itemUrl, options);
+        payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption as string, options.siteUrl, options.itemUrl ?? '', options);
         return payload;
     },
 
     toTransformReady(payload, options) {
         if (payload.url) {
-            payload.url = payload.url && toTransformReady(payload.url, options.siteUrl, options.itemUrl, options);
+            payload.url = payload.url && toTransformReady(payload.url as string, options.siteUrl, options.itemUrl, options);
         }
-        if (payload.metadata) {
+        const metadata = payload.metadata as Record<string, string> | undefined;
+        if (metadata) {
             ['url', 'icon', 'thumbnail'].forEach((attr) => {
-                if (payload.metadata[attr]) {
-                    payload.metadata[attr] = toTransformReady(payload.metadata[attr], options.siteUrl, options.itemUrl, options);
+                if (metadata[attr]) {
+                    metadata[attr] = toTransformReady(metadata[attr], options.siteUrl, options.itemUrl, options);
                 }
             });
         }
-        payload.caption = payload.caption && htmlToTransformReady(payload.caption, options.siteUrl, options.itemUrl, options);
+        payload.caption = payload.caption && htmlToTransformReady(payload.caption as string, options.siteUrl, options.itemUrl, options);
         return payload;
     }
 };
+
+export default bookmarkCard;

@@ -1,10 +1,8 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('../utils');
+import '../utils/index.js';
 
-const card = require('../../lib/cards/paywall');
-const SimpleDom = require('simple-dom');
-const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
+import card from '../../src/cards/paywall.js';
+import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
+const serializer = new HTMLSerializer(voidMap);
 
 describe('paywall card', function () {
     it('has correct properties', function () {
@@ -13,10 +11,11 @@ describe('paywall card', function () {
     });
 
     it('generates a members-only comment', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
-            }
+                dom: new SimpleDomDocument()
+            },
+            payload: {}
         };
 
         serializer.serialize(card.render(opts)).should.match('<!--members-only-->');

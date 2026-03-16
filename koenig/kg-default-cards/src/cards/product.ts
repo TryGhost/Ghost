@@ -1,22 +1,37 @@
-const {
+import {
     htmlAbsoluteToRelative,
     htmlRelativeToAbsolute,
     htmlToTransformReady,
     absoluteToRelative,
     relativeToAbsolute,
     toTransformReady
-} = require('@tryghost/url-utils/lib/utils');
-const {
+} from '@tryghost/url-utils/lib/utils';
+import {
     hbs,
     dedent,
     generateImgAttrs
-} = require('../utils');
+} from '../utils/index.js';
+import type {Card} from '../types.js';
 
-module.exports = {
+interface ProductPayload {
+    productButtonEnabled?: boolean;
+    productButton?: string;
+    productUrl?: string;
+    productTitle?: string;
+    productDescription?: string;
+    productRatingEnabled?: boolean;
+    productImageSrc?: string;
+    productImageWidth?: number;
+    productImageHeight?: number;
+    productStarRating?: number;
+}
+
+const productCard: Card = {
     name: 'product',
     type: 'dom',
 
-    render({payload, env: {dom}, options = {}}) {
+    render({payload: _payload, env: {dom}, options = {}}) {
+        const payload = _payload as ProductPayload;
         const productButtonEnabled = payload.productButtonEnabled && payload.productButton && payload.productUrl;
 
         if (!payload.productTitle && !payload.productDescription && !productButtonEnabled) {
@@ -94,7 +109,7 @@ module.exports = {
         </table>
         `;
 
-        const templateData = {
+        const templateData: Record<string, unknown> = {
             productButtonEnabled,
             productRatingEnabled: payload.productRatingEnabled,
             productImageEnabled: Boolean(payload.productImageSrc),
@@ -117,7 +132,7 @@ module.exports = {
         const starActiveClasses = 'kg-product-card-rating-active';
         for (let i = 1; i <= 5; i++) {
             templateData['star' + i] = '';
-            if (payload.productStarRating >= i) {
+            if (payload.productStarRating && payload.productStarRating >= i) {
                 templateData['star' + i] = starActiveClasses;
             }
         }
@@ -129,31 +144,36 @@ module.exports = {
     },
 
     absoluteToRelative(payload, options) {
-        payload.productTitle = payload.productTitle && htmlAbsoluteToRelative(payload.productTitle, options.siteUrl, options);
-        payload.productDescription = payload.productDescription && htmlAbsoluteToRelative(payload.productDescription, options.siteUrl, options);
+        const p = payload as ProductPayload;
+        p.productTitle = p.productTitle && htmlAbsoluteToRelative(p.productTitle, options.siteUrl, options);
+        p.productDescription = p.productDescription && htmlAbsoluteToRelative(p.productDescription, options.siteUrl, options);
 
-        payload.productImageSrc = payload.productImageSrc && absoluteToRelative(payload.productImageSrc, options.siteUrl, options);
-        payload.productUrl = payload.productUrl && absoluteToRelative(payload.productUrl, options.siteUrl, options);
+        p.productImageSrc = p.productImageSrc && absoluteToRelative(p.productImageSrc, options.siteUrl, options);
+        p.productUrl = p.productUrl && absoluteToRelative(p.productUrl, options.siteUrl, options);
 
         return payload;
     },
 
     relativeToAbsolute(payload, options) {
-        payload.productTitle = payload.productTitle && htmlRelativeToAbsolute(payload.productTitle, options.siteUrl, options.itemUrl, options);
-        payload.productDescription = payload.productDescription && htmlRelativeToAbsolute(payload.productDescription, options.siteUrl, options.itemUrl, options);
+        const p = payload as ProductPayload;
+        p.productTitle = p.productTitle && htmlRelativeToAbsolute(p.productTitle, options.siteUrl, options.itemUrl ?? '', options);
+        p.productDescription = p.productDescription && htmlRelativeToAbsolute(p.productDescription, options.siteUrl, options.itemUrl ?? '', options);
 
-        payload.productImageSrc = payload.productImageSrc && relativeToAbsolute(payload.productImageSrc, options.siteUrl, options.itemUrl, options);
-        payload.productUrl = payload.productUrl && relativeToAbsolute(payload.productUrl, options.siteUrl, options.itemUrl, options);
+        p.productImageSrc = p.productImageSrc && relativeToAbsolute(p.productImageSrc, options.siteUrl, options.itemUrl ?? '', options);
+        p.productUrl = p.productUrl && relativeToAbsolute(p.productUrl, options.siteUrl, options.itemUrl ?? '', options);
         return payload;
     },
 
     toTransformReady(payload, options) {
-        payload.productTitle = payload.productTitle && htmlToTransformReady(payload.productTitle, options.siteUrl, options.itemUrl, options);
-        payload.productDescription = payload.productDescription && htmlToTransformReady(payload.productDescription, options.siteUrl, options.itemUrl, options);
+        const p = payload as ProductPayload;
+        p.productTitle = p.productTitle && htmlToTransformReady(p.productTitle, options.siteUrl, options.itemUrl ?? '', options);
+        p.productDescription = p.productDescription && htmlToTransformReady(p.productDescription, options.siteUrl, options.itemUrl ?? '', options);
 
-        payload.productImageSrc = payload.productImageSrc && toTransformReady(payload.productImageSrc, options.siteUrl, options.itemUrl, options);
-        payload.productUrl = payload.productUrl && toTransformReady(payload.productUrl, options.siteUrl, options.itemUrl, options);
+        p.productImageSrc = p.productImageSrc && toTransformReady(p.productImageSrc, options.siteUrl, options.itemUrl ?? '', options);
+        p.productUrl = p.productUrl && toTransformReady(p.productUrl, options.siteUrl, options.itemUrl ?? '', options);
 
         return payload;
     }
 };
+
+export default productCard;

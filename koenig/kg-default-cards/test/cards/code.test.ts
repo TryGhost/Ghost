@@ -1,16 +1,14 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('../utils');
+import '../utils/index.js';
 
-const card = require('../../lib/cards/code');
-const SimpleDom = require('simple-dom');
-const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
+import card from '../../src/cards/code.js';
+import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
+const serializer = new HTMLSerializer(voidMap);
 
 describe('Code card', function () {
     it('Renders and escapes', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 code: '<p>Test</p>'
@@ -21,9 +19,9 @@ describe('Code card', function () {
     });
 
     it('Renders language class if provided', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 code: '<p>Test</p>',
@@ -35,9 +33,9 @@ describe('Code card', function () {
     });
 
     it('Renders nothing when payload is undefined', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 code: undefined
@@ -48,9 +46,9 @@ describe('Code card', function () {
     });
 
     it('Renders a figure if a caption is provided', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 code: '<p>Test</p>',
@@ -63,24 +61,24 @@ describe('Code card', function () {
     });
 
     it('transforms urls absolute to relative', function () {
-        let payload = {
+        const payload = {
             caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
         };
 
-        const transformed = card.absoluteToRelative(payload, {siteUrl: 'http://127.0.0.1:2369/'});
+        const transformed = card.absoluteToRelative!(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
-        transformed.caption
+        (transformed.caption as string)
             .should.equal('A link to <a href="/post">an internal post</a>');
     });
 
     it('transforms urls relative to absolute', function () {
-        let payload = {
+        const payload = {
             caption: 'A link to <a href="/post">an internal post</a>'
         };
 
-        const transformed = card.relativeToAbsolute(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
+        const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
 
-        transformed.caption
+        (transformed.caption as string)
             .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
     });
 });

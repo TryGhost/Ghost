@@ -1,14 +1,50 @@
-const {DateTime} = require('luxon');
-const {toArray} = require('lodash');
+import {DateTime} from 'luxon';
+import type {CardRenderArgs, CardRenderOptions, SimpleDomNode} from '../../types.js';
 
-module.exports = {
-    render({payload, env: {dom}, options = {}}) {
+interface TwitterUser {
+    id: string;
+    name: string;
+    username: string;
+    profile_image_url: string;
+}
+
+interface TwitterEntity {
+    start: number;
+    end: number;
+    url?: string;
+    display_url?: string;
+    username?: string;
+    tag?: string;
+}
+
+interface TweetData {
+    id: string;
+    text: string;
+    author_id: string;
+    created_at: string;
+    public_metrics: {retweet_count: number; like_count: number};
+    includes: {users: TwitterUser[]; media: {preview_image_url?: string; url?: string}[]};
+    entities?: {mentions?: TwitterEntity[]; urls?: TwitterEntity[]; hashtags?: TwitterEntity[]};
+    attachments?: {media_keys?: string[]; poll_ids?: string[]};
+}
+
+interface TwitterPayload {
+    html?: string;
+    caption?: string;
+    metadata?: {
+        tweet_data?: TweetData;
+    };
+}
+
+const twitterCard = {
+    render({payload: _payload, env: {dom}, options = {}}: CardRenderArgs): SimpleDomNode {
+        const payload = _payload as TwitterPayload;
         const figure = dom.createElement('figure');
         figure.setAttribute('class', 'kg-card kg-embed-card');
 
-        let html = payload.html;
+        let html = payload.html || '';
 
-        const tweetData = payload && payload.metadata && payload.metadata.tweet_data;
+        const tweetData = payload.metadata && payload.metadata.tweet_data;
 
         if (tweetData) {
             const tweetId = tweetData.id;
@@ -20,17 +56,17 @@ module.exports = {
             });
             const retweetCount = numberFormatter.format(tweetData.public_metrics.retweet_count);
             const likeCount = numberFormatter.format(tweetData.public_metrics.like_count);
-            const authorUser = tweetData.includes.users.find(user => user.id === tweetData.author_id);
+            const authorUser = tweetData.includes.users.find((user: TwitterUser) => user.id === tweetData.author_id)!;
             const tweetTime = DateTime.fromISO(tweetData.created_at).toLocaleString(DateTime.TIME_SIMPLE);
             const tweetDate = DateTime.fromISO(tweetData.created_at).toLocaleString(DateTime.DATE_MED);
 
             const mentions = tweetData.entities && tweetData.entities.mentions || [];
             const urls = tweetData.entities && tweetData.entities.urls || [];
             const hashtags = tweetData.entities && tweetData.entities.hashtags || [];
-            const entities = mentions.concat(urls).concat(hashtags).sort((a, b) => a.start - b.start);
+            const entities = mentions.concat(urls).concat(hashtags).sort((a: TwitterEntity, b: TwitterEntity) => a.start - b.start);
             let tweetContent = tweetData.text;
 
-            let tweetImageUrl = null;
+            let tweetImageUrl: string | null | undefined = null;
             const hasImageOrVideo = tweetData.attachments && tweetData.attachments && tweetData.attachments.media_keys;
             if (hasImageOrVideo) {
                 tweetImageUrl = tweetData.includes.media[0].preview_image_url || tweetData.includes.media[0].url;
@@ -39,8 +75,8 @@ module.exports = {
 
             if (mentions) {
                 let last = 0;
-                let parts = [];
-                let content = toArray(tweetContent);
+                const parts: {type: string; data: string}[] = [];
+                const content = Array.from(tweetContent);
                 for (const entity of entities) {
                     let type = 'text';
                     let data = content.slice(entity.start, entity.end + 1).join('').replace(/\n/g, '<br>');
@@ -73,7 +109,7 @@ module.exports = {
                     data: content.slice(last, content.length).join('').replace(/\n/g, '<br>')
                 });
 
-                tweetContent = parts.reduce((partContent, part) => {
+                tweetContent = parts.reduce((partContent: string, part) => {
                     if (part.type === 'text') {
                         return partContent + part.data;
                     }
@@ -90,7 +126,7 @@ module.exports = {
                 }, '');
             }
 
-            if (options.target === 'email') {
+            if ((options as CardRenderOptions).target === 'email') {
                 html = `
                 <table cellspacing="0" cellpadding="0" border="0" class="kg-twitter-card">
                     <tr>
@@ -155,7 +191,7 @@ module.exports = {
         figure.appendChild(dom.createRawHTMLSection(html));
 
         if (payload.caption) {
-            let figcaption = dom.createElement('figcaption');
+            const figcaption = dom.createElement('figcaption');
             figcaption.appendChild(dom.createRawHTMLSection(payload.caption));
             figure.appendChild(figcaption);
             figure.setAttribute('class', `${figure.getAttribute('class')} kg-card-hascaption`);
@@ -165,3 +201,4 @@ module.exports = {
     }
 };
 
+export default twitterCard;

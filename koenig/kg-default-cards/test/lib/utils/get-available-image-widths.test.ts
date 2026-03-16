@@ -1,8 +1,6 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('../../utils');
+import '../../utils/index.js';
 
-const getAvailableImageWidths = require('../../../lib/utils/get-available-image-widths');
+import getAvailableImageWidths from '../../../src/utils/get-available-image-widths.js';
 
 const contentWidths = {
     w600: {width: 600},

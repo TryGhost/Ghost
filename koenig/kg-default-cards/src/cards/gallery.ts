@@ -1,18 +1,24 @@
-const {
+import {
     isLocalContentImage,
     isUnsplashImage,
     getAvailableImageWidths,
     setSrcsetAttribute,
     resizeImage
-} = require('../utils');
-const {
+} from '../utils/index.js';
+import {
     absoluteToRelative,
     relativeToAbsolute,
     htmlAbsoluteToRelative,
     htmlRelativeToAbsolute,
     htmlToTransformReady,
     toTransformReady
-} = require('@tryghost/url-utils/lib/utils');
+} from '@tryghost/url-utils/lib/utils';
+import type {Card} from '../types.js';
+
+interface GalleryPayload {
+    images?: GalleryImage[];
+    caption?: string;
+}
 
 /**
  * <figure class="kg-gallery-card kg-width-wide">
@@ -33,19 +39,32 @@ const {
 
 const MAX_IMG_PER_ROW = 3;
 
-module.exports = {
+interface GalleryImage {
+    fileName: string;
+    src: string;
+    width: number;
+    height: number;
+    alt?: string;
+    title?: string;
+    href?: string;
+    caption?: string;
+    row: number;
+}
+
+const galleryCard: Card = {
     name: 'gallery',
     type: 'dom',
 
-    render({payload, env: {dom}, options = {}}) {
-        let isValidImage = (image) => {
+    render({payload: _payload, env: {dom}, options = {}}) {
+        const payload = _payload as GalleryPayload;
+        const isValidImage = (image: GalleryImage) => {
             return image.fileName
                 && image.src
                 && image.width
                 && image.height;
         };
 
-        let validImages = [];
+        let validImages: GalleryImage[] = [];
 
         if (payload.images && payload.images.length) {
             validImages = payload.images.filter(isValidImage);
@@ -55,18 +74,18 @@ module.exports = {
             return dom.createTextNode('');
         }
 
-        let figure = dom.createElement('figure');
+        const figure = dom.createElement('figure');
         figure.setAttribute('class', 'kg-card kg-gallery-card kg-width-wide');
 
-        let container = dom.createElement('div');
+        const container = dom.createElement('div');
         container.setAttribute('class', 'kg-gallery-container');
         figure.appendChild(container);
 
-        let buildStructure = function buildStructure(images) {
-            let rows = [];
-            let noOfImages = images.length;
+        const buildStructure = function buildStructure(images: GalleryImage[]) {
+            const rows: GalleryImage[][] = [];
+            const noOfImages = images.length;
 
-            images.forEach((image, idx) => {
+            images.forEach((image: GalleryImage, idx: number) => {
                 let row = image.row;
 
                 if (noOfImages > 1 && (noOfImages % MAX_IMG_PER_ROW === 1) && (idx === (noOfImages - 2))) {
@@ -82,17 +101,17 @@ module.exports = {
             return rows;
         };
 
-        let rows = buildStructure(validImages);
+        const rows = buildStructure(validImages);
 
         rows.forEach((row) => {
-            let rowDiv = dom.createElement('div');
+            const rowDiv = dom.createElement('div');
             rowDiv.setAttribute('class', 'kg-gallery-row');
 
-            row.forEach((image) => {
-                let imgDiv = dom.createElement('div');
+            row.forEach((image: GalleryImage) => {
+                const imgDiv = dom.createElement('div');
                 imgDiv.setAttribute('class', 'kg-gallery-image');
 
-                let img = dom.createElement('img');
+                const img = dom.createElement('img');
                 img.setAttribute('src', image.src);
                 img.setAttribute('width', image.width);
                 img.setAttribute('height', image.height);
@@ -114,9 +133,9 @@ module.exports = {
                     canTransformImage &&
                     canTransformImage(image.src)
                 ) {
-                    const {width, height} = resizeImage(image, {width: defaultMaxWidth});
-                    img.setAttribute('width', width);
-                    img.setAttribute('height', height);
+                    const resized = resizeImage(image, {width: defaultMaxWidth});
+                    img.setAttribute('width', resized.width);
+                    img.setAttribute('height', resized.height);
                 }
 
                 // add srcset+sizes except for email clients which do not have good support for either
@@ -145,20 +164,23 @@ module.exports = {
 
                     if (isLocalContentImage(image.src, options.siteUrl) && options.canTransformImage && options.canTransformImage(image.src)) {
                         // find available image size next up from 2x600 so we can use it for the "retina" src
-                        const availableImageWidths = getAvailableImageWidths(image, options.imageOptimization.contentImageSizes);
+                        const availableImageWidths = getAvailableImageWidths(image, options.imageOptimization!.contentImageSizes!);
                         const srcWidth = availableImageWidths.find(width => width >= 1200);
 
                         if (!srcWidth || srcWidth === image.width) {
                             // do nothing, width is smaller than retina or matches the original payload src
                         } else {
-                            const [, imagesPath, filename] = image.src.match(/(.*\/content\/images)\/(.*)/);
-                            img.setAttribute('src', `${imagesPath}/size/w${srcWidth}/${filename}`);
+                            const match = image.src.match(/(.*\/content\/images)\/(.*)/);
+                            if (match) {
+                                const [, imagesPath, filename] = match;
+                                img.setAttribute('src', `${imagesPath}/size/w${srcWidth}/${filename}`);
+                            }
                         }
                     }
 
                     if (isUnsplashImage(image.src)) {
                         const unsplashUrl = new URL(image.src);
-                        unsplashUrl.searchParams.set('w', 1200);
+                        unsplashUrl.searchParams.set('w', '1200');
                         img.setAttribute('src', unsplashUrl.href);
                     }
                 }
@@ -178,7 +200,7 @@ module.exports = {
         });
 
         if (payload.caption) {
-            let figcaption = dom.createElement('figcaption');
+            const figcaption = dom.createElement('figcaption');
             figcaption.appendChild(dom.createRawHTMLSection(payload.caption));
             figure.appendChild(figcaption);
             figure.setAttribute('class', `${figure.getAttribute('class')} kg-card-hascaption`);
@@ -188,41 +210,46 @@ module.exports = {
     },
 
     absoluteToRelative(payload, options) {
-        if (payload.images) {
-            payload.images.forEach((image) => {
+        const p = payload as GalleryPayload;
+        if (p.images) {
+            p.images.forEach((image: GalleryImage) => {
                 image.src = image.src && absoluteToRelative(image.src, options.siteUrl, options);
                 image.caption = image.caption && htmlAbsoluteToRelative(image.caption, options.siteUrl, options);
             });
         }
 
-        payload.caption = payload.caption && htmlAbsoluteToRelative(payload.caption, options.siteUrl, options);
+        p.caption = p.caption && htmlAbsoluteToRelative(p.caption, options.siteUrl, options);
 
         return payload;
     },
 
     relativeToAbsolute(payload, options) {
-        if (payload.images) {
-            payload.images.forEach((image) => {
-                image.src = image.src && relativeToAbsolute(image.src, options.siteUrl, options.itemUrl, options);
-                image.caption = image.caption && htmlRelativeToAbsolute(image.caption, options.siteUrl, options.itemUrl, options);
+        const p = payload as GalleryPayload;
+        if (p.images) {
+            p.images.forEach((image: GalleryImage) => {
+                image.src = image.src && relativeToAbsolute(image.src, options.siteUrl, options.itemUrl ?? '', options);
+                image.caption = image.caption && htmlRelativeToAbsolute(image.caption, options.siteUrl, options.itemUrl ?? '', options);
             });
         }
 
-        payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption, options.siteUrl, options.itemUrl, options);
+        p.caption = p.caption && htmlRelativeToAbsolute(p.caption, options.siteUrl, options.itemUrl ?? '', options);
 
         return payload;
     },
 
     toTransformReady(payload, options) {
-        if (payload.images) {
-            payload.images.forEach((image) => {
+        const p = payload as GalleryPayload;
+        if (p.images) {
+            p.images.forEach((image: GalleryImage) => {
                 image.src = image.src && toTransformReady(image.src, options.siteUrl, options);
                 image.caption = image.caption && htmlToTransformReady(image.caption, options.siteUrl, options);
             });
         }
 
-        payload.caption = payload.caption && htmlToTransformReady(payload.caption, options.siteUrl, options);
+        p.caption = p.caption && htmlToTransformReady(p.caption, options.siteUrl, options);
 
         return payload;
     }
 };
+
+export default galleryCard;

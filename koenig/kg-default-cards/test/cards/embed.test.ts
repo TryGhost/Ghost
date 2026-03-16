@@ -1,17 +1,16 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('../utils');
+import should from 'should';
+import '../utils/index.js';
 
-const card = require('../../lib/cards/embed');
-const {JSDOM} = require('jsdom');
-const SimpleDom = require('simple-dom');
-const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
+import card from '../../src/cards/embed.js';
+import {JSDOM} from 'jsdom';
+import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
+const serializer = new HTMLSerializer(voidMap);
 
 describe('Embed card', function () {
     it('renders', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 html: '<h1>HEADING</h1><p>PARAGRAPH</p>'
@@ -22,9 +21,9 @@ describe('Embed card', function () {
     });
 
     it('renders videos for email target', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 type: 'video',
@@ -41,7 +40,7 @@ describe('Embed card', function () {
             }
         };
 
-        let output = serializer.serialize(card.render(opts));
+        const output = serializer.serialize(card.render(opts));
         output.should.not.match(/<h1>HEADING<\/h1>/);
         output.should.match(/<figure class="kg-card kg-embed-card"/);
         output.should.match(/<a class="kg-video-preview" href="https:\/\/example\.com\/my-video"/);
@@ -49,9 +48,9 @@ describe('Embed card', function () {
     });
 
     it('Plain content renders', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 html: 'CONTENT'
@@ -62,9 +61,9 @@ describe('Embed card', function () {
     });
 
     it('Invalid HTML returns', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 html: '<h1>HEADING<'
@@ -75,9 +74,9 @@ describe('Embed card', function () {
     });
 
     it('Renders nothing when payload is undefined', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 html: undefined
@@ -88,9 +87,9 @@ describe('Embed card', function () {
     });
 
     it('Renders caption when provided', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 html: 'Testing',
@@ -102,29 +101,29 @@ describe('Embed card', function () {
     });
 
     it('transforms urls absolute to relative', function () {
-        let payload = {
+        const payload = {
             caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
         };
 
-        const transformed = card.absoluteToRelative(payload, {siteUrl: 'http://127.0.0.1:2369/'});
+        const transformed = card.absoluteToRelative!(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
-        transformed.caption
+        (transformed.caption as string)
             .should.equal('A link to <a href="/post">an internal post</a>');
     });
 
     it('transforms urls relative to absolute', function () {
-        let payload = {
+        const payload = {
             caption: 'A link to <a href="/post">an internal post</a>'
         };
 
-        const transformed = card.relativeToAbsolute(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
+        const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
 
-        transformed.caption
+        (transformed.caption as string)
             .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
     });
 
     it('renders nfts and escapes the JSON', function () {
-        let payload = {
+        const payload = {
             type: 'nft',
             url: 'https://opensea.io/0x90bae7c0d86b2583d02c072d45bd64ace0b8db86/417',
             metadata: {
@@ -136,18 +135,18 @@ describe('Embed card', function () {
             caption: 'Hello'
         };
 
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload
         };
 
-        let output = serializer.serialize(card.render(opts));
+        const output = serializer.serialize(card.render(opts));
 
-        let dom = new JSDOM(output);
+        const dom = new JSDOM(output);
 
-        let parsedPayload = JSON.parse(decodeURIComponent(dom.window.document.body.querySelector('.kg-nft-card > a').dataset.payload));
+        const parsedPayload = JSON.parse(decodeURIComponent((dom.window.document.body.querySelector('.kg-nft-card > a') as HTMLAnchorElement).dataset.payload!));
 
         parsedPayload.type.should.equal(payload.type);
         parsedPayload.url.should.equal(payload.url);
@@ -156,7 +155,7 @@ describe('Embed card', function () {
     });
 
     it('renders nfts in a table for email', function () {
-        let payload = {
+        const payload = {
             type: 'nft',
             url: 'https://opensea.io/0x90bae7c0d86b2583d02c072d45bd64ace0b8db86/417',
             metadata: {
@@ -168,9 +167,9 @@ describe('Embed card', function () {
             caption: 'Hello'
         };
 
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload,
             options: {
@@ -178,10 +177,10 @@ describe('Embed card', function () {
             }
         };
 
-        let output = serializer.serialize(card.render(opts));
+        const output = serializer.serialize(card.render(opts));
 
-        let dom = new JSDOM(output);
+        const dom = new JSDOM(output);
 
-        dom.window.document.body.querySelector('table').should.exist;
+        should.exist(dom.window.document.body.querySelector('table'));
     });
 });

@@ -1,16 +1,23 @@
-const {
+import {
     absoluteToRelative,
     relativeToAbsolute,
     htmlAbsoluteToRelative,
     htmlRelativeToAbsolute,
     htmlToTransformReady,
     toTransformReady
-} = require('@tryghost/url-utils/lib/utils');
-
-const {
+} from '@tryghost/url-utils/lib/utils';
+import {
     hbs,
     dedent
-} = require('../utils');
+} from '../utils/index.js';
+import type {Card} from '../types.js';
+
+interface AudioPayload {
+    src: string;
+    thumbnailSrc: string;
+    duration: number;
+    title: string;
+}
 
 function getFormattedDuration(duration = 200) {
     const minutes = Math.floor(duration / 60);
@@ -20,18 +27,19 @@ function getFormattedDuration(duration = 200) {
     return formattedDuration;
 }
 
-module.exports = {
+const audioCard: Card = {
     name: 'audio',
     type: 'dom',
 
     render({payload, env: {dom}, options = {}}) {
-        if (!payload.src) {
+        const p = payload as unknown as AudioPayload;
+        if (!p.src) {
             return dom.createTextNode('');
         }
         let thumbnailCls = 'kg-audio-thumbnail';
         let emptyThumbnailCls = 'kg-audio-thumbnail placeholder';
-        let hasThumbnail = Boolean(payload.thumbnailSrc);
-        if (!payload.thumbnailSrc) {
+        const hasThumbnail = Boolean(p.thumbnailSrc);
+        if (!p.thumbnailSrc) {
             thumbnailCls += ' kg-audio-hide';
         } else {
             emptyThumbnailCls += ' kg-audio-hide';
@@ -135,30 +143,35 @@ module.exports = {
 
         const html = dedent(renderTemplate({
             postUrl,
-            src: payload.src,
-            thumbnailSrc: payload.thumbnailSrc,
-            duration: getFormattedDuration(payload.duration),
-            title: payload.title
+            src: p.src,
+            thumbnailSrc: p.thumbnailSrc,
+            duration: getFormattedDuration(p.duration),
+            title: p.title
         }));
 
         return dom.createRawHTMLSection(html);
     },
 
     absoluteToRelative(payload, options) {
-        payload.src = payload.src && absoluteToRelative(payload.src, options.siteUrl, options);
-        payload.thumbnailSrc = payload.thumbnailSrc && htmlAbsoluteToRelative(payload.thumbnailSrc, options.siteUrl, options);
+        const p = payload as unknown as AudioPayload;
+        p.src = p.src && absoluteToRelative(p.src, options.siteUrl, options);
+        p.thumbnailSrc = p.thumbnailSrc && htmlAbsoluteToRelative(p.thumbnailSrc, options.siteUrl, options);
         return payload;
     },
 
     relativeToAbsolute(payload, options) {
-        payload.src = payload.src && relativeToAbsolute(payload.src, options.siteUrl, options.itemUrl, options);
-        payload.thumbnailSrc = payload.thumbnailSrc && htmlRelativeToAbsolute(payload.thumbnailSrc, options.siteUrl, options.itemUrl, options);
+        const p = payload as unknown as AudioPayload;
+        p.src = p.src && relativeToAbsolute(p.src, options.siteUrl, options.itemUrl ?? '', options);
+        p.thumbnailSrc = p.thumbnailSrc && htmlRelativeToAbsolute(p.thumbnailSrc, options.siteUrl, options.itemUrl ?? '', options);
         return payload;
     },
 
     toTransformReady(payload, options) {
-        payload.src = payload.src && toTransformReady(payload.src, options.siteUrl, options);
-        payload.thumbnailSrc = payload.thumbnailSrc && htmlToTransformReady(payload.thumbnailSrc, options.siteUrl, options);
+        const p = payload as unknown as AudioPayload;
+        p.src = p.src && toTransformReady(p.src, options.siteUrl, options);
+        p.thumbnailSrc = p.thumbnailSrc && htmlToTransformReady(p.thumbnailSrc, options.siteUrl, options);
         return payload;
     }
 };
+
+export default audioCard;

@@ -1,16 +1,14 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('../utils');
+import '../utils/index.js';
 
-const card = require('../../lib/cards/header');
-const SimpleDom = require('simple-dom');
-const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
+import card from '../../src/cards/header.js';
+import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
+const serializer = new HTMLSerializer(voidMap);
 
 describe('Header card', function () {
     it('renders', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 backgroundImageSrc: 'https://example.com/image.jpg',
@@ -28,9 +26,9 @@ describe('Header card', function () {
     });
 
     it('renders nothing when header and subheader is undefined and the button is disabled', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 backgroundImageSrc: 'https://example.com/image.jpg',
@@ -48,9 +46,9 @@ describe('Header card', function () {
     });
 
     it('renders a minimal header card', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             },
             payload: {
                 backgroundImageSrc: '',
@@ -68,50 +66,50 @@ describe('Header card', function () {
     });
 
     it('transforms urls absolute to relative', function () {
-        let payload = {
+        const payload = {
             backgroundImageSrc: 'http://127.0.0.1:2369/img.jpg',
             buttonUrl: 'http://127.0.0.1:2369/post',
             header: '<a href="http://127.0.0.1:2369/post"></a>',
             subheader: '<a href="http://127.0.0.1:2369/post"></a>'
         };
 
-        const transformed = card.absoluteToRelative(payload, {siteUrl: 'http://127.0.0.1:2369/'});
+        const transformed = card.absoluteToRelative!(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
-        transformed.backgroundImageSrc.should.equal('/img.jpg');
-        transformed.buttonUrl.should.equal('/post');
-        transformed.header.should.equal('<a href="/post"></a>');
-        transformed.subheader.should.equal('<a href="/post"></a>');
+        (transformed.backgroundImageSrc as string).should.equal('/img.jpg');
+        (transformed.buttonUrl as string).should.equal('/post');
+        (transformed.header as string).should.equal('<a href="/post"></a>');
+        (transformed.subheader as string).should.equal('<a href="/post"></a>');
     });
 
     it('transforms urls relative to absolute', function () {
-        let payload = {
+        const payload = {
             backgroundImageSrc: '/img.jpg',
             buttonUrl: '/post',
             header: '<a href="/post"></a>',
             subheader: '<a href="/post"></a>'
         };
 
-        const transformed = card.relativeToAbsolute(payload, {siteUrl: 'http://127.0.0.1:2369/'});
+        const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
-        transformed.backgroundImageSrc.should.equal('http://127.0.0.1:2369/img.jpg');
-        transformed.buttonUrl.should.equal('http://127.0.0.1:2369/post');
-        transformed.header.should.equal('<a href="http://127.0.0.1:2369/post"></a>');
-        transformed.subheader.should.equal('<a href="http://127.0.0.1:2369/post"></a>');
+        (transformed.backgroundImageSrc as string).should.equal('http://127.0.0.1:2369/img.jpg');
+        (transformed.buttonUrl as string).should.equal('http://127.0.0.1:2369/post');
+        (transformed.header as string).should.equal('<a href="http://127.0.0.1:2369/post"></a>');
+        (transformed.subheader as string).should.equal('<a href="http://127.0.0.1:2369/post"></a>');
     });
 
     it('transforms urls to transform-ready', function () {
-        let payload = {
+        const payload = {
             backgroundImageSrc: 'http://127.0.0.1:2369/img.jpg',
             buttonUrl: 'http://127.0.0.1:2369/post',
             header: '<a href="http://127.0.0.1:2369/post"></a>',
             subheader: '<a href="http://127.0.0.1:2369/post"></a>'
         };
 
-        const transformed = card.toTransformReady(payload, {siteUrl: 'http://127.0.0.1:2369/'});
+        const transformed = card.toTransformReady!(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
-        transformed.backgroundImageSrc.should.equal('__GHOST_URL__/img.jpg');
-        transformed.buttonUrl.should.equal('__GHOST_URL__/post');
-        transformed.header.should.equal('<a href="__GHOST_URL__/post"></a>');
-        transformed.subheader.should.equal('<a href="__GHOST_URL__/post"></a>');
+        (transformed.backgroundImageSrc as string).should.equal('__GHOST_URL__/img.jpg');
+        (transformed.buttonUrl as string).should.equal('__GHOST_URL__/post');
+        (transformed.header as string).should.equal('<a href="__GHOST_URL__/post"></a>');
+        (transformed.subheader as string).should.equal('<a href="__GHOST_URL__/post"></a>');
     });
 });
