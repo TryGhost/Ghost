@@ -1,4 +1,8 @@
-export function CardVisibilityMessage({message}) {
+interface CardVisibilityMessageProps {
+    message?: string;
+}
+
+export function CardVisibilityMessage({message}: CardVisibilityMessageProps) {
     if (!message) {
         return null;
     }

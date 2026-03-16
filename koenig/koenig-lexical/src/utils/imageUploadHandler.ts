@@ -1,8 +1,9 @@
 import {$getNodeByKey} from 'lexical';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {getImageDimensions} from './getImageDimensions';
+import type {LexicalEditor} from 'lexical';
 
-export const imageUploadHandler = async (files, nodeKey, editor, upload) => {
+export const imageUploadHandler = async (files: File[] | FileList, nodeKey: string, editor: LexicalEditor, upload: (files: File[] | FileList) => Promise<{url: string}[] | null>) => {
     if (!files) {
         return;
     }
@@ -15,7 +16,7 @@ export const imageUploadHandler = async (files, nodeKey, editor, upload) => {
     }
 
     // show preview via an object URL whilst upload is in progress
-    let previewUrl = URL.createObjectURL(files[0]);
+    const previewUrl = URL.createObjectURL(files[0]);
     if (previewUrl) {
         await editor.update(() => {
             const node = $getNodeByKey(nodeKey);
@@ -46,14 +47,14 @@ export const imageUploadHandler = async (files, nodeKey, editor, upload) => {
     return;
 };
 
-export const backgroundImageUploadHandler = async (files, upload) => {
+export const backgroundImageUploadHandler = async (files: File[], upload: (files: File[]) => Promise<{url: string}[] | null>) => {
     if (!files) {
         return;
     }
     const result = await upload(files);
     const imageSrc = result?.[0].url;
 
-    const {width, height} = await getImageDimensions(imageSrc);
+    const {width, height} = await getImageDimensions(imageSrc!);
 
     return {
         imageSrc,

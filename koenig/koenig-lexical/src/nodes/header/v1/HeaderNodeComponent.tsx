@@ -5,10 +5,32 @@ import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../../../components/ui/ActionToolbar';
 import {EDIT_CARD_COMMAND} from '../../../plugins/KoenigBehaviourPlugin';
 import {HeaderCard} from '../../../components/ui/cards/HeaderCard/v1/HeaderCard';
-import {SnippetActionToolbar} from '../../../components/ui/SnippetActionToolbar.jsx';
+import {SnippetActionToolbar} from '../../../components/ui/SnippetActionToolbar';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../../../components/ui/ToolbarMenu';
 import {backgroundImageUploadHandler} from '../../../utils/imageUploadHandler';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {HeaderNode} from '../../HeaderNode';
+import type {LexicalEditor} from 'lexical';
+
+function $getHeaderNodeByKey(nodeKey: string): HeaderNode | null {
+    return $getNodeByKey(nodeKey) as HeaderNode | null;
+}
+
+interface HeaderNodeComponentProps {
+    nodeKey: string;
+    backgroundImageSrc: string;
+    button: boolean;
+    subheaderTextEditorInitialState: string | undefined;
+    buttonText: string;
+    buttonUrl: string;
+    type: 'dark' | 'light' | 'accent' | 'image';
+    headerTextEditorInitialState: string | undefined;
+    header: string;
+    subheader: string;
+    headerTextEditor: LexicalEditor;
+    subheaderTextEditor: LexicalEditor;
+    size: 'small' | 'medium' | 'large';
+}
 
 function HeaderNodeComponent({
     nodeKey,
@@ -24,14 +46,14 @@ function HeaderNodeComponent({
     headerTextEditor,
     subheaderTextEditor,
     size
-}) {
+}: HeaderNodeComponentProps) {
     const [editor] = useLexicalComposerContext();
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const {fileUploader} = React.useContext(KoenigComposerContext);
     const {isEditing, setEditing, isSelected} = React.useContext(CardContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
-    const handleToolbarEdit = (event) => {
+    const handleToolbarEdit = (event: React.MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
         editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: false});
@@ -39,72 +61,85 @@ function HeaderNodeComponent({
 
     const imageUploader = fileUploader.useFileUpload('image');
 
-    const onFileChange = async (e) => {
+    const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
+        if (!files || files.length === 0) {
+            return;
+        }
 
         // reset original src so it can be replaced with preview and upload progress
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.backgroundImageSrc = '';
         });
 
-        const {imageSrc} = await backgroundImageUploadHandler(files, imageUploader.upload);
+        const result = await backgroundImageUploadHandler(Array.from(files), imageUploader.upload);
+        if (!result) {return;}
+        const {imageSrc} = result;
 
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.backgroundImageSrc = imageSrc;
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
+            node.backgroundImageSrc = imageSrc ?? "";
         });
     };
 
-    const fileInputRef = React.useRef(null);
+    const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
     const openFilePicker = () => {
-        fileInputRef.current.click();
+        fileInputRef.current?.click();
     };
 
-    const handleColorSelector = (color) => {
+    const handleColorSelector = (color: string) => {
         if (color === 'image' && backgroundImageSrc === ''){
             openFilePicker();
         }
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.style = color;
         });
     };
 
-    const handleSizeSelector = (s) => {
+    const handleSizeSelector = (s: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.size = s;
         });
     };
 
-    const handleButtonToggle = (event) => {
+    const handleButtonToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
         event.stopPropagation();
         setEditing(true); // kinda weird but this avoids the card from unselecting itself when toggling.
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.buttonEnabled = event.target.checked;
         });
     };
 
-    const handleButtonText = (event) => {
+    const handleButtonText = (event: React.ChangeEvent<HTMLInputElement>) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.buttonText = event.target.value;
         });
     };
 
-    const handleButtonUrl = (val) => {
+    const handleButtonUrl = (val: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.buttonUrl = val;
         });
     };
 
     const handleClearBackgroundImage = () => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.backgroundImageSrc = '';
         });
     };

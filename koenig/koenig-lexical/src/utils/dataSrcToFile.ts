@@ -1,4 +1,4 @@
-export async function dataSrcToFile(src, fileName) {
+export async function dataSrcToFile(src: string, fileName?: string): Promise<File | undefined> {
     if (!src.startsWith('data:')) {
         return;
     }
@@ -6,18 +6,26 @@ export async function dataSrcToFile(src, fileName) {
     const mimeType = src.split(',')[0].split(':')[1].split(';')[0];
 
     if (!fileName) {
-        let uuid;
-        try {
-            uuid = window.crypto.randomUUID();
-        } catch (e) {
-            uuid = Array.from(window.crypto.getRandomValues(new Uint8Array(8)), byte => byte.toString(16).padStart(2, '0')).join('');
-        }
+        const uuid = getRandomFileId();
         const extension = mimeType.split('/')[1];
         fileName = `data-src-image-${uuid}.${extension}`;
     }
 
     const blob = await fetch(src).then(it => it.blob());
-    const file = new File([blob], fileName, {type: mimeType, lastModified: new Date()});
+    const file = new File([blob], fileName, {type: mimeType, lastModified: Date.now()});
 
     return file;
+}
+
+function getRandomFileId() {
+    if (window.crypto.randomUUID) {
+        return window.crypto.randomUUID();
+    }
+
+    const randomBytes = new Uint8Array(16);
+    window.crypto.getRandomValues(randomBytes);
+
+    return [...randomBytes]
+        .map(byte => byte.toString(16).padStart(2, '0'))
+        .join('');
 }

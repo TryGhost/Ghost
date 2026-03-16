@@ -1,8 +1,9 @@
 import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, selectBackwards} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 test.describe('Editor keyboard shortcuts', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -217,7 +218,7 @@ test.describe('Editor keyboard shortcuts', async () => {
         `);
     });
     test.describe('typing ` over a selection', function () {
-        const getSelectedText = () => page.evaluate(() => window.getSelection().toString());
+        const getSelectedText = () => page.evaluate(() => window.getSelection()!.toString());
         const getEditorHTML = () => page.innerHTML('.koenig-lexical div[contenteditable="true"]');
 
         test('formats the selection as inline code', async function () {
@@ -249,7 +250,7 @@ test.describe('Editor keyboard shortcuts', async () => {
         });
 
         test('matches ctrl shift K across paragraphs', async function () {
-            const formatAcrossParagraphs = async (shortcut) => {
+            const formatAcrossParagraphs = async (shortcut: string) => {
                 await initialize({page});
                 await focusEditor(page);
                 await page.keyboard.type('first para');

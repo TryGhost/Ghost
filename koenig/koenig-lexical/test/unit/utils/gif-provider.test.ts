@@ -24,7 +24,7 @@ describe('Utils: getGifProviderConfig', () => {
     });
 
     test('passes through a configured content filter', () => {
-        expect(getGifProviderConfig({klipy: {apiKey: 'k', contentFilter: 'low'}}).contentFilter).toEqual('low');
+        expect(getGifProviderConfig({klipy: {apiKey: 'k', contentFilter: 'low'}})!.contentFilter).toEqual('low');
     });
 });
 

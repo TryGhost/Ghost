@@ -1,7 +1,15 @@
 import clsx from 'clsx';
 import {Tooltip} from './Tooltip';
 
-export function IconButton({className, onClick, label, dataTestId, Icon}) {
+export interface IconButtonProps {
+    className?: string;
+    onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+    label?: string;
+    dataTestId?: string;
+    Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+}
+
+export function IconButton({className, onClick, label, dataTestId, Icon}: IconButtonProps) {
     return (
         <button
             aria-label={label}

@@ -1,22 +1,30 @@
 import CardContext from '../context/CardContext';
-import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
+import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 // TODO: Re-enable when design tab is implemented
 // import {$getNodeByKey} from 'lexical';
-import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
-import {SettingsPanel} from '../components/ui/SettingsPanel.jsx';
-import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
-import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
-import {TransistorCard} from '../components/ui/cards/TransistorCard.jsx';
-import {VisibilitySettings} from '../components/ui/VisibilitySettings.jsx';
+import {ActionToolbar} from '../components/ui/ActionToolbar';
+import {SettingsPanel} from '../components/ui/SettingsPanel';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
+import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
+import {TransistorCard} from '../components/ui/cards/TransistorCard';
+import {VisibilitySettings} from '../components/ui/VisibilitySettings';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {useVisibilityToggle} from '../hooks/useVisibilityToggle.js';
+import {useVisibilityToggle} from '../hooks/useVisibilityToggle';
+
+interface TransistorNodeComponentProps {
+    nodeKey: string;
+    accentColor: string;
+    backgroundColor: string;
+}
 
 export const TransistorNodeComponent = ({
+
     nodeKey,
     accentColor,
     backgroundColor
-}) => {
+
+}: TransistorNodeComponentProps) => {
     const [editor] = useLexicalComposerContext();
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
     const {cardConfig, darkMode} = React.useContext(KoenigComposerContext);
@@ -36,7 +44,7 @@ export const TransistorNodeComponent = ({
         {id: 'visibility', label: 'Visibility'}
     ];
 
-    const handleToolbarEdit = (event) => {
+    const handleToolbarEdit = (event: React.MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
         setEditing(true);
@@ -107,10 +115,6 @@ export const TransistorNodeComponent = ({
                     darkMode={darkMode}
                     defaultTab="visibility"
                     tabs={settingsTabs}
-                    onMouseDown={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }}
                 >
                     {{
                         visibility: visibilitySettings

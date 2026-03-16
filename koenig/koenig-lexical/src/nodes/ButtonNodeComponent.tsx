@@ -1,42 +1,53 @@
 import CardContext from '../context/CardContext';
-import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
+import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {$getNodeByKey} from 'lexical';
-import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
+import {$isButtonNode} from './ButtonNode';
+import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {ButtonCard} from '../components/ui/cards/ButtonCard';
-import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
-import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
+import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
+interface ButtonNodeComponentProps {
+    alignment: string;
+    buttonText: string;
+    buttonUrl: string;
+    nodeKey: string;
+}
+
+export function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}: ButtonNodeComponentProps) {
     const [editor] = useLexicalComposerContext();
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
-    const handleToolbarEdit = (event) => {
+    const handleToolbarEdit = (event: React.MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
         setEditing(true);
     };
 
-    const handleButtonTextChange = (event) => {
+    const handleButtonTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
+            if (!$isButtonNode(node)) {return;}
             node.buttonText = event.target.value;
         });
     };
 
-    const handleButtonUrlChange = (val) => {
+    const handleButtonUrlChange = (val: string) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
+            if (!$isButtonNode(node)) {return;}
             node.buttonUrl = val;
         });
     };
 
-    const handleAlignmentChange = (value) => {
+    const handleAlignmentChange = (value: string) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
+            if (!$isButtonNode(node)) {return;}
             node.alignment = value;
         });
     };

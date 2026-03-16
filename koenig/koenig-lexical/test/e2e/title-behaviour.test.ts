@@ -1,8 +1,9 @@
 import {assertHTML, assertSelection, focusEditor, html, initialize} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 test.describe('Title behaviour (ExternalControlPlugin)', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -60,7 +61,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
         });
 
         test.describe('TAB', function () {
-            test('moves cursor to blank editor', async function () {
+            test('moves cursor to blank editor via tab', async function () {
                 await page.getByTestId('post-title').click();
                 await page.keyboard.press('Tab');
 
@@ -123,7 +124,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
         });
 
         test.describe('ARROW DOWN', function () {
-            test('moves cursor to editor when title is blank', async function () {
+            test('moves cursor to editor via arrow down when title is blank', async function () {
                 await page.getByTestId('post-title').click();
                 await page.keyboard.press('ArrowDown');
 
@@ -135,7 +136,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
                 });
             });
 
-            test('moves cursor to editor when cursor at end of title', async function () {
+            test('moves cursor to editor via arrow down when cursor at end of title', async function () {
                 await page.getByTestId('post-title').click();
                 await page.keyboard.type('Populated title');
                 await page.keyboard.press('ArrowLeft');
@@ -168,7 +169,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
                 await page.keyboard.press('ArrowDown');
 
                 const title = page.getByTestId('post-title');
-                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                const titleHasFocus = await title.evaluate(node => document.activeElement === node);
                 expect(titleHasFocus).toEqual(false);
 
                 // card is selected
@@ -201,7 +202,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
                 await page.keyboard.press('ArrowUp');
 
                 const title = page.getByTestId('post-title');
-                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                const titleHasFocus = await title.evaluate(node => document.activeElement === node);
                 expect(titleHasFocus).toEqual(true);
             });
 
@@ -211,7 +212,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
                 await page.keyboard.press('ArrowUp');
 
                 const title = page.getByTestId('post-title');
-                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                const titleHasFocus = await title.evaluate(node => document.activeElement === node);
                 expect(titleHasFocus).toEqual(true);
             });
 
@@ -222,7 +223,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
                 await page.keyboard.press('ArrowUp');
 
                 const title = page.getByTestId('post-title');
-                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                const titleHasFocus = await title.evaluate(node => document.activeElement === node);
                 expect(titleHasFocus).toEqual(true);
 
                 // card is not selected
@@ -273,7 +274,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
                 await page.keyboard.press('ArrowUp');
 
                 const title = page.getByTestId('post-title');
-                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                const titleHasFocus = await title.evaluate(node => document.activeElement === node);
                 expect(titleHasFocus).toEqual(false);
             });
 
@@ -286,39 +287,39 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
                 await page.keyboard.press('ArrowUp');
 
                 const title = page.getByTestId('post-title');
-                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                const titleHasFocus = await title.evaluate(node => document.activeElement === node);
                 expect(titleHasFocus).toEqual(false);
             });
         });
 
         test.describe('ARROW LEFT', function () {
-            test('at start of paragraph doc moves cursor to title', async function () {
+            test('at start of paragraph doc moves cursor to title via arrow left', async function () {
                 await focusEditor(page);
                 await page.keyboard.press('ArrowLeft');
 
                 const title = page.getByTestId('post-title');
-                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                const titleHasFocus = await title.evaluate(node => document.activeElement === node);
                 expect(titleHasFocus).toEqual(true);
             });
 
-            test('at start of list at top of doc moves to title', async function () {
+            test('at start of list at top of doc moves to title via arrow left', async function () {
                 await focusEditor(page);
                 await page.keyboard.type('- ');
                 await page.keyboard.press('ArrowLeft');
 
                 const title = page.getByTestId('post-title');
-                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                const titleHasFocus = await title.evaluate(node => document.activeElement === node);
                 expect(titleHasFocus).toEqual(true);
             });
 
-            test('with selected card at start of doc moves to title', async function () {
+            test('with selected card at start of doc moves to title via arrow left', async function () {
                 await focusEditor(page);
                 await page.keyboard.type('---');
                 await page.keyboard.press('ArrowUp');
                 await page.keyboard.press('ArrowLeft');
 
                 const title = page.getByTestId('post-title');
-                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                const titleHasFocus = await title.evaluate(node => document.activeElement === node);
                 expect(titleHasFocus).toEqual(true);
 
                 // card is not selected
@@ -330,7 +331,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
                 `);
             });
 
-            test('with non-collapsed selection at start of doc does not move to title', async function () {
+            test('with non-collapsed selection at start of doc does not move to title via arrow left', async function () {
                 await focusEditor(page);
                 await page.keyboard.type('Test');
                 await page.keyboard.press('Shift+ArrowLeft');
@@ -362,18 +363,18 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
                 });
             });
 
-            test('at middle of doc does not move to title', async function () {
+            test('at middle of doc does not move to title via arrow left', async function () {
                 await focusEditor(page);
                 await page.keyboard.type('One');
                 await page.keyboard.press('Enter');
                 await page.keyboard.press('ArrowLeft');
 
                 const title = page.getByTestId('post-title');
-                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                const titleHasFocus = await title.evaluate(node => document.activeElement === node);
                 expect(titleHasFocus).toEqual(false);
             });
 
-            test('with selected card in middle of doc does not move to title', async function () {
+            test('with selected card in middle of doc does not move to title via arrow left', async function () {
                 await focusEditor(page);
                 await page.keyboard.type('One');
                 await page.keyboard.press('Enter');
@@ -382,7 +383,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
                 await page.keyboard.press('ArrowLeft');
 
                 const title = page.getByTestId('post-title');
-                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                const titleHasFocus = await title.evaluate(node => document.activeElement === node);
                 expect(titleHasFocus).toEqual(false);
             });
         });
@@ -394,7 +395,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
                 await page.keyboard.press('Shift+Tab');
 
                 const title = page.getByTestId('post-title');
-                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                const titleHasFocus = await title.evaluate(node => document.activeElement === node);
                 expect(titleHasFocus).toEqual(true);
             });
 
@@ -405,7 +406,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
                 await page.keyboard.press('Shift+Tab');
 
                 const title = page.getByTestId('post-title');
-                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                const titleHasFocus = await title.evaluate(node => document.activeElement === node);
                 expect(titleHasFocus).toEqual(true);
             });
 
@@ -419,7 +420,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
                 await page.keyboard.press('Shift+Tab');
 
                 const title = page.getByTestId('post-title');
-                let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+                const titleHasFocus = await title.evaluate(node => document.activeElement === node);
                 expect(titleHasFocus).toEqual(true);
             });
         });

@@ -1,8 +1,10 @@
 import populateEditor from '../../../utils/storybook/populate-storybook-editor';
 import {CardWrapper} from './../CardWrapper';
 import {CodeBlockCard} from './CodeBlockCard';
-import {MINIMAL_NODES} from '../../../index.js';
+import {MINIMAL_NODES} from '../../../index';
 import {createEditor} from 'lexical';
+import type {ComponentProps} from 'react';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
@@ -10,14 +12,15 @@ const displayOptions = {
     Editing: {isSelected: true, isEditing: true}
 };
 
-const story = {
+type StoryArgs = ComponentProps<typeof CodeBlockCard> & {display: keyof typeof displayOptions; caption?: string};
+
+const story: Meta<StoryArgs> = {
     title: 'Primary cards/Code card',
     component: CodeBlockCard,
-    subcomponent: {CardWrapper},
+    subcomponents: {CardWrapper},
     argTypes: {
         display: {
             options: Object.keys(displayOptions),
-            mapping: displayOptions,
             control: {
                 type: 'radio',
                 labels: {
@@ -37,22 +40,22 @@ const story = {
 };
 export default story;
 
-const Template = ({display, caption, ...args}) => {
+const Template: StoryFn<StoryArgs> = ({display, caption, ...args}) => {
     const captionEditor = createEditor({nodes: MINIMAL_NODES});
     populateEditor({editor: captionEditor, initialHtml: `${caption}`});
 
     return (
         <div className="kg-prose">
             <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
-                <CardWrapper wrapperStyle='code-card' {...display} {...args}>
-                    <CodeBlockCard captionEditor={captionEditor} updateCode={() => {}} {...display} {...args} />
+                <CardWrapper wrapperStyle='code-card' {...displayOptions[display]} {...args}>
+                    <CodeBlockCard captionEditor={captionEditor} updateCode={() => {}} {...displayOptions[display]} {...args} />
                 </CardWrapper>
             </div>
         </div>
     );
 };
 
-export const Empty = Template.bind({});
+export const Empty: StoryFn<StoryArgs> = Template.bind({});
 Empty.args = {
     display: 'Editing',
     code: '',
@@ -60,7 +63,7 @@ Empty.args = {
     caption: ''
 };
 
-export const Populated = Template.bind({});
+export const Populated: StoryFn<StoryArgs> = Template.bind({});
 Populated.args = {
     display: 'Editing',
     code: '<script></script>',

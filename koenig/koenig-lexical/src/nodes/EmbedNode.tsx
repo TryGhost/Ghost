@@ -6,19 +6,22 @@ import VimeoIcon from '../assets/icons/kg-card-type-vimeo.svg?react';
 import XIcon from '../assets/icons/kg-card-type-x.svg?react';
 import YouTubeIcon from '../assets/icons/kg-card-type-youtube.svg?react';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {EmbedNode as BaseEmbedNode} from '@tryghost/kg-default-nodes';
+import {EmbedNode as BaseEmbedNode, type EmbedData} from '@tryghost/kg-default-nodes';
 import {EmbedNodeComponent} from './EmbedNodeComponent';
-import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
+import {KoenigCardWrapper, MINIMAL_NODES} from '../index';
 import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
+import type {LexicalEditor} from 'lexical';
 
-export const INSERT_EMBED_COMMAND = createCommand();
+export type EmbedNodeData = EmbedData & {captionEditor?: unknown};
+
+export const INSERT_EMBED_COMMAND = createCommand<EmbedNodeData>();
 
 export class EmbedNode extends BaseEmbedNode {
-    __captionEditor;
-    __captionEditorInitialState;
-    __createdWithUrl;
+    __captionEditor!: LexicalEditor;
+    __captionEditorInitialState: unknown;
+    __createdWithUrl: boolean;
 
     static kgMenu = [{
         section: 'Embeds',
@@ -30,7 +33,7 @@ export class EmbedNode extends BaseEmbedNode {
         queryParams: ['url'],
         priority: 100,
         shortcut: '/embed [url]',
-        isHidden: ({config}) => config?.editorType === 'email'
+        isHidden: ({config}: {config?: Record<string, unknown>}) => config?.editorType === 'email'
     },
     {
         section: 'Embeds',
@@ -53,7 +56,7 @@ export class EmbedNode extends BaseEmbedNode {
         matches: ['twitter', 'x'],
         priority: 3,
         shortcut: '/twitter [url]',
-        isHidden: ({config}) => config?.editorType === 'email'
+        isHidden: ({config}: {config?: Record<string, unknown>}) => config?.editorType === 'email'
     },
     {
         section: 'Embeds',
@@ -65,7 +68,7 @@ export class EmbedNode extends BaseEmbedNode {
         matches: ['vimeo'],
         priority: 4,
         shortcut: '/vimeo [url]',
-        isHidden: ({config}) => config?.editorType === 'email'
+        isHidden: ({config}: {config?: Record<string, unknown>}) => config?.editorType === 'email'
     },
     {
         section: 'Embeds',
@@ -77,7 +80,7 @@ export class EmbedNode extends BaseEmbedNode {
         matches: ['codepen'],
         priority: 5,
         shortcut: '/codepen [url]',
-        isHidden: ({config}) => config?.editorType === 'email'
+        isHidden: ({config}: {config?: Record<string, unknown>}) => config?.editorType === 'email'
     },
     {
         section: 'Embeds',
@@ -89,7 +92,7 @@ export class EmbedNode extends BaseEmbedNode {
         matches: ['spotify'],
         priority: 6,
         shortcut: '/spotify [url]',
-        isHidden: ({config}) => config?.editorType === 'email'
+        isHidden: ({config}: {config?: Record<string, unknown>}) => config?.editorType === 'email'
     },
     {
         section: 'Embeds',
@@ -101,14 +104,14 @@ export class EmbedNode extends BaseEmbedNode {
         matches: ['soundcloud'],
         priority: 7,
         shortcut: '/soundcloud [url]',
-        isHidden: ({config}) => config?.editorType === 'email'
+        isHidden: ({config}: {config?: Record<string, unknown>}) => config?.editorType === 'email'
     }];
 
     getIcon() {
         return EmbedCardIcon;
     }
 
-    constructor(dataset = {}, key) {
+    constructor(dataset: EmbedNodeData = {}, key?: string) {
         super(dataset, key);
 
         this.__createdWithUrl = !!dataset.url && !dataset.html;
@@ -166,10 +169,10 @@ export class EmbedNode extends BaseEmbedNode {
     }
 }
 
-export const $createEmbedNode = (dataset) => {
+export const $createEmbedNode = (dataset: EmbedNodeData) => {
     return new EmbedNode(dataset);
 };
 
-export function $isEmbedNode(node) {
+export function $isEmbedNode(node: unknown): node is EmbedNode {
     return node instanceof EmbedNode;
 }

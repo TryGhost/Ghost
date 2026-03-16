@@ -1,13 +1,13 @@
 import React from 'react';
 import {Modal} from '../../Modal';
 
-function Th({value}) {
+function Th({value}: {value: string}) {
     return (
         <th className="p-2 font-semibold">{value}</th>
     );
 }
 
-function superSub(value) {
+function superSub(value: string) {
     switch (value) {
     case 'Super':
         return (
@@ -28,7 +28,7 @@ function superSub(value) {
     }
 }
 
-export function Td({value}) {
+export function Td({value}: {value: string}) {
     return (
         <td className={`p-2 font-normal ${(value === 'Bold' ? '!font-bold' : (value === 'Emphasize') ? 'italic' : (value === 'Strike-through') ? 'line-through' : (value === 'Link') ? 'cursor-pointer text-green' : '')}`}>
             <span className={` ${(value === 'Inline code') ? 'rounded-sm border border-grey-300 bg-grey-100 p-[.2rem] font-mono text-2xs dark:border-grey-900 dark:bg-grey-900' : (value === 'Highlight') ? 'bg-[#ff0] dark:text-black' : ''}`}>
@@ -38,7 +38,7 @@ export function Td({value}) {
     );
 }
 
-export default function MarkdownHelpDialog(props) {
+export default function MarkdownHelpDialog(props: {isOpen?: boolean; onClose: () => void}) {
     const headingId = React.useId();
 
     return (

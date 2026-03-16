@@ -4,21 +4,33 @@ import emojiData from '@emoji-mart/data';
 import trackEvent from '../utils/analytics';
 import useTypeaheadTriggerMatch from '../hooks/useTypeaheadTriggerMatch';
 import {$createTextNode, $getSelection, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_HIGH, KEY_DOWN_COMMAND} from 'lexical';
-import {LexicalTypeaheadMenuPlugin} from '@lexical/react/LexicalTypeaheadMenuPlugin';
+import {LexicalTypeaheadMenuPlugin, MenuOption} from '@lexical/react/LexicalTypeaheadMenuPlugin';
 import {SearchIndex, init} from 'emoji-mart';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {EmojiMartData} from '@emoji-mart/data';
 
 init({data: emojiData});
 
-const EmojiMenuItem = function ({index, isSelected, onClick, onMouseEnter, emoji}) {
-    // we need to manually set this unless we import the MenuOption type and extend it (see LexicalTypeaheadMenuPlugin)
-    const ref = React.useRef(null);
-    emoji.ref = ref;
+// the data module's synthetic default import isn't typed; cast to the shape it documents
+const emojiDictionary = (emojiData as unknown as EmojiMartData).emojis;
+
+class Emoji extends MenuOption {
+    id: string;
+    skins: Array<{native: string}>;
+
+    constructor(emoji: {id: string; skins: Array<{native: string}>}) {
+        super(emoji.id);
+        this.id = emoji.id;
+        this.skins = emoji.skins;
+    }
+}
+
+const EmojiMenuItem = function ({index, isSelected, onClick, onMouseEnter, emoji}: {index: number; isSelected: boolean; onClick: (e: React.MouseEvent) => void; onMouseEnter: () => void; emoji: Emoji}) {
     return (
         <li
             key={emoji.id}
-            ref={emoji.ref}
+            ref={el => emoji.setRefElement(el)}
             aria-selected={isSelected}
             className={`mb-0 flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-md px-2 py-1 font-sans text-sm leading-[1.65] tracking-wide text-grey-800 dark:text-grey-200 ${isSelected ? 'bg-grey-100 text-grey-900 dark:bg-grey-900 dark:text-white' : ''}`}
             data-testid={'emoji-option-' + index}
@@ -36,14 +48,17 @@ const EmojiMenuItem = function ({index, isSelected, onClick, onMouseEnter, emoji
 
 export function EmojiPickerPlugin() {
     const [editor] = useLexicalComposerContext();
-    const [queryString, setQueryString] = React.useState(null);
-    const [searchResults, setSearchResults] = React.useState(null);
+    const [queryString, setQueryString] = React.useState<string | null>(null);
+    const [searchResults, setSearchResults] = React.useState<Emoji[] | null>(null);
 
     const checkForTriggerMatch = useTypeaheadTriggerMatch(':', {minLength: 1});
 
     const cursorInInlineCodeBlock = () => {
         return editor.getEditorState().read(() => {
             const selection = $getSelection();
+            if (!$isRangeSelection(selection)) {
+                return false;
+            }
             const node = selection.anchor.getNode();
             if (node && $isTextNode(node) && node.hasFormat('code')) {
                 return true;
@@ -58,7 +73,7 @@ export function EmojiPickerPlugin() {
         return mergeRegister(
             editor.registerCommand(
                 KEY_DOWN_COMMAND,
-                async (event) => {
+                (event: KeyboardEvent) => {
                     if (!queryString) {
                         return false;
                     }
@@ -66,16 +81,16 @@ export function EmojiPickerPlugin() {
                         if (cursorInInlineCodeBlock() === true) {
                             return false;
                         }
-                        const emojis = await SearchIndex.search(queryString);
-                        if (emojis.length === 0) {
-                            return;
+                        // only swallow the closing colon when there's an exact shortcode
+                        // match. Look it up synchronously in the emoji dictionary — the
+                        // cached async search results can lag behind the latest queryString
+                        const emojiMatch = emojiDictionary[queryString];
+                        if (!emojiMatch) {
+                            return false;
                         }
-                        const emojiMatch = emojis?.[0].id === queryString; // only look for exact match
-                        if (emojiMatch) {
-                            handleCompletionInsertion(emojis[0]);
-                            event.preventDefault();
-                            return true;
-                        }
+                        handleCompletionInsertion(new Emoji(emojiMatch));
+                        event.preventDefault();
+                        return true;
                     }
                     return false;
                 },
@@ -84,7 +99,7 @@ export function EmojiPickerPlugin() {
         );
     });
 
-    const handleCompletionInsertion = React.useCallback((emoji) => {
+    const handleCompletionInsertion = React.useCallback((emoji: Emoji) => {
         editor.update(() => {
             const selection = $getSelection();
 
@@ -109,21 +124,21 @@ export function EmojiPickerPlugin() {
         }
 
         async function searchEmojis() {
-            let filteredEmojis = [];
-            if ([')','-)'].includes(queryString)) {
-                filteredEmojis = await SearchIndex.search('smile');
-            } else if (['(','-('].includes(queryString)) {
-                filteredEmojis = await SearchIndex.search('frown');
+            let results: Array<{id: string; skins: Array<{native: string}>}> = [];
+            if ([')','-)'].includes(queryString!)) {
+                results = await SearchIndex.search('smile');
+            } else if (['(','-('].includes(queryString!)) {
+                results = await SearchIndex.search('frown');
             } else {
-                filteredEmojis = await SearchIndex.search(queryString);
+                results = await SearchIndex.search(queryString);
             }
-            setSearchResults(filteredEmojis);
+            setSearchResults(results.map(emoji => new Emoji(emoji)));
         }
 
         searchEmojis();
     }, [queryString]);
 
-    const onEmojiSelect = React.useCallback((selectedOption, nodeToRemove, closeMenu) => {
+    const onEmojiSelect = React.useCallback((selectedOption: Emoji, nodeToRemove: {remove: () => void} | null, closeMenu: () => void) => {
         editor.update(() => {
             const selection = $getSelection();
 
@@ -148,7 +163,7 @@ export function EmojiPickerPlugin() {
 
     // close menu on escape
     React.useEffect(() => {
-        const handleKeyDown = (event) => {
+        const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 setSearchResults(null);
             }
@@ -158,7 +173,11 @@ export function EmojiPickerPlugin() {
     });
 
     function getPositionStyles() {
-        const selectedRange = window.getSelection().getRangeAt(0);
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) {
+            return {marginTop: '0px'};
+        }
+        const selectedRange = selection.getRangeAt(0);
         const rangeRect = selectedRange.getBoundingClientRect();
 
         return {
@@ -200,7 +219,7 @@ export function EmojiPickerPlugin() {
                     </Portal>
                 );
             }}
-            options={searchResults}
+            options={searchResults ?? []}
             triggerFn={checkForTriggerMatch}
             onQueryChange={setQueryString}
             onSelectOption={onEmojiSelect}

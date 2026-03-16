@@ -1,40 +1,45 @@
-import KoenigComposerContext from '../../context/KoenigComposerContext.jsx';
+import KoenigComposerContext from '../../context/KoenigComposerContext';
 import React from 'react';
 import {$createNodeSelection, $getSelection} from 'lexical';
 import {$generateJSONFromSelectedNodes} from '@lexical/clipboard';
-import {SELECT_CARD_COMMAND} from '../../plugins/KoenigBehaviourPlugin.jsx';
+import {SELECT_CARD_COMMAND} from '../../plugins/KoenigBehaviourPlugin';
 import {SnippetInput} from './SnippetInput';
-import {useKoenigSelectedCardContext} from '../../context/KoenigSelectedCardContext.jsx';
+import {useKoenigSelectedCardContext} from '../../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export function SnippetActionToolbar({onClose, ...props}) {
+interface SnippetActionToolbarProps {
+    onClose?: () => void;
+    [key: string]: unknown;
+}
+
+export function SnippetActionToolbar({onClose, ...props}: SnippetActionToolbarProps) {
     const {cardConfig: {snippets, createSnippet}, darkMode} = React.useContext(KoenigComposerContext);
     const [editor] = useLexicalComposerContext();
     const {selectedCardKey} = useKoenigSelectedCardContext();
     const [value, setValue] = React.useState('');
 
-    const handleChange = (event) => {
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setValue(event.target.value);
     };
 
-    const handleSnippetCreation = (snippetName) => {
+    const handleSnippetCreation = (snippetName: string) => {
         editor.update(() => {
             if (selectedCardKey) {
                 const nodeSelection = $createNodeSelection();
                 nodeSelection.add(selectedCardKey);
 
                 const nodeJson = $generateJSONFromSelectedNodes(editor, nodeSelection);
-                createSnippet({name: snippetName, value: JSON.stringify(nodeJson)});
+                createSnippet?.({name: snippetName, value: JSON.stringify(nodeJson)});
                 editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey: selectedCardKey});
             } else {
                 const selection = $getSelection();
 
                 const nodeJson = $generateJSONFromSelectedNodes(editor, selection);
-                createSnippet({name: snippetName, value: JSON.stringify(nodeJson)});
+                createSnippet?.({name: snippetName, value: JSON.stringify(nodeJson)});
             }
 
             onClose?.();
-            editor.getRootElement().focus(); // don't force focus to be handled in each implementation
+            editor.getRootElement()?.focus();
         });
     };
 
@@ -44,9 +49,9 @@ export function SnippetActionToolbar({onClose, ...props}) {
             snippets={snippets}
             value={value}
             onChange={handleChange}
-            onClose={onClose}
+            onClose={onClose ?? (() => {})}
             onCreateSnippet={() => handleSnippetCreation(value)}
-            onUpdateSnippet={name => handleSnippetCreation(name)}
+            onUpdateSnippet={(name: string) => handleSnippetCreation(name)}
             {...props}
         />
     );

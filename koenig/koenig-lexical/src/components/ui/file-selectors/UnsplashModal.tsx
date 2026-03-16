@@ -1,11 +1,17 @@
 import Portal from '../Portal';
-import {UnsplashSearchModal} from '@tryghost/kg-unsplash-selector'; 
+import {UnsplashSearchModal} from '@tryghost/kg-unsplash-selector';
 
-const UnsplashModal = ({unsplashConf, onImageInsert, onClose}) => {
+interface UnsplashModalProps {
+    unsplashConf: unknown;
+    onImageInsert: (image: unknown) => void;
+    onClose: () => void;
+}
+
+const UnsplashModal = ({unsplashConf, onImageInsert, onClose}: UnsplashModalProps) => {
     return (
         <Portal>
             <UnsplashSearchModal
-                unsplashProviderConfig={unsplashConf}
+                unsplashProviderConfig={unsplashConf as Parameters<typeof UnsplashSearchModal>[0]['unsplashProviderConfig']}
                 onClose={onClose}
                 onImageInsert={onImageInsert}
             />

@@ -4,6 +4,7 @@ import {COMMAND_PRIORITY_LOW} from 'lexical';
 import {INSERT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {HeaderNodeData} from '../nodes/HeaderNode';
 
 export const HeaderPlugin = () => {
     const [editor] = useLexicalComposerContext();
@@ -16,7 +17,7 @@ export const HeaderPlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_HEADER_COMMAND,
-                async (dataset) => {
+                (dataset: HeaderNodeData) => {
                     const cardNode = $createHeaderNode(dataset);
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode, openInEditMode: true});
 

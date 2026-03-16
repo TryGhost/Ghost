@@ -1,21 +1,47 @@
 import {useRef} from 'react';
 
-export default function useMarkdownImageUploader(editor, imageUploader) {
-    const imageInputRef = useRef(null);
+interface UploadResult {
+    fileName?: string;
+    url: string;
+    credit?: string;
+}
+
+interface ImageUploaderResult {
+    progress: number;
+    upload: (files: FileList) => Promise<(string | UploadResult)[]>;
+    errors: {message: string}[];
+    isLoading: boolean;
+    filesNumber: number;
+}
+
+interface SimpleMDEEditorRef {
+    current: {
+        codemirror: {
+            focus: () => void;
+            replaceSelection: (text: string, position: string) => void;
+        };
+    } | null;
+}
+
+export default function useMarkdownImageUploader(editor: SimpleMDEEditorRef, imageUploader: (type: string) => ImageUploaderResult) {
+    const imageInputRef = useRef<HTMLInputElement>(null);
     const {progress, upload, errors, isLoading, filesNumber} = imageUploader('image');
 
-    const uploadImages = async (event) => {
+    const uploadImages = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
+        if (!files) {
+            return;
+        }
         const filesSrc = await upload(files);
         insertImages(filesSrc);
     };
 
     function openImageUploadDialog() {
-        imageInputRef.current.click();
+        imageInputRef.current?.click();
     }
 
-    function insertUnsplashImage({src, alt, caption}) {
-        let image = {
+    function insertUnsplashImage({src, alt, caption}: {src: string; alt?: string; caption: string}) {
+        const image = {
             alt,
             url: src,
             credit: `<small>${caption}</small>`
@@ -24,14 +50,14 @@ export default function useMarkdownImageUploader(editor, imageUploader) {
         insertImages([image]);
     }
 
-    function insertImages(urls = []) {
-        const codemirror = editor.current.codemirror;
+    function insertImages(urls: (string | UploadResult)[] = []) {
+        const codemirror = editor.current!.codemirror;
 
         // loop through urls and generate image markdown
-        let images = urls.map((url) => {
+        const images = urls.map((url) => {
             // plain url string, so extract filename from path
             if (typeof url === 'string') {
-                let filename = url.split('/').pop();
+                const filename = url.split('/').pop() || '';
                 let alt = filename;
 
                 // if we have a normal filename.ext, set alt to filename -ext
@@ -52,9 +78,9 @@ export default function useMarkdownImageUploader(editor, imageUploader) {
                 return image;
             }
         });
-        let text = images.join('\n\n');
+        const text = images.join('\n\n');
 
-        editor.current.codemirror.focus();
+        editor.current!.codemirror.focus();
 
         // insert at cursor or replace selection then position cursor at end
         // of inserted text
