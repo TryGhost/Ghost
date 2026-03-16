@@ -4,8 +4,8 @@ import type {Page} from '@playwright/test';
 
 /**
  * Types a slash command into the Koenig editor and waits for the slash menu
- * to appear before continuing. This prevents race conditions in CI where
- * pressing Enter before the menu renders inserts a newline instead of
+ * to appear before continuing. This prevents race conditions where
+ * pressing Enter before the menu renders can insert a newline instead of
  * selecting the menu item.
  */
 async function openSlashMenu(page: Page, command: string) {
