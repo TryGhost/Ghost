@@ -35,8 +35,9 @@ const Comments: React.FC = () => {
 
     const {knownPosts, knownMembers} = useKnownFilterValues({comments: data?.comments ?? []});
 
-    // If we are fetching comments, but not fetching the next page and not refetching, we should show the loading indicator
-    const shouldShowLoading = isFetching && !isFetchingNextPage && !isRefetching;
+    // Keep showing the spinner while refetching into or out of an empty result set.
+    const shouldShowLoading = isFetching && !isFetchingNextPage && (!isRefetching || !(data?.comments.length));
+    const hasFilters = filters.length > 0;
 
     return (
         <CommentsLayout>
@@ -69,11 +70,20 @@ const Comments: React.FC = () => {
                     </div>
                 ) : !data?.comments.length ? (
                     <div className="flex h-full items-center justify-center">
-                        <EmptyIndicator
-                            title="No comments yet"
-                        >
-                            <LucideIcon.MessageSquare />
-                        </EmptyIndicator>
+                        {hasFilters ? (
+                            <div className="flex flex-col items-center">
+                                <EmptyIndicator title="No comments match the current filter">
+                                    <LucideIcon.MessageSquare />
+                                </EmptyIndicator>
+                                <Button className="mt-4" variant="outline" onClick={() => clearFilters({replace: false})}>
+                                    Show all comments
+                                </Button>
+                            </div>
+                        ) : (
+                            <EmptyIndicator title="No comments yet">
+                                <LucideIcon.MessageSquare />
+                            </EmptyIndicator>
+                        )}
                     </div>
                 ) : (
                     <>
