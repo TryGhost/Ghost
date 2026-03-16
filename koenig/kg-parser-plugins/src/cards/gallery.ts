@@ -1,59 +1,59 @@
-import {addFigCaptionToPayload, readImageAttributesFromNode} from '../helpers';
+import type {Builder, ParserPlugin, ParserPluginOptions, PluginOptions} from '../types.js';
+import {addFigCaptionToPayload, readImageAttributesFromNode} from '../helpers.js';
 
-function readGalleryImageAttributesFromNode(node, imgNum) {
+function readGalleryImageAttributesFromNode(node: HTMLImageElement, imgNum: number): Record<string, unknown> {
     const image = readImageAttributesFromNode(node);
-
-    image.fileName = node.src.match(/[^/]*$/)[0];
+    const match = node.src.match(/[^/]*$/);
+    image.fileName = match ? match[0] : '';
     image.row = Math.floor(imgNum / 3);
-
     return image;
 }
 
-export function fromKoenigCard(options) {
-    return function kgGalleryCardToCard(node, builder, {addSection, nodeFinished}) {
-        if (node.nodeType !== 1 || node.tagName !== 'FIGURE') {
+export function fromKoenigCard(options: ParserPluginOptions): ParserPlugin {
+    return function kgGalleryCardToCard(node: Node, builder: Builder, {addSection, nodeFinished}: PluginOptions) {
+        if (node.nodeType !== 1 || (node as Element).tagName !== 'FIGURE') {
             return;
         }
 
-        if (!node.className.match(/kg-gallery-card/)) {
+        const el = node as Element;
+        if (!el.className.match(/kg-gallery-card/)) {
             return;
         }
 
-        let payload = {};
-        let imgs = Array.from(node.querySelectorAll('img'));
+        const payload: Record<string, unknown> = {};
+        const imgs = Array.from(el.querySelectorAll('img')) as HTMLImageElement[];
 
         // Process nodes into the payload
         payload.images = imgs.map(readGalleryImageAttributesFromNode);
+        addFigCaptionToPayload(el, payload, {options});
 
-        addFigCaptionToPayload(node, payload, {options});
-
-        let cardSection = builder.createCardSection('gallery', payload);
+        const cardSection = builder.createCardSection('gallery', payload);
         addSection(cardSection);
         nodeFinished();
     };
 }
 
-export function fromGrafGallery(options) {
-    return function grafGalleryToCard(node, builder, {addSection, nodeFinished}) {
-        function isGrafGallery(n) {
-            return n.nodeType === 1 && n.tagName === 'DIV' && n.dataset && n.dataset.paragraphCount && n.querySelectorAll('img').length > 0;
+export function fromGrafGallery(options: ParserPluginOptions): ParserPlugin {
+    return function grafGalleryToCard(node: Node, builder: Builder, {addSection, nodeFinished}: PluginOptions) {
+        function isGrafGallery(n: Node | null): n is HTMLElement {
+            return !!n && n.nodeType === 1 && (n as Element).tagName === 'DIV' && !!(n as HTMLElement).dataset && !!(n as HTMLElement).dataset.paragraphCount && (n as Element).querySelectorAll('img').length > 0;
         }
 
         if (!isGrafGallery(node)) {
             return;
         }
 
-        let payload = {};
+        const payload: Record<string, unknown> = {};
 
         // These galleries exist in multiple divs. Read the images and caption from the first one...
-        let imgs = Array.from(node.querySelectorAll('img'));
+        let imgs = Array.from(node.querySelectorAll('img')) as HTMLImageElement[];
         addFigCaptionToPayload(node, payload, {options});
 
         // ...and then iterate over any remaining divs until we run out of matches
         let nextNode = node.nextSibling;
         while (nextNode && isGrafGallery(nextNode)) {
-            let currentNode = nextNode;
-            imgs = imgs.concat(Array.from(currentNode.querySelectorAll('img')));
+            const currentNode = nextNode;
+            imgs = imgs.concat(Array.from(currentNode.querySelectorAll('img')) as HTMLImageElement[]);
             addFigCaptionToPayload(currentNode, payload, {options});
             nextNode = currentNode.nextSibling;
             // remove nodes as we go so that they don't go through the parser
@@ -63,45 +63,44 @@ export function fromGrafGallery(options) {
         // Process nodes into the payload
         payload.images = imgs.map(readGalleryImageAttributesFromNode);
 
-        let cardSection = builder.createCardSection('gallery', payload);
+        const cardSection = builder.createCardSection('gallery', payload);
         addSection(cardSection);
         nodeFinished();
     };
 }
 
-export function fromSqsGallery(options) {
-    return function sqsGalleriesToCard(node, builder, {addSection, nodeFinished}) {
-        if (node.nodeType !== 1 || node.tagName !== 'DIV' || !node.className.match(/sqs-gallery-container/) || node.className.match(/summary-/)) {
+export function fromSqsGallery(options: ParserPluginOptions): ParserPlugin {
+    return function sqsGalleriesToCard(node: Node, builder: Builder, {addSection, nodeFinished}: PluginOptions) {
+        if (node.nodeType !== 1 || (node as Element).tagName !== 'DIV' || !(node as Element).className.match(/sqs-gallery-container/) || (node as Element).className.match(/summary-/)) {
             return;
         }
 
-        let payload = {};
+        const el = node as Element;
+        const payload: Record<string, unknown> = {};
 
         // Each image exists twice...
         // The first image is wrapped in `<noscript>`
         // The second image contains image dimensions but the src property needs to be taken from `data-src`.
-        let imgs = Array.from(node.querySelectorAll('img.thumb-image'));
-
-        imgs = imgs.map((img) => {
+        let imgs = Array.from(el.querySelectorAll('img.thumb-image')) as HTMLImageElement[];
+        imgs = imgs.map((img: HTMLImageElement) => {
             if (!img.getAttribute('src')) {
-                if (img.previousSibling.tagName === 'NOSCRIPT' && img.previousSibling.getElementsByTagName('img').length) {
-                    const prevNode = img.previousSibling;
-                    img.setAttribute('src', img.getAttribute('data-src'));
-                    prevNode.remove();
+                const prevSibling = img.previousSibling as Element | null;
+                if (prevSibling && prevSibling.tagName === 'NOSCRIPT' && prevSibling.getElementsByTagName('img').length) {
+                    img.setAttribute('src', img.getAttribute('data-src')!);
+                    prevSibling.remove();
                 } else {
-                    return undefined;
+                    return undefined as unknown as HTMLImageElement;
                 }
             }
-
             return img;
         });
 
-        addFigCaptionToPayload(node, payload, {options, selector: '.meta-title'});
+        addFigCaptionToPayload(el, payload, {options, selector: '.meta-title'});
 
         // Process nodes into the payload
         payload.images = imgs.map(readGalleryImageAttributesFromNode);
 
-        let cardSection = builder.createCardSection('gallery', payload);
+        const cardSection = builder.createCardSection('gallery', payload);
         addSection(cardSection);
         nodeFinished();
     };

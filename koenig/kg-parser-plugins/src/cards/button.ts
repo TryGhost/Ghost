@@ -1,20 +1,26 @@
-function getButtonText(node) {
+import type {Builder, ParserPlugin, PluginOptions} from '../types.js';
+
+function getButtonText(node: Element): string {
     let buttonText = node.textContent;
     if (buttonText) {
         buttonText = buttonText.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
     }
-    return buttonText;
+    return buttonText || '';
 }
 
-export function fromKoenigCard() {
-    return function kgButtonCardToCard(node, builder, {addSection, nodeFinished}) {
-        if (node.nodeType !== 1 || !node.classList.contains('kg-button-card')) {
+export function fromKoenigCard(): ParserPlugin {
+    return function kgButtonCardToCard(node: Node, builder: Builder, {addSection, nodeFinished}: PluginOptions) {
+        if (node.nodeType !== 1 || !(node as Element).classList.contains('kg-button-card')) {
             return;
         }
 
-        const alignment = node.classList.contains('kg-align-center') ? 'center' : 'left';
+        const el = node as Element;
+        const alignment = el.classList.contains('kg-align-center') ? 'center' : 'left';
+        const anchor = el.querySelector('a') as HTMLAnchorElement | null;
 
-        const anchor = node.querySelector('a');
+        if (!anchor) {
+            return;
+        }
 
         const buttonUrl = anchor.href;
         const buttonText = getButtonText(anchor);
@@ -35,22 +41,22 @@ export function fromKoenigCard() {
     };
 }
 
-export function fromWordpressButton() {
-    return function wordpressButtonToCard(node, builder, {addSection, nodeFinished}) {
-        if (node.nodeType !== 1 || !node.classList.contains('wp-block-button__link')) {
+export function fromWordpressButton(): ParserPlugin {
+    return function wordpressButtonToCard(node: Node, builder: Builder, {addSection, nodeFinished}: PluginOptions) {
+        if (node.nodeType !== 1 || !(node as Element).classList.contains('wp-block-button__link')) {
             return;
         }
 
-        const buttonUrl = node.href;
-        const buttonText = getButtonText(node);
+        const el = node as HTMLAnchorElement;
+        const buttonUrl = el.href;
+        const buttonText = getButtonText(el);
 
         if (!buttonUrl || !buttonText) {
             return;
         }
 
         let alignment = 'left';
-
-        if (node.closest('.is-content-justification-center, .is-content-justification-right')) {
+        if (el.closest('.is-content-justification-center, .is-content-justification-right')) {
             alignment = 'center';
         }
 
@@ -66,16 +72,17 @@ export function fromWordpressButton() {
     };
 }
 
-export function fromSubstackButton() {
-    return function substackButtonToCard(node, builder, {addSection, nodeFinished}) {
-        if (node.nodeType !== 1 || !node.classList.contains('button')) {
+export function fromSubstackButton(): ParserPlugin {
+    return function substackButtonToCard(node: Node, builder: Builder, {addSection, nodeFinished}: PluginOptions) {
+        if (node.nodeType !== 1 || !(node as Element).classList.contains('button')) {
             return;
         }
 
         // substack has .button-wrapper elems with a data-attrs JSON object with `url` and `text`
         // we're not using that in favour of grabbing the anchor element directly for simplicity
 
-        const anchor = node.tagName === 'A' ? node : node.querySelector('a');
+        const el = node as Element;
+        const anchor = (el.tagName === 'A' ? el : el.querySelector('a')) as HTMLAnchorElement | null;
 
         if (!anchor) {
             return;

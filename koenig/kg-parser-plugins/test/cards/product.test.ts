@@ -1,13 +1,11 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('../utils');
+import '../utils/index.js';
 
-const {JSDOM} = require('jsdom');
-const {createParserPlugins} = require('../../cjs/parser-plugins');
-const PostNodeBuilder = require('@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/models/post-node-builder').default;
-const DOMParser = require('@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/parsers/dom').default;
+import {JSDOM} from 'jsdom';
+import {createParserPlugins} from '../../src/index.js';
+import PostNodeBuilder from '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/models/post-node-builder';
+import DOMParser from '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/parsers/dom';
 
-const buildDOM = function (html) {
+const buildDOM = function (html: string) {
     // the <body> wrapper is needed to retain the first comment if `html` starts
     // with one, this matches general DOM Parsing behaviour so we should always
     // be careful to wrap content any time we're converting fragments
@@ -15,24 +13,24 @@ const buildDOM = function (html) {
 };
 
 describe.skip('parser-plugins: product card', function () {
-    let builder; let parser; let plugins;
+    let builder: unknown, parser: MobiledocParser, plugins: unknown;
 
     before(function () {
         plugins = createParserPlugins({
-            createDocument(html) {
+            createDocument(html: string) {
                 return (new JSDOM(html)).window.document;
             }
         });
     });
 
     beforeEach(function () {
-        builder = new PostNodeBuilder();
-        parser = new DOMParser(builder, {plugins});
+        builder = new PostNodeBuilder.default();
+        parser = new DOMParser.default(builder, {plugins});
     });
 
     afterEach(function () {
         builder = null;
-        parser = null;
+        parser = null as unknown as typeof parser;
     });
 
     describe('kgProductCardToCard', function () {

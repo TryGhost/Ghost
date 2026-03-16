@@ -1,28 +1,29 @@
-import {addFigCaptionToPayload, readImageAttributesFromNode} from '../helpers';
+import type {Builder, ParserPlugin, ParserPluginOptions, PluginOptions} from '../types.js';
+import {addFigCaptionToPayload, readImageAttributesFromNode} from '../helpers.js';
 
-export function fromImg() {
-    return function imgToCard(node, builder, {addSection, nodeFinished}) {
-        if (node.nodeType !== 1 || node.tagName !== 'IMG') {
+export function fromImg(): ParserPlugin {
+    return function imgToCard(node: Node, builder: Builder, {addSection, nodeFinished}: PluginOptions) {
+        if (node.nodeType !== 1 || (node as Element).tagName !== 'IMG') {
             return;
         }
 
-        const payload = readImageAttributesFromNode(node);
-
+        const payload = readImageAttributesFromNode(node as HTMLImageElement);
         const cardSection = builder.createCardSection('image', payload);
         addSection(cardSection);
         nodeFinished();
     };
 }
 
-export function fromFigure(options) {
-    return function figureImgToCard(node, builder, {addSection, nodeFinished}) {
-        if (node.nodeType !== 1 || node.tagName !== 'FIGURE') {
+export function fromFigure(options: ParserPluginOptions): ParserPlugin {
+    return function figureImgToCard(node: Node, builder: Builder, {addSection, nodeFinished}: PluginOptions) {
+        if (node.nodeType !== 1 || (node as Element).tagName !== 'FIGURE') {
             return;
         }
 
-        const img = node.querySelector('img');
-        const kgClass = node.className.match(/kg-width-(wide|full)/);
-        const grafClass = node.className.match(/graf--layout(FillWidth|OutsetCenter)/);
+        const el = node as Element;
+        const img = el.querySelector('img') as HTMLImageElement | null;
+        const kgClass = el.className.match(/kg-width-(wide|full)/);
+        const grafClass = el.className.match(/graf--layout(FillWidth|OutsetCenter)/);
 
         if (!img) {
             return;
@@ -36,9 +37,9 @@ export function fromFigure(options) {
             payload.cardWidth = grafClass[1] === 'FillWidth' ? 'full' : 'wide';
         }
 
-        addFigCaptionToPayload(node, payload, {options});
+        addFigCaptionToPayload(el, payload, {options});
 
-        let cardSection = builder.createCardSection('image', payload);
+        const cardSection = builder.createCardSection('image', payload);
         addSection(cardSection);
         nodeFinished();
     };

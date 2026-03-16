@@ -1,0 +1,2 @@
+node-option:
+  - import=tsx/esm

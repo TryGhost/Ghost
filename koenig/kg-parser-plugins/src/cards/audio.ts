@@ -1,13 +1,16 @@
-export function fromKoenigCard() {
-    return function kgAudioCardToCard(node, builder, {addSection, nodeFinished}) {
-        if (node.nodeType !== 1 || !node.classList.contains('kg-audio-card')) {
+import type {Builder, ParserPlugin, PluginOptions} from '../types.js';
+
+export function fromKoenigCard(): ParserPlugin {
+    return function kgAudioCardToCard(node: Node, builder: Builder, {addSection, nodeFinished}: PluginOptions) {
+        if (node.nodeType !== 1 || !(node as Element).classList.contains('kg-audio-card')) {
             return;
         }
 
-        const titleNode = node.querySelector('.kg-audio-title');
-        const audioNode = node.querySelector('.kg-audio-player-container audio');
-        const thumbnailNode = node.querySelector('.kg-audio-thumbnail');
-        const durationNode = node.querySelector('.kg-audio-duration');
+        const el = node as Element;
+        const titleNode = el.querySelector('.kg-audio-title');
+        const audioNode = el.querySelector('.kg-audio-player-container audio') as HTMLAudioElement | null;
+        const thumbnailNode = el.querySelector('.kg-audio-thumbnail') as HTMLImageElement | null;
+        const durationNode = el.querySelector('.kg-audio-duration');
         const title = titleNode && titleNode.innerHTML.trim();
         const audioSrc = audioNode && audioNode.src;
         const thumbnailSrc = thumbnailNode && thumbnailNode.src;
@@ -17,7 +20,7 @@ export function fromKoenigCard() {
             return;
         }
 
-        const payload = {
+        const payload: Record<string, unknown> = {
             src: audioSrc,
             title: title
         };
@@ -26,10 +29,10 @@ export function fromKoenigCard() {
         }
 
         if (durationText) {
-            const {minutes, seconds} = durationText.split(':');
+            const [minutes, seconds] = durationText.split(':');
             try {
                 payload.duration = parseInt(minutes) * 60 + parseInt(seconds);
-            } catch (e) {
+            } catch {
                 // ignore duration
             }
         }

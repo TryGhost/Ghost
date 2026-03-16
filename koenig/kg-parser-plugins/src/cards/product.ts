@@ -1,19 +1,23 @@
-function getButtonText(node) {
+import type {Builder, ParserPlugin, PluginOptions} from '../types.js';
+
+function getButtonText(node: Element): string {
     let buttonText = node.textContent;
     if (buttonText) {
         buttonText = buttonText.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
     }
-    return buttonText;
+    return buttonText || '';
 }
 
-export function fromKoenigCard() {
-    return function kgButtonCardToCard(node, builder, {addSection, nodeFinished}) {
-        if (node.nodeType !== 1 || !node.classList.contains('kg-product-card')) {
+export function fromKoenigCard(): ParserPlugin {
+    return function kgButtonCardToCard(node: Node, builder: Builder, {addSection, nodeFinished}: PluginOptions) {
+        if (node.nodeType !== 1 || !(node as Element).classList.contains('kg-product-card')) {
             return;
         }
 
-        const titleNode = node.querySelector('.kg-product-card-title');
-        const descriptionNode = node.querySelector('.kg-product-card-description');
+        const el = node as Element;
+        const titleNode = el.querySelector('.kg-product-card-title');
+        const descriptionNode = el.querySelector('.kg-product-card-description');
+
         const title = titleNode && titleNode.innerHTML.trim();
         const description = descriptionNode && descriptionNode.innerHTML.trim();
 
@@ -21,27 +25,25 @@ export function fromKoenigCard() {
             return;
         }
 
-        const payload = {
+        const payload: Record<string, unknown> = {
             productButtonEnabled: false,
             productRatingEnabled: false,
-
             productTitle: title,
             productDescription: description
         };
 
-        const img = node.querySelector('.kg-product-card-image');
+        const img = el.querySelector('.kg-product-card-image');
         if (img && img.getAttribute('src')) {
             payload.productImageSrc = img.getAttribute('src');
         }
 
-        const stars = [...node.querySelectorAll('.kg-product-card-rating-active')].length;
+        const stars = [...el.querySelectorAll('.kg-product-card-rating-active')].length;
         if (stars) {
             payload.productRatingEnabled = true;
             payload.productStarRating = stars;
         }
 
-        const button = node.querySelector('a');
-
+        const button = el.querySelector('a') as HTMLAnchorElement | null;
         if (button) {
             const buttonUrl = button.href;
             const buttonText = getButtonText(button);

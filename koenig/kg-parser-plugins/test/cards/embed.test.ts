@@ -1,13 +1,11 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('../utils');
+import '../utils/index.js';
 
-const {JSDOM} = require('jsdom');
-const {createParserPlugins} = require('../../');
-const PostNodeBuilder = require('@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/models/post-node-builder').default;
-const DOMParser = require('@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/parsers/dom').default;
+import {JSDOM} from 'jsdom';
+import {createParserPlugins} from '../../src/index.js';
+import PostNodeBuilder from '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/models/post-node-builder';
+import DOMParser from '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/parsers/dom';
 
-const buildDOM = function (html) {
+const buildDOM = function (html: string) {
     // the <body> wrapper is needed to retain the first comment if `html` starts
     // with one, this matches general DOM Parsing behaviour so we should always
     // be careful to wrap content any time we're converting fragments
@@ -15,24 +13,24 @@ const buildDOM = function (html) {
 };
 
 describe('parser-plugins: embed card', function () {
-    let builder; let parser; let plugins;
+    let builder: unknown, parser: MobiledocParser, plugins: unknown;
 
     before(function () {
         plugins = createParserPlugins({
-            createDocument(html) {
+            createDocument(html: string) {
                 return (new JSDOM(html)).window.document;
             }
         });
     });
 
     beforeEach(function () {
-        builder = new PostNodeBuilder();
-        parser = new DOMParser(builder, {plugins});
+        builder = new PostNodeBuilder.default();
+        parser = new DOMParser.default(builder, {plugins});
     });
 
     afterEach(function () {
         builder = null;
-        parser = null;
+        parser = null as unknown as typeof parser;
     });
 
     describe('figureIframeToEmbed', function () {
@@ -202,7 +200,7 @@ describe('parser-plugins: embed card', function () {
             section.payload.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
             section.payload.metadata.should.be.an.Object().with.properties('url', 'title', 'description', 'publisher', 'thumbnail');
 
-            let metadata = section.payload.metadata;
+            const metadata = section.payload.metadata;
             metadata.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
             metadata.title.should.eql('TypeScript at Slack');
             metadata.description.should.eql('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
@@ -220,7 +218,7 @@ describe('parser-plugins: embed card', function () {
             section.payload.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
             section.payload.metadata.should.be.an.Object().with.properties('url', 'title', 'description', 'publisher', 'thumbnail');
 
-            let metadata = section.payload.metadata;
+            const metadata = section.payload.metadata;
             metadata.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
             metadata.title.should.eql('');
             metadata.description.should.eql('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
@@ -238,7 +236,7 @@ describe('parser-plugins: embed card', function () {
             section.payload.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
             section.payload.metadata.should.be.an.Object().with.properties('url', 'title', 'description', 'publisher', 'thumbnail');
 
-            let metadata = section.payload.metadata;
+            const metadata = section.payload.metadata;
             metadata.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
             metadata.title.should.eql('TypeScript at Slack');
             metadata.description.should.eql('');
@@ -256,7 +254,7 @@ describe('parser-plugins: embed card', function () {
             section.payload.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
             section.payload.metadata.should.be.an.Object().with.properties('url', 'title', 'description', 'thumbnail');
 
-            let metadata = section.payload.metadata;
+            const metadata = section.payload.metadata;
             metadata.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
             metadata.title.should.eql('TypeScript at Slack');
             metadata.description.should.eql('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
@@ -273,7 +271,7 @@ describe('parser-plugins: embed card', function () {
             section.payload.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
             section.payload.metadata.should.be.an.Object().with.properties('url', 'title', 'description', 'thumbnail');
 
-            let metadata = section.payload.metadata;
+            const metadata = section.payload.metadata;
             metadata.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
             metadata.title.should.eql('TypeScript at Slack');
             metadata.description.should.eql('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
