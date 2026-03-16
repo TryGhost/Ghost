@@ -68,7 +68,7 @@
     "nwsapi": "2.2.12"
   },
   "lint-staged": {
-    "*.{js,ts,tsx,jsx,cjs}": "eslint"
+    "**/*.{js,ts,tsx,jsx,cjs,mjs}": "node .github/scripts/lint-staged-router.cjs"
   },
   "devDependencies": {
     "@actions/core": "1.11.1",
