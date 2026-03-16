@@ -15,12 +15,8 @@ const addHeadTag = ({tagName, attrs = {}}) => {
     return element;
 };
 
-const setup = ({pageData} = {}) => {
-    return render(<ShareModal />, {
-        overrideContext: {
-            pageData: pageData || {}
-        }
-    });
+const setup = () => {
+    return render(<ShareModal />);
 };
 
 describe('ShareModal', () => {
@@ -34,18 +30,58 @@ describe('ShareModal', () => {
         vi.useRealTimers();
     });
 
-    test('renders share actions and uses pageData for social links', () => {
-        const pageData = {
-            url: 'https://example.com/post?ref=test',
-            title: 'Example post title',
-            image: 'https://example.com/post.jpg',
-            excerpt: 'Example post excerpt',
-            favicon: 'https://example.com/favicon.png',
-            siteName: 'Example site',
-            author: 'Jane Doe'
-        };
+    test('renders share actions and uses DOM metadata for social links', () => {
+        addHeadTag({
+            tagName: 'link',
+            attrs: {
+                rel: 'canonical',
+                href: 'https://example.com/post?ref=test'
+            }
+        });
+        addHeadTag({
+            tagName: 'meta',
+            attrs: {
+                property: 'og:title',
+                content: 'Example post title'
+            }
+        });
+        addHeadTag({
+            tagName: 'meta',
+            attrs: {
+                property: 'og:description',
+                content: 'Example post excerpt'
+            }
+        });
+        addHeadTag({
+            tagName: 'meta',
+            attrs: {
+                property: 'og:image',
+                content: 'https://example.com/post.jpg'
+            }
+        });
+        addHeadTag({
+            tagName: 'meta',
+            attrs: {
+                property: 'og:site_name',
+                content: 'Example site'
+            }
+        });
+        addHeadTag({
+            tagName: 'meta',
+            attrs: {
+                name: 'author',
+                content: 'Jane Doe'
+            }
+        });
+        addHeadTag({
+            tagName: 'link',
+            attrs: {
+                rel: 'icon',
+                href: 'https://example.com/favicon.png'
+            }
+        });
 
-        const {getByRole, getByText, queryByText, getByTestId} = setup({pageData});
+        const {getByRole, getByText, queryByText, getByTestId} = setup();
 
         expect(getByText('Share')).toBeInTheDocument();
         expect(queryByText('Share this post')).not.toBeInTheDocument();
@@ -67,87 +103,20 @@ describe('ShareModal', () => {
         const linkedInUrl = new URL(linkedInLink.getAttribute('href'));
 
         expect(twitterUrl.origin + twitterUrl.pathname).toBe('https://twitter.com/intent/tweet');
-        expect(twitterUrl.searchParams.get('url')).toBe(pageData.url);
-        expect(twitterUrl.searchParams.get('text')).toBe(pageData.title);
+        expect(twitterUrl.searchParams.get('url')).toBe('https://example.com/post?ref=test');
+        expect(twitterUrl.searchParams.get('text')).toBe('Example post title');
 
         expect(threadsUrl.origin + threadsUrl.pathname).toBe('https://www.threads.net/intent/post');
-        expect(threadsUrl.searchParams.get('text')).toBe(`${pageData.title} ${pageData.url}`);
+        expect(threadsUrl.searchParams.get('text')).toBe('Example post title https://example.com/post?ref=test');
 
         expect(facebookUrl.origin + facebookUrl.pathname).toBe('https://www.facebook.com/sharer/sharer.php');
-        expect(facebookUrl.searchParams.get('u')).toBe(pageData.url);
+        expect(facebookUrl.searchParams.get('u')).toBe('https://example.com/post?ref=test');
 
         expect(linkedInUrl.origin + linkedInUrl.pathname).toBe('https://www.linkedin.com/sharing/share-offsite/');
-        expect(linkedInUrl.searchParams.get('url')).toBe(pageData.url);
+        expect(linkedInUrl.searchParams.get('url')).toBe('https://example.com/post?ref=test');
 
         expect(twitterLink).toHaveAttribute('target', '_blank');
         expect(twitterLink).toHaveAttribute('rel', 'noopener noreferrer');
-    });
-
-    test('falls back to canonical url and og title when pageData is missing', () => {
-        addHeadTag({
-            tagName: 'link',
-            attrs: {
-                rel: 'canonical',
-                href: 'https://canonical.example/post'
-            }
-        });
-        addHeadTag({
-            tagName: 'meta',
-            attrs: {
-                property: 'og:title',
-                content: 'OG title'
-            }
-        });
-        addHeadTag({
-            tagName: 'meta',
-            attrs: {
-                property: 'og:description',
-                content: 'OG description'
-            }
-        });
-        addHeadTag({
-            tagName: 'meta',
-            attrs: {
-                property: 'og:image',
-                content: 'https://canonical.example/og-image.jpg'
-            }
-        });
-        addHeadTag({
-            tagName: 'meta',
-            attrs: {
-                property: 'og:site_name',
-                content: 'Canonical Site'
-            }
-        });
-        addHeadTag({
-            tagName: 'meta',
-            attrs: {
-                name: 'author',
-                content: 'Canonical Author'
-            }
-        });
-        addHeadTag({
-            tagName: 'link',
-            attrs: {
-                rel: 'icon',
-                href: 'https://canonical.example/favicon.ico'
-            }
-        });
-        document.title = 'Document title';
-
-        const {getByRole, getByText, getByTestId} = setup({pageData: {}});
-
-        const twitterLink = getByRole('link', {name: 'X (Twitter)'});
-        const twitterUrl = new URL(twitterLink.getAttribute('href'));
-
-        expect(twitterUrl.searchParams.get('url')).toBe('https://canonical.example/post');
-        expect(twitterUrl.searchParams.get('text')).toBe('OG title');
-        expect(getByText('OG title')).toBeInTheDocument();
-        expect(getByText('OG description')).toBeInTheDocument();
-        expect(getByTestId('share-preview-image')).toHaveAttribute('src', 'https://canonical.example/og-image.jpg');
-        expect(getByTestId('share-preview-favicon')).toHaveAttribute('src', 'https://canonical.example/favicon.ico');
-        expect(getByText('Canonical Site')).toBeInTheDocument();
-        expect(getByText('| Canonical Author')).toBeInTheDocument();
     });
 
     test('falls back to meta description when og description is missing', () => {
@@ -160,49 +129,9 @@ describe('ShareModal', () => {
         });
         document.title = 'Document fallback title';
 
-        const {getByText} = setup({pageData: {}});
+        const {getByText} = setup();
 
         expect(getByText('Meta description fallback')).toBeInTheDocument();
-    });
-
-    test('prefers pageData values over DOM metadata when both are present', () => {
-        addHeadTag({
-            tagName: 'link',
-            attrs: {
-                rel: 'canonical',
-                href: 'https://canonical.example/post'
-            }
-        });
-        addHeadTag({
-            tagName: 'meta',
-            attrs: {
-                property: 'og:title',
-                content: 'OG title'
-            }
-        });
-        addHeadTag({
-            tagName: 'meta',
-            attrs: {
-                property: 'og:image',
-                content: 'https://canonical.example/og-image.jpg'
-            }
-        });
-
-        const pageData = {
-            url: 'https://override.example/post',
-            title: 'Override title',
-            image: 'https://override.example/image.jpg'
-        };
-
-        const {getByRole, getByText, getByTestId} = setup({pageData});
-
-        const twitterLink = getByRole('link', {name: 'X (Twitter)'});
-        const twitterUrl = new URL(twitterLink.getAttribute('href'));
-
-        expect(twitterUrl.searchParams.get('url')).toBe('https://override.example/post');
-        expect(twitterUrl.searchParams.get('text')).toBe('Override title');
-        expect(getByText('Override title')).toBeInTheDocument();
-        expect(getByTestId('share-preview-image')).toHaveAttribute('src', 'https://override.example/image.jpg');
     });
 
     test('falls back to twitter image when og image is missing', () => {
@@ -213,17 +142,16 @@ describe('ShareModal', () => {
                 content: 'https://canonical.example/twitter-image.jpg'
             }
         });
-        document.title = 'Document fallback title';
 
-        const {getByTestId} = setup({pageData: {}});
+        const {getByTestId} = setup();
 
         expect(getByTestId('share-preview-image')).toHaveAttribute('src', 'https://canonical.example/twitter-image.jpg');
     });
 
-    test('falls back to window location and document title when canonical and og title are missing', () => {
+    test('falls back to window location, document title and domain when canonical metadata is missing', () => {
         document.title = 'Document fallback title';
 
-        const {getByRole, getByText, queryByTestId} = setup({pageData: {}});
+        const {getByRole, getByText, queryByTestId} = setup();
 
         const linkedInLink = getByRole('link', {name: 'LinkedIn'});
         const linkedInUrl = new URL(linkedInLink.getAttribute('href'));
@@ -235,6 +163,7 @@ describe('ShareModal', () => {
 
         expect(twitterUrl.searchParams.get('text')).toBe('Document fallback title');
         expect(getByText('Document fallback title')).toBeInTheDocument();
+        expect(getByText(window.location.hostname.replace(/^www\./, ''))).toBeInTheDocument();
         expect(queryByTestId('share-preview-image')).not.toBeInTheDocument();
     });
 
@@ -242,17 +171,13 @@ describe('ShareModal', () => {
         vi.useFakeTimers();
         copyTextToClipboard.mockResolvedValue(true);
 
-        const {getByRole} = setup({
-            pageData: {
-                url: 'https://example.com/post'
-            }
-        });
+        const {getByRole} = setup();
 
         const copyButton = getByRole('button', {name: 'Copy link'});
         fireEvent.click(copyButton);
 
         await waitFor(() => {
-            expect(copyTextToClipboard).toHaveBeenCalledWith('https://example.com/post');
+            expect(copyTextToClipboard).toHaveBeenCalledWith(window.location.href);
             expect(getByRole('button', {name: 'Copied'})).toBeInTheDocument();
         });
 

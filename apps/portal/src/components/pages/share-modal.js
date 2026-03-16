@@ -1,4 +1,3 @@
-import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
 import copyTextToClipboard from '../../utils/copy-to-clipboard';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
@@ -7,7 +6,7 @@ import {ReactComponent as LinkIcon} from '../../images/icons/share-link.svg';
 import {ReactComponent as LinkedinIcon} from '../../images/icons/share-linkedin.svg';
 import {ReactComponent as ThreadsIcon} from '../../images/icons/share-threads.svg';
 import {ReactComponent as XIcon} from '../../images/icons/share-x.svg';
-import {useContext, useEffect, useMemo, useRef, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {t} from '../../utils/i18n';
 
 export const ShareModalStyles = `
@@ -283,28 +282,28 @@ const getTwitterCreator = () => {
     return document.querySelector('meta[name="twitter:creator"]')?.content || '';
 };
 
-const getShareUrl = (pageData) => {
-    return (pageData?.url || '').trim() || getCanonicalUrl() || window.location.href;
+const getShareUrl = () => {
+    return getCanonicalUrl() || window.location.href;
 };
 
-const getShareTitle = (pageData) => {
-    return (pageData?.title || '').trim() || getOgTitle() || document.title || '';
+const getShareTitle = () => {
+    return getOgTitle() || document.title || '';
 };
 
-const getShareExcerpt = (pageData) => {
-    return (pageData?.excerpt || '').trim() || getOgDescription() || getMetaDescription() || '';
+const getShareExcerpt = () => {
+    return getOgDescription() || getMetaDescription() || '';
 };
 
-const getShareImage = (pageData) => {
-    return (pageData?.image || '').trim() || getOgImage() || getTwitterImage() || '';
+const getShareImage = () => {
+    return getOgImage() || getTwitterImage() || '';
 };
 
-const getShareFavicon = (pageData) => {
-    return (pageData?.favicon || '').trim() || getFavicon() || '';
+const getShareFavicon = () => {
+    return getFavicon() || '';
 };
 
-const getShareSiteName = ({pageData, shareUrl}) => {
-    const siteName = (pageData?.siteName || '').trim() || getOgSiteName() || getApplicationName() || '';
+const getShareSiteName = ({shareUrl}) => {
+    const siteName = getOgSiteName() || getApplicationName() || '';
     if (siteName) {
         return siteName;
     }
@@ -316,8 +315,8 @@ const getShareSiteName = ({pageData, shareUrl}) => {
     }
 };
 
-const getShareAuthor = (pageData) => {
-    return (pageData?.author || '').trim() || getMetaAuthor() || getTwitterCreator() || '';
+const getShareAuthor = () => {
+    return getMetaAuthor() || getTwitterCreator() || '';
 };
 
 const createShareLink = (baseUrl, params) => {
@@ -326,17 +325,16 @@ const createShareLink = (baseUrl, params) => {
 };
 
 const ShareModal = () => {
-    const {pageData} = useContext(AppContext);
     const [copied, setCopied] = useState(false);
     const copyTimeoutRef = useRef();
 
-    const shareUrl = useMemo(() => getShareUrl(pageData), [pageData]);
-    const shareTitle = useMemo(() => getShareTitle(pageData), [pageData]);
-    const shareExcerpt = useMemo(() => getShareExcerpt(pageData), [pageData]);
-    const shareImage = useMemo(() => getShareImage(pageData), [pageData]);
-    const shareFavicon = useMemo(() => getShareFavicon(pageData), [pageData]);
-    const shareSiteName = useMemo(() => getShareSiteName({pageData, shareUrl}), [pageData, shareUrl]);
-    const shareAuthor = useMemo(() => getShareAuthor(pageData), [pageData]);
+    const shareUrl = useMemo(() => getShareUrl(), []);
+    const shareTitle = useMemo(() => getShareTitle(), []);
+    const shareExcerpt = useMemo(() => getShareExcerpt(), []);
+    const shareImage = useMemo(() => getShareImage(), []);
+    const shareFavicon = useMemo(() => getShareFavicon(), []);
+    const shareSiteName = useMemo(() => getShareSiteName({shareUrl}), [shareUrl]);
+    const shareAuthor = useMemo(() => getShareAuthor(), []);
 
     const socialLinks = useMemo(() => {
         const threadsText = [shareTitle, shareUrl].filter(Boolean).join(' ').trim();

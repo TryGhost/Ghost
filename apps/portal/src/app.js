@@ -183,19 +183,11 @@ export default class App extends React.Component {
             event.preventDefault();
             const target = event.currentTarget;
             const pagePath = (target && target.dataset.portal);
-            const shareUrl = target && target.dataset.portalShareUrl;
-            const shareTitle = target && target.dataset.portalShareTitle;
-            const shareImage = target && target.dataset.portalShareImage;
             const linkData = this.getPageFromLinkPath(pagePath);
             if (!linkData) {
                 return;
             }
             const {page, pageQuery, pageData} = linkData;
-            const sharePageData = page === 'share' ? {
-                ...(shareUrl ? {url: shareUrl} : {}),
-                ...(shareTitle ? {title: shareTitle} : {}),
-                ...(shareImage ? {image: shareImage} : {})
-            } : pageData;
             if (this.state.initStatus === 'success') {
                 if (page === 'gift' && !hasGiftSubscriptions({site: this.state.site})) {
                     this.invalidateGiftRedemptionRequest();
@@ -222,7 +214,7 @@ export default class App extends React.Component {
                 if (pageQuery && pageQuery !== 'free') {
                     this.handleSignupQuery({site: this.state.site, pageQuery});
                 } else {
-                    this.dispatchAction('openPopup', {page, pageQuery, pageData: sharePageData});
+                    this.dispatchAction('openPopup', {page, pageQuery, pageData});
                 }
             }
         };
