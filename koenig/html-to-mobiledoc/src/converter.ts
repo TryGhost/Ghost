@@ -1,35 +1,51 @@
-const DOMParser = require('@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/parsers/dom').default;
-const Builder = require('@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/models/post-node-builder').default;
-const mobiledocRenderer = require('@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/renderers/mobiledoc').default;
-const {createParserPlugins} = require('@tryghost/kg-parser-plugins');
-const {JSDOM} = require('jsdom');
+import DOMParserModule from '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/parsers/dom';
+import BuilderModule from '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/models/post-node-builder';
+import mobiledocRendererModule from '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/renderers/mobiledoc';
+import {createParserPlugins} from '@tryghost/kg-parser-plugins';
+import {JSDOM} from 'jsdom';
 
-module.exports.toMobiledoc = (html, options = {}) => {
+// These modules may export via .default depending on the bundler/CJS interop
+const DOMParser = (DOMParserModule as {default?: typeof DOMParserModule}).default || DOMParserModule;
+const Builder = (BuilderModule as {default?: typeof BuilderModule}).default || BuilderModule;
+const mobiledocRenderer = (mobiledocRendererModule as {default?: typeof mobiledocRendererModule}).default || mobiledocRendererModule;
+
+interface ConvertOptions {
+    plugins?: unknown[];
+    [key: string]: unknown;
+}
+
+export interface Mobiledoc {
+    version: string;
+    atoms: object[];
+    cards: object[];
+    markups: object[];
+    sections: object[];
+}
+
+export function htmlToMobiledoc(html: string, options: ConvertOptions = {}): Mobiledoc {
     // 1. sanitize HTML
     // @TODO: what sanitisations are needed?
-    let sanitizedHTML = html;
+    const sanitizedHTML = html;
 
     // 2. Do something vaguely like loadPost
     // https://github.com/ErisDS/mobiledoc-kit/blob/master/src/js/editor/editor.js#L193
 
     // 2.a. Parse our HTML and convert to a DOM with same API as browser
-    let dom = new JSDOM(`<body>${sanitizedHTML}</body>`);
+    const dom = new JSDOM(`<body>${sanitizedHTML}</body>`);
 
     // 2.b. Use Mobiledoc-kit's own DOM Parser to convert the DOM into mobiledoc's internal format
     // We use our parser plugins by default, but this is extensible
     if (!options.plugins) {
         options.plugins = createParserPlugins({
-            createDocument(htmlToParse) {
+            createDocument(htmlToParse: string) {
                 return (new JSDOM(htmlToParse)).window.document;
             }
         });
     }
-    let parser = new DOMParser(new Builder(), options);
-    let post = parser.parse(dom.window.document.body);
-
+    const parser = new DOMParser(new Builder(), options);
+    const post = parser.parse(dom.window.document.body);
     // 3. Do something vaguely like serializePost, to render the mobiledoc internal format as mobiledoc
     // https://github.com/ErisDS/mobiledoc-kit/blob/master/src/js/editor/editor.js#L567
-    let mobiledoc = mobiledocRenderer.render(post, '0.3.1');
-
+    const mobiledoc = mobiledocRenderer.render(post, '0.3.1') as Mobiledoc;
     return mobiledoc;
-};
+}
