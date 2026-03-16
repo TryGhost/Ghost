@@ -62,7 +62,7 @@ export const PaywallPlugin = () => {
                 }
 
                 const selection = $getSelection();
-                if (!$isRangeSelection(selection) || !selection.type === 'text' || !selection.isCollapsed()) {
+                if (!$isRangeSelection(selection) || !selection.isCollapsed()) {
                     return;
                 }
 
@@ -73,10 +73,13 @@ export const PaywallPlugin = () => {
                 }
 
                 const nativeSelection = window.getSelection();
+                if (!nativeSelection) {
+                    return;
+                }
                 const anchorNode = nativeSelection.anchorNode;
                 const rootElement = editor.getRootElement();
 
-                if (anchorNode?.nodeType !== Node.TEXT_NODE || !rootElement.contains(anchorNode)) {
+                if (anchorNode?.nodeType !== Node.TEXT_NODE || !rootElement?.contains(anchorNode)) {
                     return;
                 }
 

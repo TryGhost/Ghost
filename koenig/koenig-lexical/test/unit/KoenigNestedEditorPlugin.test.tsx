@@ -2,8 +2,9 @@ import KoenigNestedEditorPlugin from '../../src/plugins/KoenigNestedEditorPlugin
 import {KEY_ENTER_COMMAND, createEditor} from 'lexical';
 import {act, cleanup, render} from '@testing-library/react';
 import {afterEach, describe, expect, it, vi} from 'vitest';
+import type {LexicalEditor} from 'lexical';
 
-const context = vi.hoisted(() => ({editor: null}));
+const context = vi.hoisted(() => ({editor: null as LexicalEditor | null}));
 vi.mock('@lexical/react/LexicalComposerContext.js', () => ({useLexicalComposerContext: () => [context.editor]}));
 
 describe('KoenigNestedEditorPlugin', () => {
@@ -17,7 +18,7 @@ describe('KoenigNestedEditorPlugin', () => {
         context.editor = editor;
         render(<KoenigNestedEditorPlugin defaultKoenigEnterBehaviour={defaultKoenigEnterBehaviour} />);
 
-        let handled;
+        let handled: boolean | undefined;
         act(() => {
             editor.update(() => {
                 handled = editor.dispatchCommand(KEY_ENTER_COMMAND, null);

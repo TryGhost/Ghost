@@ -3,7 +3,7 @@ import {
     $isRangeSelection,
     $isTextNode
 } from 'lexical';
-import {getSelectedNode} from '../utils/getSelectedNode.js';
+import {getSelectedNode} from '../utils/getSelectedNode';
 import {isDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {useEffect} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -28,7 +28,7 @@ export const EmEnDashPlugin = () => {
                 }
 
                 const selection = $getSelection();
-                if (!$isRangeSelection(selection) || !selection.type === 'text' || !selection.isCollapsed()) {
+                if (!$isRangeSelection(selection) || !selection.isCollapsed()) {
                     return;
                 }
 
@@ -43,10 +43,13 @@ export const EmEnDashPlugin = () => {
 
                 /// ???
                 const nativeSelection = window.getSelection();
+                if (!nativeSelection) {
+                    return;
+                }
                 const anchorNode = nativeSelection.anchorNode;
                 const rootElement = editor.getRootElement();
 
-                if (anchorNode?.nodeType !== Node.TEXT_NODE || !rootElement.contains(anchorNode)) {
+                if (anchorNode?.nodeType !== Node.TEXT_NODE || !rootElement?.contains(anchorNode)) {
                     return;
                 }
 
@@ -56,7 +59,7 @@ export const EmEnDashPlugin = () => {
 
                 const emDashMatch = text.match(emDashRegExp);
                 if (emDashMatch) {
-                    const index = emDashMatch?.index;
+                    const index = emDashMatch.index!;
                     const newText = text.slice(0,index) + '—' + text.slice(index + 3);
                     node.setTextContent(newText);
                     selection.anchor.offset = index + 2;
@@ -66,7 +69,7 @@ export const EmEnDashPlugin = () => {
 
                 const enDashMatch = text.match(enDashRegExp);
                 if (enDashMatch) {
-                    const index = enDashMatch?.index;
+                    const index = enDashMatch.index!;
                     const newText = text.slice(0,index + 1) + '–' + text.slice(index + 3);
                     node.setTextContent(newText);
                     selection.anchor.offset = index + 3;

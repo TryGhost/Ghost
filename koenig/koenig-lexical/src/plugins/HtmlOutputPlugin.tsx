@@ -4,7 +4,7 @@ import {$getRoot, $insertNodes} from 'lexical';
 import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export const HtmlOutputPlugin = ({html = '', setHtml}) => {
+export const HtmlOutputPlugin = ({html = '', setHtml}: {html?: string; setHtml: (html: string) => void}) => {
     const [editor] = useLexicalComposerContext();
     const isFirstRender = React.useRef(true);
 

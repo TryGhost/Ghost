@@ -1,17 +1,29 @@
-import PropTypes from 'prop-types';
-import {useState} from 'react';
+import React, {useState} from 'react';
 
-const TabView = ({tabs, defaultTab, defaultTabKey, tabContent}) => {
-    const [activeTab, setActiveTab] = useState(defaultTab || tabs[0].id);
+interface Tab {
+    id: string;
+    label: string;
+}
+
+interface TabViewProps {
+    tabs: Tab[];
+    defaultTab?: string;
+    // a new key re-selects `defaultTab`, even after a manual tab switch
+    defaultTabKey?: number;
+    tabContent: Record<string, React.ReactNode>;
+}
+
+const TabView = ({tabs, defaultTab, defaultTabKey, tabContent}: TabViewProps) => {
+    const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id || '');
     const [previousDefault, setPreviousDefault] = useState({tab: defaultTab, key: defaultTabKey});
 
     // A new request can select the same default again after a manual tab switch.
     if (defaultTab !== previousDefault.tab || defaultTabKey !== previousDefault.key) {
         setPreviousDefault({tab: defaultTab, key: defaultTabKey});
-        setActiveTab(defaultTab || tabs[0].id);
+        setActiveTab(defaultTab || tabs[0]?.id || '');
     }
 
-    const handleTabChange = (tabId) => {
+    const handleTabChange = (tabId: string) => {
         setActiveTab(tabId);
     };
 
@@ -41,18 +53,6 @@ const TabView = ({tabs, defaultTab, defaultTabKey, tabContent}) => {
             </div>
         </>
     );
-};
-
-TabView.propTypes = {
-    tabs: PropTypes.arrayOf(
-        PropTypes.shape({
-            id: PropTypes.string.isRequired,
-            label: PropTypes.string.isRequired
-        })
-    ).isRequired,
-    defaultTab: PropTypes.string,
-    defaultTabKey: PropTypes.number,
-    tabContent: PropTypes.objectOf(PropTypes.node).isRequired
 };
 
 export {TabView};

@@ -7,9 +7,11 @@ import {ActionToolbar} from '../../../components/ui/ActionToolbar';
 import {EDIT_CARD_COMMAND} from '../../../plugins/KoenigBehaviourPlugin';
 import {useCardVisibilitySettings} from '../../../hooks/useCardVisibilitySettings';
 import {useEditModeAfterReadOnly} from '../../../hooks/useIsDocumentEditable';
-// import {SignupCard} from '../components/ui/cards/SignupCard.jsx';
+import type {HeaderNode} from '../../HeaderNode';
+import type {LexicalEditor} from 'lexical';
+// import {SignupCard} from '../components/ui/cards/SignupCard';
 import {HeaderCard} from '../../../components/ui/cards/HeaderCard/v2/HeaderCard';
-import {SnippetActionToolbar} from '../../../components/ui/SnippetActionToolbar.jsx';
+import {SnippetActionToolbar} from '../../../components/ui/SnippetActionToolbar';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../../../components/ui/ToolbarMenu';
 import {backgroundImageUploadHandler} from '../../../utils/imageUploadHandler';
 import {getAccentColor} from '../../../utils/getAccentColor';
@@ -20,13 +22,46 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 // {name: 'style', default: 'dark'}, // v1
 // do we need these?
 
+function $getHeaderNodeByKey(nodeKey: string): HeaderNode | null {
+    return $getNodeByKey(nodeKey) as HeaderNode | null;
+}
+
 // this is v2 of the header card
+type Layout = 'regular' | 'wide' | 'full' | 'split';
+type Alignment = 'left' | 'center';
+type BackgroundSize = 'cover' | 'contain';
+
+interface HeaderNodeComponentProps {
+    alignment: Alignment;
+    backgroundColor: string;
+    backgroundImageSrc: string;
+    backgroundImageWidth: number | null;
+    backgroundImageHeight: number | null;
+    backgroundSize: BackgroundSize;
+    buttonColor: string;
+    buttonText: string;
+    buttonTextColor: string;
+    buttonUrl: string;
+    buttonEnabled: boolean;
+    nodeKey: string;
+    header: string;
+    headerTextEditor: LexicalEditor;
+    headerTextEditorInitialState: string | undefined;
+    layout: Layout;
+    subheader: string;
+    subheaderTextEditor: LexicalEditor;
+    subheaderTextEditorInitialState: string | undefined;
+    textColor: string;
+    isSwapped: boolean;
+    accentColor: string;
+}
+
 function HeaderNodeComponent({
     alignment,
     backgroundColor,
     backgroundImageSrc,
-    backgroundImageWidth,
-    backgroundImageHeight,
+    backgroundImageWidth: _backgroundImageWidth,
+    backgroundImageHeight: _backgroundImageHeight,
     backgroundSize,
     buttonColor,
     buttonText,
@@ -34,17 +69,17 @@ function HeaderNodeComponent({
     buttonUrl,
     buttonEnabled,
     nodeKey,
-    header,
+    header: _header,
     headerTextEditor,
     headerTextEditorInitialState,
     layout,
-    subheader,
+    subheader: _subheader,
     subheaderTextEditor,
     subheaderTextEditorInitialState,
     textColor,
     isSwapped,
-    accentColor
-}) {
+    accentColor: _accentColor
+}: HeaderNodeComponentProps) {
     const [editor] = useLexicalComposerContext();
     const {visibilitySettings, showVisibilitySettings} = useCardVisibilitySettings(nodeKey);
     const {cardConfig} = useContext(KoenigComposerContext);
@@ -58,7 +93,7 @@ function HeaderNodeComponent({
     const [imageRemoved, setImageRemoved] = useState(false);
 
     const {isEnabled: isPinturaEnabled, openEditor: openImageEditor} = usePinturaEditor({config: cardConfig.pinturaConfig});
-    const fileInputRef = useRef(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
         if (layout !== 'split') {
@@ -73,31 +108,34 @@ function HeaderNodeComponent({
     }, [layout]);
 
     useEffect(() => {
-        let accent = getAccentColor();
+        const accent = getAccentColor();
 
         if (accent) {
             editor.update(() => {
-                const node = $getNodeByKey(nodeKey);
+                const node = $getHeaderNodeByKey(nodeKey);
+                if (!node) {return;}
                 node.accentColor = accent;
             });
         }
     }, [editor, nodeKey]);
 
-    const handleAlignment = (a) => {
+    const handleAlignment = (a: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.alignment = a;
         });
     };
 
-    const handleBackgroundSize = (a) => {
+    const handleBackgroundSize = (a: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.backgroundSize = a;
         });
     };
 
-    const handleToolbarEdit = (event) => {
+    const handleToolbarEdit = (event: React.MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
         editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: false});
@@ -105,17 +143,19 @@ function HeaderNodeComponent({
 
     const imageUploader = fileUploader.useFileUpload('image');
 
-    const handleImageChange = async (files) => {
-        // reset original src so it can be replaced with preview and upload progress
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.backgroundImageSrc = '';
-        });
+    const handleImageChange = async (files: File[] | FileList | null) => {
+        if (!files || files.length === 0) {
+            return;
+        }
 
-        const {imageSrc, width, height} = await backgroundImageUploadHandler(files, imageUploader.upload);
+        const result = await backgroundImageUploadHandler(Array.from(files), imageUploader.upload);
+        if (!result) {return;}
+        const {width, height} = result;
+        const imageSrc = result.imageSrc ?? "";
 
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.backgroundImageSrc = imageSrc;
             node.backgroundImageWidth = width;
             node.backgroundImageHeight = height;
@@ -125,30 +165,33 @@ function HeaderNodeComponent({
         setImageRemoved(false);
     };
 
-    const onFileChange = async (e) => {
+    const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         handleImageChange(e.target.files);
     };
 
     const imageDragHandler = useFileDragAndDrop({handleDrop: handleImageChange});
 
-    const handleLayout = (l) => {
+    const handleLayout = (l: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.layout = l;
         });
     };
 
-    const handleButtonText = (event) => {
+    const handleButtonText = (event: React.ChangeEvent<HTMLInputElement>) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.buttonText = event.target.value;
         });
     };
 
-    const handleButtonTextBlur = (event) => {
+    const handleButtonTextBlur = (event: React.FocusEvent<HTMLInputElement>) => {
         if (!event.target.value) {
             editor.update(() => {
-                const node = $getNodeByKey(nodeKey);
+                const node = $getHeaderNodeByKey(nodeKey);
+                if (!node) {return;}
                 node.buttonText = '';
             });
         }
@@ -156,7 +199,8 @@ function HeaderNodeComponent({
 
     const handleClearBackgroundImage = () => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.backgroundImageSrc = '';
         });
         setImageRemoved(true);
@@ -167,7 +211,8 @@ function HeaderNodeComponent({
 
         if (lastBackgroundImage && !imageRemoved) {
             editor.update(() => {
-                const node = $getNodeByKey(nodeKey);
+                const node = $getHeaderNodeByKey(nodeKey);
+                if (!node) {return;}
                 node.backgroundImageSrc = lastBackgroundImage;
             });
         } else {
@@ -178,14 +223,16 @@ function HeaderNodeComponent({
     const handleHideBackgroundImage = () => {
         setShowBackgroundImage(false);
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.backgroundImageSrc = '';
         });
     };
 
-    const handleBackgroundColor = (color, matchingTextColor) => {
+    const handleBackgroundColor = (color: string, matchingTextColor: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.backgroundColor = color;
             node.textColor = matchingTextColor;
 
@@ -195,16 +242,18 @@ function HeaderNodeComponent({
         });
     };
 
-    const handleTextColor = (color) => {
+    const handleTextColor = (color: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.textColor = color;
         });
     };
 
-    const handleButtonColor = (color, matchingTextColor) => {
+    const handleButtonColor = (color: string, matchingTextColor: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.buttonColor = color;
             node.buttonTextColor = matchingTextColor;
         });
@@ -212,29 +261,33 @@ function HeaderNodeComponent({
 
     const handleSwapLayout = () => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.swapped = !isSwapped;
         });
     };
 
     const handleButtonEnabled = () => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.buttonEnabled = !buttonEnabled;
         });
     };
 
-    const handleButtonUrl = (val) => {
+    const handleButtonUrl = (val: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getHeaderNodeByKey(nodeKey);
+            if (!node) {return;}
             node.buttonUrl = val;
         });
     };
 
-    const handleButtonUrlBlur = (event) => {
+    const handleButtonUrlBlur = (event: React.FocusEvent<HTMLInputElement>) => {
         if (!event.target.value) {
             editor.update(() => {
-                const node = $getNodeByKey(nodeKey);
+                const node = $getHeaderNodeByKey(nodeKey);
+                if (!node) {return;}
                 node.buttonUrl = 'https://';
             });
         }
@@ -274,7 +327,6 @@ function HeaderNodeComponent({
                 handleShowBackgroundImage={handleShowBackgroundImage}
                 handleSwapLayout={handleSwapLayout}
                 handleTextColor={handleTextColor}
-                header={header}
                 headerTextEditor={headerTextEditor}
                 headerTextEditorInitialState={headerTextEditorInitialState}
                 imageDragHandler={imageDragHandler}
@@ -286,7 +338,6 @@ function HeaderNodeComponent({
                 setFileInputRef={ref => fileInputRef.current = ref}
                 showBackgroundImage={showBackgroundImage}
                 showVisibilitySettings={showVisibilitySettings}
-                subheader={subheader}
                 subheaderTextEditor={subheaderTextEditor}
                 subheaderTextEditorInitialState={subheaderTextEditorInitialState}
                 textColor={textColor}

@@ -1,6 +1,5 @@
 import ImageIcon from '../../assets/icons/kg-card-type-image.svg?react';
 import ImageUploadForm from './ImageUploadForm';
-import PropTypes from 'prop-types';
 import React from 'react';
 import clsx from 'clsx';
 import {FramesUnreadableError, LOAD_TIMEOUT_MS, canvasToJpeg, createFrameVideo, drawFrame, filmstripTimes, formatTime, hasUsableDuration, loadVideo, releaseVideo, seekVideo, whenFrameReady} from '../../utils/videoFrames';
@@ -20,7 +19,7 @@ const button = 'rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline
 const secondaryButton = clsx(button, 'border border-grey-300 text-black transition-colors hover:border-grey-500 dark:border-grey-800 dark:text-white dark:hover:border-grey-600');
 const primaryButton = clsx(button, 'bg-black text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 aria-disabled:cursor-not-allowed aria-disabled:opacity-40 dark:bg-white dark:text-black');
 
-function FilmstripFrame({src}) {
+function FilmstripFrame({src}: {src: string}) {
     const [isShown, setShown] = React.useState(false);
 
     return (
@@ -33,16 +32,12 @@ function FilmstripFrame({src}) {
     );
 }
 
-FilmstripFrame.propTypes = {
-    src: PropTypes.string
-};
-
 /**
  * Frames from across the video, drawn from a second video element so the preview doesn't move. Only a
  * video that can't be read at all is reported; a slow or failed seek leaves the strip unfinished.
  */
-function useFilmstrip(videoSrc, onUnreadable) {
-    const [frames, setFrames] = React.useState([]);
+function useFilmstrip(videoSrc: string | null, onUnreadable: () => void) {
+    const [frames, setFrames] = React.useState<string[]>([]);
     const [isStopped, setStopped] = React.useState(false);
 
     React.useEffect(() => {
@@ -51,7 +46,7 @@ function useFilmstrip(videoSrc, onUnreadable) {
         }
         let cancelled = false;
         const video = createFrameVideo();
-        const urls = [];
+        const urls: string[] = [];
 
         const draw = async () => {
             try {
@@ -97,13 +92,25 @@ function useFilmstrip(videoSrc, onUnreadable) {
     return {frames, isStopped};
 }
 
-function Picker({headingId, videoSrc, videoWidth, videoHeight, thumbnail, mimeTypes, onClose, onSelectFrame, onUploadImage}) {
-    const previewRef = React.useRef(null);
-    const fileInputRef = React.useRef(null);
+interface PickerProps {
+    headingId: string;
+    videoSrc: string;
+    videoWidth?: number | null;
+    videoHeight?: number | null;
+    thumbnail?: string;
+    mimeTypes: string[];
+    onClose: () => void;
+    onSelectFrame: (frame: Blob) => void;
+    onUploadImage: (files: File[]) => void;
+}
+
+function Picker({headingId, videoSrc, videoWidth, videoHeight, thumbnail, mimeTypes, onClose, onSelectFrame, onUploadImage}: PickerProps) {
+    const previewRef = React.useRef<HTMLVideoElement>(null);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
     const isOpenRef = React.useRef(false);
     const [duration, setDuration] = React.useState(0);
     const [time, setTime] = React.useState(0);
-    const [aspectRatio, setAspectRatio] = React.useState(videoWidth > 0 && videoHeight > 0 ? videoWidth / videoHeight : 16 / 9);
+    const [aspectRatio, setAspectRatio] = React.useState(videoWidth && videoHeight && videoWidth > 0 && videoHeight > 0 ? videoWidth / videoHeight : 16 / 9);
     const [isUnreadable, setUnreadable] = React.useState(false);
     const [isSelecting, setSelecting] = React.useState(false);
     const [isSelectFailed, setSelectFailed] = React.useState(false);
@@ -139,7 +146,7 @@ function Picker({headingId, videoSrc, videoWidth, videoHeight, thumbnail, mimeTy
         };
     }, [videoSrc, isUnreadable, markUnreadable]);
 
-    const onPreviewLoaded = (event) => {
+    const onPreviewLoaded = (event: React.SyntheticEvent<HTMLVideoElement>) => {
         const video = event.currentTarget;
         // No decodable picture (its sound may still play), or a length that can't be scrubbed
         if (!video.videoWidth || !hasUsableDuration(video.duration)) {
@@ -153,14 +160,16 @@ function Picker({headingId, videoSrc, videoWidth, videoHeight, thumbnail, mimeTy
         video.currentTime = start;
     };
 
-    const onScrub = (event) => {
+    const onScrub = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (isSelecting) {
             return;
         }
         const next = Number(event.target.value);
         setSelectFailed(false);
         setTime(next);
-        previewRef.current.currentTime = next;
+        if (previewRef.current) {
+            previewRef.current.currentTime = next;
+        }
     };
 
     const select = async () => {
@@ -168,6 +177,9 @@ function Picker({headingId, videoSrc, videoWidth, videoHeight, thumbnail, mimeTy
             return;
         }
         const video = previewRef.current;
+        if (!video) {
+            return;
+        }
         setSelecting(true);
         setSelectFailed(false);
         try {
@@ -188,7 +200,7 @@ function Picker({headingId, videoSrc, videoWidth, videoHeight, thumbnail, mimeTy
         }
     };
 
-    const onFilesPicked = (event) => {
+    const onFilesPicked = (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(event.target.files || []);
         if (files.length) {
             onUploadImage(files);
@@ -292,24 +304,17 @@ function Picker({headingId, videoSrc, videoWidth, videoHeight, thumbnail, mimeTy
     );
 }
 
-Picker.propTypes = {
-    headingId: PropTypes.string,
-    videoSrc: PropTypes.string,
-    videoWidth: PropTypes.number,
-    videoHeight: PropTypes.number,
-    thumbnail: PropTypes.string,
-    mimeTypes: PropTypes.arrayOf(PropTypes.string),
-    onClose: PropTypes.func,
-    onSelectFrame: PropTypes.func,
-    onUploadImage: PropTypes.func
-};
+export interface VideoThumbnailPickerProps extends Omit<PickerProps, 'headingId' | 'mimeTypes'> {
+    isOpen?: boolean;
+    mimeTypes?: string[];
+}
 
 /**
  * Picks a video's thumbnail from its own frames, or an uploaded image. `onSelectFrame` gets the
  * chosen frame as a JPEG, and `onUploadImage` the image files picked. A video whose
  * frames can't be read shows its `thumbnail`, with only an image to choose.
  */
-export function VideoThumbnailPicker({isOpen, videoSrc, videoWidth, videoHeight, thumbnail, mimeTypes = [], onClose, onSelectFrame, onUploadImage}) {
+export function VideoThumbnailPicker({isOpen, videoSrc, videoWidth, videoHeight, thumbnail, mimeTypes = [], onClose, onSelectFrame, onUploadImage}: VideoThumbnailPickerProps) {
     const headingId = React.useId();
 
     return (
@@ -328,8 +333,3 @@ export function VideoThumbnailPicker({isOpen, videoSrc, videoWidth, videoHeight,
         </Modal>
     );
 }
-
-VideoThumbnailPicker.propTypes = {
-    isOpen: PropTypes.bool,
-    ...Picker.propTypes
-};

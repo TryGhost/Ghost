@@ -4,15 +4,63 @@ import prettier from '@prettier/sync';
 import startCase from 'lodash/startCase.js';
 import {E2E_PORT} from '../../playwright.config';
 import {expect} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 const {JSDOM} = jsdom;
 const browserCtrlOrCmdMap = new WeakMap();
 
-export async function initialize({page, uri = '/#/?content=false'}) {
+interface AssertHTMLOptions {
+    selector?: string;
+    ignoreClasses?: boolean;
+    ignoreInlineStyles?: boolean;
+    ignoreInnerSVG?: boolean;
+    getBase64FileFormat?: boolean;
+    ignoreCardContents?: boolean;
+    ignoreCardSettings?: boolean;
+    ignoreCardToolbarContents?: boolean;
+    ignoreDragDropAttrs?: boolean;
+    ignoreDataTestId?: boolean;
+    ignoreCardCaptionContents?: boolean;
+}
+
+interface PrettifyHTMLOptions {
+    ignoreClasses?: boolean;
+    ignoreInlineStyles?: boolean;
+    ignoreInnerSVG?: boolean;
+    getBase64FileFormat?: boolean;
+    ignoreCardContents?: boolean;
+    ignoreCardSettings?: boolean;
+    ignoreCardToolbarContents?: boolean;
+    ignoreDragDropAttrs?: boolean;
+    ignoreDataTestId?: boolean;
+    ignoreCardCaptionContents?: boolean;
+}
+
+interface FileData {
+    filePath: string;
+    fileName: string;
+    fileType: string;
+}
+
+interface SelectionExpectation {
+    anchorPath: number[];
+    anchorOffset: number | [number, number];
+    focusPath: number[];
+    focusOffset: number | [number, number];
+}
+
+export interface BoundingBox {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
+export async function initialize({page, uri = '/#/?content=false', force: _force = false}: {page: Page; uri?: string; force?: boolean}) {
     const url = `http://localhost:${E2E_PORT}${uri}`;
 
     const currentViewportSize = page.viewportSize();
-    if (currentViewportSize.width !== 1000 || currentViewportSize.height !== 1000) {
+    if (currentViewportSize!.width !== 1000 || currentViewportSize!.height !== 1000) {
         await page.setViewportSize({width: 1000, height: 1000});
     }
 
@@ -26,24 +74,25 @@ export async function initialize({page, uri = '/#/?content=false'}) {
         await exposeLexicalEditor(page);
     } else {
         // Subsequent pages navigated to using react router
-        await page.evaluate(async ([navigateTo, force]) => {
-            window.lexicalEditor.blur();
-            window.lexicalEditor.setEditorState(window.originalEditorState);
+        await page.evaluate(async ([navigateTo, force]: [string, boolean]) => {
+            const w = window;
+            w.lexicalEditor.blur();
+            w.lexicalEditor.setEditorState(w.originalEditorState);
 
             if (force) {
                 // Purposefully navigate away from the current page to ensure component is reloaded
-                window.navigate('/404');
-                await new Promise((res) => {
+                w.navigate('/404');
+                await new Promise<void>((res) => {
                     setTimeout(() => {
                         // Navigate in a task to ensure React Router cannot optimise out our first navigation
-                        window.navigate(navigateTo);
+                        w.navigate(navigateTo);
                         res();
                     }, 10);
                 });
             } else {
-                await window.navigate(navigateTo);
+                await w.navigate(navigateTo);
             }
-        }, [uri.slice(2), currentUrl === url]);
+        }, [uri.slice(2), currentUrl === url] as [string, boolean]);
         await exposeLexicalEditor(page);
     }
 
@@ -52,22 +101,23 @@ export async function initialize({page, uri = '/#/?content=false'}) {
     }));
 }
 
-async function exposeLexicalEditor(page) {
+async function exposeLexicalEditor(page: Page) {
     await page.waitForSelector('[data-lexical-editor]');
     await page.evaluate(() => {
-        window.lexicalEditor = document.querySelector('[data-lexical-editor]').__lexicalEditor;
+        const el = document.querySelector('[data-lexical-editor]') as HTMLElement & {__lexicalEditor: unknown};
+        window.lexicalEditor = el.__lexicalEditor as KoenigTestEditor;
         window.originalEditorState = window.lexicalEditor.getEditorState();
     });
 }
 
-export async function focusEditor(page, parentSelector = '.koenig-lexical') {
+export async function focusEditor(page: Page, parentSelector = '.koenig-lexical') {
     const selector = `${parentSelector} div[contenteditable="true"]`;
     await page.focus(selector);
 }
 
 export async function assertHTML(
-    page,
-    expectedHtml,
+    page: Page,
+    expectedHtml: string,
     {
         selector = 'div[contenteditable="true"]',
         ignoreClasses = true,
@@ -80,7 +130,7 @@ export async function assertHTML(
         ignoreDragDropAttrs = true,
         ignoreDataTestId = true,
         ignoreCardCaptionContents = false
-    } = {}
+    }: AssertHTMLOptions = {}
 ) {
     const actualHtml = await page.$eval(selector, e => e.innerHTML);
     const actual = prettifyHTML(actualHtml.replace(/\n/gm, ''), {
@@ -110,7 +160,7 @@ export async function assertHTML(
     expect(actual).toEqual(expected);
 }
 
-export function prettifyHTML(string, options = {}) {
+export function prettifyHTML(string: string, options: PrettifyHTMLOptions = {}) {
     let output = string;
 
     if (options.ignoreInnerSVG) {
@@ -132,7 +182,7 @@ export function prettifyHTML(string, options = {}) {
     if (options.ignoreCardContents || options.ignoreCardToolbarContents || options.ignoreCardCaptionContents || options.ignoreCardSettings) {
         const {document} = (new JSDOM(output)).window;
 
-        const querySelectors = [];
+        const querySelectors: string[] = [];
         if (options.ignoreCardContents) {
             querySelectors.push('[data-kg-card]');
         }
@@ -146,7 +196,7 @@ export function prettifyHTML(string, options = {}) {
             querySelectors.push('[data-testid="settings-panel"]');
         }
 
-        document.querySelectorAll(querySelectors.join(', ')).forEach((element) => {
+        document.querySelectorAll(querySelectors.join(', ')).forEach((element: Element) => {
             element.innerHTML = '';
         });
         output = document.body.innerHTML;
@@ -176,7 +226,7 @@ export function prettifyHTML(string, options = {}) {
         .trim();
 }
 
-export function prettifyJSON(string) {
+export function prettifyJSON(string: string) {
     let output = string;
 
     // replace urls inside markdown links
@@ -191,7 +241,7 @@ export function prettifyJSON(string) {
 
 // This function does not suppose to do anything, it's only used as a trigger
 // for prettier auto-formatting (https://prettier.io/blog/2020/08/24/2.1.0.html#api)
-export function html(partials, ...params) {
+export function html(partials: TemplateStringsArray, ...params: unknown[]) {
     let output = '';
     for (let i = 0; i < partials.length; i++) {
         output += partials[i];
@@ -202,13 +252,13 @@ export function html(partials, ...params) {
     return output;
 }
 
-export async function assertSelection(page, expected) {
+export async function assertSelection(page: Page, expected: SelectionExpectation) {
     // Assert the selection of the editor matches the snapshot
     const selection = await page.evaluate(() => {
         const rootElement = document.querySelector('div[contenteditable="true"]');
 
-        const getPathFromNode = (node) => {
-            const path = [];
+        const getPathFromNode = (node: Node | null): number[] => {
+            const path: number[] = [];
             if (node === rootElement) {
                 return [];
             }
@@ -217,13 +267,13 @@ export async function assertSelection(page, expected) {
                 if (parent === null || node === rootElement) {
                     break;
                 }
-                path.push(Array.from(parent.childNodes).indexOf(node));
+                path.push(Array.from(parent.childNodes).indexOf(node as ChildNode));
                 node = parent;
             }
             return path.reverse();
         };
 
-        const {anchorNode, anchorOffset, focusNode, focusOffset} = window.getSelection();
+        const {anchorNode, anchorOffset, focusNode, focusOffset} = window.getSelection()!;
 
         return {
             anchorOffset,
@@ -231,7 +281,7 @@ export async function assertSelection(page, expected) {
             focusOffset,
             focusPath: getPathFromNode(focusNode)
         };
-    }, expected);
+    });
 
     expect(selection.anchorPath).toEqual(expected.anchorPath);
 
@@ -254,21 +304,21 @@ export async function assertSelection(page, expected) {
     }
 }
 
-export async function assertPosition(page, selector, expectedBox, {threshold = 0} = {}) {
+export async function assertPosition(page: Page, selector: string, expectedBox: Partial<BoundingBox>, {threshold = 0} = {}) {
     const assertedElem = await page.$(selector);
-    const assertedBox = await assertedElem.boundingBox();
+    const assertedBox = await assertedElem!.boundingBox();
 
-    ['x', 'y'].forEach((boxProperty) => {
+    (['x', 'y'] as const).forEach((boxProperty) => {
         if (Object.prototype.hasOwnProperty.call(expectedBox, boxProperty)) {
-            expect(assertedBox[boxProperty], boxProperty).toBeGreaterThanOrEqual(expectedBox[boxProperty] - threshold);
-            expect(assertedBox[boxProperty], boxProperty).toBeLessThanOrEqual(expectedBox[boxProperty] + threshold);
+            expect(assertedBox![boxProperty], boxProperty).toBeGreaterThanOrEqual(expectedBox[boxProperty]! - threshold);
+            expect(assertedBox![boxProperty], boxProperty).toBeLessThanOrEqual(expectedBox[boxProperty]! + threshold);
         }
     });
 }
 
-export async function getEditorStateJSON(page) {
+export async function getEditorStateJSON(page: Page) {
     const json = await page.evaluate(() => {
-        const rootElement = document.querySelector('div[contenteditable="true"]');
+        const rootElement = document.querySelector('div[contenteditable="true"]') as HTMLElement & {__lexicalEditor: {getEditorState: () => {toJSON: () => unknown}}};
         const editor = rootElement.__lexicalEditor;
         return JSON.stringify(editor.getEditorState().toJSON());
     });
@@ -276,7 +326,7 @@ export async function getEditorStateJSON(page) {
     return json;
 }
 
-export async function assertRootChildren(page, expectedState) {
+export async function assertRootChildren(page: Page, expectedState: string) {
     const state = await getEditorStateJSON(page);
     const actualState = JSON.stringify(JSON.parse(state).root.children);
 
@@ -286,7 +336,7 @@ export async function assertRootChildren(page, expectedState) {
     expect(actual).toEqual(expected);
 }
 
-export async function paste(page, data) {
+export async function paste(page: Page, data: Record<string, string>) {
     const setDataCommands = Object.keys(data).map((mimeType) => {
         return `
             dataTransfer.setData('${mimeType}', ${JSON.stringify(data[mimeType])});
@@ -310,60 +360,63 @@ export async function paste(page, data) {
     await page.evaluate(pasteCommand);
 }
 
-export async function pasteText(page, content) {
+export async function pasteText(page: Page, content: string) {
     await paste(page, {'text/plain': content});
 }
 
-export async function pasteHtml(page, content) {
+export async function pasteHtml(page: Page, content: string) {
     await paste(page, {'text/html': content});
 }
 
-export async function pasteLexical(page, content) {
+export async function pasteLexical(page: Page, content: string) {
     await paste(page, {'application/x-lexical-editor': content});
 }
 
-export async function pasteFiles(page, files) {
+export async function pasteFiles(page: Page, files: FileData[]) {
     const dataTransfer = await createDataTransfer(page, files);
 
     await page.evaluate(async (clipboardData) => {
-        document.activeElement.dispatchEvent(new ClipboardEvent('paste', {
-            clipboardData: clipboardData,
+        document.activeElement!.dispatchEvent(new ClipboardEvent('paste', {
+            clipboardData: clipboardData as unknown as DataTransfer,
             bubbles: true,
             cancelable: true
         }));
 
-        clipboardData.clearData();
+        (clipboardData as unknown as DataTransfer).clearData();
     }, dataTransfer);
 }
 
-export async function pasteFilesWithText(page, files, text = {}) {
+export async function pasteFilesWithText(page: Page, files: FileData[], text: Record<string, string> = {}) {
     const dataTransfer = await createDataTransfer(page, files);
 
     await page.evaluate(async ({clipboardData, textData}) => {
         Object.keys(textData).forEach((mimeType) => {
-            clipboardData.setData(mimeType, textData[mimeType]);
+            (clipboardData as unknown as DataTransfer).setData(mimeType, textData[mimeType]);
         });
 
-        document.activeElement.dispatchEvent(new ClipboardEvent('paste', {
-            clipboardData: clipboardData,
+        document.activeElement!.dispatchEvent(new ClipboardEvent('paste', {
+            clipboardData: clipboardData as unknown as DataTransfer,
             bubbles: true,
             cancelable: true
         }));
 
-        clipboardData.clearData();
+        (clipboardData as unknown as DataTransfer).clearData();
     }, {clipboardData: dataTransfer, textData: text});
 }
 
 export async function dragMouse(
-    page,
-    fromBoundingBox,
-    toBoundingBox,
+    page: Page,
+    fromBoundingBox: BoundingBox | null,
+    toBoundingBox: BoundingBox | null,
     positionStart = 'middle',
     positionEnd = 'middle',
     mouseUp = true,
     hover = 0,
     steps = 1
 ) {
+    if (!fromBoundingBox || !toBoundingBox) {
+        throw new Error('dragMouse: bounding box not found');
+    }
     let fromX = fromBoundingBox.x;
     let fromY = fromBoundingBox.y;
     if (positionStart === 'middle') {
@@ -402,7 +455,7 @@ export function isMac() {
     return process.platform === 'darwin';
 }
 
-export function ctrlOrCmd(page) {
+export function ctrlOrCmd(page?: Page) {
     if (!page) {
         return isMac() ? 'Meta' : 'Control';
     }
@@ -417,8 +470,8 @@ export function ctrlOrCmd(page) {
 }
 
 // note: we always use lowercase for the cardName but we use start case for the menu item attribute
-export async function insertCard(page, {cardName, nth = 0}) {
-    let card = startCase(cardName);
+export async function insertCard(page: Page, {cardName, nth = 0}: {cardName: string; nth?: number}) {
+    const card = startCase(cardName);
     await page.keyboard.type(`/${cardName}`);
     await expect(page.locator(`[data-kg-card-menu-item="${card}" i][data-kg-cardmenu-selected="true"]`)).toBeVisible();
     await page.keyboard.press('Enter');
@@ -432,7 +485,7 @@ export async function insertCard(page, {cardName, nth = 0}) {
     }
 }
 
-export async function createSnippet(page) {
+export async function createSnippet(page: Page) {
     await page.waitForSelector('[data-testid="create-snippet"]');
     // Small wait for toolbar to stabilize after card state transitions
     // (React re-renders can detach and re-mount toolbar elements)
@@ -442,13 +495,13 @@ export async function createSnippet(page) {
     await page.keyboard.press('Enter');
 }
 
-export async function getScrollPosition(page) {
+export async function getScrollPosition(page: Page) {
     return await page.evaluate(() => {
-        return document.querySelector('.h-full.overflow-auto').scrollTop;
+        return document.querySelector('.h-full.overflow-auto')!.scrollTop;
     });
 }
 
-export async function enterUntilScrolled(page) {
+export async function enterUntilScrolled(page: Page) {
     let scrollPosition = 0;
 
     while (scrollPosition === 0) {
@@ -460,15 +513,15 @@ export async function enterUntilScrolled(page) {
     }
 }
 
-export async function expectUnchangedScrollPosition(page, wrapper) {
+export async function expectUnchangedScrollPosition(page: Page, wrapper: () => Promise<void>) {
     const start = await getScrollPosition(page);
     await wrapper();
     const end = await getScrollPosition(page);
     expect(start).toEqual(end);
 }
 
-export async function createDataTransfer(page, data = []) {
-    const filesData = [];
+export async function createDataTransfer(page: Page, data: FileData[] = []) {
+    const filesData: {buffer: number[]; name: string; type: string}[] = [];
 
     data.forEach((file) => {
         const buffer = fs.readFileSync(file.filePath);
@@ -480,10 +533,10 @@ export async function createDataTransfer(page, data = []) {
         });
     });
 
-    return await page.evaluateHandle((dataset = []) => {
+    return await page.evaluateHandle((dataset) => {
         const dt = new DataTransfer();
 
-        dataset.forEach((fileData) => {
+        dataset.forEach((fileData: {buffer: number[]; name: string; type: string}) => {
             const file = new File([new Uint8Array(fileData.buffer)], fileData.name, {type: fileData.type});
             dt.items.add(file);
         });
@@ -492,9 +545,9 @@ export async function createDataTransfer(page, data = []) {
     }, filesData);
 }
 
-export async function getEditorState(page) {
+export async function getEditorState(page: Page): Promise<{root: {children: Array<Record<string, unknown>>}}> {
     return await page.evaluate(() => {
-        return window.lexicalEditor.getEditorState().toJSON();
+        return window.lexicalEditor.getEditorState().toJSON() as {root: {children: Array<Record<string, unknown>>}};
     });
 }
 
@@ -503,7 +556,7 @@ export async function getEditorState(page) {
  * Uses keyboard Shift+ArrowLeft with a short wait to ensure Chrome for Testing
  * registers the selection correctly before subsequent keyboard actions.
  */
-export async function selectBackwards(page, charCount) {
+export async function selectBackwards(page: Page, charCount: number) {
     await page.keyboard.down('Shift');
     for (let i = 0; i < charCount; i++) {
         await page.keyboard.press('ArrowLeft');
@@ -518,7 +571,7 @@ export async function selectBackwards(page, charCount) {
  * Uses keyboard Shift+ArrowRight with a short wait to ensure Chrome for Testing
  * registers the selection correctly before subsequent keyboard actions.
  */
-export async function selectForward(page, charCount) {
+export async function selectForward(page: Page, charCount: number) {
     await page.keyboard.down('Shift');
     for (let i = 0; i < charCount; i++) {
         await page.keyboard.press('ArrowRight');

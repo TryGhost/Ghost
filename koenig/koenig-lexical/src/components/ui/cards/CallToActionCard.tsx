@@ -1,22 +1,22 @@
 import CenterAlignIcon from '../../../assets/icons/kg-align-center.svg?react';
 import ImmersiveLayoutIcon from '../../../assets/icons/kg-layout-immersive.svg?react';
-import KoenigNestedEditor from '../../KoenigNestedEditor.jsx';
+import KoenigNestedEditor from '../../KoenigNestedEditor';
 import LeftAlignIcon from '../../../assets/icons/kg-align-left.svg?react';
 import MinimalLayoutIcon from '../../../assets/icons/kg-layout-minimal.svg?react';
-import PropTypes from 'prop-types';
-import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin.jsx';
+import React, {useState} from 'react';
+import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin';
 import clsx from 'clsx';
-import defaultTheme from '../../../themes/default.js';
+import defaultTheme from '../../../themes/default';
 import {BASIC_TRANSFORMERS} from '../../../plugins/MarkdownShortcutPlugin';
-import {Button} from '../Button.jsx';
-import {ButtonGroupSetting, ColorOptionSetting, ColorPickerSetting, InputSetting, InputUrlSetting, MediaUploadSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel.jsx';
-import {CALLTOACTION_COLORS} from '../../../utils/callToActionColors.js';
+import {Button} from '../Button';
+import {ButtonGroupSetting, ColorOptionSetting, ColorPickerSetting, InputSetting, InputUrlSetting, MediaUploadSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
+import {CALLTOACTION_COLORS} from '../../../utils/callToActionColors';
 import {HEADING} from '@lexical/markdown';
-import {ReadOnlyOverlay} from '../ReadOnlyOverlay.jsx';
-import {RestrictContentPlugin} from '../../../index.js';
-import {getAccentColor} from '../../../utils/getAccentColor.js';
+import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
+import {RestrictContentPlugin} from '../../../index';
+import {getAccentColor} from '../../../utils/getAccentColor';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
-import {useState} from 'react';
+import type {LexicalEditor} from 'lexical';
 
 // Typing "## " or "### " at the start of a line turns it into a heading, as in the post body
 const CTA_TEXT_TRANSFORMERS = [HEADING, ...BASIC_TRANSFORMERS];
@@ -87,6 +87,45 @@ export const callToActionLinkColorPicker = [
     }
 ];
 
+type CtaColor = 'none' | 'grey' | 'white' | 'blue' | 'green' | 'yellow' | 'red' | 'pink' | 'purple';
+
+interface CallToActionCardProps {
+    alignment?: 'left' | 'center';
+    buttonColor?: string;
+    buttonText?: string;
+    buttonTextColor?: string;
+    buttonUrl?: string;
+    color?: CtaColor;
+    hasSponsorLabel?: boolean;
+    htmlEditor: LexicalEditor;
+    htmlEditorInitialState?: string;
+    sponsorLabelHtmlEditor: LexicalEditor;
+    sponsorLabelHtmlEditorInitialState?: string;
+    imageSrc?: string;
+    isEditing?: boolean;
+    layout?: 'minimal' | 'immersive';
+    showButton?: boolean;
+    showDividers?: boolean;
+    visibilitySettings?: React.ReactNode;
+    handleButtonColor?: (bgColor: string, textColor: string) => void;
+    handleColorChange?: (name: string) => void;
+    handleLinkColorChange?: (name: string) => void;
+    onFileChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onRemoveMedia?: () => void;
+    setFileInputRef?: (el: HTMLInputElement | null) => void;
+    updateAlignment?: (name: string) => void;
+    updateButtonText?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    updateButtonUrl?: (value: string) => void;
+    updateHasSponsorLabel?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    updateLayout?: (name: string) => void;
+    updateShowButton?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    updateShowDividers?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    imageDragHandler?: {isDraggedOver?: boolean; setRef?: React.Ref<HTMLDivElement>};
+    imageUploader?: {isLoading?: boolean; progress?: number};
+    linkColor?: 'text' | 'accent';
+    showVisibilitySettings?: boolean;
+}
+
 export function CallToActionCard({
     alignment = 'left',
     buttonColor = '',
@@ -119,10 +158,10 @@ export function CallToActionCard({
     updateShowButton = () => {},
     updateShowDividers = () => {},
     imageDragHandler = {},
-    imageUploader = () => {},
+    imageUploader = {},
     linkColor = 'text',
     showVisibilitySettings = false
-}) {
+}: CallToActionCardProps) {
     const [buttonColorPickerExpanded, setButtonColorPickerExpanded] = useState(false);
 
     const {isLoading, progress} = imageUploader || {};
@@ -164,7 +203,7 @@ export function CallToActionCard({
         }
     ];
 
-    const matchingTextColor = (bgColor) => {
+    const matchingTextColor = (bgColor: string) => {
         return bgColor === 'transparent' ? '' : textColorForBackgroundColor(bgColor === 'accent' ? getAccentColor() : bgColor).hex();
     };
 
@@ -281,12 +320,12 @@ export function CallToActionCard({
                         {title: 'Brand color', accent: true}
                     ]}
                     value={buttonColor}
-                    onPickerChange={bgColor => handleButtonColor(bgColor, matchingTextColor(bgColor))}
-                    onSwatchChange={(bgColor) => {
+                    onPickerChange={(bgColor: string) => handleButtonColor(bgColor, matchingTextColor(bgColor))}
+                    onSwatchChange={(bgColor: string) => {
                         handleButtonColor(bgColor, matchingTextColor(bgColor));
                         setButtonColorPickerExpanded(false);
                     }}
-                    onTogglePicker={(isExpanded) => {
+                    onTogglePicker={(isExpanded: boolean) => {
                         setButtonColorPickerExpanded(isExpanded);
                     }}
                 />
@@ -311,7 +350,7 @@ export function CallToActionCard({
                     '--cta-link-color': linkColor === 'accent'
                         ? getAccentColor()
                         : 'var(--cta-link-color-text)'
-                }}
+                } as React.CSSProperties}
             >
 
                 {/* Sponsor label */}
@@ -419,7 +458,6 @@ export function CallToActionCard({
                     showVisibilitySettings={showVisibilitySettings}
                     tabs={tabs}
                     visibilitySettings={visibilitySettings}
-                    onMouseDown={e => e.preventDefault()}
                 >
                     {{
                         content: contentSettings,
@@ -430,41 +468,3 @@ export function CallToActionCard({
         </>
     );
 }
-
-CallToActionCard.propTypes = {
-    alignment: PropTypes.oneOf(['left', 'center']),
-    buttonText: PropTypes.string,
-    buttonUrl: PropTypes.string,
-    buttonColor: PropTypes.string,
-    buttonTextColor: PropTypes.string,
-    color: PropTypes.oneOf(['none', 'grey', 'white', 'blue', 'green', 'yellow', 'red', 'pink', 'purple']),
-    hasSponsorLabel: PropTypes.bool,
-    imageSrc: PropTypes.string,
-    isEditing: PropTypes.bool,
-    layout: PropTypes.oneOf(['minimal', 'immersive']),
-    showButton: PropTypes.bool,
-    showDividers: PropTypes.bool,
-    htmlEditor: PropTypes.object,
-    htmlEditorInitialState: PropTypes.object,
-    updateAlignment: PropTypes.func,
-    updateButtonText: PropTypes.func,
-    updateButtonUrl: PropTypes.func,
-    updateHasSponsorLabel: PropTypes.func,
-    updateShowButton: PropTypes.func,
-    updateShowDividers: PropTypes.func,
-    updateLayout: PropTypes.func,
-    handleColorChange: PropTypes.func,
-    handleButtonColor: PropTypes.func,
-    onFileChange: PropTypes.func,
-    setFileInputRef: PropTypes.func,
-    onRemoveMedia: PropTypes.func,
-    sponsorLabelHtmlEditor: PropTypes.object,
-    sponsorLabelHtmlEditorInitialState: PropTypes.object,
-    visibilitySettings: PropTypes.node,
-    imageUploadHandler: PropTypes.func,
-    imageDragHandler: PropTypes.object,
-    linkColor: PropTypes.oneOf(['text', 'accent']),
-    handleLinkColorChange: PropTypes.func,
-    imageUploader: PropTypes.object,
-    showVisibilitySettings: PropTypes.bool
-};

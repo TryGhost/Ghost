@@ -4,6 +4,7 @@ import {COMMAND_PRIORITY_LOW} from 'lexical';
 import {INSERT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {ProductNodeData} from '../nodes/ProductNode';
 
 export const ProductPlugin = () => {
     const [editor] = useLexicalComposerContext();
@@ -16,7 +17,7 @@ export const ProductPlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_PRODUCT_COMMAND,
-                async (dataset) => {
+                (dataset: ProductNodeData) => {
                     const cardNode = $createProductNode(dataset);
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode, openInEditMode: true});
 

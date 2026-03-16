@@ -13,9 +13,9 @@ import {ImageUploadForm} from '../components/ui/ImageUploadForm';
 import {LinkInput} from '../components/ui/LinkInput';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
-import {dataSrcToFile} from '../utils/dataSrcToFile.js';
+import {dataSrcToFile} from '../utils/dataSrcToFile';
 import {getAllowedImageCardWidths, getDefaultImageCardWidth} from '../utils/image-card-widths';
-import {getImageDimensions} from '../utils/getImageDimensions.js';
+import {getImageDimensions} from '../utils/getImageDimensions';
 import {getImageFilenameFromSrc} from '../utils/getImageFilenameFromSrc';
 import {imageUploadHandler} from '../utils/imageUploadHandler';
 import {isCardWidth} from '@tryghost/kg-default-nodes';
@@ -25,19 +25,39 @@ import {openFileSelection} from '../utils/openFileSelection';
 import {useCardVisibilityAvailable} from '../hooks/useCardVisibilitySettings';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useResetWhenReadOnly} from '../hooks/useIsDocumentEditable';
+import type {DraggableInfo} from '../utils/draggable/ScrollHandler';
+import type {ImageNode} from './ImageNode';
+import type {LexicalEditor} from 'lexical';
+import type {Visibility} from '@tryghost/kg-default-nodes/visibility';
 
-export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionEditor, captionEditorInitialState, triggerFileDialog, previewSrc, href}) {
+function $getImageNodeByKey(nodeKey: string): ImageNode | null {
+    return $getNodeByKey(nodeKey) as ImageNode | null;
+}
+
+interface ImageNodeComponentProps {
+    nodeKey: string;
+    initialFile: unknown;
+    src: string;
+    altText: string;
+    captionEditor: LexicalEditor;
+    captionEditorInitialState: string | undefined;
+    triggerFileDialog: boolean;
+    previewSrc: string | undefined;
+    href: string;
+}
+
+export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionEditor, captionEditorInitialState, triggerFileDialog, previewSrc, href}: ImageNodeComponentProps) {
     const [editor] = useLexicalComposerContext();
     const [showLink, setShowLink] = React.useState(false);
     useResetWhenReadOnly(() => setShowLink(false));
     const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
     const {isSelected, isEditing, cardWidth, setCardWidth, setEditing} = React.useContext(CardContext);
-    const fileInputRef = React.useRef();
-    const toolbarFileInputRef = React.useRef();
+    const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+    const toolbarFileInputRef = React.useRef<HTMLInputElement | null>(null);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
     const isVisibilityEnabled = useCardVisibilityAvailable(nodeKey);
 
-    const handleToolbarEdit = (event) => {
+    const handleToolbarEdit = (event: React.MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
         setEditing(true);
@@ -48,29 +68,30 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
 
     // stable fn refs to avoid excessive re-inits of the drag/drop handler effects
     // which can cause unexpected side-effects with event handling
-    const canDropImageCard = React.useCallback((draggable) => {
+    const canDropImageCard = React.useCallback((draggable: DraggableInfo) => {
         if (draggable.type !== 'card' || draggable.cardName !== 'image' || draggable.nodeKey === nodeKey) {
             return false;
         }
 
         // a gallery has one audience, so only merge images that share one
-        const targetVisibility = editor.getEditorState().read(() => $getNodeByKey(nodeKey)?.visibility);
-        return isSameVisibility(draggable.dataset?.visibility, targetVisibility);
+        const targetVisibility = editor.getEditorState().read(() => $getImageNodeByKey(nodeKey)?.visibility);
+        return isSameVisibility(draggable.dataset?.visibility as Visibility | undefined, targetVisibility);
     }, [editor, nodeKey]);
-    const onDropImageCard = React.useCallback((draggable) => {
+    const onDropImageCard = React.useCallback((draggable: DraggableInfo) => {
         const {type, cardName, nodeKey: draggedNodeKey, dataset} = draggable;
 
         if (type === 'card' && cardName === 'image' && draggedNodeKey && dataset) {
             editor.update(() => {
-                const targetImageNode = $getNodeByKey(nodeKey);
+                const targetImageNode = $getImageNodeByKey(nodeKey);
                 const droppedImageNode = $getNodeByKey(draggedNodeKey);
+                if (!targetImageNode || !droppedImageNode) {return;}
                 // keep the shared audience (canDropImageCard only allows matching ones)
                 const galleryNode = $createGalleryNode({visibility: targetImageNode.visibility});
 
                 // images don't contain the filename dataset property so we need to add it
-                dataset.fileName = dataset?.fileName || getImageFilenameFromSrc(dataset.src);
+                dataset.fileName = dataset?.fileName || getImageFilenameFromSrc(dataset.src as string);
                 const targetImageDataset = targetImageNode.getDataset();
-                targetImageDataset.fileName = targetImageDataset?.fileName || getImageFilenameFromSrc(targetImageDataset.src);
+                targetImageDataset.fileName = targetImageDataset?.fileName || getImageFilenameFromSrc(targetImageDataset.src as string);
 
                 galleryNode.addImages([targetImageDataset, dataset]);
 
@@ -81,12 +102,14 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
     }, [editor, nodeKey]);
     const imageCardDragHandler = useCardDragAndDrop({
         canDrop: canDropImageCard,
-        onDrop: onDropImageCard
+        onDrop: onDropImageCard,
+        draggableSelector: '[data-kg-card]',
+        droppableSelector: '[data-kg-card]'
     });
 
     const {isEnabled: isPinturaEnabled, openEditor: openImageEditor}
         = usePinturaEditor({config: cardConfig.pinturaConfig});
-        
+
     const allowedImageCardWidths = React.useMemo(() => {
         return getAllowedImageCardWidths(cardConfig?.image?.allowedWidths);
     }, [cardConfig?.image?.allowedWidths]);
@@ -106,21 +129,21 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
         // Convert `data:` URL to File and upload it
         const uploadFile = async () => {
             const file = await dataSrcToFile(src);
-            if (isMounted) {
+            if (isMounted && file) {
                 await imageUploadHandler([file], nodeKey, editor, imageUploader.upload);
             }
         };
 
         uploadFile();
 
-        return () => isMounted = false;
+        return () => { isMounted = false; };
     }, [editor, imageUploader.isLoading, imageUploader.upload, nodeKey, src]);
 
     React.useEffect(() => {
         // If an initial file is provided, upload it
-        const uploadInitialFile = async (file) => {
+        const uploadInitialFile = async (file: unknown) => {
             if (file && !src) {
-                await imageUploadHandler([file], nodeKey, editor, imageUploader.upload);
+                await imageUploadHandler([file as File], nodeKey, editor, imageUploader.upload);
             }
         };
 
@@ -133,7 +156,9 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
             if (src && !initialFile && !triggerFileDialog) {
                 const {width, height} = await getImageDimensions(src);
                 editor.update(() => {
-                    const node = $getNodeByKey(nodeKey);
+                    const node = $getImageNodeByKey(nodeKey);
+                   if (!node) {return;}
+                    if (!node) {return;}
                     node.width = width;
                     node.height = height;
                 });
@@ -141,7 +166,8 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
         };
 
         const hasMissingDimensions = editor.getEditorState().read(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getImageNodeByKey(nodeKey);
+            if (!node) {return;}
             if (!node.width || !node.height) {
                 return true;
             }
@@ -156,28 +182,34 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const onFileChange = async (e) => {
+    const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
 
         // reset original src so it can be replaced with preview and upload progress
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getImageNodeByKey(nodeKey);
+           if (!node) {return;}
+            if (!node) {return;}
             node.src = '';
         });
 
-        return await imageUploadHandler(files, nodeKey, editor, imageUploader.upload);
+        return await imageUploadHandler(files!, nodeKey, editor, imageUploader.upload);
     };
 
-    const setHref = (newHref) => {
+    const setHref = (newHref: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getImageNodeByKey(nodeKey);
+           if (!node) {return;}
+            if (!node) {return;}
             node.href = newHref;
         });
     };
 
-    const setAltText = (newAltText) => {
+    const setAltText = (newAltText: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getImageNodeByKey(nodeKey);
+           if (!node) {return;}
+            if (!node) {return;}
             node.alt = newAltText;
         });
     };
@@ -195,7 +227,9 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
 
             // clear the property on the node so we don't accidentally trigger anything with a re-render
             editor.update(() => {
-                const node = $getNodeByKey(nodeKey);
+                const node = $getImageNodeByKey(nodeKey);
+               if (!node) {return;}
+                if (!node) {return;}
                 node.triggerFileDialog = false;
             });
         });
@@ -211,7 +245,9 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
         }
 
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getImageNodeByKey(nodeKey);
+           if (!node) {return;}
+            if (!node) {return;}
             node.cardWidth = newWidth; // this is a property on the node, not the card
             setCardWidth(newWidth); // sets the state of the toolbar component
         });
@@ -236,7 +272,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
         });
     };
 
-    async function handleImageDrop(files) {
+    async function handleImageDrop(files: File[]) {
         await imageUploadHandler(files, nodeKey, editor, imageUploader.upload);
     }
 
@@ -283,10 +319,10 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
 
             <ActionToolbar
                 data-kg-card-toolbar="image"
-                isVisible={src && isSelected && !isEditing && !showLink && !showSnippetToolbar}
+                isVisible={!!src && isSelected && !isEditing && !showLink && !showSnippetToolbar}
             >
                 <ImageUploadForm
-                    fileInputRef={toolbarFileInputRef}
+                    fileInputRef={toolbarFileInputRef as React.RefObject<HTMLInputElement>}
                     mimeTypes={fileUploader.fileTypes.image?.mimeTypes}
                     onFileChange={onFileChange}
                 />
@@ -313,7 +349,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
                         onClick={() => handleImageCardResize('full')}
                     />
                     <ToolbarMenuSeparator hide={isGif(src) || !hasMultipleImageCardWidths} />
-                    <ToolbarMenuItem icon="link" isActive={href || false} label="Link" onClick = {() => {
+                    <ToolbarMenuItem icon="link" isActive={!!href} label="Link" onClick = {() => {
                         setShowLink(true);
                     }} />
                     <ToolbarMenuSeparator hide={!isVisibilityEnabled} />

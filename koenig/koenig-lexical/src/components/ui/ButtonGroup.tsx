@@ -1,9 +1,24 @@
-import PropTypes from 'prop-types';
+import React from 'react';
 
 import {Tooltip} from './Tooltip';
 import {usePreviousFocus} from '../../hooks/usePreviousFocus';
 
-export function ButtonGroup({buttons = [], selectedName, onClick, hasTooltip = true}) {
+interface ButtonGroupButton {
+    label?: string;
+    name: string;
+    Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    dataTestId?: string;
+    ariaLabel?: string;
+}
+
+export interface ButtonGroupProps {
+    buttons?: ButtonGroupButton[];
+    selectedName: string;
+    onClick: (name: string) => void;
+    hasTooltip?: boolean;
+}
+
+export function ButtonGroup({buttons = [], selectedName, onClick, hasTooltip = true}: ButtonGroupProps) {
     return (
         <div className="flex">
             <ul className="flex items-center justify-evenly rounded-lg bg-grey-100 font-sans text-md font-normal text-white dark:bg-grey-900" role="menubar">
@@ -25,7 +40,18 @@ export function ButtonGroup({buttons = [], selectedName, onClick, hasTooltip = t
     );
 }
 
-export function ButtonGroupIconButton({dataTestId, onClick, label, ariaLabel, name, selectedName, Icon, hasTooltip}) {
+interface ButtonGroupIconButtonProps {
+    dataTestId?: string;
+    onClick: (name: string) => void;
+    label?: string;
+    ariaLabel?: string;
+    name: string;
+    selectedName: string;
+    Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    hasTooltip?: boolean;
+}
+
+export function ButtonGroupIconButton({dataTestId, onClick, label, ariaLabel, name, selectedName, Icon, hasTooltip}: ButtonGroupIconButtonProps) {
     const isActive = name === selectedName;
 
     const {handleMousedown, handleClick} = usePreviousFocus(onClick, name);
@@ -48,16 +74,3 @@ export function ButtonGroupIconButton({dataTestId, onClick, label, ariaLabel, na
         </li>
     );
 }
-
-ButtonGroup.propTypes = {
-    selectedName: PropTypes.oneOf(['regular', 'wide', 'full', 'split', 'center', 'left', 'small', 'medium', 'large', 'grid', 'list', 'minimal', 'immersive']).isRequired,
-    hasTooltip: PropTypes.bool,
-    onClick: PropTypes.func.isRequired,
-    buttons: PropTypes.arrayOf(PropTypes.shape({
-        label: PropTypes.string,
-        name: PropTypes.string.isRequired,
-        Icon: PropTypes.elementType,
-        dataTestId: PropTypes.string,
-        ariaLabel: PropTypes.string
-    }))
-};

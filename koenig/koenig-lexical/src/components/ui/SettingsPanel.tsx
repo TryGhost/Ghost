@@ -1,35 +1,54 @@
-import KoenigComposerContext from '../../context/KoenigComposerContext.jsx';
+import KoenigComposerContext from '../../context/KoenigComposerContext';
 import React from 'react';
 import clsx from 'clsx';
 import useSettingsPanelReposition from '../../hooks/useSettingsPanelReposition';
-import {ButtonGroup} from './ButtonGroup.jsx';
-import {ColorIndicator} from './ColorPicker.jsx';
-import {ColorOptionButtons} from './ColorOptionButtons.jsx';
+import {ButtonGroup} from './ButtonGroup';
+import {ColorIndicator} from './ColorPicker';
+import {ColorOptionButtons} from './ColorOptionButtons';
 import {Dropdown} from './Dropdown';
 import {Input} from './Input';
-import {InputList, InputListItem} from './InputList.jsx';
-import {MediaUploader} from './MediaUploader.jsx';
+import {InputList, InputListItem} from './InputList';
+import {MediaUploader} from './MediaUploader';
 import {MultiSelectDropdown} from './MultiSelectDropdown';
-import {Slider} from './Slider.jsx';
+import {Slider} from './Slider';
 import {TabView} from './TabView';
 import {Toggle} from './Toggle';
 import {useKoenigSelectedCardContext} from '../../context/KoenigSelectedCardContext';
+import type {OpenImageEditor} from '../../hooks/usePinturaEditor';
+
+interface Tab {
+    id: string;
+    label: string;
+}
+
+type SettingsPanelChildren = React.ReactNode | Record<string, React.ReactNode>;
+
+export interface SettingsPanelProps {
+    children?: SettingsPanelChildren;
+    darkMode?: boolean;
+    cardWidth?: string;
+    tabs?: Tab[];
+    defaultTab?: string;
+    settingsLabel?: string;
+    visibilitySettings?: React.ReactNode;
+    showVisibilitySettings?: boolean;
+}
 
 // A card's settings panel. Pass `visibilitySettings` to add a Visibility tab
 // after the card's own settings: untabbed settings then get a tab named
 // `settingsLabel`, and `showVisibilitySettings` opens the panel on Visibility.
-export function SettingsPanel({children, darkMode, cardWidth, tabs, defaultTab, settingsLabel = 'Design', visibilitySettings = null, showVisibilitySettings = false}) {
+export function SettingsPanel({children, darkMode, cardWidth, tabs, defaultTab, settingsLabel = 'Design', visibilitySettings = null, showVisibilitySettings = false}: SettingsPanelProps) {
     const {ref} = useSettingsPanelReposition({}, cardWidth);
     const {visibilitySettingsRequestId} = useKoenigSelectedCardContext();
 
     let panelTabs = tabs;
-    let panelChildren = children;
+    let panelChildren: SettingsPanelChildren = children;
     let panelDefaultTab = defaultTab;
     if (visibilitySettings) {
         const settingsTab = {id: settingsLabel.toLowerCase(), label: settingsLabel};
         const ownTabs = tabs ?? [settingsTab];
         panelTabs = [...ownTabs, {id: 'visibility', label: 'Visibility'}];
-        panelChildren = {...(tabs ? children : {[settingsTab.id]: children}), visibility: visibilitySettings};
+        panelChildren = {...(tabs ? children as Record<string, React.ReactNode> : {[settingsTab.id]: children}), visibility: visibilitySettings};
         panelDefaultTab = showVisibilitySettings ? 'visibility' : (defaultTab ?? panelTabs[0].id);
     }
 
@@ -43,25 +62,33 @@ export function SettingsPanel({children, darkMode, cardWidth, tabs, defaultTab, 
         <div className={`!mt-0 touch-none ${darkMode ? 'dark' : ''}`}>
 
             {panelTabs ? (
-                <div ref={ref}
+                <div ref={ref as React.RefObject<HTMLDivElement>}
                     className="not-kg-prose fixed left-0 top-0 z-[9999999] m-0 flex w-[320px] flex-col rounded-lg bg-white bg-clip-padding font-sans shadow-lg will-change-transform dark:bg-grey-950 dark:shadow-xl"
                     data-testid="settings-panel"
                     data-kg-settings-panel
                 >
-                    <TabView defaultTab={panelDefaultTab} defaultTabKey={visibilitySettingsRequestId} tabContent={tabContent} tabs={panelTabs} />
+                    <TabView defaultTab={panelDefaultTab} defaultTabKey={visibilitySettingsRequestId} tabContent={tabContent as Record<string, React.ReactNode>} tabs={panelTabs} />
                 </div>
             ) : (
-                <div ref={ref}
+                <div ref={ref as React.RefObject<HTMLDivElement>}
                     className="not-kg-prose fixed left-0 top-0 z-[9999999] m-0 flex w-[320px] flex-col gap-3 rounded-lg bg-white bg-clip-padding p-6 font-sans shadow-lg will-change-transform dark:bg-grey-950 dark:shadow-xl"
                     data-testid="settings-panel"
                     data-kg-settings-panel
-                >{panelChildren}</div>
+                >{panelChildren as React.ReactNode}</div>
             )}
         </div>
     );
 }
 
-export function ToggleSetting({label, description, isChecked, onChange, dataTestId}) {
+interface ToggleSettingProps {
+    label: string;
+    description?: string;
+    isChecked?: boolean;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    dataTestId?: string;
+}
+
+export function ToggleSetting({label, description, isChecked, onChange, dataTestId}: ToggleSettingProps) {
     return (
         <label className="flex w-full cursor-pointer items-center justify-between">
             <div>
@@ -77,7 +104,18 @@ export function ToggleSetting({label, description, isChecked, onChange, dataTest
     );
 }
 
-export function SliderSetting({label, onChange, max, min, value, defaultValue, description, dataTestId}) {
+interface SliderSettingProps {
+    label: string;
+    onChange?: (value: number) => void;
+    max?: number;
+    min?: number;
+    value?: number;
+    defaultValue?: number;
+    description?: string;
+    dataTestId?: string;
+}
+
+export function SliderSetting({label, onChange, max, min, value, defaultValue, description, dataTestId}: SliderSettingProps) {
     return (
         <div className="my-2 flex w-full flex-col gap-1">
             <div className="flex items-center justify-between font-sans text-[1.3rem] font-normal">
@@ -92,7 +130,18 @@ export function SliderSetting({label, onChange, max, min, value, defaultValue, d
     );
 }
 
-export function InputSetting({label, hideLabel, description, onChange, value, placeholder, dataTestId, onBlur}) {
+interface InputSettingProps {
+    label: string;
+    hideLabel?: boolean;
+    description?: string;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    value?: string;
+    placeholder?: string;
+    dataTestId?: string;
+    onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
+}
+
+export function InputSetting({label, hideLabel, description, onChange, value, placeholder, dataTestId, onBlur}: InputSettingProps) {
     return (
         <div className="flex w-full flex-col justify-between">
             <div className={hideLabel ? 'sr-only' : 'mb-1.5 text-sm font-medium tracking-normal text-grey-900 dark:text-grey-300'}>{label}</div>
@@ -104,17 +153,21 @@ export function InputSetting({label, hideLabel, description, onChange, value, pl
     );
 }
 
-/**
- * Enter a link with autocompletion
- */
-export function InputUrlSetting({dataTestId, label, value, onChange}) {
+interface InputUrlSettingProps {
+    dataTestId?: string;
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+}
+
+export function InputUrlSetting({dataTestId, label, value, onChange}: InputUrlSettingProps) {
     const {cardConfig} = React.useContext(KoenigComposerContext);
-    const [listOptions, setListOptions] = React.useState([]);
+    const [listOptions, setListOptions] = React.useState<{value: string; label: string}[]>([]);
 
     React.useEffect(() => {
         if (cardConfig?.fetchAutocompleteLinks) {
-            cardConfig.fetchAutocompleteLinks().then((links) => {
-                setListOptions(links.map((link) => {
+            cardConfig.fetchAutocompleteLinks().then((links: {value: string; label: string}[]) => {
+                setListOptions(links.map((link: {value: string; label: string}) => {
                     return {value: link.value, label: link.label};
                 }));
             });
@@ -137,19 +190,22 @@ export function InputUrlSetting({dataTestId, label, value, onChange}) {
     );
 }
 
-/**
- * A text input with autocomplete suggestions.
- * @param {object} options
- * @param {(value: string) => void} options.onChange Does not pass an event, only the value
- * @param {{value: string, label: string}[]} options.listOptions
- * @returns
- */
-export function InputListSetting({dataTestId, description, label, listOptions, onChange, placeholder, value}) {
-    function onClick(item) {
+interface InputListSettingProps {
+    dataTestId?: string;
+    description?: string;
+    label: string;
+    listOptions?: {value: string; label: string}[];
+    onChange: (value: string) => void;
+    placeholder?: string;
+    value?: string;
+}
+
+export function InputListSetting({dataTestId, description, label, listOptions, onChange, placeholder, value}: InputListSettingProps) {
+    function onClick(item: {value: string}) {
         onChange(item.value);
     }
 
-    const getItem = (item, selected, onMouseOver, scrollIntoView) => {
+    const getItem = (item: {value: string; label: string}, selected: boolean, onMouseOver?: () => void, scrollIntoView?: boolean) => {
         return (
             <InputListItem
                 key={item.value}
@@ -190,7 +246,16 @@ export function InputListSetting({dataTestId, description, label, listOptions, o
     );
 }
 
-export function DropdownSetting({label, description, value, menu, onChange, dataTestId}) {
+interface DropdownSettingProps {
+    label: string;
+    description?: string;
+    value?: string;
+    menu: {name: string; label: string}[];
+    onChange: (name: string) => void;
+    dataTestId?: string;
+}
+
+export function DropdownSetting({label, description, value, menu, onChange, dataTestId}: DropdownSettingProps) {
     return (
         <div className="flex w-full flex-col justify-between gap-1">
             <div className="text-sm font-medium tracking-normal text-grey-900 dark:text-grey-300" data-testid={`${dataTestId}-label`}>{label}</div>
@@ -207,15 +272,18 @@ export function DropdownSetting({label, description, value, menu, onChange, data
     );
 }
 
-/**
- *
- * @param {object} options
- * @param {T[]} options.items The currently selected items
- * @param {T[]} options.availableItems The items available for selection
- * @param {boolean} options.allowAdd Whether to allow adding new items
- * @returns
- */
-export function MultiSelectDropdownSetting({label, description, placeholder = '', items, availableItems, onChange, dataTestId, allowAdd = true}) {
+interface MultiSelectDropdownSettingProps {
+    label: string;
+    description?: string;
+    placeholder?: string;
+    items: string[];
+    availableItems: string[];
+    onChange: (items: string[]) => void;
+    dataTestId?: string;
+    allowAdd?: boolean;
+}
+
+export function MultiSelectDropdownSetting({label, description, placeholder = '', items, availableItems, onChange, dataTestId, allowAdd = true}: MultiSelectDropdownSettingProps) {
     return (
         <div className="flex w-full flex-col justify-between gap-1">
             <div className="text-sm font-medium tracking-normal text-grey-900 dark:text-grey-300">{label}</div>
@@ -234,7 +302,15 @@ export function MultiSelectDropdownSetting({label, description, placeholder = ''
     );
 }
 
-export function ButtonGroupSetting({label, onClick, selectedName, buttons, hasTooltip}) {
+interface ButtonGroupSettingProps {
+    label: string;
+    onClick: (name: string) => void;
+    selectedName: string;
+    buttons: {label?: string; name: string; Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>; dataTestId?: string; ariaLabel?: string}[];
+    hasTooltip?: boolean;
+}
+
+export function ButtonGroupSetting({label, onClick, selectedName, buttons, hasTooltip}: ButtonGroupSettingProps) {
     return (
         <div className="flex w-full items-center justify-between text-[1.3rem]">
             <div className="text-sm font-medium tracking-normal text-grey-900 dark:text-grey-300">{label}</div>
@@ -246,7 +322,16 @@ export function ButtonGroupSetting({label, onClick, selectedName, buttons, hasTo
     );
 }
 
-export function ColorOptionSetting({label, onClick, selectedName, buttons, layout, dataTestId}) {
+interface ColorOptionSettingProps {
+    label: string;
+    onClick: (name: string) => void;
+    selectedName?: string;
+    buttons: {label: string; name: string; color?: string}[];
+    layout?: 'stacked' | string;
+    dataTestId?: string;
+}
+
+export function ColorOptionSetting({label, onClick, selectedName, buttons, layout, dataTestId}: ColorOptionSettingProps) {
     return (
         <div className={`flex w-full text-[1.3rem] ${layout === 'stacked' ? 'flex-col' : 'items-center justify-between'}`} data-testid={dataTestId}>
             <div className="text-sm font-medium tracking-normal text-grey-900 dark:text-grey-300">{label}</div>
@@ -258,10 +343,26 @@ export function ColorOptionSetting({label, onClick, selectedName, buttons, layou
     );
 }
 
-export function ColorPickerSetting({label, isExpanded, onSwatchChange, onPickerChange, onTogglePicker, value, swatches, eyedropper, hasTransparentOption, dataTestId, children, showChildren}) {
-    const markClickedInside = (event) => {
+interface ColorPickerSettingProps {
+    label: string;
+    isExpanded?: boolean;
+    onSwatchChange: (value: string) => void;
+    onPickerChange: (value: string) => void;
+    onTogglePicker: (expanded: boolean) => void;
+    value?: string;
+    swatches: {hex?: string; accent?: boolean; transparent?: boolean; image?: boolean; title: string; customContent?: React.ReactNode}[];
+    eyedropper?: boolean;
+    hasTransparentOption?: boolean;
+    dataTestId?: string;
+    children?: React.ReactNode;
+    showChildren?: boolean;
+}
+
+export function ColorPickerSetting({label, isExpanded, onSwatchChange, onPickerChange, onTogglePicker, value, swatches, eyedropper, hasTransparentOption, dataTestId, children, showChildren}: ColorPickerSettingProps) {
+    const markClickedInside = (event: React.MouseEvent) => {
         event.stopPropagation();
     };
+    const shouldRenderChildren = showChildren ?? true;
 
     return (
         <div className="flex-col" data-testid={dataTestId} onClick={markClickedInside}>
@@ -273,14 +374,13 @@ export function ColorPickerSetting({label, isExpanded, onSwatchChange, onPickerC
                         eyedropper={eyedropper}
                         hasTransparentOption={hasTransparentOption}
                         isExpanded={isExpanded}
-                        showChildren={showChildren}
                         swatches={swatches}
                         value={value}
                         onChange={onPickerChange}
                         onSwatchChange={onSwatchChange}
                         onTogglePicker={onTogglePicker}
                     >
-                        {children}
+                        {shouldRenderChildren && children}
                     </ColorIndicator>
                 </div>
             </div>
@@ -288,7 +388,35 @@ export function ColorPickerSetting({label, isExpanded, onSwatchChange, onPickerC
     );
 }
 
-export function MediaUploadSetting({className, imgClassName, label, hideLabel, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, errors = [], progress, onRemoveMedia, icon, desc, size, type, stacked, borderStyle, mimeTypes, isPinturaEnabled, openImageEditor, setFileInputRef, filePicker}) {
+interface MediaUploadSettingProps {
+    className?: string;
+    imgClassName?: string;
+    dataTestId?: string;
+    label: string;
+    hideLabel?: boolean;
+    onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    isDraggedOver?: boolean;
+    placeholderRef?: React.Ref<HTMLDivElement>;
+    src?: string;
+    alt?: string;
+    isLoading?: boolean;
+    errors?: {message: string}[];
+    progress?: number;
+    onRemoveMedia?: () => void;
+    icon?: string;
+    desc?: string;
+    size?: string;
+    type?: 'image' | 'button';
+    stacked?: boolean;
+    borderStyle?: 'squared' | 'rounded';
+    mimeTypes?: string[];
+    isPinturaEnabled?: boolean;
+    openImageEditor?: OpenImageEditor;
+    setFileInputRef?: (el: HTMLInputElement | null) => void;
+    filePicker?: () => void;
+}
+
+export function MediaUploadSetting({className, imgClassName, label, hideLabel, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, errors = [], progress, onRemoveMedia, icon, desc, size, type, stacked, borderStyle, mimeTypes, isPinturaEnabled, openImageEditor, setFileInputRef, filePicker}: MediaUploadSettingProps) {
     return (
         <div className={clsx(className, !stacked && 'flex justify-between gap-3')} data-testid="media-upload-setting">
             <div className={hideLabel ? 'sr-only' : 'mb-2 shrink-0 text-sm font-medium tracking-normal text-grey-900 dark:text-grey-400'}>{label}</div>
@@ -301,7 +429,7 @@ export function MediaUploadSetting({className, imgClassName, label, hideLabel, o
                     !stacked && type !== 'button' && 'h-[5.2rem] w-[9.2rem]'
                 )}
                 desc={desc}
-                dragHandler={{isDraggedOver, setRef: placeholderRef}}
+                dragHandler={{isDraggedOver: isDraggedOver || false, setRef: placeholderRef as React.Ref<HTMLDivElement>}}
                 errors={errors}
                 filePicker={filePicker}
                 icon={icon}

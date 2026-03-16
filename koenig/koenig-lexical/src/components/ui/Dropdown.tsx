@@ -3,7 +3,12 @@ import React from 'react';
 import {DropdownContainer} from './DropdownContainer';
 import {KeyboardSelection} from './KeyboardSelection';
 
-function Item({item, selected, onChange}) {
+interface DropdownItem {
+    name: string;
+    label: string;
+}
+
+function Item({item, selected, onChange}: {item: DropdownItem; selected: boolean; onChange: (name: string) => void}) {
     let selectionClass = '';
 
     if (selected) {
@@ -12,7 +17,7 @@ function Item({item, selected, onChange}) {
 
     // We use the capture phase of the mouse down event, otherwise the list option will be removed when blurring the input
     // before calling the click event
-    const handleOptionMouseDown = (event, v) => {
+    const handleOptionMouseDown = (event: React.MouseEvent, v: string) => {
         // Prevent losing focus when clicking an option
         event.preventDefault();
         onChange(v);
@@ -25,19 +30,26 @@ function Item({item, selected, onChange}) {
     );
 }
 
-export function Dropdown({value, menu, onChange, dataTestId}) {
+export interface DropdownProps {
+    value?: string;
+    menu: DropdownItem[];
+    onChange: (name: string) => void;
+    dataTestId?: string;
+}
+
+export function Dropdown({value, menu, onChange, dataTestId}: DropdownProps) {
     const [open, setOpen] = React.useState(false);
 
-    const handleOpen = (event) => {
+    const handleOpen = (event: React.MouseEvent) => {
         setOpen(!open);
 
         // For Safari, we need to manually focus the button (doesn't happen by default)
-        if (!open) {
+        if (!open && event.target instanceof HTMLElement) {
             event.target.focus();
         }
     };
 
-    const preventLoseFocus = (event) => {
+    const preventLoseFocus = (event: React.MouseEvent) => {
         // Prevent losing focus when clicking the dropdown
         // needed on Safari
         event.preventDefault();
@@ -48,12 +60,12 @@ export function Dropdown({value, menu, onChange, dataTestId}) {
         setOpen(false);
     };
 
-    const handleSelect = (name) => {
+    const handleSelect = (name: string) => {
         setOpen(false);
         onChange(name);
     };
 
-    const getItem = (item, selected) => {
+    const getItem = (item: DropdownItem, selected: boolean) => {
         return (
             <Item key={item.name} item={item} selected={selected} onChange={handleSelect}/>
         );
@@ -78,7 +90,7 @@ export function Dropdown({value, menu, onChange, dataTestId}) {
             </button>
             {open && (
                 <DropdownContainer>
-                    <KeyboardSelection
+                    <KeyboardSelection<DropdownItem>
                         defaultSelected={selectedItem}
                         getItem={getItem}
                         items={menu}

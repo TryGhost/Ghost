@@ -1,39 +1,39 @@
 import CardContext from '../context/CardContext';
-import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
+import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {$getNodeByKey} from 'lexical';
-import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
+import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {CardSettingsPanel} from '../components/CardSettingsPanel';
-import {DESELECT_CARD_COMMAND, EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin.jsx';
+import {EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {HtmlCard} from '../components/ui/cards/HtmlCard';
-import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
-import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
+import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {HtmlNode} from '@tryghost/kg-default-nodes';
 
-export function HtmlNodeComponent({nodeKey, html}) {
+interface HtmlNodeComponentProps {
+    nodeKey: string;
+    html: string;
+}
+
+export function HtmlNodeComponent({nodeKey, html}: HtmlNodeComponentProps) {
     const [editor] = useLexicalComposerContext();
     const cardContext = React.useContext(CardContext);
     const {cardConfig, darkMode} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
-    const updateHtml = (value) => {
+    const updateHtml = (value: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getNodeByKey(nodeKey) as HtmlNode | null;
+            if (!node) {return;}
             node.html = value;
         });
     };
 
-    const handleToolbarEdit = (event) => {
+    const handleToolbarEdit = (event: React.MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
         editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: false});
-    };
-
-    // TODO: this isn't used? <HtmlCard> does not have a prop for `onBlur`
-    const onBlur = (event) => {
-        if (event?.relatedTarget?.className !== 'kg-prose') {
-            editor.dispatchCommand(DESELECT_CARD_COMMAND, {cardKey: nodeKey});
-        }
     };
 
     return (
@@ -43,7 +43,6 @@ export function HtmlNodeComponent({nodeKey, html}) {
                 html={html}
                 isEditing={cardContext.isEditing}
                 updateHtml={updateHtml}
-                onBlur={onBlur}
             />
 
             <ActionToolbar

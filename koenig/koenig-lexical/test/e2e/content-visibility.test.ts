@@ -1,5 +1,6 @@
 import {createSnippet, ctrlOrCmd, focusEditor, getEditorStateJSON, initialize, insertCard} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 // Every card with settings has one Edit button that opens a single settings
 // panel in edit mode. Visibility is always the panel's last tab. Each rule is
@@ -11,7 +12,7 @@ const hidden = {
     email: {memberSegment: 'status:free,status:-free'}
 };
 
-const paragraph = text => ({
+const paragraph = (text: string) => ({
     children: [{detail: 0, format: 0, mode: 'normal', style: '', text, type: 'text', version: 1}],
     direction: 'ltr',
     format: '',
@@ -20,7 +21,7 @@ const paragraph = text => ({
     version: 1
 });
 
-const image = ({cardWidth = 'regular', caption = '', visibility} = {}) => ({
+const image = ({cardWidth = 'regular', caption = '', visibility}: {cardWidth?: string; caption?: string; visibility?: typeof hidden} = {}) => ({
     type: 'image',
     version: 1,
     src: '/Koenig-editor-1.png',
@@ -33,7 +34,7 @@ const image = ({cardWidth = 'regular', caption = '', visibility} = {}) => ({
     ...(visibility && {visibility})
 });
 
-const video = ({cardWidth = 'regular', visibility} = {}) => ({
+const video = ({cardWidth = 'regular', visibility}: {cardWidth?: string; visibility?: typeof hidden} = {}) => ({
     type: 'video',
     version: 1,
     cardWidth,
@@ -58,12 +59,12 @@ const audio = {
     thumbnailSrc: ''
 };
 
-const content = (...children) => encodeURIComponent(JSON.stringify({
+const content = (...children: object[]) => encodeURIComponent(JSON.stringify({
     root: {children, direction: null, format: '', indent: 0, type: 'root', version: 1}
 }));
 
 test.describe('Content Visibility', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();

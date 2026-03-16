@@ -7,7 +7,7 @@ import ImgWideIcon from '../../../../../assets/icons/kg-img-wide.svg?react';
 import KoenigNestedEditor from '../../../../KoenigNestedEditor';
 import LayoutSplitIcon from '../../../../../assets/icons/kg-layout-split.svg?react';
 import LeftAlignIcon from '../../../../../assets/icons/kg-align-left.svg?react';
-import PropTypes from 'prop-types';
+import React, {useEffect, useState} from 'react';
 import ShrinkIcon from '../../../../../assets/icons/kg-shrink.svg?react';
 import clsx from 'clsx';
 import trackEvent from '../../../../../utils/analytics';
@@ -21,7 +21,57 @@ import {ReadOnlyOverlay} from '../../../ReadOnlyOverlay';
 import {Tooltip} from '../../../Tooltip';
 import {getAccentColor} from '../../../../../utils/getAccentColor';
 import {isEditorEmpty} from '../../../../../utils/isEditorEmpty';
-import {useEffect, useState} from 'react';
+import type {LexicalEditor} from 'lexical';
+import type {OpenImageEditor} from '../../../../../hooks/usePinturaEditor';
+
+type Layout = 'regular' | 'wide' | 'full' | 'split';
+type Alignment = 'left' | 'center';
+type BackgroundSize = 'cover' | 'contain';
+
+interface HeaderCardV2Props {
+    alignment: Alignment;
+    buttonEnabled?: boolean;
+    buttonText?: string;
+    buttonUrl?: string;
+    showBackgroundImage?: boolean;
+    backgroundImageSrc?: string;
+    backgroundSize?: BackgroundSize;
+    backgroundColor: string;
+    buttonColor?: string;
+    buttonTextColor?: string;
+    textColor?: string;
+    isEditing?: boolean;
+    fileUploader?: {isLoading?: boolean; progress?: number; errors?: {message: string}[]};
+    handleAlignment: (name: string) => void;
+    handleButtonText?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleButtonEnabled?: () => void;
+    handleShowBackgroundImage?: () => void;
+    handleHideBackgroundImage?: () => void;
+    handleClearBackgroundImage?: () => void;
+    handleBackgroundColor: (color: string, textColor: string) => void;
+    handleButtonColor: (color: string, textColor: string) => void;
+    handleLayout: (name: string) => void;
+    handleTextColor: (color: string) => void;
+    isPinturaEnabled?: boolean;
+    layout: Layout;
+    onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    openImageEditor?: OpenImageEditor;
+    imageDragHandler?: {isDraggedOver?: boolean; setRef?: React.Ref<HTMLDivElement>};
+    headerTextEditor: LexicalEditor;
+    headerTextEditorInitialState?: string;
+    subheaderTextEditor: LexicalEditor;
+    subheaderTextEditorInitialState?: string;
+    isSwapped?: boolean;
+    handleSwapLayout?: () => void;
+    handleBackgroundSize?: (size: string) => void;
+    handleButtonTextBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
+    handleButtonUrlBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
+    handleButtonUrl: (value: string) => void;
+    setFileInputRef?: (el: HTMLInputElement | null) => void;
+    visibilitySettings?: React.ReactNode;
+    showVisibilitySettings?: boolean;
+}
+
 // Header Card Version 2
 export function HeaderCard({alignment,
     visibilitySettings = null,
@@ -61,20 +111,20 @@ export function HeaderCard({alignment,
     handleSwapLayout,
     handleBackgroundSize,
     handleButtonTextBlur,
-    handleButtonUrlBlur,
+    handleButtonUrlBlur: _handleButtonUrlBlur,
     handleButtonUrl,
-    setFileInputRef}) {
+    setFileInputRef}: HeaderCardV2Props) {
     const [backgroundColorPickerExpanded, setBackgroundColorPickerExpanded] = useState(false);
     const [buttonColorPickerExpanded, setButtonColorPickerExpanded] = useState(false);
 
-    const matchingTextColor = (color) => {
+    const matchingTextColor = (color: string) => {
         return color === 'transparent' ? '' : textColorForBackgroundColor(hexColorValue(color)).hex();
     };
 
     /**
      * Convert a semi transparent color to a fully opaque color by merging it with a white background
      */
-    const mergeWhiteColor = ({r, g, b, a}) => {
+    const mergeWhiteColor = ({r, g, b, a}: {r: number; g: number; b: number; a: number}) => {
         const aPercentage = a / 255;
 
         return Color({
@@ -159,7 +209,7 @@ export function HeaderCard({alignment,
     const headerPlaceholder = layout === 'split' ? 'Heading' : 'Enter heading text';
     const subheaderPlaceholder = layout === 'split' ? 'Subheading text' : 'Enter subheading text';
 
-    const hexColorValue = (color) => {
+    const hexColorValue = (color: string) => {
         if (color === 'accent') {
             const accentColor = getAccentColor().trim();
             return accentColor;
@@ -167,7 +217,7 @@ export function HeaderCard({alignment,
         return color.trim();
     };
 
-    const wrapperStyle = () => {
+    const wrapperStyle = (): React.CSSProperties => {
         if (backgroundImageSrc && layout !== 'split' && textColor) {
             return {
                 backgroundImage: `url(${backgroundImageSrc})`,
@@ -186,34 +236,34 @@ export function HeaderCard({alignment,
         return {
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3ERectangle%3C/title%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cpath fill='%23F2F6F8' d='M0 0h24v24H0z'/%3E%3Cpath fill='%23E5ECF0' d='M0 0h12v12H0zM12 12h12v12H12z'/%3E%3C/g%3E%3C/svg%3E")`,
             backgroundColor: 'transparent',
-            color: hexColorValue(textColor)
+            color: textColor ? hexColorValue(textColor) : ''
         };
     };
 
-    const toggleBackgroundSize = (event) => {
+    const toggleBackgroundSize = (event: React.MouseEvent) => {
         event.stopPropagation();
         if (backgroundSize === 'cover') {
-            handleBackgroundSize('contain');
+            handleBackgroundSize?.('contain');
             trackEvent('header Card Toggle Size', {size: 'contain'});
         } else {
-            handleBackgroundSize('cover');
+            handleBackgroundSize?.('cover');
             trackEvent('header Card Toggle Size', {size: 'cover'});
         }
     };
 
     const toggleSwapped = () => {
         trackEvent('header Card Toggle Swapped', {swapped: !isSwapped});
-        handleSwapLayout();
+        handleSwapLayout?.();
     };
 
     const toggleButton = () => {
         trackEvent('header card button toggled', {buttonEnabled: !buttonEnabled});
-        handleButtonEnabled();
+        handleButtonEnabled?.();
     };
 
     const correctedBackgroundSize = backgroundSize === 'contain' && backgroundImageSrc ? 'contain' : 'cover';
 
-    const getButtonSize = (layoutString) => {
+    const getButtonSize = (layoutString: Layout) => {
         if (layoutString === 'regular') {
             return 'medium';
         }
@@ -229,6 +279,8 @@ export function HeaderCard({alignment,
         if (layoutString === 'split') {
             return 'medium';
         }
+
+        return 'medium';
     };
 
     const designSettings = (
@@ -278,7 +330,7 @@ export function HeaderCard({alignment,
                                 title="Image"
                                 type="button"
                                 onClick={() => {
-                                    handleShowBackgroundImage();
+                                    handleShowBackgroundImage?.();
                                     setBackgroundColorPickerExpanded(false);
                                     setButtonColorPickerExpanded(false);
                                 }}
@@ -291,17 +343,17 @@ export function HeaderCard({alignment,
                     {title: 'Black', hex: '#000000'},
                     {title: 'Grey', hex: '#F0F0F0'},
                     {title: 'Brand color', accent: true}
-                ].filter(Boolean)}
+                ].filter(Boolean) as {hex?: string; accent?: boolean; transparent?: boolean; image?: boolean; title: string; customContent?: React.ReactNode}[]}
                 value={(showBackgroundImage && layout !== 'split') ? 'image' : backgroundColor}
-                onPickerChange={color => handleBackgroundColor(color, matchingTextColor(color))}
-                onSwatchChange={(color) => {
+                onPickerChange={(color: string) => handleBackgroundColor(color, matchingTextColor(color))}
+                onSwatchChange={(color: string) => {
                     handleBackgroundColor(color, matchingTextColor(color));
                     setBackgroundColorPickerExpanded(false);
                 }}
-                onTogglePicker={(isExpanded) => {
+                onTogglePicker={(isExpanded: boolean) => {
                     if (isExpanded) {
                         if (layout !== 'split') {
-                            handleHideBackgroundImage();
+                            handleHideBackgroundImage?.();
                         }
 
                         if (backgroundColor) {
@@ -340,7 +392,7 @@ export function HeaderCard({alignment,
                     stacked={true}
                     onFileChange={onFileChange}
                     onRemoveMedia={() => {
-                        handleClearBackgroundImage();
+                        handleClearBackgroundImage?.();
                         handleTextColor(matchingTextColor(backgroundColor));
                     }}
                 />
@@ -366,12 +418,12 @@ export function HeaderCard({alignment,
                             {title: 'Brand color', accent: true}
                         ]}
                         value={buttonColor}
-                        onPickerChange={color => handleButtonColor(color, matchingTextColor(color))}
-                        onSwatchChange={(color) => {
+                        onPickerChange={(color: string) => handleButtonColor(color, matchingTextColor(color))}
+                        onSwatchChange={(color: string) => {
                             handleButtonColor(color, matchingTextColor(color));
                             setButtonColorPickerExpanded(false);
                         }}
-                        onTogglePicker={(isExpanded) => {
+                        onTogglePicker={(isExpanded: boolean) => {
                             setButtonColorPickerExpanded(isExpanded);
                             if (isExpanded) {
                                 setBackgroundColorPickerExpanded(!isExpanded);
@@ -389,7 +441,7 @@ export function HeaderCard({alignment,
                     <InputUrlSetting
                         dataTestId='header-button-url'
                         label='Button URL'
-                        value={buttonUrl}
+                        value={buttonUrl || ''}
                         onChange={handleButtonUrl}
                     />
                 </>
@@ -468,7 +520,6 @@ export function HeaderCard({alignment,
                             )}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
-                            style={{color: matchingTextColor(backgroundColor)}}
                             textClassName={clsx(
                                 'koenig-lexical-heading relative w-full whitespace-normal font-bold caret-current',
                                 (!isEditing && isEditorEmpty(headerTextEditor)) ? 'hidden' : 'peer',
@@ -482,7 +533,7 @@ export function HeaderCard({alignment,
                         {/* Subheading */}
                         {<KoenigNestedEditor
                             dataTestId="header-subheader-editor"
-                            defaultKoenigEnterBehavior={true}
+                            defaultKoenigEnterBehaviour={true}
                             hasSettingsPanel={true}
                             initialEditor={subheaderTextEditor}
                             initialEditorState={subheaderTextEditorInitialState}
@@ -496,7 +547,6 @@ export function HeaderCard({alignment,
                             )}
                             placeholderText={subheaderPlaceholder}
                             singleParagraph={true}
-                            style={{color: matchingTextColor(backgroundColor)}}
                             textClassName={clsx(
                                 'koenig-lexical-subheading relative w-full whitespace-normal caret-current',
                                 (!isEditing && isEditorEmpty(subheaderTextEditor)) ? 'hidden' : 'peer',
@@ -520,7 +570,7 @@ export function HeaderCard({alignment,
                                         size={getButtonSize(layout)}
                                         style={buttonColor ? {
                                             backgroundColor: hexColorValue(buttonColor),
-                                            color: hexColorValue(buttonTextColor)
+                                            color: buttonTextColor ? hexColorValue(buttonTextColor) : '#ffffff'
                                         } : {backgroundColor: `#000000`,
                                             color: `#ffffff`}}
                                         value={buttonText}
@@ -547,46 +597,3 @@ export function HeaderCard({alignment,
         </>
     );
 }
-
-HeaderCard.propTypes = {
-    visibilitySettings: PropTypes.node,
-    showVisibilitySettings: PropTypes.bool,
-    alignment: PropTypes.oneOf(['left', 'center']),
-    buttonColor: PropTypes.string,
-    buttonText: PropTypes.string,
-    buttonTextColor: PropTypes.string,
-    buttonEnabled: PropTypes.bool,
-    buttonPlaceholder: PropTypes.string,
-    backgroundImageSrc: PropTypes.string,
-    backgroundSize: PropTypes.oneOf(['cover', 'contain']),
-    backgroundColor: PropTypes.string,
-    textColor: PropTypes.string,
-    showBackgroundImage: PropTypes.bool,
-    isEditing: PropTypes.bool,
-    isPinturaEnabled: PropTypes.bool,
-    fileUploader: PropTypes.object,
-    fileInputRef: PropTypes.object,
-    handleLayout: PropTypes.func,
-    handleAlignment: PropTypes.func,
-    handleButtonText: PropTypes.func,
-    handleClearBackgroundImage: PropTypes.func,
-    handleBackgroundColor: PropTypes.func,
-    handleShowBackgroundImage: PropTypes.func,
-    handleHideBackgroundImage: PropTypes.func,
-    handleButtonColor: PropTypes.func,
-    handleTextColor: PropTypes.func,
-    layout: PropTypes.oneOf(['regular', 'wide', 'full', 'split']),
-    openFilePicker: PropTypes.func,
-    onFileChange: PropTypes.func,
-    openImageEditor: PropTypes.func,
-    imageDragHandler: PropTypes.object,
-    headerTextEditor: PropTypes.object,
-    headerTextEditorInitialState: PropTypes.object,
-    subheaderTextEditor: PropTypes.object,
-    subheaderTextEditorInitialState: PropTypes.object,
-    isSwapped: PropTypes.bool,
-    handleSwapLayout: PropTypes.func,
-    handleBackgroundSize: PropTypes.func,
-    setFileInputRef: PropTypes.func,
-    handleButtonTextBlur: PropTypes.func
-};

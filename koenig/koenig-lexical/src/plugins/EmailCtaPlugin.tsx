@@ -16,8 +16,8 @@ export const EmailCtaPlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_EMAIL_CTA_COMMAND,
-                async (dataset) => {
-                    const cardNode = $createEmailCtaNode(dataset);
+                (_dataset: Record<string, unknown>) => {
+                    const cardNode = $createEmailCtaNode();
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode, openInEditMode: true});
 
                     return true;

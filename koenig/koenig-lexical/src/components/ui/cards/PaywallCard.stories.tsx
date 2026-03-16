@@ -1,22 +1,26 @@
 import KoenigComposerContext, {defaultKoenigComposerContext} from '../../../context/KoenigComposerContext';
 import {CardWrapper} from './../CardWrapper';
 import {PaywallCard} from './PaywallCard';
+import type {ComponentProps} from 'react';
+import type {Meta, StoryFn} from '@storybook/react-vite';
+import type {PostVisibility} from '../../../context/KoenigComposerContext';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
     Selected: {isSelected: true, isEditing: false}
 };
 
-const accessOptions = ['public', 'members', 'paid', 'tiers'];
+const accessOptions: PostVisibility[] = ['public', 'members', 'paid', 'tiers'];
 
-const story = {
+type StoryArgs = ComponentProps<typeof PaywallCard> & {access: PostVisibility; display: keyof typeof displayOptions};
+
+const story: Meta<StoryArgs> = {
     title: 'Primary cards/Public preview card',
     component: PaywallCard,
-    subcomponent: {CardWrapper},
+    subcomponents: {CardWrapper},
     argTypes: {
         display: {
             options: Object.keys(displayOptions),
-            mapping: displayOptions,
             control: {
                 type: 'radio',
                 labels: {
@@ -39,7 +43,7 @@ const story = {
 };
 export default story;
 
-const Template = ({access, display, ...args}) => {
+const Template: StoryFn<StoryArgs> = ({access, display, ...args}) => {
     const cardConfig = {
         feature: {
             paywallImprovements: true
@@ -53,12 +57,12 @@ const Template = ({access, display, ...args}) => {
         <KoenigComposerContext.Provider value={{...defaultKoenigComposerContext, cardConfig}}>
             <div className="kg-prose">
                 <div className="mx-auto my-8 min-w-[initial] max-w-[740px] px-3 py-9">
-                    <CardWrapper {...display} {...args}>
+                    <CardWrapper {...displayOptions[display]} {...args}>
                         <PaywallCard />
                     </CardWrapper>
                 </div>
                 <div className="dark mx-auto my-8 min-w-[initial] max-w-[740px] bg-black px-3 py-9">
-                    <CardWrapper {...display} {...args}>
+                    <CardWrapper {...displayOptions[display]} {...args}>
                         <PaywallCard />
                     </CardWrapper>
                 </div>
@@ -67,7 +71,7 @@ const Template = ({access, display, ...args}) => {
     );
 };
 
-export const Default = Template.bind({});
+export const Default: StoryFn<StoryArgs> = Template.bind({});
 Default.args = {
     access: 'members',
     display: 'Selected'

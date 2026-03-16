@@ -1,14 +1,19 @@
 import React from 'react';
 import StarIcon from '../../../../assets/icons/kg-star.svg?react';
 
-export function RatingButton({rating, onRatingChange}) {
+interface RatingButtonProps {
+    rating: number;
+    onRatingChange: (rating: number) => void;
+}
+
+export function RatingButton({rating, onRatingChange}: RatingButtonProps) {
     const [hoveredStarIndex, setHoveredStarIndex] = React.useState(-1);
 
     const resetHoveredStarIndex = () => {
         setHoveredStarIndex(-1);
     };
 
-    const getStyles = (index) => {
+    const getStyles = (index: number) => {
         const styles = {
             active: rating >= (index + 1) ? 'fill-grey-900 dark:fill-white' : 'fill-grey-200 dark:fill-grey-900',
             hovered: hoveredStarIndex >= index ? 'opacity-70' : ''

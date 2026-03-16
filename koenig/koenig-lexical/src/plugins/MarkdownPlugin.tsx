@@ -16,7 +16,7 @@ export const MarkdownPlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_MARKDOWN_COMMAND,
-                async (dataset) => {
+                (dataset) => {
                     const cardNode = $createMarkdownNode(dataset);
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode, openInEditMode: true});
 

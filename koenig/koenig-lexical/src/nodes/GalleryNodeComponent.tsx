@@ -13,50 +13,65 @@ import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/
 import {getImageDimensions} from '../utils/getImageDimensions';
 import {useCardVisibilityAvailable} from '../hooks/useCardVisibilitySettings';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {GalleryImage} from '../types/GalleryImage';
+import type {GalleryNode} from './GalleryNode';
+import type {LexicalEditor} from 'lexical';
 
-export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorInitialState}) {
+function $getGalleryNodeByKey(nodeKey: string): GalleryNode | null {
+    return $getNodeByKey(nodeKey) as GalleryNode | null;
+}
+
+interface GalleryNodeComponentProps {
+    nodeKey: string;
+    captionEditor: LexicalEditor;
+    captionEditorInitialState: string | undefined;
+}
+
+export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorInitialState}: GalleryNodeComponentProps) {
     const [editor] = useLexicalComposerContext();
     const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
     const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
-    const fileInputRef = React.useRef();
-    const [errorMessage, setErrorMessage] = React.useState(null);
+    const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+    const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
-    const [images, setImages] = React.useState(() => {
+    const [images, setImages] = React.useState<GalleryImage[]>(() => {
         const existingImages = editor.getEditorState().read(() => {
-            const node = $getNodeByKey(nodeKey);
-            return node.images;
+            const node = $getGalleryNodeByKey(nodeKey);
+            if (!node) {return [];}
+            return node.images as GalleryImage[];
         });
-        return existingImages;
+        return existingImages || [];
     });
 
     const getVisibility = React.useCallback(() => {
-        return editor.getEditorState().read(() => $getNodeByKey(nodeKey)?.visibility);
+        return editor.getEditorState().read(() => $getGalleryNodeByKey(nodeKey)?.visibility);
     }, [editor, nodeKey]);
     const galleryReorder = useGalleryReorder({images, updateImages: reorderImages, isSelected, getVisibility});
     const imageUploader = fileUploader.useFileUpload('image');
     const imageFilesDropper = useFileDragAndDrop({handleDrop: handleImageFilesDrop});
 
-    function reorderImages(newImages) {
+    function reorderImages(newImages: GalleryImage[]) {
         recalculateImageRows(newImages);
         setImages(newImages);
         setNodeImages(newImages);
     }
 
-    function setNodeImages(newImages) {
+    function setNodeImages(newImages: GalleryImage[]) {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getGalleryNodeByKey(nodeKey);
+            if (!node) {return;}
             node.setImages(newImages);
         });
     }
 
-    const deleteImage = (imageToDelete) => {
+    const deleteImage = (imageToDelete: GalleryImage) => {
         const newImages = images.filter(image => image.fileName !== imageToDelete.fileName);
         recalculateImageRows(newImages);
         setImages(newImages);
         setNodeImages(newImages);
     };
 
-    const handleImageUploads = async (files) => {
+    const handleImageUploads = async (files: File[] | FileList) => {
         const currentCount = images.length;
         const allowedCount = (MAX_IMAGES - currentCount);
 
@@ -98,7 +113,7 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
             return;
         }
 
-        uploadResult.forEach((result) => {
+        (uploadResult as {fileName: string; url: string}[]).forEach((result) => {
             const image = uploadedImages.find(i => i.fileName === result.fileName);
 
             if (!image) {
@@ -115,7 +130,7 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
         setNodeImages(newImages);
     };
 
-    const onFileChange = async (e) => {
+    const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
 
         if (!files || !files.length) {
@@ -125,21 +140,21 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
         return await handleImageUploads(files);
     };
 
-    async function handleImageFilesDrop(files) {
+    async function handleImageFilesDrop(files: File[]) {
         await handleImageUploads(files);
     }
 
     const isVisibilityEnabled = useCardVisibilityAvailable(nodeKey);
 
-    const handleToolbarEdit = (event) => {
+    const handleToolbarEdit = (event: React.MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
         setEditing(true);
     };
 
-    function handleToolbarAdd(event) {
+    function handleToolbarAdd(event: React.MouseEvent) {
         event.preventDefault();
-        fileInputRef.current.click();
+        fileInputRef.current?.click();
     }
 
     const clearErrorMessage = () => {
@@ -160,7 +175,7 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
                 captionEditorInitialState={captionEditorInitialState}
                 clearErrorMessage={clearErrorMessage}
                 deleteImage={deleteImage}
-                errorMessage={errorMessage}
+                errorMessage={errorMessage ?? undefined}
                 fileInputRef={fileInputRef}
                 filesDropper={imageFilesDropper}
                 imageMimeTypes={fileUploader.fileTypes.image.mimeTypes}

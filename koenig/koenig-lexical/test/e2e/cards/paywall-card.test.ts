@@ -1,14 +1,15 @@
 import {assertHTML, focusEditor, html, initialize} from '../../utils/e2e';
 import {test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
-async function insertPaywallCard(page) {
+async function insertPaywallCard(page: Page) {
     await page.keyboard.type('/paywall');
     await page.waitForSelector('[data-kg-card-menu-item="Public preview"][data-kg-cardmenu-selected="true"]');
     await page.keyboard.press('Enter');
 }
 
 test.describe('Paywall card', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();

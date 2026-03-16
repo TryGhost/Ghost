@@ -11,7 +11,7 @@ const {countWords} = utils;
 // TODO: language is not currently used but in future we should switch to using
 // Intl.Segmenter to get more accurate word counts for non-latin languages. For
 // now we're using Ghost's existing countWords util which is regex based
-export const WordCountPlugin = ({onChange, language = 'en'} = {}) => {
+export const WordCountPlugin = ({onChange, language: _language = 'en'}: {onChange?: (count: number) => void; language?: string} = {}) => {
     const [editor] = useLexicalComposerContext();
     const {onWordCountChangeRef} = React.useContext(KoenigComposerContext);
 
@@ -23,7 +23,7 @@ export const WordCountPlugin = ({onChange, language = 'en'} = {}) => {
         // store onChange in context so that we can use it in the KoenigNestedComposer
         // to render nested <WordCountPlugin /> without needing to pass onChange down
         if (!editor._parentEditor) {
-            onWordCountChangeRef.current = onChange;
+            (onWordCountChangeRef as React.MutableRefObject<((counts: unknown) => void) | null>).current = onChange as (counts: unknown) => void;
         }
 
         let lastWordCount = 0;
@@ -97,10 +97,12 @@ export const WordCountPlugin = ({onChange, language = 'en'} = {}) => {
             cleanupRegister();
 
             if (!editor._parentEditor) {
-                onWordCountChangeRef.current = null;
+                (onWordCountChangeRef as React.MutableRefObject<((counts: unknown) => void) | null>).current = null;
             }
         };
     }, [editor, onChange, onWordCountChangeRef]);
+
+    return null;
 };
 
 export default WordCountPlugin;

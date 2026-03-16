@@ -1,6 +1,13 @@
 import CloseIcon from '../../../assets/icons/kg-close.svg?react';
 
-export const Input = ({value, onChange, onClear, onKeyDown}) => {
+interface InputProps {
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onClear: () => void;
+    onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+}
+
+export const Input = ({value, onChange, onClear, onKeyDown}: InputProps) => {
     return (
         <div className="relative m-0 flex items-center justify-evenly gap-1 rounded-lg bg-white font-sans text-md font-normal text-black shadow-md dark:bg-grey-950">
             <input
