@@ -310,7 +310,8 @@ test.describe('Member emails settings', async () => {
             await editor.click({timeout: 5000});
             await page.keyboard.press('ControlOrMeta+a');
             await page.keyboard.press('Backspace');
-            await page.keyboard.type('/bookmark');
+            await page.keyboard.type('/bookmark', {delay: 50});
+            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible({timeout: 5000});
             await page.keyboard.press('Enter');
 
             const bookmarkUrlInput = modal.getByTestId('bookmark-url');
@@ -344,7 +345,8 @@ test.describe('Member emails settings', async () => {
             await editor.click({timeout: 5000});
             await page.keyboard.press('ControlOrMeta+a');
             await page.keyboard.press('Backspace');
-            await page.keyboard.type('/call-to-action');
+            await page.keyboard.type('/call-to-action', {delay: 50});
+            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible({timeout: 5000});
             await page.keyboard.press('Enter');
 
             await expect(modal.locator('[data-kg-card="call-to-action"]')).toBeVisible();
