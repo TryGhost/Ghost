@@ -2,6 +2,17 @@ import {expect, test} from '@playwright/test';
 import {globalDataRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import type {Page} from '@playwright/test';
 
+/**
+ * Types a slash command into the Koenig editor and waits for the slash menu
+ * to appear before continuing. This prevents race conditions in CI where
+ * pressing Enter before the menu renders inserts a newline instead of
+ * selecting the menu item.
+ */
+async function openSlashMenu(page: Page, command: string) {
+    await page.keyboard.type(`/${command}`, {delay: 50});
+    await expect(page.locator('[data-kg-slash-menu]')).toBeVisible({timeout: 5000});
+}
+
 const automatedEmailsFixture = {
     automated_emails: [{
         id: 'free-welcome-email-id',
@@ -310,8 +321,7 @@ test.describe('Member emails settings', async () => {
             await editor.click({timeout: 5000});
             await page.keyboard.press('ControlOrMeta+a');
             await page.keyboard.press('Backspace');
-            await page.keyboard.type('/bookmark', {delay: 50});
-            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible({timeout: 5000});
+            await openSlashMenu(page, 'bookmark');
             await page.keyboard.press('Enter');
 
             const bookmarkUrlInput = modal.getByTestId('bookmark-url');
@@ -345,8 +355,7 @@ test.describe('Member emails settings', async () => {
             await editor.click({timeout: 5000});
             await page.keyboard.press('ControlOrMeta+a');
             await page.keyboard.press('Backspace');
-            await page.keyboard.type('/call-to-action', {delay: 50});
-            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible({timeout: 5000});
+            await openSlashMenu(page, 'call-to-action');
             await page.keyboard.press('Enter');
 
             await expect(modal.locator('[data-kg-card="call-to-action"]')).toBeVisible();
@@ -374,8 +383,7 @@ test.describe('Member emails settings', async () => {
             await editor.click({timeout: 5000});
             await page.keyboard.press('ControlOrMeta+a');
             await page.keyboard.press('Backspace');
-            await page.keyboard.type('/product', {delay: 50});
-            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible({timeout: 5000});
+            await openSlashMenu(page, 'product');
             await page.keyboard.press('Enter');
 
             await expect(modal.locator('[data-kg-card="product"]')).toBeVisible();
@@ -417,10 +425,9 @@ test.describe('Member emails settings', async () => {
             await expect(editor).toBeFocused();
             await editor.press('ControlOrMeta+a');
             await editor.press('Backspace');
-            await editor.type('/gif');
-
-            const slashMenu = page.locator('[data-kg-slash-menu]');
-            await expect(slashMenu.getByText('GIF', {exact: true})).not.toBeVisible();
+            await page.keyboard.type('/', {delay: 50});
+            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible({timeout: 5000});
+            await expect(page.locator('[data-kg-slash-menu]').getByText('GIF', {exact: true})).not.toBeVisible();
         });
 
         test('welcome email editor shows GIF selector when Tenor is configured', async ({page}) => {
@@ -459,11 +466,8 @@ test.describe('Member emails settings', async () => {
             await expect(editor).toBeFocused();
             await editor.press('ControlOrMeta+a');
             await editor.press('Backspace');
-            await editor.type('/gif');
-
-            const slashMenu = page.locator('[data-kg-slash-menu]');
-            await expect(slashMenu).toBeVisible();
-            await expect(slashMenu.getByText('GIF', {exact: true})).toBeVisible();
+            await openSlashMenu(page, 'gif');
+            await expect(page.locator('[data-kg-slash-menu]').getByText('GIF', {exact: true})).toBeVisible();
         });
 
         test('uses automated email sender fields when populated, even if newsletter differs', async ({page}) => {
