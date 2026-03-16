@@ -678,6 +678,9 @@ test.describe('Markdown card', async () => {
         // create snippet
         await createSnippet(page);
 
+        // Wait for snippet toolbar to close and card to be back in selected state
+        await expect(page.locator('[data-kg-card="markdown"][data-kg-card-selected="true"]')).toBeVisible();
+
         // can insert card from snippet
         await page.keyboard.press('Enter');
         await page.keyboard.type('/snippet');

@@ -342,6 +342,14 @@ test.describe('Gallery card', async () => {
             await expect(page.locator('[data-testid="gallery-image"]')).toHaveCount(2);
         });
 
+        // Wait for upload to complete and images to be saved to node state
+        // (preview images appear in the DOM before the upload finishes)
+        await page.waitForFunction(() => {
+            const state = window.lexicalEditor.getEditorState().toJSON();
+            const gallery = state.root.children.find(c => c.type === 'gallery');
+            return gallery && gallery.images && gallery.images.length === 2;
+        }, {timeout: 5000});
+
         // Re-click the card to ensure it's selected after upload
         // (Chrome for Testing may lose card selection after file upload)
         await page.locator('[data-kg-card="gallery"]').click();
@@ -413,8 +421,13 @@ test.describe('Gallery card', async () => {
         ]);
         await fileChooser.setFiles([filePath]);
 
-        // Wait for image to fully load
-        await expect(page.locator('[data-kg-card="image"] img[src^="blob:"]')).toBeVisible();
+        // Wait for upload to fully complete - the image node needs its src
+        // set in the Lexical state (not just the preview) for drag-to-gallery to work
+        await page.waitForFunction(() => {
+            const state = window.lexicalEditor.getEditorState().toJSON();
+            const imageNode = state.root.children.find(c => c.type === 'image');
+            return imageNode && imageNode.src;
+        }, {timeout: 5000});
 
         // Click outside to deselect the image card before dragging
         // (Chrome for Testing keeps the card selected after upload)
@@ -477,8 +490,14 @@ test.describe('Gallery card', async () => {
             await expect(page.getByTestId('gallery-image')).toHaveCount(9);
         });
 
-        // give the gallery card time to update the editor state
-        await page.waitForTimeout(200);
+        // Wait for all images to be saved to the Lexical node state
+        // (preview images appear in the DOM before the upload completes and
+        // updates the node, so we need to poll the serialized state directly)
+        await page.waitForFunction(() => {
+            const state = window.lexicalEditor.getEditorState().toJSON();
+            const gallery = state.root.children.find(c => c.type === 'gallery');
+            return gallery && gallery.images && gallery.images.length === 9;
+        }, {timeout: 5000});
 
         const editorState = await getEditorState(page);
 
