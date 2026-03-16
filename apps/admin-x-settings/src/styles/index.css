@@ -60,3 +60,5 @@
         transform: translateY(0px) scale(1.0);
     }
 }
+
+@config '../../tailwind.config.cjs';

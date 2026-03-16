@@ -63,15 +63,16 @@ test.describe('Zapier integration settings', async () => {
         await integrationsSection.getByTestId('zapier-integration').getByRole('button', {name: 'Configure'}).click();
 
         const zapierModal = page.getByTestId('zapier-modal');
+        const adminApiKeyField = zapierModal.getByTestId('api-keys').locator('div.mb-3').filter({hasText: 'Admin API key'});
 
         await expect(zapierModal).toHaveText(/zapier-api-secret/);
-        await zapierModal.getByText('zapier-api-secret').hover();
-        await zapierModal.getByRole('button', {name: 'Copy'}).click();
+        await adminApiKeyField.getByText('zapier-api-secret').hover();
+        await adminApiKeyField.getByRole('button', {name: 'Copy'}).click();
 
         // Can't consistently check the clipboard contents, sadly https://github.com/microsoft/playwright/issues/13037
-        await expect(zapierModal.getByRole('button', {name: 'Copied'})).toHaveCount(1);
+        await expect(adminApiKeyField.getByRole('button', {name: 'Copied'})).toHaveCount(1);
 
-        await zapierModal.getByRole('button', {name: 'Regenerate'}).click();
+        await adminApiKeyField.getByRole('button', {name: 'Regenerate'}).click();
         await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Regenerate Admin API Key'}).click();
 
         await expect(zapierModal).toHaveText(/Admin API Key was successfully regenerated/);

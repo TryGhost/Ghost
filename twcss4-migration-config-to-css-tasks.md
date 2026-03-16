@@ -1,83 +1,81 @@
 # Tailwind v4 Config-to-CSS Migration Tasklist (Checkbox Version)
 
+Last updated: 2026-03-16 (local branch state, not pushed)
+
 ## Summary
-- [ ] Validate migration in strict sequence: Shade runtime first, Admin apps second, `admin-x-design-system` last (separate lane).
-- [ ] Enforce a hard gate after every phase: build + lint + smoke clickthrough must pass before next phase.
-- [ ] Keep runtime stable at all times; no phase may introduce required manual class rewrites in app code.
+- [x] Shade runtime switched to CSS-first tokens (`@theme` + CSS vars).
+- [ ] Admin-scope migration is complete end-to-end.
+- [ ] PR CI is green for all required checks.
+
+## Current Blockers
+- [ ] Re-run CI with local `admin-x-settings` compatibility fix (settings scoped `@config` bridge restored).
+- [ ] Resolve or re-trigger isolated flaky test if it reappears: `membership/member-welcome-emails` bookmark metadata flow.
+- [ ] Remove/replace remaining runtime `@config` bridge in `apps/admin-x-design-system/styles.css`.
+- [ ] Remove remaining Admin-scope `tailwind.config.*` files that are still consumed.
+- [ ] Re-run full gates (`yarn build`, `yarn lint`, required CI checks) with all required jobs green.
 
 ## Public Interface / Contract Tasks
-- [ ] Keep `@tryghost/shade/styles.css` as the only stable style contract.
-- [x] Deprecate `@tryghost/shade/tailwind.cjs` (compat shim period), then remove in cleanup phase.
-- [x] Deprecate `@tryghost/admin-x-design-system/tailwind.cjs` only in the DS lane.
-- [x] Rewrite docs/examples to CSS-first tokens (`@theme`, CSS vars), not preset/config usage.
+- [x] Keep `@tryghost/shade/styles.css` as the primary runtime style contract for Admin.
+- [x] Deprecate and remove `@tryghost/shade/tailwind.cjs`.
+- [x] Deprecate and remove `@tryghost/admin-x-design-system/tailwind.cjs`.
+- [ ] Remove remaining docs/tooling metadata that still point to config as token source (for example `apps/shade/components.json` still references `tailwind.config.cjs`).
 
 ## Phase 0: Baseline + Inventory Freeze
-- [x] Extract full token matrix from Shade config to target CSS constructs (`@theme`, `@custom-variant`, keyframes, animation utilities).
-- [x] Record every config/preset consumer (runtime, lint, docs, package exports).
-- [ ] Capture baseline screenshots/video for Admin smoke paths.
-- [x] Run gate: `yarn build` (re-run complete; still fails on existing baseline issues in `@tryghost/admin-x-settings` type checks, unrelated to migration changes).
-- [x] Run gate: `yarn lint` (re-run complete; still fails on existing baseline issues in `ghost/core/content/themes/luno-v1.0.0/assets/js/*.ts`, unrelated to migration changes).
-- [ ] Smoke gate: clickthrough posts, stats, activitypub, settings, dark mode, breakpoint transitions.
+- [x] Extract token matrix from Shade config to CSS constructs (`@theme`, `@custom-variant`, keyframes, animation utilities).
+- [x] Record config/preset consumers (runtime, lint, docs, package metadata).
+- [x] Capture baseline screenshot artifact (`e2e/visual-regression/baselines/settings-migration.png`).
+- [ ] Capture baseline video for full Admin smoke paths.
+- [ ] Keep gate status current at branch head (`yarn build` + `yarn lint` + smoke clickthrough).
 
 ## Phase 1: Add CSS-First Tokens in Shade (Dual-Run)
-- [x] Add CSS token source in [apps/shade/styles.css](/Users/peterzimon/Code/Ghost/apps/shade/styles.css) with `@theme` values for colors, type, spacing, shadows, radius, screens.
-- [x] Add CSS dark variant equivalent to current behavior.
+- [x] Add CSS token source in `apps/shade/tailwind.theme.css`.
+- [x] Add CSS dark variant equivalent.
 - [x] Move animation/keyframe definitions into CSS-first source.
-- [x] Keep current `@config` active for fallback (dual-run mode).
-- [x] Keep current unlayered import order unchanged.
-- [x] Run gate: `yarn workspace @tryghost/shade build`.
-- [x] Run gate: `yarn workspace @tryghost/shade lint` (passes with pre-existing warning in `apps/shade/src/components/ui/filters.tsx`).
-- [x] Run gate: `yarn workspace @tryghost/shade build-storybook` (passes with pre-existing CSS optimization/minification warnings in Storybook output).
-- [x] Smoke gate: full Admin clickthrough (manually validated by user before starting Phase 2).
+- [x] Keep unlayered import order unchanged.
+- [x] Gate: Shade build/lint/storybook validated during migration.
 
 ## Phase 2: Switch Shade Runtime to CSS-Only Generation
-- [x] Remove `@config` from [apps/shade/styles.css](/Users/peterzimon/Code/Ghost/apps/shade/styles.css).
-- [x] Confirm Admin utility generation remains complete via [apps/admin/src/index.css](/Users/peterzimon/Code/Ghost/apps/admin/src/index.css) `@source` scanning (validated with direct `yarn workspace @tryghost/admin run vite build`).
-- [x] Keep legacy config files present only as temporary compat/lint artifacts.
-- [x] Run gate: `yarn workspace @tryghost/shade build`.
-- [x] Run gate: `yarn workspace @tryghost/admin build` (still fails on existing baseline `@tryghost/admin-x-settings` TS errors, unrelated to this migration).
-- [x] Run gate: `yarn build` (still fails because `@tryghost/admin-x-settings` build fails on the same baseline TS errors).
-- [x] Smoke gate: full Admin clickthrough with special focus on toasts/modals/onboarding animations and dark mode (manually validated by user; rounded-corner regression handled with temporary compatibility override).
+- [x] Remove `@config` from `apps/shade/styles.css`.
+- [x] Keep Admin utility generation centralized via `apps/admin/src/index.css` `@source`.
+- [x] Preserve compatibility while removing preset-chain usage in runtime lane.
+- [ ] Reconfirm full smoke set at current branch head with CI passing.
 
 ## Phase 3: Decouple Admin Apps From Preset/Config Chain
-- [x] Remove effective dependency on `shadePreset(...)` for admin/posts/stats/activitypub runtime lane (removed preset usage in app-level configs for admin/posts/stats; runtime CSS generation remains centralized in `apps/admin/src/index.css` + Shade CSS-first tokens).
-- [ ] Update ESLint tailwind rules so they no longer require removed config files (currently blocked by `eslint-plugin-tailwindcss` v3 expecting `tailwindcss/resolveConfig` when v4 is hoisted).
-- [x] Remove preset/config references from docs and package metadata for this lane.
-- [x] Run gate: `yarn workspace @tryghost/admin build` (still fails on existing baseline `@tryghost/admin-x-settings` TS errors, unrelated to this migration).
-- [x] Run gate: `yarn workspace @tryghost/posts build`.
-- [x] Run gate: `yarn workspace @tryghost/stats build`.
-- [x] Run gate: `yarn workspace @tryghost/activitypub build`.
-- [x] Run gate: `yarn lint` (fails on existing baseline lint issues in `@tryghost/activitypub` classname ordering and `ghost` formatting; no new migration-specific runtime build breakage).
-- [ ] Smoke gate: full Admin clickthrough; verify no missing classes.
+- [x] Remove `shadePreset(...)` usage from admin/posts/stats/settings configs.
+- [x] Remove `apps/shade/tailwind.cjs`.
+- [ ] Remove now-redundant app configs once no toolchain/runtime consumer remains.
+- [ ] Resolve remaining ESLint/tooling reliance on config files where applicable.
 
-## Phase 4: Migrate admin-x-design-system (Separate Lane)
-- [x] Convert [apps/admin-x-design-system/styles.css](/Users/peterzimon/Code/Ghost/apps/admin-x-design-system/styles.css) from v3 directives to v4 CSS-first imports.
-- [x] Replace DS PostCSS/Tailwind v3 pipeline with CSS-first-compatible setup.
-- [x] Update settings lane to consume DS without config-token dependency.
-- [x] Replace temporary Phase 2 `.rounded*` compatibility override in [apps/shade/styles.css](/Users/peterzimon/Code/Ghost/apps/shade/styles.css) with a proper CSS-first default radius token mapping (legacy `rounded` now resolves through Tailwind token variables; removed manual `.rounded*` patch, and moved component-specific `9px` usage to `--input-group-radius`).
-- [x] Run gate: `yarn workspace @tryghost/admin-x-design-system build`.
-- [x] Run gate: `yarn workspace @tryghost/admin-x-design-system build-storybook` (passes; only existing Storybook eval/chunk-size warnings remain).
-- [x] Run gate: `yarn workspace @tryghost/admin-x-settings build` (still fails on existing baseline TS typing errors around `@tryghost/admin-x-framework/api/roles`, unrelated to migration changes).
-- [x] Run gate: `yarn build` (still fails because `@tryghost/admin-x-settings` build fails on the same baseline TS errors).
-- [ ] Smoke gate: settings-heavy clickthrough (forms, nav, modals, notifications).
+## Phase 4: Migrate admin-x-design-system Lane
+- [x] Convert DS CSS imports/pipeline to Tailwind v4-compatible setup.
+- [x] Move DS PostCSS to v4-compatible plugin chain.
+- [ ] Remove DS runtime `@config` bridge (`apps/admin-x-design-system/styles.css` currently uses `@config './tailwind.config.cjs';`).
+- [ ] Ensure admin-x-settings no longer depends on config-driven DS tokens/scoping (temporary settings-scoped `@config` bridge reintroduced to stabilize acceptance tests).
+- [ ] Clear `Admin-X Settings tests` in CI after DS/settings lane stabilization.
 
 ## Phase 5: Hard Cleanup
-- [x] Remove deprecated `tailwind.config.*` and `tailwind.cjs` files that are no longer referenced (removed `apps/shade/tailwind.cjs` and `apps/admin-x-design-system/tailwind.cjs`; activitypub preset dependency was replaced with direct config merge against `@tryghost/shade/tailwind.config.cjs`).
-- [x] Remove temporary `.rounded*` compatibility override from [apps/shade/styles.css](/Users/peterzimon/Code/Ghost/apps/shade/styles.css) after Phase 4 default-radius token fix is validated.
-- [x] Remove obsolete package `files` exports and outdated doc references.
-- [x] Update architecture/token docs to CSS-first-only guidance.
-- [x] Run gate: `yarn build` (still fails because `@tryghost/admin-x-settings` build fails on known baseline TS errors around `@tryghost/admin-x-framework/api/roles`).
-- [x] Run gate: `yarn lint` (fails on two known baseline families: existing `ghost/core/content/themes/luno-v1.0.0/assets/js/*.ts` lint errors, plus unresolved Tailwind ESLint plugin compatibility in Admin workspaces due `eslint-plugin-tailwindcss` v3 + hoisted Tailwind v4).
-- [x] Final smoke gate: full Admin clickthrough in light and dark modes (manually validated by user; no visual regressions found versus `main`).
+- [x] Remove deprecated `tailwind.cjs` compatibility exports (`shade`, `admin-x-design-system`).
+- [ ] Remove remaining `tailwind.config.*` files in Admin scope after consumers are gone.
+- [ ] Remove config references from docs/tooling metadata and package guidance.
+- [ ] Reach zero config-token runtime dependency in migrated Admin lane.
+
+## Remaining `tailwind.config.*` Inventory (Admin Scope)
+- [ ] `apps/admin/tailwind.config.js`
+- [ ] `apps/shade/tailwind.config.cjs`
+- [ ] `apps/posts/tailwind.config.cjs`
+- [ ] `apps/stats/tailwind.config.cjs`
+- [ ] `apps/activitypub/tailwind.config.cjs`
+- [ ] `apps/admin-x-settings/tailwind.config.cjs`
+- [ ] `apps/admin-x-design-system/tailwind.config.cjs`
 
 ## Acceptance Checklist
 - [ ] No missing utility classes in Admin runtime.
 - [ ] No visual regressions in key Admin routes beyond baseline tolerance.
-- [ ] Storybook builds pass for migrated package(s) at each phase.
-- [ ] No remaining runtime dependency on JS Tailwind token config in migrated lane.
+- [ ] Storybook builds pass for migrated package lanes at branch head.
+- [ ] No remaining runtime dependency on JS Tailwind token config in migrated Admin lane.
+- [ ] Required CI checks pass on PR #26800.
 
 ## Assumptions / Defaults
-- [ ] `admin-x-design-system` remains a separate lane until Phase 4.
-- [ ] Full gates are mandatory after each phase.
-- [ ] Public UMD apps are out of scope.
-- [ ] Unlayered Tailwind import strategy remains required for Ember coexistence.
+- [x] Public UMD apps are out of scope.
+- [x] Unlayered Tailwind import strategy remains required for Ember coexistence.
+- [ ] Full gates are mandatory after each phase and are currently satisfied.
