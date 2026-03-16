@@ -165,20 +165,12 @@ export default class App extends React.Component {
             event.preventDefault();
             const target = event.currentTarget;
             const pagePath = (target && target.dataset.portal);
-            const shareUrl = target && target.dataset.portalShareUrl;
-            const shareTitle = target && target.dataset.portalShareTitle;
-            const shareImage = target && target.dataset.portalShareImage;
             const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath) || {};
-            const sharePageData = page === 'share' ? {
-                ...(shareUrl ? {url: shareUrl} : {}),
-                ...(shareTitle ? {title: shareTitle} : {}),
-                ...(shareImage ? {image: shareImage} : {})
-            } : pageData;
             if (this.state.initStatus === 'success') {
                 if (pageQuery && pageQuery !== 'free') {
                     this.handleSignupQuery({site: this.state.site, pageQuery});
                 } else {
-                    this.dispatchAction('openPopup', {page, pageQuery, pageData: sharePageData});
+                    this.dispatchAction('openPopup', {page, pageQuery, pageData});
                 }
             }
         };
