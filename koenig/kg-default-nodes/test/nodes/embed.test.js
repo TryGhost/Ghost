@@ -420,7 +420,7 @@ describe('EmbedNode', function () {
                 nodes[0].getType().should.equal('embed');
                 // nodes[0].embedType.should.equal('embed');
                 nodes[0].url.should.equal('https://www.youtube.com/embed/YTVID?feature=oembed');
-                nodes[0].html.should.equal('<iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>');
+                nodes[0].html.should.prettifyTo('<iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>');
             }));
 
             it('medium youtube iframe', editorTest(function () {
@@ -453,7 +453,7 @@ describe('EmbedNode', function () {
                 nodes[0].getType().should.equal('embed');
                 // nodes[0].embedType.should.equal('embed');
                 nodes[0].url.should.equal('https://www.youtube.com/embed/YTVID?feature=oembed');
-                nodes[0].html.should.equal('<iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>');
+                nodes[0].html.should.prettifyTo('<iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>');
                 nodes[0].caption.should.equal('My Video');
             }));
 
@@ -475,7 +475,7 @@ describe('EmbedNode', function () {
 
                 nodes.length.should.equal(1);
                 nodes[0].url.should.equal('https://www.youtube.com/embed/YTVID?feature=oembed');
-                nodes[0].html.should.equal('<iframe width="640" height="360" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>');
+                nodes[0].html.should.prettifyTo('<iframe width="640" height="360" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>');
             }));
 
             it('youtube iframe with double wrapper div + schemaless url', editorTest(function () {
