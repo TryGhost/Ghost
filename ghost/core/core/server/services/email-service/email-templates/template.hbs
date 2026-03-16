@@ -106,11 +106,19 @@
                                                             </td>
                                                             <td class="{{classes.meta}} view-online desktop">
                                                                 <a href="{{post.url}}" class="view-online-link">{{t 'View in browser'}}</a>
+                                                                {{#if post.shareUrl}}
+                                                                    <span aria-hidden="true"> • </span>
+                                                                    <a href="{{post.shareUrl}}" class="view-online-link">{{t 'Share'}}</a>
+                                                                {{/if}}
                                                             </td>
                                                         </tr>
                                                         <tr class="{{classes.meta}} view-online-mobile">
                                                             <td height="20" class="view-online">
                                                                 <a href="{{post.url}}" class="view-online-link">{{t 'View in browser'}}</a>
+                                                                {{#if post.shareUrl}}
+                                                                    <span aria-hidden="true"> • </span>
+                                                                    <a href="{{post.shareUrl}}" class="view-online-link">{{t 'Share'}}</a>
+                                                                {{/if}}
                                                             </td>
                                                         </tr>
                                                     </table>

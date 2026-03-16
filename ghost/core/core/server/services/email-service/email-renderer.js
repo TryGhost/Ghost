@@ -1166,6 +1166,9 @@ class EmailRenderer {
         }
 
         const postUrl = this.#getPostUrl(post);
+        const isPublicPost = post.get('visibility') === 'public';
+        const shareUrl = new URL(postUrl);
+        shareUrl.hash = '/portal/share';
 
         // Signup URL is the post url with a hash added to it
         const signupUrl = new URL(postUrl);
@@ -1250,6 +1253,7 @@ class EmailRenderer {
             post: {
                 title: post.get('title'),
                 url: postUrl,
+                shareUrl: isPublicPost ? shareUrl.href : null,
                 commentUrl: commentUrl.href,
                 authors,
                 publishedAt,

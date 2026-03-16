@@ -1418,6 +1418,54 @@ describe('Email renderer', function () {
             assert(response.html.includes('http://feedback-link.com/?score=0'));
         });
 
+        it('includes share links for public posts', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel({
+                header_image: null,
+                name: 'Test Newsletter',
+                show_badge: false,
+                feedback_enabled: true,
+                show_post_title_section: true
+            });
+            const segment = null;
+            const options = {};
+
+            const response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            assert(response.html.includes('href="http://example.com/#/portal/share"'));
+            assert.match(response.html, />Share<\/a>/);
+        });
+
+        it('does not include share links for non-public posts', async function () {
+            const post = createModel({
+                ...basePost,
+                visibility: 'members'
+            });
+            const newsletter = createModel({
+                header_image: null,
+                name: 'Test Newsletter',
+                show_badge: false,
+                feedback_enabled: true,
+                show_post_title_section: true
+            });
+            const segment = null;
+            const options = {};
+
+            const response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            assert(!response.html.includes('#/portal/share'));
+        });
+
         it('uses custom excerpt as preheader', async function () {
             const post = createModel({...basePost, custom_excerpt: 'Custom excerpt'});
             const newsletter = createModel({
@@ -1741,7 +1789,9 @@ describe('Email renderer', function () {
             assert.deepEqual(links, [
                 `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded%23%2Fportal%2Fshare`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded%23%2Fportal%2Fshare`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexternal-domain.com%2F%3Fref%3D123%26source_tracking%3Dsite`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fencoded-link.com%2F%3Fcode%3Dtest%26source_tracking%3Dsite`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexample.com%2F%3Fref%3D123%26source_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
@@ -1798,7 +1848,9 @@ describe('Email renderer', function () {
             assert.deepEqual(links, [
                 'http://example.com/',
                 'http://example.com/',
+                'http://example.com/#/portal/share',
                 'http://example.com/',
+                'http://example.com/#/portal/share',
                 'http://example.com/#relative-test',
                 '#',
                 'http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%',
@@ -1853,7 +1905,9 @@ describe('Email renderer', function () {
             assert.deepEqual(links, [
                 `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded%23%2Fportal%2Fshare`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded%23%2Fportal%2Fshare`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexternal-domain.com%2F%3Fref%3D123%26source_tracking%3Dsite`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexample.com%2F%3Fref%3D123%26source_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%`,
@@ -2485,6 +2539,33 @@ describe('Email renderer', function () {
             const newsletter = createModel({});
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
             assert.equal(data.post.publishedAt, '1 Jan 1970');
+        });
+
+        it('includes share URL for public posts', async function () {
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                visibility: 'public'
+            });
+            const newsletter = createModel({});
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.post.shareUrl, 'http://example.com/#/portal/share');
+        });
+
+        it('does not include share URL for non-public posts', async function () {
+            const html = '';
+            const newsletter = createModel({});
+
+            for (const visibility of ['members', 'paid', 'tiers']) {
+                const post = createModel({
+                    posts_meta: createModel({}),
+                    loaded: ['posts_meta'],
+                    visibility
+                });
+                const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+                assert.equal(data.post.shareUrl, null, `Expected no share URL for "${visibility}" visibility`);
+            }
         });
 
         it('show feature image if post has feature image', async function () {
