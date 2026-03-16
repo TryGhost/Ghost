@@ -90,15 +90,17 @@ export default (function viteConfig({mode}) {
                     return `${outputFileName}.js`;
                 }
             },
-            rollupOptions: {
+            rolldownOptions: {
                 external: [
-                    'react',
-                    'react-dom'
+                    /^react($|\/)/,
+                    /^react-dom($|\/)/
                 ],
                 output: {
                     globals: {
-                        react: 'React',
-                        'react-dom': 'ReactDOM'
+                        'react': 'React',
+                        'react/jsx-runtime': 'React',
+                        'react-dom': 'ReactDOM',
+                        'react-dom/server': 'ReactDOM'
                     },
                     assetFileNames: (assetInfo) => {
                         // Vite 6 changed CSS output naming in lib mode from
@@ -110,9 +112,6 @@ export default (function viteConfig({mode}) {
                         return assetInfo.names?.[0] ?? '[name][extname]';
                     }
                 }
-            },
-            commonjsOptions: {
-                include: [/packages/, /node_modules/]
             }
         },
         test: {

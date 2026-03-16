@@ -31,11 +31,8 @@ export default (function viteDemoConfig() {
             ]
         },
         build: {
-            commonjsOptions: {
-                include: [/packages/, /node_modules/]
-            },
             sourcemap: true,
-            rollupOptions: {
+            rolldownOptions: {
                 input: {
                     main: resolve(__dirname, 'index.html')
                 }

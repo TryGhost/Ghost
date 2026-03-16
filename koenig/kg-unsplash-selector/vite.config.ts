@@ -12,8 +12,8 @@ export default defineConfig({
             fileName: format => `index.${format}.js`, // Generates the output file name based on the format.
             formats: ['cjs', 'es'] // Specifies the output formats (CommonJS and ES modules).
         },
-        rollupOptions: {
-            external: [...Object.keys(peerDependencies)] // Defines external dependencies for Rollup bundling.
+        rolldownOptions: {
+            external: [/^react($|\/)/, /^react-dom($|\/)/] // Defines external dependencies for Rolldown bundling.
         },
         sourcemap: true, // Generates source maps for debugging.
         emptyOutDir: true // Clears the output directory before building.
