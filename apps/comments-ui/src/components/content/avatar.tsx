@@ -78,7 +78,7 @@ export const Avatar: React.FC<AvatarProps> = ({member}) => {
                 (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-white/70 ${dimensionClasses}`} data-testid="avatar-background">
                     <AvatarIcon className="stroke-white dark:stroke-black/60" />
                 </div>)}
-            {member?.avatar_image && <img alt="Avatar" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} data-testid="avatar-image" src={member.avatar_image} />}
+            {member?.avatar_image && <img alt="Avatar" className={`absolute top-0 left-0 rounded-full ${dimensionClasses}`} data-testid="avatar-image" src={member.avatar_image} />}
         </>
     );
 

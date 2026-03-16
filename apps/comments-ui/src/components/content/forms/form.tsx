@@ -139,7 +139,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress
                     onTouchStart={stopIfFocused}
                 />
             </div>
-            <div className="absolute bottom-1 right-1 flex space-x-4 transition-[opacity] duration-150 sm:bottom-2 sm:right-2">
+            <div className="absolute right-1 bottom-1 flex space-x-4 transition-[opacity] duration-150 sm:right-2 sm:bottom-2">
                 {close &&
                     <button className="ml-2.5 font-sans text-sm font-medium text-neutral-900/50 outline-0 transition-all hover:text-neutral-900/70 dark:text-white/60 dark:hover:text-white/75" type="button" onClick={close}>{t('Cancel')}</button>
                 }
@@ -186,7 +186,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingT
         >
             <div className="flex flex-wrap">
                 <div
-                    className="w-full font-sans text-base font-bold leading-snug text-neutral-900 sm:w-auto sm:text-sm dark:text-white/85"
+                    className="w-full font-sans text-base leading-snug font-bold text-neutral-900 sm:w-auto sm:text-sm dark:text-white/85"
                     data-testid="member-name"
                     onMouseDown={editName}
                 >
@@ -194,7 +194,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingT
                 </div>
                 <div className="flex items-baseline justify-start">
                     <button
-                        className={`group flex items-center justify-start whitespace-nowrap text-left font-sans text-base leading-snug text-neutral-900/50 transition duration-150 hover:text-black/75 sm:text-sm dark:text-white/60 dark:hover:text-white/75 ${!expertise && 'text-black/30 hover:text-black/50 dark:text-white/30 dark:hover:text-white/50'}`}
+                        className={`group flex items-center justify-start text-left font-sans text-base leading-snug whitespace-nowrap text-neutral-900/50 transition duration-150 hover:text-black/75 sm:text-sm dark:text-white/60 dark:hover:text-white/75 ${!expertise && 'text-black/30 hover:text-black/50 dark:text-white/30 dark:hover:text-white/50'}`}
                         data-testid="expertise-button"
                         type="button"
                         onMouseDown={editExpertise}
@@ -369,11 +369,11 @@ const FormWrapper: React.FC<FormWrapperProps> = ({
                         {children}
                     </div>
                 </div>
-                <div className='absolute left-0 top-1 flex h-11 w-full items-start justify-start sm:h-12'>
+                <div className='absolute top-1 left-0 flex h-11 w-full items-start justify-start sm:h-12'>
                     <div className="pointer-events-none mr-2 grow-0 sm:mr-3">
                         <Avatar member={member} />
                     </div>
-                    <div className="grow-1 mt-0.5 w-full">
+                    <div className="mt-0.5 w-full grow-1">
                         <FormHeader
                             editExpertise={editExpertise}
                             editName={editName}
