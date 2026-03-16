@@ -111,7 +111,7 @@
     "pluralize": "^8.0.0",
     "postcss": "8.5.8",
     "postcss-import": "16.1.1",
-    "prettier": "3.6.2",
+    "prettier": "3.8.1",
     "prettier-plugin-organize-attributes": "^1.0.0",
     "react": "^18.2.0",
     "react-colorful": "^5.6.1",
