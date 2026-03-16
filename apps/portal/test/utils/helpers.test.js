@@ -27,7 +27,8 @@ import {
     getUpdatedOfferPrice,
     isComplimentaryMember,
     subscriptionHasFreeTrial,
-    addMonths
+    addMonths,
+    formatPrice
 } from '../../src/utils/helpers';
 import * as Fixtures from '../../src/utils/fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from './test-fixtures';
@@ -280,6 +281,25 @@ describe('Helpers - ', () => {
             });
 
             expect(updatedPrice).toBe('$4.79');
+        });
+    });
+
+    describe('formatPrice - ', () => {
+        test('returns whole numbers without decimal padding', () => {
+            expect(formatPrice(5)).toBe('5');
+        });
+
+        test('returns fractional numbers with two decimals', () => {
+            expect(formatPrice(5.4)).toBe('5.40');
+        });
+
+        test('returns fractional numbers with locale grouping', () => {
+            expect(formatPrice(1234.5)).toBe('1,234.50');
+        });
+
+        test('returns empty string for null/undefined input', () => {
+            expect(formatPrice(null)).toBe('');
+            expect(formatPrice(undefined)).toBe('');
         });
     });
 
