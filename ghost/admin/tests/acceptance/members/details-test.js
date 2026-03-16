@@ -195,6 +195,59 @@ describe('Acceptance: Member details', function () {
             .to.equal(1);
     });
 
+    it('renders non-discounted subscription prices with trailing zeros', async function () {
+        const member = this.server.create('member', {
+            id: 1,
+            subscriptions: [
+                this.server.create('subscription', {
+                    id: 'sub_1KZGi6EGb07FFvyNDjZq98g8',
+                    tier,
+                    customer: {
+                        id: 'cus_LFmGicpX4BkQKH',
+                        name: '123',
+                        email: 'test@ghost.org'
+                    },
+                    plan: {
+                        id: 'price_1KZGc6EGb07FFvyNkK3umKiX',
+                        nickname: 'Monthly',
+                        amount: 590,
+                        interval: 'month',
+                        currency: 'USD'
+                    },
+                    status: 'active',
+                    start_date: '2022-03-03T15:36:58.000Z',
+                    default_payment_card_last4: '4242',
+                    cancel_at_period_end: false,
+                    cancellation_reason: null,
+                    current_period_end: '2022-04-03T15:36:58.000Z',
+                    price: {
+                        id: 'price_1KZGc6EGb07FFvyNkK3umKiX',
+                        price_id: '6220df272fee0571b5dd0a0a',
+                        nickname: 'Monthly',
+                        amount: 590,
+                        interval: 'month',
+                        type: 'recurring',
+                        currency: 'USD',
+                        tier: {
+                            id: 'prod_LFmAAmCnnbzrvL',
+                            name: 'Supporter',
+                            tier_id: tier.id
+                        }
+                    },
+                    offer: null
+                })
+            ],
+            tiers: [
+                tier
+            ]
+        });
+
+        await visit(`/members/${member.id}`);
+
+        const amountElement = find(`[data-test-tier="${tier.id}"] .gh-tier-card-price .amount`);
+        expect(amountElement.textContent.trim()).to.equal('5.90');
+    });
+
     it('can add and remove complimentary subscription', async function () {
         const member = this.server.create('member', {name: 'Comp Member Test'});
 
