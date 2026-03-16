@@ -5,7 +5,10 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import { globalIgnores } from 'eslint/config'
 import noRelativeImportPaths from 'eslint-plugin-no-relative-import-paths'
+import tailwindcss from 'eslint-plugin-tailwindcss'
 import ghostPlugin from 'eslint-plugin-ghost';
+
+const tailwindCssConfig = `${import.meta.dirname}/src/index.css`;
 
 const noHardcodedGhostPaths = {
   meta: {
@@ -53,8 +56,14 @@ export default tseslint.config([
     ],
     plugins: {
       'no-relative-import-paths': noRelativeImportPaths,
+      tailwindcss,
       ghost: ghostPlugin,
       local: localPlugin,
+    },
+    settings: {
+      tailwindcss: {
+        config: tailwindCssConfig,
+      },
     },
     languageOptions: {
       parserOptions: {
@@ -66,6 +75,13 @@ export default tseslint.config([
     },
     rules: {
       'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
+      'tailwindcss/classnames-order': 'error',
+      'tailwindcss/enforces-negative-arbitrary-values': 'warn',
+      'tailwindcss/enforces-shorthand': 'warn',
+      'tailwindcss/migration-from-tailwind-2': 'warn',
+      'tailwindcss/no-arbitrary-value': 'off',
+      'tailwindcss/no-custom-classname': 'off',
+      'tailwindcss/no-contradicting-classname': 'error',
     },
   },
   // Apply no-relative-import-paths rule for src files (auto-fix supported)
