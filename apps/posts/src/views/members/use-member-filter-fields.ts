@@ -2,7 +2,6 @@ import LabelFilterRenderer from '@src/components/label-picker/label-filter-rende
 import React, {useMemo} from 'react';
 import moment from 'moment-timezone';
 import {CustomRendererProps, FilterFieldConfig, FilterFieldGroup, FilterOption, LucideIcon} from '@tryghost/shade';
-import {createOperatorOptions} from '../filters/filter-operator-options';
 import {memberFields} from './member-fields';
 import type {Offer} from '@tryghost/admin-x-framework/api/offers';
 
@@ -31,6 +30,23 @@ interface UseMemberFilterFieldsOptions {
 
 type OfferOption = FilterOption<string>;
 type SearchableFieldOverrides = Pick<FilterFieldConfig, 'options' | 'onSearchChange' | 'searchValue' | 'isLoading'>;
+
+interface OperatorOption {
+    value: string;
+    label: string;
+}
+
+function createOperatorOptions(
+    operators: readonly string[],
+    options: {labels?: Record<string, string>} = {}
+): OperatorOption[] {
+    const labels = options.labels || {};
+
+    return operators.map(operator => ({
+        value: operator,
+        label: labels[operator] ?? operator.replaceAll('-', ' ')
+    }));
+}
 
 const MEMBER_OPERATOR_LABELS = {
     'is-not-any': 'is none of',

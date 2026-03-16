@@ -1,4 +1,4 @@
-import {escapeNqlString, normalizeMultiValue} from './filter-normalization';
+import {escapeNqlString} from './filter-normalization';
 import {extractComparator} from './filter-ast';
 import type {FilterCodec} from './filter-types';
 
@@ -44,6 +44,10 @@ interface CodecConfig {
 
 function getCodecField(config: CodecConfig | undefined, key: string): string {
     return config?.field ?? key;
+}
+
+function normalizeMultiValue(values: unknown[]): string[] {
+    return values.map(value => String(value)).sort((left, right) => left.localeCompare(right));
 }
 
 function serializeScalarValue(value: unknown, config?: CodecConfig): string {
