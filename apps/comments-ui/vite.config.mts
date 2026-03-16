@@ -1,4 +1,5 @@
 import pkg from './package.json';
+import prosemirrorNoFingerprint from './src/plugins/vite-plugin-prosemirror-no-fingerprint';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import {SUPPORTED_LOCALES} from '@tryghost/i18n';
@@ -12,6 +13,7 @@ export default (function viteConfig() {
     return defineConfig({
         logLevel: process.env.CI ? 'info' : 'warn',
         plugins: [
+            prosemirrorNoFingerprint(),
             svgr(),
             react()
         ],
