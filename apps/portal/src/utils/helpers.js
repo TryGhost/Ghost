@@ -1,4 +1,5 @@
 import {getDateString} from './date-time';
+import {t} from './i18n';
 
 export function removePortalLinkFromUrl() {
     const [path] = window.location.hash.substr(1).split('?');
@@ -547,14 +548,6 @@ export function isFreeMonthsOffer(offer) {
         && offer?.redemption_type === 'retention';
 }
 
-export function subscriptionHasFreeMonthsOffer({sub} = {}) {
-    if (!isFreeMonthsOffer(sub?.offer)) {
-        return false;
-    }
-    const discountEnd = sub?.next_payment?.discount?.end;
-    return discountEnd && !isInThePast(new Date(discountEnd));
-}
-
 export function isInThePast(date) {
     return date < new Date();
 }
@@ -803,11 +796,14 @@ export function getPriceIdFromPageQuery({site, pageQuery}) {
     return null;
 }
 
-// TODO: Add i18n once copy is finalized
 export const getOfferOffAmount = ({offer}) => {
     if (isFreeMonthsOffer(offer)) {
         const months = offer.duration_in_months;
-        return `${months === 1 ? '1 month' : `${months} months`}`;
+        if (months === 1) {
+            return t('1 month');
+        }
+
+        return t('{months} months', {months});
     } else if (offer.type === 'fixed') {
         return `${getCurrencySymbol(offer.currency)}${offer.amount / 100}`;
     } else if (offer.type === 'percent') {
@@ -936,6 +932,38 @@ export function getUrlHistory() {
 
         console.warn(`[Portal] Failed to load member URL history:`, error);
     }
+}
+
+export function addMonths(date, numberOfMonths = 1) {
+    const originalDate = new Date(date);
+
+    if (isNaN(originalDate.getTime())) {
+        return null;
+    }
+
+    if (!Number.isInteger(numberOfMonths) || numberOfMonths < 1) {
+        return originalDate;
+    }
+
+    const originalDay = originalDate.getUTCDate();
+    const originalHours = originalDate.getUTCHours();
+    const originalMinutes = originalDate.getUTCMinutes();
+    const originalSeconds = originalDate.getUTCSeconds();
+    const originalMilliseconds = originalDate.getUTCMilliseconds();
+    let targetMonth = originalDate.getUTCMonth() + numberOfMonths;
+    let targetYear = originalDate.getUTCFullYear() + Math.floor(targetMonth / 12);
+    targetMonth = targetMonth % 12;
+    const daysInTargetMonth = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate();
+
+    return new Date(Date.UTC(
+        targetYear,
+        targetMonth,
+        Math.min(originalDay, daysInTargetMonth),
+        originalHours,
+        originalMinutes,
+        originalSeconds,
+        originalMilliseconds
+    ));
 }
 
 // Check if member is a recent member, i.e. created in last 24 hours

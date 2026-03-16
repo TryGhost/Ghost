@@ -1,5 +1,6 @@
 const jose = require('node-jose');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 module.exports = class TokenService {
     constructor({
@@ -24,6 +25,31 @@ module.exports = class TokenService {
             algorithm: 'RS512',
             audience: this._issuer,
             expiresIn: '10m',
+            issuer: this._issuer
+        });
+    }
+
+    async encodeEntitlementToken({
+        sub,
+        memberUuid,
+        paid,
+        activeTierIds = []
+    }) {
+        const jwk = await this._keyStoreReady;
+
+        return jwt.sign({
+            sub,
+            kid: jwk.kid,
+            scope: 'members:entitlements:read',
+            member_uuid: memberUuid,
+            paid,
+            active_tier_ids: activeTierIds,
+            jti: crypto.randomUUID()
+        }, this._privateKey, {
+            keyid: jwk.kid,
+            algorithm: 'RS512',
+            audience: this._issuer,
+            expiresIn: '5m',
             issuer: this._issuer
         });
     }

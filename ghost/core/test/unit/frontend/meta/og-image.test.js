@@ -183,4 +183,50 @@ describe('getOgImage', function () {
 
         assert.equal(getOgImage({context: ['tag', 'paged'], tag}), null);
     });
+
+    describe('CDN image URLs', function () {
+        it('returns CDN og_image for home context', function () {
+            localSettingsCache.og_image = 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/og.jpg';
+
+            const result = getOgImage({context: ['home'], home: {}});
+            assert(result.includes('storage.ghost.is'));
+            assert(result.endsWith('/content/images/2026/02/og.jpg'));
+        });
+
+        it('returns CDN og_image for post context', function () {
+            const post = {
+                og_image: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/post-og.jpg',
+                feature_image: '/content/images/post-feature.jpg'
+            };
+
+            const result = getOgImage({context: ['post'], post});
+            assert(result.includes('storage.ghost.is'));
+            assert(result.endsWith('post-og.jpg'));
+        });
+
+        it('falls back to CDN feature_image when post og_image is empty', function () {
+            const post = {
+                og_image: '',
+                feature_image: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/feature.jpg'
+            };
+
+            const result = getOgImage({context: ['post'], post});
+            assert(result.includes('storage.ghost.is'));
+            assert(result.endsWith('feature.jpg'));
+        });
+
+        it('falls back to CDN cover_image for settings', function () {
+            localSettingsCache.og_image = '';
+            localSettingsCache.cover_image = 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/cover.jpg';
+
+            const post = {
+                og_image: '',
+                feature_image: ''
+            };
+
+            const result = getOgImage({context: ['post'], post});
+            assert(result.includes('storage.ghost.is'));
+            assert(result.endsWith('cover.jpg'));
+        });
+    });
 });

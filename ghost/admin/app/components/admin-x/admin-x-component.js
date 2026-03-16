@@ -8,6 +8,7 @@ import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {camelize} from '@ember/string';
 import {inject} from 'ghost-admin/decorators/inject';
+import {prefixAssetUrl} from 'ghost-admin/utils/asset-base';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -57,7 +58,7 @@ export const importComponent = async (packageName) => {
         throw new Error(`Missing config for ${packageName}. Add it in asset delivery.`);
     }
 
-    const baseUrl = (config.cdnUrl ? `${config.cdnUrl}assets/` : ghostPaths().assetRootWithHost);
+    const baseUrl = prefixAssetUrl('assets/');
     let url = new URL(`${baseUrl}${relativePath}/${config[`${configKey}Filename`]}?v=${config[`${configKey}Hash`]}`);
 
     const customUrl = config[`${configKey}CustomUrl`];

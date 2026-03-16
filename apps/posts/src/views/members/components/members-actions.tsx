@@ -11,7 +11,7 @@ import {
 } from '@tryghost/shade';
 import {blobDownloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
-import {useBrowseLabels} from '@tryghost/admin-x-framework/api/labels';
+import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBulkDeleteMembers, useBulkEditMembers} from '@tryghost/admin-x-framework/api/members';
 
 interface MembersActionsProps {
@@ -36,11 +36,14 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     nql,
     canBulkDelete
 }) => {
-    const {data: labelsData} = useBrowseLabels({});
-    const labels = labelsData?.labels || [];
+    const {data: newslettersData, isLoading: isLoadingNewsletters} = useBrowseNewsletters({
+        searchParams: {filter: 'status:-archived', limit: '50'}
+    });
+    const activeNewsletters = newslettersData?.newsletters || [];
 
-    const {mutate: bulkEdit, isLoading: isBulkEditing} = useBulkEditMembers();
+    const {mutateAsync: bulkEditAsync, isLoading: isBulkEditing} = useBulkEditMembers();
     const {mutate: bulkDelete, isLoading: isBulkDeleting} = useBulkDeleteMembers();
+    const [isUnsubscribing, setIsUnsubscribing] = useState(false);
 
     const [showAddLabelModal, setShowAddLabelModal] = useState(false);
     const [showRemoveLabelModal, setShowRemoveLabelModal] = useState(false);
@@ -52,77 +55,107 @@ const MembersActions: React.FC<MembersActionsProps> = ({
             await exportMembers(nql);
         } catch (e) {
             toast.error('Export failed', {
-                description: 'There was a problem downloading your member data. Please check your connection and try again.',
-                duration: 8000
+                description: 'There was a problem downloading your member data. Please check your connection and try again.'
             });
             throw e;
         }
     }, [nql]);
 
-    const handleAddLabel = useCallback((labelId: string) => {
-        bulkEdit({
-            filter: nql || '',
-            all: !nql,
-            action: {
-                type: 'addLabel',
-                meta: {label: {id: labelId}}
-            }
-        }, {
-            onSuccess: () => {
-                setShowAddLabelModal(false);
-                toast.success('Label added successfully');
-            },
-            onError: () => {
-                toast.error('Failed to add label', {
-                    description: 'There was a problem applying this label. Please try again.',
-                    duration: 8000
+    const handleAddLabel = useCallback(async (labelIds: string[]) => {
+        try {
+            for (const labelId of labelIds) {
+                await bulkEditAsync({
+                    filter: nql || '',
+                    all: !nql,
+                    action: {
+                        type: 'addLabel',
+                        meta: {label: {id: labelId}}
+                    }
                 });
             }
-        });
-    }, [bulkEdit, nql]);
+            setShowAddLabelModal(false);
+            toast.success(labelIds.length > 1 ? 'Labels added successfully' : 'Label added successfully');
+        } catch {
+            toast.error('Failed to add label', {
+                description: 'There was a problem applying this label. Please try again.'
+            });
+        }
+    }, [bulkEditAsync, nql]);
 
-    const handleRemoveLabel = useCallback((labelId: string) => {
-        bulkEdit({
-            filter: nql || '',
-            all: !nql,
-            action: {
-                type: 'removeLabel',
-                meta: {label: {id: labelId}}
-            }
-        }, {
-            onSuccess: () => {
-                setShowRemoveLabelModal(false);
-                toast.success('Label removed successfully');
-            },
-            onError: () => {
-                toast.error('Failed to remove label', {
-                    description: 'There was a problem removing this label. Please try again.',
-                    duration: 8000
+    const handleRemoveLabel = useCallback(async (labelIds: string[]) => {
+        try {
+            for (const labelId of labelIds) {
+                await bulkEditAsync({
+                    filter: nql || '',
+                    all: !nql,
+                    action: {
+                        type: 'removeLabel',
+                        meta: {label: {id: labelId}}
+                    }
                 });
             }
-        });
-    }, [bulkEdit, nql]);
+            setShowRemoveLabelModal(false);
+            toast.success(labelIds.length > 1 ? 'Labels removed successfully' : 'Label removed successfully');
+        } catch {
+            toast.error('Failed to remove label', {
+                description: 'There was a problem removing this label. Please try again.'
+            });
+        }
+    }, [bulkEditAsync, nql]);
 
-    const handleUnsubscribe = useCallback(() => {
-        bulkEdit({
+    const handleUnsubscribe = useCallback(async (newsletterIds: string[] | null) => {
+        const baseParams = {
             filter: nql || '',
-            all: !nql,
-            action: {
-                type: 'unsubscribe'
-            }
-        }, {
-            onSuccess: () => {
+            all: !nql
+        };
+
+        if (newsletterIds === null) {
+            try {
+                await bulkEditAsync({
+                    ...baseParams,
+                    action: {type: 'unsubscribe'}
+                });
                 setShowUnsubscribeModal(false);
                 toast.success('Members unsubscribed successfully');
-            },
-            onError: () => {
+            } catch {
                 toast.error('Failed to unsubscribe members', {
-                    description: 'There was a problem unsubscribing these members. Please try again.',
-                    duration: 8000
+                    description: 'There was a problem unsubscribing these members. Please try again.'
                 });
             }
-        });
-    }, [bulkEdit, nql]);
+            return;
+        }
+
+        setIsUnsubscribing(true);
+        try {
+            const results = await Promise.allSettled(
+                newsletterIds.map(id => bulkEditAsync({
+                    ...baseParams,
+                    action: {type: 'unsubscribe', newsletter: id}
+                }))
+            );
+            const succeeded = results.filter(r => r.status === 'fulfilled').length;
+            const total = results.length;
+
+            setShowUnsubscribeModal(false);
+            if (succeeded === total) {
+                toast.success(`Unsubscribed from ${total} ${total === 1 ? 'newsletter' : 'newsletters'}`);
+            } else if (succeeded > 0) {
+                toast.warning(`Unsubscribed from ${succeeded} of ${total} newsletters`, {
+                    description: 'Some newsletters could not be unsubscribed. Please try again.'
+                });
+            } else {
+                toast.error('Failed to unsubscribe members', {
+                    description: 'There was a problem unsubscribing these members. Please try again.'
+                });
+            }
+        } catch {
+            toast.error('Failed to unsubscribe members', {
+                description: 'There was a problem unsubscribing these members. Please try again.'
+            });
+        } finally {
+            setIsUnsubscribing(false);
+        }
+    }, [bulkEditAsync, nql]);
 
     const handleDelete = useCallback(() => {
         bulkDelete({
@@ -135,8 +168,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
             },
             onError: () => {
                 toast.error('Failed to delete members', {
-                    description: 'There was a problem deleting these members. Please try again.',
-                    duration: 8000
+                    description: 'There was a problem deleting these members. Please try again.'
                 });
             }
         });
@@ -147,8 +179,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
             await exportMembers(nql);
         } catch (e) {
             toast.error('Export failed', {
-                description: 'There was a problem downloading your backup. Please check your connection and try again.',
-                duration: 8000
+                description: 'There was a problem downloading your backup. Please check your connection and try again.'
             });
             throw e;
         }
@@ -164,29 +195,31 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    {/* Export */}
-                    <DropdownMenuItem onClick={handleExport}>
-                        <LucideIcon.Download className="mr-2 size-4" />
-                        {isFiltered
-                            ? `Export ${memberCount.toLocaleString()} members`
-                            : 'Export all members'}
-                    </DropdownMenuItem>
-
-                    {/* Bulk actions only when NQL filter is present (not just search) */}
-                    {nql && (
+                    {memberCount > 0 && (
                         <>
+                            {/* Export */}
+                            <DropdownMenuItem onClick={handleExport}>
+                                <LucideIcon.Download className="mr-2 size-4" />
+                                {isFiltered
+                                    ? `Export ${memberCount.toLocaleString()} members`
+                                    : 'Export all members'}
+                            </DropdownMenuItem>
+
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => setShowAddLabelModal(true)}>
                                 <LucideIcon.Tags className="mr-2 size-4" />
-                                    Add label to {memberCount.toLocaleString()} members
+                                    Add label to {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setShowRemoveLabelModal(true)}>
                                 <LucideIcon.Tag className="mr-2 size-4" />
-                                    Remove label from {memberCount.toLocaleString()} members
+                                    Remove label from {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setShowUnsubscribeModal(true)}>
+                            <DropdownMenuItem
+                                disabled={isLoadingNewsletters}
+                                onClick={() => setShowUnsubscribeModal(true)}
+                            >
                                 <LucideIcon.MailX className="mr-2 size-4" />
-                                    Unsubscribe {memberCount.toLocaleString()} members
+                                    Unsubscribe {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
@@ -195,7 +228,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                                 onClick={() => setShowDeleteModal(true)}
                             >
                                 <LucideIcon.Trash2 className="mr-2 size-4" />
-                                    Delete {memberCount.toLocaleString()} members
+                                    Delete {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
                             </DropdownMenuItem>
                         </>
                     )}
@@ -212,7 +245,6 @@ const MembersActions: React.FC<MembersActionsProps> = ({
             {/* Modals */}
             <AddLabelModal
                 isLoading={isBulkEditing}
-                labels={labels}
                 memberCount={memberCount}
                 open={showAddLabelModal}
                 onConfirm={handleAddLabel}
@@ -220,15 +252,16 @@ const MembersActions: React.FC<MembersActionsProps> = ({
             />
             <RemoveLabelModal
                 isLoading={isBulkEditing}
-                labels={labels}
                 memberCount={memberCount}
+                nql={nql}
                 open={showRemoveLabelModal}
                 onConfirm={handleRemoveLabel}
                 onOpenChange={setShowRemoveLabelModal}
             />
             <UnsubscribeModal
-                isLoading={isBulkEditing}
+                isLoading={isBulkEditing || isUnsubscribing}
                 memberCount={memberCount}
+                newsletters={activeNewsletters}
                 open={showUnsubscribeModal}
                 onConfirm={handleUnsubscribe}
                 onOpenChange={setShowUnsubscribeModal}

@@ -27,6 +27,7 @@
     "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
     "clean:hard": "node ./.github/scripts/clean.js",
     "dev": "nx run ghost-monorepo:docker:dev",
+    "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' nx run ghost-monorepo:docker:dev",
     "dev:lexical": "EDITOR_URL=http://localhost:2368/ghost/assets/koenig-lexical/ yarn dev",
     "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' nx run ghost-monorepo:docker:dev",
     "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' nx run ghost-monorepo:docker:dev",
@@ -67,7 +68,7 @@
     "nwsapi": "2.2.12"
   },
   "lint-staged": {
-    "*.js": "eslint"
+    "*.{js,ts,tsx,jsx,cjs}": "eslint"
   },
   "devDependencies": {
     "@actions/core": "1.11.1",
@@ -75,7 +76,7 @@
     "chokidar": "3.6.0",
     "concurrently": "8.2.2",
     "eslint": "8.57.1",
-    "eslint-plugin-ghost": "3.4.4",
+    "eslint-plugin-ghost": "3.5.0",
     "eslint-plugin-react": "7.37.5",
     "husky": "8.0.3",
     "inquirer": "8.2.7",

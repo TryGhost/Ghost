@@ -1,6 +1,7 @@
 const mime = require('mime-types');
 const FileType = require('file-type');
 const request = require('../../lib/request-external');
+const urlUtils = require('../../../shared/url-utils');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const string = require('@tryghost/string');
@@ -145,7 +146,8 @@ class ExternalMediaInliner {
             }, targetDir);
             const targetPath = path.relative(storage.storagePath, uniqueFileName);
             const filePath = await storage.saveRaw(media.fileBuffer, targetPath);
-            return filePath;
+
+            return urlUtils.toTransformReady(filePath);
         }
     }
 
@@ -188,11 +190,9 @@ class ExternalMediaInliner {
                 }
 
                 if (media) {
-                    const filePath = await this.storeMediaLocally(media);
+                    const inlinedSrc = await this.storeMediaLocally(media);
 
-                    if (filePath) {
-                        const inlinedSrc = `__GHOST_URL__${filePath}`;
-
+                    if (inlinedSrc) {
                         // NOTE: does not account for duplicate images in content
                         //       in those cases would be processed twice
                         content = content.replace(src, inlinedSrc);
@@ -228,11 +228,9 @@ class ExternalMediaInliner {
                     }
 
                     if (media) {
-                        const filePath = await this.storeMediaLocally(media);
+                        const inlinedSrc = await this.storeMediaLocally(media);
 
-                        if (filePath) {
-                            const inlinedSrc = `__GHOST_URL__${filePath}`;
-
+                        if (inlinedSrc) {
                             updatedFields[field] = inlinedSrc;
                             logging.info(`Added media to inline: ${src} -> ${inlinedSrc}`);
                         }

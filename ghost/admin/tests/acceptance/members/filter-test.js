@@ -82,6 +82,12 @@ describe('Acceptance: Members filtering', function () {
 
             await visit('/members');
 
+            const getLabelRequests = () => {
+                return this.server.pretender.handledRequests.filter((request) => {
+                    return request.url.includes('/ghost/api/admin/labels/');
+                });
+            };
+
             expect(findAll('[data-test-list="members-list-item"]').length, '# of initial member rows')
                 .to.equal(7);
 
@@ -100,6 +106,17 @@ describe('Acceptance: Members filtering', function () {
             // value dropdown can open and has all labels
             await click(`${filterSelector} .gh-member-label-input`);
             expect(findAll(`${filterSelector} [data-test-label-filter]`).length, '# of label options').to.equal(5);
+
+            const labelRequests = getLabelRequests();
+            expect(labelRequests.length).to.be.greaterThan(0);
+            labelRequests.forEach((request) => {
+                const parsedUrl = new URL(request.url);
+                expect(parsedUrl.searchParams.get('limit')).to.not.equal('all');
+            });
+            expect(labelRequests.some((request) => {
+                const parsedUrl = new URL(request.url);
+                return parsedUrl.searchParams.get('limit') === '100';
+            })).to.be.true;
 
             // selecting a value updates table
             await selectChoose(`${filterSelector} .gh-member-label-input`, label.name);

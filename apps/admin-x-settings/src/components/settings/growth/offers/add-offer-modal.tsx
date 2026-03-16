@@ -30,6 +30,8 @@ export interface OfferType {
     description: string;
 }
 
+const MAX_DISPLAY_TEXT_LENGTH = 191;
+
 export const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick: () => void}> = ({type, checked, onClick}) => {
     const checkboxClass = checked ? 'bg-black text-white dark:bg-white dark:text-black' : 'border border-grey-300 dark:border-grey-800';
 
@@ -135,15 +137,10 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
     handleTrialAmountInput,
     amountOptions}) => {
     // const handleError = useHandleError();
-    const getFilteredDurationOptions = () => {
-        // Check if the selected tier's cadence is 'yearly'
-        if (selectedTier?.label?.includes('Yearly')) {
-            // Filter out 'repeating' from duration options
-            return durationOptions.filter(option => option.value !== 'repeating');
-        }
-        return durationOptions;
-    };
-    const filteredDurationOptions = getFilteredDurationOptions();
+    const isYearlyTier = overrides.cadence === 'year';
+    const filteredDurationOptions = isYearlyTier
+        ? durationOptions.filter(option => option.value !== 'repeating')
+        : durationOptions;
 
     const [nameLength, setNameLength] = useState(0);
     const nameLengthColor = nameLength > 40 ? 'text-red' : 'text-green';
@@ -179,6 +176,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                         <TextField
                             error={Boolean(errors.displayTitle)}
                             hint={errors.displayTitle}
+                            maxLength={MAX_DISPLAY_TEXT_LENGTH}
                             placeholder='Black Friday Special'
                             title='Display title'
                             value={overrides.displayTitle.value}
@@ -188,6 +186,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             onKeyDown={() => clearError('displayTitle')}
                         />
                         <TextArea
+                            maxLength={MAX_DISPLAY_TEXT_LENGTH}
                             placeholder='Take advantage of this limited-time offer.'
                             title='Display description'
                             value={overrides.displayDescription}
@@ -254,14 +253,26 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                 selectedOption={filteredDurationOptions.find(option => option.value === overrides.duration)}
                                 testId='duration-select-offers'
                                 title='Duration'
-                                onSelect={e => handleDurationChange(e?.value || '')}
+                                onSelect={(e) => {
+                                    clearError('durationInMonths');
+                                    handleDurationChange(e?.value || '');
+                                }}
                             />
 
                             {
-                                overrides.duration === 'repeating' && <div className='-mt-4'>
-                                    <TextField data-testid='duration-months-input' rightPlaceholder={`${overrides.durationInMonths === 1 ? 'month' : 'months'}`} type='number' value={overrides.durationInMonths === 0 ? '' : String(overrides.durationInMonths)} onChange={(e) => {
-                                        handleDurationInMonthsInput(e);
-                                    }} />
+                                overrides.duration === 'repeating' && !isYearlyTier && <div className='-mt-4'>
+                                    <TextField
+                                        data-testid='duration-months-input'
+                                        error={Boolean(errors.durationInMonths)}
+                                        hint={errors.durationInMonths}
+                                        rightPlaceholder={`${overrides.durationInMonths === 1 ? 'month' : 'months'}`}
+                                        type='number'
+                                        value={overrides.durationInMonths === 0 ? '' : String(overrides.durationInMonths)}
+                                        onChange={(e) => {
+                                            handleDurationInMonthsInput(e);
+                                        }}
+                                        onKeyDown={() => clearError('durationInMonths')}
+                                    />
                                 </div>
                             }
                             </>
@@ -363,6 +374,7 @@ const AddOfferModal = () => {
             percentAmount: 0
         },
         onSave: async () => {
+            const duration = formState.type === 'trial' ? 'trial' : formState.duration;
             const dataset = {
                 name: formState.name,
                 code: formState.code.value,
@@ -370,8 +382,8 @@ const AddOfferModal = () => {
                 display_description: formState.displayDescription,
                 cadence: formState.cadence,
                 amount: calculateAmount(formState) || 0,
-                duration: formState.type === 'trial' ? 'trial' : formState.duration,
-                duration_in_months: Number(formState.durationInMonths),
+                duration,
+                ...(duration === 'repeating' ? {duration_in_months: formState.durationInMonths} : {}),
                 currency: formState.currency,
                 status: formState.status,
                 redemption_type: 'signup' as const,
@@ -408,8 +420,8 @@ const AddOfferModal = () => {
                 newErrors.amount = 'Enter an amount greater than 0.';
             }
 
-            if (formState.type === 'percent' && (formState.percentAmount < 0 || formState.percentAmount > 100)) {
-                newErrors.amount = 'Amount must be between 0 and 100%.';
+            if (formState.type === 'percent' && (formState.percentAmount < 1 || formState.percentAmount > 100)) {
+                newErrors.amount = 'Enter an amount between 1 and 100%.';
             }
 
             if (formState.type === 'fixed' && formState.fixedAmount === 0 || formState.type === 'fixed' && formState.fixedAmount < 1) {
@@ -424,6 +436,10 @@ const AddOfferModal = () => {
                 newErrors.amount = 'Free trial must be at least 1 day.';
             }
 
+            if (formState.type !== 'trial' && formState.duration === 'repeating' && (!Number.isInteger(formState.durationInMonths) || formState.durationInMonths < 1)) {
+                newErrors.durationInMonths = 'Enter a whole number of months (1 or more).';
+            }
+
             return newErrors;
         },
         savingDelay: 500
@@ -435,19 +451,32 @@ const AddOfferModal = () => {
     ];
 
     const handleTierChange = (tier: SelectOption) => {
+        const parsedTier = parseData(tier.value);
+        const isYearlyCadence = parsedTier.period === 'year';
+
         setSelectedTier({
             tier,
-            dataset: parseData(tier.value)
+            dataset: parsedTier
         });
         updateForm(state => ({
             ...state,
-            cadence: parseData(tier.value).period,
-            currency: parseData(tier.value).currency,
-            tierId: parseData(tier.value).id
+            cadence: parsedTier.period,
+            currency: parsedTier.currency,
+            tierId: parsedTier.id,
+            duration: isYearlyCadence && state.duration === 'repeating' ? 'once' : state.duration
         }));
+
+        if (isYearlyCadence) {
+            clearError('durationInMonths');
+        }
     };
 
     const handleTypeChange = (type: string) => {
+        if (type === 'trial') {
+            clearError('amount');
+            clearError('durationInMonths');
+        }
+
         updateForm(state => ({
             ...state,
             type: type
@@ -484,9 +513,11 @@ const AddOfferModal = () => {
 
     const handleDurationInMonthsInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
+        const nextValue = Number(target.value);
+
         updateForm(state => ({
             ...state,
-            durationInMonths: Number(target.value)
+            durationInMonths: Number.isNaN(nextValue) ? 0 : nextValue
         }));
     };
 

@@ -21,7 +21,7 @@ network:
     - mcp.linear.app
 safe-outputs:
   create-issue:
-  noop: false
+  noop:
 ---
 
 # Linear Issue Triage Agent
@@ -40,7 +40,7 @@ You are an AI agent that triages new Linear issues for the **Berlin Bureau (BER)
    - Tag the product area
    - Post a triage comment explaining your reasoning
 4. Update your cache-memory with the newly triaged issue IDs
-5. If there are no new issues to triage, call the `noop` safe output with a message like "No new BER issues in Triage state"
+5. After processing, call the `noop` safe output with a summary of what you did — e.g. "Triaged 1 issue: BER-3367 (Bug, P3)" or "No new BER issues in Triage state" if there was nothing to triage
 
 ## Linear MCP Tools
 

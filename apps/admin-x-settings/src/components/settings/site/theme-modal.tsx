@@ -78,6 +78,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     }, [checkThemeLimitError, isThemeLimited]);
 
     const onClose = () => {
+        modal.remove();
         updateRoute('/');
     };
 
@@ -506,6 +507,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                 prompt,
                 installedTheme: installedTheme!,
                 onActivate: () => {
+                    modal.remove();
                     updateRoute('');
                 }
             });

@@ -24,7 +24,7 @@ const UniversalImportModal: React.FC = () => {
             testId='universal-import-modal'
             title='Universal import'
         >
-            <div className='py-4 leading-9'>
+            <div className='py-4'>
                 <FileUpload
                     accept="application/json, application/zip"
                     id="import-file"

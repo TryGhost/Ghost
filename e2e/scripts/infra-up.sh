@@ -7,6 +7,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
 
 MODE="${GHOST_E2E_MODE:-dev}"
+
 if [[ "$MODE" != "build" ]]; then
   DEV_COMPOSE_PROJECT="${COMPOSE_PROJECT_NAME:-ghost-dev}"
   GHOST_DEV_IMAGE="${DEV_COMPOSE_PROJECT}-ghost-dev"

@@ -27,7 +27,7 @@ export type Offer = {
 }
 
 export type PartialNewOffer = Omit<Offer, 'redemption_count'>;
-export type NewOffer = Partial<Pick<PartialNewOffer, 'id'>> & Omit<PartialNewOffer, 'id'>;
+export type NewOffer = Partial<Pick<PartialNewOffer, 'id' | 'duration_in_months'>> & Omit<PartialNewOffer, 'id' | 'duration_in_months'>;
 
 export interface OffersResponseType {
     meta?: Meta

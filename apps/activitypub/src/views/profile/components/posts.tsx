@@ -95,7 +95,7 @@ const Posts: React.FC<PostsProps> = ({
                     </li>
                 ))}
                 {isFetchingNextPage && (
-                    <li className='flex flex-col items-center justify-center space-y-4 text-center'>
+                    <li className='flex flex-col items-center justify-center gap-4 text-center'>
                         <LoadingIndicator size='md' />
                     </li>
                 )}

@@ -69,17 +69,22 @@ export class DomainWarmingService {
      */
     async getWarmupLimit(emailCount: number): Promise<number> {
         const day = await this.#getDaysSinceFirstEmail();
-        if (day >= this.#warmupConfig.totalDays) {
-            return Infinity;
-        }
 
-        const limit = Math.round(
-            this.#warmupConfig.start *
-            Math.pow(
-                this.#warmupConfig.end / this.#warmupConfig.start,
-                day / (this.#warmupConfig.totalDays - 1)
-            )
-        );
+        let limit = 0;
+
+        if (day >= this.#warmupConfig.totalDays) {
+            // Max limit if we're after the warm-up period
+            limit = Infinity;
+        } else {
+            // Interpolate the warmup amount
+            limit = Math.round(
+                this.#warmupConfig.start *
+                Math.pow(
+                    this.#warmupConfig.end / this.#warmupConfig.start,
+                    day / (this.#warmupConfig.totalDays - 1)
+                )
+            );
+        }
 
         return Math.min(emailCount, limit);
     }

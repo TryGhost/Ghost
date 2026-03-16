@@ -48,7 +48,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                     <div>
                         <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0' data-testid='unique-visitors'>
                             <div className='flex grow flex-col gap-1.5 border-none pb-0'>
-                                <KpiCardHeaderLabel color='hsl(var(--chart-blue))'>
+                                <KpiCardHeaderLabel color='var(--chart-blue)'>
                             Unique visitors
                                 </KpiCardHeaderLabel>
                                 <KpiCardHeaderValue
@@ -65,7 +65,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                                 :
                                 <GhAreaChart
                                     className={'aspect-auto h-[240px] w-full'}
-                                    color='hsl(var(--chart-blue))'
+                                    color='var(--chart-blue)'
                                     data={chartData || []}
                                     id="visitors"
                                     range={range}

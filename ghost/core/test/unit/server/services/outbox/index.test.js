@@ -55,4 +55,19 @@ describe('Outbox Service', function () {
             });
         });
     });
+
+    describe('startProcessing error handling', function () {
+        it('logs structured error when processOutbox throws', async function () {
+            processOutboxStub.rejects(new Error('Unexpected failure'));
+            service.init();
+
+            await service.startProcessing();
+
+            const errorLog = findByEvent(logCapture.output, 'outbox.processing.error');
+            assert.ok(errorLog);
+            assert.deepEqual(errorLog.system, {
+                event: 'outbox.processing.error'
+            });
+        });
+    });
 });

@@ -36,7 +36,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({tableHeader, data, defaultSo
                     return (
                         <DataListRow
                             key={row.source}
-                            className={onSourceClick ? 'group/row cursor-pointer transition-colors hover:bg-accent/50' : 'group/row'}
+                            className={onSourceClick ? 'group/row hover:bg-accent/50 cursor-pointer transition-colors' : 'group/row'}
                             data-testid={`source-row-${row.isDirectTraffic ? 'direct' : row.source}`}
                             onClick={onSourceClick ? () => handleRowClick(row) : undefined}
                         >
@@ -166,7 +166,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                             <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                         </SheetTrigger>
                         <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
+                            <SheetHeader className='bg-background/60 sticky top-0 z-40 -mx-6 p-6 backdrop-blur'>
                                 <SheetTitle>{title}</SheetTitle>
                                 <SheetDescription>{description}</SheetDescription>
                             </SheetHeader>

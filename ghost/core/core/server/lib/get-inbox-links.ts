@@ -34,7 +34,7 @@ import logging from '@tryghost/logging';
 
 type GetLinkFn = (options: Readonly<{recipient: string; sender: string}>) => string;
 
-type ProviderName = 'gmail' | 'yahoo' | 'outlook' | 'proton' | 'icloud' | 'hey' | 'aol' | 'mailru' | 'dev-mailpit';
+type ProviderName = 'gmail' | 'yahoo' | 'outlook' | 'proton' | 'icloud' | 'hey' | 'aol' | 'mailru' | 'feedbin' | 'dev-mailpit';
 
 type Provider = {
     name: ProviderName;
@@ -119,6 +119,12 @@ const PROVIDERS: ReadonlyArray<Provider> = [
         domains: ['mail.ru'],
         getDesktopLink: ({sender}) => buildUrl('https://e.mail.ru/search/', 'q_from', sender),
         getAndroidLink: () => getAndroidIntentUrl('ru.mail.mailapp', 'https://e.mail.ru/')
+    },
+    {
+        name: 'feedbin',
+        domains: ['feedb.in'],
+        getDesktopLink: () => 'https://feedbin.com/',
+        getAndroidLink: () => 'https://feedbin.com/'
     },
     ...(process.env.NODE_ENV === 'development' ? [{
         name: 'dev-mailpit' as const,

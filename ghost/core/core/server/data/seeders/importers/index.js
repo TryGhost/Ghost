@@ -22,6 +22,7 @@ module.exports = [
     require('./redirects-importer'),
     require('./members-click-events-importer'),
     require('./offers-importer'),
+    require('./offer-redemptions-importer'),
     require('./members-created-events-importer'),
     require('./members-login-events-importer'),
     require('./members-status-events-importer'),

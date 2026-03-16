@@ -4,4 +4,7 @@ export type {Dirtyable, ErrorMessages, FormHook, OkProps, SaveHandler, SaveState
 export {default as useHandleError} from './hooks/use-handle-error';
 export {usePermission} from './hooks/use-permissions';
 export {useKoenigFileUpload, koenigFileUploadTypes} from './hooks/use-koenig-file-upload';
+export {useKoenigFetchEmbed} from './hooks/use-koenig-fetch-embed';
 export type {KoenigFileUploadType} from './hooks/use-koenig-file-upload';
+export {useKoenigLinkSuggestions} from './hooks/use-koenig-link-suggestions';
+export {usePinturaConfig} from './hooks/use-pintura-config';

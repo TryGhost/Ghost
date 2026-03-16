@@ -101,7 +101,7 @@ describe('Account Plan Page', () => {
         expect(confirmCancelButton).toBeInTheDocument();
     });
 
-    test('shows retention offer when opened with cancel pageData and retention offers exist', async () => {
+    test('shows retention offer during cancellation flow', async () => {
         const paidProduct = getProductData({
             name: 'Basic',
             monthlyPrice: getPriceData({interval: 'month', amount: 1000, currency: 'usd'}),
@@ -144,6 +144,66 @@ describe('Account Plan Page', () => {
         // Should show retention offer section instead of cancellation confirmation
         const acceptOfferButton = await findByRole('button', {name: 'Continue subscription'});
         expect(acceptOfferButton).toBeInTheDocument();
+    });
+
+    test('shows retention offer during cancellation flow for members on an archived tier', async () => {
+        const paidTier = getProductData({
+            name: 'Basic',
+            monthlyPrice: getPriceData({interval: 'month', amount: 1000, currency: 'usd'}),
+            yearlyPrice: getPriceData({interval: 'year', amount: 10000, currency: 'usd'})
+        });
+
+        const archivedTier = getProductData({
+            name: 'Archived',
+            monthlyPrice: getPriceData({interval: 'month', amount: 1000, currency: 'usd'}),
+            yearlyPrice: getPriceData({interval: 'year', amount: 10000, currency: 'usd'})
+        });
+
+        // As archived products are not returned by the /tiers endpoint, omit archivedTier
+        const site = getSiteData({
+            products: [paidTier, getProductData({type: 'free'})],
+            portalProducts: [paidTier.id]
+        });
+
+        // Subscription is linked to archivedTier
+        const subscription = getSubscriptionData({
+            status: 'active',
+            interval: 'month',
+            amount: 1200,
+            currency: 'USD',
+            priceId: archivedTier.monthlyPrice.id,
+            tier: {
+                id: archivedTier.id,
+                name: archivedTier.name
+            }
+        });
+        subscription.price.product.product_id = subscription.tier.id;
+
+        const member = getMemberData({
+            paid: true,
+            subscriptions: [subscription]
+        });
+
+        const retentionOffer = {
+            ...getOfferData({
+                redemptionType: 'retention',
+                type: 'percent',
+                amount: 20,
+                cadence: 'month'
+            }),
+            tier: null
+        };
+
+        const {findByRole, queryByText} = customSetup({
+            site,
+            member,
+            offers: [retentionOffer],
+            pageData: {action: 'cancel', subscriptionId: subscription.id}
+        });
+
+        const acceptOfferButton = await findByRole('button', {name: 'Continue subscription'});
+        expect(acceptOfferButton).toBeInTheDocument();
+        expect(queryByText(`${archivedTier.name} - Monthly`)).toBeInTheDocument();
     });
 
     test('refreshes retention preview details when offer context changes', () => {
@@ -436,7 +496,53 @@ describe('Account Plan Page', () => {
         fireEvent.click(cancelButton);
 
         expect(queryByText('1 month free')).toBeInTheDocument();
-        expect(queryByText('Enjoy 1 free month on us. Your next billing date will be 5 Nov 2022.')).toBeInTheDocument();
+        expect(queryByText('Enjoy a free month on us. You won\'t be charged until 5 Nov 2022.')).toBeInTheDocument();
+    });
+
+    test('renders multi-month free months retention offers', async () => {
+        const paidProduct = getProductData({
+            name: 'Basic',
+            monthlyPrice: getPriceData({interval: 'month', amount: 1000, currency: 'usd'}),
+            yearlyPrice: getPriceData({interval: 'year', amount: 10000, currency: 'usd'})
+        });
+        const products = [paidProduct, getProductData({type: 'free'})];
+        const site = getSiteData({
+            products,
+            portalProducts: [paidProduct.id]
+        });
+        const member = getMemberData({
+            paid: true,
+            subscriptions: [
+                getSubscriptionData({
+                    status: 'active',
+                    interval: 'month',
+                    amount: paidProduct.monthlyPrice.amount,
+                    currency: 'USD',
+                    priceId: paidProduct.monthlyPrice.id
+                })
+            ]
+        });
+
+        const retentionOffer = {
+            ...getOfferData({
+                type: 'percent',
+                amount: 100,
+                cadence: 'month',
+                duration: 'repeating',
+                durationInMonths: 3,
+                tierId: paidProduct.id,
+                tierName: paidProduct.name
+            }),
+            redemption_type: 'retention'
+        };
+
+        const {queryByRole, queryByText} = customSetup({site, member, offers: [retentionOffer]});
+        const cancelButton = queryByRole('button', {name: 'Cancel subscription'});
+
+        fireEvent.click(cancelButton);
+
+        expect(queryByText('3 months free')).toBeInTheDocument();
+        expect(queryByText('Enjoy 3 free months on us. You won\'t be charged until 5 Jan 2023.')).toBeInTheDocument();
     });
 
     test('renders forever percent retention offers', async () => {
