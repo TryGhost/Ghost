@@ -71,7 +71,10 @@ export function fromMixtape(options) {
         // Image is optional,
         // The element usually still exists with an additional has.mixtapeImage--empty class and has no background image
         if (imgElement && imgElement.style['background-image']) {
-            metadata.thumbnail = imgElement.style['background-image'].match(/url\(([^)]*?)\)/)[1].replace(/^['"]|['"]$/g, '');
+            const match = imgElement.style['background-image'].match(/url\(([^)]*?)\)/);
+            if (match?.[1]) {
+                metadata.thumbnail = match[1].replace(/^['"]|['"]$/g, '');
+            }
         }
 
         let payload = {url, metadata};
