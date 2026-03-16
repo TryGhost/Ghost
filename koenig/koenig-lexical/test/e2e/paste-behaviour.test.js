@@ -532,6 +532,7 @@ test.describe('Paste behaviour', async () => {
                                             autocorrect="off"
                                             autocapitalize="off"
                                             translate="no"
+                                            writingsuggestions="false"
                                             contenteditable="true"
                                             role="textbox"
                                             aria-multiline="true"

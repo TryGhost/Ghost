@@ -15,7 +15,14 @@ export const shouldIgnoreEvent = (event) => {
         return false;
     }
 
-    const isFromCardEditor = target.matches('input, textarea') || target.cmView || target.cmIgnore || !!target.closest('.cm-editor');
+    // Check for standard form inputs and CodeMirror editors.
+    // For cut events, CodeMirror may process the event first and remove the
+    // target element from the DOM before the event bubbles to Lexical, so
+    // target.closest('.cm-editor') would return null. Fall back to checking
+    // document.activeElement when the target is disconnected.
+    const isFromCardEditor = target.matches('input, textarea')
+        || !!target.closest('.cm-editor')
+        || (!target.isConnected && !!document.activeElement?.closest('.cm-editor'));
 
     return isFromCardEditor;
 };
