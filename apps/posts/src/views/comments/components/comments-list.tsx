@@ -1,11 +1,7 @@
 import CommentContent from './comment-content';
 import CommentThreadSidebar from './comment-thread-sidebar';
 import {Button, LucideIcon} from '@tryghost/shade';
-import {
-    Comment,
-    useHideComment,
-    useShowComment
-} from '@tryghost/admin-x-framework/api/comments';
+import {Comment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
 import {CommentAvatar} from './comment-avatar';
 import {CommentHeader} from './comment-header';
 import {CommentMenu} from './comment-menu';
@@ -34,10 +30,7 @@ const PlaceholderRow = forwardRef<HTMLDivElement>(function PlaceholderRow(
             className="relative flex flex-col"
         >
             <div className="relative z-10 h-24 animate-pulse">
-                <div
-                    className="h-full rounded-md bg-muted"
-                    data-testid="loading-placeholder"
-                />
+                <div className="bg-muted h-full rounded-md" data-testid="loading-placeholder" />
             </div>
         </div>
     );
@@ -63,9 +56,7 @@ function CommentsList({
     const parentRef = useRef<HTMLDivElement>(null);
     const [searchParams, setSearchParams] = useSearchParams();
     const [threadSidebarOpen, setThreadSidebarOpen] = useState(false);
-    const [selectedThreadCommentId, setSelectedThreadCommentId] = useState<
-        string | null
-    >(null);
+    const [selectedThreadCommentId, setSelectedThreadCommentId] = useState<string | null>(null);
 
     const {mutate: hideComment} = useHideComment();
     const {mutate: showComment} = useShowComment();
@@ -116,7 +107,10 @@ function CommentsList({
 
     return (
         <div ref={parentRef} className="overflow-hidden">
-            <div className="flex flex-col" data-testid="comments-list">
+            <div
+                className="flex flex-col"
+                data-testid="comments-list"
+            >
                 <div className="flex flex-col">
                     <SpacerRow height={spaceBefore} />
                     {visibleItems.map(({key, virtualItem, item, props}) => {
@@ -140,62 +134,32 @@ function CommentsList({
                                     }
                                 }}
                             >
-                                <div className="flex items-start gap-3">
+                                <div className='flex items-start gap-3'>
                                     <CommentAvatar
                                         avatarImage={item.member?.avatar_image}
                                         isHidden={item.status === 'hidden'}
                                         memberId={item.member?.id}
                                     />
 
-                                    <div className="flex min-w-0 flex-col">
+                                    <div className='flex min-w-0 flex-col'>
                                         <CommentHeader
-                                            canComment={
-                                                item.member?.can_comment
-                                            }
+                                            canComment={item.member?.can_comment}
                                             createdAt={item.created_at}
                                             isHidden={item.status === 'hidden'}
                                             memberId={item.member?.id}
                                             memberName={item.member?.name}
                                             postTitle={item.post?.title}
-                                            onAuthorClick={
-                                                item.member?.id
-                                                    ? () => onAddFilter(
-                                                        'author',
-                                                              item.member!.id
-                                                    )
-                                                    : undefined
-                                            }
-                                            onPostClick={
-                                                item.post?.id
-                                                    ? () => onAddFilter(
-                                                        'post',
-                                                              item.post!.id
-                                                    )
-                                                    : undefined
-                                            }
+                                            onAuthorClick={item.member?.id ? () => onAddFilter('author', item.member!.id) : undefined}
+                                            onPostClick={item.post?.id ? () => onAddFilter('post', item.post!.id) : undefined}
                                         />
 
                                         {item.in_reply_to_snippet && (
-                                            <div
-                                                className={`mb-1 line-clamp-1 max-w-3xl text-sm ${
-                                                    item.status === 'hidden' &&
-                                                    'opacity-50'
-                                                }`}
-                                            >
-                                                <span className="text-muted-foreground">
-                                                    Replied to:
-                                                </span>
-                                                &nbsp;
+                                            <div className={`mb-1 line-clamp-1 max-w-3xl text-sm ${item.status === 'hidden' && 'opacity-50'}`}>
+                                                <span className="text-muted-foreground">Replied to:</span>&nbsp;
                                                 <Link
-                                                    className="text-sm font-normal text-muted-foreground hover:text-foreground"
+                                                    className="text-muted-foreground hover:text-foreground text-sm font-normal"
                                                     data-testid="replied-to-link"
-                                                    to={
-                                                        buildThreadLink(
-                                                            searchParams,
-                                                            item.in_reply_to_id ||
-                                                                item.parent_id
-                                                        ) || ''
-                                                    }
+                                                    to={buildThreadLink(searchParams, item.in_reply_to_id || item.parent_id) || ''}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                     }}
@@ -209,30 +173,14 @@ function CommentsList({
 
                                         <div className="mt-4 flex flex-row flex-nowrap items-center gap-3">
                                             {item.status === 'published' && (
-                                                <Button
-                                                    className="text-foreground"
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => hideComment({
-                                                        id: item.id
-                                                    })
-                                                    }
-                                                >
-                                                    <LucideIcon.EyeOff />
+                                                <Button className='text-foreground' size="sm" variant="outline" onClick={() => hideComment({id: item.id})}>
+                                                    <LucideIcon.EyeOff/>
                                                     Hide
                                                 </Button>
                                             )}
                                             {item.status === 'hidden' && (
-                                                <Button
-                                                    className="text-foreground"
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => showComment({
-                                                        id: item.id
-                                                    })
-                                                    }
-                                                >
-                                                    <LucideIcon.Eye />
+                                                <Button className='text-foreground' size="sm" variant="outline" onClick={() => showComment({id: item.id})}>
+                                                    <LucideIcon.Eye/>
                                                     Show
                                                 </Button>
                                             )}
@@ -240,7 +188,9 @@ function CommentsList({
                                                 className="ml-2"
                                                 comment={item}
                                             />
-                                            <CommentMenu comment={item} />
+                                            <CommentMenu
+                                                comment={item}
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -248,14 +198,8 @@ function CommentsList({
                                 <div>
                                     {item.post?.feature_image ? (
                                         <img
-                                            alt={
-                                                item.post.title ||
-                                                'Post feature image'
-                                            }
-                                            className={`hidden aspect-video w-36 rounded object-cover lg:block ${
-                                                item.status === 'hidden' &&
-                                                'opacity-50'
-                                            }`}
+                                            alt={item.post.title || 'Post feature image'}
+                                            className={`hidden aspect-video w-36 rounded object-cover lg:block ${item.status === 'hidden' && 'opacity-50'}`}
                                             src={item.post.feature_image}
                                         />
                                     ) : null}
