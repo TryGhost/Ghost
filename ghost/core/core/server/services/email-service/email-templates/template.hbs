@@ -106,19 +106,11 @@
                                                             </td>
                                                             <td class="{{classes.meta}} view-online desktop">
                                                                 <a href="{{post.url}}" class="view-online-link">{{t 'View in browser'}}</a>
-                                                                {{#if post.shareUrl}}
-                                                                    <span aria-hidden="true"> • </span>
-                                                                    <a href="{{post.shareUrl}}" class="view-online-link">{{t 'Share'}}</a>
-                                                                {{/if}}
                                                             </td>
                                                         </tr>
                                                         <tr class="{{classes.meta}} view-online-mobile">
                                                             <td height="20" class="view-online">
                                                                 <a href="{{post.url}}" class="view-online-link">{{t 'View in browser'}}</a>
-                                                                {{#if post.shareUrl}}
-                                                                    <span aria-hidden="true"> • </span>
-                                                                    <a href="{{post.shareUrl}}" class="view-online-link">{{t 'Share'}}</a>
-                                                                {{/if}}
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -204,7 +196,7 @@
 
                             <!-- END MAIN CONTENT AREA -->
 
-                            {{#if (or feedbackButtons newsletter.showCommentCta) }}
+                            {{#if (or feedbackButtons newsletter.showCommentCta post.shareUrl) }}
                                 <tr>
                                     <td class="feedback-buttons-container" dir="ltr" width="100%" align="center">
                                         <table class="feedback-buttons" role="presentation" border="0" cellpadding="0" cellspacing="0">
@@ -215,6 +207,9 @@
                                                 {{/if}}
                                                 {{#if newsletter.showCommentCta}}
                                                     {{> feedbackButton href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment-mobile.png" width="42" height="42"}}
+                                                {{/if}}
+                                                {{#if post.shareUrl}}
+                                                    {{> feedbackButton href=post.shareUrl buttonText='Share' iconUrl="https://static.ghost.org/v5.0.0/images/link-icon.svg" width="42" height="42"}}
                                                 {{/if}}
                                             </tr>
                                         </table>

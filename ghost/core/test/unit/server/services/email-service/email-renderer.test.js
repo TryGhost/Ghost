@@ -1438,7 +1438,7 @@ describe('Email renderer', function () {
             );
 
             assert(response.html.includes('href="http://example.com/#/portal/share"'));
-            assert.match(response.html, />Share<\/a>/);
+            assert(response.html.includes('>Share</p>'));
         });
 
         it('does not include share links for non-public posts', async function () {
@@ -1789,15 +1789,14 @@ describe('Email renderer', function () {
             assert.deepEqual(links, [
                 `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
-                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded%23%2Fportal%2Fshare`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
-                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded%23%2Fportal%2Fshare`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexternal-domain.com%2F%3Fref%3D123%26source_tracking%3Dsite`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fencoded-link.com%2F%3Fcode%3Dtest%26source_tracking%3Dsite`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexample.com%2F%3Fref%3D123%26source_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
                 '#',
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%`,
                 `http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded%23%2Fportal%2Fshare`,
                 `%%{unsubscribe_url}%%`,
                 `https://ghost.org/?via=pbg-newsletter&source_tracking=site`
             ]);
@@ -1848,13 +1847,12 @@ describe('Email renderer', function () {
             assert.deepEqual(links, [
                 'http://example.com/',
                 'http://example.com/',
-                'http://example.com/#/portal/share',
                 'http://example.com/',
-                'http://example.com/#/portal/share',
                 'http://example.com/#relative-test',
                 '#',
                 'http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%',
                 'http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%',
+                'http://example.com/#/portal/share',
                 '%%{unsubscribe_url}%%',
                 'https://ghost.org/?via=pbg-newsletter'
             ]);
@@ -1905,13 +1903,12 @@ describe('Email renderer', function () {
             assert.deepEqual(links, [
                 `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
-                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded%23%2Fportal%2Fshare`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
-                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded%23%2Fportal%2Fshare`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexternal-domain.com%2F%3Fref%3D123%26source_tracking%3Dsite`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexample.com%2F%3Fref%3D123%26source_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%`,
                 `http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded%23%2Fportal%2Fshare`,
                 `%%{unsubscribe_url}%%`,
                 `https://ghost.org/?via=pbg-newsletter&source_tracking=site`
             ]);
