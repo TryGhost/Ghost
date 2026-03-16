@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/api-framework",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/framework.git",
@@ -27,11 +27,11 @@
     "sinon": "21.0.2"
   },
   "dependencies": {
-    "@tryghost/debug": "^2.0.2",
-    "@tryghost/errors": "^3.0.2",
-    "@tryghost/promise": "^2.0.2",
-    "@tryghost/tpl": "^2.0.2",
-    "@tryghost/validator": "^2.0.2",
+    "@tryghost/debug": "^2.0.3",
+    "@tryghost/errors": "^3.0.3",
+    "@tryghost/promise": "^2.0.3",
+    "@tryghost/tpl": "^2.0.3",
+    "@tryghost/validator": "^2.0.3",
     "lodash": "4.17.23"
   }
 }
