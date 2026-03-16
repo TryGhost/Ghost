@@ -83,7 +83,6 @@ export const responseFixtures = {
 const defaultLabFlags = {
     collections: false,
     outboundLinkTagging: false,
-    announcementBar: false,
     members: false
 };
 
@@ -349,7 +348,7 @@ export async function testUrlValidation(input: Locator, textToEnter: string, exp
     await input.fill(textToEnter);
     await input.blur();
 
-    expect(input).toHaveValue(expectedResult);
+    await expect(input).toHaveValue(expectedResult);
 
     if (expectedError) {
         await expect(input.locator('xpath=../..')).toContainText(expectedError);

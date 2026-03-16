@@ -882,7 +882,7 @@ describe('Comments API', function () {
                 await testCanReply(loggedInMember);
             });
 
-            it('Limits returned replies to 3', async function () {
+            it('Returns all replies when reading a single comment', async function () {
                 const {parent} = await dbFns.addCommentWithReplies({
                     member_id: fixtureManager.get('members', 0).id,
                     replies: new Array(5).fill({
@@ -893,11 +893,43 @@ describe('Comments API', function () {
                 // All 5 are direct replies (in_reply_to_id IS NULL)
                 // count.replies = 5 (all descendants)
                 // count.direct_replies = 5 (all are direct)
-                await testGetComments(`/api/comments/${parent.get('id')}/`, [commentMatcherWithReplies({replies: 3})])
+                await testGetComments(`/api/comments/${parent.get('id')}/`, [commentMatcherWithReplies({replies: 5})])
                     .expect(({body}) => {
                         assert.equal(body.comments[0].count.replies, 5);
                         assert.equal(body.comments[0].count.direct_replies, 5);
                     });
+            });
+
+            it('Returns all replies for every parent when browsing multiple comments', async function () {
+                // Create two parent comments, each with 5 replies
+                const {parent: parentA} = await dbFns.addCommentWithReplies({
+                    member_id: fixtureManager.get('members', 0).id,
+                    replies: new Array(5).fill({
+                        member_id: fixtureManager.get('members', 1).id
+                    })
+                });
+
+                const {parent: parentB} = await dbFns.addCommentWithReplies({
+                    member_id: fixtureManager.get('members', 0).id,
+                    replies: new Array(5).fill({
+                        member_id: fixtureManager.get('members', 1).id
+                    })
+                });
+
+                const res = await membersAgent
+                    .get(`/api/comments/post/${postId}/`)
+                    .expectStatus(200);
+
+                const commentA = res.body.comments.find(c => c.id === parentA.get('id'));
+                const commentB = res.body.comments.find(c => c.id === parentB.get('id'));
+
+                // Both parents should have all 5 replies loaded
+                assert.equal(commentA.replies.length, 5, `Parent A should have 5 replies, got ${commentA.replies.length}`);
+                assert.equal(commentB.replies.length, 5, `Parent B should have 5 replies, got ${commentB.replies.length}`);
+
+                // Counts should reflect the true totals
+                assert.equal(commentA.count.replies, 5);
+                assert.equal(commentB.count.replies, 5);
             });
 
             it('hidden replies are not included in the count', async function () {

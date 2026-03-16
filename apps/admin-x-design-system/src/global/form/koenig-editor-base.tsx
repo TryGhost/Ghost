@@ -44,7 +44,7 @@ export type KoenigInstance = {
     lastNodeIsDecorator: () => boolean
 };
 
-const loadKoenig = function (fetchKoenigLexical: FetchKoenigLexical) {
+export const loadKoenig = function (fetchKoenigLexical: FetchKoenigLexical) {
     let status = 'pending';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let response: any;
@@ -194,7 +194,7 @@ const KoenigEditorBase: React.FC<KoenigEditorBaseInternalProps> = ({
 }) => {
     const {fetchKoenigLexical, darkMode} = useDesignSystem();
     const editorResource = useMemo(() => loadKoenig(fetchKoenigLexical), [fetchKoenigLexical]);
-    const inheritClasses = inheritFontStyles ? '[&_*]:!font-inherit [&_*]:!text-inherit' : '';
+    const inheritClasses = inheritFontStyles ? '[&_*]:font-inherit! [&_*]:[font-size:inherit]!' : '';
 
     return (
         <div className={className || 'w-full'}>

@@ -31,7 +31,7 @@
   "devDependencies": {
     "@eslint/js": "9.37.0",
     "@faker-js/faker": "8.4.1",
-    "@playwright/test": "1.55.1",
+    "@playwright/test": "1.58.2",
     "@tryghost/debug": "0.1.35",
     "@tryghost/logging": "2.4.23",
     "@types/dockerode": "3.3.44",
@@ -42,7 +42,7 @@
     "eslint-plugin-playwright": "2.8.0",
     "eslint-plugin-no-relative-import-paths": "1.6.1",
     "knex": "3.1.0",
-    "mysql2": "3.18.0",
+    "mysql2": "3.18.1",
     "ts-node": "10.9.2",
     "typescript": "5.8.3"
   },

@@ -23,7 +23,12 @@ async function handle({payload}) {
 
         const automatedEmail = await AutomatedEmail.findOne({slug});
         if (!automatedEmail) {
-            logging.warn(`${LOG_KEY} No automated email found for slug: ${slug}`);
+            logging.warn({
+                system: {
+                    event: 'outbox.member_created.no_automated_email',
+                    slug
+                }
+            }, `${LOG_KEY} No automated email found for slug: ${slug}`);
             return;
         }
 

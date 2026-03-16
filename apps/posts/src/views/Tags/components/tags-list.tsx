@@ -67,7 +67,7 @@ function TagsList({
                 className="flex table-fixed flex-col lg:table"
                 data-testid="tags-list"
             >
-                <TableHeader className="hidden lg:!visible lg:!table-header-group">
+                <TableHeader className="lg:visible! lg:table-header-group! hidden">
                     <TableRow>
                         <TableHead className="w-auto px-4">
                             Tag
@@ -93,7 +93,7 @@ function TagsList({
                             <TableRow
                                 key={key}
                                 {...props}
-                                className="grid w-full grid-cols-[1fr_5rem] items-center gap-x-4 p-2 hover:bg-muted/50 md:grid-cols-[1fr_auto_5rem] lg:table-row lg:p-0 [&.group:hover_td]:bg-transparent"
+                                className="hover:bg-muted/50 grid w-full grid-cols-[1fr_5rem] items-center gap-x-4 p-2 md:grid-cols-[1fr_auto_5rem] lg:table-row lg:p-0 [&.group:hover_td]:bg-transparent"
                                 data-testid="tag-list-row"
                             >
                                 <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 md:relative lg:table-cell lg:w-1/2 lg:p-4 xl:w-3/5">

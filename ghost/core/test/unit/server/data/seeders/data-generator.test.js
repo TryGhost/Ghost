@@ -4,6 +4,7 @@ const knex = require('knex').default;
 
 const importers = require('../../../../../core/server/data/seeders/importers');
 const ProductsImporter = importers.find(i => i.table === 'products');
+const OfferRedemptionsImporter = importers.find(i => i.table === 'offer_redemptions');
 const StripeProductsImporter = importers.find(i => i.table === 'stripe_products');
 const StripePricesImporter = importers.find(i => i.table === 'stripe_prices');
 
@@ -93,6 +94,41 @@ describe('Data Generator', function () {
             withDefault: true
         });
         await dataGenerator.importData();
+    });
+
+    it('Can import explicit offer redemptions', async function () {
+        const dataGenerator = new DataGenerator({
+            knex: db,
+            schema,
+            schemaTables,
+            logger: {
+                info: () => {},
+                ok: () => {}
+            },
+            tables: [{
+                name: 'offers',
+                quantity: 12
+            }, {
+                name: 'offer_redemptions',
+                quantity: 10
+            }],
+            quantities: {
+                members: 100,
+                members_stripe_customers: 100,
+                members_stripe_customers_subscriptions: 100
+            }
+        });
+
+        await dataGenerator.importData();
+
+        const offers = await db.select('name', 'code').from('offers');
+        const redemptions = await db.select('offer_id', 'subscription_id').from('offer_redemptions');
+
+        assert.equal(offers.length, 12);
+        assert.equal(new Set(offers.map(offer => offer.name)).size, 12);
+        assert.equal(new Set(offers.map(offer => offer.code)).size, 12);
+        assert.equal(redemptions.length, 10);
+        assert.equal(new Set(redemptions.map(redemption => `${redemption.subscription_id}:${redemption.offer_id}`)).size, 10);
     });
 });
 
@@ -197,6 +233,22 @@ describe('Importer', function () {
 
         assert.equal(results.length, 4);
         assert.equal(results[0].name, 'Free');
+    });
+
+    it('Clamps redemption timestamps to the subscription window', function () {
+        const importer = new OfferRedemptionsImporter(db, null);
+        const subscriptionState = {
+            subscriptionCreatedAt: new Date('2024-01-01T00:00:00.000Z'),
+            redemptionEndAt: new Date('2024-01-01T00:00:01.000Z'),
+            lastRedeemedAt: new Date('2024-01-01T00:00:00.500Z')
+        };
+        const offer = {
+            created_at: '2024-01-01T00:00:00.000Z'
+        };
+
+        importer.getCreatedAt(subscriptionState, offer);
+
+        assert.equal(subscriptionState.lastRedeemedAt.valueOf(), subscriptionState.redemptionEndAt.valueOf());
     });
 });
 

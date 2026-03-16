@@ -115,11 +115,11 @@ const ColorPicker: React.FC<ColorPickerProps> = ({hexValue, eyedropper, clearBut
                     <HexColorInput aria-label="Color value" className='z-[1] w-full rounded-md border border-transparent bg-grey-150 p-2 pl-6 transition-all hover:bg-grey-100 focus:border-green focus:bg-white focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] dark:bg-grey-900 dark:text-white dark:focus:bg-grey-925' color={hexValue} onChange={onChange} />
                     {eyedropper && !!window.EyeDropper && (
                         <button
-                            className="absolute inset-y-0 right-3 z-50 my-auto h-4 w-4 p-[1px]"
+                            className="absolute inset-y-0 right-3 z-50 my-auto size-4 p-[1px]"
                             type="button"
                             onClick={openColorPicker}
                         >
-                            <EyedropperIcon className="h-full w-full" />
+                            <EyedropperIcon className="size-full" />
                         </button>
                     )}
                 </div>

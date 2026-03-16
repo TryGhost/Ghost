@@ -155,7 +155,7 @@ const UnblockDialog: React.FC<UnblockDialogProps> = ({
                 <AlertDialogTitle className='mb-1 flex flex-col gap-1'>
                     Unblock
                 </AlertDialogTitle>
-                <AlertDialogDescription className='!mt-4' asChild>
+                <AlertDialogDescription className='mt-4!' asChild>
                     <div className='flex flex-col rounded-md border'>
                         <div className='flex justify-between gap-6 p-5'>
                             <div className='flex flex-col gap-1'>

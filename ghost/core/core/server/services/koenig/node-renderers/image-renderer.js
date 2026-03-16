@@ -1,9 +1,23 @@
+const path = require('path');
+const imageTransform = require('@tryghost/image-transform');
 const {getAvailableImageWidths} = require('../render-utils/get-available-image-widths');
 const {isContentImage} = require('../render-utils/is-content-image');
-const {setSrcsetAttribute} = require('../render-utils/srcset-attribute');
+const {getSrcsetAttribute, setSrcsetAttribute} = require('../render-utils/srcset-attribute');
 const {getResizedImageDimensions} = require('../render-utils/get-resized-image-dimensions');
 const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
 const {renderEmptyContainer} = require('../render-utils/render-empty-container');
+
+const MODERN_IMAGE_FORMATS = ['avif', 'webp'];
+
+function isAnimatedImage(url = '') {
+    try {
+        const parsedUrl = new URL(url, 'http://localhost');
+        const extension = path.extname(parsedUrl.pathname).toLowerCase();
+        return extension === '.gif';
+    } catch (err) {
+        return false;
+    }
+}
 
 function renderImageNode(node, options = {}) {
     addCreateDocumentOption(options);
@@ -62,22 +76,78 @@ function renderImageNode(node, options = {}) {
         img.setAttribute('height', height);
     }
 
+    const imgAttributes = {
+        src: node.src,
+        width: node.width,
+        height: node.height
+    };
+
+    let picture = null;
+
     if (options.target !== 'email') {
-        const imgAttributes = {
-            src: node.src,
-            width: node.width,
-            height: node.height
-        };
         setSrcsetAttribute(img, imgAttributes, options);
 
+        let sizes;
         if (img.getAttribute('srcset') && node.width && node.width >= 720) {
             // standard size
             if (!node.cardWidth || node.cardWidth === 'regular') {
-                img.setAttribute('sizes', '(min-width: 720px) 720px');
+                sizes = '(min-width: 720px) 720px';
             }
 
             if (node.cardWidth === 'wide' && node.width >= 1200) {
-                img.setAttribute('sizes', '(min-width: 1200px) 1200px');
+                sizes = '(min-width: 1200px) 1200px';
+            }
+        }
+
+        if (sizes) {
+            img.setAttribute('sizes', sizes);
+        }
+
+        const shouldRenderPicture = Boolean(
+            options.feature?.pictureImageFormats &&
+            img.getAttribute('srcset') &&
+            !isAnimatedImage(node.src) &&
+            isContentImage(node.src, options.siteUrl, options.imageBaseUrl) &&
+            options.canTransformImage?.(node.src) &&
+            imageTransform.canTransformFiles()
+        );
+
+        if (shouldRenderPicture) {
+            picture = document.createElement('picture');
+            let sourcesAdded = false;
+
+            MODERN_IMAGE_FORMATS.forEach((format) => {
+                if (!imageTransform.canTransformToFormat(format)) {
+                    return;
+                }
+
+                const formattedSrcset = getSrcsetAttribute({
+                    src: node.src,
+                    width: node.width,
+                    options,
+                    format
+                });
+
+                if (!formattedSrcset) {
+                    return;
+                }
+
+                const source = document.createElement('source');
+                source.setAttribute('srcset', formattedSrcset);
+                source.setAttribute('type', `image/${format}`);
+
+                if (sizes) {
+                    source.setAttribute('sizes', sizes);
+                }
+
+                picture.appendChild(source);
+                sourcesAdded = true;
+            });
+
+            if (sourcesAdded) {
+                picture.appendChild(img);
+            } else {
+                picture = null;
             }
         }
     }
@@ -113,10 +183,10 @@ function renderImageNode(node, options = {}) {
     if (node.href) {
         const a = document.createElement('a');
         a.setAttribute('href', node.href);
-        a.appendChild(img);
+        a.appendChild(picture || img);
         figure.appendChild(a);
     } else {
-        figure.appendChild(img);
+        figure.appendChild(picture || img);
     }
 
     if (node.caption) {

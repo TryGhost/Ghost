@@ -11,6 +11,7 @@ import {
 } from '@tryghost/shade';
 import {blobDownloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
+import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBulkDeleteMembers, useBulkEditMembers} from '@tryghost/admin-x-framework/api/members';
 
 interface MembersActionsProps {
@@ -35,8 +36,14 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     nql,
     canBulkDelete
 }) => {
+    const {data: newslettersData, isLoading: isLoadingNewsletters} = useBrowseNewsletters({
+        searchParams: {filter: 'status:-archived', limit: '50'}
+    });
+    const activeNewsletters = newslettersData?.newsletters || [];
+
     const {mutateAsync: bulkEditAsync, isLoading: isBulkEditing} = useBulkEditMembers();
     const {mutate: bulkDelete, isLoading: isBulkDeleting} = useBulkDeleteMembers();
+    const [isUnsubscribing, setIsUnsubscribing] = useState(false);
 
     const [showAddLabelModal, setShowAddLabelModal] = useState(false);
     const [showRemoveLabelModal, setShowRemoveLabelModal] = useState(false);
@@ -96,21 +103,58 @@ const MembersActions: React.FC<MembersActionsProps> = ({
         }
     }, [bulkEditAsync, nql]);
 
-    const handleUnsubscribe = useCallback(() => {
-        bulkEditAsync({
+    const handleUnsubscribe = useCallback(async (newsletterIds: string[] | null) => {
+        const baseParams = {
             filter: nql || '',
-            all: !nql,
-            action: {
-                type: 'unsubscribe'
+            all: !nql
+        };
+
+        if (newsletterIds === null) {
+            try {
+                await bulkEditAsync({
+                    ...baseParams,
+                    action: {type: 'unsubscribe'}
+                });
+                setShowUnsubscribeModal(false);
+                toast.success('Members unsubscribed successfully');
+            } catch {
+                toast.error('Failed to unsubscribe members', {
+                    description: 'There was a problem unsubscribing these members. Please try again.'
+                });
             }
-        }).then(() => {
+            return;
+        }
+
+        setIsUnsubscribing(true);
+        try {
+            const results = await Promise.allSettled(
+                newsletterIds.map(id => bulkEditAsync({
+                    ...baseParams,
+                    action: {type: 'unsubscribe', newsletter: id}
+                }))
+            );
+            const succeeded = results.filter(r => r.status === 'fulfilled').length;
+            const total = results.length;
+
             setShowUnsubscribeModal(false);
-            toast.success('Members unsubscribed successfully');
-        }).catch(() => {
+            if (succeeded === total) {
+                toast.success(`Unsubscribed from ${total} ${total === 1 ? 'newsletter' : 'newsletters'}`);
+            } else if (succeeded > 0) {
+                toast.warning(`Unsubscribed from ${succeeded} of ${total} newsletters`, {
+                    description: 'Some newsletters could not be unsubscribed. Please try again.'
+                });
+            } else {
+                toast.error('Failed to unsubscribe members', {
+                    description: 'There was a problem unsubscribing these members. Please try again.'
+                });
+            }
+        } catch {
             toast.error('Failed to unsubscribe members', {
                 description: 'There was a problem unsubscribing these members. Please try again.'
             });
-        });
+        } finally {
+            setIsUnsubscribing(false);
+        }
     }, [bulkEditAsync, nql]);
 
     const handleDelete = useCallback(() => {
@@ -151,36 +195,43 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    {/* Export */}
-                    <DropdownMenuItem onClick={handleExport}>
-                        <LucideIcon.Download className="mr-2 size-4" />
-                        {isFiltered
-                            ? `Export ${memberCount.toLocaleString()} members`
-                            : 'Export all members'}
-                    </DropdownMenuItem>
+                    {memberCount > 0 && (
+                        <>
+                            {/* Export */}
+                            <DropdownMenuItem onClick={handleExport}>
+                                <LucideIcon.Download className="mr-2 size-4" />
+                                {isFiltered
+                                    ? `Export ${memberCount.toLocaleString()} members`
+                                    : 'Export all members'}
+                            </DropdownMenuItem>
 
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setShowAddLabelModal(true)}>
-                        <LucideIcon.Tags className="mr-2 size-4" />
-                            Add label to {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setShowRemoveLabelModal(true)}>
-                        <LucideIcon.Tag className="mr-2 size-4" />
-                            Remove label from {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setShowUnsubscribeModal(true)}>
-                        <LucideIcon.MailX className="mr-2 size-4" />
-                            Unsubscribe {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        disabled={!canBulkDelete}
-                        onClick={() => setShowDeleteModal(true)}
-                    >
-                        <LucideIcon.Trash2 className="mr-2 size-4" />
-                            Delete {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
-                    </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => setShowAddLabelModal(true)}>
+                                <LucideIcon.Tags className="mr-2 size-4" />
+                                    Add label to {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setShowRemoveLabelModal(true)}>
+                                <LucideIcon.Tag className="mr-2 size-4" />
+                                    Remove label from {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                disabled={isLoadingNewsletters}
+                                onClick={() => setShowUnsubscribeModal(true)}
+                            >
+                                <LucideIcon.MailX className="mr-2 size-4" />
+                                    Unsubscribe {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                className="text-destructive focus:text-destructive"
+                                disabled={!canBulkDelete}
+                                onClick={() => setShowDeleteModal(true)}
+                            >
+                                <LucideIcon.Trash2 className="mr-2 size-4" />
+                                    Delete {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
+                            </DropdownMenuItem>
+                        </>
+                    )}
                 </DropdownMenuContent>
             </DropdownMenu>
 
@@ -208,8 +259,9 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                 onOpenChange={setShowRemoveLabelModal}
             />
             <UnsubscribeModal
-                isLoading={isBulkEditing}
+                isLoading={isBulkEditing || isUnsubscribing}
                 memberCount={memberCount}
+                newsletters={activeNewsletters}
                 open={showUnsubscribeModal}
                 onConfirm={handleUnsubscribe}
                 onOpenChange={setShowUnsubscribeModal}
