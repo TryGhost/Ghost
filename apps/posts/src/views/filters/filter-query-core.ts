@@ -1,5 +1,4 @@
 import nql from '@tryghost/nql-lang';
-import {canonicalizeClauses} from './filter-normalization';
 import {resolveField} from './resolve-field';
 import type {AstNode} from './filter-ast';
 import type {FilterField, FilterPredicate, ParsedPredicate} from './filter-types';
@@ -43,6 +42,10 @@ export function dispatchSimpleNodes<TFields extends Record<string, FilterField>>
 
         return [];
     });
+}
+
+function canonicalizeClauses(clauses: string[]): string[] {
+    return [...clauses].sort((left, right) => left.localeCompare(right));
 }
 
 export function serializePredicates<TFields extends Record<string, FilterField>>(predicates: FilterPredicate[], fields: TFields, timezone: string): string | undefined {
