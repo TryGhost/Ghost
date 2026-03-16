@@ -109,7 +109,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const form = (
         <SettingGroupContent className='gap-y-4' columns={1}>
             <div className="flex flex-col content-center items-center gap-4 md:flex-row">
-                <div className="w-full min-w-[160px] max-w-none md:w-2/3 md:max-w-[320px]">Who should be able to subscribe to your site?</div>
+                <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px]">Who should be able to subscribe to your site?</div>
                 <div className="w-full md:flex-1">
                     <Select
                         options={MEMBERS_SIGNUP_ACCESS_OPTIONS}
@@ -124,7 +124,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             </div>
             <Separator className="border-grey-200 dark:border-grey-900" />
             <div className="flex flex-col content-center items-center gap-4 md:flex-row">
-                <div className="w-full min-w-[160px] max-w-none md:w-2/3 md:max-w-[320px]">Who should have access to new posts?</div>
+                <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px]">Who should have access to new posts?</div>
                 <div className="w-full md:flex-1">
                     <Select
                         options={DEFAULT_CONTENT_VISIBILITY_OPTIONS}
@@ -139,7 +139,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             </div>
             {defaultContentVisibility === 'tiers' && (
                 <div className="flex flex-col content-center items-center gap-4 md:flex-row">
-                    <div className="w-full min-w-[160px] max-w-none md:w-2/3 md:max-w-[320px]">Select specific tiers</div>
+                    <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px]">Select specific tiers</div>
                     <div className="w-full md:flex-1">
                         <MultiSelect
                             color='black'
@@ -156,7 +156,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             )}
             <Separator className="border-grey-200 dark:border-grey-900" />
             <div className="flex flex-col content-center items-center gap-4 md:flex-row">
-                <div className="w-full min-w-[160px] max-w-none md:w-2/3 md:max-w-[320px]">Who can comment on posts?</div>
+                <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px]">Who can comment on posts?</div>
                 <div className="w-full md:flex-1">
                     <Select
                         options={COMMENTS_ENABLED_OPTIONS}
