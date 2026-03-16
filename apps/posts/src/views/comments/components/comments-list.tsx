@@ -30,7 +30,7 @@ const PlaceholderRow = forwardRef<HTMLDivElement>(function PlaceholderRow(
             className="relative flex flex-col"
         >
             <div className="relative z-10 h-24 animate-pulse">
-                <div className="bg-muted h-full rounded-md" data-testid="loading-placeholder" />
+                <div className="h-full rounded-md bg-muted" data-testid="loading-placeholder" />
             </div>
         </div>
     );
@@ -157,7 +157,7 @@ function CommentsList({
                                             <div className={`mb-1 line-clamp-1 max-w-3xl text-sm ${item.status === 'hidden' && 'opacity-50'}`}>
                                                 <span className="text-muted-foreground">Replied to:</span>&nbsp;
                                                 <Link
-                                                    className="text-muted-foreground hover:text-foreground text-sm font-normal"
+                                                    className="text-sm font-normal text-muted-foreground hover:text-foreground"
                                                     data-testid="replied-to-link"
                                                     to={buildThreadLink(searchParams, item.in_reply_to_id || item.parent_id) || ''}
                                                     onClick={(e) => {

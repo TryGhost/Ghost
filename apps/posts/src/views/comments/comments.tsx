@@ -60,7 +60,7 @@ const Comments: React.FC = () => {
                         <h2 className="mb-2 text-xl font-medium">
                             Error loading comments
                         </h2>
-                        <p className="text-muted-foreground mb-4">
+                        <p className="mb-4 text-muted-foreground">
                             Please reload the page to try again
                         </p>
                         <Button onClick={() => window.location.reload()}>
