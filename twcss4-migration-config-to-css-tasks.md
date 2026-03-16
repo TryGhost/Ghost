@@ -1,16 +1,15 @@
 # Tailwind v4 Config-to-CSS Migration Tasklist (Checkbox Version)
 
-Last updated: 2026-03-16 (local branch state, not pushed)
+Last updated: 2026-03-16 (local branch state, pending CI on latest local changes)
 
 ## Summary
 - [x] Shade runtime switched to CSS-first tokens (`@theme` + CSS vars).
 - [ ] Admin-scope migration is complete end-to-end.
-- [ ] PR CI is green for all required checks.
+- [x] PR CI was green for pushed commit `401ad1d972` (run `23160350559`).
 
 ## Current Blockers
-- [ ] Re-run CI with local `admin-x-settings` compatibility fix (settings scoped `@config` bridge restored).
-- [ ] Resolve or re-trigger isolated flaky test if it reappears: `membership/member-welcome-emails` bookmark metadata flow.
-- [ ] Remove/replace remaining runtime `@config` bridge in `apps/admin-x-design-system/styles.css`.
+- [ ] Re-run CI on latest local DS lane change (removed DS runtime `@config` bridge).
+- [ ] Resolve or re-trigger isolated flaky test if it reappears: `advanced/dangerzone` toast assertion.
 - [ ] Remove remaining Admin-scope `tailwind.config.*` files that are still consumed.
 - [ ] Re-run full gates (`yarn build`, `yarn lint`, required CI checks) with all required jobs green.
 
@@ -49,7 +48,7 @@ Last updated: 2026-03-16 (local branch state, not pushed)
 ## Phase 4: Migrate admin-x-design-system Lane
 - [x] Convert DS CSS imports/pipeline to Tailwind v4-compatible setup.
 - [x] Move DS PostCSS to v4-compatible plugin chain.
-- [ ] Remove DS runtime `@config` bridge (`apps/admin-x-design-system/styles.css` currently uses `@config './tailwind.config.cjs';`).
+- [x] Remove DS runtime `@config` bridge (`apps/admin-x-design-system/styles.css`) — local validation passed (`admin-x-design-system` build + focused `admin-x-settings` acceptance suite), CI pending.
 - [ ] Ensure admin-x-settings no longer depends on config-driven DS tokens/scoping (temporary settings-scoped `@config` bridge reintroduced to stabilize acceptance tests).
 - [ ] Clear `Admin-X Settings tests` in CI after DS/settings lane stabilization.
 

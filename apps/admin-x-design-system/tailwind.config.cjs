@@ -1,4 +1,4 @@
-// Used for eslint, Storybook and the v4 @config bridge in styles.css.
+// Used for eslint and Storybook metadata checks.
 module.exports = {
     content: ['./src/**/*.{js,ts,jsx,tsx}'],
     important: '.admin-x-design-system',
