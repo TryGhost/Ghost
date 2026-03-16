@@ -2,6 +2,9 @@
     "editor.quickSuggestions": {
         "strings": true
     },
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "always"
+    },
     "eslint.workingDirectories": [
         {
             "pattern": "./apps/*/"
@@ -24,6 +27,9 @@
     ],
     "git.detectSubmodules": false,
     "[typescript]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[typescriptreact]": {
         "editor.defaultFormatter": "dbaeumer.vscode-eslint"
     }
 }
