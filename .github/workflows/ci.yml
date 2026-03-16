@@ -21,6 +21,12 @@ env:
     ~/.cache/ms-playwright/
   NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
   NODE_VERSION: 22.18.0
+  # Disable v8-compile-cache to prevent intermittent V8 deserializer crashes
+  # when multiple parallel Nx workers race to read/write shared bytecode cache
+  # files. The cache lives in /tmp and is discarded after each run anyway,
+  # so disabling it has no meaningful performance impact in CI.
+  # See: https://github.com/nodejs/node/issues/51555
+  DISABLE_V8_COMPILE_CACHE: 1
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -1146,19 +1152,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-        # TODO: Build tb-cli in a separate workflow and pull from GHCR instead of building here
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Tinybird CLI Image
-        uses: docker/build-push-action@v6
-        id: build
-        with:
-          context: .
-          file: docker/tb-cli/Dockerfile
-          push: false
-          load: true
-          tags: ghost-tb-cli
+      - name: Pull or build Tinybird CLI Image
+        run: |
+          COMPOSE_IMAGE="${COMPOSE_PROJECT_NAME:-ghost-dev}-tb-cli"
+          # Try pulling pre-built image from GHCR first (fast path)
+          if docker pull ghcr.io/tryghost/tb-cli:latest 2>/dev/null; then
+            echo "Pulled tb-cli from GHCR"
+            docker tag ghcr.io/tryghost/tb-cli:latest "$COMPOSE_IMAGE"
+          else
+            echo "GHCR image not available, building from source"
+            docker buildx build --load -t "$COMPOSE_IMAGE" -f docker/tb-cli/Dockerfile .
+          fi
 
       - name: Load Image
         uses: ./.github/actions/load-docker-image

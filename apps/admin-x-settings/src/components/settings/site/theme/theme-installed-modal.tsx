@@ -20,7 +20,7 @@ export const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
                 </div>
                 {
                     isExpanded ?
-                        <div className='mt-2 px-4 text-[13px] leading-8'>
+                        <div className='mt-2 px-4 text-[13px]'>
                             <div dangerouslySetInnerHTML={{__html: problem.details}} className='mb-4' />
                             <Heading level={6}>Affected files:</Heading>
                             <ul className='mt-1'>
