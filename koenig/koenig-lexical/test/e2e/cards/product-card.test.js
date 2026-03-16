@@ -341,6 +341,10 @@ test.describe('Product card', async () => {
         await page.keyboard.type('snippet');
         await page.keyboard.press('Escape');
 
+        // wait for card to finish transitioning to display mode
+        await expect(page.locator('[data-kg-card="product"]')).toHaveAttribute('data-kg-card-editing', 'false');
+        await expect(page.locator('[data-kg-card="product"]')).toHaveAttribute('data-kg-card-selected', 'true');
+
         // create snippet
         await createSnippet(page);
 
