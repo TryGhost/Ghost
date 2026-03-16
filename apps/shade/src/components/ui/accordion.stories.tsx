@@ -111,10 +111,10 @@ export const CustomStyling: Story = {
         children: [
             <AccordionItem
                 key="item-1"
-                className="border-blue-200 mb-2 rounded-lg border-2"
+                className="mb-2 rounded-lg border-2 border-blue-200"
                 value="item-1"
             >
-                <AccordionTrigger className="bg-blue-50 rounded-t-lg px-4 py-3 hover:bg-blue-100">
+                <AccordionTrigger className="rounded-t-lg bg-blue-50 px-4 py-3 hover:bg-blue-100">
                     Custom styled trigger
                 </AccordionTrigger>
                 <AccordionContent className="rounded-b-lg bg-white px-4 py-3">
@@ -124,10 +124,10 @@ export const CustomStyling: Story = {
             </AccordionItem>,
             <AccordionItem
                 key="item-2"
-                className="border-green-200 rounded-lg border-2"
+                className="rounded-lg border-2 border-green-200"
                 value="item-2"
             >
-                <AccordionTrigger className="bg-green-50 rounded-t-lg px-4 py-3 hover:bg-green-100">
+                <AccordionTrigger className="rounded-t-lg bg-green-50 px-4 py-3 hover:bg-green-100">
                     Another custom item
                 </AccordionTrigger>
                 <AccordionContent className="rounded-b-lg bg-white px-4 py-3">
