@@ -1439,6 +1439,7 @@ describe('Email renderer', function () {
 
             assert(response.html.includes('href="http://example.com/#/portal/share"'));
             assert(response.html.includes('>Share</p>'));
+            assert(response.html.includes('class="feedback-share-icon"'));
         });
 
         it('does not include share links for non-public posts', async function () {
@@ -2548,6 +2549,23 @@ describe('Email renderer', function () {
             const newsletter = createModel({});
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
             assert.equal(data.post.shareUrl, 'http://example.com/#/portal/share');
+        });
+
+        it('calculates footer feedback button widths based on visible actions', async function () {
+            settings.comments_enabled = 'all';
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                visibility: 'public'
+            });
+            const newsletter = createModel({
+                feedback_enabled: true,
+                show_comment_cta: true
+            });
+
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.feedbackButtonCellWidth, '25%');
         });
 
         it('does not include share URL for non-public posts', async function () {

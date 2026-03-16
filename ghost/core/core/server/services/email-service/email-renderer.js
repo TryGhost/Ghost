@@ -1192,6 +1192,12 @@ class EmailRenderer {
         commentUrl.hash = '#ghost-comments-root';
 
         const hasEmailOnlyFlag = post.related('posts_meta')?.get('email_only') ?? false;
+        const hasFeedbackButtons = newsletter.get('feedback_enabled');
+        const showCommentCta = newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag;
+        const feedbackButtonCount = (hasFeedbackButtons ? 2 : 0) + (showCommentCta ? 1 : 0) + (isPublicPost ? 1 : 0);
+        const feedbackButtonCellWidth = feedbackButtonCount > 0
+            ? `${(100 / feedbackButtonCount).toFixed(2).replace(/\.00$/, '')}%`
+            : null;
 
         const latestPosts = [];
         let latestPostsHasImages = false;
@@ -1269,7 +1275,7 @@ class EmailRenderer {
                 name: newsletter.get('name'),
                 showPostTitleSection: newsletter.get('show_post_title_section'),
                 showExcerpt: newsletter.get('show_excerpt'),
-                showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag,
+                showCommentCta,
                 showSubscriptionDetails: newsletter.get('show_subscription_details')
             },
 
@@ -1358,10 +1364,11 @@ class EmailRenderer {
             },
 
             // Audience feedback
-            feedbackButtons: newsletter.get('feedback_enabled') ? {
+            feedbackButtons: hasFeedbackButtons ? {
                 likeHref: positiveLink,
                 dislikeHref: negativeLink
             } : null,
+            feedbackButtonCellWidth,
 
             // Paywall
             paywall: addPaywall ? {
