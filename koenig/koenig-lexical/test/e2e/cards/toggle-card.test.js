@@ -197,6 +197,7 @@ test.describe('Toggle card', async () => {
 
         // Shift focus away from heading field
         await page.keyboard.press('ArrowDown');
+        await page.waitForTimeout(50);
 
         // Shift focus away from content field
         await page.keyboard.press('ArrowDown');
