@@ -1601,6 +1601,125 @@ describe('Members API', function () {
         });
     });
 
+    it('Can create a comped member from a Stripe customer with a paid subscription', async function () {
+        // Regression test: when creating a member with both stripe_customer_id (pointing to a
+        // customer with an existing paid subscription) AND comped: true, the setComplimentarySubscription
+        // method needs to convert the paid subscription to a $0 complimentary price. Previously,
+        // the full options object (including withRelated: ['labels', 'newsletters']) was passed to
+        // setComplimentarySubscription, which caused a "labels is not defined on the model" error
+        // when fetching stripeSubscriptions. The fix passes only shared options (context + transacting).
+        const stripeService = require('../../../core/server/services/stripe');
+
+        const fakePaidPrice = {
+            id: 'price_paid_comped_test',
+            product: 'product_1234',
+            active: true,
+            nickname: 'Monthly',
+            unit_amount: 500,
+            currency: 'usd',
+            type: 'recurring',
+            recurring: {
+                interval: 'month'
+            }
+        };
+
+        const fakeCompPrice = {
+            id: 'price_comp_comped_test',
+            product: '',
+            active: true,
+            nickname: 'Complimentary',
+            unit_amount: 0,
+            currency: 'usd',
+            type: 'recurring',
+            recurring: {
+                interval: 'year'
+            }
+        };
+
+        const fakePaidSubscription = {
+            id: 'sub_comped_test',
+            customer: 'cus_comped_test',
+            status: 'active',
+            cancel_at_period_end: false,
+            metadata: {},
+            current_period_end: Date.now() / 1000 + 1000,
+            start_date: Date.now() / 1000,
+            plan: fakePaidPrice,
+            items: {
+                data: [{
+                    id: 'item_comped_test',
+                    price: fakePaidPrice
+                }]
+            }
+        };
+
+        const fakeCompSubscription = {
+            ...fakePaidSubscription,
+            plan: fakeCompPrice,
+            items: {
+                data: [{
+                    id: 'item_comped_test',
+                    price: fakeCompPrice
+                }]
+            }
+        };
+
+        const fakeCustomer = {
+            id: 'cus_comped_test',
+            name: 'Paid To Comped',
+            email: 'paid-to-comped-test@email.com',
+            subscriptions: {
+                type: 'list',
+                data: [fakePaidSubscription]
+            },
+            invoice_settings: {
+                default_payment_method: null
+            }
+        };
+
+        // Track whether the subscription has been updated to comp
+        let subscriptionUpdated = false;
+
+        sinon.stub(stripeService.api, 'getCustomer').resolves(fakeCustomer);
+        sinon.stub(stripeService.api, 'getSubscription').callsFake(async () => {
+            return subscriptionUpdated ? fakeCompSubscription : fakePaidSubscription;
+        });
+        sinon.stub(stripeService.api, 'updateSubscriptionItemPrice').callsFake(async () => {
+            subscriptionUpdated = true;
+            return fakeCompSubscription;
+        });
+        sinon.stub(stripeService.api, 'createPrice').resolves(fakeCompPrice);
+
+        const initialMember = {
+            name: fakeCustomer.name,
+            email: fakeCustomer.email,
+            subscribed: true,
+            newsletters: [newsletters[0]],
+            stripe_customer_id: fakeCustomer.id,
+            comped: true
+        };
+
+        const {body} = await agent
+            .post(`/members/`)
+            .body({members: [initialMember]})
+            .expectStatus(201);
+
+        const newMember = body.members[0];
+
+        assert.equal(newMember.status, 'comped',
+            'Member should be comped after paid-to-comp conversion');
+
+        await assertMemberEvents({
+            eventType: 'MemberStatusEvent',
+            memberId: newMember.id,
+            asserts: [
+                {from_status: null, to_status: 'free'},
+                {from_status: 'free', to_status: 'paid'},
+                {from_status: 'paid', to_status: 'comped'}
+            ]
+        });
+    });
+
     let memberWithPaidSubscription;
 
     it('Can create a member with an existing paid subscription', async function () {
