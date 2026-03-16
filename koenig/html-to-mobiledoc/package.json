@@ -27,6 +27,6 @@
   "dependencies": {
     "@tryghost/kg-parser-plugins": "4.2.19",
     "@tryghost/mobiledoc-kit": "^0.12.4-ghost.1",
-    "jsdom": "^24.1.1"
+    "jsdom": "^29.0.0"
   }
 }
