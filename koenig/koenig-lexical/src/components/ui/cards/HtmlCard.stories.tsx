@@ -1,6 +1,8 @@
 import HtmlIndicatorIcon from '../../../assets/icons/kg-indicator-html.svg?react';
 import {CardWrapper} from '../CardWrapper';
-import {HtmlCard} from './HtmlCard.jsx';
+import {HtmlCard} from './HtmlCard';
+import type {ComponentProps} from 'react';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
@@ -8,14 +10,15 @@ const displayOptions = {
     Editing: {isSelected: true, isEditing: true}
 };
 
-const story = {
+type StoryArgs = ComponentProps<typeof HtmlCard> & {display: keyof typeof displayOptions};
+
+const story: Meta<StoryArgs> = {
     title: 'Primary cards/Html card',
     component: HtmlCard,
-    subcomponent: {CardWrapper},
+    subcomponents: {CardWrapper},
     argTypes: {
         display: {
             options: Object.keys(displayOptions),
-            mapping: displayOptions,
             control: {
                 type: 'radio',
                 labels: {
@@ -35,29 +38,29 @@ const story = {
 };
 export default story;
 
-const Template = ({display, ...args}) => (
+const Template: StoryFn<StoryArgs> = ({display, ...args}) => (
     <div className="kg-prose">
         <div className="mx-auto my-8 w-[740px] min-w-[initial]">
-            <CardWrapper IndicatorIcon={HtmlIndicatorIcon} wrapperStyle='code-card' {...display} {...args}>
-                <HtmlCard updateCode={() => {}} {...display} {...args} />
+            <CardWrapper IndicatorIcon={HtmlIndicatorIcon} wrapperStyle='code-card' {...displayOptions[display]} {...args}>
+                <HtmlCard {...displayOptions[display]} {...args} />
             </CardWrapper>
         </div>
     </div>
 );
 
-export const Empty = Template.bind({});
+export const Empty: StoryFn<StoryArgs> = Template.bind({});
 Empty.args = {
     html: '',
     display: 'Editing'
 };
 
-export const Progress = Template.bind({});
+export const Progress: StoryFn<StoryArgs> = Template.bind({});
 Progress.args = {
     html: `<h1>Header</h1>\n\r<p>Paragraph</p>\n\r<ul><li>List</li><li>Items</li></ul>\n\r<!-- comment -->`,
     display: 'Editing'
 };
 
-export const Populated = Template.bind({});
+export const Populated: StoryFn<StoryArgs> = Template.bind({});
 Populated.args = {
     html: `<h1>Header</h1>\n\r<p>Paragraph</p>\n\r<ul><li>List</li><li>Items</li></ul>\n\r<!-- comment -->`,
     display: 'Selected'

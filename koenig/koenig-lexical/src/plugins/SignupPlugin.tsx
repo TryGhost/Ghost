@@ -4,6 +4,7 @@ import {COMMAND_PRIORITY_LOW} from 'lexical';
 import {INSERT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {SignupNodeData} from '../nodes/SignupNode';
 
 export const SignupPlugin = () => {
     const [editor] = useLexicalComposerContext();
@@ -16,7 +17,7 @@ export const SignupPlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_SIGNUP_COMMAND,
-                async (dataset) => {
+                (dataset: SignupNodeData) => {
                     const cardNode = $createSignupNode(dataset);
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode, openInEditMode: true});
 

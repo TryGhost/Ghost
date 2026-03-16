@@ -1,14 +1,20 @@
 import KoenigNestedEditor from '../../KoenigNestedEditor';
-import PropTypes from 'prop-types';
 import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin';
-import {CardVisibilityMessage} from '../CardVisibilityMessage.jsx';
+import {CardVisibilityMessage} from '../CardVisibilityMessage';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
+import type {LexicalEditor} from 'lexical';
+
+interface EmailCardProps {
+    htmlEditor: LexicalEditor;
+    htmlEditorInitialState?: string;
+    isEditing?: boolean;
+}
 
 export function EmailCard({
     htmlEditor,
     htmlEditorInitialState,
     isEditing = false
-}) {
+}: EmailCardProps) {
     return (
         <>
             <CardVisibilityMessage message="Hidden on website" />
@@ -28,9 +34,3 @@ export function EmailCard({
         </>
     );
 }
-
-EmailCard.propTypes = {
-    htmlEditor: PropTypes.object,
-    isEditing: PropTypes.bool,
-    htmlEditorInitialState: PropTypes.object
-};

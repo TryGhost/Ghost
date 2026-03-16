@@ -87,7 +87,7 @@ const DesignSandbox = () => {
     /* Component title
     /* ---------------------------------------------------------- */
 
-    function ComponentTitle({label}) {
+    function ComponentTitle({label}: {label: string}) {
         return (
             <h3 className="mb-4 mt-20 text-xl font-bold first-of-type:mt-8" >
                 {label}
@@ -145,12 +145,12 @@ const DesignSandbox = () => {
         );
     }
 
-    function ToolbarItem({label, Icon, ...props}) {
+    function ToolbarItem({label: _label, Icon, ...props}: {label: string; Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; [key: string]: unknown}) {
         return (
             <li className="m-0 flex p-0 first:m-0" {...props}>
                 <div
                     className="flex size-9 items-center justify-center"
-                    type="button"
+                    role="button"
                 >
                     <Icon className="fill-white" />
                 </div>
@@ -220,7 +220,7 @@ const DesignSandbox = () => {
         );
     }
 
-    function CardMenuSection({label, ...props}) {
+    function CardMenuSection({label, ...props}: {label: string; [key: string]: unknown}) {
         return (
             <div className="mb-2 flex shrink-0 flex-col justify-center px-4 pt-3 text-2xs font-medium uppercase tracking-[.06rem] text-grey" style={{minWidth: 'calc(100% - 3.2rem)'}} {...props}>
                 {label}
@@ -228,7 +228,7 @@ const DesignSandbox = () => {
         );
     }
 
-    function CardMenuItem({label, desc, Icon, ...props}) {
+    function CardMenuItem({label, desc, Icon, ...props}: {label: string; desc: string; Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; [key: string]: unknown}) {
         return (
             <div className="flex cursor-pointer flex-row items-center border border-transparent px-4 py-2 text-grey-800 hover:bg-grey-100" {...props}>
                 <div className="flex items-center">
@@ -242,7 +242,7 @@ const DesignSandbox = () => {
         );
     }
 
-    function CardSnippetItem({label, Icon, ...props}) {
+    function CardSnippetItem({label, Icon, ...props}: {label: string; Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; [key: string]: unknown}) {
         return (
             <div className="flex cursor-pointer flex-row items-center border border-transparent px-4 py-2 text-grey-800 hover:bg-grey-100" {...props}>
                 <div className="flex items-center">
@@ -291,7 +291,7 @@ const DesignSandbox = () => {
             setActive(!isActive);
         };
 
-        const toggleAltText = (e) => {
+        const toggleAltText = (e: React.MouseEvent) => {
             e.stopPropagation();
             setAltText(!altText);
         };
@@ -321,7 +321,7 @@ const DesignSandbox = () => {
         );
     }
 
-    function MediaPlaceholder({desc, Icon, ...props}) {
+    function MediaPlaceholder({desc, Icon, ...props}: {desc: string; Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; [key: string]: unknown}) {
         return (
             <div className="relative">
                 <figure className="cursor-pointer border border-transparent" {...props}>
@@ -344,7 +344,7 @@ const DesignSandbox = () => {
         );
     }
 
-    function CaptionEditor({placeholder}) {
+    function CaptionEditor({placeholder}: {placeholder: string}) {
         return (
             <input
                 className="not-kg-prose w-full p-2 text-center font-sans text-sm font-normal tracking-wide text-grey-900"

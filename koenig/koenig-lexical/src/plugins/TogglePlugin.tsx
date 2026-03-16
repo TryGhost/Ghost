@@ -16,7 +16,7 @@ export const TogglePlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_TOGGLE_COMMAND,
-                async (dataset) => {
+                (dataset) => {
                     const cardNode = $createToggleNode(dataset);
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode, openInEditMode: true});
 

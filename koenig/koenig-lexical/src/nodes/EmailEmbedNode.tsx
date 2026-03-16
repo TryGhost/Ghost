@@ -1,4 +1,4 @@
-import {EmbedNode} from './EmbedNode';
+import {EmbedNode, type EmbedNodeData} from './EmbedNode';
 
 export class EmailEmbedNode extends EmbedNode {
     // Only show embed and youtube cards in the email editor
@@ -7,6 +7,6 @@ export class EmailEmbedNode extends EmbedNode {
     );
 }
 
-export const emailEmbedNodeReplacement = {replace: EmbedNode, with: (node) => {
-    return new EmailEmbedNode(node.exportJSON());
+export const emailEmbedNodeReplacement = {replace: EmbedNode, with: (node: InstanceType<typeof EmbedNode>) => {
+    return new EmailEmbedNode(node.exportJSON() as EmbedNodeData);
 }};

@@ -2,6 +2,7 @@ import path from 'path';
 import {assertHTML, focusEditor, html, initialize, insertCard, pasteText, selectBackwards} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
+import type {Page} from '@playwright/test';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,7 +43,7 @@ const smokeTestInsertions = [
     {shortcut: 'email-cta', menuItem: 'Email call to action', selector: '[data-kg-card="email-cta"]'}
 ];
 
-async function insertCardFromMenu(page, {shortcut, menuItem, selector}) {
+async function insertCardFromMenu(page: Page, {shortcut, menuItem, selector}: {shortcut: string; menuItem: string; selector: string}) {
     await focusEditor(page);
     await page.keyboard.type(`/${shortcut}`);
     await expect(page.locator(`[data-kg-card-menu-item="${menuItem}" i]`)).toBeVisible();
@@ -51,7 +52,7 @@ async function insertCardFromMenu(page, {shortcut, menuItem, selector}) {
 }
 
 test.describe('Koenig Editor with email template nodes', async function () {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();

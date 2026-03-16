@@ -1,5 +1,6 @@
 import '../src/styles/index.css';
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
+import type {FC} from 'react';
 
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },
@@ -54,7 +55,7 @@ export const parameters = {
 }
 
 export const decorators = [
-    (Story) => {
+    (Story: FC) => {
         return (
             <LexicalComposer initialConfig={{namespace: 'Storybook editor'}}>
                 <div className="koenig-lexical">

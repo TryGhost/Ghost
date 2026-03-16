@@ -2,18 +2,21 @@ import EmailCardIcon from '../assets/icons/kg-card-type-email.svg?react';
 import EmailIndicatorIcon from '../assets/icons/kg-indicator-email.svg?react';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {BASIC_NODES, KoenigCardWrapper} from '../index.js';
-import {EmailNode as BaseEmailNode} from '@tryghost/kg-default-nodes';
+import {BASIC_NODES, KoenigCardWrapper} from '../index';
+import {EmailNode as BaseEmailNode, type EmailData} from '@tryghost/kg-default-nodes';
 import {EmailNodeComponent} from './EmailNodeComponent';
 import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
+import type {LexicalEditor} from 'lexical';
 
-export const INSERT_EMAIL_COMMAND = createCommand();
+export type EmailNodeData = EmailData & {htmlEditor?: unknown};
+
+export const INSERT_EMAIL_COMMAND = createCommand<EmailNodeData>();
 
 export class EmailNode extends BaseEmailNode {
-    __htmlEditor;
-    __htmlEditorInitialState;
+    __htmlEditor!: LexicalEditor;
+    __htmlEditorInitialState: unknown;
 
     static kgMenu = [{
         label: 'Email content',
@@ -30,7 +33,7 @@ export class EmailNode extends BaseEmailNode {
         return EmailCardIcon;
     }
 
-    constructor(dataset = {}, key) {
+    constructor(dataset: EmailNodeData = {}, key?: string) {
         super(dataset, key);
 
         // set up nested editor instances
@@ -38,7 +41,7 @@ export class EmailNode extends BaseEmailNode {
 
         // populate nested editors on initial construction
         if (!dataset.htmlEditor) {
-            populateNestedEditor(this, '__htmlEditor', dataset.html || '<p>Hey <code>{first_name, "there"}</code>,</p>');
+            populateNestedEditor(this, '__htmlEditor', typeof dataset.html === 'string' ? dataset.html : '<p>Hey <code>{first_name, "there"}</code>,</p>');
         }
     }
 
@@ -93,10 +96,10 @@ export class EmailNode extends BaseEmailNode {
     }
 }
 
-export const $createEmailNode = (dataset) => {
+export const $createEmailNode = (dataset: EmailNodeData) => {
     return new EmailNode(dataset);
 };
 
-export function $isEmailNode(node) {
+export function $isEmailNode(node: unknown): node is EmailNode {
     return node instanceof EmailNode;
 }

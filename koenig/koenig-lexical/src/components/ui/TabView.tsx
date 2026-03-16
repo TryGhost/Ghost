@@ -1,10 +1,20 @@
-import PropTypes from 'prop-types';
-import {useState} from 'react';
+import React, {useState} from 'react';
 
-const TabView = ({tabs, defaultTab, tabContent}) => {
-    const [activeTab, setActiveTab] = useState(defaultTab || tabs[0].id);
+interface Tab {
+    id: string;
+    label: string;
+}
 
-    const handleTabChange = (tabId) => {
+interface TabViewProps {
+    tabs: Tab[];
+    defaultTab?: string;
+    tabContent: Record<string, React.ReactNode>;
+}
+
+const TabView = ({tabs, defaultTab, tabContent}: TabViewProps) => {
+    const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id || '');
+
+    const handleTabChange = (tabId: string) => {
         setActiveTab(tabId);
     };
 
@@ -34,17 +44,6 @@ const TabView = ({tabs, defaultTab, tabContent}) => {
             </div>
         </>
     );
-};
-
-TabView.propTypes = {
-    tabs: PropTypes.arrayOf(
-        PropTypes.shape({
-            id: PropTypes.string.isRequired,
-            label: PropTypes.string.isRequired
-        })
-    ).isRequired,
-    defaultTab: PropTypes.string,
-    tabContent: PropTypes.objectOf(PropTypes.node).isRequired
 };
 
 export {TabView};

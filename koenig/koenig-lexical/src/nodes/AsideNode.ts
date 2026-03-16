@@ -5,9 +5,10 @@ import {AsideNode as BaseAsideNode} from '@tryghost/kg-default-nodes';
 import {
     addClassNamesToElement
 } from '@lexical/utils';
+import type {EditorConfig, LexicalNode, RangeSelection} from 'lexical';
 
 export class AsideNode extends BaseAsideNode {
-    createDOM(config) {
+    createDOM(config: EditorConfig): HTMLElement {
         const element = document.createElement('aside');
         addClassNamesToElement(element, config.theme.aside);
         return element;
@@ -15,7 +16,7 @@ export class AsideNode extends BaseAsideNode {
 
     // Mutation
 
-    insertNewAfter() {
+    insertNewAfter(_selection: RangeSelection, _restoreSelection?: boolean): LexicalNode {
         const newBlock = $createParagraphNode();
         const direction = this.getDirection();
         newBlock.setDirection(direction);
@@ -23,7 +24,7 @@ export class AsideNode extends BaseAsideNode {
         return newBlock;
     }
 
-    collapseAtStart() {
+    collapseAtStart(): boolean {
         const paragraph = $createParagraphNode();
         const children = this.getChildren();
         children.forEach(child => paragraph.append(child));
@@ -32,10 +33,10 @@ export class AsideNode extends BaseAsideNode {
     }
 }
 
-export function $createAsideNode() {
+export function $createAsideNode(): AsideNode {
     return new AsideNode();
 }
 
-export function $isAsideNode(node) {
+export function $isAsideNode(node: unknown): node is AsideNode {
     return node instanceof AsideNode;
 }

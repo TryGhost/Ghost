@@ -1,9 +1,10 @@
 import {assertHTML, html, initialize} from '../utils/e2e';
 // import {calloutColorPicker} from '../../../src/components/ui/cards/CalloutCardx';
 import {test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 test.describe('Node transforms', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();

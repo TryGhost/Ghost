@@ -9,6 +9,16 @@ import debounce from 'lodash/debounce';
  * Displays the dropdown above or below the parent element, depending on the space available in the viewport.
  * The parent should be positioned relative.
  */
+
+interface DropdownContainerProps {
+    dataTestId?: string;
+    className?: string;
+    placementTopClass?: string;
+    placementBottomClass?: string;
+    children?: React.ReactNode;
+    [key: string]: unknown;
+}
+
 export function DropdownContainer({
     dataTestId,
     className = 'z-[-1] max-h-[30vh] w-full overflow-y-auto bg-white shadow rounded-lg dark:border-grey-800 dark:bg-grey-900',
@@ -16,8 +26,8 @@ export function DropdownContainer({
     placementBottomClass = 'mt-0.5',
     children,
     ...props
-}) {
-    const divRef = React.useRef(null);
+}: DropdownContainerProps) {
+    const divRef = React.useRef<HTMLUListElement>(null);
 
     const [placement, setPlacement] = React.useState('bottom');
 
@@ -27,7 +37,7 @@ export function DropdownContainer({
         }
 
         // Get the position of divRef on the screen
-        const box = divRef.current.parentNode.getBoundingClientRect();
+        const box = (divRef.current.parentNode as HTMLElement).getBoundingClientRect();
         const bottom = box.bottom;
         const spaceBelow = window.innerHeight - bottom;
 
@@ -53,7 +63,7 @@ export function DropdownContainer({
         window.addEventListener('resize', updatePlacementDebounced, {passive: true});
 
         return () => {
-            window.removeEventListener('resize', updatePlacementDebounced, {passive: true});
+            window.removeEventListener('resize', updatePlacementDebounced);
         };
     }, []);
 

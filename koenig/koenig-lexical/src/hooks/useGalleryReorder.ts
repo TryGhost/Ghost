@@ -2,20 +2,31 @@ import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import pick from 'lodash/pick';
 import {getImageFilenameFromSrc} from '../utils/getImageFilenameFromSrc';
+import type {DragDropHandler} from '../utils/draggable/DragDropHandler';
+import type {DraggableInfo} from '../utils/draggable/ScrollHandler';
+import type {GalleryImage} from '../types/GalleryImage';
+import type {IndicatorPosition} from '../utils/draggable/DragDropContainer';
 
-export default function useGalleryReorder({images, updateImages, isSelected = false, maxImages = 9, disabled = false}) {
+interface DragDropContainerRef {
+    enableDrag: () => void;
+    disableDrag: () => void;
+    refresh: () => void;
+    destroy: () => void;
+}
+
+export default function useGalleryReorder({images, updateImages, isSelected = false, maxImages = 9, disabled = false}: {images: GalleryImage[]; updateImages: (images: GalleryImage[]) => void; isSelected?: boolean; maxImages?: number; disabled?: boolean}) {
     const koenig = React.useContext(KoenigComposerContext);
 
-    const [containerRef, setContainerRef] = React.useState(null);
+    const [containerRef, setContainerRef] = React.useState<HTMLElement | null>(null);
     const [isDraggedOver, setIsDraggedOver] = React.useState(false);
-    const dragDropContainer = React.useRef(null);
+    const dragDropContainer = React.useRef<DragDropContainerRef | null>(null);
     const skipOnDragEndRef = React.useRef(false);
 
-    const onDragStart = (draggableInfo) => {
+    const onDragStart = (draggableInfo: DraggableInfo) => {
         // enable dropping when an image is dragged in from outside of this card
         const isImageDrag = draggableInfo.type === 'image' || draggableInfo.cardName === 'image';
-        if (isImageDrag && draggableInfo.dataset.src && images.length !== maxImages) {
-            dragDropContainer.current.enableDrag();
+        if (isImageDrag && draggableInfo.dataset?.src && images.length !== maxImages) {
+            dragDropContainer.current?.enableDrag();
         }
     };
 
@@ -31,7 +42,7 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
         setIsDraggedOver(false);
     };
 
-    const onDrop = (draggableInfo) => {
+    const onDrop = (draggableInfo: DraggableInfo) => {
         // do not allow dropping of non-images
         if (draggableInfo.type !== 'image' && draggableInfo.cardName !== 'image') {
             return false;
@@ -39,35 +50,36 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
 
         let updatedImages = [...images];
         let {insertIndex} = draggableInfo;
-        const droppables = Array.from(containerRef.querySelectorAll('[data-image]'));
+        const droppables = Array.from(containerRef!.querySelectorAll('[data-image]'));
         const draggableIndex = droppables.indexOf(draggableInfo.element);
 
         if (!updatedImages.length) {
             insertIndex = 0;
         }
 
-        if (isDropAllowed(draggableIndex, insertIndex)) {
+        if (isDropAllowed(draggableIndex, insertIndex!)) {
             if (draggableIndex === -1) {
                 // external image being added
-                const {dataset} = draggableInfo;
-                const img = draggableInfo.element.querySelector(`img[src="${dataset.src}"]`);
+                const dataset = draggableInfo.dataset as GalleryImage;
+                const img = draggableInfo.element.querySelector(`img[src="${dataset.src}"]`) as HTMLImageElement | null;
 
                 // image card datasets may not have all of the details we need but we can fill them in
-                dataset.width = dataset.width || img.naturalWidth;
-                dataset.height = dataset.height || img.naturalHeight;
-                dataset.fileName = dataset?.fileName || getImageFilenameFromSrc(dataset.src);
+                dataset.width = dataset.width || img?.naturalWidth;
+                dataset.height = dataset.height || img?.naturalHeight;
+                dataset.fileName = dataset?.fileName || (dataset.src ? getImageFilenameFromSrc(dataset.src) : undefined);
 
-                updatedImages.splice(insertIndex, 0, dataset);
+                updatedImages.splice(insertIndex!, 0, dataset);
             } else {
                 // internal image being re-ordered
-                const draggedImage = updatedImages.find(i => i.src === draggableInfo.dataset.src);
-                const accountForRemoval = draggableIndex < insertIndex && insertIndex ? -1 : 0;
+                const draggableDataset = draggableInfo.dataset as {src: string};
+                const draggedImage = updatedImages.find(i => i.src === draggableDataset.src);
+                const accountForRemoval = draggableIndex < insertIndex! && insertIndex! ? -1 : 0;
                 updatedImages = updatedImages.filter(i => i !== draggedImage);
-                updatedImages.splice(insertIndex + accountForRemoval, 0, draggedImage);
+                updatedImages.splice(insertIndex! + accountForRemoval, 0, draggedImage!);
             }
 
             updateImages(updatedImages);
-            dragDropContainer.current.refresh();
+            dragDropContainer.current?.refresh();
 
             skipOnDragEndRef.current = true;
             return true;
@@ -77,24 +89,25 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
     };
 
     // if an image is dragged out of a gallery we need to remove it
-    const onDropEnd = (draggableInfo, success) => {
+    const onDropEnd = (draggableInfo: DraggableInfo, success: boolean) => {
         if (skipOnDragEndRef.current || !success) {
             skipOnDragEndRef.current = false;
             return;
         }
 
-        const image = images.find(i => i.src === draggableInfo.dataset.src);
+        const draggableDataset = draggableInfo.dataset as {src: string};
+        const image = images.find(i => i.src === draggableDataset.src);
         if (image) {
             const updatedImages = images.filter(i => i !== image);
             updateImages(updatedImages);
-            dragDropContainer.current.refresh();
+            dragDropContainer.current?.refresh();
         }
     };
 
-    const getDraggableInfo = (draggableElement) => {
-        let src = draggableElement.querySelector('img').getAttribute('src');
-        let image = images.find(i => i.src === src) || images.find(i => i.previewSrc === src);
-        let dataset = image && pick(image, ['fileName', 'src', 'row', 'width', 'height', 'caption']);
+    const getDraggableInfo = (draggableElement: HTMLElement) => {
+        const src = draggableElement.querySelector('img')!.getAttribute('src')!;
+        const image = images.find(i => i.src === src) || images.find(i => i.previewSrc === src);
+        const dataset = image && pick(image, ['fileName', 'src', 'row', 'width', 'height', 'caption']);
 
         if (image) {
             return {
@@ -106,21 +119,14 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
         return {};
     };
 
-    // returns {
-    //   direction: 'horizontal' TODO: use a constant?
-    //   position: 'left'/'right' TODO: use constants?
-    //   beforeElems: array of elems to left of indicator
-    //   afterElems: array of elems to right of indicator
-    //   droppableIndex:
-    // }
-    const getIndicatorPosition = (draggableInfo, droppableElem, position) => {
+    const getIndicatorPosition = (draggableInfo: DraggableInfo, droppableElem: Element, position: string): IndicatorPosition | false => {
         // do not allow dropping of non-images
         if (draggableInfo.type !== 'image' && draggableInfo.cardName !== 'image') {
             return false;
         }
 
         const row = droppableElem.closest('[data-row]');
-        const droppables = Array.from(containerRef.querySelectorAll('[data-image]'));
+        const droppables = Array.from(containerRef!.querySelectorAll('[data-image]'));
         const draggableIndex = droppables.indexOf(draggableInfo.element);
         const droppableIndex = droppables.indexOf(droppableElem);
 
@@ -128,24 +134,24 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
             const rowImages = Array.from(row.querySelectorAll('[data-image]'));
             const rowDroppableIndex = rowImages.indexOf(droppableElem);
             let insertIndex = droppableIndex;
-            const beforeElems = [];
-            const afterElems = [];
+            const beforeElems: HTMLElement[] = [];
+            const afterElems: HTMLElement[] = [];
 
             rowImages.forEach((image, index) => {
                 if (index < rowDroppableIndex) {
-                    beforeElems.push(image);
+                    beforeElems.push(image as HTMLElement);
                 }
 
                 if (index === rowDroppableIndex) {
                     if (position.match(/left/)) {
-                        afterElems.push(image);
+                        afterElems.push(image as HTMLElement);
                     } else {
-                        beforeElems.push(image);
+                        beforeElems.push(image as HTMLElement);
                     }
                 }
 
                 if (index > rowDroppableIndex) {
-                    afterElems.push(image);
+                    afterElems.push(image as HTMLElement);
                 }
             });
 
@@ -165,20 +171,15 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
         }
     };
 
-    // we don't allow an image to be dropped where it would end up in the
-    // same position within the gallery
-    const isDropAllowed = (draggableIndex, droppableIndex, position = '') => {
-        // external images can always be dropped
+    const isDropAllowed = (draggableIndex: number, droppableIndex: number, position = ''): boolean => {
         if (draggableIndex === -1) {
             return true;
         }
 
-        // can't drop on itself or when droppableIndex doesn't exist
         if (draggableIndex === droppableIndex || typeof droppableIndex === 'undefined') {
             return false;
         }
 
-        // account for dropping at beginning or end of a row
         if (position.match(/left/)) {
             droppableIndex -= 1;
         }
@@ -205,7 +206,7 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
             return;
         }
 
-        dragDropContainer.current = koenig.dragDropHandler.registerContainer(
+        dragDropContainer.current = (koenig.dragDropHandler as DragDropHandler).registerContainer(
             galleryElem,
             {
                 draggableSelector: '[data-image]',

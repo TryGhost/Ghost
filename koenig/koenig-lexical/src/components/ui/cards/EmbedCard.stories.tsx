@@ -1,22 +1,25 @@
 import populateEditor from '../../../utils/storybook/populate-storybook-editor';
 import {CardWrapper} from './../CardWrapper';
 import {EmbedCard} from './EmbedCard';
-import {MINIMAL_NODES} from '../../../index.js';
+import {MINIMAL_NODES} from '../../../index';
 import {createEditor} from 'lexical';
+import type {ComponentProps} from 'react';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
     Selected: {isSelected: true, isEditing: false}
 };
 
-const story = {
+type StoryArgs = ComponentProps<typeof EmbedCard> & {display: keyof typeof displayOptions; caption?: string};
+
+const story: Meta<StoryArgs> = {
     title: 'Primary cards/Embed card',
     component: EmbedCard,
-    subcomponent: {CardWrapper},
+    subcomponents: {CardWrapper},
     argTypes: {
         display: {
             options: Object.keys(displayOptions),
-            mapping: displayOptions,
             control: {
                 type: 'radio',
                 labels: {
@@ -35,76 +38,42 @@ const story = {
 };
 export default story;
 
-const Template = ({display, caption, ...args}) => {
+const Template: StoryFn<StoryArgs> = ({display, caption, ...args}) => {
     const captionEditor = createEditor({nodes: MINIMAL_NODES});
     populateEditor({editor: captionEditor, initialHtml: `${caption}`});
 
     return (
         <div className="kg-prose">
             <div className="not-kg-prose mx-auto my-8 min-w-[initial] max-w-[740px] p-4">
-                <CardWrapper {...display} {...args}>
-                    <EmbedCard {...display} {...args} captionEditor={captionEditor} />
+                <CardWrapper {...displayOptions[display]} {...args}>
+                    <EmbedCard {...displayOptions[display]} {...args} captionEditor={captionEditor} />
                 </CardWrapper>
             </div>
             <div className="not-kg-prose dark mx-auto my-8 min-w-[initial] max-w-[740px] bg-black p-4">
-                <CardWrapper {...display} {...args}>
-                    <EmbedCard {...display} {...args} captionEditor={captionEditor} />
+                <CardWrapper {...displayOptions[display]} {...args}>
+                    <EmbedCard {...displayOptions[display]} {...args} captionEditor={captionEditor} />
                 </CardWrapper>
             </div>
         </div>
     );
 };
 
-export const Empty = Template.bind({});
+export const Empty: StoryFn<StoryArgs> = Template.bind({});
 Empty.args = {
     display: 'Selected',
-    url: '',
+    urlInputValue: '',
     urlPlaceholder: 'Paste URL to add embedded content...'
 };
 
-export const Populated = Template.bind({});
+export const Populated: StoryFn<StoryArgs> = Template.bind({});
 Populated.args = {
     display: 'Selected',
-    url: 'https://ghost.org/',
-    embedType: 'video',
-    html: '<iframe width="480" height="270" src="https://www.youtube.com/embed/E5yFcdPAGv0?feature=oembed" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>',
-    metadata: {
-        html: '<iframe width="480" height="270" src="https://www.youtube.com/embed/E5yFcdPAGv0?feature=oembed" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>',
-        thumbnail_width: 480,
-        width: 480,
-        author_url: 'https://www.youtube.com/user/gorillaz',
-        height: 270,
-        thumbnail_height: 360,
-        provider_name: 'YouTube',
-        title: 'Gorillaz - Humility (Official Video)',
-        provider_url: 'https://www.youtube.com/',
-        author_name: 'Gorillaz',
-        version: '1.0',
-        thumbnail_url: 'https://i.ytimg.com/vi/E5yFcdPAGv0/hqdefault.jpg',
-        type: 'video'
-    }
+    html: '<iframe width="480" height="270" src="https://www.youtube.com/embed/E5yFcdPAGv0?feature=oembed" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>'
 };
 
-export const WithCaption = Template.bind({});
+export const WithCaption: StoryFn<StoryArgs> = Template.bind({});
 WithCaption.args = {
     display: 'Selected',
-    url: 'https://ghost.org/',
     caption: 'This is a caption',
-    embedType: 'video',
-    html: '<iframe width="480" height="270" src="https://www.youtube.com/embed/E5yFcdPAGv0?feature=oembed" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>',
-    metadata: {
-        html: '<iframe width="480" height="270" src="https://www.youtube.com/embed/E5yFcdPAGv0?feature=oembed" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>',
-        thumbnail_width: 480,
-        width: 480,
-        author_url: 'https://www.youtube.com/user/gorillaz',
-        height: 270,
-        thumbnail_height: 360,
-        provider_name: 'YouTube',
-        title: 'Gorillaz - Humility (Official Video)',
-        provider_url: 'https://www.youtube.com/',
-        author_name: 'Gorillaz',
-        version: '1.0',
-        thumbnail_url: 'https://i.ytimg.com/vi/E5yFcdPAGv0/hqdefault.jpg',
-        type: 'video'
-    }
+    html: '<iframe width="480" height="270" src="https://www.youtube.com/embed/E5yFcdPAGv0?feature=oembed" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>'
 };

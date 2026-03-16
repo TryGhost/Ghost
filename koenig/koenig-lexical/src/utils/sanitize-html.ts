@@ -1,6 +1,6 @@
 import DOMPurify from 'dompurify';
 
-export function sanitizeHtml(html = '', options = {}) {
+export function sanitizeHtml(html = '', options: {replaceJS?: boolean} = {}) {
     options = {
         ...{replaceJS: true},
         ...options
@@ -8,10 +8,7 @@ export function sanitizeHtml(html = '', options = {}) {
 
     // replace script and iFrame
     if (options.replaceJS) {
-        html = html.replace(/<script\b[^<]*(?:(?!<\/script\b)<[^<]*)*<\/script\b[^>]*>/gi,
-            '<pre class="js-embed-placeholder">Embedded JavaScript</pre>');
-        html = html.replace(/<iframe\b[^<]*(?:(?!<\/iframe\b)<[^<]*)*<\/iframe\b[^>]*>/gi,
-            '<pre class="iframe-embed-placeholder">Embedded iFrame</pre>');
+        html = replaceEmbedsWithPlaceholders(html);
     }
 
     // sanitize html
@@ -19,5 +16,25 @@ export function sanitizeHtml(html = '', options = {}) {
         ALLOWED_URI_REGEXP: /^(?:https?:|\/|blob:)/,
         ADD_ATTR: ['id'],
         FORBID_TAGS: ['style']
+    });
+}
+
+function replaceEmbedsWithPlaceholders(html: string) {
+    const template = document.createElement('template');
+    template.innerHTML = html;
+
+    replaceElements(template, 'script', 'js-embed-placeholder', 'Embedded JavaScript');
+    replaceElements(template, 'iframe', 'iframe-embed-placeholder', 'Embedded iFrame');
+
+    return template.innerHTML;
+}
+
+function replaceElements(template: HTMLTemplateElement, selector: string, className: string, textContent: string) {
+    template.content.querySelectorAll(selector).forEach((element) => {
+        const placeholder = document.createElement('pre');
+        placeholder.className = className;
+        placeholder.textContent = textContent;
+
+        element.replaceWith(placeholder);
     });
 }

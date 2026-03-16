@@ -1,8 +1,17 @@
 // taken from https://github.com/TryGhost/Ghost/blob/main/ghost/admin/lib/koenig-editor/addon/utils/extract-video-metadata.js
-export default function extractVideoMetadata(file) {
+
+interface VideoMetadata {
+    duration: number;
+    width: number;
+    height: number;
+    mimeType: string;
+    thumbnailBlob: Blob | null;
+}
+
+export default function extractVideoMetadata(file: File): Promise<VideoMetadata> {
     return new Promise((resolve, reject) => {
         const mimeType = file.type;
-        let duration, width, height;
+        let duration: number, width: number, height: number;
 
         const video = document.createElement('video');
         video.muted = true;
@@ -26,7 +35,7 @@ export default function extractVideoMetadata(file) {
             canvas.width = width;
             canvas.height = height;
 
-            const ctx = canvas.getContext('2d');
+            const ctx = canvas.getContext('2d')!;
             ctx.drawImage(video, 0, 0, width, height);
 
             window.URL.revokeObjectURL(video.src);

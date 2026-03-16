@@ -1,20 +1,28 @@
-import {$createRangeSelection, $getSelection, $setSelection} from 'lexical';
-import {LinkInput} from './LinkInput.jsx';
+import {$createRangeSelection, $getSelection, $isRangeSelection, $setSelection} from 'lexical';
+import {LinkInput} from './LinkInput';
 import {TOGGLE_LINK_COMMAND} from '@lexical/link';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export function LinkActionToolbar({href, onClose, ...props}) {
+interface LinkActionToolbarProps {
+    href?: string;
+    onClose: () => void;
+    [key: string]: unknown;
+}
+
+export function LinkActionToolbar({href, onClose, ...props}: LinkActionToolbarProps) {
     const [editor] = useLexicalComposerContext();
 
-    const onLinkUpdate = (updatedHref) => {
+    const onLinkUpdate = (updatedHref: string) => {
         editor.update(() => {
             editor.dispatchCommand(TOGGLE_LINK_COMMAND, updatedHref || null);
             // remove selection to avoid format menu popup
             const selection = $getSelection();
-            const focusNode = selection.focus.getNode();
-            const rangeSelection = $createRangeSelection();
-            rangeSelection.setTextNodeRange(focusNode, focusNode.getTextContentSize(), focusNode, focusNode.getTextContentSize());
-            $setSelection(rangeSelection);
+            if (selection && $isRangeSelection(selection)) {
+                const focusNode = selection.focus.getNode();
+                const rangeSelection = $createRangeSelection();
+                rangeSelection.setTextNodeRange(focusNode, focusNode.getTextContentSize(), focusNode, focusNode.getTextContentSize());
+                $setSelection(rangeSelection);
+            }
             onClose();
         });
     };

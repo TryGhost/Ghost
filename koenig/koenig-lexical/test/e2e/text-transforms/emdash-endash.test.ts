@@ -1,8 +1,9 @@
 import {assertHTML, focusEditor, html, initialize} from '../../utils/e2e';
 import {test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 test.describe('Renders horizontal line rule', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -43,19 +44,19 @@ test.describe('Renders horizontal line rule', async () => {
             await page.keyboard.press('ArrowLeft');
             await page.keyboard.press('ArrowLeft');
             await page.keyboard.type('---');
-            
+
             await assertHTML(page, html`<p dir=\"ltr\"><span data-lexical-text=\"true\">text—text</span></p>`);
         });
     });
 
     test.describe('endash', () => {
-        test('renders with text and space on either side', async function () {
+        test('renders endash with text and space on either side', async function () {
             await focusEditor(page);
             await page.keyboard.type('text-- ');
             await assertHTML(page, html`<p dir=\"ltr\"><span data-lexical-text=\"true\">text– </span></p>`);
         });
 
-        test('renders with space and space on either side', async function () {
+        test('renders endash with space and space on either side', async function () {
             await focusEditor(page);
             await page.keyboard.type('text -- ');
             await assertHTML(page, html`<p dir=\"ltr\"><span data-lexical-text=\"true\">text – </span></p>`);

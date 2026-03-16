@@ -1,51 +1,65 @@
-import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
+import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {$createParagraphNode, $getSelection, $isParagraphNode, $isRangeSelection, COMMAND_PRIORITY_HIGH, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_UP_COMMAND, KEY_ENTER_COMMAND} from 'lexical';
 import {CardMenu} from '../components/ui/CardMenu';
+import {type CardMenuItem, buildCardMenu} from '../utils/buildCardMenu';
 import {SlashMenu} from '../components/ui/SlashMenu';
-import {buildCardMenu} from '../utils/buildCardMenu';
 import {getEditorCardNodes} from '../utils/getEditorCardNodes';
 import {getSelectedNode} from '../utils/getSelectedNode';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {LexicalCommand, LexicalEditor} from 'lexical';
 
-function useSlashCardMenu(editor) {
+interface CardMenuResult {
+    menu?: Map<string, CardMenuItem[]>;
+    maxItemIndex?: number;
+}
+
+function useSlashCardMenu(editor: LexicalEditor) {
     const [isShowingMenu, setIsShowingMenu] = React.useState(false);
-    const [position, setPosition] = React.useState({});
+    const [position, setPosition] = React.useState<Record<string, number | null>>({});
     const [query, setQuery] = React.useState('');
-    const [commandParams, setCommandParams] = React.useState([]);
-    const [cardMenu, setCardMenu] = React.useState({});
+    const [commandParams, setCommandParams] = React.useState<string[]>([]);
+    const [cardMenu, setCardMenu] = React.useState<CardMenuResult>({});
     const [selectedItemIndex, setSelectedItemIndex] = React.useState(0);
     const [scrollToSelectedItem, setScrollToSelectedItem] = React.useState(false);
-    const cachedRange = React.useRef(null);
-    const containerRef = React.useRef(null);
+    const cachedRange = React.useRef<Range | null>(null);
+    const containerRef = React.useRef<HTMLDivElement | null>(null);
     const {cardConfig} = React.useContext(KoenigComposerContext);
 
-    function setMenuPosition(elem) {
+    function setMenuPosition(elem: HTMLElement | Element | null) {
+        if (!elem || !containerRef.current) {
+            return;
+        }
+        const htmlElem = elem as HTMLElement;
         const elemRect = elem.getBoundingClientRect();
-        const containerRect = elem.parentNode.getBoundingClientRect();
+        const containerRect = htmlElem.parentNode ? (htmlElem.parentNode as HTMLElement).getBoundingClientRect() : elemRect;
         const menuRect = containerRef.current.getBoundingClientRect();
 
         const wouldBeOffscreenBottom = elemRect.bottom - containerRect.top + menuRect.height > window.innerHeight;
         const wouldBeOffscreenTop = elemRect.top - menuRect.height < 0;
 
         if (wouldBeOffscreenBottom && !wouldBeOffscreenTop) {
-            const bottom = containerRect.height - elem.offsetTop;
+            const bottom = containerRect.height - htmlElem.offsetTop;
             setPosition({top: null, left: 0, bottom});
         } else {
-            const top = elem.offsetTop + elemRect.height;
+            const top = htmlElem.offsetTop + elemRect.height;
             setPosition({top, left: 0, bottom: null});
         }
     }
 
-    function getSelectionElement() {
+    function getSelectionElement(): Element | null {
         const nativeSelection = window.getSelection();
-        let selectionElem;
+        if (!nativeSelection?.anchorNode) {
+            return null;
+        }
+
+        let selectionElem: Element | null;
 
         if (nativeSelection.anchorNode.nodeType === Node.TEXT_NODE) {
-            selectionElem = nativeSelection.anchorNode.parentNode.closest('p');
+            selectionElem = (nativeSelection.anchorNode.parentNode as Element)?.closest?.('p') ?? null;
         } else {
-            selectionElem = nativeSelection.anchorNode;
+            selectionElem = nativeSelection.anchorNode as Element;
         }
         return selectionElem;
     }
@@ -54,8 +68,8 @@ function useSlashCardMenu(editor) {
         if (!cachedRange.current) {
             return;
         }
-        document.getSelection().removeAllRanges();
-        document.getSelection().addRange(cachedRange.current);
+        document.getSelection()?.removeAllRanges();
+        document.getSelection()?.addRange(cachedRange.current);
     }
 
     const openMenu = React.useCallback(() => {
@@ -75,8 +89,8 @@ function useSlashCardMenu(editor) {
         cachedRange.current = null;
     }, [setIsShowingMenu, commandParams]);
 
-    const insert = React.useCallback((insertCommand, {insertParams = {}, queryParams = {}} = {}) => {
-        const dataset = {...insertParams};
+    const insert = React.useCallback((insertCommand: LexicalCommand<Record<string, unknown>>, {insertParams = {}, queryParams = []} : {insertParams?: Record<string, unknown>; queryParams?: string[]} = {}) => {
+        const dataset: Record<string, unknown> = {...insertParams};
 
         for (let i = 0; i < queryParams.length; i++) {
             if (commandParams[i]) {
@@ -88,6 +102,9 @@ function useSlashCardMenu(editor) {
 
         editor.update(() => {
             const selection = $getSelection();
+            if (!$isRangeSelection(selection)) {
+                return;
+            }
 
             const focusPNode = selection.focus.getNode().getTopLevelElement();
 
@@ -118,10 +135,10 @@ function useSlashCardMenu(editor) {
 
                 const selection = $getSelection();
 
-                if (!$isRangeSelection(selection) || !selection.type === 'text' || !selection.isCollapsed()) {
+                if (!$isRangeSelection(selection) || !selection.isCollapsed()) {
                     const nativeSelection = window.getSelection();
-                    const anchorNode = nativeSelection.anchorNode;
-                    const isMenuSection = anchorNode?.parentNode?.dataset?.cardMenuSection;
+                    const anchorNode = nativeSelection?.anchorNode;
+                    const isMenuSection = (anchorNode?.parentNode as HTMLElement | null)?.dataset?.cardMenuSection;
 
                     // don't close the menu if the selection inside the card section
                     if (isMenuSection) {
@@ -140,10 +157,10 @@ function useSlashCardMenu(editor) {
                 }
 
                 const nativeSelection = window.getSelection();
-                const anchorNode = nativeSelection.anchorNode;
+                const anchorNode = nativeSelection?.anchorNode;
                 const rootElement = editor.getRootElement();
 
-                if (anchorNode?.nodeType !== Node.TEXT_NODE || !rootElement.contains(anchorNode)) {
+                if (!nativeSelection || nativeSelection.rangeCount === 0 || !anchorNode || anchorNode.nodeType !== Node.TEXT_NODE || !rootElement?.contains(anchorNode)) {
                     closeMenu();
                     return;
                 }
@@ -167,7 +184,7 @@ function useSlashCardMenu(editor) {
             return;
         }
 
-        const triggerMenu = (event) => {
+        const triggerMenu = (event: KeyboardEvent) => {
             const {key, isComposing, ctrlKey, metaKey} = event;
 
             // we only care about / presses when not composing or pressed with modifiers
@@ -177,13 +194,16 @@ function useSlashCardMenu(editor) {
 
             // ignore if editor doesn't have focus
             const rootElement = editor.getRootElement();
-            if (!rootElement.matches(':focus')) {
+            if (!rootElement?.matches(':focus')) {
                 return;
             }
 
             // potentially valid / press
             editor.getEditorState().read(() => {
                 const selection = $getSelection();
+                if (!$isRangeSelection(selection)) {
+                    return;
+                }
                 const node = getSelectedNode(selection).getTopLevelElement();
 
                 // ignore if selection is not on a top-level paragraph
@@ -217,7 +237,7 @@ function useSlashCardMenu(editor) {
             return;
         }
 
-        const handleEscape = (event) => {
+        const handleEscape = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 closeMenu({resetCursor: true});
                 return;
@@ -236,8 +256,8 @@ function useSlashCardMenu(editor) {
             return;
         }
 
-        const handleMousedown = (event) => {
-            if (containerRef.current?.contains(event.target)) {
+        const handleMousedown = (event: MouseEvent) => {
+            if (containerRef.current?.contains(event.target as Node)) {
                 return;
             }
 
@@ -256,9 +276,9 @@ function useSlashCardMenu(editor) {
             return;
         }
 
-        const moveUp = (event) => {
+        const moveUp = (event: KeyboardEvent) => {
             if (selectedItemIndex === 0) {
-                setSelectedItemIndex(cardMenu.maxItemIndex);
+                setSelectedItemIndex(cardMenu.maxItemIndex ?? 0);
             } else {
                 setSelectedItemIndex(selectedItemIndex - 1);
             }
@@ -268,8 +288,8 @@ function useSlashCardMenu(editor) {
             return true;
         };
 
-        const moveDown = (event) => {
-            if (selectedItemIndex === cardMenu.maxItemIndex) {
+        const moveDown = (event: KeyboardEvent) => {
+            if (selectedItemIndex === (cardMenu.maxItemIndex ?? 0)) {
                 setSelectedItemIndex(0);
             } else {
                 setSelectedItemIndex(selectedItemIndex + 1);
@@ -280,8 +300,8 @@ function useSlashCardMenu(editor) {
             return true;
         };
 
-        const enter = (event) => {
-            document.querySelector(`[data-kg-slash-menu] [data-kg-cardmenu-idx="${selectedItemIndex}"]`)?.click();
+        const enter = (event: KeyboardEvent) => {
+            (document.querySelector(`[data-kg-slash-menu] [data-kg-cardmenu-idx="${selectedItemIndex}"]`) as HTMLElement | null)?.click();
             event.preventDefault();
             return true;
         };
@@ -318,7 +338,7 @@ function useSlashCardMenu(editor) {
     // build up the card menu based on registered nodes and current search
     React.useEffect(() => {
         const cardNodes = getEditorCardNodes(editor);
-        setCardMenu(buildCardMenu(cardNodes, {insert, query, config: cardConfig}));
+        setCardMenu(buildCardMenu(cardNodes, {query, config: cardConfig}));
         setSelectedItemIndex(0);
     }, [editor, query, insert, setCardMenu, setSelectedItemIndex, cardConfig]);
 
@@ -361,7 +381,7 @@ function useSlashCardMenu(editor) {
                 <SlashMenu>
                     <CardMenu
                         closeMenu={closeMenu}
-                        insert={insert}
+                        insert={insert as (command: unknown, params: unknown) => void}
                         menu={cardMenu.menu}
                         scrollToSelectedItem={scrollToSelectedItem}
                         searchTerm={query}

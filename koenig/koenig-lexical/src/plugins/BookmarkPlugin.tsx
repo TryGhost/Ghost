@@ -20,7 +20,7 @@ export const BookmarkPlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_BOOKMARK_COMMAND,
-                async (dataset) => {
+                (dataset) => {
                     const selection = $getSelection();
 
                     if (!$isRangeSelection(selection)) {

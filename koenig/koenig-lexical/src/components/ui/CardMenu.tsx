@@ -2,8 +2,15 @@ import ExternalLinkIcon from '../../assets/icons/kg-help.svg?react';
 import React from 'react';
 import TrashCardIcon from '../../assets/icons/kg-trash.svg?react';
 import trackEvent from '../../utils/analytics';
+import type {CardMenuItem as CardMenuItemData} from '../../utils/buildCardMenu';
 
-export const CardMenuSection = ({label, children, ...props}) => {
+interface CardMenuSectionProps {
+    label: string;
+    children?: React.ReactNode;
+    [key: string]: unknown;
+}
+
+export const CardMenuSection = ({label, children, ...props}: CardMenuSectionProps) => {
     let helpLink = '';
     if (label === 'Primary') {
         helpLink = 'https://ghost.org/help/cards/';
@@ -29,19 +36,30 @@ export const CardMenuSection = ({label, children, ...props}) => {
     );
 };
 
-export const CardMenuItem = ({label, shortcut, desc, isSelected, scrollToItem, onClick, Icon, ...props}) => {
-    const buttonRef = React.useRef(null);
+interface CardMenuItemProps {
+    label: string;
+    shortcut?: string;
+    desc?: string;
+    isSelected?: boolean;
+    scrollToItem?: boolean;
+    onClick?: (e: React.MouseEvent) => void;
+    Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    [key: string]: unknown;
+}
+
+export const CardMenuItem = ({label, shortcut, desc: _desc, isSelected, scrollToItem, onClick, Icon, ...props}: CardMenuItemProps) => {
+    const buttonRef = React.useRef<HTMLButtonElement>(null);
 
     React.useEffect(() => {
         if (scrollToItem) {
-            buttonRef.current.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'nearest'});
+            buttonRef.current?.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'nearest'});
         }
     }, [scrollToItem]);
 
     // browsers will move focus on mouseDown but we don't want that because it
     // removes focus from the editor meaning key commands don't work as
     // expected after a card is inserted
-    const preventMouseDown = (event) => {
+    const preventMouseDown = (event: React.MouseEvent) => {
         event.preventDefault();
     };
 
@@ -70,22 +88,32 @@ export const CardMenuItem = ({label, shortcut, desc, isSelected, scrollToItem, o
     );
 };
 
-export const CardSnippetItem = ({label, isSelected, scrollToItem, Icon, onRemove, closeMenu, ...props}) => {
-    const itemRef = React.useRef(null);
+interface CardSnippetItemProps {
+    label: string;
+    isSelected?: boolean;
+    scrollToItem?: boolean;
+    Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    onRemove?: () => void;
+    closeMenu?: () => void;
+    [key: string]: unknown;
+}
+
+export const CardSnippetItem = ({label, isSelected, scrollToItem, Icon, onRemove, closeMenu, ...props}: CardSnippetItemProps) => {
+    const itemRef = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
         if (scrollToItem) {
-            itemRef.current.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'nearest'});
+            itemRef.current?.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'nearest'});
         }
     }, [scrollToItem]);
 
-    const handleSnippetRemove = (event) => {
+    const handleSnippetRemove = (event: React.MouseEvent) => {
         event.stopPropagation(); // prevent snippet insertion
-        onRemove();
-        closeMenu();
+        onRemove?.();
+        closeMenu?.();
     };
 
-    const handleMouseDown = (event) => {
+    const handleMouseDown = (event: React.MouseEvent) => {
         // prevent menu closing before snippet insertion
         event.stopPropagation();
         event.preventDefault();
@@ -117,17 +145,27 @@ export const CardSnippetItem = ({label, isSelected, scrollToItem, Icon, onRemove
     );
 };
 
-export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex, scrollToSelectedItem, closeMenu, source, searchTerm}) => {
+export interface CardMenuProps {
+    menu?: Map<string, CardMenuItemData[]>;
+    insert?: (command: unknown, params: unknown) => void;
+    selectedItemIndex?: number;
+    scrollToSelectedItem?: boolean;
+    closeMenu?: () => void;
+    source?: 'plus' | 'slash';
+    searchTerm?: string;
+}
+
+export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex, scrollToSelectedItem, closeMenu, source, searchTerm}: CardMenuProps) => {
     // build up the children arrays from the passed in menu Map
-    const CardMenuSections = [];
+    const CardMenuSections: React.ReactNode[] = [];
 
     let itemIndex = 0;
     for (const [sectionLabel, items] of menu) {
-        const CardMenuItems = [];
+        const CardMenuItems: React.ReactNode[] = [];
 
         items.forEach((item) => {
             const isSelected = itemIndex === selectedItemIndex;
-            const onClick = (event) => {
+            const onClick = (event: React.MouseEvent) => {
                 event.preventDefault();
                 event.stopPropagation();
                 insert?.(item.insertCommand, {insertParams: item.insertParams, queryParams: item.queryParams});

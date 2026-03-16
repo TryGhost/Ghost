@@ -11,7 +11,7 @@ export interface CardMenuItem {
     shortcut?: string;
     section?: string;
     matches?: ((query: string, label?: string) => boolean) | string[];
-    isHidden?: (context: {config: unknown}) => boolean;
+    isHidden?: (context: {config?: CardMenuConfig}) => boolean;
     postType?: string;
     insertParams?: unknown;
     insertCommand?: unknown;
@@ -21,14 +21,30 @@ export interface CardMenuItem {
     [key: string]: unknown;
 }
 
-export function buildCardMenu(nodes, {query, config} = {}) {
-    let menu = new Map();
+interface CardMenuSnippet {
+    name: string;
+    value?: string;
+}
+
+interface CardMenuConfig {
+    post?: {displayName?: string};
+    snippets?: CardMenuSnippet[];
+    deleteSnippet?: (data: {name: string}) => void;
+    [key: string]: unknown;
+}
+
+interface CardMenuNode {
+    kgMenu: CardMenuItem | CardMenuItem[];
+}
+
+export function buildCardMenu(nodes: Array<[string, CardMenuNode]>, {query, config}: {query?: string; config?: CardMenuConfig} = {}) {
+    let menu = new Map<string, CardMenuItem[]>();
 
     query = query?.toLowerCase();
 
     let maxItemIndex = -1;
 
-    function addMenuItem(item) {
+    function addMenuItem(item: CardMenuItem) {
         // items hidden based on missing config (e.g. GIF provider API key)
         if (!!item.isHidden && item.isHidden?.({config})) {
             return;
@@ -40,15 +56,15 @@ export function buildCardMenu(nodes, {query, config} = {}) {
         }
 
         const matches = typeof item?.matches === 'function'
-            ? item?.matches?.(query, item.label)
-            : item?.matches?.find?.(m => m.startsWith(query));
+            ? item?.matches?.(query!, item.label)
+            : (item?.matches as string[] | undefined)?.find?.((m: string) => m.startsWith(query!));
 
         if (query && !matches) {
             return;
         }
 
         if (typeof item.insertParams === 'function') {
-            item.insertParams = item.insertParams({config});
+            item.insertParams = (item.insertParams as (ctx: {config: unknown}) => unknown)({config});
         }
 
         const section = item.section || 'Primary';
@@ -56,7 +72,7 @@ export function buildCardMenu(nodes, {query, config} = {}) {
         if (!menu.has(section)) {
             menu.set(section, [item]);
         } else {
-            menu.get(section).push(item);
+            menu.get(section)!.push(item);
         }
 
         maxItemIndex = maxItemIndex + 1;
@@ -64,7 +80,7 @@ export function buildCardMenu(nodes, {query, config} = {}) {
 
     for (const [nodeType, node] of nodes) {
         if (Array.isArray(node.kgMenu)) {
-            node.kgMenu.forEach(item => addMenuItem({nodeType, ...item}));
+            node.kgMenu.forEach((item: CardMenuItem) => addMenuItem({nodeType, ...item}));
         } else {
             addMenuItem({nodeType, ...node.kgMenu});
         }
@@ -77,7 +93,7 @@ export function buildCardMenu(nodes, {query, config} = {}) {
 
     // sort each menu section by priority
     menu = new Map([...menu.entries()].map(([section, items]) => {
-        return [section, items.sort((a, b) => {
+        return [section, items.sort((a: CardMenuItem, b: CardMenuItem) => {
             if (a.priority === b.priority) {
                 return 0;
             } else if (a.priority === undefined) {
@@ -91,7 +107,7 @@ export function buildCardMenu(nodes, {query, config} = {}) {
     }));
 
     // sort primary section to always display first
-    menu = new Map([...menu.entries()].sort((a, b) => {
+    menu = new Map([...menu.entries()].sort((a, _b) => {
         if (a[0] === 'Primary') {
             return -1;
         } else {
@@ -102,17 +118,17 @@ export function buildCardMenu(nodes, {query, config} = {}) {
     return {menu, maxItemIndex};
 }
 
-function buildSnippetMenuItem(data, config) {
+function buildSnippetMenuItem(data: CardMenuSnippet, config: CardMenuConfig): CardMenuItem {
     const name = data.name.toLowerCase();
-    const snippet = {
+    const snippet: CardMenuItem = {
         type: 'snippet',
         label: data.name,
         Icon: SnippetCardIcon,
         section: 'Snippets',
-        matches: query => name.indexOf(query) > -1 || 'snippets'.indexOf(query) > -1,
+        matches: (query: string) => name.indexOf(query) > -1 || 'snippets'.indexOf(query) > -1,
         insertCommand: INSERT_SNIPPET_COMMAND,
         insertParams: data,
-        ...(config.deleteSnippet && {onRemove: () => config.deleteSnippet(data)})
+        ...(config.deleteSnippet && {onRemove: () => config.deleteSnippet!(data)})
     };
 
     return snippet;

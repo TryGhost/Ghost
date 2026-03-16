@@ -3,6 +3,7 @@ import {
     $createParagraphNode,
     $getSelection,
     $isDecoratorNode,
+    $isElementNode,
     $isParagraphNode,
     $isRangeSelection,
     COMMAND_PRIORITY_LOW,
@@ -10,12 +11,13 @@ import {
     RootNode
 } from 'lexical';
 import {$isListNode} from '@lexical/list';
-import {MIME_TEXT_HTML, MIME_TEXT_PLAIN, PASTE_MARKDOWN_COMMAND} from './MarkdownPastePlugin.jsx';
-import {PASTE_LINK_COMMAND} from './KoenigBehaviourPlugin.jsx';
+import {MIME_TEXT_HTML, MIME_TEXT_PLAIN, PASTE_MARKDOWN_COMMAND} from './MarkdownPastePlugin';
+import {PASTE_LINK_COMMAND} from './KoenigBehaviourPlugin';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {PasteCommandType} from 'lexical';
 
-export const RestrictContentPlugin = ({paragraphs, allowBr}) => {
+export const RestrictContentPlugin = ({paragraphs, allowBr}: {paragraphs: number; allowBr?: boolean}) => {
     const [editor] = useLexicalComposerContext();
 
     React.useEffect(() => {
@@ -53,9 +55,9 @@ export const RestrictContentPlugin = ({paragraphs, allowBr}) => {
                     cleanedNodes = cleanedNodes.map((node) => {
                         if ($isListNode(node)) {
                             const firstListItem = node.getChildren()[0];
-                            return $createParagraphNode().append(...firstListItem.getChildren());
+                            return $createParagraphNode().append(...($isElementNode(firstListItem) ? firstListItem.getChildren() : []));
                         } else if (!$isParagraphNode(node)) {
-                            return $createParagraphNode().append(...node.getChildren());
+                            return $createParagraphNode().append(...($isElementNode(node) ? node.getChildren() : []));
                         } else {
                             return node;
                         }
@@ -71,9 +73,9 @@ export const RestrictContentPlugin = ({paragraphs, allowBr}) => {
             }),
             editor.registerCommand(
                 PASTE_COMMAND,
-                (clipboard) => {
-                    const text = clipboard?.clipboardData?.getData(MIME_TEXT_PLAIN);
-                    const html = clipboard?.clipboardData?.getData(MIME_TEXT_HTML);
+                (clipboard: PasteCommandType) => {
+                    const text = (clipboard as ClipboardEvent)?.clipboardData?.getData(MIME_TEXT_PLAIN);
+                    const html = (clipboard as ClipboardEvent)?.clipboardData?.getData(MIME_TEXT_HTML);
 
                     // TODO: replace with better regex to include more protocols like mailto, ftp, etc
                     const linkMatch = text?.match(/^(https?:\/\/[^\s]+)$/);
@@ -91,6 +93,8 @@ export const RestrictContentPlugin = ({paragraphs, allowBr}) => {
 
                         return true;
                     }
+
+                    return false;
                 },
                 COMMAND_PRIORITY_LOW
             )

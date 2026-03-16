@@ -5,13 +5,14 @@ import {EMBED_RENDERER_MAX_HEIGHT, EMBED_RENDERER_TIMEOUT} from '../../../src/ut
 import {assertHTML, createSnippet, focusEditor, html, initialize, isMac, pasteText} from '../../utils/e2e';
 import {chromium, expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
+import type {Page} from '@playwright/test';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 test.describe('Embed card', async () => {
     const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -107,7 +108,7 @@ test.describe('Embed card', async () => {
             await page.unroute(`${rendererDirectory}**`);
         });
 
-        function embedContent(embedHtml) {
+        function embedContent(embedHtml: string) {
             return encodeURIComponent(JSON.stringify({
                 root: {
                     children: [{
@@ -167,7 +168,7 @@ test.describe('Embed card', async () => {
                 await initialize({page: scrollbarPage, uri: `/#/?embedPreviewUrl=${encodeURIComponent(rendererDirectory)}&content=${embedContent(embedHtml)}`});
 
                 const iframe = scrollbarPage.getByTestId('embed-iframe');
-                const {width} = await iframe.boundingBox();
+                const {width} = (await iframe.boundingBox())!;
 
                 await expect(iframe).toHaveCSS('height', `${Math.ceil(width / (200 / 113))}px`);
             } finally {
@@ -182,7 +183,7 @@ test.describe('Embed card', async () => {
             slowPage.on('console', message => message.type() === 'error' && reported.push(message.text()));
 
             try {
-                let answerRenderer: () => Promise<void>;
+                let answerRenderer!: () => Promise<void>;
                 await slowPage.route(`${rendererDirectory}**`, (route) => {
                     answerRenderer = () => route.fulfill({path: rendererFile, contentType: 'text/html'});
                 });
@@ -506,7 +507,7 @@ test.describe('Embed card', async () => {
     });
 });
 
-async function insertEmbedCard(page) {
+async function insertEmbedCard(page: Page) {
     await page.keyboard.type(`/embed`);
     await expect(await page.locator('[data-kg-card-menu-item="Other..."][data-kg-cardmenu-selected="true"]')).toBeVisible();
     await page.keyboard.press('Enter');

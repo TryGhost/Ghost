@@ -2,9 +2,11 @@ import {$getNodeByKey} from 'lexical';
 import {expect, vi} from 'vitest';
 import {getImageDimensions} from '../../../src/utils/getImageDimensions';
 import {imageUploadHandler} from '../../../src/utils/imageUploadHandler';
+import type {KoenigCard} from '@tryghost/kg-default-nodes';
+import type {LexicalEditor, LexicalNode} from 'lexical';
 
 const koenigMocks = vi.hoisted(() => ({
-    $isKoenigCard: vi.fn()
+    $isKoenigCard: vi.fn<(node: unknown) => node is KoenigCard>()
 }));
 
 vi.mock(import('lexical'), async (importOriginal) => {
@@ -17,7 +19,7 @@ vi.mock(import('lexical'), async (importOriginal) => {
 });
 
 vi.mock(import('@tryghost/kg-default-nodes'), () => ({
-    $isKoenigCard: koenigMocks.$isKoenigCard
+    $isKoenigCard: koenigMocks.$isKoenigCard as unknown as (node: unknown) => node is KoenigCard
 }));
 
 vi.mock(import('../../../src/utils/getImageDimensions'), () => ({
@@ -34,21 +36,22 @@ describe('imageUploadHandler', () => {
     });
 
     it('does not prepare or upload an image when the target is not a card', async () => {
-        const node = {};
+        const node = {} as LexicalNode;
+        const file = new File(['image'], 'image.png', {type: 'image/png'});
         const createObjectURL = vi.fn();
-        const upload = vi.fn();
+        const upload = vi.fn<(files: File[] | FileList) => Promise<{url: string}[] | null>>();
         const update = vi.fn();
         const editor = {
             getEditorState: vi.fn(() => ({
                 read: vi.fn(callback => callback())
             })),
             update
-        };
+        } as unknown as LexicalEditor;
         vi.mocked($getNodeByKey).mockReturnValue(node);
         koenigMocks.$isKoenigCard.mockReturnValue(false);
         vi.stubGlobal('URL', {createObjectURL});
 
-        await imageUploadHandler([{}], 'test-key', editor, upload);
+        await imageUploadHandler([file], 'test-key', editor, upload);
 
         expect(koenigMocks.$isKoenigCard).toHaveBeenCalledWith(node);
         expect(createObjectURL).not.toHaveBeenCalled();

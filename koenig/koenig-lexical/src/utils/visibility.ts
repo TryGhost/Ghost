@@ -7,7 +7,41 @@ export const VISIBILITY_SETTINGS = {
     NONE: 'none'
 };
 
-export function parseVisibilityToToggles(visibility) {
+export interface Visibility {
+    web: {
+        nonMember: boolean;
+        memberSegment: string;
+    };
+    email: {
+        memberSegment: string;
+    };
+}
+
+export interface VisibilityToggles {
+    web: {
+        nonMembers: boolean;
+        freeMembers: boolean;
+        paidMembers: boolean;
+    };
+    email: {
+        freeMembers: boolean;
+        paidMembers: boolean;
+    };
+}
+
+interface Toggle {
+    key: string;
+    label: string;
+    checked: boolean;
+}
+
+export interface VisibilityOption {
+    label: string;
+    key: string;
+    toggles: Toggle[];
+}
+
+export function parseVisibilityToToggles(visibility?: Visibility): VisibilityToggles {
     visibility = visibility || buildDefaultVisibility();
 
     return {
@@ -23,17 +57,17 @@ export function parseVisibilityToToggles(visibility) {
     };
 }
 
-function isToggleChecked(toggles, key, fallback) {
+function isToggleChecked(toggles: Toggle[], key: string, fallback: boolean): boolean {
     return toggles.find(t => t.key === key)?.checked ?? fallback;
 }
 
 // used for building UI
-export function getVisibilityOptions(visibility, {isStripeEnabled = true, showWeb = true, showEmail = true} = {}) {
+export function getVisibilityOptions(visibility: Visibility | undefined, {isStripeEnabled = true, showWeb = true, showEmail = true} = {}): VisibilityOption[] {
     visibility = visibility || buildDefaultVisibility();
     const toggles = parseVisibilityToToggles(visibility);
 
     // use arrays to ensure consistent order when using to build UI
-    const options = [
+    const options: VisibilityOption[] = [
         {
             label: 'Web',
             key: 'web',
@@ -71,13 +105,13 @@ export function getVisibilityOptions(visibility, {isStripeEnabled = true, showWe
     });
 }
 
-export function serializeOptionsToVisibility(options, existingVisibility) {
+export function serializeOptionsToVisibility(options: VisibilityOption[], existingVisibility?: Visibility) {
     existingVisibility = existingVisibility || buildDefaultVisibility();
     const existingToggles = parseVisibilityToToggles(existingVisibility);
     const webToggles = options.find(group => group.key === 'web')?.toggles ?? [];
     const emailToggles = options.find(group => group.key === 'email')?.toggles ?? [];
 
-    const webSegments = [];
+    const webSegments: string[] = [];
     if (isToggleChecked(webToggles, 'freeMembers', existingToggles.web.freeMembers)) {
         webSegments.push('status:free');
     }
@@ -85,7 +119,7 @@ export function serializeOptionsToVisibility(options, existingVisibility) {
         webSegments.push('status:-free');
     }
 
-    const emailSegments = [];
+    const emailSegments: string[] = [];
     if (isToggleChecked(emailToggles, 'freeMembers', existingToggles.email.freeMembers)) {
         emailSegments.push('status:free');
     }
