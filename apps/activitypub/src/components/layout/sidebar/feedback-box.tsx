@@ -22,7 +22,7 @@ const FeedbackBox: React.FC = () => {
                 </span>
                 <Button className='mt-2 dark:bg-gray-925/70 dark:hover:bg-gray-900' variant='secondary' onClick={showFeedbackReply}>Send feedback</Button>
             </div>
-            <div className='-mb-1 ml-3 flex items-center gap-1.5 pb-2 pt-4 text-xs text-gray-400'>
+            <div className='-mb-1 ml-3 flex items-center gap-1.5 pt-4 pb-2 text-xs text-gray-400'>
                 <a className='text-xs font-medium text-gray-700 hover:text-black dark:text-gray-600 dark:hover:text-white' href="https://ghost.org/help/social-web/" rel="noreferrer" target="_blank">Help</a>
                 &sdot;
                 <a className='text-xs font-medium text-gray-700 hover:text-black dark:text-gray-600 dark:hover:text-white' href="https://activitypub.ghost.org/archive" rel="noreferrer"target="_blank">Updates</a>

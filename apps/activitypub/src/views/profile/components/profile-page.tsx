@@ -251,7 +251,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                     </Dialog>
                                 }
                             </div>
-                            <H2 className='mt-4 truncate break-anywhere'>{!isLoadingAccount ? account?.name : <Skeleton className='w-32' />}</H2>
+                            <H2 className='break-anywhere mt-4 truncate'>{!isLoadingAccount ? account?.name : <Skeleton className='w-32' />}</H2>
                             <div className='mb-4 flex items-center gap-2'>
                                 <a className='inline-flex max-w-full truncate text-[1.5rem] text-gray-800 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-500' href={account?.url} rel='noopener noreferrer' target='_blank'>
                                     <span className='truncate'>{!isLoadingAccount ? account?.handle : <Skeleton className='w-full max-w-56' />}</span>
@@ -268,7 +268,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                     <Badge className='mt-px whitespace-nowrap' variant='secondary'>Follows you</Badge>
                                 )}
                             </div>
-                            {(account?.bio || customFields?.length > 0) && (<div ref={contentRef} className={`ap-profile-content relative text-[1.5rem] break-anywhere [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
+                            {(account?.bio || customFields?.length > 0) && (<div ref={contentRef} className={`ap-profile-content break-anywhere relative text-[1.5rem] [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
                                 {!isLoadingAccount ?
                                     <div dangerouslySetInnerHTML={{__html: sanitizeHtml(openLinksInNewTab(stripHtml(account?.bio ?? '', ['a', 'br'])))}} /> :
                                     <>
