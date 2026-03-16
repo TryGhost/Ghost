@@ -123,7 +123,7 @@ const BodyContent: React.FC<{
 const ActionButton: React.FC<{
     buttonStyle?: string;
     buttonColor: string;
-    buttonTextColor: string;
+    buttonTextColor?: string;
     cornerClass: string;
 }> = ({buttonStyle, buttonColor, buttonTextColor, cornerClass}) => {
     const isOutline = buttonStyle === 'outline';

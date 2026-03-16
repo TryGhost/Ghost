@@ -217,7 +217,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
         modal.remove();
     }, [modal]);
 
-    const emailDomain = config?.emailDomain || defaultEmailAddress?.split('@')[1] || '';
+    const emailDomain = (config?.emailDomain as string) || defaultEmailAddress?.split('@')[1] || '';
 
     return (
         <EmailDesignProvider accentColor={siteData.accent_color} settings={designSettings} onSettingsChange={handleDesignChange}>
