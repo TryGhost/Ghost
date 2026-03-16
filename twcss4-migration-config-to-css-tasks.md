@@ -10,6 +10,7 @@ Last updated: 2026-03-16 (local branch state, pending CI on latest local changes
 ## Current Blockers
 - [ ] Re-run CI on latest local DS lane change (removed DS runtime `@config` bridge).
 - [ ] Resolve or re-trigger isolated flaky test if it reappears: `advanced/dangerzone` toast assertion.
+- [ ] Replace `admin-x-settings` scoped `@config` bridge with CSS-only utility generation (local repro: `membership/stripe` acceptance fails with duplicate visible controls when `@config` is removed).
 - [ ] Remove remaining Admin-scope `tailwind.config.*` files that are still consumed.
 - [ ] Re-run full gates (`yarn build`, `yarn lint`, required CI checks) with all required jobs green.
 
@@ -17,7 +18,7 @@ Last updated: 2026-03-16 (local branch state, pending CI on latest local changes
 - [x] Keep `@tryghost/shade/styles.css` as the primary runtime style contract for Admin.
 - [x] Deprecate and remove `@tryghost/shade/tailwind.cjs`.
 - [x] Deprecate and remove `@tryghost/admin-x-design-system/tailwind.cjs`.
-- [ ] Remove remaining docs/tooling metadata that still point to config as token source (for example `apps/shade/components.json` still references `tailwind.config.cjs`).
+- [x] Remove remaining docs/tooling metadata that still point to config as token source (`apps/shade/components.json` no longer references `tailwind.config.cjs`).
 
 ## Phase 0: Baseline + Inventory Freeze
 - [x] Extract token matrix from Shade config to CSS constructs (`@theme`, `@custom-variant`, keyframes, animation utilities).
@@ -49,7 +50,7 @@ Last updated: 2026-03-16 (local branch state, pending CI on latest local changes
 - [x] Convert DS CSS imports/pipeline to Tailwind v4-compatible setup.
 - [x] Move DS PostCSS to v4-compatible plugin chain.
 - [x] Remove DS runtime `@config` bridge (`apps/admin-x-design-system/styles.css`) — local validation passed (`admin-x-design-system` build + focused `admin-x-settings` acceptance suite), CI pending.
-- [ ] Ensure admin-x-settings no longer depends on config-driven DS tokens/scoping (temporary settings-scoped `@config` bridge reintroduced to stabilize acceptance tests).
+- [ ] Ensure admin-x-settings no longer depends on config-driven DS tokens/scoping (temporary settings-scoped `@config` bridge remains required; local CSS-only `@source` attempts still fail in `membership/stripe` acceptance due duplicate visible controls).
 - [ ] Clear `Admin-X Settings tests` in CI after DS/settings lane stabilization.
 
 ## Phase 5: Hard Cleanup
