@@ -10,7 +10,6 @@ interface DesignSystemProps {
 }
 
 const fetchKoenigLexical: DesignSystemProps['fetchKoenigLexical'] = async () => {
-    // @ts-expect-error koenig-lexical doesn't currently ship TypeScript declarations.
     return await import('@tryghost/koenig-lexical');
 };
 

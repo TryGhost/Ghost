@@ -4,30 +4,54 @@ import React from 'react';
 import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
 import usePinturaEditor from '../hooks/usePinturaEditor';
 import {$getNodeByKey} from 'lexical';
-import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
+import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {ProductCard} from '../components/ui/cards/ProductCard';
-import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
-import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
+import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {getImageDimensions} from '../utils/getImageDimensions';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {LexicalEditor} from 'lexical';
+import type {ProductNode} from './ProductNode';
+
+function $getProductNodeByKey(nodeKey: string): ProductNode | null {
+    return $getNodeByKey(nodeKey) as ProductNode | null;
+}
+
+interface ProductNodeComponentProps {
+    nodeKey: string;
+    buttonText: string;
+    buttonUrl: string;
+    imgHeight: number | null;
+    imgSrc: string;
+    imgWidth: number | null;
+    isButtonEnabled: boolean;
+    isRatingEnabled: boolean;
+    starRating: number;
+    title: string;
+    titleEditor: LexicalEditor;
+    titleEditorInitialState: string | undefined;
+    descriptionEditor: LexicalEditor;
+    descriptionEditorInitialState: string | undefined;
+    description: string;
+}
 
 export function ProductNodeComponent({
     nodeKey,
     buttonText,
     buttonUrl,
-    imgHeight,
+    imgHeight: _imgHeight,
     imgSrc,
-    imgWidth,
+    imgWidth: _imgWidth,
     isButtonEnabled,
     isRatingEnabled,
     starRating,
-    title,
+    title: _title,
     titleEditor,
     titleEditorInitialState,
     descriptionEditor,
     descriptionEditorInitialState,
-    description
-}) {
+    description: _description
+}: ProductNodeComponentProps) {
     const [editor] = useLexicalComposerContext();
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
     const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
@@ -43,17 +67,18 @@ export function ProductNodeComponent({
         descriptionEditor.setEditable(isEditing);
     }, [isEditing, titleEditor, descriptionEditor]);
 
-    const handleImgUpload = async (files) => {
+    const handleImgUpload = async (files: File[] | FileList) => {
         const imgPreviewUrl = URL.createObjectURL(files[0]);
         setImgPreview(imgPreviewUrl);
 
         const {width, height} = await getImageDimensions(imgPreviewUrl);
-        const imgUploadResult = await imgUploader.upload(files);
+        const imgUploadResult = await imgUploader.upload(Array.from(files));
         const imageUrl = imgUploadResult?.[0]?.url;
 
         if (imageUrl) {
             editor.update(() => {
-                const node = $getNodeByKey(nodeKey);
+                const node = $getProductNodeByKey(nodeKey);
+                if (!node) {return;}
                 node.productImageSrc = imageUrl;
                 node.productImageHeight = height;
                 node.productImageWidth = width;
@@ -64,61 +89,67 @@ export function ProductNodeComponent({
         URL.revokeObjectURL(imgPreviewUrl);
     };
 
-    const handleImgChange = async (e) => {
-        const file = e.target.files[0];
+    const handleImgChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
         if (!file) {
             return;
         }
-        await handleImgUpload(e.target.files);
+        await handleImgUpload(e.target.files!);
     };
 
     const onRemoveImage = () => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getProductNodeByKey(nodeKey);
+            if (!node) {return;}
             node.productImageSrc = '';
         });
     };
 
-    async function handleImgDrop(files) {
+    async function handleImgDrop(files: File[]) {
         await handleImgUpload(files);
     }
 
-    const handleButtonToggle = (event) => {
+    const handleButtonToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getProductNodeByKey(nodeKey);
+            if (!node) {return;}
             node.productButtonEnabled = event.target.checked;
         });
     };
 
-    const handleButtonTextChange = (event) => {
+    const handleButtonTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getProductNodeByKey(nodeKey);
+            if (!node) {return;}
             node.productButton = event.target.value;
         });
     };
 
-    const handleButtonUrlChange = (val) => {
+    const handleButtonUrlChange = (val: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getProductNodeByKey(nodeKey);
+            if (!node) {return;}
             node.productUrl = val;
         });
     };
 
-    const handleRatingToggle = (event) => {
+    const handleRatingToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getProductNodeByKey(nodeKey);
+            if (!node) {return;}
             node.productRatingEnabled = event.target.checked;
         });
     };
 
-    const handleRatingChange = (rating) => {
+    const handleRatingChange = (rating: number) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getProductNodeByKey(nodeKey);
+            if (!node) {return;}
             node.productStarRating = rating;
         });
     };
 
-    const handleToolbarEdit = (event) => {
+    const handleToolbarEdit = (event: React.MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
         setEditing(true);
@@ -129,22 +160,18 @@ export function ProductNodeComponent({
             <ProductCard
                 buttonText={buttonText}
                 buttonUrl={buttonUrl}
-                description={description}
                 descriptionEditor={descriptionEditor}
                 descriptionEditorInitialState={descriptionEditorInitialState}
                 imgDragHandler={imgDragHandler}
-                imgHeight={imgHeight}
                 imgMimeTypes={imgMimeTypes}
                 imgSrc={imgPreview || imgSrc}
                 imgUploader={imgUploader}
-                imgWidth={imgWidth}
                 isButtonEnabled={isButtonEnabled}
                 isEditing={isEditing}
                 isPinturaEnabled={isPinturaEnabled}
                 isRatingEnabled={isRatingEnabled}
                 openImageEditor={openImageEditor}
                 rating={starRating}
-                title={title}
                 titleEditor={titleEditor}
                 titleEditorInitialState={titleEditorInitialState}
                 onButtonTextChange={handleButtonTextChange}

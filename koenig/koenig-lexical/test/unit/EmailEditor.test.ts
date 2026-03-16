@@ -40,7 +40,7 @@ describe('getEmailEditorCardConfig', function () {
 
     it('restricts image widths to regular only', function () {
         const result = getEmailEditorCardConfig({image: {allowedWidths: ['wide', 'full']}});
-        expect(result.image.allowedWidths).toEqual(['regular']);
+        expect(result.image?.allowedWidths).toEqual(['regular']);
     });
 
     it('preserves other cardConfig properties', function () {

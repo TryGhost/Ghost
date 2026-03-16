@@ -1,11 +1,39 @@
 import KoenigNestedEditor from '../../KoenigNestedEditor';
-import PropTypes from 'prop-types';
+import React from 'react';
 import {Button} from '../Button';
 import {InputSetting, InputUrlSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ProductCardImage} from './ProductCard/ProductCardImage';
 import {RatingButton} from './ProductCard/RatingButton';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
+import type {LexicalEditor} from 'lexical';
+import type {OpenImageEditor} from '../../../hooks/usePinturaEditor';
+
+interface ProductCardProps {
+    isEditing?: boolean;
+    imgSrc?: string;
+    isButtonEnabled?: boolean;
+    buttonText?: string;
+    buttonUrl?: string;
+    rating: number;
+    isRatingEnabled?: boolean;
+    onButtonToggle?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onButtonTextChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onButtonUrlChange: (value: string) => void;
+    onRatingToggle?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    imgDragHandler?: {isDraggedOver?: boolean; setRef?: React.Ref<HTMLDivElement>};
+    onImgChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    imgMimeTypes?: string[];
+    imgUploader?: {isLoading?: boolean; progress?: number; errors?: {message: string}[]};
+    isPinturaEnabled?: boolean;
+    openImageEditor?: OpenImageEditor;
+    onRemoveImage?: () => void;
+    titleEditor: LexicalEditor;
+    titleEditorInitialState?: string;
+    descriptionEditor: LexicalEditor;
+    descriptionEditorInitialState?: string;
+    onRatingChange: (rating: number) => void;
+}
 
 export function ProductCard({
     isEditing,
@@ -31,7 +59,7 @@ export function ProductCard({
     descriptionEditor,
     descriptionEditorInitialState,
     onRatingChange
-}) {
+}: ProductCardProps) {
     const showFilledButton = !!buttonUrl && !!buttonText && isButtonEnabled;
     const showButtonInEditMode = isButtonEnabled && isEditing;
     return (
@@ -122,7 +150,7 @@ export function ProductCard({
                             <InputUrlSetting
                                 dataTestId="product-button-url-input"
                                 label='Button URL'
-                                value={buttonUrl}
+                                value={buttonUrl || ''}
                                 onChange={onButtonUrlChange}
                             />
                         </>
@@ -134,31 +162,3 @@ export function ProductCard({
         </>
     );
 }
-
-ProductCard.propTypes = {
-    isEditing: PropTypes.bool,
-    imgSrc: PropTypes.string,
-    isButtonEnabled: PropTypes.bool,
-    buttonText: PropTypes.string,
-    buttonUrl: PropTypes.string,
-    isRatingEnabled: PropTypes.bool,
-    rating: PropTypes.number,
-    onButtonToggle: PropTypes.func,
-    onButtonTextChange: PropTypes.func,
-    onButtonUrlChange: PropTypes.func,
-    onRatingToggle: PropTypes.func,
-    onImgChange: PropTypes.func,
-    onRemoveImage: PropTypes.func,
-    imgDragHandler: PropTypes.object,
-    imgUploader: PropTypes.object,
-    imgMimeTypes: PropTypes.array,
-    isPinturaEnabled: PropTypes.bool,
-    openImageEditor: PropTypes.func,
-    title: PropTypes.string,
-    description: PropTypes.string,
-    titleEditor: PropTypes.object,
-    titleEditorInitialState: PropTypes.object,
-    descriptionEditor: PropTypes.object,
-    descriptionEditorInitialState: PropTypes.object,
-    onRatingChange: PropTypes.func
-};

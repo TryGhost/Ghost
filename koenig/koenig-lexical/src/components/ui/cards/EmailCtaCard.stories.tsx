@@ -1,9 +1,11 @@
 import EmailIndicatorIcon from '../../../assets/icons/kg-indicator-email.svg?react';
-import populateEditor from '../../../utils/storybook/populate-storybook-editor.js';
-import {BASIC_NODES} from '../../../index.js';
+import populateEditor from '../../../utils/storybook/populate-storybook-editor';
+import {BASIC_NODES} from '../../../index';
 import {CardWrapper} from './../CardWrapper';
 import {EmailCtaCard} from './EmailCtaCard';
 import {createEditor} from 'lexical';
+import type {ComponentProps} from 'react';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
@@ -11,14 +13,15 @@ const displayOptions = {
     Editing: {isSelected: true, isEditing: true}
 };
 
-const story = {
+type StoryArgs = ComponentProps<typeof EmailCtaCard> & {display: keyof typeof displayOptions; value?: string};
+
+const story: Meta<StoryArgs> = {
     title: 'Primary cards/Email CTA card',
     component: EmailCtaCard,
-    subcomponent: {CardWrapper},
+    subcomponents: {CardWrapper},
     argTypes: {
         display: {
             options: Object.keys(displayOptions),
-            mapping: displayOptions,
             control: {
                 type: 'radio',
                 labels: {
@@ -38,22 +41,22 @@ const story = {
 };
 export default story;
 
-const Template = ({display, value, ...args}) => {
+const Template: StoryFn<StoryArgs> = ({display, value, ...args}) => {
     const htmlEditor = createEditor({nodes: BASIC_NODES});
     populateEditor({editor: htmlEditor, initialHtml: `${value}`});
     return (
         <div>
             <div className="kg-prose">
                 <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
-                    <CardWrapper IndicatorIcon={EmailIndicatorIcon} wrapperStyle='wide' {...display} {...args}>
-                        <EmailCtaCard {...display} {...args} htmlEditor={htmlEditor} />
+                    <CardWrapper IndicatorIcon={EmailIndicatorIcon} wrapperStyle='wide' {...displayOptions[display]} {...args}>
+                        <EmailCtaCard {...displayOptions[display]} {...args} htmlEditor={htmlEditor} />
                     </CardWrapper>
                 </div>
             </div>
             <div className="kg-prose dark bg-black px-4 py-8">
                 <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
-                    <CardWrapper IndicatorIcon={EmailIndicatorIcon} wrapperStyle='wide' {...display} {...args}>
-                        <EmailCtaCard {...display} {...args} htmlEditor={htmlEditor} />
+                    <CardWrapper IndicatorIcon={EmailIndicatorIcon} wrapperStyle='wide' {...displayOptions[display]} {...args}>
+                        <EmailCtaCard {...displayOptions[display]} {...args} htmlEditor={htmlEditor} />
                     </CardWrapper>
                 </div>
             </div>
@@ -61,31 +64,27 @@ const Template = ({display, value, ...args}) => {
     );
 };
 
-export const Empty = Template.bind({});
+export const Empty: StoryFn<StoryArgs> = Template.bind({});
 Empty.args = {
     display: 'Editing',
     segment: 'status:free',
     alignment: 'left',
     showDividers: true,
     value: '',
-    placeholder: 'Email only text... (optional)',
     showButton: true,
     buttonText: '',
-    buttonUrl: '',
-    suggestedUrls: []
+    buttonUrl: ''
 };
 
-export const Populated = Template.bind({});
+export const Populated: StoryFn<StoryArgs> = Template.bind({});
 Populated.args = {
     display: 'Editing',
     segment: 'status:free',
     alignment: 'center',
     value: 'Want to get access to premium content?',
-    placeholder: 'Email only text... (optional)',
     showButton: false,
     showDividers: true,
     buttonText: 'Upgrade',
-    buttonUrl: 'https://ghost.org/',
-    suggestedUrls: [{label: 'Homepage', value: 'https://localhost.org/'}]
+    buttonUrl: 'https://ghost.org/'
 };
 

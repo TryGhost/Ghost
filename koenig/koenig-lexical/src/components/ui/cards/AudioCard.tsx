@@ -1,7 +1,6 @@
 import AudioFileIcon from '../../../assets/icons/kg-audio-file.svg?react';
 import DeleteIcon from '../../../assets/icons/kg-trash.svg?react';
 import FilePlaceholderIcon from '../../../assets/icons/kg-file-placeholder.svg?react';
-import PropTypes from 'prop-types';
 import React from 'react';
 import {AudioUploadForm} from '../AudioUploadForm';
 import {IconButton} from '../IconButton';
@@ -13,9 +12,20 @@ import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 import {TextInput} from '../TextInput';
 import {openFileSelection} from '../../../utils/openFileSelection';
 
-function AudioUploading({progress}) {
+interface FileUploader {
+    isLoading?: boolean;
+    progress?: number;
+    errors?: {message: string}[];
+}
+
+interface DragHandler {
+    isDraggedOver?: boolean;
+    setRef?: React.Ref<HTMLDivElement>;
+}
+
+function AudioUploading({progress}: {progress?: number}) {
     const progressStyle = {
-        width: `${progress?.toFixed(0)}%`
+        width: `${(progress ?? 0).toFixed(0)}%`
     };
 
     return (
@@ -29,18 +39,26 @@ function AudioUploading({progress}) {
     );
 }
 
+interface EmptyAudioCardProps {
+    audioUploader: FileUploader;
+    audioMimeTypes?: string[];
+    onFileChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    setFileInputRef: (ref: React.RefObject<HTMLInputElement | null>) => void;
+    audioDragHandler?: DragHandler;
+}
+
 function EmptyAudioCard({
     audioUploader,
     audioMimeTypes,
     onFileChange,
     setFileInputRef,
     audioDragHandler = {}
-}) {
+}: EmptyAudioCardProps) {
     const {isLoading: isUploading, progress, errors} = audioUploader;
-    const fileInputRef = React.useRef(null);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-    const onFileInputRef = (element) => {
-        fileInputRef.current = element;
+    const onFileInputRef = (element: HTMLInputElement | null) => {
+        (fileInputRef as React.MutableRefObject<HTMLInputElement | null>).current = element;
         setFileInputRef(fileInputRef);
     };
 
@@ -63,11 +81,24 @@ function EmptyAudioCard({
                     fileInputRef={onFileInputRef}
                     filePicker={() => openFileSelection({fileInputRef: fileInputRef})}
                     mimeTypes={audioMimeTypes}
-                    onFileChange={onFileChange}
+                    onFileChange={onFileChange!}
                 />
             </>
         );
     }
+}
+
+interface AudioThumbnailProps {
+    mimeTypes?: string[];
+    src?: string;
+    progress?: number;
+    isUploading?: boolean;
+    isEditing?: boolean;
+    setFileInputRef: (ref: React.RefObject<HTMLInputElement | null>) => void;
+    onFileChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    removeThumbnail?: () => void;
+    isDraggedOver?: boolean;
+    errors?: {message: string}[];
 }
 
 function AudioThumbnail({
@@ -81,16 +112,16 @@ function AudioThumbnail({
     removeThumbnail,
     isDraggedOver,
     errors
-}) {
-    const fileInputRef = React.useRef(null);
+}: AudioThumbnailProps) {
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-    const onFileInputRef = (element) => {
-        fileInputRef.current = element;
+    const onFileInputRef = (element: HTMLInputElement | null) => {
+        (fileInputRef as React.MutableRefObject<HTMLInputElement | null>).current = element;
         setFileInputRef(fileInputRef);
     };
 
     const progressStyle = {
-        width: `${progress?.toFixed(0)}%`
+        width: `${(progress ?? 0).toFixed(0)}%`
     };
 
     if (isDraggedOver) {
@@ -143,11 +174,26 @@ function AudioThumbnail({
                     fileInputRef={onFileInputRef}
                     filePicker={() => openFileSelection({fileInputRef: fileInputRef})}
                     mimeTypes={mimeTypes}
-                    onFileChange={onFileChange}
+                    onFileChange={onFileChange!}
                 />
             </div>
         );
     }
+}
+
+interface PopulatedAudioCardProps {
+    isEditing?: boolean;
+    title?: string;
+    placeholder?: string;
+    thumbnailUploader: FileUploader;
+    thumbnailMimeTypes?: string[];
+    duration?: number;
+    updateTitle?: (value: string) => void;
+    thumbnailSrc?: string;
+    setFileInputRef: (ref: React.RefObject<HTMLInputElement | null>) => void;
+    onFileChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    removeThumbnail?: () => void;
+    thumbnailDragHandler?: DragHandler;
 }
 
 function PopulatedAudioCard({
@@ -163,9 +209,9 @@ function PopulatedAudioCard({
     onFileChange,
     removeThumbnail,
     thumbnailDragHandler = {}
-}) {
+}: PopulatedAudioCardProps) {
     const {isLoading: isUploading, progress, errors} = thumbnailUploader;
-    const formatDuration = (rawDuration) => {
+    const formatDuration = (rawDuration: number) => {
         const minutes = Math.floor(rawDuration / 60);
         const seconds = Math.floor(rawDuration - (minutes * 60));
         const returnedSeconds = seconds < 10 ? `0${seconds}` : `${seconds}`;
@@ -173,14 +219,14 @@ function PopulatedAudioCard({
         return formattedDuration;
     };
 
-    const handleChange = (event) => {
-        updateTitle(event.target.value);
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        updateTitle?.(event.target.value);
     };
 
     return (
         <>
             <div
-                ref={thumbnailDragHandler.setRef}
+                ref={thumbnailDragHandler.setRef as React.Ref<HTMLDivElement>}
                 className="flex rounded-md border border-grey/30 p-2"
                 data-testid="audio-card-populated"
             >
@@ -208,12 +254,32 @@ function PopulatedAudioCard({
                             onChange={handleChange}
                         />
                     )}
-                    <MediaPlayer duration={formatDuration(duration)} theme='dark' />
+                    <MediaPlayer duration={formatDuration(duration || 0)} theme='dark' />
                 </div>
             </div>
             {!isEditing && <ReadOnlyOverlay />}
         </>
     );
+}
+
+interface AudioCardProps {
+    src?: string;
+    thumbnailSrc?: string;
+    title?: string;
+    isEditing?: boolean;
+    updateTitle?: (value: string) => void;
+    duration?: number;
+    audioUploader: FileUploader;
+    audioMimeTypes?: string[];
+    thumbnailUploader: FileUploader;
+    thumbnailMimeTypes?: string[];
+    audioFileInputRef?: React.MutableRefObject<HTMLInputElement | null>;
+    thumbnailFileInputRef?: React.MutableRefObject<HTMLInputElement | null>;
+    onAudioFileChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onThumbnailFileChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    audioDragHandler?: DragHandler;
+    removeThumbnail?: () => void;
+    thumbnailDragHandler?: DragHandler;
 }
 
 export function AudioCard({
@@ -234,14 +300,14 @@ export function AudioCard({
     audioDragHandler,
     removeThumbnail,
     thumbnailDragHandler
-}) {
-    const setAudioFileInputRef = (ref) => {
+}: AudioCardProps) {
+    const setAudioFileInputRef = (ref: React.RefObject<HTMLInputElement | null>) => {
         if (audioFileInputRef) {
             audioFileInputRef.current = ref.current;
         }
     };
 
-    const setThumbnailFileInputRef = (ref) => {
+    const setThumbnailFileInputRef = (ref: React.RefObject<HTMLInputElement | null>) => {
         if (thumbnailFileInputRef) {
             thumbnailFileInputRef.current = ref.current;
         }
@@ -256,7 +322,6 @@ export function AudioCard({
                     placeholder='Add a title...'
                     removeThumbnail={removeThumbnail}
                     setFileInputRef={setThumbnailFileInputRef}
-                    setTitle={updateTitle}
                     thumbnailDragHandler={thumbnailDragHandler}
                     thumbnailMimeTypes={thumbnailMimeTypes}
                     thumbnailSrc={thumbnailSrc}
@@ -281,64 +346,3 @@ export function AudioCard({
         );
     }
 }
-
-AudioCard.propTypes = {
-    src: PropTypes.string,
-    title: PropTypes.string,
-    isEditing: PropTypes.bool,
-    updateTitle: PropTypes.func,
-    duration: PropTypes.number,
-    thumbnailSrc: PropTypes.string,
-    audioUploader: PropTypes.object,
-    audioMimeTypes: PropTypes.array,
-    thumbnailUploader: PropTypes.object,
-    thumbnailMimeTypes: PropTypes.array,
-    audioFileInputRef: PropTypes.object,
-    thumbnailFileInputRef: PropTypes.object,
-    onAudioFileChange: PropTypes.func,
-    onThumbnailFileChange: PropTypes.func,
-    audioDragHandler: PropTypes.object,
-    removeThumbnail: PropTypes.func,
-    thumbnailDragHandler: PropTypes.object
-};
-
-AudioUploading.propTypes = {
-    progress: PropTypes.number
-};
-
-AudioThumbnail.propTypes = {
-    errors: PropTypes.array,
-    isDraggedOver: PropTypes.bool,
-    isEditing: PropTypes.bool,
-    isUploading: PropTypes.bool,
-    mimeTypes: PropTypes.array,
-    progress: PropTypes.number,
-    removeThumbnail: PropTypes.func,
-    setFileInputRef: PropTypes.func,
-    src: PropTypes.string,
-    onFileChange: PropTypes.func
-};
-
-PopulatedAudioCard.propTypes = {
-    duration: PropTypes.number,
-    errors: PropTypes.array,
-    isEditing: PropTypes.bool,
-    placeholder: PropTypes.string,
-    removeThumbnail: PropTypes.func,
-    setFileInputRef: PropTypes.func,
-    thumbnailDragHandler: PropTypes.object,
-    thumbnailMimeTypes: PropTypes.array,
-    thumbnailSrc: PropTypes.string,
-    thumbnailUploader: PropTypes.object,
-    title: PropTypes.string,
-    updateTitle: PropTypes.func,
-    onFileChange: PropTypes.func
-};
-
-EmptyAudioCard.propTypes = {
-    audioDragHandler: PropTypes.object,
-    audioMimeTypes: PropTypes.array,
-    audioUploader: PropTypes.object,
-    setFileInputRef: PropTypes.func,
-    onFileChange: PropTypes.func
-};

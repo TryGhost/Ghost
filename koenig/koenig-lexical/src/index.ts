@@ -1,3 +1,5 @@
+declare const __APP_VERSION__: string | undefined;
+
 /* Components */
 import DesignSandbox from './components/DesignSandbox';
 import EmailEditor, {EMAIL_EDITOR_CARD_CONFIG, getEmailEditorCardConfig} from './components/EmailEditor';
@@ -140,5 +142,5 @@ export {
     getEmailEditorCardConfig
 };
 
-// eslint-disable-next-line no-undef
+
 export const version = __APP_VERSION__ ? __APP_VERSION__ : 'development';

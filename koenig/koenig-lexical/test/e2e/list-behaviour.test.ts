@@ -1,8 +1,9 @@
 import {assertHTML, assertSelection, focusEditor, html, initialize} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 test.describe('List behaviour', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -272,7 +273,7 @@ test.describe('List behaviour', async () => {
             await page.keyboard.press('Shift+Tab');
 
             const title = page.getByTestId('post-title');
-            let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+            const titleHasFocus = await title.evaluate(node => document.activeElement === node);
             expect(titleHasFocus).toEqual(true);
         });
     });

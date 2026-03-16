@@ -1,8 +1,9 @@
 import {assertHTML, focusEditor, html, initialize, pasteHtml, pasteLexical, pasteText, selectBackwards} from '../../utils/e2e';
 import {test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 test.describe('Restrict Content Plugin', async function () {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();

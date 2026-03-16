@@ -1,5 +1,20 @@
-import PropTypes from 'prop-types';
 import clsx from 'clsx';
+
+export interface ButtonProps {
+    color?: 'white' | 'grey' | 'black' | 'accent';
+    dataTestId?: string;
+    href?: string;
+    size?: 'small' | 'medium' | 'large';
+    width?: 'regular' | 'full';
+    rounded?: boolean;
+    shrink?: boolean;
+    value?: string;
+    placeholder?: string;
+    type?: 'button' | 'submit' | 'reset';
+    disabled?: boolean;
+    target?: string;
+    [key: string]: unknown;
+}
 
 export function Button({
     color = 'accent',
@@ -15,9 +30,9 @@ export function Button({
     disabled = false,
     target,
     ...other
-}) {
+}: ButtonProps) {
     const Tag = href ? 'a' : 'button';
-    const props = {
+    const props: Record<string, unknown> = {
         type: href ? null : type,
         href: href || null,
         rel: target === '_blank' ? 'noopener noreferrer' : null,
@@ -56,15 +71,3 @@ export function Button({
         </Tag>
     );
 }
-
-Button.propTypes = {
-    color: PropTypes.oneOf(['white', 'grey', 'black', 'accent']),
-    size: PropTypes.oneOf(['small', 'medium', 'large']),
-    width: PropTypes.oneOf(['regular', 'full']),
-    rounded: PropTypes.bool,
-    value: PropTypes.string,
-    placeholder: PropTypes.string,
-    href: PropTypes.string,
-    target: PropTypes.string,
-    disabled: PropTypes.bool
-};

@@ -4,12 +4,13 @@ import {assertHTML, createDataTransfer, focusEditor, getEditorStateJSON, html, i
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 import {selectCustomColor, selectNamedColor, selectTitledColor} from '../../utils/color-select-helper';
+import type {Page} from '@playwright/test';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 test.describe('Call To Action Card', async () => {
-    let page;
-    let serializedTestCard;
+    let page: Page;
+    let serializedTestCard: Record<string, unknown>;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -152,7 +153,7 @@ test.describe('Call To Action Card', async () => {
         await insertCard(page, {cardName: 'call-to-action'});
         await page.fill('[data-testid="button-url"]', 'https://example.com/somepost');
         const buttonContainer = await page.$('[data-test-cta-button-current-url]');
-        const currentUrl = await buttonContainer.getAttribute('data-test-cta-button-current-url');
+        const currentUrl = await buttonContainer!.getAttribute('data-test-cta-button-current-url');
         expect(currentUrl).toBe('https://example.com/somepost');
     });
 
@@ -170,7 +171,7 @@ test.describe('Call To Action Card', async () => {
         await expect(await page.getByTestId('button-url-listOption')).toContainText('Homepage');
         await page.getByTestId('button-url-listOption').click();
         const buttonContainer = await page.$('[data-test-cta-button-current-url]');
-        const currentUrl = await buttonContainer.getAttribute('data-test-cta-button-current-url');
+        const currentUrl = await buttonContainer!.getAttribute('data-test-cta-button-current-url');
         // current view can be any url, so check for a valid url
         const validUrlRegex = /^(https?:\/\/)([\w.-]+)(:[0-9]+)?(\/[\w.-]*)*(\?.*)?(#.*)?$/;
         // Assert the URL is valid
@@ -185,7 +186,7 @@ test.describe('Call To Action Card', async () => {
         expect(await page.isVisible('[data-testid="cta-button"]')).toBe(true);
         expect(await page.textContent('[data-testid="cta-button"]')).toBe('Click me');
         const buttonContainer = await page.$('[data-test-cta-button-current-url]');
-        const currentUrl = await buttonContainer.getAttribute('data-test-cta-button-current-url');
+        const currentUrl = await buttonContainer!.getAttribute('data-test-cta-button-current-url');
         expect(currentUrl).toBe('https://example.com/somepost');
 
         // lose focus and editing mode
@@ -433,8 +434,8 @@ test.describe('Call To Action Card', async () => {
         for (const color of colors) {
             const colorOptionsButton = page.locator('[data-testid="cta-background-color-picker"] [data-testid="color-options-button"]');
             await colorOptionsButton.click();
-            await selectNamedColor(page, color, null);
-            const className = CALLTOACTION_COLORS[color];
+            await selectNamedColor(page, color, undefined);
+            const className = (CALLTOACTION_COLORS as Record<string, string>)[color];
             await expect(page.locator(firstChildSelector)).toHaveClass(new RegExp(className));
         }
     });
@@ -492,7 +493,7 @@ test.describe('Call To Action Card', async () => {
 
         const colorOptionsButton = page.locator('[data-testid="cta-button-color"] [data-testid="color-selector-button"]');
         await colorOptionsButton.click();
-        await selectTitledColor(page, 'Black', null);
+        await selectTitledColor(page, 'Black', undefined);
         // await cardBackgroundColorSettings(page, {cardColorPickerTestId: 'cta-button-color', findByColorTitle: 'Black'});
 
         expect(await page.getAttribute('[data-testid="cta-button"]', 'style')).toContain('background-color: rgb(0, 0, 0);');
@@ -505,7 +506,7 @@ test.describe('Call To Action Card', async () => {
         await page.getByTestId('tab-design').click();
         const colorOptionsButton = page.locator('[data-testid="cta-button-color"] [data-testid="color-selector-button"]');
         await colorOptionsButton.click();
-        await selectTitledColor(page, 'Grey', null);
+        await selectTitledColor(page, 'Grey', undefined);
         expect(await page.getAttribute('[data-testid="cta-button"]', 'style')).toContain('background-color: rgb(240, 240, 240);');
     });
 
@@ -516,7 +517,7 @@ test.describe('Call To Action Card', async () => {
         const colorOptionsButton = page.locator('[data-testid="cta-button-color"] [data-testid="color-selector-button"]');
         await colorOptionsButton.click();
         await page.locator('[data-testid="color-picker-toggle"]').click();
-        await selectCustomColor(page, 'ff0000', null);
+        await selectCustomColor(page, 'ff0000', undefined);
         // await cardBackgroundColorSettings(page, {cardColorPickerTestId: 'cta-button-color', customColor: 'ff0000'});
         expect(await page.getAttribute('[data-testid="cta-button"]', 'style')).toContain('background-color: rgb(255, 0, 0);');
     });
@@ -530,13 +531,13 @@ test.describe('Call To Action Card', async () => {
         await page.getByTestId('tab-design').click();
         const colorOptionsButton = page.locator('[data-testid="cta-button-color"] [data-testid="color-selector-button"]');
         // await colorOptionsButton.click();
-        // await selectTitledColor(page, 'Grey', null);
+        // await selectTitledColor(page, 'Grey', undefined);
         // await cardBackgroundColorSettings(page, {cardColorPickerTestId: 'cta-button-color', customColor: 'FFFFFF'});
         expect(await page.getAttribute('[data-testid="cta-button"]', 'style')).toContain('color: rgb(255, 255, 255);');
 
         // change button color to black
         await colorOptionsButton.click();
-        await selectTitledColor(page, 'Black', null);
+        await selectTitledColor(page, 'Black', undefined);
         expect(await page.getAttribute('[data-testid="cta-button"]', 'style')).toContain('color: rgb(0, 0, 0);');
     });
 

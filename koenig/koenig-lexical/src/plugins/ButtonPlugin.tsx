@@ -16,7 +16,7 @@ export const ButtonPlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_BUTTON_COMMAND,
-                async (dataset) => {
+                (dataset) => {
                     const cardNode = $createButtonNode(dataset);
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode, openInEditMode: true});
 

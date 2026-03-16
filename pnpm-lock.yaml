@@ -3745,6 +3745,12 @@ importers:
       '@tryghost/kg-unsplash-selector':
         specifier: workspace:~
         version: link:../kg-unsplash-selector
+      '@types/jsdom':
+        specifier: 28.0.3
+        version: 28.0.3
+      '@types/lodash':
+        specifier: 4.17.24
+        version: 4.17.24
       '@types/react':
         specifier: 'catalog:'
         version: 18.3.31
@@ -3793,6 +3799,9 @@ importers:
       eslint-plugin-react-hooks:
         specifier: 'catalog:'
         version: 5.2.0(eslint@9.39.4(jiti@2.7.0))
+      eslint-plugin-react-refresh:
+        specifier: 'catalog:'
+        version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-storybook:
         specifier: 10.4.6
         version: 10.4.6(eslint@9.39.4(jiti@2.7.0))(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@18.3.31)(prettier@3.9.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)

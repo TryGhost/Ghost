@@ -1,6 +1,7 @@
 import {Input} from './Input';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
-const story = {
+const story: Meta<typeof Input> = {
     title: 'Generic/Input',
     component: Input,
     parameters: {
@@ -11,10 +12,10 @@ const story = {
 };
 export default story;
 
-const Template = args => (
+const Template: StoryFn<typeof Input> = args => (
     <div className="w-[240px]">
         <Input {...args} />
     </div>
 );
 
-export const Default = Template.bind({});
+export const Default: StoryFn<typeof Input> = Template.bind({});

@@ -1,26 +1,56 @@
 import KoenigNestedEditor from '../../../../KoenigNestedEditor';
-import PropTypes from 'prop-types';
+import React from 'react';
 import clsx from 'clsx';
 import {BackgroundImagePicker} from '../../../BackgroundImagePicker';
 import {Button} from '../../../Button';
 import {ButtonGroupSetting, ColorOptionSetting, InputSetting, InputUrlSetting, SettingsPanel, ToggleSetting} from '../../../SettingsPanel';
 import {ReadOnlyOverlay} from '../../../ReadOnlyOverlay';
 import {isEditorEmpty} from '../../../../../utils/isEditorEmpty';
+import type {LexicalEditor} from 'lexical';
 
-export const HEADER_COLORS = {
+export const HEADER_COLORS: Record<string, string> = {
     dark: 'bg-black',
     light: 'bg-grey-100',
     accent: 'bg-accent',
     image: 'bg-grey-300 dark:bg-grey-950 bg-gradient-to-t from-black/0 via-black/5 to-black/30'
 };
 
-export const HEADER_TEXT_COLORS = {
+export const HEADER_TEXT_COLORS: Record<string, string> = {
     dark: 'text-white caret-white',
     light: 'text-black caret-black',
     // kg-header-accent fixes the link color
     accent: 'text-white caret-white kg-header-accent',
     image: 'text-white caret-white'
 };
+
+type HeaderSize = 'small' | 'medium' | 'large';
+type HeaderType = 'dark' | 'light' | 'accent' | 'image';
+
+interface HeaderCardV1Props {
+    isEditing?: boolean;
+    size: HeaderSize;
+    subheader?: string;
+    button?: boolean;
+    buttonText?: string;
+    buttonUrl?: string;
+    handleColorSelector: (name: string) => void;
+    handleSizeSelector: (name: string) => void;
+    handleButtonText?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleButtonUrl?: (value: string) => void;
+    backgroundImageSrc?: string;
+    onFileChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleClearBackgroundImage?: () => void;
+    fileInputRef?: React.Ref<HTMLInputElement>;
+    openFilePicker?: () => void;
+    type: HeaderType;
+    header?: string;
+    headerTextEditor: LexicalEditor;
+    subheaderTextEditor: LexicalEditor;
+    fileUploader?: {isLoading?: boolean; progress?: number};
+    headerTextEditorInitialState?: string;
+    subheaderTextEditorInitialState?: string;
+    handleButtonToggle?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}
 
 // Header Card version 1
 export function HeaderCard({isEditing,
@@ -45,7 +75,7 @@ export function HeaderCard({isEditing,
     fileUploader,
     headerTextEditorInitialState,
     subheaderTextEditorInitialState,
-    handleButtonToggle}) {
+    handleButtonToggle}: HeaderCardV1Props) {
     const buttonGroupChildren = [
         {
             label: 'S',
@@ -91,13 +121,14 @@ export function HeaderCard({isEditing,
 
     return (
         <>
-            <div className={`flex flex-col items-center justify-center text-center font-sans transition-colors ease-in-out ${(size === 'small') ? 'min-h-[40vh] p-[14vmin]' : (size === 'medium') ? 'min-h-[60vh] p-[12vmin]' : 'min-h-[80vh] p-[18vmin]'} ${HEADER_COLORS[type]} `}
+            <div className={`flex flex-col items-center justify-center text-center font-sans transition-colors ease-in-out ${(size === 'small') ? 'min-h-[40vh] p-[14vmin]' : (size === 'medium') ? 'min-h-[60vh] p-[12vmin]' : 'min-h-[80vh] p-[18vmin]'} ${HEADER_COLORS[type || 'dark']} `}
                 style={backgroundImageSrc && type === 'image' ? {
                     backgroundImage: `url(${backgroundImageSrc})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center center',
                     backgroundColor: 'bg-grey-950'
-                } : null}>
+                } : undefined}
+            >
 
                 {/* Heading */}
                 {
@@ -113,7 +144,7 @@ export function HeaderCard({isEditing,
                                 '!text-center !font-bold !leading-[1.1] !tracking-tight opacity-50',
                                 (size === 'small') && 'text-3xl sm:text-4xl md:text-5xl',
                                 (size === 'medium' || size === 'large') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl',
-                                (HEADER_TEXT_COLORS[type])
+                                (HEADER_TEXT_COLORS[type || 'dark'])
                             )}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
@@ -121,7 +152,7 @@ export function HeaderCard({isEditing,
                                 'koenig-lexical-heading relative w-full whitespace-normal text-center font-bold [&:has(.placeholder)]:w-fit [&:has(.placeholder)]:text-left',
                                 (size === 'small') && 'heading-medium',
                                 ((size === 'medium') || (size === 'large')) && 'heading-large',
-                                (HEADER_TEXT_COLORS[type])
+                                (HEADER_TEXT_COLORS[type || 'dark'])
                             )}
                         />
                     )
@@ -140,7 +171,7 @@ export function HeaderCard({isEditing,
                                 (size === 'small') && 'text-lg sm:text-xl',
                                 (size === 'medium') && 'text-lg sm:text-xl md:text-[2.2rem]',
                                 (size === 'large') && 'text-lg sm:text-xl md:text-[2.2rem] lg:text-2xl',
-                                (HEADER_TEXT_COLORS[type])
+                                (HEADER_TEXT_COLORS[type || 'dark'])
                             )}
                             placeholderText={subheaderPlaceholder}
                             singleParagraph={true}
@@ -149,7 +180,7 @@ export function HeaderCard({isEditing,
                                 (size === 'small') && 'subheading-small !mt-2',
                                 (size === 'medium') && 'subheading-medium !mt-3',
                                 (size === 'large') && 'subheading-large !mt-3',
-                                (HEADER_TEXT_COLORS[type])
+                                (HEADER_TEXT_COLORS[type || 'dark'])
                             )}
                         />
                     )
@@ -168,7 +199,7 @@ export function HeaderCard({isEditing,
             </div>
 
             {isEditing && (
-                <SettingsPanel className="mt-0">
+                <SettingsPanel>
                     <ButtonGroupSetting
                         buttons={buttonGroupChildren}
                         label='Size'
@@ -211,8 +242,8 @@ export function HeaderCard({isEditing,
                             <InputUrlSetting
                                 dataTestId='header-button-url'
                                 label='Button URL'
-                                value={buttonUrl}
-                                onChange={handleButtonUrl}
+                                value={buttonUrl || ''}
+                                onChange={handleButtonUrl!}
                             />
                         </>
                     ) : null}
@@ -221,32 +252,3 @@ export function HeaderCard({isEditing,
         </>
     );
 }
-
-HeaderCard.propTypes = {
-    size: PropTypes.oneOf(['small', 'medium', 'large']),
-    type: PropTypes.oneOf(['dark', 'light', 'accent', 'image']),
-    heading: PropTypes.string,
-    subheader: PropTypes.string,
-    button: PropTypes.bool,
-    buttonText: PropTypes.string,
-    buttonUrl: PropTypes.string,
-    backgroundImageSrc: PropTypes.string,
-    isEditing: PropTypes.bool,
-    isUploading: PropTypes.bool,
-    progress: PropTypes.number,
-    fileUploader: PropTypes.object,
-    header: PropTypes.string,
-    fileInputRef: PropTypes.object,
-    handleSizeSelector: PropTypes.func,
-    handleColorSelector: PropTypes.func,
-    handleButtonToggle: PropTypes.func,
-    handleButtonText: PropTypes.func,
-    handleButtonUrl: PropTypes.func,
-    handleClearBackgroundImage: PropTypes.func,
-    openFilePicker: PropTypes.func,
-    onFileChange: PropTypes.func,
-    headerTextEditor: PropTypes.object,
-    headerTextEditorInitialState: PropTypes.object,
-    subheaderTextEditor: PropTypes.object,
-    subheaderTextEditorInitialState: PropTypes.object
-};

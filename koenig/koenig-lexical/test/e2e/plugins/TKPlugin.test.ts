@@ -1,8 +1,9 @@
 import {assertHTML, assertSelection, focusEditor, html, initialize} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 test.describe('TK Plugin', async function () {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -119,13 +120,13 @@ test.describe('TK Plugin', async function () {
             await focusEditor(page);
             await page.keyboard.type('TK and TK and TK');
 
-            await page.evaluate(() => window.getSelection().toString()).then((selection) => {
+            await page.evaluate(() => window.getSelection()!.toString()).then((selection) => {
                 expect(selection).toEqual('');
             });
 
             await page.getByTestId('tk-indicator').click();
 
-            await page.evaluate(() => window.getSelection().toString()).then((selection) => {
+            await page.evaluate(() => window.getSelection()!.toString()).then((selection) => {
                 expect(selection).toEqual('TK');
             });
         });

@@ -1,12 +1,31 @@
 import CenterAlignIcon from '../../../assets/icons/kg-align-center.svg?react';
 import KoenigNestedEditor from '../../KoenigNestedEditor';
 import LeftAlignIcon from '../../../assets/icons/kg-align-left.svg?react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin';
 import {Button} from '../Button';
 import {ButtonGroupSetting, DropdownSetting, InputSetting, InputUrlSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
-import {CardVisibilityMessage} from '../CardVisibilityMessage.jsx';
+import {CardVisibilityMessage} from '../CardVisibilityMessage';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
+import type {LexicalEditor} from 'lexical';
+
+interface EmailCtaCardProps {
+    alignment?: 'left' | 'center';
+    buttonText?: string;
+    buttonUrl?: string;
+    handleSegmentChange?: (value: string) => void;
+    htmlEditor?: LexicalEditor;
+    htmlEditorInitialState?: string;
+    isEditing?: boolean;
+    segment?: 'status:free' | 'status:-free';
+    showDividers?: boolean;
+    showButton?: boolean;
+    toggleDividers?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    updateAlignment?: (name: string) => void;
+    updateShowButton?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    updateButtonText?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    updateButtonUrl?: (value: string) => void;
+}
 
 export function EmailCtaCard({
     alignment = 'left',
@@ -24,7 +43,7 @@ export function EmailCtaCard({
     updateShowButton,
     updateButtonText,
     updateButtonUrl
-}) {
+}: EmailCtaCardProps) {
     const alignmentOpts = [
         {
             label: 'Left',
@@ -48,7 +67,7 @@ export function EmailCtaCard({
         name: 'status:-free'
     }];
 
-    const getVisibilityMessage = (segmentType) => {
+    const getVisibilityMessage = (segmentType: string) => {
         switch (segmentType) {
         case 'status:free':
             return 'Hidden on website and paid newsletter';
@@ -74,7 +93,7 @@ export function EmailCtaCard({
                 <KoenigNestedEditor
                     autoFocus={true}
                     hasSettingsPanel={true}
-                    initialEditor={htmlEditor}
+                    initialEditor={htmlEditor!}
                     initialEditorState={htmlEditorInitialState}
                     nodes='basic'
                     placeholderClassName={`bg-transparent whitespace-normal font-serif text-xl !text-grey-500 !dark:text-grey-800 ` }
@@ -106,7 +125,7 @@ export function EmailCtaCard({
                         label='Visibility'
                         menu={dropdownOptions}
                         value={segment}
-                        onChange={handleSegmentChange}
+                        onChange={handleSegmentChange!}
                     />
 
                     {/* Alignment settings */}
@@ -114,7 +133,7 @@ export function EmailCtaCard({
                         buttons={alignmentOpts}
                         label='Content alignment'
                         selectedName={alignment}
-                        onClick={updateAlignment}
+                        onClick={updateAlignment!}
                     />
 
                     {/* Dividers settings */}
@@ -145,7 +164,7 @@ export function EmailCtaCard({
                                 dataTestId="button-url"
                                 label='Button URL'
                                 value={buttonUrl}
-                                onChange={updateButtonUrl}
+                                onChange={updateButtonUrl!}
                             />
                         </>
                     )}
@@ -154,22 +173,3 @@ export function EmailCtaCard({
         </>
     );
 }
-
-EmailCtaCard.propTypes = {
-    alignment: PropTypes.oneOf(['left', 'center']),
-    buttonText: PropTypes.string,
-    buttonUrl: PropTypes.string,
-    isEditing: PropTypes.bool,
-    segment: PropTypes.oneOf(['status:free', 'status:-free']),
-    showButton: PropTypes.bool,
-    showDividers: PropTypes.bool,
-    updateAlignment: PropTypes.func,
-    updateButtonText: PropTypes.func,
-    updateButtonUrl: PropTypes.func,
-    updateShowButton: PropTypes.func,
-    toggleDividers: PropTypes.func,
-    suggestedUrls: PropTypes.array,
-    handleSegmentChange: PropTypes.func,
-    htmlEditor: PropTypes.object,
-    htmlEditorInitialState: PropTypes.object
-};

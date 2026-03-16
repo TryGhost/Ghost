@@ -1,7 +1,8 @@
 import {Modal} from './Modal';
 import {useState} from 'react';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
-const story = {
+const story: Meta<typeof Modal> = {
     title: 'Generic/Modal',
     component: Modal,
     parameters: {
@@ -12,7 +13,7 @@ const story = {
 };
 export default story;
 
-const Template = (args) => {
+const Template: StoryFn<typeof Modal> = (_args) => {
     const [isOpen, setOpen] = useState(false);
 
     const openModal = () => setOpen(true);
@@ -33,4 +34,4 @@ const Template = (args) => {
     );
 };
 
-export const Default = Template.bind({});
+export const Default: StoryFn<typeof Modal> = Template.bind({});

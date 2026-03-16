@@ -14,7 +14,7 @@ export const ImagePlugin = () => {
 
     const imageUploader = fileUploader.useFileUpload('image');
 
-    const handleImageUpload = React.useCallback(async (files, imageNodeKey) => {
+    const handleImageUpload = React.useCallback(async (files: FileList | File[], imageNodeKey: string) => {
         if (files?.length > 0) {
             return await imageUploadHandler(files, imageNodeKey, editor, imageUploader.upload);
         }
@@ -28,7 +28,7 @@ export const ImagePlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_IMAGE_COMMAND,
-                async (dataset) => {
+                (dataset) => {
                     const cardNode = $createImageNode(dataset);
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode});
 
@@ -38,7 +38,7 @@ export const ImagePlugin = () => {
             ),
             editor.registerCommand(
                 INSERT_MEDIA_COMMAND,
-                async (dataset) => {
+                (dataset) => {
                     if (dataset.type === 'image') {
                         editor.dispatchCommand(INSERT_IMAGE_COMMAND, {initialFile: dataset.file});
                         return true;

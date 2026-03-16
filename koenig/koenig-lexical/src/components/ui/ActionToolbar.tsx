@@ -1,6 +1,12 @@
 import {useKoenigSelectedCardContext} from '../../context/KoenigSelectedCardContext';
 
-export function ActionToolbar({isVisible, children, ...props}) {
+interface ActionToolbarProps {
+    isVisible?: boolean;
+    children?: React.ReactNode;
+    [key: string]: unknown;
+}
+
+export function ActionToolbar({isVisible, children, ...props}: ActionToolbarProps) {
     const {isDragging} = useKoenigSelectedCardContext();
 
     if (isVisible && !isDragging) {

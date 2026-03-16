@@ -4,6 +4,19 @@ import {$getSelection} from 'lexical';
 import {$getSelectionRangeRect} from '../../utils/$getSelectionRangeRect';
 import {getScrollParent} from '../../utils/getScrollParent';
 import {setFloatingElemPosition} from '../../utils/setFloatingElemPosition';
+import type {LexicalEditor} from 'lexical';
+
+interface FloatingToolbarProps {
+    anchorElem?: HTMLElement;
+    children?: React.ReactNode;
+    editor: LexicalEditor;
+    isVisible?: boolean;
+    toolbarRef: React.RefObject<HTMLDivElement | null>;
+    targetElem?: HTMLElement | null;
+    onReposition?: () => void;
+    shouldReposition?: boolean;
+    controlOpacity?: boolean;
+}
 
 export default function FloatingToolbar({
     anchorElem,
@@ -15,7 +28,7 @@ export default function FloatingToolbar({
     onReposition,
     shouldReposition = true,
     controlOpacity
-}) {
+}: FloatingToolbarProps) {
     const updateToolbarPosition = React.useCallback((reposition = true) => {
         editor.update(() => {
             const toolbarElement = toolbarRef?.current;
@@ -43,7 +56,7 @@ export default function FloatingToolbar({
                 return;
             }
 
-            setFloatingElemPosition(rangeRect, toolbarElement, anchorElem, {controlOpacity});
+            setFloatingElemPosition(rangeRect, toolbarElement, anchorElem!, {controlOpacity});
         });
     }, [anchorElem, controlOpacity, editor, targetElem, toolbarRef]);
 
@@ -58,17 +71,20 @@ export default function FloatingToolbar({
     }, [isVisible, onReposition, shouldReposition, updateToolbarPosition]);
 
     React.useEffect(() => {
-        const scrollElement = getScrollParent(anchorElem);
+        const scrollElement = getScrollParent(anchorElem ?? null);
 
-        window.addEventListener('resize', updateToolbarPosition);
+        const handleResize = () => updateToolbarPosition();
+        const handleScroll = () => updateToolbarPosition();
+
+        window.addEventListener('resize', handleResize);
         if (scrollElement) {
-            scrollElement.addEventListener('scroll', updateToolbarPosition);
+            scrollElement.addEventListener('scroll', handleScroll);
         }
 
         return () => {
-            window.removeEventListener('resize', updateToolbarPosition);
+            window.removeEventListener('resize', handleResize);
             if (scrollElement) {
-                scrollElement.removeEventListener('scroll', updateToolbarPosition);
+                scrollElement.removeEventListener('scroll', handleScroll);
             }
         };
     }, [anchorElem, updateToolbarPosition]);
@@ -79,7 +95,7 @@ export default function FloatingToolbar({
 
     return (
         <Portal>
-            <div ref={toolbarRef} className="not-kg-prose fixed z-[10000]" style={{opacity: 0, transition: 'opacity 100ms ease'}} data-kg-floating-toolbar>
+            <div ref={toolbarRef as React.RefObject<HTMLDivElement>} className="not-kg-prose fixed z-[10000]" style={{opacity: 0, transition: 'opacity 100ms ease'}} data-kg-floating-toolbar>
                 {children}
             </div>
         </Portal>

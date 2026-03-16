@@ -2,9 +2,10 @@ import generateEditorState, {_$generateNodesFromHTML} from '../../../src/utils/g
 import {DEFAULT_NODES} from '../../../src';
 import {createEditor} from 'lexical';
 import {describe, expect, test} from 'vitest';
+import type {CreateEditorArgs, ElementNode, LexicalNode} from 'lexical';
 
 describe('Utils: generateEditorState', () => {
-    function runGenerateEditorState(html, {nodes = DEFAULT_NODES} = {}) {
+    function runGenerateEditorState(html: string, {nodes = DEFAULT_NODES as unknown as CreateEditorArgs['nodes']} = {}) {
         const editor = createEditor({
             // lexical swallows errors inside updates by default,
             // so we need to throw them to fail the test
@@ -115,7 +116,7 @@ describe('Utils: generateEditorState', () => {
         const editorState = runGenerateEditorState(html);
 
         expect(editorState.root.children).toHaveLength(1);
-        expect(editorState.root.children[0].children).toHaveLength(2);
+        expect((editorState.root.children[0] as unknown as {children: unknown[]}).children).toHaveLength(2);
         expect(editorState.root.children[0]).toMatchObject({
             type: 'list',
             children: [
@@ -126,7 +127,7 @@ describe('Utils: generateEditorState', () => {
     });
 
     describe('_$generateNodesFromHTML', () => {
-        function testGenerateNodesFromHTML(html, callback) {
+        function testGenerateNodesFromHTML(html: string, callback: (nodes: LexicalNode[]) => void) {
             const editor = createEditor({
                 // lexical swallows errors inside updates by default,
                 // so we need to throw them to fail the test
@@ -152,18 +153,18 @@ describe('Utils: generateEditorState', () => {
         test('handles single span inside paragraph', function () {
             const html = '<p><span>Test</span></p>';
             testGenerateNodesFromHTML(html, (nodes) => {
-                expect(nodes[0].getChildren().length).toEqual(1);
-                expect(nodes[0].getChildren()[0].getType()).toEqual('text');
+                expect((nodes[0] as ElementNode).getChildren().length).toEqual(1);
+                expect((nodes[0] as ElementNode).getChildren()[0].getType()).toEqual('text');
             });
         });
 
         test('handles multiple spans inside paragraph', function () {
             const html = '<p><span>Test</span> <span>Test2</span></p>';
             testGenerateNodesFromHTML(html, (nodes) => {
-                expect(nodes[0].getChildren().length).toEqual(3);
-                expect(nodes[0].getChildren()[0].getTextContent()).toEqual('Test');
-                expect(nodes[0].getChildren()[1].getTextContent()).toEqual(' ');
-                expect(nodes[0].getChildren()[2].getTextContent()).toEqual('Test2');
+                expect((nodes[0] as ElementNode).getChildren().length).toEqual(3);
+                expect((nodes[0] as ElementNode).getChildren()[0].getTextContent()).toEqual('Test');
+                expect((nodes[0] as ElementNode).getChildren()[1].getTextContent()).toEqual(' ');
+                expect((nodes[0] as ElementNode).getChildren()[2].getTextContent()).toEqual('Test2');
             });
         });
 

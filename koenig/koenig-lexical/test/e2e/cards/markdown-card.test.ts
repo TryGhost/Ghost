@@ -11,17 +11,18 @@ import {
 } from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
+import type {Page} from '@playwright/test';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Click the markdown card and wait for CodeMirror to be focused
 // (Chrome for Testing needs this before typing/shortcuts will register reliably)
-async function focusMarkdownEditor(page) {
+async function focusMarkdownEditor(page: Page) {
     await page.click('[data-kg-card="markdown"]');
     await expect(page.locator('[data-kg-card="markdown"] .CodeMirror-focused')).toBeVisible();
 }
 
-async function pressMarkdownShortcut(page, key, modifier) {
+async function pressMarkdownShortcut(page: Page, key: string, modifier?: string) {
     const locator = '[data-kg-card="markdown"] [title^="Bold"]';
     const title = await page.locator(locator).getAttribute('title');
 
@@ -33,7 +34,7 @@ async function pressMarkdownShortcut(page, key, modifier) {
 }
 
 test.describe('Markdown card', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();

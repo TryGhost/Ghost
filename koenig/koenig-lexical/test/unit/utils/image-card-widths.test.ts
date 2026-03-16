@@ -3,7 +3,7 @@ import {getAllowedImageCardWidths, getDefaultImageCardWidth} from '../../../src/
 
 describe('image-card-widths utils', () => {
     it('returns all widths when config is missing', () => {
-        expect(getAllowedImageCardWidths()).toEqual(['regular', 'wide', 'full']);
+        expect(getAllowedImageCardWidths(undefined)).toEqual(['regular', 'wide', 'full']);
     });
 
     it('returns all widths when config is invalid or empty', () => {

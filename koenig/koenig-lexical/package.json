@@ -16,23 +16,26 @@
   ],
   "main": "./dist/koenig-lexical.umd.js",
   "module": "./dist/koenig-lexical.js",
+  "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/types/index.d.ts",
       "import": "./dist/koenig-lexical.js",
       "require": "./dist/koenig-lexical.umd.js"
     }
   },
   "scripts": {
-    "dev": "concurrently \"vite --host --force\" \"pnpm build --watch\" \"pnpm preview -l silent --host\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
-    "dev:integrated": "concurrently \"pnpm build --watch\" \"pnpm preview -l silent --host\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
+    "dev": "concurrently \"vite --host --force\" \"vite build --watch\" \"pnpm preview -l silent --host\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
+    "dev:integrated": "concurrently \"vite build --watch\" \"pnpm preview -l silent --host\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
     "dev:multiplayer": "concurrently \"vite\" \"pnpm multiplayer\"",
     "dev:test": "concurrently \"vite --port 5174\" \"pnpm multiplayer\"",
     "multiplayer": "HOST=localhost PORT=1234 npx y-websocket-server",
-    "build": "vite build",
+    "build": "vite build && pnpm build:types",
+    "build:types": "tsc -p tsconfig.types.json",
     "build:demo": "vite build --config vite.config.demo.ts",
     "preview": "vite preview",
-    "pretest": "VITE_TEST=true pnpm build --config vite.config.demo.ts && pnpm build",
-    "test": "pnpm test:unit && pnpm test:acceptance",
+    "pretest": "VITE_TEST=true pnpm build:demo && pnpm build",
+    "test": "pnpm typecheck && pnpm test:unit && pnpm test:acceptance",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "test:acceptance": "NODE_ENV=test PLAYWRIGHT_FORCE_ASYNC_LOADER=1 NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
@@ -46,7 +49,8 @@
     "lint": "pnpm run '/^lint:/'",
     "lint:css": "stylelint \"src/**/*.css\"",
     "lint:js": "eslint --cache demo src test",
-    "storybook": "catalog:",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "storybook": "NODE_OPTIONS=--openssl-legacy-provider storybook dev -p 6006 -h 127.0.0.1",
     "build-storybook": "storybook build"
   },
   "devDependencies": {
@@ -92,6 +96,8 @@
     "@tryghost/kg-markdown-html-renderer": "workspace:~",
     "@tryghost/kg-simplemde": "workspace:~",
     "@tryghost/kg-unsplash-selector": "workspace:~",
+    "@types/jsdom": "28.0.3",
+    "@types/lodash": "4.17.24",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@uiw/codemirror-extensions-basic-setup": "catalog:",
@@ -108,6 +114,7 @@
     "eslint-plugin-ghost": "catalog:",
     "eslint-plugin-react": "catalog:",
     "eslint-plugin-react-hooks": "catalog:",
+    "eslint-plugin-react-refresh": "catalog:",
     "eslint-plugin-storybook": "10.4.6",
     "eslint-plugin-tailwindcss": "catalog:tailwind3",
     "eventemitter3": "5.0.4",

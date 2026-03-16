@@ -1,9 +1,10 @@
 // TODO: Switch to mocked API. Currently uses real Unsplash API so the asserted test data isn't stable
 import {expect, test} from '@playwright/test';
 import {focusEditor, initialize} from '../../utils/e2e';
+import type {Page} from '@playwright/test';
 
 test.describe('Modals', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -130,7 +131,7 @@ test.describe('Modals', async () => {
         await page.waitForSelector('[data-kg-unsplash-gallery-item]');
         const images = await page.$$('img[data-kg-unsplash-gallery-img]');
         const altTexts = await Promise.all(images.map(img => img.getAttribute('alt')));
-        expect(altTexts.some(alt => alt.includes(searchTerm))).toBe(true);
+        expect(altTexts.some(alt => alt!.includes(searchTerm))).toBe(true);
     });
 
     test.skip('closes a zoomed image when searching', async () => {

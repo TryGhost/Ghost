@@ -1,7 +1,16 @@
 import pluralize from 'pluralize';
 import {ProgressBar} from '../../ProgressBar';
 
-export default function MarkdownImageUploader({onChange, inputRef, progress, loading, filesNumber, errors = []}) {
+interface MarkdownImageUploaderProps {
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    inputRef?: React.Ref<HTMLInputElement>;
+    progress?: number;
+    loading?: boolean;
+    filesNumber?: number;
+    errors?: {fileName?: string; message: string}[];
+}
+
+export default function MarkdownImageUploader({onChange, inputRef, progress, loading, filesNumber, errors = []}: MarkdownImageUploaderProps) {
     const progressStyle = {
         width: `${progress}%`
     };
@@ -32,7 +41,7 @@ export default function MarkdownImageUploader({onChange, inputRef, progress, loa
                     ))
                 )
             }
-            <form onChange={onChange}>
+            <form onChange={onChange as React.FormEventHandler}>
                 <input
                     ref={inputRef}
                     accept='image/*'

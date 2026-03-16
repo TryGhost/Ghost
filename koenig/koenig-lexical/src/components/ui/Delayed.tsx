@@ -1,6 +1,11 @@
 import React from 'react';
 
-export function Delayed({children, waitBeforeShow = 500}) {
+interface DelayedProps {
+    children: React.ReactNode;
+    waitBeforeShow?: number;
+}
+
+export function Delayed({children, waitBeforeShow = 500}: DelayedProps) {
     const [show, setShow] = React.useState(waitBeforeShow === 0);
 
     React.useEffect(() => {

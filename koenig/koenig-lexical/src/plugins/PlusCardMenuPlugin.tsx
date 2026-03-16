@@ -1,30 +1,35 @@
-import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
+import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {$getSelection, $isParagraphNode, $isRangeSelection, $setSelection} from 'lexical';
 import {CardMenu} from '../components/ui/CardMenu';
+import {type CardMenuItem, buildCardMenu} from '../utils/buildCardMenu';
 import {PlusButton, PlusMenu} from '../components/ui/PlusMenu';
-import {buildCardMenu} from '../utils/buildCardMenu';
 import {getEditorCardNodes} from '../utils/getEditorCardNodes';
 import {getSelectedNode} from '../utils/getSelectedNode';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {LexicalCommand, LexicalEditor} from 'lexical';
 
-function usePlusCardMenu(editor) {
+interface PlusCardMenuResult {
+    menu?: Map<string, CardMenuItem[]>;
+}
+
+function usePlusCardMenu(editor: LexicalEditor) {
     const [isShowingButton, setIsShowingButton] = React.useState(false);
     const [isShowingMenu, setIsShowingMenu] = React.useState(false);
     const [topPosition, setTopPosition] = React.useState(0);
-    const [cachedRange, setCachedRange] = React.useState(null);
-    const [cardMenu, setCardMenu] = React.useState({});
-    const containerRef = React.useRef(null);
+    const [cachedRange, setCachedRange] = React.useState<Range | null>(null);
+    const [cardMenu, setCardMenu] = React.useState<PlusCardMenuResult>({});
+    const containerRef = React.useRef<HTMLDivElement | null>(null);
     const {cardConfig} = React.useContext(KoenigComposerContext);
 
-    function getTopPosition(elem) {
+    function getTopPosition(elem: HTMLElement) {
         const elemRect = elem.getBoundingClientRect();
-        const containerRect = elem.parentNode.getBoundingClientRect();
+        const containerRect = (elem.parentNode as HTMLElement)?.getBoundingClientRect();
 
         return elemRect.top - containerRect.top;
     }
 
-    function getElementRange(elem) {
+    function getElementRange(elem: Node) {
         const range = new Range();
         range.setStart(elem, 0);
         range.setEnd(elem, 0);
@@ -35,11 +40,11 @@ function usePlusCardMenu(editor) {
         if (!cachedRange) {
             return;
         }
-        document.getSelection().removeAllRanges();
-        document.getSelection().addRange(cachedRange);
+        document.getSelection()?.removeAllRanges();
+        document.getSelection()?.addRange(cachedRange);
     }, [cachedRange]);
 
-    const showButton = React.useCallback((elem) => {
+    const showButton = React.useCallback((elem: HTMLElement) => {
         const range = getElementRange(elem);
         setCachedRange(range);
         setIsShowingButton(true);
@@ -51,7 +56,7 @@ function usePlusCardMenu(editor) {
         setCachedRange(null);
     }, [setIsShowingButton, setIsShowingMenu, setCachedRange]);
 
-    const openMenu = React.useCallback((event) => {
+    const openMenu = React.useCallback((event?: React.MouseEvent) => {
         event?.preventDefault();
 
         // clear any existing selection so cards leave selected/editing mode
@@ -80,7 +85,7 @@ function usePlusCardMenu(editor) {
 
             const selection = $getSelection();
 
-            if (!$isRangeSelection(selection) || !selection.type === 'text' || !selection.isCollapsed()) {
+            if (!$isRangeSelection(selection) || !selection.isCollapsed()) {
                 hideButton();
                 return;
             }
@@ -93,10 +98,10 @@ function usePlusCardMenu(editor) {
             }
 
             const nativeSelection = window.getSelection();
-            const p = nativeSelection.anchorNode;
+            const p = nativeSelection?.anchorNode as HTMLElement | null;
             const rootElement = editor.getRootElement();
 
-            if (p?.tagName !== 'P' || !rootElement.contains(p)) {
+            if (p?.tagName !== 'P' || !rootElement?.contains(p)) {
                 hideButton();
                 return;
             }
@@ -106,7 +111,7 @@ function usePlusCardMenu(editor) {
         });
     }, [editor, showButton, hideButton]);
 
-    const insert = React.useCallback((insertCommand, {insertParams = {}} = {}) => {
+    const insert = React.useCallback((insertCommand: LexicalCommand<Record<string, unknown>>, {insertParams = {}}: {insertParams?: Record<string, unknown>} = {}) => {
         const commandParams = {...insertParams};
         editor.dispatchCommand(insertCommand, commandParams);
         closeMenu();
@@ -115,7 +120,7 @@ function usePlusCardMenu(editor) {
     React.useEffect(() => {
         return editor.registerUpdateListener(() => {
             updateButton();
-        }, [editor, updateButton]);
+        });
     });
 
     // hide the button as soon as there's any selection made outside of the
@@ -127,13 +132,13 @@ function usePlusCardMenu(editor) {
 
             // clicking inside the menu changes native selection, we don't want
             // to close the menu when that occurs
-            if (isShowingMenu && containerRef.current?.contains(nativeSelection.anchorNode)) {
+            if (isShowingMenu && containerRef.current?.contains(nativeSelection?.anchorNode ?? null)) {
                 return;
             }
 
             const rootElement = editor.getRootElement();
 
-            if (!rootElement.contains(nativeSelection.anchorNode)) {
+            if (!rootElement?.contains(nativeSelection?.anchorNode ?? null)) {
                 hideButton();
             }
         }
@@ -147,18 +152,22 @@ function usePlusCardMenu(editor) {
     }, [hideButtonOnOutsideSelection]);
 
     // show or move the button when the mouse moves over a blank paragraph
-    const updateButtonOnMousemove = React.useCallback((event) => {
+    const updateButtonOnMousemove = React.useCallback((event: MouseEvent) => {
         // once the menu is open moving the mouse should not have any effect on button/menu positioning
         if (isShowingMenu) {
             return;
         }
 
         const rootElement = editor.getRootElement();
-        let {pageX, pageY} = event;
+        const {pageY} = event;
+        let {pageX} = event;
 
         // add a horizontal buffer to the pointer position so that the button
         // doesn't disappear when moving across the gap between button and paragraph
-        let containerRect = rootElement.getBoundingClientRect();
+        const containerRect = rootElement?.getBoundingClientRect();
+        if (!containerRect) {
+            return;
+        }
         if (pageX < containerRect.left) {
             pageX = pageX + 40;
         }
@@ -173,11 +182,11 @@ function usePlusCardMenu(editor) {
         //   - https://github.com/bustle/mobiledoc-kit/blob/cdd126009cb809e80ff1d0c202198310aaa1ad1a/src/js/utils/selection-utils.ts#L39-L90
         const hoveredElem = document.elementFromPoint(pageX, pageY);
 
-        if (rootElement.contains(hoveredElem) && !hoveredElem.closest('[data-kg-card]')) {
+        if (rootElement?.contains(hoveredElem) && !(hoveredElem as Element)?.closest('[data-kg-card]')) {
             if (hoveredElem?.tagName === 'P' && hoveredElem.textContent === '') {
                 // place cursor next to the hovered paragraph
-                setTopPosition(getTopPosition(hoveredElem));
-                showButton(hoveredElem);
+                setTopPosition(getTopPosition(hoveredElem as HTMLElement));
+                showButton(hoveredElem as HTMLElement);
             } else {
                 // reset button based on cursor position
                 updateButton();
@@ -194,9 +203,9 @@ function usePlusCardMenu(editor) {
 
     // when menu is open, watch the window for mousedown events so that we can
     // close it when we detect a click outside
-    const closeMenuOnClickOutside = React.useCallback((event) => {
+    const closeMenuOnClickOutside = React.useCallback((event: MouseEvent) => {
         if (isShowingMenu) {
-            if (!containerRef.current?.contains(event.target)) {
+            if (!containerRef.current?.contains(event.target as Node)) {
                 return closeMenu();
             }
         }
@@ -210,14 +219,14 @@ function usePlusCardMenu(editor) {
     }, [closeMenuOnClickOutside]);
 
     // when menu is open, close it when Escape or arrow keys are pressed
-    const handleKeydown = React.useCallback((event) => {
+    const handleKeydown = React.useCallback((event: KeyboardEvent) => {
         if (isShowingMenu) {
             if (event.key === 'Escape') {
                 closeMenu({resetCursor: true});
                 return;
             }
 
-            let arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+            const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
             if (arrowKeys.includes(event.key)) {
                 closeMenu();
             }
@@ -251,7 +260,7 @@ function usePlusCardMenu(editor) {
                 {isShowingButton && <PlusButton onClick={openMenu} />}
                 {isShowingMenu && (
                     <PlusMenu>
-                        <CardMenu closeMenu={closeMenu} insert={insert} menu={cardMenu.menu} source="plus" />
+                        <CardMenu closeMenu={closeMenu} insert={insert as (command: unknown, params: unknown) => void} menu={cardMenu.menu} source="plus" />
                     </PlusMenu>
                 )}
             </div>

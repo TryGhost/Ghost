@@ -1,6 +1,7 @@
 import {Slider} from './Slider';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
-const story = {
+const story: Meta<typeof Slider> = {
     title: 'Generic/Slider',
     component: Slider,
     parameters: {
@@ -11,11 +12,11 @@ const story = {
 };
 export default story;
 
-const Template = args => (
+const Template: StoryFn<typeof Slider> = args => (
     <Slider {...args} />
 );
 
-export const Default = Template.bind({});
+export const Default: StoryFn<typeof Slider> = Template.bind({});
 Default.args = {
     min: 1,
     max: 10,

@@ -1,14 +1,15 @@
 import {$isListItemNode} from '@lexical/list';
 import {$isTextNode} from 'lexical';
+import type {RangeSelection} from 'lexical';
 
-export function $isAtStartOfDocument(selection) {
+export function $isAtStartOfDocument(selection: RangeSelection): boolean {
     let [selectedNode] = selection.getNodes();
-    
+
     if ($isTextNode(selectedNode)) {
-        selectedNode = selectedNode.getParent();
+        selectedNode = selectedNode.getParent()!;
     }
 
-    let selectedTopLevelElement = selectedNode.getTopLevelElement();
+    const selectedTopLevelElement = selectedNode.getTopLevelElement();
 
     // handle nested lists, where parent for a text node is not enough
     if ($isListItemNode(selectedNode) && selectedTopLevelElement !== selectedNode.getParent()) {

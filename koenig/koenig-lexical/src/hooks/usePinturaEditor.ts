@@ -1,9 +1,22 @@
 import trackEvent from '../utils/analytics';
 import {useCallback, useEffect, useRef, useState} from 'react';
+import type {PinturaConfig} from '../context/KoenigComposerContext';
+
+export type OpenImageEditor = (options: {image: string; handleSave: (blob: Blob) => void}) => void;
+
+declare global {
+    interface Window {
+        pintura?: {
+            openDefaultEditor: (options: Record<string, unknown>) => {
+                on: (event: string, callback: (result: {dest: Blob}) => void) => void;
+            };
+        };
+    }
+}
 
 export default function usePinturaEditor({
     config, disabled = false
-}) {
+}: {config?: PinturaConfig; disabled?: boolean}) {
     const [scriptLoaded, setScriptLoaded] = useState(false);
     const [cssLoaded, setCssLoaded] = useState(false);
     const allowClose = useRef(false);
@@ -32,24 +45,24 @@ export default function usePinturaEditor({
             }).catch(() => {
                 // log script loading failure
             });
-        } catch (e) {
+        } catch {
             // Log script loading error
         }
     }, [config?.jsUrl]);
 
     useEffect(() => {
-        let cssUrl = config?.cssUrl;
+        const cssUrl = config?.cssUrl;
         if (!cssUrl) {
             return;
         }
 
         try {
             // Check if the CSS file is already present in the document's head
-            let cssLink = document.querySelector(`link[href="${cssUrl}"]`);
+            const cssLink = document.querySelector(`link[href="${cssUrl}"]`);
             if (cssLink) {
                 setCssLoaded(true);
             } else {
-                let link = document.createElement('link');
+                const link = document.createElement('link');
                 link.rel = 'stylesheet';
                 link.type = 'text/css';
                 link.href = cssUrl;
@@ -58,12 +71,12 @@ export default function usePinturaEditor({
                 };
                 document.head.appendChild(link);
             }
-        } catch (e) {
+        } catch {
             // Log css loading error
         }
     }, [config?.cssUrl]);
 
-    const openEditor = useCallback(({image, handleSave}) => {
+    const openEditor = useCallback<OpenImageEditor>(({image, handleSave}) => {
         allowClose.current = false;
 
         trackEvent('Image Edit Button Clicked', {location: 'editor'});
@@ -72,11 +85,11 @@ export default function usePinturaEditor({
             // avoids cors issues with cached images
             const imageUrl = new URL(image);
             if (!imageUrl.searchParams.has('v')) {
-                imageUrl.searchParams.set('v', Date.now());
+                imageUrl.searchParams.set('v', String(Date.now()));
             }
 
             const imageSrc = imageUrl.href;
-            const editor = window.pintura.openDefaultEditor({
+            const editor = window.pintura!.openDefaultEditor({
                 src: imageSrc,
                 enableTransparencyGrid: true,
                 util: 'crop',
@@ -92,22 +105,22 @@ export default function usePinturaEditor({
                 ],
                 frameOptions: [
                     // No frame
-                    [undefined, locale => locale.labelNone],
+                    [undefined, (locale: Record<string, string>) => locale.labelNone],
 
                     // Sharp edge frame
-                    ['solidSharp', locale => locale.frameLabelMatSharp],
+                    ['solidSharp', (locale: Record<string, string>) => locale.frameLabelMatSharp],
 
                     // Rounded edge frame
-                    ['solidRound', locale => locale.frameLabelMatRound],
+                    ['solidRound', (locale: Record<string, string>) => locale.frameLabelMatRound],
 
                     // A single line frame
-                    ['lineSingle', locale => locale.frameLabelLineSingle],
+                    ['lineSingle', (locale: Record<string, string>) => locale.frameLabelLineSingle],
 
                     // A frame with cornenr hooks
-                    ['hook', locale => locale.frameLabelCornerHooks],
+                    ['hook', (locale: Record<string, string>) => locale.frameLabelCornerHooks],
 
                     // A polaroid frame
-                    ['polaroid', locale => locale.frameLabelPolaroid]
+                    ['polaroid', (locale: Record<string, string>) => locale.frameLabelPolaroid]
                 ],
                 cropSelectPresetFilter: 'landscape',
                 cropSelectPresetOptions: [
@@ -146,8 +159,8 @@ export default function usePinturaEditor({
     }, [isEnabled]);
 
     useEffect(() => {
-        const handleCloseClick = (event) => {
-            if (event.target.closest('.PinturaModal button[title="Close"]')) {
+        const handleCloseClick = (event: MouseEvent) => {
+            if ((event.target as HTMLElement).closest('.PinturaModal button[title="Close"]')) {
                 allowClose.current = true;
             }
         };

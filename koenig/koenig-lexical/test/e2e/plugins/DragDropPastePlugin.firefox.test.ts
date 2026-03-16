@@ -2,6 +2,7 @@ import path from 'path';
 import {assertHTML, createDataTransfer, focusEditor, html, initialize} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
+import type {Page} from '@playwright/test';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -9,7 +10,7 @@ const __dirname = path.dirname(__filename);
 // Need to get video thumbnail before uploading on the server; for this purpose, convert video to blob https://github.com/TryGhost/Koenig/blob/a04c59c2d81ddc783869c47653aa9d7adf093629/packages/koenig-lexical/src/utils/extractVideoMetadata.js#L45
 // The problem is that Chromium can't read video src as blob
 test.describe('Drag Drop Paste Plugin Firefox', async function () {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();

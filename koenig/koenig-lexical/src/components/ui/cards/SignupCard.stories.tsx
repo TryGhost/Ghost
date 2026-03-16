@@ -1,9 +1,11 @@
 import populateEditor from '../../../utils/storybook/populate-storybook-editor';
 import {CardWrapper} from './../CardWrapper';
-import {MINIMAL_NODES} from '../../../index.js';
+import {MINIMAL_NODES} from '../../../index';
 import {SignupCard} from './SignupCard';
 import {createEditor} from 'lexical';
 import {editorEmptyState} from '../../../../.storybook/editorEmptyState';
+import type {ComponentProps} from 'react';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
@@ -11,14 +13,15 @@ const displayOptions = {
     Editing: {isSelected: true, isEditing: true}
 };
 
-const story = {
+type StoryArgs = ComponentProps<typeof SignupCard> & {display: keyof typeof displayOptions; heading?: string; subheader?: string; disclaimer?: string};
+
+const story: Meta<StoryArgs> = {
     title: 'Primary cards/Signup card',
     component: SignupCard,
-    subcomponent: {CardWrapper},
+    subcomponents: {CardWrapper},
     argTypes: {
         display: {
             options: Object.keys(displayOptions),
-            mapping: displayOptions,
             control: {
                 type: 'radio',
                 labels: {
@@ -42,7 +45,7 @@ const story = {
 };
 export default story;
 
-const Template = ({display, heading, subheader, disclaimer, ...args}) => {
+const Template: StoryFn<StoryArgs> = ({display, heading, subheader, disclaimer, ...args}) => {
     const headerTextEditor = createEditor({nodes: MINIMAL_NODES});
     const subheaderTextEditor = createEditor({nodes: MINIMAL_NODES});
     const disclaimerTextEditor = createEditor({nodes: MINIMAL_NODES});
@@ -54,12 +57,12 @@ const Template = ({display, heading, subheader, disclaimer, ...args}) => {
 
     return (<div className="kg-prose">
         <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
-            <CardWrapper {...display} cardWidth={cardWidth}>
+            <CardWrapper {...displayOptions[display]} cardWidth={cardWidth}>
                 <SignupCard
-                    {...display}
                     {...args}
                     disclaimerTextEditor={disclaimerTextEditor}
                     headerTextEditor={headerTextEditor}
+                    isEditing={displayOptions[display].isEditing}
                     subheaderTextEditor={subheaderTextEditor}
                 />
             </CardWrapper>
@@ -67,7 +70,7 @@ const Template = ({display, heading, subheader, disclaimer, ...args}) => {
     </div>);
 };
 
-export const Default = Template.bind({});
+export const Default: StoryFn<StoryArgs> = Template.bind({});
 Default.args = {
     display: 'Editing',
     layout: 'wide',
@@ -84,7 +87,7 @@ Default.args = {
     availableLabels: ['First label', 'Second label']
 };
 
-export const Empty = Template.bind({});
+export const Empty: StoryFn<StoryArgs> = Template.bind({});
 Empty.args = {
     display: 'Editing',
     layout: 'wide',
@@ -104,7 +107,7 @@ Empty.args = {
     disclaimerTextEditorInitialState: editorEmptyState
 };
 
-export const Populated = Template.bind({});
+export const Populated: StoryFn<StoryArgs> = Template.bind({});
 Populated.args = {
     display: 'Editing',
     layout: 'split',

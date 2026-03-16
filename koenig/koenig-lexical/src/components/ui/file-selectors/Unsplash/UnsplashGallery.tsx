@@ -1,5 +1,6 @@
 import UnsplashImage from './UnsplashImage';
 import UnsplashZoomed from './UnsplashZoomed';
+import type {UnsplashPhotoPayload} from './UnsplashImage';
 
 function UnsplashGalleryLoading() {
     return (
@@ -9,34 +10,40 @@ function UnsplashGalleryLoading() {
     );
 }
 
-export function MasonryColumn(props) {
+export function MasonryColumn({children}: {children: React.ReactNode}) {
     return (
         <div className="mr-6 flex grow basis-0 flex-col justify-start last-of-type:mr-0">
-            {props.children}
+            {children}
         </div>
     );
 }
 
-export function UnsplashGalleryColumns(props) {
+interface UnsplashGalleryColumnsProps {
+    columns?: UnsplashPhotoPayload[][];
+    insertImage?: (image: {src: string; caption: string; height: number; width: number; alt?: string; links: unknown}) => void;
+    selectImg?: (payload: UnsplashPhotoPayload | null) => void;
+    zoomed?: UnsplashPhotoPayload | null | false;
+}
+
+export function UnsplashGalleryColumns(props: UnsplashGalleryColumnsProps) {
     if (!props?.columns) {
         return null;
     }
 
     return (
-        props?.columns.map((array, index) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <MasonryColumn key={index}>
+        props?.columns.map(array => (
+            <MasonryColumn key={array[0]?.id}>
                 {
                     array.map(payload => (
                         <UnsplashImage
                             key={payload.id}
                             alt={payload.alt_description}
                             height={payload.height}
-                            insertImage={props?.insertImage}
+                            insertImage={props?.insertImage ?? (() => {})}
                             likes={payload.likes}
                             links={payload.links}
                             payload={payload}
-                            selectImg={props?.selectImg}
+                            selectImg={props?.selectImg ?? (() => {})}
                             srcUrl={payload.urls.regular}
                             urls={payload.urls}
                             user={payload.user}
@@ -50,7 +57,15 @@ export function UnsplashGalleryColumns(props) {
     );
 }
 
-export function GalleryLayout(props) {
+interface GalleryLayoutProps {
+    galleryRef?: React.Ref<HTMLDivElement>;
+    zoomed?: UnsplashPhotoPayload | null | false;
+    isLoading?: boolean;
+    children?: React.ReactNode;
+    dataset?: UnsplashPhotoPayload[][];
+}
+
+export function GalleryLayout(props: GalleryLayoutProps) {
     return (
         <div className="relative h-full overflow-hidden" data-kg-unsplash-gallery>
             <div ref={props.galleryRef} className={`flex size-full justify-center overflow-auto px-20 ${props?.zoomed ? 'pb-10' : ''}`} data-kg-unsplash-gallery-scrollref>
@@ -61,13 +76,23 @@ export function GalleryLayout(props) {
     );
 }
 
+interface UnsplashGalleryProps {
+    zoomed?: UnsplashPhotoPayload | null | false;
+    error?: string;
+    galleryRef?: React.Ref<HTMLDivElement>;
+    isLoading?: boolean;
+    dataset?: UnsplashPhotoPayload[][];
+    selectImg: (payload: UnsplashPhotoPayload | null) => void;
+    insertImage: (image: {src: string; caption: string; height: number; width: number; alt?: string; links: unknown}) => void;
+}
+
 function UnsplashGallery({zoomed,
     error,
     galleryRef,
     isLoading,
     dataset,
     selectImg,
-    insertImage}) {
+    insertImage}: UnsplashGalleryProps) {
     if (zoomed) {
         return (
             <GalleryLayout

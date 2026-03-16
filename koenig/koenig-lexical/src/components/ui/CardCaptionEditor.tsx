@@ -2,8 +2,16 @@ import KoenigCaptionEditor from '../KoenigCaptionEditor';
 import React from 'react';
 import {TextInput} from './TextInput';
 import {isEditorEmpty} from '../../utils/isEditorEmpty';
+import type {LexicalEditor} from 'lexical';
 
-function CaptionInput({captionEditor, captionEditorInitialState, placeholder, dataTestId}) {
+interface CaptionInputProps {
+    captionEditor: LexicalEditor;
+    captionEditorInitialState?: string;
+    placeholder?: string;
+    dataTestId?: string;
+}
+
+function CaptionInput({captionEditor, captionEditorInitialState, placeholder, dataTestId}: CaptionInputProps) {
     return (
         <div
             className={`m-0 w-full px-9 text-center`}
@@ -19,8 +27,17 @@ function CaptionInput({captionEditor, captionEditorInitialState, placeholder, da
     );
 }
 
-function AltTextInput({value, placeholder, onChange, readOnly, dataTestId, autoFocus = true}) {
-    const handleChange = (e) => {
+interface AltTextInputProps {
+    value?: string;
+    placeholder?: string;
+    onChange?: (value: string) => void;
+    readOnly?: boolean;
+    dataTestId?: string;
+    autoFocus?: boolean;
+}
+
+function AltTextInput({value, placeholder, onChange, readOnly, dataTestId, autoFocus = true}: AltTextInputProps) {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         onChange?.(e.target.value);
     };
 
@@ -38,7 +55,12 @@ function AltTextInput({value, placeholder, onChange, readOnly, dataTestId, autoF
     );
 }
 
-function AltToggleButton({isEditingAlt, onClick}) {
+interface AltToggleButtonProps {
+    isEditingAlt: boolean;
+    onClick: (e: React.MouseEvent) => void;
+}
+
+function AltToggleButton({isEditingAlt, onClick}: AltToggleButtonProps) {
     return (
         <button
             className={`absolute bottom-0 right-0 m-2 cursor-pointer rounded-md border px-1 font-sans text-[1.3rem] font-normal leading-7 tracking-wide transition-all duration-100 ${isEditingAlt ? 'border-green bg-green text-white' : 'border-grey text-grey' } `}
@@ -52,6 +74,18 @@ function AltToggleButton({isEditingAlt, onClick}) {
     );
 }
 
+interface CardCaptionEditorProps {
+    altText?: string;
+    altTextPlaceholder?: string;
+    setAltText?: (value: string) => void;
+    captionEditor: LexicalEditor;
+    captionEditorInitialState?: string;
+    captionPlaceholder?: string;
+    isSelected?: boolean;
+    readOnly?: boolean;
+    dataTestId?: string;
+}
+
 export function CardCaptionEditor({
     altText,
     altTextPlaceholder,
@@ -62,10 +96,10 @@ export function CardCaptionEditor({
     isSelected,
     readOnly,
     dataTestId
-}) {
+}: CardCaptionEditorProps) {
     const [isEditingAlt, setIsEditingAlt] = React.useState(false);
 
-    const toggleIsEditingAlt = (e) => {
+    const toggleIsEditingAlt = (e: React.MouseEvent) => {
         e.stopPropagation();
         setIsEditingAlt(!isEditingAlt);
     };

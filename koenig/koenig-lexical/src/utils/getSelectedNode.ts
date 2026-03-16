@@ -1,6 +1,7 @@
 import {$isAtNodeEnd} from '@lexical/selection';
+import type {LexicalNode, RangeSelection} from 'lexical';
 
-export function getSelectedNode(selection) {
+export function getSelectedNode(selection: RangeSelection): LexicalNode {
     const anchor = selection.anchor;
     const focus = selection.focus;
     const anchorNode = selection.anchor.getNode();

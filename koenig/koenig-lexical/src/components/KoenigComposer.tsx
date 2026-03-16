@@ -1,5 +1,5 @@
 import DEFAULT_NODES from '../nodes/DefaultNodes';
-import KoenigComposerContext from '../context/KoenigComposerContext';
+import KoenigComposerContext, {defaultFileUploader} from '../context/KoenigComposerContext';
 import React from 'react';
 import defaultTheme from '../themes/default';
 import {CollaborationPlugin} from '@lexical/react/LexicalCollaborationPlugin';
@@ -9,11 +9,16 @@ import {KoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
 import {TKContext} from '../context/TKContext';
 import {WebsocketProvider} from 'y-websocket';
+import type {CardConfig, FileUploader} from '../context/KoenigComposerContext';
+import type {Klass, LexicalNode} from 'lexical';
+import type {LexicalNodeReplacement} from 'lexical';
+
+type KoenigFileUploaderProp = Partial<FileUploader> & Record<string, unknown>;
 
 // Catch any errors that occur during Lexical updates and log them
 // or throw them as needed. If you don't throw them, Lexical will
 // try to recover gracefully without losing user data.
-function defaultOnError(error) {
+function defaultOnError(error: Error) {
     console.error(error);
 }
 
@@ -23,11 +28,27 @@ const defaultConfig = {
     html: DEFAULT_CONFIG.html
 };
 
+export interface KoenigComposerProps {
+    initialEditorState?: string | Record<string, unknown>;
+    nodes?: ReadonlyArray<Klass<LexicalNode> | LexicalNodeReplacement>;
+    onError?: (error: Error) => void;
+    fileUploader?: KoenigFileUploaderProp;
+    cardConfig?: CardConfig;
+    darkMode?: boolean;
+    enableMultiplayer?: boolean;
+    isTKEnabled?: boolean;
+    multiplayerEndpoint?: string;
+    multiplayerDebug?: boolean;
+    multiplayerDocId?: string;
+    multiplayerUsername?: string;
+    children?: React.ReactNode;
+}
+
 const KoenigComposer = ({
     initialEditorState,
-    nodes = [...DEFAULT_NODES],
+    nodes = [...DEFAULT_NODES] as ReadonlyArray<Klass<LexicalNode> | LexicalNodeReplacement>,
     onError = defaultOnError,
-    fileUploader = {},
+    fileUploader,
     cardConfig = {},
     darkMode = false,
     enableMultiplayer = false,
@@ -37,18 +58,22 @@ const KoenigComposer = ({
     multiplayerDocId,
     multiplayerUsername,
     children
-}) => {
+}: KoenigComposerProps) => {
     const initialConfig = React.useMemo(() => {
-        let editorState = initialEditorState;
+        let editorState: string | undefined;
 
         // root needs to have at least one paragraph node for the editor to work
-        if (editorState) {
-            if (typeof editorState === 'string') {
-                editorState = JSON.parse(editorState);
+        if (initialEditorState) {
+            let parsed: Record<string, unknown>;
+            if (typeof initialEditorState === 'string') {
+                parsed = JSON.parse(initialEditorState);
+            } else {
+                parsed = initialEditorState;
             }
 
-            if (editorState.root?.children?.length === 0) {
-                editorState.root.children.push({
+            const root = parsed.root as {children: unknown[]} | undefined;
+            if (root?.children?.length === 0) {
+                root.children.push({
                     children: [],
                     direction: null,
                     format: '',
@@ -58,7 +83,7 @@ const KoenigComposer = ({
                 });
             }
 
-            editorState = JSON.stringify(editorState);
+            editorState = JSON.stringify(parsed);
         }
 
         return Object.assign({}, defaultConfig, {
@@ -68,17 +93,16 @@ const KoenigComposer = ({
         });
     }, [enableMultiplayer, initialEditorState, nodes, onError]);
 
-    const editorContainerRef = React.useRef(null);
-    const onWordCountChangeRef = React.useRef(null);
+    const editorContainerRef = React.useRef<HTMLElement | null>(null);
+    const onWordCountChangeRef = React.useRef<((counts: unknown) => void) | null>(null);
+    const normalizedFileUploader = React.useMemo<FileUploader>(() => ({
+        ...defaultFileUploader,
+        ...fileUploader,
+        fileTypes: fileUploader?.fileTypes ?? defaultFileUploader.fileTypes,
+        useFileUpload: fileUploader?.useFileUpload ?? defaultFileUploader.useFileUpload
+    }), [fileUploader]);
 
-    if (!fileUploader.useFileUpload) {
-        fileUploader.useFileUpload = function () {
-            console.error('<KoenigComposer> requires a `fileUploader` prop object to be passed containing a `useFileUpload` custom hook');
-            return;
-        };
-    }
-
-    const createWebsocketProvider = React.useCallback((id, yjsDocMap) => {
+    const createWebsocketProvider = React.useCallback((id: string, yjsDocMap: Map<string, Doc>) => {
         let doc = yjsDocMap.get(id);
 
         if (doc === undefined) {
@@ -88,17 +112,21 @@ const KoenigComposer = ({
             doc.load();
         }
 
+        if (!multiplayerEndpoint) {
+            throw new Error('KoenigComposer: multiplayerEndpoint is required when multiplayer is enabled');
+        }
+
         const provider = new WebsocketProvider(
             multiplayerEndpoint,
-            multiplayerDocId + '/' + id,
+            (multiplayerDocId || '') + '/' + id,
             doc,
             {connect: false}
         );
 
         if (multiplayerDebug) {
-            provider.on('status', (event) => {
+            provider.on('status', (event: {status: string}) => {
 
-                console.log(event.status, `id: ${multiplayerDocId}/${id}`); // logs "connected" or "disconnected"
+                console.log(event.status, `id: ${multiplayerDocId || ''}/${id}`); // logs "connected" or "disconnected"
             });
         }
 
@@ -106,9 +134,9 @@ const KoenigComposer = ({
     }, [multiplayerEndpoint, multiplayerDocId, multiplayerDebug]);
 
     return (
-        <LexicalComposer initialConfig={initialConfig}>
+        <LexicalComposer initialConfig={initialConfig as Parameters<typeof LexicalComposer>[0]['initialConfig']}>
             <KoenigComposerContext.Provider value={{
-                fileUploader,
+                fileUploader: normalizedFileUploader,
                 editorContainerRef,
                 cardConfig,
                 darkMode,
@@ -125,8 +153,8 @@ const KoenigComposer = ({
                         {enableMultiplayer ? (
                             <CollaborationPlugin
                                 id="main"
-                                initialEditorState={initialEditorState}
-                                providerFactory={createWebsocketProvider}
+                                initialEditorState={initialEditorState as string | undefined}
+                                providerFactory={createWebsocketProvider as unknown as Parameters<typeof CollaborationPlugin>[0]['providerFactory']}
                                 shouldBootstrap={true}
                                 username={multiplayerUsername}
                             />

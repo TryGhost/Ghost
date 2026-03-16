@@ -4,20 +4,40 @@ import SignupCardIcon from '../assets/icons/kg-card-type-signup.svg?react';
 import SignupNodeComponent from './SignupNodeComponent';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {SignupNode as BaseSignupNode, type CardWidth, normalizeCardWidth} from '@tryghost/kg-default-nodes';
+import {SignupNode as BaseSignupNode, normalizeCardWidth, type CardWidth, type SignupData} from '@tryghost/kg-default-nodes';
 import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
+import type {LexicalEditor} from 'lexical';
 
-export const {INSERT_SIGNUP_COMMAND} = createCommand();
+type Alignment = 'left' | 'center';
+type BackgroundSize = 'cover' | 'contain';
+type Layout = 'regular' | 'wide' | 'full' | 'split';
+
+export type SignupNodeData = SignupData & {
+    disclaimerTextEditor?: LexicalEditor;
+    disclaimerTextEditorInitialState?: unknown;
+    headerTextEditor?: LexicalEditor;
+    headerTextEditorInitialState?: unknown;
+    subheaderTextEditor?: LexicalEditor;
+    subheaderTextEditorInitialState?: unknown;
+};
+
+interface SignupMenuConfig {
+    membersEnabled?: boolean;
+    siteDescription?: string;
+    siteTitle?: string;
+}
+
+export const INSERT_SIGNUP_COMMAND = createCommand<SignupNodeData>();
 
 export class SignupNode extends BaseSignupNode {
-    __disclaimerTextEditor;
-    __disclaimerTextEditorInitialState;
-    __headerTextEditor;
-    __headerTextEditorInitialState;
-    __subheaderTextEditor;
-    __subheaderTextEditorInitialState;
+    __disclaimerTextEditor!: LexicalEditor;
+    __disclaimerTextEditorInitialState: unknown;
+    __headerTextEditor!: LexicalEditor;
+    __headerTextEditorInitialState: unknown;
+    __subheaderTextEditor!: LexicalEditor;
+    __subheaderTextEditorInitialState: unknown;
 
     static kgMenu = {
         label: 'Signup',
@@ -26,11 +46,11 @@ export class SignupNode extends BaseSignupNode {
         insertCommand: INSERT_SIGNUP_COMMAND,
         matches: ['signup', 'subscribe'],
         priority: 10,
-        isHidden: ({config}) => {
+        isHidden: ({config}: {config?: SignupMenuConfig}) => {
             const isMembersEnabled = config?.membersEnabled;
             return !(isMembersEnabled);
         },
-        insertParams: ({config}) => ({
+        insertParams: ({config}: {config?: SignupMenuConfig}) => ({
             header: config?.siteTitle ? `Sign up for ${config.siteTitle}` : '',
             subheader: config?.siteDescription || '',
             disclaimer: 'No spam. Unsubscribe anytime.'
@@ -42,7 +62,7 @@ export class SignupNode extends BaseSignupNode {
         return SignupCardIcon;
     }
 
-    constructor(dataset = {}, key) {
+    constructor(dataset: SignupNodeData = {}, key?: string) {
         super(dataset, key);
 
         setupNestedEditor(this, '__headerTextEditor', {editor: dataset.headerTextEditor, nodes: MINIMAL_NODES});
@@ -66,7 +86,7 @@ export class SignupNode extends BaseSignupNode {
     }
 
     exportJSON() {
-        const json = super.exportJSON();
+        const json: ReturnType<BaseSignupNode['exportJSON']> & {disclaimer?: string; header?: string; subheader?: string} = super.exportJSON();
 
         if (this.__disclaimerTextEditor) {
             this.__disclaimerTextEditor.getEditorState().read(() => {
@@ -100,7 +120,7 @@ export class SignupNode extends BaseSignupNode {
     }
 
     getDataset() {
-        const dataset = super.getDataset();
+        const dataset: ReturnType<BaseSignupNode['getDataset']> & {disclaimerTextEditor?: LexicalEditor; headerTextEditor?: LexicalEditor; subheaderTextEditor?: LexicalEditor} = super.getDataset();
         const self = this.getLatest();
 
         dataset.disclaimerTextEditor = self.__disclaimerTextEditor;
@@ -119,26 +139,26 @@ export class SignupNode extends BaseSignupNode {
         return (
             <KoenigCardWrapper nodeKey={this.getKey()} width={this.getCardWidth()}>
                 <SignupNodeComponent
-                    alignment={this.alignment}
+                    alignment={this.alignment as Alignment}
                     backgroundColor={this.backgroundColor}
                     backgroundImageSrc={this.backgroundImageSrc}
-                    backgroundSize={this.backgroundSize}
+                    backgroundSize={this.backgroundSize as BackgroundSize}
                     buttonColor={this.buttonColor}
                     buttonText={this.buttonText}
                     buttonTextColor={this.buttonTextColor}
                     disclaimer={this.disclaimer}
                     disclaimerTextEditor={this.__disclaimerTextEditor}
-                    disclaimerTextEditorInitialState={this.__disclaimerTextEditorInitialState}
+                    disclaimerTextEditorInitialState={this.__disclaimerTextEditorInitialState as string | undefined}
                     header={this.header}
                     headerTextEditor={this.__headerTextEditor}
-                    headerTextEditorInitialState={this.__headerTextEditorInitialState}
+                    headerTextEditorInitialState={this.__headerTextEditorInitialState as string | undefined}
                     isSwapped={this.swapped}
                     labels={this.labels}
-                    layout={this.layout}
+                    layout={this.layout as Layout}
                     nodeKey={this.getKey()}
                     subheader={this.subheader}
                     subheaderTextEditor={this.__subheaderTextEditor}
-                    subheaderTextEditorInitialState={this.__subheaderTextEditorInitialState}
+                    subheaderTextEditorInitialState={this.__subheaderTextEditorInitialState as string | undefined}
                     textColor={this.textColor}
                 />
             </KoenigCardWrapper>
@@ -158,15 +178,15 @@ export class SignupNode extends BaseSignupNode {
             !this.__buttonText &&
             isDisclaimerEmpty &&
             isHeaderEmpty &&
-            !this.__labels.length &&
+            !this.labels.length &&
             isSubheaderEmpty;
     }
 }
 
-export const $createSignupNode = (dataset) => {
+export const $createSignupNode = (dataset: SignupNodeData = {}) => {
     return new SignupNode(dataset);
 };
 
-export function $isSignupNode(node) {
+export function $isSignupNode(node: unknown): node is SignupNode {
     return node instanceof SignupNode;
 }

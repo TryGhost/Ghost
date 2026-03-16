@@ -1,7 +1,17 @@
 import {isTestEnv} from '../../test/utils/isTestEnv';
 import {useState} from 'react';
+import type {FileTypeConfig, FileUploadResultItem} from '../../src/context/KoenigComposerContext';
 
-export const fileTypes = {
+interface FileError {
+    fileName: string;
+    message: string;
+}
+
+interface UploadResult extends FileUploadResultItem {
+    fileName: string;
+}
+
+export const fileTypes: Record<string, FileTypeConfig> = {
     image: {
         mimeTypes: ['image/gif', 'image/jpg', 'image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'],
         extensions: ['gif', 'jpg', 'jpeg', 'png', 'svg', 'svgz', 'webp']
@@ -28,38 +38,34 @@ export function useFileUpload({isMultiplayer = false} = {}) {
     return function useFileUploadFn(type = '') {
         const [progress, setProgress] = useState(100);
         const [isLoading, setLoading] = useState(false);
-        const [errors, setErrors] = useState([]);
+        const [errors, setErrors] = useState<FileError[]>([]);
         const [filesNumber, setFilesNumber] = useState(0);
 
-        function defaultValidator(file) {
+        function defaultValidator(file: File): string | true {
             if (type === 'file') {
                 return true;
             }
-            let extensions = fileTypes[type].extensions;
-            let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
+            const extensions = fileTypes[type]?.extensions;
+            const match = (/(?:\.([^.]+))?$/).exec(file.name);
+            const extension = match ? match[1] : undefined;
 
             // if extensions is falsy exit early and accept all files
             if (!extensions) {
                 return true;
             }
 
-            if (!Array.isArray(extensions)) {
-                extensions = extensions.split(',');
-            }
-
             if (!extension || extensions.indexOf(extension.toLowerCase()) === -1) {
-                let validExtensions = `.${extensions.join(', .').toUpperCase()}`;
+                const validExtensions = `.${extensions.join(', .').toUpperCase()}`;
                 return `The file type you uploaded is not supported. Please use ${validExtensions}`;
             }
             return true;
         }
 
-        function validate(files = []) {
-            const validationResult = [];
+        function validate(files: File[] | FileList = []): FileError[] {
+            const validationResult: FileError[] = [];
 
-            for (let i = 0; i < files.length; i += 1) {
-                let file = files[i];
-                let result = defaultValidator(file);
+            for (const file of Array.from(files)) {
+                const result = defaultValidator(file);
                 if (result === true) {
                     continue;
                 }
@@ -70,12 +76,14 @@ export function useFileUpload({isMultiplayer = false} = {}) {
             return validationResult;
         }
 
-        async function upload(files = [], options = {}) {
-            setFilesNumber(files.length);
+        async function upload(files: File[] | FileList = [], _options: Record<string, unknown> = {}): Promise<UploadResult[] | null> {
+            const fileArray = Array.from(files);
+
+            setFilesNumber(fileArray.length);
             // added delay for demo, helps to check progress bar
             setLoading(true);
 
-            const validationResult = validate(files);
+            const validationResult = validate(fileArray);
 
             if (validationResult.length) {
                 setErrors(validationResult);
@@ -100,7 +108,7 @@ export function useFileUpload({isMultiplayer = false} = {}) {
 
             // simulate upload errors for the sake of testing
             // Any file that has "fail" in the filename will return errors
-            const fileErrors = Array.from(files).filter(file => file.name?.includes('fail'));
+            const fileErrors = fileArray.filter(file => file.name?.includes('fail'));
             if (fileErrors.length) {
                 setErrors(fileErrors.map(file => ({fileName: file.name, message: 'Upload failed'})));
                 setLoading(false);
@@ -115,16 +123,16 @@ export function useFileUpload({isMultiplayer = false} = {}) {
             // file for multi-file uploads such as in gallery cards where we need to replace
             // the correct preview image with the real uploaded image
             // TODO: can we use something more unique than filename?
-            let uploadResult = [];
+            let uploadResult: UploadResult[] = [];
 
             if (isMultiplayer) {
                 // multiplayer needs to store the whole file data inline so it can be transferred
                 // and stored in the shared document, otherwise images etc won't appear across browsers
-                for (const file of Array.from(files)) {
+                for (const file of fileArray) {
                     const reader = new FileReader();
-                    const url = await new Promise((resolve) => {
+                    const url = await new Promise<string>((resolve) => {
                         reader.addEventListener('load', () => {
-                            resolve(reader.result);
+                            resolve(typeof reader.result === 'string' ? reader.result : '');
                         }, false);
                         reader.readAsDataURL(file);
                     });
@@ -137,7 +145,7 @@ export function useFileUpload({isMultiplayer = false} = {}) {
             } else {
                 // for non-multiplayer editors, use blob urls as they are much shorter meaning they
                 // are nicer to work with in things like the markdown card and in the state tree
-                uploadResult = Array.from(files).map(file => ({
+                uploadResult = fileArray.map(file => ({
                     url: URL.createObjectURL(file),
                     fileName: file.name
                 }));
@@ -155,7 +163,7 @@ export function useFileUpload({isMultiplayer = false} = {}) {
     };
 }
 
-function delay(time) {
+function delay(time: number): Promise<void> {
     return new Promise((resolve) => {
         setTimeout(resolve, time);
     });

@@ -1,6 +1,7 @@
 import {MediaPlaceholder} from './MediaPlaceholder';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
-const story = {
+const story: Meta<typeof MediaPlaceholder> = {
     title: 'Generic/Media placeholder (beta)',
     component: MediaPlaceholder,
     argTypes: {
@@ -25,13 +26,13 @@ const story = {
 };
 export default story;
 
-const Template = args => (
+const Template: StoryFn<typeof MediaPlaceholder> = args => (
     <div className="flex">
         <MediaPlaceholder {...args} />
     </div>
 );
 
-export const Image = Template.bind({});
+export const Image: StoryFn<typeof MediaPlaceholder> = Template.bind({});
 Image.args = {
     icon: 'image',
     desc: 'Click to select an image',
@@ -39,7 +40,7 @@ Image.args = {
     borderStyle: 'squared'
 };
 
-export const Gallery = Template.bind({});
+export const Gallery: StoryFn<typeof MediaPlaceholder> = Template.bind({});
 Gallery.args = {
     icon: 'gallery',
     desc: 'Click to select up to 9 images',
@@ -47,7 +48,7 @@ Gallery.args = {
     borderStyle: 'squared'
 };
 
-export const Video = Template.bind({});
+export const Video: StoryFn<typeof MediaPlaceholder> = Template.bind({});
 Video.args = {
     icon: 'video',
     desc: 'Click to select a video',
@@ -55,7 +56,7 @@ Video.args = {
     borderStyle: 'squared'
 };
 
-export const Audio = Template.bind({});
+export const Audio: StoryFn<typeof MediaPlaceholder> = Template.bind({});
 Audio.args = {
     icon: 'audio',
     desc: 'Click to upload an audio file',
@@ -63,7 +64,7 @@ Audio.args = {
     borderStyle: 'squared'
 };
 
-export const File = Template.bind({});
+export const File: StoryFn<typeof MediaPlaceholder> = Template.bind({});
 File.args = {
     icon: 'file',
     desc: 'Click to upload a file',
@@ -71,7 +72,7 @@ File.args = {
     borderStyle: 'squared'
 };
 
-export const Product = Template.bind({});
+export const Product: StoryFn<typeof MediaPlaceholder> = Template.bind({});
 Product.args = {
     icon: 'product',
     desc: 'Click to upload a product image',
@@ -79,7 +80,7 @@ Product.args = {
     borderStyle: 'squared'
 };
 
-export const ErrorState = Template.bind({});
+export const ErrorState: StoryFn<typeof MediaPlaceholder> = Template.bind({});
 ErrorState.args = {
     icon: 'video',
     desc: 'Click to select a video',

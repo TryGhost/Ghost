@@ -1,8 +1,10 @@
 import populateEditor from '../../../utils/storybook/populate-storybook-editor';
 import {CardWrapper} from './../CardWrapper';
-import {MINIMAL_NODES} from '../../../index.js';
+import {MINIMAL_NODES} from '../../../index';
 import {VideoCard} from './VideoCard';
 import {createEditor} from 'lexical';
+import type {ComponentProps} from 'react';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
@@ -10,14 +12,15 @@ const displayOptions = {
     Editing: {isSelected: true, isEditing: true}
 };
 
-const story = {
+type StoryArgs = ComponentProps<typeof VideoCard> & {display: keyof typeof displayOptions; caption?: string};
+
+const story: Meta<StoryArgs> = {
     title: 'Primary cards/Video card',
     component: VideoCard,
-    subcomponent: {CardWrapper},
+    subcomponents: {CardWrapper},
     argTypes: {
         display: {
             options: Object.keys(displayOptions),
-            mapping: displayOptions,
             control: {
                 type: 'radio',
                 labels: {
@@ -41,28 +44,28 @@ const story = {
 };
 export default story;
 
-const Template = ({display, caption, ...args}) => {
+const Template: StoryFn<StoryArgs> = ({display, caption, ...args}) => {
     const captionEditor = createEditor({nodes: MINIMAL_NODES});
     populateEditor({editor: captionEditor, initialHtml: `${caption}`});
 
     return (
         <div className="kg-prose">
             <div className="not-kg-prose mx-auto my-8 min-w-[initial] max-w-[740px]">
-                <CardWrapper {...display} {...args}>
-                    <VideoCard {...display} {...args} captionEditor={captionEditor} />
+                <CardWrapper {...displayOptions[display]} {...args}>
+                    <VideoCard {...displayOptions[display]} {...args} captionEditor={captionEditor} />
                 </CardWrapper>
             </div>
         </div>
     );
 };
 
-export const Empty = Template.bind({});
+export const Empty: StoryFn<StoryArgs> = Template.bind({});
 Empty.args = {
     display: 'Editing',
     caption: ''
 };
 
-export const Uploading = Template.bind({});
+export const Uploading: StoryFn<StoryArgs> = Template.bind({});
 Uploading.args = {
     display: 'Editing',
     cardWidth: 'regular',
@@ -76,7 +79,7 @@ Uploading.args = {
     }
 };
 
-export const DraggedOver = Template.bind({});
+export const DraggedOver: StoryFn<StoryArgs> = Template.bind({});
 DraggedOver.args = {
     display: 'Editing',
     cardWidth: 'regular',
@@ -88,7 +91,7 @@ DraggedOver.args = {
     }
 };
 
-export const Populated = Template.bind({});
+export const Populated: StoryFn<StoryArgs> = Template.bind({});
 Populated.args = {
     display: 'Editing',
     cardWidth: 'regular',
@@ -99,7 +102,7 @@ Populated.args = {
     caption: 'Watch the full documentary here.'
 };
 
-export const Error = Template.bind({});
+export const Error: StoryFn<StoryArgs> = Template.bind({});
 Error.args = {
     display: 'Editing',
     cardWidth: 'regular',
@@ -110,7 +113,7 @@ Error.args = {
     videoUploadErrors: [{message: 'The file type you uploaded is not supported. Please use .MP4, .WEBM, .OGV'}]
 };
 
-export const ThumbnailUploading = Template.bind({});
+export const ThumbnailUploading: StoryFn<StoryArgs> = Template.bind({});
 ThumbnailUploading.args = {
     display: 'Editing',
     cardWidth: 'regular',
@@ -124,7 +127,7 @@ ThumbnailUploading.args = {
     }
 };
 
-export const ThumbnailDraggedOver = Template.bind({});
+export const ThumbnailDraggedOver: StoryFn<StoryArgs> = Template.bind({});
 ThumbnailDraggedOver.args = {
     display: 'Editing',
     cardWidth: 'regular',
@@ -137,7 +140,7 @@ ThumbnailDraggedOver.args = {
     }
 };
 
-export const ThumbnailPopulated = Template.bind({});
+export const ThumbnailPopulated: StoryFn<StoryArgs> = Template.bind({});
 ThumbnailPopulated.args = {
     display: 'Editing',
     cardWidth: 'regular',
@@ -148,7 +151,7 @@ ThumbnailPopulated.args = {
     caption: 'Watch the full documentary here.'
 };
 
-export const ThumbnailError = Template.bind({});
+export const ThumbnailError: StoryFn<StoryArgs> = Template.bind({});
 ThumbnailError.args = {
     display: 'Editing',
     cardWidth: 'regular',
@@ -161,4 +164,3 @@ ThumbnailError.args = {
         errors: [{message: 'This file type is not supported. Please use .GIF, .JPG, .JPEG, .PNG, .SVG, .SVGZ, .WEBP'}]
     }
 };
-

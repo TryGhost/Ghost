@@ -1,7 +1,7 @@
 import {TreeView} from '@lexical/react/LexicalTreeView';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-const TreeViewPlugin = () => {
+const TreeViewPlugin = (_props: {isOpen?: boolean}) => {
     const [editor] = useLexicalComposerContext();
 
     return (
@@ -11,6 +11,7 @@ const TreeViewPlugin = () => {
             timeTravelPanelButtonClassName="text-green font-sans text-md font-medium"
             timeTravelPanelClassName="absolute bottom-1 flex w-[400px]"
             timeTravelPanelSliderClassName="m-3 bg-green flex-grow"
+            treeTypeButtonClassName="text-green font-sans text-md font-medium"
             viewClassName="size-full m-[1rem] p-[1rem] pb-16 overflow-auto text-sm text-grey-300 font-mono selection:bg-grey-800"
         />
     );

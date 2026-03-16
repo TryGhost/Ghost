@@ -1,14 +1,18 @@
 import GalleryCardIcon from '../assets/icons/kg-card-type-gallery.svg?react';
 import pick from 'lodash/pick';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {GalleryNode as BaseGalleryNode} from '@tryghost/kg-default-nodes';
+import {GalleryNode as BaseGalleryNode, type GalleryData} from '@tryghost/kg-default-nodes';
 import {GalleryNodeComponent} from './GalleryNodeComponent';
-import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
+import {KoenigCardWrapper, MINIMAL_NODES} from '../index';
 import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
+import type {GalleryImage} from '../types/GalleryImage';
+import type {LexicalEditor} from 'lexical';
 
-export const INSERT_GALLERY_COMMAND = createCommand();
+export type GalleryNodeData = GalleryData & {captionEditor?: unknown};
+
+export const INSERT_GALLERY_COMMAND = createCommand<GalleryNodeData>();
 
 export const MAX_IMAGES = 9;
 export const MAX_PER_ROW = 3;
@@ -16,15 +20,15 @@ export const MAX_PER_ROW = 3;
 // ensure we don't save client-side only properties such as preview blob urls to the server
 export const ALLOWED_IMAGE_PROPS = ['row', 'src', 'width', 'height', 'alt', 'caption', 'fileName'];
 
-export function recalculateImageRows(images) {
+export function recalculateImageRows(images: GalleryImage[]) {
     images.forEach((image, idx) => {
         image.row = Math.ceil((idx + 1) / MAX_PER_ROW) - 1;
     });
 }
 
 export class GalleryNode extends BaseGalleryNode {
-    __captionEditor;
-    __captionEditorInitialState;
+    __captionEditor!: LexicalEditor;
+    __captionEditorInitialState: unknown;
 
     static kgMenu = [{
         label: 'Gallery',
@@ -39,7 +43,7 @@ export class GalleryNode extends BaseGalleryNode {
         shortcut: '/gallery'
     }];
 
-    constructor(dataset = {}, key) {
+    constructor(dataset: GalleryNodeData = {}, key?: string) {
         super(dataset, key);
 
         const {caption} = dataset;
@@ -87,7 +91,7 @@ export class GalleryNode extends BaseGalleryNode {
             <KoenigCardWrapper nodeKey={this.getKey()} width={'wide'}>
                 <GalleryNodeComponent
                     captionEditor={this.__captionEditor}
-                    captionEditorInitialState={this.__captionEditorInitialState}
+                    captionEditorInitialState={this.__captionEditorInitialState as string | undefined}
                     nodeKey={this.getKey()}
                 />
             </KoenigCardWrapper>
@@ -95,29 +99,29 @@ export class GalleryNode extends BaseGalleryNode {
     }
 
     // TODO: move to kg-default-nodes?
-    setImages(images) {
+    setImages(images: GalleryImage[]) {
         const datasetImages = images
             .slice(0, MAX_IMAGES)
-            .map(image => pick(image, ALLOWED_IMAGE_PROPS));
+            .map(image => pick(image, ALLOWED_IMAGE_PROPS) as GalleryImage);
 
         recalculateImageRows(datasetImages);
         this.images = datasetImages;
     }
 
-    addImages(images) {
-        const datasetImages = [...this.images, ...images]
+    addImages(images: GalleryImage[]) {
+        const datasetImages = [...(this.images as GalleryImage[]), ...images]
             .slice(0, MAX_IMAGES)
-            .map(image => pick(image, ALLOWED_IMAGE_PROPS));
+            .map(image => pick(image, ALLOWED_IMAGE_PROPS) as GalleryImage);
 
         recalculateImageRows(datasetImages);
         this.images = datasetImages;
     }
 }
 
-export const $createGalleryNode = (dataset) => {
+export const $createGalleryNode = (dataset: GalleryNodeData) => {
     return new GalleryNode(dataset);
 };
 
-export function $isGalleryNode(node) {
+export function $isGalleryNode(node: unknown): node is GalleryNode {
     return node instanceof GalleryNode;
 }

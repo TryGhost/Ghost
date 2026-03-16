@@ -4,6 +4,24 @@ import {
     getDocumentScrollingElement,
     getParentScrollableElement
 } from './draggable-utils';
+import type {ComponentType} from 'react';
+
+// the partial info produced by a container's `getDraggableInfo` callback before
+// the handler merges in the live `element`/`mousePosition` to form a DraggableInfo
+export interface DraggableInfoSeed {
+    type?: string;
+    cardName?: string;
+    nodeKey?: string;
+    dataset?: Record<string, unknown>;
+    Icon?: ComponentType<{className?: string}>;
+}
+
+export interface DraggableInfo extends DraggableInfoSeed {
+    element: HTMLElement;
+    mousePosition: {x: number; y: number};
+    target?: Element | null;
+    insertIndex?: number;
+}
 
 export const defaultOptions = {
     speed: 8,
@@ -11,6 +29,13 @@ export const defaultOptions = {
 };
 
 export class ScrollHandler {
+    options: {speed: number; sensitivity: number};
+    currentMousePosition: {clientX: number; clientY: number} | null;
+    findScrollableElementFrame: number | null;
+    scrollableElement: Element | null;
+    scrollAnimationFrame: number | null;
+    private _isSafari: boolean;
+
     constructor() {
         this.options = Object.assign({}, defaultOptions);
 
@@ -26,15 +51,15 @@ export class ScrollHandler {
         this._isSafari = navigator.userAgent.indexOf('Safari') !== -1 && navigator.userAgent.indexOf('Chrome') === -1;
     }
 
-    dragStart(draggableInfo) {
+    dragStart(draggableInfo: DraggableInfo): void {
         this.findScrollableElementFrame = requestAnimationFrame(() => {
-            this.scrollableElement = this.getScrollableElement(draggableInfo.element);
+            this.scrollableElement = getParentScrollableElement(draggableInfo.element);
         });
     }
 
-    dragMove(draggableInfo) {
+    dragMove(draggableInfo: DraggableInfo): void {
         this.findScrollableElementFrame = requestAnimationFrame(() => {
-            this.scrollableElement = this.getScrollableElement(draggableInfo.target);
+            this.scrollableElement = getParentScrollableElement(draggableInfo.target as Element | null);
         });
 
         if (!this.scrollableElement) {
@@ -49,9 +74,9 @@ export class ScrollHandler {
         this.scrollAnimationFrame = requestAnimationFrame(this._scroll);
     }
 
-    dragStop() {
-        cancelAnimationFrame(this.scrollAnimationFrame);
-        cancelAnimationFrame(this.findScrollableElementFrame);
+    dragStop(): void {
+        cancelAnimationFrame(this.scrollAnimationFrame!);
+        cancelAnimationFrame(this.findScrollableElementFrame!);
 
         this.currentMousePosition = null;
         this.findScrollableElementFrame = null;
@@ -59,7 +84,7 @@ export class ScrollHandler {
         this.scrollAnimationFrame = null;
     }
 
-    getScrollableElement(target) {
+    getScrollableElement(target: Element | null): Element | null {
         let scrollableElement = getParentScrollableElement(target);
 
         // workaround for our particular scrolling setup
@@ -72,25 +97,25 @@ export class ScrollHandler {
         return scrollableElement;
     }
 
-    _scroll() {
+    _scroll(): void {
         if (!this.scrollableElement || !this.currentMousePosition) {
             return;
         }
 
-        cancelAnimationFrame(this.scrollAnimationFrame);
+        cancelAnimationFrame(this.scrollAnimationFrame!);
 
-        let {speed, sensitivity} = this.options;
+        const {speed, sensitivity} = this.options;
 
-        let rect = this.scrollableElement.getBoundingClientRect();
+        const rect = this.scrollableElement.getBoundingClientRect();
 
-        let scrollableElement = this.scrollableElement;
-        let clientX = this.currentMousePosition.clientX;
-        let clientY = this.currentMousePosition.clientY;
+        const scrollableElement = this.scrollableElement;
+        const clientX = this.currentMousePosition.clientX;
+        const clientY = this.currentMousePosition.clientY;
 
-        let {offsetHeight, offsetWidth} = scrollableElement;
+        const {offsetHeight, offsetWidth} = scrollableElement as HTMLElement;
 
-        let topPosition = rect.top + offsetHeight - clientY;
-        let bottomPosition = clientY - rect.top;
+        const topPosition = rect.top + offsetHeight - clientY;
+        const bottomPosition = clientY - rect.top;
 
         // Safari will automatically scroll when the mouse is outside of the window
         // so we want to avoid our own scrolling in that situation to avoid jank

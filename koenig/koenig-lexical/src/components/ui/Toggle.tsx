@@ -1,6 +1,12 @@
-import PropTypes from 'prop-types';
+import React from 'react';
 
-export function Toggle({isChecked, onChange, dataTestId}) {
+export interface ToggleProps {
+    isChecked?: boolean;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    dataTestId?: string;
+}
+
+export function Toggle({isChecked, onChange, dataTestId}: ToggleProps) {
     return (
         <label className="relative inline-block h-4 w-7 outline-none" data-testid={dataTestId} id={dataTestId}>
             <input
@@ -13,8 +19,3 @@ export function Toggle({isChecked, onChange, dataTestId}) {
         </label>
     );
 }
-
-Toggle.propTypes = {
-    isChecked: PropTypes.bool,
-    onChange: PropTypes.func
-};

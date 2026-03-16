@@ -1,8 +1,9 @@
 import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, selectBackwards} from '../utils/e2e';
 import {test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 test.describe('Editor keyboard shortcuts', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();

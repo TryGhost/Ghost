@@ -87,7 +87,7 @@ describe('parseVisibilityToToggles', function () {
 
 describe('getVisibilityOptions', function () {
     it('has correct default options', function () {
-        const options = getVisibilityOptions();
+        const options = getVisibilityOptions(undefined);
 
         expect(options).toEqual([
             {
@@ -239,17 +239,17 @@ describe('serializeOptionsToVisibility', function () {
                 key: 'web',
                 label: 'Web',
                 toggles: [
-                    {key: 'nonMembers', checked: true},
-                    {key: 'freeMembers', checked: true},
-                    {key: 'paidMembers', checked: false}
+                    {key: 'nonMembers', label: 'Public visitors', checked: true},
+                    {key: 'freeMembers', label: 'Free members', checked: true},
+                    {key: 'paidMembers', label: 'Paid members', checked: false}
                 ]
             },
             {
                 key: 'email',
                 label: 'Email',
                 toggles: [
-                    {key: 'freeMembers', checked: false},
-                    {key: 'paidMembers', checked: true}
+                    {key: 'freeMembers', label: 'Free members', checked: false},
+                    {key: 'paidMembers', label: 'Paid members', checked: true}
                 ]
             }
         ]);
