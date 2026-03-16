@@ -426,8 +426,10 @@ test.describe('Member emails settings', async () => {
             await editor.press('ControlOrMeta+a');
             await editor.press('Backspace');
             await page.keyboard.type('/', {delay: 50});
-            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible({timeout: 5000});
-            await expect(page.locator('[data-kg-slash-menu]').getByText('GIF', {exact: true})).not.toBeVisible();
+            const slashMenu = page.locator('[data-kg-slash-menu]');
+            await expect(slashMenu).toBeVisible({timeout: 5000});
+            await expect(slashMenu.getByText('Image', {exact: true})).toBeVisible();
+            await expect(slashMenu.getByText('GIF', {exact: true})).not.toBeVisible();
         });
 
         test('welcome email editor shows GIF selector when Tenor is configured', async ({page}) => {
