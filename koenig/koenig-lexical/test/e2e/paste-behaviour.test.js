@@ -244,6 +244,8 @@ test.describe('Paste behaviour', async () => {
                 </p>
             `);
 
+            // wait for React to flush slash menu state update with commandParams
+            await page.waitForTimeout(50);
             await page.keyboard.press('Enter');
 
             // loading container may be too transient to catch, go straight to end state

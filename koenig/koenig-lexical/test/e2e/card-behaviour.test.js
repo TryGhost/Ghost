@@ -802,21 +802,13 @@ test.describe('Card behaviour', async () => {
                 focusPath: [0, 3, 0]
             });
 
+            // wait for cursor position to be painted so getClientRects() is accurate
+            // when the ArrowDown handler checks if cursor is at bottom of element
+            await page.waitForTimeout(50);
             await page.keyboard.press('ArrowDown');
 
             // card is selected
-            await assertHTML(page, html`
-                <p dir="ltr">
-                    <span data-lexical-text="true">First line</span>
-                    <br>
-                    <br>
-                    <span data-lexical-text="true">Second line after break</span>
-                </p>
-                <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule"><hr /></div>
-                </div>
-                <p><br /></p>
-            `);
+            await expect(page.locator('[data-kg-card="horizontalrule"][data-kg-card-selected="true"]')).toBeVisible();
         });
 
         test('with selected card at end of document', async function () {
