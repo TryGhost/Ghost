@@ -165,6 +165,30 @@ describe('Email verification flow', function () {
         );
     });
 
+    it('Uses default message when no custom message is provided', async function () {
+        const emailStub = sinon.stub().resolves(null);
+        const settingsStub = sinon.stub().resolves(null);
+        const trigger = new VerificationTrigger({
+            Settings: {
+                edit: settingsStub
+            },
+            isVerified: () => false,
+            isVerificationRequired: () => false,
+            sendVerificationEmail: emailStub
+        });
+
+        try {
+            await trigger._startVerificationProcess({
+                amount: 10,
+                throwOnTrigger: true
+            });
+            assert.fail('Should have thrown');
+        } catch (e) {
+            assert.match(e.message, /We're hard at work processing your import/);
+            assert.equal(e.code, 'EMAIL_VERIFICATION_NEEDED');
+        }
+    });
+
     it('Sends a message containing the number of members imported', async function () {
         const emailStub = sinon.stub().resolves(null);
         const settingsStub = sinon.stub().resolves(null);

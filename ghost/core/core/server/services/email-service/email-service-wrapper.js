@@ -141,7 +141,8 @@ class EmailServiceWrapper {
             membersRepository,
             verificationTrigger: membersService.verificationTrigger,
             emailAnalyticsJobs,
-            domainWarmingService
+            domainWarmingService,
+            config: configService
         });
 
         this.controller = new EmailController(this.service, {
