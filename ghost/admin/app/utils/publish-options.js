@@ -400,7 +400,8 @@ export default class PublishOptions {
             if (this.limit.limiter && this.limit.limiter.isLimited('emails')) {
                 await this.limit.limiter.errorIfWouldGoOverLimit('emails');
             } else if (this.settings.emailVerificationRequired) {
-                this.emailDisabledError = 'Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org.';
+                this.emailDisabledError = this.config.hostSettings?.emailVerification?.emailSendingDisabledMessage
+                    || 'Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org.';
             }
         } catch (e) {
             this.emailDisabledError = e.message;
