@@ -16,7 +16,7 @@ export const EmailPlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_EMAIL_COMMAND,
-                async (dataset) => {
+                (dataset) => {
                     const cardNode = $createEmailNode(dataset);
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode, openInEditMode: true});
 

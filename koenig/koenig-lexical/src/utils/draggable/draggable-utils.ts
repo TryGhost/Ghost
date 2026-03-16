@@ -1,5 +1,5 @@
 // TODO: more or less duplicated in koenig-card-gallery other than direction
-export function isCardDropAllowed(draggableIndex, droppableIndex, position = '') {
+export function isCardDropAllowed(draggableIndex: number, droppableIndex: number, position = ''): boolean {
     // images can be dragged out of a gallery to any position
     if (draggableIndex === -1) {
         return true;
@@ -23,31 +23,31 @@ export function isCardDropAllowed(draggableIndex, droppableIndex, position = '')
 }
 
 // TODO: rename to closest? getParent can actually match passed in element
-export function getParent(element, value) {
-    return getWithMatch(element, value, current => current.parentNode);
+export function getParent(element: Element | null, value: string | ((el: Element) => boolean)): Element | null {
+    return getWithMatch(element, value, current => current.parentNode as Element | null);
 }
 
-export function getNextSibling(element, value) {
+export function getNextSibling(element: Element | null, value: string | ((el: Element) => boolean)): Element | null {
     // don't match the passed in element
-    element = element.nextElementSibling;
+    element = element?.nextElementSibling ?? null;
     return getWithMatch(element, value, current => current.nextElementSibling);
 }
 
-export function getPreviousSibling(element, value) {
+export function getPreviousSibling(element: Element | null, value: string | ((el: Element) => boolean)): Element | null {
     // don't match the passed in element
-    element = element.previousElementSibling;
+    element = element?.previousElementSibling ?? null;
     return getWithMatch(element, value, current => current.previousElementSibling);
 }
 
-export function getParentScrollableElement(element) {
+export function getParentScrollableElement(element: Element | null): Element | null {
     if (!element) {
         return getDocumentScrollingElement();
     }
 
-    let position = getComputedStyle(element).getPropertyValue('position');
-    let excludeStaticParents = position === 'absolute';
+    const position = getComputedStyle(element).getPropertyValue('position');
+    const excludeStaticParents = position === 'absolute';
 
-    let scrollableElement = getParent(element, (parent) => {
+    const scrollableElement = getParent(element, (parent) => {
         if (excludeStaticParents && isStaticallyPositioned(parent)) {
             return false;
         }
@@ -61,42 +61,38 @@ export function getParentScrollableElement(element) {
     }
 }
 
-export function getDocumentScrollingElement() {
-    return document.scrollingElement?.body || document.scrollingElement || document.element;
+export function getDocumentScrollingElement(): Element | null {
+    return (document.scrollingElement as HTMLElement)?.querySelector('body') || document.scrollingElement || document.documentElement;
 }
 
-export function applyUserSelect(element, value) {
+export function applyUserSelect(element: HTMLElement, value: string): void {
     element.style.webkitUserSelect = value;
-    element.style.mozUserSelect = value;
-    element.style.msUserSelect = value;
-    element.style.oUserSelect = value;
+    (element.style as unknown as Record<string, string>).mozUserSelect = value;
+    (element.style as unknown as Record<string, string>).msUserSelect = value;
+    (element.style as unknown as Record<string, string>).oUserSelect = value;
     element.style.userSelect = value;
 }
 
 /* Not exported --------------------------------------------------------------*/
 
-function getWithMatch(element, value, next) {
+function getWithMatch(element: Element | null, value: string | ((el: Element) => boolean), next: (el: Element) => Element | null): Element | null {
     if (!element) {
         return null;
     }
 
-    let selector = value;
-    let callback = value;
+    const isSelector = typeof value === 'string';
 
-    let isSelector = typeof value === 'string';
-    let isFunction = typeof value === 'function';
-
-    function matches(currentElement) {
+    function matches(currentElement: Element | null): boolean {
         if (!currentElement) {
-            return currentElement;
+            return false;
         } else if (isSelector) {
-            return currentElement.matches(selector);
-        } else if (isFunction) {
-            return callback(currentElement);
+            return currentElement.matches(value as string);
+        } else {
+            return (value as (el: Element) => boolean)(currentElement);
         }
     }
 
-    let current = element;
+    let current: Element | null = element;
 
     do {
         if (matches(current)) {
@@ -104,19 +100,21 @@ function getWithMatch(element, value, next) {
         }
 
         current = next(current);
-    } while (current && current !== document.body && current !== document);
+    } while (current && current !== document.body && current !== document.documentElement);
+
+    return null;
 }
 
-function isStaticallyPositioned(element) {
-    let position = getComputedStyle(element).getPropertyValue('position');
+function isStaticallyPositioned(element: Element): boolean {
+    const position = getComputedStyle(element).getPropertyValue('position');
     return position === 'static';
 }
 
-function hasOverflow(element) {
-    let overflowRegex = /(auto|scroll)/;
-    let computedStyles = getComputedStyle(element, null);
+function hasOverflow(element: Element): boolean {
+    const overflowRegex = /(auto|scroll)/;
+    const computedStyles = getComputedStyle(element, null);
 
-    let overflow =
+    const overflow =
         computedStyles.getPropertyValue('overflow') +
         computedStyles.getPropertyValue('overflow-y') +
         computedStyles.getPropertyValue('overflow-x');

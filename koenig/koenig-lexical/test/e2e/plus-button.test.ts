@@ -1,8 +1,9 @@
 import {assertHTML, assertPosition, assertSelection, focusEditor, html, initialize, insertCard} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 test.describe('Plus button', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -28,21 +29,21 @@ test.describe('Plus button', async () => {
             // expect button to be positioned for first paragraph
             const firstPara = await page.locator('[data-lexical-editor] > p');
             const firstParaRect = await firstPara.boundingBox();
-            await assertPosition(page, '[data-kg-plus-button]', {y: firstParaRect.y}, {threshold: 5});
+            await assertPosition(page, '[data-kg-plus-button]', {y: firstParaRect!.y}, {threshold: 5});
 
             await page.keyboard.press('Enter');
 
             // expect button to be positioned for second paragraph
             const secondPara = await page.locator('[data-lexical-editor] > p:nth-of-type(2)');
             const secondParaRect = await secondPara.boundingBox();
-            await assertPosition(page, '[data-kg-plus-button]', {y: secondParaRect.y}, {threshold: 5});
+            await assertPosition(page, '[data-kg-plus-button]', {y: secondParaRect!.y}, {threshold: 5});
 
             await page.keyboard.press('ArrowUp');
             // wait for selection change to be processed and plus button position to update
             await page.waitForTimeout(50);
 
             // expect button to be positioned for first paragraph
-            await assertPosition(page, '[data-kg-plus-button]', {y: firstParaRect.y}, {threshold: 5});
+            await assertPosition(page, '[data-kg-plus-button]', {y: firstParaRect!.y}, {threshold: 5});
         });
 
         test('disappears when starting to type', async function () {
@@ -105,13 +106,13 @@ test.describe('Plus button', async () => {
             const firstPHandleBox = await firstPHandle.boundingBox();
             await firstPHandle.hover();
 
-            await assertPosition(page, '[data-kg-plus-button]', {y: firstPHandleBox.y}, {threshold: 5});
+            await assertPosition(page, '[data-kg-plus-button]', {y: firstPHandleBox!.y}, {threshold: 5});
 
             const secondPHandle = await page.locator('[data-lexical-editor] > p:nth-of-type(2)');
             const secondPHandleBox = await secondPHandle.boundingBox();
             await secondPHandle.hover();
 
-            await assertPosition(page, '[data-kg-plus-button]', {y: secondPHandleBox.y}, {threshold: 5});
+            await assertPosition(page, '[data-kg-plus-button]', {y: secondPHandleBox!.y}, {threshold: 5});
         });
 
         test('does not appear over populated paragraphs', async function () {
@@ -180,15 +181,15 @@ test.describe('Plus button', async () => {
             const pHandle1Box = await pHandle1.boundingBox();
             const pHandle3Box = await pHandle3.boundingBox();
 
-            await assertPosition(page, '[data-kg-plus-button]', {y: pHandle3Box.y}, {threshold: 5});
+            await assertPosition(page, '[data-kg-plus-button]', {y: pHandle3Box!.y}, {threshold: 5});
 
             await pHandle1.hover();
 
-            await assertPosition(page, '[data-kg-plus-button]', {y: pHandle1Box.y}, {threshold: 5});
+            await assertPosition(page, '[data-kg-plus-button]', {y: pHandle1Box!.y}, {threshold: 5});
 
             await pHandle2.hover();
 
-            await assertPosition(page, '[data-kg-plus-button]', {y: pHandle3Box.y}, {threshold: 5});
+            await assertPosition(page, '[data-kg-plus-button]', {y: pHandle3Box!.y}, {threshold: 5});
         });
 
         test('does not appear over an empty paragraph in a card', async function () {
@@ -243,17 +244,17 @@ test.describe('Plus button', async () => {
             const p3 = await page.locator('[data-lexical-editor] > p:nth-of-type(3)');
             const p3Box = await p3.boundingBox();
 
-            await assertPosition(page, '[data-kg-plus-button]', {y: p3Box.y}, {threshold: 5});
+            await assertPosition(page, '[data-kg-plus-button]', {y: p3Box!.y}, {threshold: 5});
 
             await page.click('[data-kg-plus-button]');
 
             expect(await page.locator('[data-kg-plus-menu]')).not.toBeNull();
-            await assertPosition(page, '[data-kg-plus-menu]', {y: p3Box.y}, {threshold: 5});
+            await assertPosition(page, '[data-kg-plus-menu]', {y: p3Box!.y}, {threshold: 5});
 
             await p1.hover();
 
-            await assertPosition(page, '[data-kg-plus-button]', {y: p3Box.y}, {threshold: 5});
-            await assertPosition(page, '[data-kg-plus-menu]', {y: p3Box.y}, {threshold: 5});
+            await assertPosition(page, '[data-kg-plus-button]', {y: p3Box!.y}, {threshold: 5});
+            await assertPosition(page, '[data-kg-plus-menu]', {y: p3Box!.y}, {threshold: 5});
         });
 
         test('moves cursor when opening', async function () {
@@ -286,7 +287,7 @@ test.describe('Plus button', async () => {
 
             await page.keyboard.type('Test');
             await expect(await page.locator('[data-kg-plus-menu]')).toHaveCount(0);
-            expect(await page.$eval('[data-lexical-editor] > p', p => p.innerText))
+            expect(await page.$eval('[data-lexical-editor] > p', p => (p as HTMLElement).innerText))
                 .toBe('Test');
         });
 
@@ -319,7 +320,7 @@ test.describe('Plus button', async () => {
 
             const p1 = await page.locator('[data-lexical-editor] > p').first();
             const p1Box = await p1.boundingBox();
-            await assertPosition(page, '[data-kg-plus-button]', {y: p1Box.y}, {threshold: 5});
+            await assertPosition(page, '[data-kg-plus-button]', {y: p1Box!.y}, {threshold: 5});
         });
 
         test('inserts card and closes menu when card item clicked', async function () {

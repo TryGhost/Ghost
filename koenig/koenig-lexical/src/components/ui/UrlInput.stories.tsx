@@ -1,6 +1,7 @@
 import {UrlInput} from './UrlInput';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
-const story = {
+const story: Meta<typeof UrlInput> = {
     title: 'Generic/URL Input',
     component: UrlInput,
     parameters: {
@@ -11,7 +12,7 @@ const story = {
 };
 export default story;
 
-const Template = args => (
+const Template: StoryFn<typeof UrlInput> = args => (
     <div className="w-[740px]">
         <div className="p-4">
             <UrlInput {...args} />
@@ -22,37 +23,32 @@ const Template = args => (
     </div>
 );
 
-export const Empty = Template.bind({});
+export const Empty: StoryFn<typeof UrlInput> = Template.bind({});
 Empty.args = {
     value: '',
-    onChange: () => {}
 };
 
-export const Loading = Template.bind({});
+export const Loading: StoryFn<typeof UrlInput> = Template.bind({});
 Loading.args = {
     value: 'https://ghost.org/',
-    onChange: () => {},
     isLoading: true
 };
 
-export const Placeholder = Template.bind({});
+export const Placeholder: StoryFn<typeof UrlInput> = Template.bind({});
 Placeholder.args = {
     value: '',
-    onChange: () => {},
     placeholder: 'Enter a URL to add content...'
 };
 
-export const Populated = Template.bind({});
+export const Populated: StoryFn<typeof UrlInput> = Template.bind({});
 Populated.args = {
     value: 'https://sampleurl.com',
-    onChange: () => {}
 };
 
-export const Error = Template.bind({});
+export const Error: StoryFn<typeof UrlInput> = Template.bind({});
 Error.args = {
     value: 'thisisntaurl',
     hasError: true,
-    onChange: () => {},
     handleRetry: () => {},
     handlePasteAsLink: () => {}
 };

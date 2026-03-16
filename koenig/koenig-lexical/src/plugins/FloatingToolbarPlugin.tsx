@@ -6,15 +6,16 @@ import {FloatingFormatToolbar, toolbarItemTypes} from '../components/ui/Floating
 import {FloatingLinkToolbar} from '../components/ui/FloatingLinkToolbar';
 import {getSelectedNode} from '../utils/getSelectedNode';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {LexicalEditor} from 'lexical';
 
-export default function FloatingToolbarPlugin({anchorElem = document.body, isSnippetsEnabled, hiddenFormats = []}) {
+export default function FloatingToolbarPlugin({anchorElem = document.body, isSnippetsEnabled, hiddenFormats = []}: {anchorElem?: HTMLElement; isSnippetsEnabled?: boolean; hiddenFormats?: string[]}) {
     const [editor] = useLexicalComposerContext();
     return useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenFormats);
 }
 
-function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenFormats = []) {
-    const [toolbarItemType, setToolbarItemType] = React.useState(null);
-    const [href, setHref] = React.useState(null);
+function useFloatingFormatToolbar(editor: LexicalEditor, anchorElem: HTMLElement, isSnippetsEnabled?: boolean, hiddenFormats: string[] = []) {
+    const [toolbarItemType, setToolbarItemType] = React.useState<string | null>(null);
+    const [href, setHref] = React.useState<string | null>(null);
 
     const setToolbarType = React.useCallback(() => {
         editor.getEditorState().read(() => {
@@ -82,7 +83,7 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenF
     React.useEffect(() => {
         editor.registerCommand(
             KEY_MODIFIER_COMMAND,
-            (event) => {
+            (event: KeyboardEvent) => {
                 const {keyCode, ctrlKey, metaKey, shiftKey} = event;
                 // ctrl/cmd K with selected text should prompt for link insertion
                 if (!shiftKey && keyCode === 75 && (ctrlKey || metaKey)) {
@@ -102,8 +103,8 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenF
     // use native mousedown event so the toolbar can close when something is
     // clicked outside of the editor and the selection is lost
     React.useEffect(() => {
-        const handleMousedown = (event) => {
-            if (!anchorElem.contains(event.target)) {
+        const handleMousedown = (event: MouseEvent) => {
+            if (!anchorElem.contains(event.target as Node)) {
                 setToolbarItemType(null);
             }
         };
@@ -115,9 +116,9 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenF
         };
     });
 
-    const handleLinkEdit = (data) => {
+    const handleLinkEdit = (data: {href?: string}) => {
         setToolbarItemType(toolbarItemTypes.link);
-        setHref(data?.href);
+        setHref(data?.href ?? null);
     };
 
     return (
@@ -126,7 +127,7 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenF
                 anchorElem={anchorElem}
                 editor={editor}
                 hiddenFormats={hiddenFormats}
-                href={href}
+                href={href ?? undefined}
                 isSnippetsEnabled={isSnippetsEnabled}
                 setToolbarItemType={setToolbarItemType}
                 toolbarItemType={toolbarItemType}

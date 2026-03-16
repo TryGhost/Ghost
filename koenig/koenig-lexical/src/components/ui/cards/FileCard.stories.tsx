@@ -1,5 +1,7 @@
 import {CardWrapper} from './../CardWrapper';
 import {FileCard} from './FileCard';
+import type {ComponentProps} from 'react';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
@@ -7,14 +9,15 @@ const displayOptions = {
     Editing: {isSelected: true, isEditing: true}
 };
 
-const story = {
+type StoryArgs = ComponentProps<typeof FileCard> & {display: keyof typeof displayOptions};
+
+const story: Meta<StoryArgs> = {
     title: 'Primary cards/File card',
     component: FileCard,
-    subcomponent: {CardWrapper},
+    subcomponents: {CardWrapper},
     argTypes: {
         display: {
             options: Object.keys(displayOptions),
-            mapping: displayOptions,
             control: {
                 type: 'radio',
                 labels: {
@@ -34,24 +37,24 @@ const story = {
 };
 export default story;
 
-const Template = ({display, ...args}) => (
+const Template: StoryFn<StoryArgs> = ({display, ...args}) => (
     <div className="kg-prose">
         <div className="not-kg-prose mx-auto my-8 min-w-[initial] max-w-[740px]">
-            <CardWrapper {...display} {...args}>
-                <FileCard {...display} {...args} />
+            <CardWrapper {...displayOptions[display]} {...args}>
+                <FileCard {...displayOptions[display]} {...args} />
             </CardWrapper>
         </div>
         <div className="dark bg-black py-10">
             <div className="not-kg-prose mx-auto my-8 min-w-[initial] max-w-[740px]">
-                <CardWrapper {...display} {...args}>
-                    <FileCard {...display} {...args} />
+                <CardWrapper {...displayOptions[display]} {...args}>
+                    <FileCard {...displayOptions[display]} {...args} />
                 </CardWrapper>
             </div>
         </div>
     </div>
 );
 
-export const Empty = Template.bind({});
+export const Empty: StoryFn<StoryArgs> = Template.bind({});
 Empty.args = {
     display: 'Editing',
     isPopulated: false,
@@ -61,11 +64,11 @@ Empty.args = {
     fileDescPlaceholder: 'Add optional file description',
     fileName: 'Example-file.pdf',
     fileSize: '165 KB',
-    fileInputRef: {},
+    fileInputRef: {current: null},
     fileDragHandler: {}
 };
 
-export const Populated = Template.bind({});
+export const Populated: StoryFn<StoryArgs> = Template.bind({});
 Populated.args = {
     display: 'Editing',
     isPopulated: true,
@@ -75,7 +78,7 @@ Populated.args = {
     fileDescPlaceholder: 'Add optional file description',
     fileName: 'Example-file.pdf',
     fileSize: '165 KB',
-    fileInputRef: {},
+    fileInputRef: {current: null},
     fileDragHandler: {}
 };
 

@@ -1,8 +1,9 @@
 import {assertHTML, assertSelection, ctrlOrCmd, focusEditor, getScrollPosition, html, initialize, insertCard, pasteText} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 test.describe('Card behaviour', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -151,12 +152,12 @@ test.describe('Card behaviour', async () => {
 
             const title = page.getByTestId('post-title');
             await title.click();
-            let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+            const titleHasFocus = await title.evaluate(node => document.activeElement === node);
             expect(titleHasFocus).toEqual(true);
 
             await page.click('div[data-kg-card="codeblock"]');
             const editor = await page.locator('div.kg-prose').first();
-            let editorHasFocus = await editor.evaluate(node => document.activeElement === node);
+            const editorHasFocus = await editor.evaluate(node => document.activeElement === node);
             expect(editorHasFocus).toEqual(true);
         });
 
@@ -491,7 +492,7 @@ test.describe('Card behaviour', async () => {
 
     test.describe('UP', function () {
         // moves caret to end of paragraph
-        test('with selected card after paragraph', async function () {
+        test('with selected card after paragraph moves caret up', async function () {
             await focusEditor(page);
             await page.keyboard.type('First line');
             await page.keyboard.down('Shift');
@@ -532,7 +533,7 @@ test.describe('Card behaviour', async () => {
         });
 
         // selects the previous card
-        test('with selected card after card', async function () {
+        test('with selected card after card moves caret up', async function () {
             await focusEditor(page);
             await page.keyboard.type('---');
             await page.keyboard.type('---');
@@ -577,7 +578,7 @@ test.describe('Card behaviour', async () => {
             // place cursor at beginning of third line
             const textLocator = await page.locator('[data-lexical-editor] > p');
             const pRect = await textLocator.boundingBox();
-            await page.mouse.click(pRect.x + 1, pRect.y + pRect.height - 5);
+            await page.mouse.click(pRect!.x + 1, pRect!.y + pRect!.height - 5);
 
             await assertSelection(page, {
                 anchorOffset: 220,
@@ -688,7 +689,7 @@ test.describe('Card behaviour', async () => {
 
     test.describe('DOWN', function () {
         // moves caret to beginning of paragraph
-        test('with selected card before paragraph', async function () {
+        test('with selected card before paragraph moves caret down', async function () {
             await focusEditor(page);
             await page.keyboard.type('---');
             await page.keyboard.type('First line');
@@ -726,7 +727,7 @@ test.describe('Card behaviour', async () => {
         });
 
         // selects the next card
-        test('with selected card before card', async function () {
+        test('with selected card before card moves caret down', async function () {
             await focusEditor(page);
             await page.keyboard.type('---');
             await page.keyboard.type('---');
@@ -758,7 +759,7 @@ test.describe('Card behaviour', async () => {
         });
 
         // selects the card once caret reaches bottom of paragraph
-        test('moving through paragraph to card', async function () {
+        test('moving down through paragraph to card', async function () {
             await focusEditor(page);
             await page.keyboard.type('First line');
             await page.keyboard.down('Shift');
@@ -772,7 +773,7 @@ test.describe('Card behaviour', async () => {
             // place cursor at beginning of first line
             const pHandle = await page.locator('[data-lexical-editor] > p').nth(0);
             const pRect = await pHandle.boundingBox();
-            await page.mouse.click(pRect.x + 5, pRect.y + 5);
+            await page.mouse.click(pRect!.x + 5, pRect!.y + 5);
 
             // sanity check
             await assertSelection(page, {
@@ -884,7 +885,7 @@ test.describe('Card behaviour', async () => {
 
     test.describe('BACKSPACE', function () {
         // deletes card and puts cursor at end of previous paragraph
-        test('with selected card after paragraph', async function () {
+        test('with selected card after paragraph deletes card', async function () {
             await focusEditor(page);
             await page.keyboard.type('Testing');
             await page.keyboard.press('Enter');
@@ -916,7 +917,7 @@ test.describe('Card behaviour', async () => {
             });
         });
 
-        test('with selected card after card', async function () {
+        test('with selected card after card deletes card via backspace', async function () {
             await focusEditor(page);
             await page.keyboard.type('---');
             await page.keyboard.type('---');
@@ -1171,7 +1172,7 @@ test.describe('Card behaviour', async () => {
     });
 
     test.describe('DELETE', function () {
-        test('with selected card before paragraph', async function () {
+        test('with selected card before paragraph deletes card', async function () {
             await focusEditor(page);
             await page.keyboard.type('---');
             await page.keyboard.type('Testing');
@@ -1200,7 +1201,7 @@ test.describe('Card behaviour', async () => {
             });
         });
 
-        test('with selected card before card', async function () {
+        test('with selected card before card deletes card via delete', async function () {
             await focusEditor(page);
             await page.keyboard.type('---');
             await page.keyboard.type('---');
@@ -1218,7 +1219,7 @@ test.describe('Card behaviour', async () => {
             `);
         });
 
-        test('with selected card as only node', async function () {
+        test('with selected card as only node deletes card via delete', async function () {
             await focusEditor(page);
             await page.keyboard.type('---');
             await page.keyboard.press('Backspace');
@@ -1935,7 +1936,7 @@ test.describe('Card behaviour', async () => {
                 textValue: '<p><span style="white-space: pre-wrap;">CTA content</span></p>'
             };
 
-            const children = [{...ctaCard}];
+            const children: Record<string, unknown>[] = [{...ctaCard}];
 
             for (let i = 0; i < 30; i++) {
                 children.push({
@@ -1982,16 +1983,17 @@ test.describe('Card behaviour', async () => {
 
             // Start monitoring for any scroll movement
             await page.evaluate(() => {
-                const container = document.querySelector('.h-full.overflow-auto');
-                window._scrollStartPosition = container.scrollTop;
-                window._maxScrollDeviation = 0;
-                window._scrollHandler = () => {
-                    const deviation = Math.abs(container.scrollTop - window._scrollStartPosition);
-                    if (deviation > window._maxScrollDeviation) {
-                        window._maxScrollDeviation = deviation;
+                const container = document.querySelector('.h-full.overflow-auto')!;
+                const w = window as unknown as Record<string, unknown>;
+                w._scrollStartPosition = container.scrollTop;
+                w._maxScrollDeviation = 0;
+                w._scrollHandler = () => {
+                    const deviation = Math.abs(container.scrollTop - (w._scrollStartPosition as number));
+                    if (deviation > (w._maxScrollDeviation as number)) {
+                        w._maxScrollDeviation = deviation;
                     }
                 };
-                container.addEventListener('scroll', window._scrollHandler);
+                container.addEventListener('scroll', w._scrollHandler as EventListener);
             });
 
             // Enter edit mode on the first card — the second card's nested
@@ -2002,9 +2004,10 @@ test.describe('Card behaviour', async () => {
 
             // Check no scroll movement occurred (even transiently)
             const maxDeviation = await page.evaluate(() => {
-                const container = document.querySelector('.h-full.overflow-auto');
-                container.removeEventListener('scroll', window._scrollHandler);
-                return window._maxScrollDeviation;
+                const container = document.querySelector('.h-full.overflow-auto')!;
+                const w = window as unknown as Record<string, unknown>;
+                container.removeEventListener('scroll', w._scrollHandler as EventListener);
+                return w._maxScrollDeviation;
             });
 
             expect(maxDeviation).toBe(0);

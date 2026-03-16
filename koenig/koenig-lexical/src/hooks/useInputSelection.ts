@@ -13,14 +13,14 @@ import {useEffect, useState} from 'react';
  * https://github.com/facebook/lexical/issues/3488
  * https://github.com/facebook/lexical/pull/3491
  */
-export default function useInputSelection({value}) {
-    const [ref, setRef] = useState(null);
+export default function useInputSelection({value}: {value: string}) {
+    const [ref, setRef] = useState<HTMLInputElement | null>(null);
     const [selectionStart, setSelectionStart] = useState(0);
     const [selectionEnd, setSelectionEnd] = useState(0);
 
-    function saveSelectionRange(e) {
-        setSelectionStart(e.target.selectionStart);
-        setSelectionEnd(e.target.selectionEnd);
+    function saveSelectionRange(e: React.SyntheticEvent<HTMLInputElement>) {
+        setSelectionStart((e.target as HTMLInputElement).selectionStart ?? 0);
+        setSelectionEnd((e.target as HTMLInputElement).selectionEnd ?? 0);
     }
 
     useEffect(() => {

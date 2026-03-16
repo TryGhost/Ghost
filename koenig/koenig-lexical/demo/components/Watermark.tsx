@@ -1,7 +1,7 @@
 import GhostFavicon from './icons/ghost-favicon.svg?react';
 import {Link} from 'react-router-dom';
 
-function EditorLink({editorType}) {
+function EditorLink({editorType}: {editorType: {name: string; url: string}}) {
     return (
         <Link rel="nofollow ugc noopener noreferrer" to={editorType?.url}>
             <span className="ml-[.7rem] hidden font-normal hover:font-bold group-hover:inline">/ {editorType?.name}</span>
@@ -9,7 +9,7 @@ function EditorLink({editorType}) {
     );
 }
 
-const Watermark = ({editorType}) => {
+const Watermark = ({editorType}: {editorType?: string}) => {
     if (!editorType) {
         return (
             <a className="absolute bottom-4 left-6 z-20 flex items-center rounded bg-white py-1 pl-1 pr-2 font-mono text-sm tracking-tight text-black" href="https://github.com/TryGhost/Koenig/tree/main/packages/koenig-lexical" rel="nofollow ugc noopener noreferrer" target="_blank">

@@ -1,10 +1,11 @@
 import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, isMac, pasteText} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 test.describe('Bookmark card (with searchLinks)', async () => {
     const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
-    let page;
-    let errors;
+    let page: Page;
+    let errors: string[];
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();

@@ -23,8 +23,10 @@ import {
 } from './ToolbarMenu';
 import {altOrOption, ctrlOrCmdSymbol, ctrlOrSymbol} from '../../utils/shortcutSymbols';
 import {getSelectedNode} from '../../utils/getSelectedNode';
+import type {HeadingTagType} from '@lexical/rich-text';
+import type {LexicalEditor} from 'lexical';
 
-const blockTypeToBlockName = {
+const blockTypeToBlockName: Record<string, string> = {
     bullet: 'Bulleted List',
     check: 'Check List',
     code: 'Code Block',
@@ -51,6 +53,15 @@ function quoteIcon(blockType = '') {
     }
 }
 
+interface FormatToolbarProps {
+    editor: LexicalEditor;
+    isSnippetsEnabled?: boolean;
+    isLinkSelected?: boolean;
+    onLinkClick?: () => void;
+    onSnippetClick?: () => void;
+    hiddenFormats?: string[];
+}
+
 export default function FormatToolbar({
     editor,
     isSnippetsEnabled,
@@ -58,7 +69,7 @@ export default function FormatToolbar({
     onLinkClick,
     onSnippetClick,
     hiddenFormats = []
-}) {
+}: FormatToolbarProps) {
     const [isBold, setIsBold] = React.useState(false);
     const [isItalic, setIsItalic] = React.useState(false);
     const [blockType, setBlockType] = React.useState('paragraph');
@@ -73,7 +84,7 @@ export default function FormatToolbar({
     if (!editor.hasNodes([QuoteNode])){
         hideQuotes = true;
     }
-    
+
     let hideSnippets = !isSnippetsEnabled || !createSnippet; // don't show snippet toolbar if we can't create them
     if (editor._parentEditor) {
         hideSnippets = true;
@@ -146,7 +157,7 @@ export default function FormatToolbar({
         }
     };
 
-    const formatHeading = (headingSize) => {
+    const formatHeading = (headingSize: HeadingTagType) => {
         if (blockType !== headingSize) {
             editor.update(() => {
                 const selection = $getSelection();

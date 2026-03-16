@@ -1,8 +1,9 @@
 import {assertHTML, createSnippet, ctrlOrCmd, focusEditor, html, initialize} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 test.describe('Html card', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();

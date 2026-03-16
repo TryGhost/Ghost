@@ -1,19 +1,25 @@
-import GifSelector from './GifSelector';
-import KoenigComposerContext from '../../context/KoenigComposerContext.jsx';
+import GifSelector, {type GifSelectorProps} from './GifSelector';
+import KoenigComposerContext from '../../context/KoenigComposerContext';
 import React from 'react';
-import {DELETE_CARD_COMMAND} from '../../plugins/KoenigBehaviourPlugin.jsx';
-import {INSERT_FROM_GIF_COMMAND} from '../../plugins/KoenigSelectorPlugin.jsx';
-import {getGifProviderConfig, useGif} from '../../utils/services/gif.js';
+import {DELETE_CARD_COMMAND} from '../../plugins/KoenigBehaviourPlugin';
+import {INSERT_FROM_GIF_COMMAND} from '../../plugins/KoenigSelectorPlugin';
+import {getGifProviderConfig, useGif} from '../../utils/services/gif';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-const GifPlugin = ({nodeKey}) => {
-    const {cardConfig} = React.useContext(KoenigComposerContext);
-    const providerConfig = getGifProviderConfig(cardConfig);
+interface GifPluginProps {
+    nodeKey: string;
+}
+
+interface GifSelectorPluginProps extends GifPluginProps {
+    providerConfig: NonNullable<ReturnType<typeof getGifProviderConfig>>;
+}
+
+const GifSelectorPlugin = ({nodeKey, providerConfig}: GifSelectorPluginProps) => {
     const gifHook = useGif({config: providerConfig});
     const [editor] = useLexicalComposerContext();
 
     React.useEffect(() => {
-        const handleKeyDown = (e) => {
+        const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
                 editor.dispatchCommand(DELETE_CARD_COMMAND, {cardKey: nodeKey});
             }
@@ -33,17 +39,28 @@ const GifPlugin = ({nodeKey}) => {
         editor.dispatchCommand(DELETE_CARD_COMMAND, {cardKey: nodeKey});
     };
 
-    const insertImageToNode = async (image) => {
+    const insertImageToNode = async (image: unknown) => {
         editor.dispatchCommand(INSERT_FROM_GIF_COMMAND, image);
     };
 
     return (
         <GifSelector
             onClickOutside={onClickOutside}
-            onGifInsert={insertImageToNode}
-            {...gifHook}
+            onGifInsert={insertImageToNode as GifSelectorProps['onGifInsert']}
+            {...gifHook as unknown as Omit<GifSelectorProps, 'onGifInsert' | 'onClickOutside'>}
         />
     );
+};
+
+const GifPlugin = ({nodeKey}: GifPluginProps) => {
+    const {cardConfig} = React.useContext(KoenigComposerContext);
+    const providerConfig = getGifProviderConfig(cardConfig);
+
+    if (!providerConfig) {
+        return null;
+    }
+
+    return <GifSelectorPlugin nodeKey={nodeKey} providerConfig={providerConfig} />;
 };
 
 export default GifPlugin;

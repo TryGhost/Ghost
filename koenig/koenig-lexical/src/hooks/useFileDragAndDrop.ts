@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 
-export default function useFileDragAndDrop({handleDrop, disabled = false}) {
-    const [ref, setRef] = useState(null);
+export default function useFileDragAndDrop({handleDrop, disabled = false}: {handleDrop: (files: File[]) => void; disabled?: boolean}) {
+    const [ref, setRef] = useState<HTMLElement | null>(null);
     const [isDraggedOver, setDraggedOver] = useState(false);
 
     useEffect(() => {
@@ -15,33 +15,33 @@ export default function useFileDragAndDrop({handleDrop, disabled = false}) {
         node.addEventListener('dragleave', onDragLeave);
         node.addEventListener('drop', onDrop);
 
-        function onDragEnter(event) {
+        function onDragEnter(event: DragEvent) {
             cancelEvents(event);
             setDraggedOver(true);
         }
 
-        function onDragOver(event) {
+        function onDragOver(event: DragEvent) {
             cancelEvents(event);
             setDraggedOver(true);
         }
 
-        function onDragLeave(event) {
+        function onDragLeave(event: DragEvent) {
             cancelEvents(event);
             setDraggedOver(false);
         }
 
-        function onDrop(event) {
+        function onDrop(event: DragEvent) {
             cancelEvents(event);
             const {dataTransfer} = event;
 
-            if (dataTransfer.files && dataTransfer.files.length > 0) {
+            if (dataTransfer?.files && dataTransfer.files.length > 0) {
                 handleDrop(Array.from(dataTransfer.files));
             }
 
             setDraggedOver(false);
         }
 
-        function cancelEvents(event) {
+        function cancelEvents(event: Event) {
             event.preventDefault();
             event.stopPropagation();
         }

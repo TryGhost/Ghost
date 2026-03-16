@@ -1,8 +1,9 @@
 import {assertHTML, assertSelection, focusEditor, html, initialize, insertCard} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 test.describe('Slash menu', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -309,7 +310,7 @@ test.describe('Slash menu', async () => {
             `, {ignoreCardContents: true});
 
             expect(await page.evaluate(() => {
-                return document.querySelector('[data-kg-card="image"] img').src;
+                return (document.querySelector('[data-kg-card="image"] img') as HTMLImageElement).src;
             })).toEqual('https://example.com/image.jpg');
         });
 

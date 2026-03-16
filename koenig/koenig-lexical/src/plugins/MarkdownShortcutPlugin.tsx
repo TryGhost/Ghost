@@ -1,5 +1,6 @@
 import {$createCodeBlockNode, $isCodeBlockNode, CodeBlockNode} from '../nodes/CodeBlockNode';
 import {$createHorizontalRuleNode, $isHorizontalRuleNode, HorizontalRuleNode} from '../nodes/HorizontalRuleNode';
+import {$createImageNode, $isImageNode, ImageNode} from '../nodes/ImageNode';
 import {$createNodeSelection, $setSelection} from 'lexical';
 import {
     HEADING,
@@ -10,14 +11,16 @@ import {
     UNORDERED_LIST
 } from '@lexical/markdown';
 import {MarkdownShortcutPlugin as LexicalMarkdownShortcutPlugin} from '@lexical/react/LexicalMarkdownShortcutPlugin';
+import type {ElementNode, LexicalNode} from 'lexical';
+import type {ElementTransformer, Transformer} from '@lexical/markdown';
 
-export const HR = {
+export const HR: ElementTransformer = {
     dependencies: [HorizontalRuleNode],
-    export: (node) => {
+    export: (node: LexicalNode) => {
         return $isHorizontalRuleNode(node) ? '---' : null;
     },
     regExp: /^(---|\*\*\*|___)\s?$/,
-    replace: (parentNode, _1, _2, isImport) => {
+    replace: (parentNode: ElementNode, _1: LexicalNode[], _2: string[], isImport: boolean) => {
         const line = $createHorizontalRuleNode();
 
         // TODO: Get rid of isImport flag
@@ -32,9 +35,9 @@ export const HR = {
     type: 'element'
 };
 
-export const CODE_BLOCK = {
+export const CODE_BLOCK: ElementTransformer = {
     dependencies: [CodeBlockNode],
-    export: (node) => {
+    export: (node: LexicalNode) => {
         if (!$isCodeBlockNode(node)) {
             return null;
         }
@@ -48,7 +51,7 @@ export const CODE_BLOCK = {
         );
     },
     regExp: /^```(\w{1,10})?\s/,
-    replace: (textNode, match, text) => {
+    replace: (textNode: ElementNode, _match: LexicalNode[], text: string[]) => {
         const language = text[1];
         const codeBlockNode = $createCodeBlockNode({language, _openInEditMode: true});
         const replacementNode = textNode.replace(codeBlockNode);
@@ -57,6 +60,29 @@ export const CODE_BLOCK = {
         const replacementSelection = $createNodeSelection();
         replacementSelection.add(replacementNode.getKey());
         $setSelection(replacementSelection);
+    },
+    type: 'element'
+};
+
+// render imageNode when writing image!
+// regex that detects exactly the string 'image!'
+
+export const IMAGE: ElementTransformer = {
+    dependencies: [ImageNode],
+    export: (node: LexicalNode) => {
+        if (!$isImageNode(node)){
+            return null;
+        } else {
+            const {src, alt} = (node as ImageNode).getDataset() as {src: string; alt: string};
+            return `![${alt}](${src})`;
+        }
+    },
+    regExp: /^image! $/,
+    replace: (parentNode: ElementNode) => {
+        const alt = '';
+        const src = '';
+        const imageNode = $createImageNode({altText: alt, src});
+        parentNode.replace(imageNode);
     },
     type: 'element'
 };
@@ -80,7 +106,8 @@ export const ELEMENT_TRANSFORMERS = [
     UNORDERED_LIST,
     ORDERED_LIST,
     HR,
-    CODE_BLOCK
+    CODE_BLOCK,
+    IMAGE
 ];
 
 export const CUSTOM_TEXT_FORMAT_TRANSFORMERS = [
@@ -88,38 +115,38 @@ export const CUSTOM_TEXT_FORMAT_TRANSFORMERS = [
     SUPERSCRIPT
 ];
 
-export const DEFAULT_TRANSFORMERS = [
+export const DEFAULT_TRANSFORMERS: Transformer[] = [
     ...ELEMENT_TRANSFORMERS,
     ...TEXT_FORMAT_TRANSFORMERS,
-    ...CUSTOM_TEXT_FORMAT_TRANSFORMERS,
+    ...CUSTOM_TEXT_FORMAT_TRANSFORMERS as Transformer[],
     ...TEXT_MATCH_TRANSFORMERS
 ];
 
-export const MINIMAL_TRANSFORMERS = [
+export const MINIMAL_TRANSFORMERS: Transformer[] = [
     ...TEXT_FORMAT_TRANSFORMERS,
-    ...CUSTOM_TEXT_FORMAT_TRANSFORMERS,
+    ...CUSTOM_TEXT_FORMAT_TRANSFORMERS as Transformer[],
     ...TEXT_MATCH_TRANSFORMERS
 ];
 
-export const BASIC_TRANSFORMERS = [
+export const BASIC_TRANSFORMERS: Transformer[] = [
     UNORDERED_LIST,
     ORDERED_LIST,
     ...TEXT_FORMAT_TRANSFORMERS,
-    ...CUSTOM_TEXT_FORMAT_TRANSFORMERS,
+    ...CUSTOM_TEXT_FORMAT_TRANSFORMERS as Transformer[],
     ...TEXT_MATCH_TRANSFORMERS
 ];
 
-export const EMAIL_TRANSFORMERS = [
+export const EMAIL_TRANSFORMERS: Transformer[] = [
     HEADING,
     QUOTE,
     UNORDERED_LIST,
     ORDERED_LIST,
     HR,
     ...TEXT_FORMAT_TRANSFORMERS,
-    ...CUSTOM_TEXT_FORMAT_TRANSFORMERS,
+    ...CUSTOM_TEXT_FORMAT_TRANSFORMERS as Transformer[],
     ...TEXT_MATCH_TRANSFORMERS
 ];
 
-export default function MarkdownShortcutPlugin({transformers = DEFAULT_TRANSFORMERS} = {}) {
+export default function MarkdownShortcutPlugin({transformers = DEFAULT_TRANSFORMERS}: {transformers?: Transformer[]} = {}) {
     return LexicalMarkdownShortcutPlugin({transformers});
 }

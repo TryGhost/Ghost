@@ -1,9 +1,15 @@
 import CloseIcon from '../../assets/icons/kg-close.svg?react';
 import Portal from './Portal';
-import PropTypes from 'prop-types';
+import React from 'react';
 
-export function Modal({isOpen, onClose, children}) {
-    const controlByKeys = (event) => {
+export interface ModalProps {
+    isOpen?: boolean;
+    onClose: () => void;
+    children?: React.ReactNode;
+}
+
+export function Modal({isOpen, onClose, children}: ModalProps) {
+    const controlByKeys = (event: React.KeyboardEvent) => {
         event.stopPropagation();
         event.preventDefault();
 
@@ -35,9 +41,3 @@ export function Modal({isOpen, onClose, children}) {
         </Portal>
     );
 }
-
-Modal.propTypes = {
-    isOpen: PropTypes.bool,
-    onClose: PropTypes.func,
-    children: PropTypes.node
-};

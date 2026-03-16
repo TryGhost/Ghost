@@ -1,7 +1,21 @@
-import PropTypes from 'prop-types';
 import React, {useRef, useState} from 'react';
 import {Dropdown} from './SnippetInput/Dropdown';
 import {Input} from './SnippetInput/Input';
+
+interface Snippet {
+    name: string;
+    value: string;
+}
+
+export interface SnippetInputProps {
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onCreateSnippet: () => void;
+    onUpdateSnippet: (name: string) => void;
+    onClose: () => void;
+    snippets?: Snippet[];
+    [key: string]: unknown;
+}
 
 export function SnippetInput({
     value,
@@ -10,11 +24,11 @@ export function SnippetInput({
     onUpdateSnippet,
     onClose,
     snippets = []
-}) {
-    const snippetRef = useRef(null);
+}: SnippetInputProps) {
+    const snippetRef = useRef<HTMLDivElement>(null);
     const [isCreateButtonActive, setIsCreateButtonActive] = useState(true);
     const [activeMenuItem, setActiveMenuItem] = useState(-1);
-    const [suggestedList, setSuggestedList] = useState([]);
+    const [suggestedList, setSuggestedList] = useState<Snippet[]>([]);
 
     // default to first snippet or create new button
     React.useEffect(() => {
@@ -31,8 +45,8 @@ export function SnippetInput({
 
     // close snippets menu if clicked outside the input/dropdown
     React.useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (snippetRef.current && !snippetRef.current.contains(event.target)) {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (snippetRef.current && !snippetRef.current.contains(event.target as Node)) {
                 onClose();
             }
         };
@@ -43,7 +57,7 @@ export function SnippetInput({
         };
     }, [onClose]);
 
-    const handleInputKeyDown = (event) => {
+    const handleInputKeyDown = (event: React.KeyboardEvent) => {
         if (event.key === 'Escape' || event.key === 'Esc') {
             event.stopPropagation();
             onClose();
@@ -140,15 +154,3 @@ export function SnippetInput({
         </div>
     );
 }
-
-SnippetInput.propTypes = {
-    value: PropTypes.string,
-    onChange: PropTypes.func,
-    onCreateSnippet: PropTypes.func,
-    onReplaceSnippet: PropTypes.func,
-    onClose: PropTypes.func,
-    suggestedList: PropTypes.arrayOf(PropTypes.shape({
-        name: PropTypes.string.isRequired,
-        value: PropTypes.string.isRequired
-    }))
-};
