@@ -44,6 +44,8 @@ describe('Members Service - utils', function () {
                 subscribed: true,
                 subscriptions: [],
                 paid: false,
+                status: 'free',
+                comped: false,
                 enable_comment_notifications: true,
                 can_comment: true,
                 commenting: null,
@@ -90,6 +92,8 @@ describe('Members Service - utils', function () {
                 subscribed: true,
                 subscriptions: [],
                 paid: true,
+                status: 'comped',
+                comped: true,
                 newsletters: [{
                     id: 'newsletter-1',
                     uuid: 'uuid-1',

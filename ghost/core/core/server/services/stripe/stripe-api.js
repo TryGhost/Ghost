@@ -683,6 +683,64 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Create a new Stripe Checkout Session for a gift purchase.
+     *
+     * @param {object} options
+     * @param {string} options.tierName
+     * @param {number} options.durationMonths
+     * @param {number} options.amount
+     * @param {string} options.currency
+     * @param {string} options.successUrl
+     * @param {string} options.cancelUrl
+     * @param {Object.<string, any>} options.metadata
+     * @param {ICustomer} [options.customer]
+     * @param {string} [options.customerEmail]
+     *
+     * @returns {Promise<ICheckoutSession>}
+     */
+    async createGiftCheckoutSession({tierName, durationMonths, amount, currency, successUrl, cancelUrl, metadata, customer, customerEmail}) {
+        await this._rateLimitBucket.throttle();
+
+        const stripeSessionOptions = {
+            mode: 'payment',
+            success_url: successUrl || this._config.checkoutSessionSuccessUrl,
+            cancel_url: cancelUrl || this._config.checkoutSessionCancelUrl,
+            automatic_tax: {
+                enabled: this._config.enableAutomaticTax
+            },
+            metadata,
+            customer: customer ? customer.id : undefined,
+            customer_email: !customer && customerEmail ? customerEmail : undefined,
+            submit_type: 'pay',
+            invoice_creation: {
+                enabled: true,
+                invoice_data: {
+                    metadata
+                }
+            },
+            line_items: [{
+                price_data: {
+                    currency,
+                    unit_amount: amount,
+                    product_data: {
+                        name: `${tierName} gift subscription`,
+                        description: `${durationMonths}-month gift subscription`
+                    }
+                },
+                quantity: 1
+            }]
+        };
+
+        if (customer && this._config.enableAutomaticTax) {
+            stripeSessionOptions.customer_update = {address: 'auto'};
+        }
+
+        // @ts-ignore
+        const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
+        return session;
+    }
+
+    /**
      * Create a new Stripe Checkout Setup Session.
      *
      * @param {ICustomer} customer

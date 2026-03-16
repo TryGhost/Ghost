@@ -26,6 +26,8 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
         subscribed: !!member.subscribed,
         subscriptions: member.subscriptions || [],
         paid: member.status !== 'free',
+        status: member.status,
+        comped: member.status === 'comped',
         created_at: member.created_at,
         enable_comment_notifications: member.enable_comment_notifications,
         can_comment: member.can_comment,

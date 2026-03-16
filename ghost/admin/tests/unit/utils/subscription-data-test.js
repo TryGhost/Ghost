@@ -169,6 +169,18 @@ describe('Unit: Util: subscription-data', function () {
             expect(compExpiry(sub)).to.equal('31 May 2021');
         });
 
+        it('falls back to the gift expiry date when tier expiry is missing', function () {
+            let sub = {
+                id: null,
+                tier: {},
+                gift: {
+                    expires_at: moment.utc('2021-05-31').toISOString()
+                }
+            };
+
+            expect(compExpiry(sub)).to.equal('31 May 2021');
+        });
+
         it('returns undefined for paid subscriptions', function () {
             let sub = {id: 'sub_123'};
             expect(compExpiry(sub)).to.be.undefined;
@@ -210,6 +222,18 @@ describe('Unit: Util: subscription-data', function () {
                 compExpiry: undefined
             };
             expect(validityDetails(data)).to.equal('');
+        });
+
+        it('returns "{duration} gift until {compExpiry}" for gift subscriptions', function () {
+            let data = {
+                isComplimentary: true,
+                compExpiry: '31 May 2021',
+                gift: {
+                    duration_months: 3
+                }
+            };
+
+            expect(validityDetails(data)).to.equal('3-month gift until 31 May 2021');
         });
 
         it('returns "Ended {validUntil}" for canceled subscriptions', function () {

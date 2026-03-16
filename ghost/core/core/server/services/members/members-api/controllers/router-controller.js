@@ -33,7 +33,11 @@ const messages = {
     archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}',
     otcNotSupported: 'OTC verification not supported.',
     invalidCode: 'Invalid verification code.',
-    failedToVerifyCode: 'Failed to verify code, please try again.'
+    failedToVerifyCode: 'Failed to verify code, please try again.',
+    giftRecipientEmailRequired: 'Recipient email is required.',
+    giftDurationRequired: 'Gift duration is required.',
+    giftTierRequired: 'Gift tier is required.',
+    giftEmailClaimRequired: 'Email is required to deliver this gift.'
 };
 
 // helper utility for logic shared between sendMagicLink and verifyOTC
@@ -64,6 +68,7 @@ module.exports = class RouterController {
      * @param {object} deps
      * @param {any} deps.offersAPI
      * @param {any} deps.paymentsService
+     * @param {any} deps.giftService
      * @param {any} deps.memberRepository
      * @param {any} deps.StripePrice
      * @param {() => boolean} deps.allowSelfSignup
@@ -83,6 +88,7 @@ module.exports = class RouterController {
     constructor({
         offersAPI,
         paymentsService,
+        giftService,
         tiersService,
         memberRepository,
         StripePrice,
@@ -102,6 +108,7 @@ module.exports = class RouterController {
     }) {
         this._offersAPI = offersAPI;
         this._paymentsService = paymentsService;
+        this._giftService = giftService;
         this._tiersService = tiersService;
         this._memberRepository = memberRepository;
         this._StripePrice = StripePrice;
@@ -133,6 +140,65 @@ module.exports = class RouterController {
             res.writeHead(500);
             return res.end('There was an error configuring stripe');
         }
+    }
+
+    _getGiftClaimUrl(token) {
+        return `${this._urlUtils.getSiteUrl()}#/portal/gift/${token}`;
+    }
+
+    _appendGiftTokenToSuccessUrl(successUrl, token) {
+        try {
+            const parsed = new URL(successUrl);
+            const currentHash = parsed.hash || '#/portal/gift/success';
+            const normalizedHash = currentHash.endsWith('/') ? currentHash.slice(0, -1) : currentHash;
+            parsed.hash = `${normalizedHash}/${token}`;
+            return parsed.href;
+        } catch (err) {
+            logging.warn(`Invalid gift success URL "${successUrl}", using original URL`, err);
+            return successUrl;
+        }
+    }
+
+    _maskEmail(email) {
+        if (!email || !email.includes('@')) {
+            return email || '';
+        }
+
+        const [localPart, domain] = email.split('@');
+        const visibleLocalPart = localPart.slice(0, 2);
+
+        return `${visibleLocalPart}${'*'.repeat(Math.max(localPart.length - 2, 1))}@${domain}`;
+    }
+
+    async _serializeGift(gift) {
+        let tier = null;
+
+        try {
+            tier = await this._tiersService.api.read(gift.get('product_id'));
+        } catch (err) {
+            logging.warn(err);
+        }
+
+        const tierData = tier?.toJSON ? tier.toJSON() : tier;
+
+        return {
+            id: gift.id,
+            status: gift.get('status'),
+            delivery_method: gift.get('delivery_method') || 'link',
+            duration_months: gift.get('duration_months'),
+            amount: gift.get('amount'),
+            currency: gift.get('currency'),
+            recipient_email: gift.get('recipient_email'),
+            recipient_email_masked: this._maskEmail(gift.get('recipient_email')),
+            sender_email: gift.get('purchaser_email'),
+            access_expires_at: gift.get('access_expires_at'),
+            redeemed_at: gift.get('redeemed_at'),
+            claim_url: this._getGiftClaimUrl(gift.get('claim_token')),
+            tier: tierData ? {
+                id: tierData.id,
+                name: tierData.name
+            } : null
+        };
     }
 
     async createCheckoutSetupSession(req, res) {
@@ -436,6 +502,81 @@ module.exports = class RouterController {
         };
     }
 
+    async _getGiftCheckoutData(body) {
+        const tierId = body.tierId;
+        const recipientEmail = body.recipientEmail;
+        const deliveryMethod = this._giftService.validateDeliveryMethod(body.deliveryMethod ?? 'link');
+
+        if (!tierId) {
+            throw new BadRequestError({
+                message: tpl(messages.giftTierRequired)
+            });
+        }
+
+        if (deliveryMethod === 'email' && !recipientEmail) {
+            throw new BadRequestError({
+                message: tpl(messages.giftRecipientEmailRequired)
+            });
+        }
+
+        if (!body.durationMonths && body.durationMonths !== 0) {
+            throw new BadRequestError({
+                message: tpl(messages.giftDurationRequired)
+            });
+        }
+
+        if (recipientEmail && !isEmail(recipientEmail)) {
+            throw new BadRequestError({
+                message: tpl(messages.invalidEmail)
+            });
+        }
+
+        const normalizedRecipientEmail = recipientEmail ? normalizeEmail(recipientEmail) : null;
+
+        if (recipientEmail && !normalizedRecipientEmail) {
+            throw new BadRequestError({
+                message: tpl(messages.invalidEmail)
+            });
+        }
+
+        let tier;
+        try {
+            tier = await this._tiersService.api.read(tierId);
+        } catch (err) {
+            logging.error(err);
+            this._sentry?.captureException?.(err);
+            throw new BadRequestError({
+                message: tpl(messages.tierNotFound),
+                context: 'Tier with id "' + tierId + '" not found'
+            });
+        }
+
+        if (!tier) {
+            throw new BadRequestError({
+                message: tpl(messages.tierNotFound)
+            });
+        }
+
+        if (tier.type !== 'paid') {
+            throw new BadRequestError({
+                message: tpl(messages.badRequest)
+            });
+        }
+
+        if (tier.status === 'archived') {
+            throw new NoPermissionError({
+                message: tpl(messages.tierArchived)
+            });
+        }
+
+        return {
+            tier,
+            deliveryMethod,
+            recipientEmail: normalizedRecipientEmail,
+            durationMonths: this._giftService.validateDuration(body.durationMonths)
+        };
+    }
+
     /**
      *
      * @param {object} options
@@ -598,6 +739,69 @@ module.exports = class RouterController {
         }
     }
 
+    async _createGiftCheckoutSession(options) {
+        if (!this._paymentsService.stripeAPIService.configured) {
+            throw new DisabledFeatureError({
+                message: tpl(messages.notConfigured)
+            });
+        }
+
+        const tierId = options.tier.id.toHexString ? options.tier.id.toHexString() : options.tier.id;
+
+        const pricing = this._giftService.calculateGiftPrice({
+            tier: options.tier,
+            durationMonths: options.durationMonths
+        });
+
+        const gift = await this._giftService.createPendingGift({
+            recipientEmail: options.recipientEmail,
+            deliveryMethod: options.deliveryMethod,
+            productId: tierId,
+            durationMonths: options.durationMonths,
+            amount: pricing.amount,
+            currency: pricing.currency
+        });
+
+        const metadata = {
+            ...options.metadata,
+            ghost_gift: true,
+            gift_id: gift.id,
+            product_id: tierId,
+            duration_months: `${options.durationMonths}`,
+            delivery_method: options.deliveryMethod
+        };
+
+        if (options.recipientEmail) {
+            metadata.recipient_email = options.recipientEmail;
+        }
+
+        try {
+            const paymentLink = await this._paymentsService.getGiftPaymentLink({
+                tierName: options.tier.name,
+                durationMonths: options.durationMonths,
+                amount: pricing.amount,
+                currency: pricing.currency,
+                member: options.isAuthenticated ? options.member : null,
+                email: options.email,
+                metadata,
+                successUrl: this._appendGiftTokenToSuccessUrl(options.successUrl, gift.get('claim_token')),
+                cancelUrl: options.cancelUrl
+            });
+
+            return {
+                url: paymentLink,
+                token: gift.get('claim_token')
+            };
+        } catch (err) {
+            logging.error(err);
+            this._sentry?.captureException?.(err);
+            throw new BadRequestError({
+                err,
+                message: tpl(messages.unableToCheckout)
+            });
+        }
+    }
+
     async createCheckoutSession(req, res) {
         const type = req.body.type ?? 'subscription';
         const metadata = req.body.metadata ?? {};
@@ -605,7 +809,7 @@ module.exports = class RouterController {
         const membersEnabled = true;
 
         // Check this checkout type is supported
-        if (typeof type !== 'string' || !['subscription', 'donation'].includes(type)) {
+        if (typeof type !== 'string' || !['subscription', 'donation', 'gift'].includes(type)) {
             throw new BadRequestError({
                 message: tpl(messages.invalidType)
             });
@@ -682,6 +886,13 @@ module.exports = class RouterController {
         } else if (type === 'donation') {
             options.personalNote = parsePersonalNote(req.body.personalNote);
             response = await this._createDonationCheckoutSession(options);
+        } else if (type === 'gift') {
+            const data = await this._getGiftCheckoutData(req.body);
+
+            response = await this._createGiftCheckoutSession({
+                ...options,
+                ...data
+            });
         }
 
         res.writeHead(200, {
@@ -689,6 +900,116 @@ module.exports = class RouterController {
         });
 
         return res.end(JSON.stringify(response));
+    }
+
+    async readGift(req, res) {
+        const gift = await this._giftService.getByToken(req.params.token);
+
+        if (!gift) {
+            throw new NotFoundError({
+                message: tpl(messages.notFound)
+            });
+        }
+
+        return res.json(await this._serializeGift(gift));
+    }
+
+    async sendGiftMagicLink(req, res) {
+        const gift = await this._giftService.getByToken(req.params.token);
+
+        if (!gift) {
+            throw new NotFoundError({
+                message: tpl(messages.notFound)
+            });
+        }
+
+        if (!['purchased', 'redeemed'].includes(gift.get('status'))) {
+            throw new BadRequestError({
+                message: tpl(messages.badRequest)
+            });
+        }
+
+        let deliveryEmail = gift.get('recipient_email');
+
+        let redirect = this._getGiftClaimUrl(gift.get('claim_token'));
+
+        if (req.body?.redirect) {
+            try {
+                const candidate = new URL(req.body.redirect);
+
+                if (this._urlUtils.isSiteUrl(candidate)) {
+                    redirect = candidate.href;
+                }
+            } catch (err) {
+                logging.warn(err);
+            }
+        }
+
+        if (req.body?.email) {
+            if (!isEmail(req.body.email)) {
+                throw new BadRequestError({
+                    message: tpl(messages.invalidEmail)
+                });
+            }
+
+            deliveryEmail = normalizeEmail(req.body.email);
+        }
+
+        if (!deliveryEmail) {
+            throw new BadRequestError({
+                message: tpl(messages.giftEmailClaimRequired)
+            });
+        }
+
+        if (deliveryEmail !== gift.get('recipient_email')) {
+            await this._giftService.updateRecipientEmail({
+                gift,
+                recipientEmail: deliveryEmail
+            });
+        }
+
+        await this._sendEmailWithMagicLink({
+            email: deliveryEmail,
+            requestedType: 'signup',
+            tokenData: {
+                name: req.body?.name,
+                gift: {
+                    id: gift.id,
+                    durationMonths: gift.get('duration_months'),
+                    tierId: gift.get('product_id')
+                }
+            },
+            referrer: redirect
+        });
+
+        const inboxLinks = await getInboxLinks({
+            recipient: deliveryEmail,
+            sender: this._emailAddressService.getMembersSupportAddress(),
+            dnsResolver: this.#inboxLinksDnsResolver
+        });
+
+        return res.json({
+            inboxLinks
+        });
+    }
+
+    async redeemGift(req, res) {
+        if (!req.member) {
+            throw new UnauthorizedError({
+                message: tpl(messages.badRequest)
+            });
+        }
+
+        const result = await this._giftService.redeemGift({
+            token: req.params.token,
+            member: req.member,
+            confirmTierChange: req.body?.confirmTierChange === true
+        });
+
+        return res.json({
+            success: true,
+            gift: await this._serializeGift(result.gift)
+        });
     }
 
     async sendMagicLink(req, res) {

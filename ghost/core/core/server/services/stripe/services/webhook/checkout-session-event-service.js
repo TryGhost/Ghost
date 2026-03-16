@@ -25,9 +25,11 @@ module.exports = class CheckoutSessionEventService {
      * @param {object} deps
      * @param {import('../../stripe-api')} deps.api
      * @param {object} deps.memberRepository
+     * @param {object} deps.giftService
      * @param {object} deps.donationRepository
      * @param {object} deps.staffServiceEmails
      * @param {function} deps.sendSignupEmail
+     * @param {function} deps.sendGiftSubscriptionEmail
      * @param {function} deps.isPaidWelcomeEmailActive
      */
     constructor(deps) {
@@ -51,6 +53,10 @@ module.exports = class CheckoutSessionEventService {
 
         if (session.mode === 'payment' && session.metadata?.ghost_donation) {
             await this.handleDonationEvent(session);
+        }
+
+        if (session.mode === 'payment' && session.metadata?.ghost_gift) {
+            await this.handleGiftEvent(session);
         }
     }
 
@@ -93,6 +99,30 @@ module.exports = class CheckoutSessionEventService {
 
         const staffServiceEmails = this.deps.staffServiceEmails;
         await staffServiceEmails.notifyDonationReceived({donationPaymentEvent: data});
+    }
+
+    /**
+     * Handles a `checkout.session.completed` event for a gift purchase
+     * @param {import('stripe').Stripe.Checkout.Session} session
+     */
+    async handleGiftEvent(session) {
+        const {gift, updated} = await this.deps.giftService.markPurchasedFromCheckoutSession(session);
+
+        if (!gift || !updated) {
+            return;
+        }
+
+        const deliveryMethod = typeof gift.get === 'function'
+            ? (gift.get('delivery_method') || 'link')
+            : (gift.delivery_method || session.metadata?.delivery_method || 'link');
+
+        if (deliveryMethod !== 'email') {
+            return;
+        }
+
+        await this.deps.sendGiftSubscriptionEmail({
+            gift
+        });
     }
 
     /**

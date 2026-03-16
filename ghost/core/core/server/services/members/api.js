@@ -242,7 +242,8 @@ function createApiInstance(config) {
             EmailSpamComplaintEvent: models.EmailSpamComplaintEvent,
             Outbox: models.Outbox,
             AutomatedEmail: models.AutomatedEmail,
-            AutomatedEmailRecipient: models.AutomatedEmailRecipient
+            AutomatedEmailRecipient: models.AutomatedEmailRecipient,
+            MemberGift: models.MemberGift
         },
         stripeAPIService: stripeService.api,
         tiersService: tiersService,
@@ -258,6 +259,65 @@ function createApiInstance(config) {
         commentsService,
         emailAddressService: emailAddressService.service
     });
+
+    membersApiInstance.sendGiftSubscriptionEmail = async function sendGiftSubscriptionEmail({gift}) {
+        if ((gift.get('delivery_method') || 'link') !== 'email' || !gift.get('recipient_email')) {
+            return;
+        }
+
+        const siteTitle = settingsCache.get('title');
+        const siteUrl = urlUtils.urlFor('home', true);
+        const domain = siteUrl.match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
+        const siteDomain = domain && domain[1];
+        const accentColor = settingsCache.get('accent_color');
+        const tier = await models.Product.findOne({id: gift.get('product_id')});
+        const claimUrl = `${siteUrl}#/portal/gift/${gift.get('claim_token')}`;
+        const durationMonths = gift.get('duration_months');
+        const durationLabel = durationMonths === 12 ? '1-year' : `${durationMonths}-month`;
+        const purchaser = gift.get('purchaser_name') || gift.get('purchaser_email');
+        const senderLine = purchaser
+            ? t('{purchaser} sent you a gift subscription to {siteTitle}.', {purchaser, siteTitle, interpolation: {escapeValue: false}})
+            : t('You received a gift subscription to {siteTitle}.', {siteTitle, interpolation: {escapeValue: false}});
+        const tierName = tier?.get('name') || t('Member');
+        const subject = `🎁 ${t('You received a gift subscription to {siteTitle}', {siteTitle, interpolation: {escapeValue: false}})}`;
+        const text = trimLeadingWhitespace`
+            ${t('Hey there,')}
+
+            ${senderLine}
+
+            ${t('Gift tier')}: ${tierName}
+            ${t('Duration')}: ${durationLabel}
+
+            ${t('Redeem your gift here:')}
+
+            ${claimUrl}
+
+            ${t('See you soon!')}
+
+            ---
+
+            ${t('Sent to {email}', {email: gift.get('recipient_email')})}
+            ${t('If you did not expect this email, you can safely ignore it.')}
+        `;
+        const html = `
+            <div style="font-family:Arial,sans-serif;color:#111;line-height:1.5;">
+                <p>${t('Hey there,')}</p>
+                <p>${senderLine}</p>
+                <p><strong>${t('Gift tier')}:</strong> ${tierName}<br /><strong>${t('Duration')}:</strong> ${durationLabel}</p>
+                <p><a href="${claimUrl}" style="display:inline-block;padding:12px 18px;background:${accentColor || '#15171A'};color:#fff;text-decoration:none;border-radius:6px;">${t('Redeem your gift')}</a></p>
+                <p style="color:#666;font-size:14px;">${siteDomain || siteUrl}</p>
+            </div>
+        `;
+
+        return ghostMailer.send({
+            to: gift.get('recipient_email'),
+            from: config.getEmailSupportAddress(),
+            subject,
+            text,
+            html,
+            forceTextContent: true
+        });
+    };
 
     return membersApiInstance;
 }

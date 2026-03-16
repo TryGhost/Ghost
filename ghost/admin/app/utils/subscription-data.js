@@ -21,6 +21,7 @@ export function getSubscriptionData(sub) {
         },
         isComplimentary: isComplimentary(sub),
         compExpiry: compExpiry(sub),
+        gift: sub.gift,
         trialUntil: trialUntil(sub)
     };
 
@@ -69,8 +70,10 @@ export function isSetToCancel(sub) {
 }
 
 export function compExpiry(sub) {
-    if (!sub.id && sub.tier && sub.tier.expiry_at) {
-        return moment(sub.tier.expiry_at).utc().format('D MMM YYYY');
+    const expiryAt = (!sub.id && sub.tier && sub.tier.expiry_at) || sub.gift?.expires_at;
+
+    if (expiryAt) {
+        return moment(expiryAt).utc().format('D MMM YYYY');
     }
 
     return undefined;
@@ -93,6 +96,11 @@ export function validityDetails(data, separatorNeeded = false) {
     const space = data.validUntil ? ' ' : '';
 
     if (data.isComplimentary) {
+        if (data.gift && data.compExpiry) {
+            const durationLabel = data.gift.duration_months === 12 ? '1-year gift' : `${data.gift.duration_months}-month gift`;
+            return `${separator}${durationLabel} until ${data.compExpiry}`;
+        }
+
         if (data.compExpiry) {
             return `${separator}Expires ${data.compExpiry}`;
         } else {

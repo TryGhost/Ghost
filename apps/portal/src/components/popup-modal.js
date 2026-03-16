@@ -142,7 +142,7 @@ class PopupContent extends React.Component {
     }
 
     render() {
-        const {page, pageQuery, site, customSiteUrl} = this.context;
+        const {page, pageData, pageQuery, site, customSiteUrl} = this.context;
         const products = getSiteProducts({site, pageQuery});
         const noOfProducts = products.length;
 
@@ -183,6 +183,11 @@ class PopupContent extends React.Component {
                 pageClass += ' full-size';
                 popupSize = 'full';
             }
+        }
+
+        if (page === 'gift' && (!pageData?.mode || pageData.mode === 'purchase' || pageData.mode === 'success' || pageData.mode === 'redeem')) {
+            pageClass += ' full-size';
+            popupSize = 'full';
         }
 
         const freeProduct = hasFreeProductPrice({site});

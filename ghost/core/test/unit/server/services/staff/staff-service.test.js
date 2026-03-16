@@ -55,6 +55,15 @@ function testCommonPaidSubMailData({member, mailStub, getEmailAlertUsersStub}) {
     sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('$50.00/month')));
 }
 
+function testCommonGiftSignupMailData({mailStub, getEmailAlertUsersStub}) {
+    testCommonMailData({mailStub, getEmailAlertUsersStub});
+    sinon.assert.calledWith(getEmailAlertUsersStub, 'free-signup');
+    sinon.assert.calledWith(mailStub, sinon.match({subject: 'Gift member signup: Ghost'}));
+    sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('You have a new gift member')));
+    sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Test Tier')));
+    sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('6 months')));
+}
+
 function testCommonPaidSubCancelMailData({mailStub, getEmailAlertUsersStub}) {
     testCommonMailData({mailStub, getEmailAlertUsersStub});
     sinon.assert.calledWith(getEmailAlertUsersStub, 'paid-canceled');
@@ -341,6 +350,27 @@ describe('StaffService', function () {
 
                 sinon.assert.calledWith(mailStub, sinon.match({subject: '🥳 Free member signup: Jamie'}));
             });
+
+            it('handles gift member created event', async function () {
+                await service.handleEvent(MemberCreatedEvent, {
+                    data: {
+                        source: 'member',
+                        memberId: 'member-1',
+                        tierId: 'tier-1',
+                        gift: {
+                            id: 'gift_123',
+                            durationMonths: 6
+                        }
+                    }
+                });
+
+                sinon.assert.notCalled(service.memberAttributionService.getMemberCreatedAttribution);
+                sinon.assert.calledWith(mailStub, sinon.match({subject: 'Gift member signup: Jamie'}));
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('You have a new gift member')));
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Tier 1')));
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('6 months')));
+            });
+
             it('handles free member created event with provided attribution', async function () {
                 await service.handleEvent(MemberCreatedEvent, {
                     data: {
@@ -503,6 +533,33 @@ describe('StaffService', function () {
 
                 // check attribution url
                 sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('https://example.com/welcome')));
+            });
+        });
+
+        describe('notifyGiftMemberSignup', function () {
+            it('sends gift member signup alert', async function () {
+                const member = {
+                    name: 'Ghost',
+                    email: 'member@example.com',
+                    id: 'abc',
+                    geolocation: '{"country": "France"}',
+                    created_at: '2022-08-01T07:30:39.882Z'
+                };
+
+                const tier = {
+                    name: 'Test Tier'
+                };
+
+                await service.emails.notifyGiftMemberSignup({
+                    member,
+                    tier,
+                    gift: {
+                        durationMonths: 6
+                    }
+                }, options);
+
+                sinon.assert.calledOnce(mailStub);
+                testCommonGiftSignupMailData(stubs);
             });
         });
 

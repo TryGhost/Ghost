@@ -32,6 +32,7 @@ module.exports = class MemberBREADService {
     /**
      * @param {object} deps
      * @param {import('../repositories/member-repository')} deps.memberRepository
+     * @param {import('./gift-service')} [deps.giftService]
      * @param {import('@tryghost/members-offers/lib/application/OffersAPI')} deps.offersAPI
      * @param {ILabsService} deps.labsService
      * @param {IEmailService} deps.emailService
@@ -41,10 +42,12 @@ module.exports = class MemberBREADService {
      * @param {import('@tryghost/settings-helpers')} deps.settingsHelpers
      * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
      */
-    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers, nextPaymentCalculator, commentsService}) {
+    constructor({memberRepository, giftService, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers, nextPaymentCalculator, commentsService}) {
         this.offersAPI = offersAPI;
         /** @private */
         this.memberRepository = memberRepository;
+        /** @private */
+        this.giftService = giftService;
         /** @private */
         this.labsService = labsService;
         /** @private */
@@ -131,6 +134,44 @@ module.exports = class MemberBREADService {
                 subscription.tier = member.products.find(product => product.id === subscription.price.product.product_id);
             }
         }
+    }
+
+    async attachGiftDataToSubscriptions(member) {
+        if (!this.giftService || !member?.id || !Array.isArray(member.subscriptions)) {
+            return;
+        }
+
+        const activeGifts = await this.giftService.getActiveRedeemedGiftsForMember(member.id);
+
+        if (!activeGifts.length) {
+            return;
+        }
+
+        const giftByProductId = new Map(activeGifts.map((gift) => {
+            return [gift.get('product_id'), gift];
+        }));
+
+        member.subscriptions = member.subscriptions.map((subscription) => {
+            if (subscription.id || !subscription.price?.product?.product_id) {
+                return subscription;
+            }
+
+            const gift = giftByProductId.get(subscription.price.product.product_id);
+
+            if (!gift) {
+                return subscription;
+            }
+
+            subscription.gift = {
+                id: gift.id,
+                duration_months: gift.get('duration_months'),
+                expires_at: gift.get('access_expires_at')
+            };
+            subscription.plan.nickname = 'Gift subscription';
+            subscription.price.nickname = 'Gift subscription';
+
+            return subscription;
+        });
     }
 
     /**
@@ -313,6 +354,7 @@ module.exports = class MemberBREADService {
 
         member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
         this.attachSubscriptionsToMember(member);
+        await this.attachGiftDataToSubscriptions(member);
 
         const [offerMap, offerRedemptionsMap] = await Promise.all([
             this.fetchSubscriptionOffers(stripeSubscriptions),

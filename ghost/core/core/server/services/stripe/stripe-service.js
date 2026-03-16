@@ -101,6 +101,9 @@ module.exports = class StripeService {
             get memberRepository(){
                 return membersService.api.members;
             },
+            get giftService() {
+                return membersService.api.giftService;
+            },
             get productRepository(){
                 return membersService.api.productRepository;
             },
@@ -122,6 +125,9 @@ module.exports = class StripeService {
                     },
                     tokenData: {}
                 });
+            },
+            sendGiftSubscriptionEmail({gift}) {
+                return membersService.api.sendGiftSubscriptionEmail({gift});
             },
             async isPaidWelcomeEmailActive() {
                 memberWelcomeEmailService.init();

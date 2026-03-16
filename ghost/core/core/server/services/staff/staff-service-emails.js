@@ -65,6 +65,44 @@ class StaffServiceEmails {
         }
     }
 
+    async notifyGiftMemberSignup({member, tier, gift}, options) {
+        const users = await this.models.User.getEmailAlertUsers('free-signup', options);
+
+        for (const user of users) {
+            const to = user.email;
+            const memberData = this.getMemberData(member);
+            const subject = `Gift member signup: ${memberData.name}`;
+            const giftData = {
+                tierName: tier?.name || '',
+                duration: this.getGiftDurationLabel(gift?.durationMonths)
+            };
+
+            let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}/email-notifications`);
+
+            const templateData = {
+                memberData,
+                giftData,
+                siteTitle: this.settingsCache.get('title'),
+                siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
+                siteUrl: this.urlUtils.getSiteUrl(),
+                siteDomain: this.siteDomain,
+                accentColor: this.settingsCache.get('accent_color'),
+                fromEmail: this.fromEmailAddress,
+                toEmail: to,
+                staffUrl: staffUrl
+            };
+
+            const {html, text} = await this.renderEmailTemplate('new-gift-signup', templateData);
+
+            await this.sendMail({
+                to,
+                subject,
+                html,
+                text
+            });
+        }
+    }
+
     async notifyPaidSubscriptionStarted({member, subscription, offer, tier, attribution}, options = {}) {
         const users = await this.models.User.getEmailAlertUsers('paid-started', options);
 
@@ -415,6 +453,20 @@ class StaffServiceEmails {
                 details: `${offAmount}${offDuration}`
             };
         }
+    }
+
+    getGiftDurationLabel(durationMonths) {
+        const duration = Number(durationMonths);
+
+        if (duration === 12) {
+            return '1 year';
+        }
+
+        if (duration > 0) {
+            return `${duration} ${duration === 1 ? 'month' : 'months'}`;
+        }
+
+        return '';
     }
 
     get siteDomain() {

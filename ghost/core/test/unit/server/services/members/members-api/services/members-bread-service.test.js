@@ -184,6 +184,7 @@ describe('MemberBreadService', function () {
                     createUnsubscribeUrl: sinon.stub().callsFake(uuid => `https://example.com/unsubscribe/?uuid=${uuid}&key=456`)
                 },
                 memberRepository: memberRepositoryStub,
+                giftService: options.giftService,
                 memberAttributionService: memberAttributionServiceStub,
                 emailSuppressionList: emailSuppressionListStub,
                 nextPaymentCalculator: options.nextPaymentCalculator || nextPaymentCalculator,
@@ -417,6 +418,49 @@ describe('MemberBreadService', function () {
                         product_id: productsJSON[1].id
                     }
                 }
+            });
+        });
+
+        it('decorates a complimentary subscription with gift metadata', async function () {
+            const product = {
+                id: 'prod_123',
+                expiry_at: new Date('2026-05-13T15:15:00.000Z')
+            };
+            const productEvent = {
+                product_id: product.id,
+                created_at: new Date('2026-03-13T15:15:00.000Z'),
+                action: 'added'
+            };
+            const gift = {
+                id: 'gift_123',
+                get: sinon.stub()
+            };
+
+            gift.get.withArgs('product_id').returns(product.id);
+            gift.get.withArgs('duration_months').returns(3);
+            gift.get.withArgs('access_expires_at').returns(product.expiry_at);
+
+            memberModelStub.toJSON.returns({
+                ...memberModelJSON,
+                subscriptions: [],
+                products: [product],
+                productEvents: [productEvent]
+            });
+
+            memberRepositoryStub.isActiveSubscriptionStatus = sinon.stub().returns(true);
+
+            const giftService = {
+                getActiveRedeemedGiftsForMember: sinon.stub().resolves([gift])
+            };
+
+            const memberBreadService = getService({giftService});
+            const member = await memberBreadService.read({id: MEMBER_ID});
+
+            assert.equal(member.subscriptions[0].price.nickname, 'Gift subscription');
+            assert.deepEqual(member.subscriptions[0].gift, {
+                id: 'gift_123',
+                duration_months: 3,
+                expires_at: product.expiry_at
             });
         });
 

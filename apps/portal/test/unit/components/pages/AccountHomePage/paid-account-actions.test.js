@@ -162,6 +162,93 @@ describe('PaidAccountActions', () => {
             expect(queryByText(/1 Jan 2099/)).toBeInTheDocument();
         });
 
+        test('displays "Gift subscription" with expiry date for gifted complimentary access', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+
+            const expiryAt = new Date('2099-01-01T12:00:00.000Z');
+            const subscription = getSubscriptionData({
+                status: 'active',
+                amount: 0,
+                currency: 'USD',
+                interval: 'month',
+                offer: null,
+                tier: {
+                    expiry_at: expiryAt
+                },
+                nextPayment: getNextPaymentData({
+                    originalAmount: 0,
+                    amount: 0,
+                    interval: 'month',
+                    currency: 'USD',
+                    discount: null
+                })
+            });
+
+            subscription.gift = {
+                id: 'gift_123',
+                duration_months: 3,
+                expires_at: expiryAt
+            };
+
+            const member = getMemberData({
+                paid: true,
+                subscriptions: [subscription]
+            });
+
+            const {queryByText} = setup({site, member});
+
+            expect(queryByText(/Gift subscription/)).toBeInTheDocument();
+            expect(queryByText(/Expires/)).toBeInTheDocument();
+            expect(queryByText(/1 Jan 2099/)).toBeInTheDocument();
+        });
+
+        test('displays gift subscription details for comped members returned by the members API', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+
+            const expiryAt = new Date('2099-01-01T12:00:00.000Z');
+            const subscription = getSubscriptionData({
+                id: '',
+                status: 'active',
+                amount: 0,
+                currency: 'USD',
+                interval: 'month',
+                offer: null,
+                tier: {
+                    expiry_at: expiryAt
+                },
+                nextPayment: getNextPaymentData({
+                    originalAmount: 0,
+                    amount: 0,
+                    interval: 'month',
+                    currency: 'USD',
+                    discount: null
+                })
+            });
+
+            subscription.gift = {
+                id: 'gift_123',
+                duration_months: 6,
+                expires_at: expiryAt
+            };
+
+            const member = {
+                ...getMemberData({
+                    paid: false,
+                    subscriptions: [subscription]
+                }),
+                status: 'comped',
+                comped: true
+            };
+
+            const {queryByText} = setup({site, member});
+
+            expect(queryByText(/Gift subscription/)).toBeInTheDocument();
+            expect(queryByText(/Expires/)).toBeInTheDocument();
+            expect(queryByText(/1 Jan 2099/)).toBeInTheDocument();
+        });
+
         test('displays "Complimentary" without expiry for permanent comp', () => {
             const products = getProductsData({numOfProducts: 1});
             const site = getSiteData({products, portalProducts: products.map(p => p.id)});

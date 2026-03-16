@@ -27,12 +27,24 @@ import {
     getUpdatedOfferPrice,
     isComplimentaryMember,
     subscriptionHasFreeTrial,
-    addMonths
+    addMonths,
+    removePortalLinkFromUrl
 } from '../../src/utils/helpers';
 import * as Fixtures from '../../src/utils/fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from './test-fixtures';
 
 describe('Helpers - ', () => {
+    describe('removePortalLinkFromUrl -', () => {
+        test('removes gift redeem links with UUID tokens from the URL', () => {
+            const pushStateSpy = vi.spyOn(window.history, 'pushState').mockImplementation(() => {});
+            window.location.hash = '#/portal/gift/31957440-38e2-48c1-baaa-8b48e9afe727';
+
+            removePortalLinkFromUrl();
+
+            expect(pushStateSpy).toHaveBeenCalledWith('', document.title, `${window.location.pathname}${window.location.search}`);
+        });
+    });
+
     describe('isComplimentaryMember -', () => {
         test('returns true for complimentary member', () => {
             const value = isComplimentaryMember({member: FixtureMember.complimentary});
@@ -58,6 +70,18 @@ describe('Helpers - ', () => {
     describe('isPaidMember -', () => {
         test('returns true for paid member', () => {
             const value = isPaidMember({member: FixtureMember.paid});
+            expect(value).toBe(true);
+        });
+
+        test('returns true for comped members returned by the members API', () => {
+            const value = isPaidMember({
+                member: {
+                    status: 'comped',
+                    comped: true,
+                    subscriptions: []
+                }
+            });
+
             expect(value).toBe(true);
         });
 
@@ -418,10 +442,15 @@ describe('Helpers - ', () => {
             expect(value).toBe(null);
         });
 
-        test('returns undefined for complimentary member without subscription', () => {
+        test('returns null for complimentary member without subscription', () => {
             const member = FixtureMember.complimentary;
             const value = getMemberSubscription({member});
-            expect(value).toBe(undefined);
+            expect(value).toBeNull();
+        });
+
+        test('returns null for logged-out member', () => {
+            const value = getMemberSubscription({member: null});
+            expect(value).toBeNull();
         });
 
         test('returns sub for complimentary member with subscription', () => {
@@ -671,6 +700,38 @@ describe('Helpers - ', () => {
             delete member.subscriptions[0].tier.expiry_at;
 
             expect(getCompExpiry({member})).toEqual('');
+        });
+
+        it('falls back to the gift expiry date when the tier expiry is missing', () => {
+            const date = new Date('2023-10-13T00:00:00.000Z');
+            member.subscriptions[0].tier = {};
+            member.subscriptions[0].gift = {
+                expires_at: '2023-10-13T00:00:00.000Z'
+            };
+
+            expect(getCompExpiry({member})).toEqual(date.toLocaleDateString('en-GB', {year: 'numeric', month: 'short', day: 'numeric'}));
+        });
+
+        it('returns the expiry date for comped members with the API status shape', () => {
+            const date = new Date('2023-10-13T00:00:00.000Z');
+            const compedMember = {
+                status: 'comped',
+                comped: true,
+                subscriptions: [
+                    {
+                        id: '',
+                        status: 'active',
+                        price: {
+                            amount: 0
+                        },
+                        tier: {
+                            expiry_at: '2023-10-13T00:00:00.000Z'
+                        }
+                    }
+                ]
+            };
+
+            expect(getCompExpiry({member: compedMember})).toEqual(date.toLocaleDateString('en-GB', {year: 'numeric', month: 'short', day: 'numeric'}));
         });
     });
 

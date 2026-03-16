@@ -16,6 +16,7 @@ import {AvatarStyles} from './common/member-gravatar';
 import {MagicLinkStyles} from './pages/magic-link-page';
 import {PopupNotificationStyles} from './common/popup-notification';
 import {OfferPageStyles} from './pages/offer-page';
+import {GiftPageStyles} from './pages/gift-page';
 import {FeedbackPageStyles} from './pages/feedback-page';
 import EmailSuppressedPage from './pages/email-suppressed-page.css?inline';
 import EmailSuppressionFAQ from './pages/email-suppression-faq.css?inline';
@@ -1303,6 +1304,7 @@ export function getFrameStyles({site}) {
         MagicLinkStyles +
         SignupPageStyles +
         OfferPageStyles({site}) +
+        GiftPageStyles +
         NotificationStyle +
         PopupNotificationStyles +
         MobileStyles +

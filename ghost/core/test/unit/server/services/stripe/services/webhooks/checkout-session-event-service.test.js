@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const CheckoutSessionEventService = require('../../../../../../../core/server/services/stripe/services/webhook/checkout-session-event-service');
 
 describe('CheckoutSessionEventService', function () {
-    let api, memberRepository, donationRepository, staffServiceEmails, sendSignupEmail, isPaidWelcomeEmailActive;
+    let api, memberRepository, donationRepository, staffServiceEmails, sendSignupEmail, sendGiftSubscriptionEmail, isPaidWelcomeEmailActive, giftService;
 
     beforeEach(function () {
         api = {
@@ -36,7 +36,11 @@ describe('CheckoutSessionEventService', function () {
         };
 
         sendSignupEmail = sinon.stub();
+        sendGiftSubscriptionEmail = sinon.stub();
         isPaidWelcomeEmailActive = sinon.stub().resolves(false);
+        giftService = {
+            markPurchasedFromCheckoutSession: sinon.stub()
+        };
     });
 
     function createService(deps = {}) {
@@ -46,7 +50,9 @@ describe('CheckoutSessionEventService', function () {
             donationRepository,
             staffServiceEmails,
             sendSignupEmail,
+            sendGiftSubscriptionEmail,
             isPaidWelcomeEmailActive,
+            giftService,
             ...deps
         });
     }
@@ -80,6 +86,16 @@ describe('CheckoutSessionEventService', function () {
             await service.handleEvent(session);
 
             sinon.assert.calledWith(handleDonationEventStub, session);
+        });
+
+        it('should call handleGiftEvent if session mode is payment and session metadata ghost_gift is present', async function () {
+            const service = createService();
+            const session = {mode: 'payment', metadata: {ghost_gift: true}};
+            const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
+
+            await service.handleEvent(session);
+
+            sinon.assert.calledWith(handleGiftEventStub, session);
         });
 
         it('should do nothing if session mode is not setup, subscription, or payment', async function () {
@@ -250,6 +266,75 @@ describe('CheckoutSessionEventService', function () {
             const savedDonationEvent = donationRepository.save.getCall(0).args[0];
 
             assert.equal(savedDonationEvent.amount, 1000);
+        });
+    });
+
+    describe('handleGiftEvent', function () {
+        it('sends the gift email when a gift transitions to purchased', async function () {
+            const service = createService();
+            const gift = {
+                id: 'gift_123',
+                get: sinon.stub().withArgs('delivery_method').returns('email')
+            };
+
+            giftService.markPurchasedFromCheckoutSession.resolves({
+                gift,
+                updated: true
+            });
+
+            await service.handleGiftEvent({
+                id: 'cs_test_123',
+                metadata: {
+                    gift_id: 'gift_123'
+                }
+            });
+
+            sinon.assert.calledOnce(giftService.markPurchasedFromCheckoutSession);
+            sinon.assert.calledOnce(sendGiftSubscriptionEmail);
+            sinon.assert.calledWith(sendGiftSubscriptionEmail, {gift});
+        });
+
+        it('does not send the gift email for shared-link gifts', async function () {
+            const service = createService();
+            const gift = {
+                id: 'gift_123',
+                get: sinon.stub().withArgs('delivery_method').returns('link')
+            };
+
+            giftService.markPurchasedFromCheckoutSession.resolves({
+                gift,
+                updated: true
+            });
+
+            await service.handleGiftEvent({
+                id: 'cs_test_123',
+                metadata: {
+                    gift_id: 'gift_123',
+                    delivery_method: 'link'
+                }
+            });
+
+            sinon.assert.calledOnce(giftService.markPurchasedFromCheckoutSession);
+            sinon.assert.notCalled(sendGiftSubscriptionEmail);
+        });
+
+        it('does not send the gift email when the webhook is replayed', async function () {
+            const service = createService();
+
+            giftService.markPurchasedFromCheckoutSession.resolves({
+                gift: {id: 'gift_123'},
+                updated: false
+            });
+
+            await service.handleGiftEvent({
+                id: 'cs_test_123',
+                metadata: {
+                    gift_id: 'gift_123'
+                }
+            });
+
+            sinon.assert.calledOnce(giftService.markPurchasedFromCheckoutSession);
+            sinon.assert.notCalled(sendGiftSubscriptionEmail);
         });
     });
 

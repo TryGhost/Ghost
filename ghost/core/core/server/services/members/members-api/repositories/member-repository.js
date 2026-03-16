@@ -275,6 +275,7 @@ module.exports = class MemberRepository {
      * @param {string} [data.offerId]
      * @param {import('@tryghost/member-attribution/lib/Attribution').AttributionResource} [data.attribution]
      * @param {boolean} [data.email_disabled]
+     * @param {{id?: string, durationMonths?: number, tierId?: string}} [data.gift]
      * @param {*} options
      * @returns
      */
@@ -288,7 +289,7 @@ module.exports = class MemberRepository {
             options.batch_id = ObjectId().toHexString();
         }
 
-        const {labels, stripeCustomer, offerId, attribution} = data;
+        const {labels, stripeCustomer, offerId, attribution, gift} = data;
 
         if (labels) {
             labels.forEach((label, index) => {
@@ -384,7 +385,12 @@ module.exports = class MemberRepository {
                         name: newMember.get('name'),
                         source,
                         timestamp,
-                        status: 'free'
+                        status: 'free',
+                        tierId: gift?.tierId,
+                        gift: gift ? {
+                            id: gift.id,
+                            durationMonths: gift.durationMonths
+                        } : undefined
                     })
                 }, {transacting});
 
@@ -475,7 +481,12 @@ module.exports = class MemberRepository {
             memberId: member.id,
             batchId: options.batch_id,
             attribution: data.attribution,
-            source
+            source,
+            tierId: gift?.tierId,
+            gift: gift ? {
+                id: gift.id,
+                durationMonths: gift.durationMonths
+            } : undefined
         }, eventData.created_at), options);
 
         return member;

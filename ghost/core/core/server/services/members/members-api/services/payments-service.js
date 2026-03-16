@@ -150,6 +150,41 @@ class PaymentsService {
         return session.url;
     }
 
+    /**
+     * @param {object} params
+     * @param {string} params.tierName
+     * @param {number} params.durationMonths
+     * @param {number} params.amount
+     * @param {string} params.currency
+     * @param {Member} [params.member]
+     * @param {Object.<string, any>} [params.metadata]
+     * @param {string} params.successUrl
+     * @param {string} params.cancelUrl
+     * @param {string} [params.email]
+     *
+     * @returns {Promise<URL>}
+     */
+    async getGiftPaymentLink({tierName, durationMonths, amount, currency, member, metadata, successUrl, cancelUrl, email}) {
+        let customer = null;
+        if (member) {
+            customer = await this.getCustomerForMember(member);
+        }
+
+        const session = await this.stripeAPIService.createGiftCheckoutSession({
+            tierName,
+            durationMonths,
+            amount,
+            currency,
+            metadata,
+            successUrl,
+            cancelUrl,
+            customer,
+            customerEmail: !customer && email ? email : null
+        });
+
+        return session.url;
+    }
+
     async getCustomerForMember(member) {
         const rows = await this.StripeCustomerModel.where({
             member_id: member.id

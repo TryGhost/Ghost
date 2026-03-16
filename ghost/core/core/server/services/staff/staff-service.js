@@ -95,6 +95,15 @@ class StaffService {
         });
 
         if (type === MemberCreatedEvent && member.status === 'free') {
+            if (event.data.gift) {
+                await this.emails.notifyGiftMemberSignup({
+                    member,
+                    tier,
+                    gift: event.data.gift
+                });
+                return;
+            }
+
             let attribution;
             if (event.data?.attribution) {
                 attribution = await this.memberAttributionService.fetchResource(event.data.attribution);

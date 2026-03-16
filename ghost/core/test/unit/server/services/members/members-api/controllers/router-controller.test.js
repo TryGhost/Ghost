@@ -803,6 +803,214 @@ describe('RouterController', function () {
         });
     });
 
+    describe('gift checkout and claim flows', function () {
+        let responseData;
+        let res;
+
+        function createGiftRouterController(overrides = {}) {
+            const giftService = overrides.giftService || {
+                validateDeliveryMethod: sinon.stub().callsFake((deliveryMethod = 'link') => deliveryMethod.toLowerCase()),
+                validateDuration: sinon.stub().callsFake(durationMonths => Number(durationMonths)),
+                calculateGiftPrice: sinon.stub().returns({amount: 500, currency: 'usd'}),
+                createPendingGift: sinon.stub().resolves({
+                    id: 'gift_123',
+                    get: sinon.stub().withArgs('claim_token').returns('gift_token_123')
+                }),
+                getByToken: sinon.stub(),
+                updateRecipientEmail: sinon.stub()
+            };
+
+            const payments = overrides.paymentsService || {
+                stripeAPIService: {
+                    configured: true
+                },
+                getGiftPaymentLink: sinon.stub().resolves('https://example.com/checkout/gift')
+            };
+
+            return new RouterController({
+                tiersService: overrides.tiersService || {
+                    api: {
+                        read: sinon.stub().resolves({
+                            id: 'tier_123',
+                            type: 'paid',
+                            status: 'active',
+                            name: 'Bronze'
+                        })
+                    }
+                },
+                paymentsService: payments,
+                giftService,
+                memberAttributionService: {
+                    getAttribution: sinon.stub().resolves({})
+                },
+                urlUtils: {
+                    getSiteUrl: sinon.stub().returns('https://example.com/'),
+                    isSiteUrl: sinon.stub().returns(true)
+                },
+                sendEmailWithMagicLink: sinon.stub().resolves(),
+                settingsCache,
+                settingsHelpers,
+                emailAddressService,
+                ...overrides
+            });
+        }
+
+        beforeEach(function () {
+            responseData = null;
+            res = {
+                writeHead: sinon.stub(),
+                end: sinon.stub().callsFake((data) => {
+                    responseData = JSON.parse(data);
+                }),
+                json: sinon.stub()
+            };
+        });
+
+        it('allows link-delivered gift checkout without a recipient email', async function () {
+            const controller = createGiftRouterController();
+
+            await controller.createCheckoutSession({
+                body: {
+                    type: 'gift',
+                    tierId: 'tier_123',
+                    durationMonths: 3,
+                    deliveryMethod: 'link',
+                    successUrl: 'https://example.com/#/portal/gift/success',
+                    cancelUrl: 'https://example.com/#/portal/gift',
+                    metadata: {}
+                }
+            }, res);
+
+            assert.equal(responseData.token, 'gift_token_123');
+            sinon.assert.calledWith(controller._giftService.createPendingGift, sinon.match({
+                deliveryMethod: 'link',
+                recipientEmail: null
+            }));
+            sinon.assert.calledWith(controller._paymentsService.getGiftPaymentLink, sinon.match({
+                metadata: sinon.match({
+                    delivery_method: 'link'
+                }),
+                successUrl: 'https://example.com/#/portal/gift/success/gift_token_123'
+            }));
+        });
+
+        it('requires a recipient email for email-delivered gifts', async function () {
+            const controller = createGiftRouterController();
+
+            await assert.rejects(
+                controller._getGiftCheckoutData({
+                    tierId: 'tier_123',
+                    durationMonths: 1,
+                    deliveryMethod: 'email'
+                }),
+                {message: 'Recipient email is required.'}
+            );
+        });
+
+        it('normalizes recipient email for email-delivered gifts', async function () {
+            const controller = createGiftRouterController();
+
+            const data = await controller._getGiftCheckoutData({
+                tierId: 'tier_123',
+                durationMonths: 1,
+                deliveryMethod: 'email',
+                recipientEmail: 'Jamie@Example.COM'
+            });
+
+            assert.equal(data.recipientEmail, 'Jamie@example.com');
+        });
+
+        it('requires a claim email when sending a magic link for a shared-link gift', async function () {
+            const controller = createGiftRouterController({
+                giftService: {
+                    getByToken: sinon.stub().resolves({
+                        get: sinon.stub().callsFake((key) => {
+                            const values = {
+                                status: 'purchased',
+                                delivery_method: 'link',
+                                recipient_email: null,
+                                claim_token: 'gift_token_123'
+                            };
+
+                            return values[key] ?? null;
+                        })
+                    })
+                }
+            });
+
+            await assert.rejects(
+                controller.sendGiftMagicLink({
+                    params: {
+                        token: 'gift_token_123'
+                    },
+                    body: {},
+                    get: sinon.stub()
+                }, res),
+                {message: 'Email is required to deliver this gift.'}
+            );
+        });
+
+        it('updates the stored recipient email and passes the submitted name when claiming a gift', async function () {
+            const gift = {
+                id: 'gift_123',
+                get: sinon.stub().callsFake((key) => {
+                    const values = {
+                        status: 'purchased',
+                        delivery_method: 'email',
+                        recipient_email: 'jamie@example.com',
+                        claim_token: 'gift_token_123',
+                        duration_months: 6,
+                        product_id: 'tier_123'
+                    };
+
+                    return values[key] ?? null;
+                })
+            };
+
+            const giftService = {
+                getByToken: sinon.stub().resolves(gift),
+                updateRecipientEmail: sinon.stub().resolves()
+            };
+
+            const sendEmailWithMagicLink = sinon.stub().resolves();
+
+            const controller = createGiftRouterController({
+                giftService,
+                sendEmailWithMagicLink
+            });
+
+            await controller.sendGiftMagicLink({
+                params: {
+                    token: 'gift_token_123'
+                },
+                body: {
+                    email: 'new@example.com',
+                    name: 'Jamie'
+                },
+                get: sinon.stub()
+            }, res);
+
+            sinon.assert.calledOnce(giftService.updateRecipientEmail);
+            sinon.assert.calledWith(giftService.updateRecipientEmail, {
+                gift,
+                recipientEmail: 'new@example.com'
+            });
+            sinon.assert.calledOnce(sendEmailWithMagicLink);
+            sinon.assert.calledWith(sendEmailWithMagicLink, sinon.match({
+                email: 'new@example.com',
+                requestedType: 'signup',
+                tokenData: {
+                    name: 'Jamie',
+                    gift: {
+                        id: 'gift_123',
+                        durationMonths: 6,
+                        tierId: 'tier_123'
+                    }
+                }
+            }));
+        });
+    });
+
     describe('sendMagicLink', function () {
         describe('newsletters', function () {
             let req, res, sendEmailWithMagicLinkStub;

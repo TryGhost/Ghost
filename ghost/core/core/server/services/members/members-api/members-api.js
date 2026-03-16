@@ -7,6 +7,7 @@ const PaymentsService = require('./services/payments-service');
 const TokenService = require('./services/token-service');
 const GeolocationService = require('./services/geolocation-service');
 const MemberBREADService = require('./services/member-bread-service');
+const GiftService = require('./services/gift-service');
 const MemberRepository = require('./repositories/member-repository');
 const NextPaymentCalculator = require('./services/next-payment-calculator');
 
@@ -66,7 +67,8 @@ module.exports = function MembersAPI({
         MemberFeedback,
         Outbox,
         AutomatedEmail,
-        AutomatedEmailRecipient
+        AutomatedEmailRecipient,
+        MemberGift
     },
     tiersService,
     stripeAPIService,
@@ -137,11 +139,18 @@ module.exports = function MembersAPI({
         AutomatedEmailRecipient
     });
 
+    const giftService = new GiftService({
+        MemberGift,
+        memberRepository,
+        productRepository
+    });
+
     const nextPaymentCalculator = new NextPaymentCalculator();
 
     const memberBREADService = new MemberBREADService({
         offersAPI,
         memberRepository,
+        giftService,
         emailService: {
             async sendEmailWithMagicLink({email, requestedType}) {
                 return sendEmailWithMagicLink({
@@ -199,6 +208,7 @@ module.exports = function MembersAPI({
     const routerController = new RouterController({
         offersAPI,
         paymentsService,
+        giftService,
         tiersService,
         memberRepository,
         StripePrice,
@@ -255,7 +265,7 @@ module.exports = function MembersAPI({
     }
 
     async function getMemberDataFromMagicLinkToken(token, otcVerification) {
-        const {email, labels = [], name = '', oldEmail, newsletters, attribution, reqIp, type} = await getTokenDataFromMagicLinkToken(token, otcVerification);
+        const {email, labels = [], name = '', oldEmail, newsletters, attribution, reqIp, type, gift} = await getTokenDataFromMagicLinkToken(token, otcVerification);
         if (!email) {
             return null;
         }
@@ -290,7 +300,7 @@ module.exports = function MembersAPI({
             }
         }
 
-        const newMember = await users.create({name, email, labels, newsletters, attribution, geolocation});
+        const newMember = await users.create({name, email, labels, newsletters, attribution, geolocation, gift});
 
         await MemberLoginEvent.add({member_id: newMember.id});
         return getMemberIdentityData(email);
@@ -382,6 +392,17 @@ module.exports = function MembersAPI({
             body.json(),
             forwardError((req, res) => routerController.createCheckoutSession(req, res))
         ),
+        readGift: Router({mergeParams: true}).use(
+            forwardError((req, res) => routerController.readGift(req, res))
+        ),
+        sendGiftMagicLink: Router({mergeParams: true}).use(
+            body.json(),
+            forwardError((req, res) => routerController.sendGiftMagicLink(req, res))
+        ),
+        redeemGift: Router({mergeParams: true}).use(
+            body.json(),
+            forwardError((req, res) => routerController.redeemGift(req, res))
+        ),
         createCheckoutSetupSession: Router().use(
             body.json(),
             forwardError((req, res) => routerController.createCheckoutSetupSession(req, res))
@@ -448,6 +469,7 @@ module.exports = function MembersAPI({
         memberBREADService,
         events: eventRepository,
         productRepository,
+        giftService,
 
         // Test helpers
         getTokenDataFromMagicLinkToken,

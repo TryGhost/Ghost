@@ -1,9 +1,11 @@
 import {getDateString} from './date-time';
 import {t} from './i18n';
 
+export const GIFT_CLAIM_QUERY_PARAM = 'gift';
+
 export function removePortalLinkFromUrl() {
     const [path] = window.location.hash.substr(1).split('?');
-    const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
+    const linkRegex = /^\/portal\/?(?:\/([^?]+?))?\/?$/;
     if (path && linkRegex.test(path)) {
         window.history.pushState('', document.title, window.location.pathname + window.location.search);
     }
@@ -38,17 +40,20 @@ export function isSentryEventAllowed({event: sentryEvent}) {
 }
 
 export function getMemberSubscription({member = {}}) {
-    if (isPaidMember({member})) {
-        const subscriptions = member.subscriptions || [];
-        const activeSubscription = subscriptions.find((sub) => {
-            return ['active', 'trialing', 'unpaid', 'past_due'].includes(sub.status);
-        });
-        if (!activeSubscription?.price && activeSubscription?.plan) {
-            activeSubscription.price = activeSubscription.plan;
-        }
-        return activeSubscription;
+    if (!member) {
+        return null;
     }
-    return null;
+
+    const subscriptions = member.subscriptions || [];
+    const activeSubscription = subscriptions.find((sub) => {
+        return ['active', 'trialing', 'unpaid', 'past_due'].includes(sub.status);
+    });
+
+    if (activeSubscription && !activeSubscription.price && activeSubscription.plan) {
+        activeSubscription.price = activeSubscription.plan;
+    }
+
+    return activeSubscription || null;
 }
 
 export function isComplimentaryMember({member = {}}) {
@@ -59,14 +64,22 @@ export function isComplimentaryMember({member = {}}) {
     if (subscription) {
         const {price} = subscription;
         return (price && price.amount === 0);
-    } else if (!subscription && !!member.paid) {
+    } else if (!subscription && (member.comped === true || member.status === 'comped' || !!member.paid)) {
         return true;
     }
     return false;
 }
 
 export function isPaidMember({member = {}}) {
-    return (member && member.paid);
+    if (!member) {
+        return false;
+    }
+
+    if (typeof member.paid === 'boolean') {
+        return member.paid;
+    }
+
+    return member.comped === true || member.status === 'paid' || member.status === 'comped';
 }
 
 export function getProductCurrency({product}) {
@@ -93,8 +106,10 @@ export function hasNewsletterSendingEnabled({site}) {
 
 export function getCompExpiry({member}) {
     const subscription = getMemberSubscription({member});
-    if (subscription?.tier?.expiry_at) {
-        return getDateString(subscription.tier.expiry_at);
+    const expiryAt = subscription?.tier?.expiry_at || subscription?.gift?.expires_at;
+
+    if (expiryAt) {
+        return getDateString(expiryAt);
     }
     return '';
 }

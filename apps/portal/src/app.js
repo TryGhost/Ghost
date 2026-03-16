@@ -14,7 +14,7 @@ import {transformPortalAnchorToRelative} from './utils/transform-portal-anchor-t
 import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './app.css';
-import {hasRecommendations, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {GIFT_CLAIM_QUERY_PARAM, hasRecommendations, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {validateHexColor} from './utils/sanitize-html';
 import {handleDataAttributes} from './data-attributes';
 
@@ -201,7 +201,12 @@ export default class App extends React.Component {
     async initSetup() {
         try {
             // Fetch data from API, links, preview, dev sources
-            const {site, member, offers, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
+            const initialData = await this.fetchData();
+            const giftClaimState = await this.resolveGiftClaimRedirect(initialData);
+            const {site, member, offers, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = {
+                ...initialData,
+                ...giftClaimState
+            };
             const i18nLanguage = this.props.siteI18nEnabled ? this.props.locale || site.locale || 'en' : 'en';
             i18n.changeLanguage(i18nLanguage);
 
@@ -254,6 +259,78 @@ export default class App extends React.Component {
                 action: 'init:failed',
                 initStatus: 'failed'
             });
+        }
+    }
+
+    clearGiftClaimParams() {
+        try {
+            const url = new URL(window.location.href);
+            let changed = false;
+
+            [GIFT_CLAIM_QUERY_PARAM, 'success', 'action'].forEach((param) => {
+                if (url.searchParams.has(param)) {
+                    url.searchParams.delete(param);
+                    changed = true;
+                }
+            });
+
+            if (changed) {
+                window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
+            }
+        } catch (err) {
+            // Ignore environments that don't support URL/history mutation here.
+        }
+    }
+
+    async resolveGiftClaimRedirect(initialData) {
+        const qParams = new URLSearchParams(window.location.search);
+        const token = qParams.get(GIFT_CLAIM_QUERY_PARAM);
+        const member = initialData?.member;
+
+        if (!token || !member) {
+            return null;
+        }
+
+        try {
+            await this.GhostApi.member.redeemGift({token});
+            const refreshedMember = await this.GhostApi.member.sessionData();
+
+            this.clearGiftClaimParams();
+
+            return {
+                member: refreshedMember || member,
+                showPopup: true,
+                page: 'accountHome',
+                lastPage: null,
+                pageData: null,
+                popupNotification: createPopupNotification({
+                    type: 'giftRedeem:success',
+                    autoHide: true,
+                    closeable: true,
+                    status: 'success',
+                    state: this.state,
+                    message: t('Gift redeemed successfully')
+                })
+            };
+        } catch (error) {
+            this.clearGiftClaimParams();
+
+            return {
+                showPopup: true,
+                page: 'gift',
+                pageData: {
+                    mode: 'redeem',
+                    token
+                },
+                popupNotification: createPopupNotification({
+                    type: 'giftRedeem:auto-failed',
+                    autoHide: false,
+                    closeable: true,
+                    status: 'error',
+                    state: this.state,
+                    message: chooseBestErrorMessage(error, t('Failed to redeem gift'))
+                })
+            };
         }
     }
 
@@ -531,7 +608,7 @@ export default class App extends React.Component {
         const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
         const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/yearly$/;
         const offersRegex = /^offers\/(\w+?)\/?$/;
-        const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
+        const linkRegex = /^\/portal\/?(?:\/([^?]+?))?\/?$/;
         const feedbackRegex = /^\/feedback\/(\w+?)\/(\w+?)\/?$/;
 
         if (path && feedbackRegex.test(path)) {
@@ -865,10 +942,37 @@ export default class App extends React.Component {
         const customMonthlyProductSignup = /^signup\/?(?:\/(\w+?))\/monthly\/?$/;
         const customYearlyProductSignup = /^signup\/?(?:\/(\w+?))\/yearly\/?$/;
         const customOfferRegex = /^offers\/(\w+?)\/?$/;
+        const giftSuccessRegex = /^gift\/success\/([^/]+)\/?$/;
+        const giftRedeemRegex = /^gift\/([^/]+)\/?$/;
 
         if (path === undefined || path === '') {
             return {
                 page: 'default'
+            };
+        } else if (path === 'gift') {
+            return {
+                page: 'gift',
+                pageData: {
+                    mode: 'purchase'
+                }
+            };
+        } else if (giftSuccessRegex.test(path)) {
+            const [, token] = path.match(giftSuccessRegex);
+            return {
+                page: 'gift',
+                pageData: {
+                    mode: 'success',
+                    token
+                }
+            };
+        } else if (giftRedeemRegex.test(path)) {
+            const [, token] = path.match(giftRedeemRegex);
+            return {
+                page: 'gift',
+                pageData: {
+                    mode: 'redeem',
+                    token
+                }
             };
         } else if (customOfferRegex.test(path)) {
             return {

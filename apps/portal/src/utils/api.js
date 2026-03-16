@@ -509,6 +509,124 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
+        async checkoutGift({tierId, durationMonths, deliveryMethod = 'link', recipientEmail, successUrl, cancelUrl, metadata = {}} = {}) {
+            const identity = await api.member.identity();
+            const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
+            const body = {
+                identity,
+                metadata: {
+                    requestSrc: 'portal',
+                    fp_tid: (window.FPROM || window.$FPROM)?.data?.tid,
+                    urlHistory: getUrlHistory(),
+                    ...metadata
+                },
+                successUrl,
+                cancelUrl,
+                type: 'gift',
+                tierId,
+                durationMonths,
+                deliveryMethod,
+                recipientEmail
+            };
+
+            const res = await makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            const responseJson = await res.json();
+
+            if (!res.ok) {
+                const error = responseJson?.errors?.[0];
+                if (error) {
+                    throw error;
+                }
+
+                throw new Error('Failed to start gift checkout');
+            }
+
+            return responseJson;
+        },
+
+        async gift({token}) {
+            const url = endpointFor({type: 'members', resource: `gifts/${token}`});
+            const res = await makeRequest({
+                url,
+                method: 'GET',
+                credentials: 'same-origin'
+            });
+
+            if (!res.ok) {
+                const humanError = await HumanReadableError.fromApiResponse(res);
+                if (humanError) {
+                    throw humanError;
+                }
+
+                throw new Error('Failed to load gift');
+            }
+
+            return await res.json();
+        },
+
+        async sendGiftMagicLink({token, redirect, email, name}) {
+            const url = endpointFor({type: 'members', resource: `gifts/${token}/send-magic-link`});
+            const res = await makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    redirect,
+                    email,
+                    name
+                })
+            });
+
+            if (!res.ok) {
+                const humanError = await HumanReadableError.fromApiResponse(res);
+                if (humanError) {
+                    throw humanError;
+                }
+
+                throw new Error('Failed to send gift magic link');
+            }
+
+            return await res.json();
+        },
+
+        async redeemGift({token, confirmTierChange = false}) {
+            const url = endpointFor({type: 'members', resource: `gifts/${token}/redeem`});
+            const res = await makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    confirmTierChange
+                })
+            });
+
+            const responseJson = await res.json();
+
+            if (!res.ok) {
+                const error = responseJson?.errors?.[0];
+                if (error) {
+                    throw error;
+                }
+
+                throw new Error('Failed to redeem gift');
+            }
+
+            return responseJson;
+        },
+
         async checkoutDonation({successUrl, cancelUrl, metadata = {}, personalNote = ''} = {}) {
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});

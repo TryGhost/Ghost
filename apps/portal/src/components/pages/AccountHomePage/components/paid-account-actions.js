@@ -36,7 +36,8 @@ const PaidAccountActions = () => {
         const compExpiry = getCompExpiry({member});
         if (isComplimentary) {
             if (compExpiry) {
-                label = `${t('Complimentary')} - ${t('Expires {expiryDate}', {expiryDate: compExpiry})}`;
+                const giftLabel = subscription?.gift ? t('Gift subscription') : t('Complimentary');
+                label = `${giftLabel} - ${t('Expires {expiryDate}', {expiryDate: compExpiry})}`;
             } else {
                 label = label ? `${t('Complimentary')} (${label})` : t(`Complimentary`);
             }

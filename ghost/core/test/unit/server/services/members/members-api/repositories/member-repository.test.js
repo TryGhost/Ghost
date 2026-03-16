@@ -1546,6 +1546,36 @@ describe('MemberRepository', function () {
             assert.equal(payload.source, 'member');
         });
 
+        it('dispatches gift metadata on member created events', async function () {
+            const repo = new MemberRepository({
+                Member,
+                MemberStatusEvent,
+                MemberSubscribeEventModel: MemberSubscribeEvent,
+                newslettersService,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            const dispatchEventStub = sinon.stub(repo, 'dispatchEvent');
+
+            await repo.create({
+                email: 'test@example.com',
+                name: 'Test Member',
+                gift: {
+                    id: 'gift_123',
+                    durationMonths: 6,
+                    tierId: 'tier_123'
+                }
+            }, {});
+
+            sinon.assert.calledOnce(dispatchEventStub);
+            assert.equal(dispatchEventStub.firstCall.args[0].data.memberId, 'member_id_123');
+            assert.equal(dispatchEventStub.firstCall.args[0].data.tierId, 'tier_123');
+            assert.deepEqual(dispatchEventStub.firstCall.args[0].data.gift, {
+                id: 'gift_123',
+                durationMonths: 6
+            });
+        });
+
         it('does not create outbox entry for disallowed sources', async function () {
             const repo = new MemberRepository({
                 Member,

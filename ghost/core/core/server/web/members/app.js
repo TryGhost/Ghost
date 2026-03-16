@@ -104,6 +104,18 @@ module.exports = function setupMembersApp() {
     membersApp.post('/api/create-stripe-checkout-session', function lazyCreateCheckoutSessionMw(req, res, next) {
         return membersService.api.middleware.createCheckoutSession(req, res, next);
     });
+    membersApp.get('/api/gifts/:token', function lazyReadGiftMw(req, res, next) {
+        return membersService.api.middleware.readGift(req, res, next);
+    });
+    membersApp.post('/api/gifts/:token/send-magic-link', function lazySendGiftMagicLinkMw(req, res, next) {
+        return membersService.api.middleware.sendGiftMagicLink(req, res, next);
+    });
+    membersApp.post('/api/gifts/:token/redeem',
+        middleware.loadMemberSession,
+        function lazyRedeemGiftMw(req, res, next) {
+            return membersService.api.middleware.redeemGift(req, res, next);
+        }
+    );
     membersApp.post('/api/create-stripe-update-session', function lazyCreateCheckoutSetupSessionMw(req, res, next) {
         return membersService.api.middleware.createCheckoutSetupSession(req, res, next);
     });
