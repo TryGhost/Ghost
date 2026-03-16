@@ -19,7 +19,7 @@ export default [
         files: ['demo/**/*.{js,jsx}', 'src/**/*.{js,jsx}', 'test/**/*.{js,jsx}'],
         plugins: {
             ghost,
-            'react-hooks': fixupPluginRules(reactHooksPlugin),
+            'react-hooks': reactHooksPlugin,
             tailwindcss: tailwindcssPlugin
         },
         settings: {
