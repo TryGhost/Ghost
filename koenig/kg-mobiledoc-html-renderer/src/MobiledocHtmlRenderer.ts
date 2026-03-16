@@ -1,21 +1,38 @@
-const SimpleDom = require('simple-dom');
-const Renderer = require('mobiledoc-dom-renderer').default;
-const {slugify} = require('@tryghost/kg-utils');
+import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
+import MobiledocDomRenderer from 'mobiledoc-dom-renderer';
+import {slugify} from '@tryghost/kg-utils';
 
-const walkDom = function (node, func) {
+// mobiledoc-dom-renderer may use CJS default export pattern
+const Renderer = (MobiledocDomRenderer as {default?: typeof MobiledocDomRenderer}).default || MobiledocDomRenderer;
+
+interface SimpleDomNode {
+    nodeType: number;
+    nodeName: string;
+    nodeValue: string | null;
+    tagName: string;
+    firstChild: SimpleDomNode | null;
+    lastChild: SimpleDomNode | null;
+    nextSibling: SimpleDomNode | null;
+    appendChild(child: SimpleDomNode): void;
+    removeChild(child: SimpleDomNode): void;
+    setAttribute(name: string, value: string): void;
+    getAttribute(name: string): string | null;
+}
+
+const walkDom = function (node: SimpleDomNode, func: (node: SimpleDomNode) => void): void {
     func(node);
-    node = node.firstChild;
+    let child = node.firstChild;
 
-    while (node) {
-        walkDom(node, func);
-        node = node.nextSibling;
+    while (child) {
+        walkDom(child, func);
+        child = child.nextSibling;
     }
 };
 
-const nodeTextContent = function (node) {
+const nodeTextContent = function (node: SimpleDomNode): string {
     let textContent = '';
 
-    walkDom(node, (currentNode) => {
+    walkDom(node, (currentNode: SimpleDomNode) => {
         if (currentNode.nodeType === 3) {
             textContent += currentNode.nodeValue;
         }
@@ -24,21 +41,34 @@ const nodeTextContent = function (node) {
     return textContent;
 };
 
+interface SimpleDom {
+    createElement(tag: string): SimpleDomNode;
+}
+
+interface DomModifierOptions {
+    ghostVersion?: string;
+    target?: string;
+    dom: SimpleDom;
+    [key: string]: unknown;
+}
+
 // used to walk the rendered SimpleDOM output and modify elements before
 // serializing to HTML. Saves having a large HTML parsing dependency such as
 // jsdom that may break on malformed HTML in MD or HTML cards
 class DomModifier {
-    constructor(options) {
-        this.usedIds = [];
+    usedIds: Record<string, number> = {};
+    options: DomModifierOptions;
+
+    constructor(options: DomModifierOptions) {
         this.options = options;
     }
 
-    addHeadingId(node) {
+    addHeadingId(node: SimpleDomNode): void {
         if (!node.firstChild || node.getAttribute('id')) {
             return;
         }
 
-        let text = nodeTextContent(node);
+        const text = nodeTextContent(node);
         let id = slugify(text, this.options);
 
         if (this.usedIds[id] !== undefined) {
@@ -51,7 +81,7 @@ class DomModifier {
         node.setAttribute('id', id);
     }
 
-    wrapBlockquoteContentInP(node) {
+    wrapBlockquoteContentInP(node: SimpleDomNode): void {
         if (node.firstChild && node.firstChild.tagName === 'P') {
             return;
         }
@@ -64,11 +94,11 @@ class DomModifier {
         node.appendChild(p);
     }
 
-    modifyChildren(node) {
+    modifyChildren(node: SimpleDomNode): void {
         walkDom(node, this.modify.bind(this));
     }
 
-    modify(node) {
+    modify(node: SimpleDomNode): void {
         // add id attributes to H* tags
         if (node.nodeType === 1 && node.nodeName.match(/^h\d$/i)) {
             this.addHeadingId(node);
@@ -81,17 +111,50 @@ class DomModifier {
     }
 }
 
-class MobiledocHtmlRenderer {
-    constructor(options = {}) {
+interface CardDefinition {
+    name: string;
+    type: string;
+    render(args: Record<string, unknown>): unknown;
+}
+
+interface AtomDefinition {
+    name: string;
+    type: string;
+    render(args: Record<string, unknown>): unknown;
+}
+
+interface RendererOptions {
+    cards?: CardDefinition[];
+    atoms?: AtomDefinition[];
+    unknownCardHandler?: (...args: unknown[]) => void;
+}
+
+interface RendererInternalOptions {
+    dom: SimpleDomDocument;
+    cards: CardDefinition[];
+    atoms: AtomDefinition[];
+    unknownCardHandler: (...args: unknown[]) => void;
+}
+
+interface Mobiledoc {
+    ghostVersion?: string;
+    version: string;
+    [key: string]: unknown;
+}
+
+export class MobiledocHtmlRenderer {
+    options: RendererInternalOptions;
+
+    constructor(options: RendererOptions = {}) {
         this.options = {
-            dom: new SimpleDom.Document(),
+            dom: new SimpleDomDocument(),
             cards: options.cards || [],
             atoms: options.atoms || [],
             unknownCardHandler: options.unknownCardHandler || function () {}
         };
     }
 
-    render(mobiledoc, _cardOptions = {}) {
+    render(mobiledoc: Mobiledoc, _cardOptions: Record<string, unknown> = {}): string {
         const ghostVersion = mobiledoc.ghostVersion || '4.0';
 
         const defaultCardOptions = {
@@ -101,7 +164,7 @@ class MobiledocHtmlRenderer {
         const cardOptions = Object.assign({}, defaultCardOptions, _cardOptions);
 
         const sectionElementRenderer = {
-            ASIDE: function (tagName, dom) {
+            ASIDE: function (_tagName: string, dom: SimpleDom) {
                 // we use ASIDE sections in Koenig as a workaround for applying
                 // a different blockquote style because mobiledoc doesn't support
                 // storing arbitrary attributes with sections
@@ -114,11 +177,11 @@ class MobiledocHtmlRenderer {
         const rendererOptions = Object.assign({}, this.options, {cardOptions, sectionElementRenderer});
         const renderer = new Renderer(rendererOptions);
         const rendered = renderer.render(mobiledoc);
-        const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
+        const serializer = new HTMLSerializer(voidMap);
 
         // Koenig keeps a blank paragraph at the end of a doc but we want to
         // make sure it doesn't get rendered
-        const lastChild = rendered.result.lastChild;
+        const lastChild = rendered.result.lastChild as SimpleDomNode | null;
         if (lastChild && lastChild.tagName === 'P') {
             if (!nodeTextContent(lastChild)) {
                 rendered.result.removeChild(lastChild);
@@ -127,8 +190,8 @@ class MobiledocHtmlRenderer {
 
         // Walk the DOM output and modify nodes as needed
         // eg. to add ID attributes to heading elements
-        const modifier = new DomModifier(Object.assign({}, cardOptions, {dom: this.options.dom}));
-        modifier.modifyChildren(rendered.result);
+        const modifier = new DomModifier(Object.assign({}, cardOptions, {dom: this.options.dom}) as DomModifierOptions);
+        modifier.modifyChildren(rendered.result as unknown as SimpleDomNode);
 
         const output = serializer.serializeChildren(rendered.result);
 
@@ -138,5 +201,3 @@ class MobiledocHtmlRenderer {
         return output;
     }
 }
-
-module.exports = MobiledocHtmlRenderer;
