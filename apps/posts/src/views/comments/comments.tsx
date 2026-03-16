@@ -35,9 +35,8 @@ const Comments: React.FC = () => {
 
     const {knownPosts, knownMembers} = useKnownFilterValues({comments: data?.comments ?? []});
 
-    // Keep showing the spinner while refetching into or out of an empty result set.
-    const shouldShowLoading = isFetching && !isFetchingNextPage && (!isRefetching || !(data?.comments.length));
-    const hasFilters = filters.length > 0;
+    // If we are fetching comments, but not fetching the next page and not refetching, we should show the loading indicator
+    const shouldShowLoading = isFetching && !isFetchingNextPage && !isRefetching;
 
     return (
         <CommentsLayout>
@@ -61,7 +60,7 @@ const Comments: React.FC = () => {
                         <h2 className="mb-2 text-xl font-medium">
                             Error loading comments
                         </h2>
-                        <p className="mb-4 text-muted-foreground">
+                        <p className="text-muted-foreground mb-4">
                             Please reload the page to try again
                         </p>
                         <Button onClick={() => window.location.reload()}>
@@ -70,20 +69,11 @@ const Comments: React.FC = () => {
                     </div>
                 ) : !data?.comments.length ? (
                     <div className="flex h-full items-center justify-center">
-                        {hasFilters ? (
-                            <div className="flex flex-col items-center">
-                                <EmptyIndicator title="No comments match the current filter">
-                                    <LucideIcon.MessageSquare />
-                                </EmptyIndicator>
-                                <Button className="mt-4" variant="outline" onClick={() => clearFilters({replace: false})}>
-                                    Show all comments
-                                </Button>
-                            </div>
-                        ) : (
-                            <EmptyIndicator title="No comments yet">
-                                <LucideIcon.MessageSquare />
-                            </EmptyIndicator>
-                        )}
+                        <EmptyIndicator
+                            title="No comments yet"
+                        >
+                            <LucideIcon.MessageSquare />
+                        </EmptyIndicator>
                     </div>
                 ) : (
                     <>
