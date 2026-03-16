@@ -38,8 +38,7 @@ const EnvelopeHeader: React.FC<{senderName?: string; senderEmail?: string; subje
     }
 
     return (
-        // eslint-disable-next-line tailwindcss/classnames-order
-        <div className="rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 text-sm dark:border-gray-800 dark:bg-gray-950">
+        <div className="border-gray-200 dark:border-gray-800 dark:bg-gray-950 rounded-t-lg border border-b-0 bg-white px-6 py-4 text-sm">
             {senderName && (
                 <div className="flex gap-2">
                     <span className="font-semibold">{senderName}</span>
