@@ -67,7 +67,7 @@ function CommentRow({comment, isReply = false, isSelectedComment = false, select
                             <div className={`mb-1 line-clamp-1 text-sm ${comment.status === 'hidden' && 'opacity-50'}`}>
                                 <span className="text-muted-foreground">Replied to:</span>&nbsp;
                                 <Link
-                                    className="text-muted-foreground hover:text-foreground text-sm font-normal"
+                                    className="text-sm font-normal text-muted-foreground hover:text-foreground"
                                     data-testid="replied-to-link"
                                     to={buildThreadLink(searchParams, comment.in_reply_to_id || comment.parent_id) || ''}
                                     onClick={(e: React.MouseEvent) => {
