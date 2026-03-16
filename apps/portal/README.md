@@ -34,29 +34,9 @@ On pages where `{{ghost_head}}` is rendered, Portal will auto-resolve metadata f
 - Title: Open Graph title (or document title fallback)
 - Image: Open Graph image (or Twitter image fallback)
 
-Optional metadata attributes are supported as explicit overrides on the trigger element:
-
-- `data-portal-share-url`
-- `data-portal-share-title`
-- `data-portal-share-image`
-
-Override example:
-```html
-<button
-    type="button"
-    data-portal="share"
-    data-portal-share-url="{{url absolute="true"}}"
-    data-portal-share-title="{{title}}"
-    data-portal-share-image="{{feature_image}}"
->
-    Share
-</button>
-```
-
 Troubleshooting missing preview metadata:
 1. Verify the template includes `{{ghost_head}}`.
 2. Verify rendered HTML contains canonical + OG/Twitter tags.
-3. Use override attrs for custom/edge-case behavior.
 
 The script also adds custom class names to this element for open and close state of popup - `gh-portal-open` and `gh-portal-close`, allowing devs to update its UI based on popup state.
 
