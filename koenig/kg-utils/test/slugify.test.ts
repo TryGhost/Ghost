@@ -1,14 +1,11 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('./utils');
-
-const slugify = require('../lib/slugify');
+import './utils/index.js';
+import slugify from '../src/slugify.js';
 
 describe('slugify()', function () {
     it('handles non-string input', function () {
-        slugify(null, 'null input').should.eql('');
-        slugify(undefined, 'undefined input').should.eql('');
-        slugify({}, '{} input').should.eql('');
+        slugify(null).should.eql('');
+        slugify(undefined).should.eql('');
+        slugify({}).should.eql('');
     });
 
     describe('<4.x markdown', function () {

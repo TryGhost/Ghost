@@ -4,25 +4,46 @@
   "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-utils",
   "author": "Ghost Foundation",
   "license": "MIT",
-  "main": "index.js",
+  "main": "build/cjs/index.js",
+  "module": "build/esm/index.js",
+  "types": "build/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/esm/index.d.ts",
+      "node": "./build/cjs/index.js",
+      "import": "./build/esm/index.js",
+      "require": "./build/cjs/index.js"
+    }
+  },
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
+    "prepare": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
+    "pretest": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
+    "test": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha --require tsx './test/**/*.test.ts'",
     "lint": "eslint . --cache",
     "posttest": "yarn lint"
   },
   "files": [
-    "index.js",
-    "lib"
+    "build"
   ],
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
+    "@eslint/js": "9.28.0",
+    "@types/mocha": "10.0.10",
+    "@types/node": "22.15.29",
+    "@types/should": "13.0.0",
+    "@types/semver": "7.7.1",
+    "@types/sinon": "17.0.4",
     "c8": "11.0.0",
     "mocha": "11.7.5",
     "should": "13.2.3",
-    "sinon": "21.0.2"
+    "sinon": "21.0.2",
+    "tsx": "4.19.4",
+    "typescript": "5.8.3",
+    "typescript-eslint": "8.33.1"
   },
   "dependencies": {
     "semver": "^7.7.3"
