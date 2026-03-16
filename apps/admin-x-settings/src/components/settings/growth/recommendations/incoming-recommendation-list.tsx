@@ -63,7 +63,7 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
                     </div>
                 </div>
             </TableCell>
-            <TableCell className='md:visible! md:table-cell! hidden w-auto whitespace-nowrap text-left align-middle' padding={false} onClick={showDetails}>
+            <TableCell className='md:visible! md:table-cell! hidden w-auto whitespace-nowrap text-left' padding={false} valign="middle" onClick={showDetails}>
                 {(signups === 0) ? (
                     <span className="text-grey-500 dark:text-grey-900">-</span>
                 ) : (
@@ -72,7 +72,7 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
                     </div>
                 )}
             </TableCell>
-            <TableCell className='md:visible! md:table-cell! hidden w-[1%] whitespace-nowrap align-middle' onClick={showDetails}>
+            <TableCell className='md:visible! md:table-cell! hidden w-[1%] whitespace-nowrap' valign="middle" onClick={showDetails}>
                 {(signups === 0) ? (null) : (
                     <div className='-mt-px text-left'>
                         <span className='-mb-px inline-block min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{freeMembersLabel}</span>
