@@ -165,6 +165,11 @@ export const ShareModalStyles = `
         height: 20px;
     }
 
+    .gh-portal-share-icon.x svg {
+        width: 16px;
+        height: 16px;
+    }
+
     .gh-portal-share-icon.copied {
         background: color-mix(in srgb, var(--brandcolor) 14%, var(--white));
         color: var(--brandcolor);
@@ -177,6 +182,44 @@ export const ShareModalStyles = `
 
     .gh-portal-share-icon.copied svg path {
         stroke: currentColor;
+    }
+
+    .gh-portal-share .gh-portal-closeicon-container {
+        top: 20px;
+    }
+
+    @media (max-width: 420px) {
+        .gh-portal-share-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .gh-portal-share-action {
+            width: 100%;
+            max-width: none;
+            flex: 0 0 auto;
+        }
+
+        .gh-portal-share-action.copy {
+            order: 1;
+            justify-content: center;
+        }
+
+        .gh-portal-share-action.twitter {
+            order: 2;
+        }
+
+        .gh-portal-share-action.threads {
+            order: 3;
+        }
+
+        .gh-portal-share-action.facebook {
+            order: 4;
+        }
+
+        .gh-portal-share-action.linkedin {
+            order: 5;
+        }
     }
 
 `;
@@ -362,20 +405,20 @@ const ShareModal = () => {
 
             <div className='gh-portal-share-actions'>
                 <a
-                    className='gh-portal-btn gh-portal-share-action'
+                    className='gh-portal-btn gh-portal-share-action twitter'
                     href={socialLinks.twitter}
                     target='_blank'
                     rel='noopener noreferrer'
                     aria-label={t('X (Twitter)')}
                     title={t('X (Twitter)')}
                 >
-                    <span className='gh-portal-share-icon' aria-hidden='true'>
+                    <span className='gh-portal-share-icon x' aria-hidden='true'>
                         <XIcon />
                     </span>
                 </a>
 
                 <a
-                    className='gh-portal-btn gh-portal-share-action'
+                    className='gh-portal-btn gh-portal-share-action threads'
                     href={socialLinks.threads}
                     target='_blank'
                     rel='noopener noreferrer'
@@ -388,7 +431,7 @@ const ShareModal = () => {
                 </a>
 
                 <a
-                    className='gh-portal-btn gh-portal-share-action'
+                    className='gh-portal-btn gh-portal-share-action facebook'
                     href={socialLinks.facebook}
                     target='_blank'
                     rel='noopener noreferrer'
@@ -401,7 +444,7 @@ const ShareModal = () => {
                 </a>
 
                 <a
-                    className='gh-portal-btn gh-portal-share-action'
+                    className='gh-portal-btn gh-portal-share-action linkedin'
                     href={socialLinks.linkedin}
                     target='_blank'
                     rel='noopener noreferrer'
