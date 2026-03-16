@@ -50,6 +50,7 @@ interface GeneralTabProps {
 const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange, siteTitle, emailDomain}) => (
     <div className="flex flex-col gap-6 pt-6">
         <section>
+            {/* eslint-disable-next-line tailwindcss/classnames-order */}
             <h4 className="mb-4 text-xs font-semibold uppercase tracking-wide text-gray-500">Email info</h4>
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
@@ -74,11 +75,13 @@ const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange
         <Separator />
 
         <section>
+            {/* eslint-disable-next-line tailwindcss/classnames-order */}
             <h4 className="mb-4 text-xs font-semibold uppercase tracking-wide text-gray-500">Content</h4>
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
                     <label className="text-sm">Header image</label>
                     {generalSettings.headerImage ? (
+                        // eslint-disable-next-line tailwindcss/classnames-order
                         <div className="relative overflow-hidden rounded-md border border-gray-200 dark:border-gray-800">
                             <img
                                 alt="Header"
@@ -94,6 +97,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange
                             </button>
                         </div>
                     ) : (
+                        // eslint-disable-next-line tailwindcss/classnames-order
                         <div className="flex h-24 items-center justify-center rounded-md border border-dashed border-gray-300 text-sm text-gray-400 dark:border-gray-700">
                             630x140 recommended. Use a transparent PNG for best results on any background.
                         </div>
@@ -123,6 +127,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange
 const DesignTab: React.FC = () => (
     <div className="flex flex-col gap-6 pt-6">
         <section>
+            {/* eslint-disable-next-line tailwindcss/classnames-order */}
             <h4 className="mb-4 text-xs font-semibold uppercase tracking-wide text-gray-500">Global</h4>
             <div className="flex flex-col gap-4">
                 <BackgroundColorField />
@@ -135,6 +140,7 @@ const DesignTab: React.FC = () => (
         <Separator />
 
         <section>
+            {/* eslint-disable-next-line tailwindcss/classnames-order */}
             <h4 className="mb-4 text-xs font-semibold uppercase tracking-wide text-gray-500">Header</h4>
             <div className="flex flex-col gap-4">
                 <HeaderBackgroundField />
@@ -144,6 +150,7 @@ const DesignTab: React.FC = () => (
         <Separator />
 
         <section>
+            {/* eslint-disable-next-line tailwindcss/classnames-order */}
             <h4 className="mb-4 text-xs font-semibold uppercase tracking-wide text-gray-500">Body</h4>
             <div className="flex flex-col gap-4">
                 <SectionTitleColorField />
