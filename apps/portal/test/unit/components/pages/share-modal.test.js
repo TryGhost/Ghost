@@ -1,5 +1,5 @@
 import {fireEvent, render, waitFor} from '../../../utils/test-utils';
-import SharePage from '../../../../src/components/pages/share-page';
+import ShareModal from '../../../../src/components/pages/share-modal';
 import copyTextToClipboard from '../../../../src/utils/copy-to-clipboard';
 
 vi.mock('../../../../src/utils/copy-to-clipboard', () => ({
@@ -16,14 +16,14 @@ const addHeadTag = ({tagName, attrs = {}}) => {
 };
 
 const setup = ({pageData} = {}) => {
-    return render(<SharePage />, {
+    return render(<ShareModal />, {
         overrideContext: {
             pageData: pageData || {}
         }
     });
 };
 
-describe('SharePage', () => {
+describe('ShareModal', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         document.title = '';
@@ -39,7 +39,10 @@ describe('SharePage', () => {
             url: 'https://example.com/post?ref=test',
             title: 'Example post title',
             image: 'https://example.com/post.jpg',
-            excerpt: 'Example post excerpt'
+            excerpt: 'Example post excerpt',
+            favicon: 'https://example.com/favicon.png',
+            siteName: 'Example site',
+            author: 'Jane Doe'
         };
 
         const {getByRole, getByText, queryByText, getByTestId} = setup({pageData});
@@ -49,6 +52,9 @@ describe('SharePage', () => {
         expect(getByText('Example post title')).toBeInTheDocument();
         expect(getByText('Example post excerpt')).toBeInTheDocument();
         expect(getByTestId('share-preview-image')).toHaveAttribute('src', 'https://example.com/post.jpg');
+        expect(getByTestId('share-preview-favicon')).toHaveAttribute('src', 'https://example.com/favicon.png');
+        expect(getByText('Example site')).toBeInTheDocument();
+        expect(getByText('| Jane Doe')).toBeInTheDocument();
 
         const twitterLink = getByRole('link', {name: 'X (Twitter)'});
         const threadsLink = getByRole('link', {name: 'Threads'});
@@ -106,6 +112,27 @@ describe('SharePage', () => {
                 content: 'https://canonical.example/og-image.jpg'
             }
         });
+        addHeadTag({
+            tagName: 'meta',
+            attrs: {
+                property: 'og:site_name',
+                content: 'Canonical Site'
+            }
+        });
+        addHeadTag({
+            tagName: 'meta',
+            attrs: {
+                name: 'author',
+                content: 'Canonical Author'
+            }
+        });
+        addHeadTag({
+            tagName: 'link',
+            attrs: {
+                rel: 'icon',
+                href: 'https://canonical.example/favicon.ico'
+            }
+        });
         document.title = 'Document title';
 
         const {getByRole, getByText, getByTestId} = setup({pageData: {}});
@@ -118,6 +145,9 @@ describe('SharePage', () => {
         expect(getByText('OG title')).toBeInTheDocument();
         expect(getByText('OG description')).toBeInTheDocument();
         expect(getByTestId('share-preview-image')).toHaveAttribute('src', 'https://canonical.example/og-image.jpg');
+        expect(getByTestId('share-preview-favicon')).toHaveAttribute('src', 'https://canonical.example/favicon.ico');
+        expect(getByText('Canonical Site')).toBeInTheDocument();
+        expect(getByText('| Canonical Author')).toBeInTheDocument();
     });
 
     test('falls back to meta description when og description is missing', () => {

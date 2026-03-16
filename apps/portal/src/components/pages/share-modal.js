@@ -10,7 +10,7 @@ import {ReactComponent as XIcon} from '../../images/icons/share-x.svg';
 import {useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {t} from '../../utils/i18n';
 
-export const SharePageStyles = `
+export const ShareModalStyles = `
     .gh-portal-popup-container.share {
         width: 560px;
     }
@@ -75,6 +75,44 @@ export const SharePageStyles = `
         margin-top: -8px;
     }
 
+    .gh-portal-share-preview-footer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: -6px;
+        min-height: 18px;
+    }
+
+    .gh-portal-share-preview-favicon {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+        object-fit: cover;
+        flex: 0 0 auto;
+    }
+
+    .gh-portal-share-preview-meta {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        color: var(--grey3);
+        font-size: 1.35rem;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .gh-portal-share-preview-site,
+    .gh-portal-share-preview-author {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .gh-portal-share-preview-site {
+        font-weight: 500;
+    }
+
     .gh-portal-share-action {
         height: 44px;
         width: 100%;
@@ -94,7 +132,7 @@ export const SharePageStyles = `
     .gh-portal-share-action.copy {
         width: auto;
         max-width: none;
-        flex: 1 1 auto;
+        flex: 1 0 auto;
         padding: 0 14px;
         justify-content: center;
         border: none;
@@ -167,6 +205,41 @@ const getTwitterImage = () => {
     return document.querySelector('meta[name="twitter:image"]')?.content || '';
 };
 
+const getFavicon = () => {
+    const selectors = [
+        'link[rel="icon"]',
+        'link[rel="shortcut icon"]',
+        'link[rel="apple-touch-icon"]'
+    ];
+    for (const selector of selectors) {
+        const faviconLink = document.querySelector(selector);
+        if (faviconLink?.href) {
+            return faviconLink.href;
+        }
+    }
+    return '';
+};
+
+const getOgSiteName = () => {
+    return document.querySelector('meta[property="og:site_name"]')?.content || '';
+};
+
+const getApplicationName = () => {
+    return document.querySelector('meta[name="application-name"]')?.content || '';
+};
+
+const getMetaAuthor = () => {
+    const author = document.querySelector('meta[name="author"]')?.content || '';
+    if (author && !/^https?:\/\//i.test(author)) {
+        return author;
+    }
+    return '';
+};
+
+const getTwitterCreator = () => {
+    return document.querySelector('meta[name="twitter:creator"]')?.content || '';
+};
+
 const getShareUrl = (pageData) => {
     return (pageData?.url || '').trim() || getCanonicalUrl() || window.location.href;
 };
@@ -183,12 +256,33 @@ const getShareImage = (pageData) => {
     return (pageData?.image || '').trim() || getOgImage() || getTwitterImage() || '';
 };
 
+const getShareFavicon = (pageData) => {
+    return (pageData?.favicon || '').trim() || getFavicon() || '';
+};
+
+const getShareSiteName = ({pageData, shareUrl}) => {
+    const siteName = (pageData?.siteName || '').trim() || getOgSiteName() || getApplicationName() || '';
+    if (siteName) {
+        return siteName;
+    }
+
+    try {
+        return new URL(shareUrl).hostname.replace(/^www\./, '');
+    } catch (_) {
+        return '';
+    }
+};
+
+const getShareAuthor = (pageData) => {
+    return (pageData?.author || '').trim() || getMetaAuthor() || getTwitterCreator() || '';
+};
+
 const createShareLink = (baseUrl, params) => {
     const search = new URLSearchParams(params);
     return `${baseUrl}?${search.toString()}`;
 };
 
-const SharePage = () => {
+const ShareModal = () => {
     const {pageData} = useContext(AppContext);
     const [copied, setCopied] = useState(false);
     const copyTimeoutRef = useRef();
@@ -197,6 +291,9 @@ const SharePage = () => {
     const shareTitle = useMemo(() => getShareTitle(pageData), [pageData]);
     const shareExcerpt = useMemo(() => getShareExcerpt(pageData), [pageData]);
     const shareImage = useMemo(() => getShareImage(pageData), [pageData]);
+    const shareFavicon = useMemo(() => getShareFavicon(pageData), [pageData]);
+    const shareSiteName = useMemo(() => getShareSiteName({pageData, shareUrl}), [pageData, shareUrl]);
+    const shareAuthor = useMemo(() => getShareAuthor(pageData), [pageData]);
 
     const socialLinks = useMemo(() => {
         const threadsText = [shareTitle, shareUrl].filter(Boolean).join(' ').trim();
@@ -240,6 +337,26 @@ const SharePage = () => {
                 <div className='gh-portal-share-preview-content'>
                     {shareTitle && <h2 className='gh-portal-share-preview-title'>{shareTitle}</h2>}
                     {shareExcerpt && <p className='gh-portal-share-preview-excerpt'>{shareExcerpt}</p>}
+                    {(shareFavicon || shareSiteName || shareAuthor) && (
+                        <div className='gh-portal-share-preview-footer'>
+                            {shareFavicon && (
+                                <img
+                                    className='gh-portal-share-preview-favicon'
+                                    src={shareFavicon}
+                                    alt=''
+                                    data-testid='share-preview-favicon'
+                                />
+                            )}
+                            <div className='gh-portal-share-preview-meta'>
+                                {shareSiteName && <span className='gh-portal-share-preview-site'>{shareSiteName}</span>}
+                                {shareAuthor && (
+                                    <span className='gh-portal-share-preview-author'>
+                                        {shareSiteName ? `| ${shareAuthor}` : shareAuthor}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -319,4 +436,4 @@ const SharePage = () => {
     );
 };
 
-export default SharePage;
+export default ShareModal;
