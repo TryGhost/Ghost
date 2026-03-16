@@ -1,7 +1,7 @@
-import MarkdownRenderer from '@tryghost/kg-markdown-html-renderer';
 import React from 'react';
 import {$getSelection, $isRangeSelection, COMMAND_PRIORITY_LOW, createCommand} from 'lexical';
 import {$insertDataTransferForRichText} from '@lexical/clipboard';
+import {render as markdownRender} from '@tryghost/kg-markdown-html-renderer';
 import {mergeRegister} from '@lexical/utils';
 import {sanitizeHtml} from '../utils/sanitize-html.js';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -50,7 +50,7 @@ export const MarkdownPastePlugin = () => {
                     if (isShiftDown) {
                         dataTransfer.setData(MIME_TEXT_PLAIN, text);
                     } else {
-                        const markdownHtml = MarkdownRenderer.render(text);
+                        const markdownHtml = markdownRender(text);
                         // don't use cleanBasicHtml as it removes images and hr; in this case, we need to remove just br
                         const cleanedHtml = allowBr ? markdownHtml : markdownHtml.replace(/<br\s?\/?>/g, '');
                         const sanitizedHtml = sanitizeHtml(cleanedHtml, {replaceJS: true});

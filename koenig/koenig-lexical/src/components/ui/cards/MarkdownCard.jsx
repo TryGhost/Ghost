@@ -1,7 +1,7 @@
 import '@tryghost/kg-simplemde/dist/simplemde.min.css';
 import MarkdownEditor from './MarkdownCard/MarkdownEditor';
-import MarkdownRenderer from '@tryghost/kg-markdown-html-renderer';
 import PropTypes from 'prop-types';
+import {render as markdownRender} from '@tryghost/kg-markdown-html-renderer';
 import {sanitizeHtml} from '../../../utils/sanitize-html';
 
 export function MarkdownCard({markdown = '', updateMarkdown, isEditing, imageUploader, unsplashConf}) {
@@ -25,7 +25,7 @@ export function MarkdownCard({markdown = '', updateMarkdown, isEditing, imageUpl
 }
 
 function MarkdownDisplay({markdown}) {
-    const markdownHtml = MarkdownRenderer.render(markdown);
+    const markdownHtml = markdownRender(markdown);
     const sanitizedHtml = sanitizeHtml(markdownHtml, {replaceJS: true});
 
     return (
