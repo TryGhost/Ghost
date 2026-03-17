@@ -185,7 +185,7 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
     return (
         <CommentLayout avatar={avatar} hasReplies={hasReplies}>
             <div className="mt-[-3px] flex items-start">
-                <div className="flex h-10 flex-row items-center gap-4 pb-[8px] pr-4">
+                <div className="flex h-10 flex-row items-center gap-4 pr-4 pb-[8px]">
                     <p className="text-md mt-[4px] font-sans leading-normal text-neutral-900/40 sm:text-lg dark:text-white/60">
                         {notPublishedMessage}
                     </p>
@@ -236,7 +236,7 @@ const RepliesContainer: React.FC<RepliesProps & {className?: string}> = ({commen
     }
 
     return (
-        <div className={`-ml-2 mb-4 mt-7 sm:mb-0 sm:mt-8 ${className}`}>
+        <div className={`mt-7 mb-4 -ml-2 sm:mt-8 sm:mb-0 ${className}`}>
             <Replies comment={comment} />
         </div>
     );
@@ -262,7 +262,7 @@ const AuthorName: React.FC<{comment: Comment}> = ({comment}) => {
     const {t} = useAppContext();
     const name = getMemberNameFromComment(comment, t);
     return (
-        <h4 className="font-sans text-base font-bold leading-snug text-neutral-900 sm:text-sm dark:text-white/85">
+        <h4 className="font-sans text-base leading-snug font-bold text-neutral-900 sm:text-sm dark:text-white/85">
             {name}
         </h4>
     );
@@ -369,7 +369,7 @@ const CommentBody: React.FC<CommentBodyProps> = ({html, className = '', isHighli
 
     return (
         <div className={`mt mb-2 flex flex-row items-center gap-4 pr-4 ${className}`}>
-            <div dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content text-md -mx-1 text-pretty rounded-md px-1 font-sans leading-normal text-neutral-900 [overflow-wrap:anywhere] sm:text-lg dark:text-white/85" data-testid="comment-content"/>
+            <div dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content text-md -mx-1 rounded-md px-1 font-sans leading-normal text-pretty [overflow-wrap:anywhere] text-neutral-900 sm:text-lg dark:text-white/85" data-testid="comment-content"/>
         </div>
     );
 };
@@ -438,7 +438,7 @@ const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasRepli
     return (
         <div className={`flex w-full flex-row ${hasReplies === true ? 'mb-0' : 'mb-7'}`} data-member-uuid={memberUuid} data-testid="comment-component">
             <div className="mr-2 flex flex-col items-center justify-start sm:mr-3">
-                <div className={`flex-0 mb-3 sm:mb-4 ${className}`}>
+                <div className={`mb-3 flex-0 sm:mb-4 ${className}`}>
                     {avatar}
                 </div>
                 <RepliesLine hasReplies={hasReplies} />

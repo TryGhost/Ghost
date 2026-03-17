@@ -13,7 +13,7 @@ const MembersHeader: React.FC<MembersHeaderProps> = ({
     isLoading
 }) => {
     return (
-        <Header className="pb-6! relative md:sticky" variant="inline-nav">
+        <Header className="relative pb-6! md:sticky" variant="inline-nav">
             <Header.Title>
                 Members {!isLoading && <span className="font-normal text-muted-foreground">{totalMembers.toLocaleString()}</span>}
             </Header.Title>

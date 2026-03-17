@@ -162,7 +162,7 @@ const AddDetailsPopup = (props: Props) => {
                                 }
                             }}
                         />
-                        <div className="mb-2 mt-6 flex flex-row justify-between">
+                        <div className="mt-6 mb-2 flex flex-row justify-between">
                             <label className="font-sans text-base font-semibold" htmlFor="comments-name">{t('Expertise')}</label>
                             <div className={`font-sans text-base text-neutral-400 ${(expertiseCharsLeft === 0) && 'text-red-500'}`}>{charsText}</div>
                         </div>

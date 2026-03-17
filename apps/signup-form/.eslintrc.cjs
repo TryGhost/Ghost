@@ -43,7 +43,7 @@ module.exports = {
         'react/button-has-type': 'error',
         'react/no-array-index-key': 'error',
 
-        'tailwindcss/classnames-order': 'off',
+        'tailwindcss/classnames-order': 'error',
         'tailwindcss/enforces-negative-arbitrary-values': 'warn',
         'tailwindcss/enforces-shorthand': 'warn',
         'tailwindcss/migration-from-tailwind-2': 'warn',

@@ -76,7 +76,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     {dialogType !== 'domain' &&
-                        <Button className='-ml-3 mr-auto hover:bg-transparent hover:opacity-80' variant='ghost' onClick={(e) => {
+                        <Button className='mr-auto -ml-3 hover:bg-transparent hover:opacity-80' variant='ghost' onClick={(e) => {
                             e.stopPropagation();
                             setDialogType('domain');
                         }}>Block domain instead</Button>

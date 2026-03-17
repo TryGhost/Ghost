@@ -56,7 +56,7 @@ module.exports = {
         'react/no-array-index-key': 'error',
         'react/jsx-key': 'off',
 
-        'tailwindcss/classnames-order': 'off',
+        'tailwindcss/classnames-order': 'error',
         'tailwindcss/enforces-negative-arbitrary-values': 'warn',
         'tailwindcss/enforces-shorthand': 'warn',
         'tailwindcss/migration-from-tailwind-2': 'warn',

@@ -58,7 +58,7 @@ const EmailPreviewRow: React.FC<{
         >
             <div className='w-full'>
                 <button
-                    className='flex w-full min-w-0 items-center gap-3 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green focus-visible:ring-offset-2 dark:focus-visible:ring-offset-black'
+                    className='flex w-full min-w-0 items-center gap-3 py-3 text-left focus-visible:ring-2 focus-visible:ring-green focus-visible:ring-offset-2 focus-visible:outline-none dark:focus-visible:ring-offset-black'
                     data-testid={`${emailType}-welcome-email-preview`}
                     type='button'
                     onClick={onEdit}
@@ -67,7 +67,7 @@ const EmailPreviewRow: React.FC<{
                         <Icon colorClass='text-grey-700 dark:text-grey-600' name={icon} size='md' />
                     </div>
                     <div className='min-w-0 grow'>
-                        <div className='font-medium leading-tight' data-testid={`${emailType}-welcome-email-title`}>{title}</div>
+                        <div className='leading-tight font-medium' data-testid={`${emailType}-welcome-email-title`}>{title}</div>
                         <div className='mt-1 text-xs leading-[1.35] text-grey-700 dark:text-grey-600'>
                             {automatedEmail.subject}
                         </div>
