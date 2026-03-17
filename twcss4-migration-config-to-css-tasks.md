@@ -10,7 +10,7 @@ Last updated: 2026-03-17 (local branch state, pending CI on latest local changes
 ## Current Blockers
 - [ ] Re-run CI on latest local DS lane change (removed DS runtime `@config` bridge).
 - [ ] Resolve or re-trigger isolated flaky test if it reappears: `advanced/dangerzone` toast assertion.
-- [ ] Remove remaining Admin-scope `tailwind.config.*` files that are still consumed.
+- [x] Remove remaining Admin-scope `tailwind.config.*` files that are still consumed.
 - [ ] Re-run full gates (`yarn build`, `yarn lint`, required CI checks) with all required jobs green.
 
 ## Public Interface / Contract Tasks
@@ -42,8 +42,8 @@ Last updated: 2026-03-17 (local branch state, pending CI on latest local changes
 ## Phase 3: Decouple Admin Apps From Preset/Config Chain
 - [x] Remove `shadePreset(...)` usage from admin/posts/stats/settings configs.
 - [x] Remove `apps/shade/tailwind.cjs`.
-- [ ] Remove now-redundant app configs once no toolchain/runtime consumer remains.
-- [ ] Resolve remaining ESLint/tooling reliance on config files where applicable.
+- [x] Remove now-redundant app configs once no toolchain/runtime consumer remains.
+- [x] Resolve remaining ESLint/tooling reliance on config files where applicable.
 
 ## Phase 4: Migrate admin-x-design-system Lane
 - [x] Convert DS CSS imports/pipeline to Tailwind v4-compatible setup.
@@ -54,18 +54,18 @@ Last updated: 2026-03-17 (local branch state, pending CI on latest local changes
 
 ## Phase 5: Hard Cleanup
 - [x] Remove deprecated `tailwind.cjs` compatibility exports (`shade`, `admin-x-design-system`).
-- [ ] Remove remaining `tailwind.config.*` files in Admin scope after consumers are gone.
+- [x] Remove remaining `tailwind.config.*` files in Admin scope after consumers are gone.
 - [ ] Remove config references from docs/tooling metadata and package guidance.
 - [ ] Reach zero config-token runtime dependency in migrated Admin lane.
 
 ## Remaining `tailwind.config.*` Inventory (Admin Scope)
 - [x] `apps/admin/tailwind.config.js`
-- [ ] `apps/shade/tailwind.config.cjs`
+- [x] `apps/shade/tailwind.config.cjs`
 - [x] `apps/posts/tailwind.config.cjs`
 - [x] `apps/stats/tailwind.config.cjs`
 - [x] `apps/activitypub/tailwind.config.cjs`
 - [x] `apps/admin-x-settings/tailwind.config.cjs`
-- [ ] `apps/admin-x-design-system/tailwind.config.cjs`
+- [x] `apps/admin-x-design-system/tailwind.config.cjs`
 
 ## Acceptance Checklist
 - [ ] No missing utility classes in Admin runtime.
