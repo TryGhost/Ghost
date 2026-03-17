@@ -81,7 +81,7 @@ describe('ShareModal', () => {
             }
         });
 
-        const {getByRole, getByText, queryByText, getByTestId} = setup();
+        const {container, getByRole, getByText, queryByRole, queryByText, getByTestId} = setup();
 
         expect(getByText('Share')).toBeInTheDocument();
         expect(queryByText('Share this post')).not.toBeInTheDocument();
@@ -92,31 +92,64 @@ describe('ShareModal', () => {
         expect(getByText('Example site')).toBeInTheDocument();
         expect(getByText('| Jane Doe')).toBeInTheDocument();
 
+        const actions = Array.from(container.querySelector('.gh-portal-share-actions').children);
+        expect(actions[0]).toHaveClass('gh-portal-share-action', 'copy');
+        expect(actions[1]).toHaveClass('gh-portal-share-action', 'twitter');
+        expect(actions[2]).toHaveClass('gh-portal-share-action', 'facebook');
+        expect(actions[3]).toHaveClass('gh-portal-share-action', 'email');
+        expect(actions[4]).toHaveClass('gh-portal-share-more');
+
+        const copyButton = getByRole('button', {name: 'Copy link'});
         const twitterLink = getByRole('link', {name: 'X (Twitter)'});
-        const threadsLink = getByRole('link', {name: 'Threads'});
         const facebookLink = getByRole('link', {name: 'Facebook'});
-        const linkedInLink = getByRole('link', {name: 'LinkedIn'});
+        const emailLink = getByRole('link', {name: 'Email'});
+        const moreOptionsButton = getByRole('button', {name: 'More options'});
+
+        expect(copyButton).toBeInTheDocument();
+        expect(moreOptionsButton).toHaveAttribute('aria-expanded', 'false');
+        expect(queryByRole('menu')).not.toBeInTheDocument();
 
         const twitterUrl = new URL(twitterLink.getAttribute('href'));
-        const threadsUrl = new URL(threadsLink.getAttribute('href'));
         const facebookUrl = new URL(facebookLink.getAttribute('href'));
-        const linkedInUrl = new URL(linkedInLink.getAttribute('href'));
+        const emailUrl = new URL(emailLink.getAttribute('href'));
 
         expect(twitterUrl.origin + twitterUrl.pathname).toBe('https://twitter.com/intent/tweet');
         expect(twitterUrl.searchParams.get('url')).toBe('https://example.com/post?ref=test');
         expect(twitterUrl.searchParams.get('text')).toBe('Example post title');
 
-        expect(threadsUrl.origin + threadsUrl.pathname).toBe('https://www.threads.net/intent/post');
-        expect(threadsUrl.searchParams.get('text')).toBe('Example post title https://example.com/post?ref=test');
-
         expect(facebookUrl.origin + facebookUrl.pathname).toBe('https://www.facebook.com/sharer/sharer.php');
         expect(facebookUrl.searchParams.get('u')).toBe('https://example.com/post?ref=test');
+
+        expect(emailUrl.protocol).toBe('mailto:');
+        expect(emailUrl.searchParams.get('subject')).toBe('Example post title');
+        expect(emailUrl.searchParams.get('body')).toBe('Example post title\n\nhttps://example.com/post?ref=test');
+        expect(emailLink.getAttribute('href')).toContain('Example%20post%20title');
+        expect(emailLink.getAttribute('href')).not.toContain('+');
+
+        expect(twitterLink).toHaveAttribute('target', '_blank');
+        expect(twitterLink).toHaveAttribute('rel', 'noopener noreferrer');
+
+        fireEvent.click(moreOptionsButton);
+
+        expect(moreOptionsButton).toHaveAttribute('aria-expanded', 'true');
+        expect(getByRole('menu')).toBeInTheDocument();
+
+        const linkedInLink = getByRole('menuitem', {name: 'LinkedIn'});
+        const threadsLink = getByRole('menuitem', {name: 'Threads'});
+        const blueskyLink = getByRole('menuitem', {name: 'Bluesky'});
+
+        const linkedInUrl = new URL(linkedInLink.getAttribute('href'));
+        const threadsUrl = new URL(threadsLink.getAttribute('href'));
+        const blueskyUrl = new URL(blueskyLink.getAttribute('href'));
 
         expect(linkedInUrl.origin + linkedInUrl.pathname).toBe('https://www.linkedin.com/sharing/share-offsite/');
         expect(linkedInUrl.searchParams.get('url')).toBe('https://example.com/post?ref=test');
 
-        expect(twitterLink).toHaveAttribute('target', '_blank');
-        expect(twitterLink).toHaveAttribute('rel', 'noopener noreferrer');
+        expect(threadsUrl.origin + threadsUrl.pathname).toBe('https://www.threads.net/intent/post');
+        expect(threadsUrl.searchParams.get('text')).toBe('Example post title https://example.com/post?ref=test');
+
+        expect(blueskyUrl.origin + blueskyUrl.pathname).toBe('https://bsky.app/intent/compose');
+        expect(blueskyUrl.searchParams.get('text')).toBe('Example post title https://example.com/post?ref=test');
     });
 
     test('falls back to meta description when og description is missing', () => {
@@ -153,7 +186,9 @@ describe('ShareModal', () => {
 
         const {getByRole, getByText, queryByTestId} = setup();
 
-        const linkedInLink = getByRole('link', {name: 'LinkedIn'});
+        fireEvent.click(getByRole('button', {name: 'More options'}));
+
+        const linkedInLink = getByRole('menuitem', {name: 'LinkedIn'});
         const linkedInUrl = new URL(linkedInLink.getAttribute('href'));
 
         expect(linkedInUrl.searchParams.get('url')).toBe(window.location.href);
@@ -165,6 +200,39 @@ describe('ShareModal', () => {
         expect(getByText('Document fallback title')).toBeInTheDocument();
         expect(getByText(window.location.hostname.replace(/^www\./, ''))).toBeInTheDocument();
         expect(queryByTestId('share-preview-image')).not.toBeInTheDocument();
+    });
+
+    test('opens and closes more options menu', () => {
+        const {getByRole, getByText, queryByRole} = setup();
+
+        const moreButton = getByRole('button', {name: 'More options'});
+        expect(queryByRole('menu')).not.toBeInTheDocument();
+        expect(moreButton).toHaveAttribute('aria-expanded', 'false');
+
+        fireEvent.click(moreButton);
+        expect(getByRole('menu')).toBeInTheDocument();
+        expect(moreButton).toHaveAttribute('aria-expanded', 'true');
+
+        fireEvent.click(getByText('Share'));
+        expect(queryByRole('menu')).not.toBeInTheDocument();
+        expect(moreButton).toHaveAttribute('aria-expanded', 'false');
+
+        fireEvent.click(moreButton);
+        expect(getByRole('menu')).toBeInTheDocument();
+
+        fireEvent.keyDown(document, {key: 'Escape'});
+        expect(queryByRole('menu')).not.toBeInTheDocument();
+        expect(moreButton).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    test('closes more options menu after selecting an item', () => {
+        const {getByRole, queryByRole} = setup();
+
+        fireEvent.click(getByRole('button', {name: 'More options'}));
+        expect(getByRole('menu')).toBeInTheDocument();
+
+        fireEvent.click(getByRole('menuitem', {name: 'Threads'}));
+        expect(queryByRole('menu')).not.toBeInTheDocument();
     });
 
     test('shows copied state temporarily after successful copy', async () => {
