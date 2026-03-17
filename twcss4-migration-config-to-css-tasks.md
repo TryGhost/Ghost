@@ -1,6 +1,6 @@
 # Tailwind v4 Config-to-CSS Migration Tasklist (Checkbox Version)
 
-Last updated: 2026-03-16 (local branch state, pending CI on latest local changes)
+Last updated: 2026-03-17 (local branch state, pending CI on latest local changes)
 
 ## Summary
 - [x] Shade runtime switched to CSS-first tokens (`@theme` + CSS vars).
@@ -10,7 +10,6 @@ Last updated: 2026-03-16 (local branch state, pending CI on latest local changes
 ## Current Blockers
 - [ ] Re-run CI on latest local DS lane change (removed DS runtime `@config` bridge).
 - [ ] Resolve or re-trigger isolated flaky test if it reappears: `advanced/dangerzone` toast assertion.
-- [ ] Replace `admin-x-settings` scoped `@config` bridge with CSS-only utility generation (local repro: `membership/stripe` acceptance fails with duplicate visible controls when `@config` is removed).
 - [ ] Remove remaining Admin-scope `tailwind.config.*` files that are still consumed.
 - [ ] Re-run full gates (`yarn build`, `yarn lint`, required CI checks) with all required jobs green.
 
@@ -50,7 +49,7 @@ Last updated: 2026-03-16 (local branch state, pending CI on latest local changes
 - [x] Convert DS CSS imports/pipeline to Tailwind v4-compatible setup.
 - [x] Move DS PostCSS to v4-compatible plugin chain.
 - [x] Remove DS runtime `@config` bridge (`apps/admin-x-design-system/styles.css`) — local validation passed (`admin-x-design-system` build + focused `admin-x-settings` acceptance suite), CI pending.
-- [ ] Ensure admin-x-settings no longer depends on config-driven DS tokens/scoping (temporary settings-scoped `@config` bridge remains required; local CSS-only `@source` attempts still fail in `membership/stripe` acceptance due duplicate visible controls).
+- [x] Ensure admin-x-settings no longer depends on config-driven DS tokens/scoping (settings now imports DS base styles + local Tailwind utilities via `@source`; no settings `@config` bridge).
 - [ ] Clear `Admin-X Settings tests` in CI after DS/settings lane stabilization.
 
 ## Phase 5: Hard Cleanup
@@ -65,7 +64,7 @@ Last updated: 2026-03-16 (local branch state, pending CI on latest local changes
 - [ ] `apps/posts/tailwind.config.cjs`
 - [ ] `apps/stats/tailwind.config.cjs`
 - [ ] `apps/activitypub/tailwind.config.cjs`
-- [ ] `apps/admin-x-settings/tailwind.config.cjs`
+- [x] `apps/admin-x-settings/tailwind.config.cjs`
 - [ ] `apps/admin-x-design-system/tailwind.config.cjs`
 
 ## Acceptance Checklist
