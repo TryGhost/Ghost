@@ -760,7 +760,7 @@ export const formatNumber = (amount) => {
     return amount.toLocaleString();
 };
 
-export const formatPrice = (amount) => {
+export const formatPrice = (amount, locale) => {
     if (amount === undefined || amount === null) {
         return '';
     }
@@ -774,7 +774,7 @@ export const formatPrice = (amount) => {
         ? undefined
         : {minimumFractionDigits: 2, maximumFractionDigits: 2};
 
-    return normalizedAmount.toLocaleString('en-US', options);
+    return normalizedAmount.toLocaleString(locale, options);
 };
 
 export const createPopupNotification = ({type, status, autoHide, duration = 2600, closeable, state, message, meta = {}}) => {
@@ -822,7 +822,7 @@ export const getOfferOffAmount = ({offer}) => {
 
         return t('{months} months', {months});
     } else if (offer.type === 'fixed') {
-        return `${getCurrencySymbol(offer.currency)}${offer.amount / 100}`;
+        return `${getCurrencySymbol(offer.currency)}${formatPrice(offer.amount / 100)}`;
     } else if (offer.type === 'percent') {
         return `${offer.amount}%`;
     }

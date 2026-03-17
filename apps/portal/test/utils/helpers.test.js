@@ -294,7 +294,7 @@ describe('Helpers - ', () => {
         });
 
         test('returns fractional numbers with locale grouping', () => {
-            expect(formatPrice(1234.5)).toBe('1,234.50');
+            expect(formatPrice(1234.5, 'en-US')).toBe('1,234.50');
         });
 
         test('returns empty string for null/undefined input', () => {
