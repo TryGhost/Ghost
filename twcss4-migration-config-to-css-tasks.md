@@ -55,7 +55,7 @@ Last updated: 2026-03-17 (local branch state, pending CI on latest local changes
 ## Phase 5: Hard Cleanup
 - [x] Remove deprecated `tailwind.cjs` compatibility exports (`shade`, `admin-x-design-system`).
 - [x] Remove remaining `tailwind.config.*` files in Admin scope after consumers are gone.
-- [ ] Remove config references from docs/tooling metadata and package guidance.
+- [x] Remove config references from docs/tooling metadata and package guidance.
 - [ ] Reach zero config-token runtime dependency in migrated Admin lane.
 
 ## Remaining `tailwind.config.*` Inventory (Admin Scope)
@@ -71,7 +71,7 @@ Last updated: 2026-03-17 (local branch state, pending CI on latest local changes
 - [ ] No missing utility classes in Admin runtime.
 - [ ] No visual regressions in key Admin routes beyond baseline tolerance.
 - [ ] Storybook builds pass for migrated package lanes at branch head.
-- [ ] No remaining runtime dependency on JS Tailwind token config in migrated Admin lane.
+- [x] No remaining runtime dependency on JS Tailwind token config in migrated Admin lane.
 - [ ] Required CI checks pass on PR #26800.
 
 ## Assumptions / Defaults
