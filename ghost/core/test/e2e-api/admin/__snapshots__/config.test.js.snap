@@ -23,7 +23,6 @@ Object {
       "members": true,
       "membersForward": true,
       "pictureImageFormats": true,
-      "retentionOffers": true,
       "smarterCounts": true,
       "stripeAutomaticTax": true,
       "superEditors": true,
