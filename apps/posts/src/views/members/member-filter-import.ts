@@ -43,20 +43,17 @@ function matchSubscribedNode(node: AstNode): UnstampedFilter | null {
         return null;
     }
 
-    let subscribedValue: boolean | undefined;
-    let emailDisabledValue: number | undefined;
-
-    for (const child of compound.children) {
-        if (typeof child.subscribed === 'boolean') {
-            subscribedValue = child.subscribed;
-        }
-
-        if (typeof child.email_disabled === 'number') {
-            emailDisabledValue = child.email_disabled;
-        }
+    if (
+        typeof compound.children[0].subscribed !== 'boolean' ||
+        typeof compound.children[1].email_disabled !== 'number'
+    ) {
+        return null;
     }
 
-    if (compound.operator === '$and' && emailDisabledValue === 0 && subscribedValue !== undefined) {
+    const subscribedValue = compound.children[0].subscribed;
+    const emailDisabledValue = compound.children[1].email_disabled;
+
+    if (compound.operator === '$and' && emailDisabledValue === 0) {
         return {
             field: 'subscribed',
             operator: 'is',
@@ -64,7 +61,7 @@ function matchSubscribedNode(node: AstNode): UnstampedFilter | null {
         };
     }
 
-    if (compound.operator === '$or' && emailDisabledValue === 1 && subscribedValue !== undefined) {
+    if (compound.operator === '$or' && emailDisabledValue === 1) {
         return {
             field: 'subscribed',
             operator: 'is-not',
@@ -82,28 +79,25 @@ function matchNewsletterGroupedNode(node: AstNode): UnstampedFilter | null {
         return null;
     }
 
+    if (typeof compound.children[1].email_disabled !== 'number') {
+        return null;
+    }
+
+    const newsletterSlug = compound.children[0]['newsletters.slug'];
+    const emailDisabledValue = compound.children[1].email_disabled;
     let slug: string | undefined;
-    let emailDisabledValue: number | undefined;
 
-    for (const child of compound.children) {
-        const newsletterSlug = child['newsletters.slug'];
+    if (typeof newsletterSlug === 'string') {
+        slug = newsletterSlug;
+    }
 
-        if (typeof newsletterSlug === 'string') {
-            slug = newsletterSlug;
-        }
-
-        if (
-            newsletterSlug &&
-            typeof newsletterSlug === 'object' &&
-            !Array.isArray(newsletterSlug) &&
-            typeof (newsletterSlug as Record<string, unknown>).$ne === 'string'
-        ) {
-            slug = (newsletterSlug as Record<string, string>).$ne;
-        }
-
-        if (typeof child.email_disabled === 'number') {
-            emailDisabledValue = child.email_disabled;
-        }
+    if (
+        newsletterSlug &&
+        typeof newsletterSlug === 'object' &&
+        !Array.isArray(newsletterSlug) &&
+        typeof (newsletterSlug as Record<string, unknown>).$ne === 'string'
+    ) {
+        slug = (newsletterSlug as Record<string, string>).$ne;
     }
 
     if (!slug) {
@@ -136,20 +130,10 @@ function matchFeedbackGroupedNode(node: AstNode): UnstampedFilter | null {
         return null;
     }
 
-    let postId: string | undefined;
-    let score: number | undefined;
+    const postId = compound.children[0]['feedback.post_id'];
+    const score = compound.children[1]['feedback.score'];
 
-    for (const child of compound.children) {
-        if (typeof child['feedback.post_id'] === 'string') {
-            postId = child['feedback.post_id'] as string;
-        }
-
-        if (typeof child['feedback.score'] === 'number') {
-            score = child['feedback.score'] as number;
-        }
-    }
-
-    if (!postId || (score !== 0 && score !== 1)) {
+    if (typeof postId !== 'string' || (score !== 0 && score !== 1)) {
         return null;
     }
 

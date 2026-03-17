@@ -30,6 +30,10 @@ describe('member-filter-import', () => {
             {field: 'newsletters.weekly', operator: 'is', values: ['subscribed']}
         ]);
 
+        expect(stripIds(importLegacyMemberFilters('(newsletters.slug:-weekly,email_disabled:1)', 'UTC'))).toEqual([
+            {field: 'newsletters.weekly', operator: 'is', values: ['unsubscribed']}
+        ]);
+
         expect(stripIds(importLegacyMemberFilters('(feedback.post_id:\'post_123\'+feedback.score:1)', 'UTC'))).toEqual([
             {field: 'newsletter_feedback', operator: '1', values: ['post_123']}
         ]);
@@ -85,5 +89,13 @@ describe('member-filter-import', () => {
 
     it('drops invalid member date values during import', () => {
         expect(importLegacyMemberFilters('created_at:<=\'not-a-date\'', 'UTC')).toEqual([]);
+    });
+
+    it('matches Ember fallback behavior for reordered compound children', () => {
+        expect(stripIds(importLegacyMemberFilters('(email_disabled:0+subscribed:true)', 'UTC'))).toEqual([
+            {field: 'subscribed', operator: 'is-not', values: ['email-disabled']}
+        ]);
+
+        expect(importLegacyMemberFilters('(feedback.score:1+feedback.post_id:\'post_123\')', 'UTC')).toEqual([]);
     });
 });
