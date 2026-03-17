@@ -4,6 +4,7 @@ import svgr from 'vite-plugin-svgr';
 import {SUPPORTED_LOCALES} from '@tryghost/i18n';
 import {defineConfig} from 'vitest/config';
 import {resolve} from 'path';
+import {stripFingerprintingPlugin} from './vite-plugin-strip-fingerprinting';
 
 const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
 
@@ -12,6 +13,7 @@ export default (function viteConfig() {
     return defineConfig({
         logLevel: process.env.CI ? 'info' : 'warn',
         plugins: [
+            stripFingerprintingPlugin(),
             svgr(),
             react()
         ],
