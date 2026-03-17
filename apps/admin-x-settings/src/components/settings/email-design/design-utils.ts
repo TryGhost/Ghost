@@ -18,15 +18,14 @@ export interface ResolvedEmailColors {
 
 const VALID_HEX = /^#(?:[0-9a-f]{3}){1,2}$/i;
 
-function resolveBackgroundColor(settings: EmailDesignSettings): string {
-    if (VALID_HEX.test(settings.background_color)) {
-        return settings.background_color;
+function resolveBackgroundColor(value: string): string {
+    if (VALID_HEX.test(value)) {
+        return value;
     }
     return '#ffffff';
 }
 
-function resolveHeaderBackgroundColor(settings: EmailDesignSettings, accentColor: string): string {
-    const value = settings.header_background_color;
+function resolveHeaderBackgroundColor(value: string, accentColor: string): string {
     if (!value || value === 'transparent') {
         return 'transparent';
     }
@@ -39,8 +38,7 @@ function resolveHeaderBackgroundColor(settings: EmailDesignSettings, accentColor
     return 'transparent';
 }
 
-function resolveButtonColor(settings: EmailDesignSettings, accentColor: string, bgColor: string): string {
-    const value = settings.button_color;
+function resolveButtonColor(value: string | null, accentColor: string, bgColor: string): string {
     if (VALID_HEX.test(value || '')) {
         return value!;
     }
@@ -50,26 +48,25 @@ function resolveButtonColor(settings: EmailDesignSettings, accentColor: string, 
     return accentColor;
 }
 
-function resolveButtonTextColor(settings: EmailDesignSettings, buttonColor: string): string | undefined {
-    if (settings.button_style === 'fill') {
+function resolveButtonTextColor(buttonStyle: string, buttonColor: string): string | undefined {
+    if (buttonStyle === 'fill') {
         return textColorForBackgroundColor(buttonColor).hex();
     }
     return undefined;
 }
 
-function resolveLinkColor(settings: EmailDesignSettings, accentColor: string, bgColor: string): string {
-    const value = settings.link_color === undefined ? 'accent' : settings.link_color;
-    if (value === 'accent') {
+function resolveLinkColor(value: string | null | undefined, accentColor: string, bgColor: string): string {
+    const resolved = value === undefined ? 'accent' : value;
+    if (resolved === 'accent') {
         return accentColor;
     }
-    if (VALID_HEX.test(value || '')) {
-        return value!;
+    if (VALID_HEX.test(resolved || '')) {
+        return resolved!;
     }
     return textColorForBackgroundColor(bgColor).hex();
 }
 
-function resolvePostTitleColor(settings: EmailDesignSettings, accentColor: string, bgColor: string, headerBgColor: string): string {
-    const value = settings.post_title_color;
+function resolvePostTitleColor(value: string | null, accentColor: string, bgColor: string, headerBgColor: string): string {
     if (VALID_HEX.test(value || '')) {
         return value!;
     }
@@ -80,8 +77,7 @@ function resolvePostTitleColor(settings: EmailDesignSettings, accentColor: strin
     return textColorForBackgroundColor(effectiveBg).hex();
 }
 
-function resolveSectionTitleColor(settings: EmailDesignSettings, accentColor: string, bgColor: string): string {
-    const value = settings.section_title_color;
+function resolveSectionTitleColor(value: string | null, accentColor: string, bgColor: string): string {
     if (VALID_HEX.test(value || '')) {
         return value!;
     }
@@ -91,8 +87,7 @@ function resolveSectionTitleColor(settings: EmailDesignSettings, accentColor: st
     return textColorForBackgroundColor(bgColor).hex();
 }
 
-function resolveDividerColor(settings: EmailDesignSettings, accentColor: string): string {
-    const value = settings.divider_color;
+function resolveDividerColor(value: string | null, accentColor: string): string {
     if (VALID_HEX.test(value || '')) {
         return value!;
     }
@@ -103,9 +98,9 @@ function resolveDividerColor(settings: EmailDesignSettings, accentColor: string)
 }
 
 export function resolveAllColors(settings: EmailDesignSettings, accentColor: string): ResolvedEmailColors {
-    const bgColor = resolveBackgroundColor(settings);
-    const headerBgColor = resolveHeaderBackgroundColor(settings, accentColor);
-    const buttonColor = resolveButtonColor(settings, accentColor, bgColor);
+    const bgColor = resolveBackgroundColor(settings.background_color);
+    const headerBgColor = resolveHeaderBackgroundColor(settings.header_background_color, accentColor);
+    const buttonColor = resolveButtonColor(settings.button_color, accentColor, bgColor);
 
     const textColor = textColorForBackgroundColor(bgColor).hex();
     const secondaryTextColor = textColorForBackgroundColor(bgColor).alpha(0.5).toString();
@@ -115,12 +110,12 @@ export function resolveAllColors(settings: EmailDesignSettings, accentColor: str
     return {
         backgroundColor: bgColor,
         headerBackgroundColor: headerBgColor,
-        postTitleColor: resolvePostTitleColor(settings, accentColor, bgColor, headerBgColor),
-        sectionTitleColor: resolveSectionTitleColor(settings, accentColor, bgColor),
+        postTitleColor: resolvePostTitleColor(settings.post_title_color, accentColor, bgColor, headerBgColor),
+        sectionTitleColor: resolveSectionTitleColor(settings.section_title_color, accentColor, bgColor),
         buttonColor,
-        buttonTextColor: resolveButtonTextColor(settings, buttonColor),
-        linkColor: resolveLinkColor(settings, accentColor, bgColor),
-        dividerColor: resolveDividerColor(settings, accentColor),
+        buttonTextColor: resolveButtonTextColor(settings.button_style, buttonColor),
+        linkColor: resolveLinkColor(settings.link_color, accentColor, bgColor),
+        dividerColor: resolveDividerColor(settings.divider_color, accentColor),
         textColor,
         secondaryTextColor,
         headerTextColor,
