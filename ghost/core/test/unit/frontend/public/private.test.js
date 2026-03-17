@@ -285,6 +285,81 @@ describe('private.js', function () {
         assert.equal(requestBody.email, 'jamie@example.com');
     });
 
+    it('shows invalid email feedback when client-side validation fails', async function () {
+        setupEnvironment();
+
+        loadScript(env, scriptContent);
+
+        const form = env.document.querySelector('[data-ghost-private-subscribe-form]');
+        const emailInput = env.document.querySelector('input[data-members-email]');
+        const feedback = env.document.querySelector('[data-ghost-private-subscribe-feedback]');
+
+        emailInput.value = 'not-an-email';
+        emailInput.checkValidity = () => false;
+
+        form.dispatchEvent(new env.window.Event('submit', {bubbles: true, cancelable: true}));
+        await flushAsyncWork();
+
+        // Should not make any fetch calls
+        sinon.assert.notCalled(env.window.fetch);
+        assert.equal(form.dataset.state, 'idle');
+        assert.equal(feedback.dataset.state, 'error');
+        assert.equal(feedback.textContent, 'Please enter a valid email address');
+    });
+
+    it('shows generic error when network request throws', async function () {
+        setupEnvironment();
+
+        env.window.fetch.rejects(new Error('Failed to fetch'));
+
+        loadScript(env, scriptContent);
+
+        const form = env.document.querySelector('[data-ghost-private-subscribe-form]');
+        const emailInput = env.document.querySelector('input[data-members-email]');
+        const feedback = env.document.querySelector('[data-ghost-private-subscribe-feedback]');
+
+        emailInput.value = 'jamie@example.com';
+        emailInput.checkValidity = () => true;
+
+        form.dispatchEvent(new env.window.Event('submit', {bubbles: true, cancelable: true}));
+        await flushAsyncWork();
+
+        assert.equal(form.dataset.state, 'idle');
+        assert.equal(feedback.dataset.state, 'error');
+        assert.equal(feedback.textContent, 'Something went wrong, please try again.');
+    });
+
+    it('shows generic error when error response body is not JSON', async function () {
+        setupEnvironment();
+
+        env.window.fetch.onFirstCall().resolves({
+            ok: true,
+            text: async () => 'integrity-token'
+        });
+        env.window.fetch.onSecondCall().resolves({
+            ok: false,
+            json: async () => {
+                throw new SyntaxError('Unexpected token');
+            }
+        });
+
+        loadScript(env, scriptContent);
+
+        const form = env.document.querySelector('[data-ghost-private-subscribe-form]');
+        const emailInput = env.document.querySelector('input[data-members-email]');
+        const feedback = env.document.querySelector('[data-ghost-private-subscribe-feedback]');
+
+        emailInput.value = 'jamie@example.com';
+        emailInput.checkValidity = () => true;
+
+        form.dispatchEvent(new env.window.Event('submit', {bubbles: true, cancelable: true}));
+        await flushAsyncWork();
+
+        assert.equal(form.dataset.state, 'idle');
+        assert.equal(feedback.dataset.state, 'error');
+        assert.equal(feedback.textContent, 'Something went wrong, please try again.');
+    });
+
     it('shows generic error when integrity token fetch fails', async function () {
         setupEnvironment();
 
