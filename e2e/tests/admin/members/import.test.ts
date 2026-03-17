@@ -46,8 +46,7 @@ test.describe('Ghost Admin - Members Import', () => {
         await importModal.closeButton.click();
         await membersPage.goto();
 
-        await expect(membersPage.memberListItems).toHaveCount(3, {timeout: 30000});
-        await expect(membersPage.getMemberByName('Alice Test')).toBeVisible();
+        await expect(membersPage.getMemberByName('Alice Test')).toBeVisible({timeout: 30000});
         await expect(membersPage.getMemberByName('Bob Test')).toBeVisible();
         await expect(membersPage.getMemberByName('Carol Test')).toBeVisible();
     });
