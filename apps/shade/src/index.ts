@@ -13,6 +13,7 @@ export * from './components/ui/command';
 export * from './components/ui/data-list';
 export * from './components/ui/dialog';
 export * from './components/ui/dropdown-menu';
+export * from './components/ui/dropzone';
 export * from './components/ui/empty-indicator';
 export * from './components/ui/field';
 export * from './components/ui/filters';
