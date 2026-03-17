@@ -67,6 +67,7 @@ export interface StripeEvent {
     type: string;
     data: {
         object: Record<string, unknown>;
+        previous_attributes?: Record<string, unknown>;
     };
 }
 
@@ -177,6 +178,66 @@ export function buildSubscriptionCreatedEvent(opts: {
         type: 'customer.subscription.created',
         data: {
             object: opts.subscription as unknown as Record<string, unknown>
+        }
+    };
+}
+
+export function buildSubscriptionUpdatedEvent(opts: {
+    subscription: StripeSubscription;
+    previousAttributes?: Record<string, unknown>;
+}): StripeEvent {
+    return {
+        id: generateId('evt'),
+        object: 'event',
+        type: 'customer.subscription.updated',
+        data: {
+            object: opts.subscription as unknown as Record<string, unknown>,
+            previous_attributes: opts.previousAttributes ?? {}
+        }
+    };
+}
+
+export function buildSubscriptionDeletedEvent(opts: {
+    subscription: StripeSubscription;
+}): StripeEvent {
+    return {
+        id: generateId('evt'),
+        object: 'event',
+        type: 'customer.subscription.deleted',
+        data: {
+            object: {
+                ...opts.subscription,
+                status: 'canceled'
+            } as unknown as Record<string, unknown>
+        }
+    };
+}
+
+export function buildInvoicePaymentSucceededEvent(opts: {
+    subscription: StripeSubscription;
+    amount?: number;
+}): StripeEvent {
+    const price = opts.subscription.items.data[0]?.price;
+    return {
+        id: generateId('evt'),
+        object: 'event',
+        type: 'invoice.payment_succeeded',
+        data: {
+            object: {
+                id: generateId('in'),
+                object: 'invoice',
+                subscription: opts.subscription.id,
+                customer: opts.subscription.customer,
+                paid: true,
+                amount_paid: opts.amount ?? price?.unit_amount ?? 0,
+                currency: price?.currency ?? 'usd',
+                lines: {
+                    type: 'list',
+                    data: [{
+                        price: price as unknown as Record<string, unknown>
+                    }]
+                }
+            }
         }
     };
 }
