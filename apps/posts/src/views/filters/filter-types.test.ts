@@ -85,7 +85,7 @@ describe('filter core types', () => {
             toNql: () => null
         };
 
-        const parsed = fieldNql.fromNql({} as never, {
+        const parsed = fieldNql.fromNql?.({} as never, {
             key: 'status',
             pattern: 'status',
             params: {},
@@ -102,14 +102,12 @@ describe('filter core types', () => {
     });
 
     it('accepts plain filter field definitions', () => {
-        expectTypeOf<FilterField>().toMatchTypeOf<{
-            operators: readonly string[];
-            ui: {
-                label: string;
-                type: string;
-            };
-            fromNql: FilterFieldNql['fromNql'];
-            toNql: FilterFieldNql['toNql'];
+        expectTypeOf<FilterField['operators']>().toMatchTypeOf<readonly string[]>();
+        expectTypeOf<FilterField['ui']>().toMatchTypeOf<{
+            label: string;
+            type: string;
         }>();
+        expectTypeOf<FilterField['fromNql']>().toMatchTypeOf<FilterFieldNql['fromNql']>();
+        expectTypeOf<FilterField['toNql']>().toMatchTypeOf<FilterFieldNql['toNql']>();
     });
 });

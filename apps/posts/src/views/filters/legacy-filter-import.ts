@@ -33,7 +33,7 @@ export function importSimpleLegacyNodes<TFields extends Record<string, FilterFie
 
         const resolved = resolveField(fields, keys[0], timezone);
 
-        if (resolved) {
+        if (resolved?.definition.fromNql) {
             const parsed = resolved.definition.fromNql(node, resolved.context);
 
             if (parsed) {

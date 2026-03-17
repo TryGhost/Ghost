@@ -207,9 +207,6 @@ const memberDateNql: FilterFieldNql = {
 };
 
 const subscribedNql: FilterFieldNql = {
-    fromNql() {
-        return null;
-    },
     toNql(filter) {
         const value = filter.values[0];
 
@@ -240,9 +237,6 @@ const subscribedNql: FilterFieldNql = {
 };
 
 const newsletterNql: FilterFieldNql = {
-    fromNql() {
-        return null;
-    },
     toNql(filter, ctx) {
         const slug = ctx.params.slug;
         const value = filter.values[0];
@@ -264,9 +258,6 @@ const newsletterNql: FilterFieldNql = {
 };
 
 const feedbackNql: FilterFieldNql = {
-    fromNql() {
-        return null;
-    },
     toNql(filter) {
         const postId = filter.values[0];
 

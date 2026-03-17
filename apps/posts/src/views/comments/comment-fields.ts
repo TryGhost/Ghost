@@ -4,9 +4,6 @@ import {scalarNql, textNql} from '../filters/filter-nql';
 import type {FilterFieldNql} from '../filters/filter-types';
 
 const commentDateNql: FilterFieldNql = {
-    fromNql() {
-        return null;
-    },
     toNql(filter, ctx) {
         const value = filter.values[0];
 
@@ -36,9 +33,6 @@ const commentDateNql: FilterFieldNql = {
 };
 
 const reportedNql: FilterFieldNql = {
-    fromNql() {
-        return null;
-    },
     toNql(filter) {
         const value = filter.values[0];
 

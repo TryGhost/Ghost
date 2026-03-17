@@ -10,7 +10,7 @@ export interface NqlContext {
 }
 
 export interface FilterFieldNql {
-    fromNql: (node: unknown, ctx: NqlContext) => UnstampedFilter | null;
+    fromNql?: (node: unknown, ctx: NqlContext) => UnstampedFilter | null;
     toNql: (filter: Filter, ctx: NqlContext) => string[] | null;
 }
 
@@ -30,7 +30,7 @@ export interface FilterField {
             include?: string;
         };
     };
-    fromNql: FilterFieldNql['fromNql'];
+    fromNql?: FilterFieldNql['fromNql'];
     toNql: FilterFieldNql['toNql'];
 }
 

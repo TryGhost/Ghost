@@ -48,12 +48,12 @@ const countContext: NqlContext = {
 
 describe('scalarNql', () => {
     it('parses simple scalar comparisons', () => {
-        expect(scalarNql().fromNql(nql.parse('status:paid') as never, statusContext)).toEqual({
+        expect(scalarNql().fromNql?.(nql.parse('status:paid') as never, statusContext)).toEqual({
             field: 'status',
             operator: 'is',
             values: ['paid']
         });
-        expect(scalarNql().fromNql(nql.parse('status:-paid') as never, statusContext)).toEqual({
+        expect(scalarNql().fromNql?.(nql.parse('status:-paid') as never, statusContext)).toEqual({
             field: 'status',
             operator: 'is-not',
             values: ['paid']
@@ -85,7 +85,7 @@ describe('scalarNql', () => {
     it('supports mapped NQL field names', () => {
         const authorNql = scalarNql({field: 'member_id'});
 
-        expect(authorNql.fromNql(nql.parse('member_id:abc123') as never, authorContext)).toEqual({
+        expect(authorNql.fromNql?.(nql.parse('member_id:abc123') as never, authorContext)).toEqual({
             field: 'author',
             operator: 'is',
             values: ['abc123']
@@ -127,12 +127,12 @@ describe('scalarNql', () => {
 
 describe('textNql', () => {
     it('parses regex-based text operators', () => {
-        expect(textNql().fromNql(nql.parse('email:~\'ghost\'') as never, emailContext)).toEqual({
+        expect(textNql().fromNql?.(nql.parse('email:~\'ghost\'') as never, emailContext)).toEqual({
             field: 'email',
             operator: 'contains',
             values: ['ghost']
         });
-        expect(textNql().fromNql(nql.parse('email:-~$\'ghost\'') as never, emailContext)).toEqual({
+        expect(textNql().fromNql?.(nql.parse('email:-~$\'ghost\'') as never, emailContext)).toEqual({
             field: 'email',
             operator: 'does-not-end-with',
             values: ['ghost']
@@ -140,13 +140,13 @@ describe('textNql', () => {
     });
 
     it('preserves regex escape sequences while unescaping literal punctuation', () => {
-        expect(textNql().fromNql(nql.parse('email:~\'g.ost\'') as never, emailContext)).toEqual({
+        expect(textNql().fromNql?.(nql.parse('email:~\'g.ost\'') as never, emailContext)).toEqual({
             field: 'email',
             operator: 'contains',
             values: ['g.ost']
         });
 
-        expect(textNql().fromNql(nql.parse('email:~\'\\d\'') as never, emailContext)).toEqual({
+        expect(textNql().fromNql?.(nql.parse('email:~\'\\d\'') as never, emailContext)).toEqual({
             field: 'email',
             operator: 'contains',
             values: ['\\d']
@@ -154,7 +154,7 @@ describe('textNql', () => {
     });
 
     it('parses and serializes exact text operators', () => {
-        expect(textNql().fromNql(nql.parse('email:\'ghost@example.com\'') as never, emailContext)).toEqual({
+        expect(textNql().fromNql?.(nql.parse('email:\'ghost@example.com\'') as never, emailContext)).toEqual({
             field: 'email',
             operator: 'is',
             values: ['ghost@example.com']
@@ -206,7 +206,7 @@ describe('textNql', () => {
     it('supports mapped NQL field names', () => {
         const bodyNql = textNql({field: 'html'});
 
-        expect(bodyNql.fromNql(nql.parse('html:~\'ghost\'') as never, bodyContext)).toEqual({
+        expect(bodyNql.fromNql?.(nql.parse('html:~\'ghost\'') as never, bodyContext)).toEqual({
             field: 'body',
             operator: 'contains',
             values: ['ghost']
@@ -223,12 +223,12 @@ describe('textNql', () => {
 
 describe('setNql', () => {
     it('parses set membership operators', () => {
-        expect(setNql().fromNql(nql.parse('label:[vip,alpha]') as never, labelContext)).toEqual({
+        expect(setNql().fromNql?.(nql.parse('label:[vip,alpha]') as never, labelContext)).toEqual({
             field: 'label',
             operator: 'is-any',
             values: ['vip', 'alpha']
         });
-        expect(setNql().fromNql(nql.parse('label:-[vip,alpha]') as never, labelContext)).toEqual({
+        expect(setNql().fromNql?.(nql.parse('label:-[vip,alpha]') as never, labelContext)).toEqual({
             field: 'label',
             operator: 'is-not-any',
             values: ['vip', 'alpha']
@@ -260,12 +260,12 @@ describe('setNql', () => {
 
 describe('numberNql', () => {
     it('parses numeric comparison operators', () => {
-        expect(numberNql().fromNql(nql.parse('email_count:>5') as never, countContext)).toEqual({
+        expect(numberNql().fromNql?.(nql.parse('email_count:>5') as never, countContext)).toEqual({
             field: 'email_count',
             operator: 'is-greater',
             values: [5]
         });
-        expect(numberNql().fromNql(nql.parse('email_count:10') as never, countContext)).toEqual({
+        expect(numberNql().fromNql?.(nql.parse('email_count:10') as never, countContext)).toEqual({
             field: 'email_count',
             operator: 'is',
             values: [10]
