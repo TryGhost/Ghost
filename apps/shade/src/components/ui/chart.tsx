@@ -237,7 +237,7 @@ React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
                                                 </span>
                                             </div>
                                             {item.value && (
-                                                <span className="font-mono font-medium text-foreground tabular-nums">
+                                                <span className="font-mono font-medium tabular-nums text-foreground">
                                                     {item.value.toLocaleString()}
                                                 </span>
                                             )}

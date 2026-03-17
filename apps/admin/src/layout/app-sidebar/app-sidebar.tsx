@@ -13,7 +13,7 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <Sidebar {...props}>
             <AppSidebarHeader className="px-5 pt-6 pb-0" />
             <AppSidebarContent />
-            <AppSidebarFooter className="gap-0 p-3" />
+            <AppSidebarFooter className="p-3 gap-0" />
         </Sidebar>
     )
 }

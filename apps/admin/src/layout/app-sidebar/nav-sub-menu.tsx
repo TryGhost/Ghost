@@ -10,7 +10,7 @@ function NavSubMenu({ isExpanded, children, id }: NavSubMenuProps) {
     return (
         <div
             id={id}
-            className={`grid transition-all duration-200 ease-out ${isExpanded ? 'mb-5 grid-rows-[1fr]' : 'mb-0 grid-rows-[0fr]'}`}
+            className={`grid transition-all duration-200 ease-out ${isExpanded ? 'grid-rows-[1fr] mb-5' : 'grid-rows-[0fr] mb-0'}`}
         >
             <div className="overflow-hidden">
                 {children}

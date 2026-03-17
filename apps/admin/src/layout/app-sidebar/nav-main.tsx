@@ -57,7 +57,7 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             )}
                         </NavMenuItem>
                     )}
-                    <NavMenuItem className="group/viewsite relative">
+                    <NavMenuItem className="relative group/viewsite">
                         <NavMenuItem.Link to="site">
                             <LucideIcon.AppWindow />
                             <NavMenuItem.Label>View site</NavMenuItem.Label>
@@ -67,7 +67,7 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             target="_blank"
                             aria-label="View site in new tab"
                             rel="noopener noreferrer"
-                            className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full text-gray-700 opacity-0 transition-all group-hover/viewsite:opacity-100 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                            className="absolute opacity-0 group-hover/viewsite:opacity-100 right-0 top-0 size-8 hover:bg-sidebar-accent flex items-center justify-center rounded-full text-gray-700 hover:text-sidebar-accent-foreground transition-all">
                                 <LucideIcon.ExternalLink size={16} />
                         </a>
                     </NavMenuItem>

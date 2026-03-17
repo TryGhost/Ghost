@@ -118,7 +118,7 @@ function UserMenu(props: UserMenuProps) {
                     </div>
                     <div className="grid flex-1 text-left text-base leading-tight">
                         <span className="truncate font-semibold">{currentUser.data?.name}</span>
-                        <span className="-mt-px truncate text-xs text-muted-foreground">
+                        <span className="text-muted-foreground truncate text-xs -mt-px">
                             {currentUser.data?.email}
                         </span>
                     </div>
@@ -147,7 +147,7 @@ function UserMenu(props: UserMenuProps) {
                     <LucideIcon.Sparkles />
                     <UserMenuItem.Label>What’s new?</UserMenuItem.Label>
                     {whatsNewData?.hasNew && (
-                        <div className="flex flex-1 justify-end">
+                        <div className="flex-1 flex justify-end">
                             <Indicator
                                 variant="success"
                                 size="sm"
@@ -202,17 +202,17 @@ function ContributorUserMenu() {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <button
-                    className="flex items-center justify-center rounded-full border border-border bg-background p-0.5 shadow-lg transition-shadow hover:shadow-xl focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:bg-muted"
+                    className="rounded-full shadow-lg hover:shadow-xl transition-shadow focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 p-0.5 flex items-center justify-center border border-border dark:bg-muted bg-background"
                     aria-label="Open user menu"
                 >
-                    <UserMenuAvatar className="h-11 w-11" />
+                    <UserMenuAvatar className="w-11 h-11" />
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 align="start"
                 side="top"
                 sideOffset={10}
-                className="mb-2 min-w-56"
+                className="min-w-56 mb-2"
             >
                 <UserMenuHeader
                     name={currentUser.data?.name}

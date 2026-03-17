@@ -41,7 +41,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             aria-label="Toggle post views"
                             variant="ghost"
                             size="icon"
-                            className="hover:text-gray-black absolute top-0 left-3 h-9 h-[34px]! w-auto p-0 text-sidebar-accent-foreground transition-all group-hover/menu-item:opacity-100 hover:bg-transparent focus-visible:opacity-100 sidebar:opacity-0"
+                            className="h-[34px]! absolute sidebar:opacity-0 group-hover/menu-item:opacity-100 focus-visible:opacity-100 transition-all left-3 top-0 p-0 h-9 w-auto text-sidebar-accent-foreground hover:text-gray-black hover:bg-transparent"
                             onClick={() =>
                                 void setPostsExpanded(!postsExpanded)
                             }
@@ -55,16 +55,16 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             to={routing.getRouteUrl('posts')}
                             isActive={routing.isRouteActive('posts')}
                         >
-                            <LucideIcon.PenLine className="pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0" />
+                            <LucideIcon.PenLine className="opacity-0 sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 pointer-events-none transition-all" />
                             <NavMenuItem.Label>Posts</NavMenuItem.Label>
                         </NavMenuItem.Link>
                         <a href="#/editor/post"
                             aria-label="Create new post"
-                            className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 text-gray-700 transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                            className="flex items-center justify-center absolute hover:bg-sidebar-accent transition-all rounded-full right-0 top-0 p-0 size-8 text-gray-700 hover:text-sidebar-accent-foreground"
                         >
                             <LucideIcon.Plus
                                 size={20}
-                                className="mt-px stroke-[1.5px]!"
+                                className="stroke-[1.5px]! mt-px"
                             />
                         </a>
                     </NavMenuItem>

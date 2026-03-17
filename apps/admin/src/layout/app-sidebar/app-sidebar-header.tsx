@@ -35,15 +35,15 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
         <SidebarHeader {...props}>
             <div className="flex flex-col items-stretch gap-6">
                 <div className="flex items-center justify-between">
-                    <div className="flex min-w-0 items-center gap-3">
-                        <div className="h-8 w-8 shrink-0 rounded-md border-0 bg-transparent">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-8 h-8 rounded-md bg-transparent border-0 flex-shrink-0">
                             <img
                                 src={siteIcon}
                                 alt="Site icon"
-                                className="h-full w-full rounded-md object-cover"
+                                className="w-full h-full rounded-md object-cover"
                                 />
                         </div>
-                        <div className="flex-1 truncate text-[15px] font-semibold text-foreground">
+                        <div className="font-semibold text-[15px] text-foreground overflow-hidden text-ellipsis whitespace-nowrap flex-1">
                             {title}
                         </div>
                     </div>
@@ -51,14 +51,14 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
                 {showSearch && (
                     <Button
                         variant="outline"
-                        className="flex h-[38px] items-center justify-between pr-2 text-base text-muted-foreground shadow-xs hover:border-gray-200 hover:bg-background hover:text-gray-700 hover:shadow-sm dark:bg-gray-950 dark:hover:border-gray-800 [&_svg]:stroke-2"
+                        className="flex items-center justify-between text-muted-foreground hover:text-gray-700 hover:bg-background text-base [&_svg]:stroke-2 pr-2 shadow-xs hover:shadow-sm hover:border-gray-200 dark:hover:border-gray-800 h-[38px] dark:bg-gray-950"
                         onClick={openSearchModal}
                     >
                         <div className="flex items-center gap-2">
                             <LucideIcon.Search className="text-muted-foreground" />
                             Search site
                         </div>
-                        <Kbd className="bg-transparent text-gray-500 shadow-none dark:text-gray-800" style={{textShadow: 'none'}}>{searchShortcut}</Kbd>
+                        <Kbd className="text-gray-500 bg-transparent shadow-none dark:text-gray-800" style={{textShadow: 'none'}}>{searchShortcut}</Kbd>
                     </Button>
                 )}
             </div>
