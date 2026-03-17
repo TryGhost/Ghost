@@ -96,7 +96,7 @@ export class FakeStripeServer {
             res.status(200).json(response);
         });
 
-        // GET /v1/subscriptions/:id — returns subscription (supports expand[]=default_payment_method)
+        // GET /v1/subscriptions/:id — returns subscription (supports expand[0]=... and expand[]=...)
         this.app.get('/v1/subscriptions/:id', (req, res) => {
             const subscriptionId = req.params.id;
             const subscription = this.subscriptions.get(subscriptionId);
@@ -107,7 +107,7 @@ export class FakeStripeServer {
                 return;
             }
 
-            const rawExpand = req.query['expand[]'];
+            const rawExpand = req.query.expand ?? req.query['expand[]'];
             const expand: string[] = Array.isArray(rawExpand)
                 ? rawExpand.filter((v): v is string => typeof v === 'string')
                 : (typeof rawExpand === 'string' ? [rawExpand] : []);

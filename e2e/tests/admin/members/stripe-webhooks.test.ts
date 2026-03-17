@@ -1,5 +1,31 @@
+import {APIRequestContext} from '@playwright/test';
 import {MembersService} from '@/helpers/services/members';
 import {expect, test} from '@/helpers/playwright';
+
+interface MemberEventsResponse {
+    events?: Array<{
+        type: string;
+        data: {
+            amount?: number;
+        };
+    }>;
+}
+
+async function waitForPaymentEvent(request: APIRequestContext, memberId: string, amount: number) {
+    await expect.poll(async () => {
+        const filter = encodeURIComponent(`type:payment_event+data.member_id:'${memberId}'`);
+        const response = await request.get(`/ghost/api/admin/members/events/?filter=${filter}&limit=5`);
+
+        if (!response.ok()) {
+            return null;
+        }
+
+        const data = await response.json() as MemberEventsResponse;
+        const paymentEvent = data.events?.find(event => event.type === 'payment_event');
+
+        return paymentEvent?.data.amount ?? null;
+    }, {timeout: 10000}).toBe(amount);
+}
 
 test.describe('Ghost Admin - Stripe Webhooks', () => {
     test.use({stripeEnabled: true});
@@ -28,6 +54,7 @@ test.describe('Ghost Admin - Stripe Subscription Lifecycle', () => {
 
         const member = await membersService.getByEmailWithSubscriptions(email);
         expect(member.status).toBe('paid');
+        expect(member.subscriptions).toHaveLength(1);
         expect(member.subscriptions[0].cancel_at_period_end).toBe(true);
     });
 
@@ -48,10 +75,12 @@ test.describe('Ghost Admin - Stripe Subscription Lifecycle', () => {
         const email = `stripe-invoice-${Date.now()}@example.com`;
 
         const {subscription} = await stripe!.createPaidMemberViaWebhooks({email, name: 'Invoice Test'});
+        const member = await membersService.getByEmail(email);
 
         await stripe!.sendInvoicePaymentSucceeded({subscription});
+        await waitForPaymentEvent(page.request, member.id, subscription.items.data[0]?.price.unit_amount ?? 0);
 
-        const member = await membersService.getByEmail(email);
-        expect(member.status).toBe('paid');
+        const updatedMember = await membersService.getByEmail(email);
+        expect(updatedMember.status).toBe('paid');
     });
 });
