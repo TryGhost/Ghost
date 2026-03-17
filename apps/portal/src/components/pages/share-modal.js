@@ -1,6 +1,9 @@
 import CloseButton from '../common/close-button';
 import copyTextToClipboard from '../../utils/copy-to-clipboard';
+import {ReactComponent as BlueSkyIcon} from '../../images/icons/share-bluesky.svg';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
+import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
+import {ReactComponent as EllipsisIcon} from '../../images/icons/ellipsis.svg';
 import {ReactComponent as FacebookIcon} from '../../images/icons/share-facebook.svg';
 import {ReactComponent as LinkIcon} from '../../images/icons/share-link.svg';
 import {ReactComponent as LinkedinIcon} from '../../images/icons/share-linkedin.svg';
@@ -32,6 +35,7 @@ export const ShareModalStyles = `
         align-items: center;
         gap: 12px;
         margin-top: 20px;
+        position: relative;
     }
 
     .gh-portal-share-preview {
@@ -72,6 +76,10 @@ export const ShareModalStyles = `
         line-height: 1.45;
         text-wrap: pretty;
         margin-top: -8px;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 
     .gh-portal-share-preview-footer {
@@ -114,10 +122,9 @@ export const ShareModalStyles = `
 
     .gh-portal-share-action {
         height: 44px;
-        width: 100%;
         max-width: 70px;
         min-width: 0;
-        padding: 0;
+        padding: 0 16px;
         border-radius: 8px;
         border: 1px solid var(--grey12);
         background: var(--white);
@@ -140,6 +147,85 @@ export const ShareModalStyles = `
         gap: 8px;
     }
 
+    .gh-portal-share-action.more {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0;
+    }
+
+    .gh-portal-share-more {
+        position: relative;
+    }
+
+    .gh-portal-share-more-menu {
+        position: absolute;
+        bottom: calc(100% + 8px);
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        min-width: 180px;
+        padding: 6px;
+        border: 1px solid var(--grey12);
+        border-radius: 8px;
+        background: var(--white);
+        box-shadow: 0 8px 20px rgba(var(--blackrgb), 0.12);
+        z-index: 2;
+        opacity: 0;
+        transform: translateY(8px);
+        transform-origin: bottom right;
+        animation: gh-portal-share-more-menu-in 0.18s ease-out forwards;
+    }
+    html[dir="rtl"] .gh-portal-share-more-menu {
+        right: unset;
+        left: 0;
+        transform-origin: bottom left;
+    }
+
+    @keyframes gh-portal-share-more-menu-in {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .gh-portal-share-more-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 36px;
+        padding: 0 10px;
+        color: var(--grey1);
+        font-size: 1.4rem;
+        font-weight: 500;
+        line-height: 1;
+        text-decoration: none;
+        border-radius: 6px;
+        border: none;
+    }
+
+    .gh-portal-share-more-item:hover {
+        background: var(--grey14);
+    }
+
+    .gh-portal-share-more-item-icon {
+        display: inline-flex;
+        width: 16px;
+        height: 16px;
+        align-items: center;
+        justify-content: center;
+        line-height: 0;
+    }
+
+    .gh-portal-share-more-item-icon svg {
+        width: 16px;
+        height: 16px;
+    }
+
     .gh-portal-share-label {
         font-size: 1.4rem;
         font-weight: 500;
@@ -156,7 +242,6 @@ export const ShareModalStyles = `
         height: 20px;
         border-radius: 999px;
         line-height: 0;
-        color: var(--white);
     }
 
     .gh-portal-share-icon svg {
@@ -216,8 +301,25 @@ export const ShareModalStyles = `
             order: 4;
         }
 
-        .gh-portal-share-action.linkedin {
+        .gh-portal-share-action.email {
             order: 5;
+        }
+
+        .gh-portal-share-action.more {
+            order: 6;
+        }
+
+        .gh-portal-share-more {
+            width: 100%;
+        }
+
+        .gh-portal-share-more-menu {
+            left: 0;
+            right: 0;
+        }
+        html[dir="rtl"] .gh-portal-share-more-menu {
+            left: 0;
+            right: 0;
         }
     }
 
@@ -324,9 +426,26 @@ const createShareLink = (baseUrl, params) => {
     return `${baseUrl}?${search.toString()}`;
 };
 
+const createEmailShareLink = ({shareTitle, shareUrl}) => {
+    const body = [shareTitle, shareUrl].filter(Boolean).join('\n\n');
+    const params = [];
+
+    if (shareTitle) {
+        params.push(`subject=${encodeURIComponent(shareTitle)}`);
+    }
+
+    if (body) {
+        params.push(`body=${encodeURIComponent(body)}`);
+    }
+
+    return `mailto:${params.length ? `?${params.join('&')}` : ''}`;
+};
+
 const ShareModal = () => {
     const [copied, setCopied] = useState(false);
+    const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
     const copyTimeoutRef = useRef();
+    const moreMenuRef = useRef(null);
 
     const shareUrl = useMemo(() => getShareUrl(), []);
     const shareTitle = useMemo(() => getShareTitle(), []);
@@ -341,9 +460,11 @@ const ShareModal = () => {
 
         return {
             twitter: createShareLink('https://twitter.com/intent/tweet', {url: shareUrl, text: shareTitle}),
-            threads: createShareLink('https://www.threads.net/intent/post', {text: threadsText}),
             facebook: createShareLink('https://www.facebook.com/sharer/sharer.php', {u: shareUrl}),
-            linkedin: createShareLink('https://www.linkedin.com/sharing/share-offsite/', {url: shareUrl})
+            email: createEmailShareLink({shareTitle, shareUrl}),
+            threads: createShareLink('https://www.threads.net/intent/post', {text: threadsText}),
+            linkedin: createShareLink('https://www.linkedin.com/sharing/share-offsite/', {url: shareUrl}),
+            bluesky: createShareLink('https://bsky.app/intent/compose', {text: threadsText})
         };
     }, [shareTitle, shareUrl]);
 
@@ -352,6 +473,32 @@ const ShareModal = () => {
             clearTimeout(copyTimeoutRef.current);
         };
     }, []);
+
+    useEffect(() => {
+        if (!isMoreMenuOpen) {
+            return;
+        }
+
+        const onDocumentMouseDown = (event) => {
+            if (moreMenuRef.current && !moreMenuRef.current.contains(event.target)) {
+                setIsMoreMenuOpen(false);
+            }
+        };
+
+        const onDocumentKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                setIsMoreMenuOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', onDocumentMouseDown);
+        document.addEventListener('keydown', onDocumentKeyDown);
+
+        return () => {
+            document.removeEventListener('mousedown', onDocumentMouseDown);
+            document.removeEventListener('keydown', onDocumentKeyDown);
+        };
+    }, [isMoreMenuOpen]);
 
     const onCopy = async () => {
         const copySuccess = await copyTextToClipboard(shareUrl);
@@ -366,8 +513,28 @@ const ShareModal = () => {
         }, 2000);
     };
 
+    const onToggleMoreMenu = () => {
+        setIsMoreMenuOpen(isOpen => !isOpen);
+    };
+
+    const onClickMoreItem = () => {
+        setIsMoreMenuOpen(false);
+    };
+
+    const onModalBodyClick = (event) => {
+        if (!isMoreMenuOpen) {
+            return;
+        }
+
+        if (moreMenuRef.current?.contains(event.target)) {
+            return;
+        }
+
+        setIsMoreMenuOpen(false);
+    };
+
     return (
-        <div className='gh-portal-content gh-portal-share'>
+        <div className='gh-portal-content gh-portal-share' onClick={onModalBodyClick}>
             <CloseButton />
             <div className='gh-portal-share-header'>
                 <h1 className='gh-portal-main-title'>{t('Share')}</h1>
@@ -402,58 +569,6 @@ const ShareModal = () => {
             </div>
 
             <div className='gh-portal-share-actions'>
-                <a
-                    className='gh-portal-btn gh-portal-share-action twitter'
-                    href={socialLinks.twitter}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    aria-label={t('X (Twitter)')}
-                    title={t('X (Twitter)')}
-                >
-                    <span className='gh-portal-share-icon x' aria-hidden='true'>
-                        <XIcon />
-                    </span>
-                </a>
-
-                <a
-                    className='gh-portal-btn gh-portal-share-action threads'
-                    href={socialLinks.threads}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    aria-label={t('Threads')}
-                    title={t('Threads')}
-                >
-                    <span className='gh-portal-share-icon' aria-hidden='true'>
-                        <ThreadsIcon />
-                    </span>
-                </a>
-
-                <a
-                    className='gh-portal-btn gh-portal-share-action facebook'
-                    href={socialLinks.facebook}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    aria-label={t('Facebook')}
-                    title={t('Facebook')}
-                >
-                    <span className='gh-portal-share-icon' aria-hidden='true'>
-                        <FacebookIcon />
-                    </span>
-                </a>
-
-                <a
-                    className='gh-portal-btn gh-portal-share-action linkedin'
-                    href={socialLinks.linkedin}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    aria-label={t('LinkedIn')}
-                    title={t('LinkedIn')}
-                >
-                    <span className='gh-portal-share-icon' aria-hidden='true'>
-                        <LinkedinIcon />
-                    </span>
-                </a>
-
                 <button
                     className='gh-portal-btn gh-portal-share-action copy'
                     type='button'
@@ -472,6 +587,104 @@ const ShareModal = () => {
                     )}
                     <span className='gh-portal-share-label'>{copied ? t('Copied') : t('Copy link')}</span>
                 </button>
+
+                <a
+                    className='gh-portal-btn gh-portal-share-action email'
+                    href={socialLinks.email}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    aria-label={t('Email')}
+                    title={t('Email')}
+                >
+                    <span className='gh-portal-share-icon' aria-hidden='true'>
+                        <EnvelopeIcon />
+                    </span>
+                </a>
+
+                <a
+                    className='gh-portal-btn gh-portal-share-action twitter'
+                    href={socialLinks.twitter}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    aria-label={t('X (Twitter)')}
+                    title={t('X (Twitter)')}
+                >
+                    <span className='gh-portal-share-icon x' aria-hidden='true'>
+                        <XIcon />
+                    </span>
+                </a>
+
+                <a
+                    className='gh-portal-btn gh-portal-share-action facebook'
+                    href={socialLinks.facebook}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    aria-label={t('Facebook')}
+                    title={t('Facebook')}
+                >
+                    <span className='gh-portal-share-icon' aria-hidden='true'>
+                        <FacebookIcon />
+                    </span>
+                </a>
+
+                <div className='gh-portal-share-more' ref={moreMenuRef}>
+                    <button
+                        className='gh-portal-btn gh-portal-share-action more'
+                        type='button'
+                        onClick={onToggleMoreMenu}
+                        aria-label={t('More options')}
+                        title={t('More options')}
+                        aria-haspopup='menu'
+                        aria-expanded={isMoreMenuOpen}
+                    >
+                        <span className='gh-portal-share-icon' aria-hidden='true'>
+                            <EllipsisIcon />
+                        </span>
+                    </button>
+                    {isMoreMenuOpen && (
+                        <div className='gh-portal-share-more-menu' role='menu' aria-label={t('More options')}>
+                            <a
+                                className='gh-portal-share-more-item'
+                                href={socialLinks.linkedin}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                role='menuitem'
+                                onClick={onClickMoreItem}
+                            >
+                                <span className='gh-portal-share-more-item-icon' aria-hidden='true'>
+                                    <LinkedinIcon />
+                                </span>
+                                <span>{t('LinkedIn')}</span>
+                            </a>
+                            <a
+                                className='gh-portal-share-more-item'
+                                href={socialLinks.threads}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                role='menuitem'
+                                onClick={onClickMoreItem}
+                            >
+                                <span className='gh-portal-share-more-item-icon' aria-hidden='true'>
+                                    <ThreadsIcon />
+                                </span>
+                                <span>{t('Threads')}</span>
+                            </a>
+                            <a
+                                className='gh-portal-share-more-item'
+                                href={socialLinks.bluesky}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                role='menuitem'
+                                onClick={onClickMoreItem}
+                            >
+                                <span className='gh-portal-share-more-item-icon' aria-hidden='true'>
+                                    <BlueSkyIcon />
+                                </span>
+                                <span>{t('Bluesky')}</span>
+                            </a>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
