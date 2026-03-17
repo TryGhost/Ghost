@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../../utils/assertions');
+const {assertExists} = require('../../../utils/assertions');
 
-const contrast_text_color = require('../../../../../core/frontend/helpers/contrast_text_color');
+const contrast_text_color = require('../../../../core/frontend/helpers/contrast_text_color');
 
 describe('{{contrast_text_color}} helper', function () {
     it('has contrast_text_color helper', function () {

@@ -10,7 +10,7 @@ const helpers = require('../../../../../../core/frontend/services/helpers');
 describe('Helpers', function () {
     const hbsHelpers = ['each', 'if', 'unless', 'with', 'helperMissing', 'blockHelperMissing', 'log', 'lookup', 'block', 'contentFor'];
     const ghostHelpers = [
-        'admin_url', 'asset', 'authors', 'body_class', 'cancel_link', 'color_to_rgba', 'concat', 'content', 'content_api_key', 'content_api_url', 'contrast_text_color', 'date', 'encode', 'excerpt', 'facebook_url', 'foreach', 'get',
+        'asset', 'authors', 'body_class', 'cancel_link', 'color_to_rgba', 'concat', 'content', 'content_api_key', 'content_api_url', 'contrast_text_color', 'date', 'encode', 'excerpt', 'facebook_url', 'foreach', 'get',
         'ghost_foot', 'ghost_head', 'has', 'img_url', 'is', 'json', 'link', 'link_class', 'meta_description', 'meta_title', 'navigation',
         'next_post', 'page_url', 'pagination', 'plural', 'post_class', 'prev_post', 'price', 'raw', 'reading_time', 'split', 't', 'tags', 'title','total_members', 'total_paid_members', 'twitter_url',
         'url', 'comment_count', 'collection', 'recommendations', 'readable_url', 'social_url'
@@ -37,23 +37,24 @@ describe('Helpers', function () {
     });
 
     describe('gscan compatibility', function () {
-        // Helpers that are intentionally NOT added to gscan's knownHelpers.
-        // Each entry must have a comment explaining why it's excluded.
-        // gscan already knows about 'search' via its own knownHelpers list — check
-        // if there's a version mismatch. The remaining entries are intentionally excluded:
-        const intentionallyExcluded = [
-            'raw', // internal helper used by Ghost's own templates, not intended for theme developers
-            'collection', // experimental helper, not yet stable enough for gscan enforcement
-
-            // The following helpers need gscan bumps (tracked separately):
-            'admin_url', // new in this PR — gscan PR pending
-            'json', // new in this PR — gscan PR pending
-            'color_to_rgba', // new in this PR — gscan PR pending
-            'contrast_text_color', // new in this PR — gscan PR pending
-            'search' // pre-existing gap — gscan doesn't know about this helper yet
+        // Ghost helpers that are not intended for theme developers and are
+        // legitimately absent from gscan's knownHelpers.
+        const internalHelpers = [
+            'raw', // internal helper used by Ghost's own templates
+            'collection', // experimental, not yet stable for themes
+            'search' // experimental, not yet in gscan
         ];
 
-        it('all global helpers should be known to gscan', function () {
+        // Helpers that are available for themes but gscan doesn't know about yet.
+        // When gscan is updated, remove entries here — the test will fail if you
+        // add a new helper without updating either this list or gscan.
+        const pendingGscanUpdate = [
+            'json',
+            'color_to_rgba',
+            'contrast_text_color'
+        ];
+
+        it('should track helpers not yet known to gscan', function () {
             const gscanSpec = require('gscan/lib/specs/v6');
             const gscanKnownHelpers = new Set(gscanSpec.knownHelpers);
 
@@ -63,12 +64,15 @@ describe('Helpers', function () {
                 .map(f => f.replace('.js', ''));
 
             const missing = globalHelperFiles
-                .filter(h => !intentionallyExcluded.includes(h))
+                .filter(h => !internalHelpers.includes(h))
                 .filter(h => !gscanKnownHelpers.has(h));
 
-            assert.deepEqual(missing, [],
-                `Helpers in core/frontend/helpers/ but missing from gscan\'s knownHelpers: ${missing.join(', ')}. ` +
-                'Either add them to gscan or add to intentionallyExcluded with a reason.'
+            // This assertion ensures the missing set matches exactly what we expect.
+            // If you add a new helper, it will fail until you either:
+            //   1. Add it to gscan's knownHelpers (preferred), or
+            //   2. Add it to pendingGscanUpdate with a tracking issue
+            assert.deepEqual(missing.sort(), pendingGscanUpdate.sort(),
+                'gscan helper mismatch. If you added a new helper, update gscan or add to pendingGscanUpdate.'
             );
         });
     });

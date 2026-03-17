@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 
-const json = require('../../../../../core/frontend/helpers/json');
+const json = require('../../../../core/frontend/helpers/json');
 
 describe('{{json}} helper', function () {
     it('serializes values safely for inline JSON', function () {
