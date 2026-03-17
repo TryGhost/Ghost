@@ -1,4 +1,4 @@
-const {SafeString} = require('../../../../services/handlebars');
+const {SafeString} = require('../services/handlebars');
 
 module.exports = function json(value, options) {
     let payload = value;

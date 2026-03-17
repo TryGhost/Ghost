@@ -8,11 +8,10 @@ const themeEngine = require('../../../../../core/frontend/services/theme-engine'
 const privateController = require('../../../../../core/frontend/apps/private-blogging/lib/router');
 const hbs = require('../../../../../core/frontend/services/theme-engine/engine');
 const t = require('../../../../../core/frontend/helpers/t');
-const admin_url = require('../../../../../core/frontend/helpers/admin_url');
 const input_password = require('../../../../../core/frontend/apps/private-blogging/lib/helpers/input_password');
-const color_to_rgba = require('../../../../../core/frontend/apps/private-blogging/lib/helpers/color_to_rgba');
-const contrast_text_color = require('../../../../../core/frontend/apps/private-blogging/lib/helpers/contrast_text_color');
-const json = require('../../../../../core/frontend/apps/private-blogging/lib/helpers/json');
+const color_to_rgba = require('../../../../../core/frontend/helpers/color_to_rgba');
+const contrast_text_color = require('../../../../../core/frontend/helpers/contrast_text_color');
+const json = require('../../../../../core/frontend/helpers/json');
 const {setupI18nTest, initLocale} = require('../../../../utils/i18n-test-utils');
 
 describe('Private Controller', function () {
@@ -130,10 +129,7 @@ describe('private.hbs template translation', function () {
 
     function renderPrivateTemplate(context) {
         return compiledTemplate(context, {
-            data: context,
-            helpers: {
-                admin_url
-            }
+            data: context
         });
     }
 
@@ -162,7 +158,7 @@ describe('private.hbs template translation', function () {
 
             it('renders the site icon above the site title when an icon exists', function () {
                 const context = {
-                    site: {title: 'Test', url: 'http://test.local', locale: 'en', icon: '/content/images/icon.png'}
+                    site: {title: 'Test', url: 'http://test.local', locale: 'en', icon: '/content/images/icon.png', admin_url: 'http://test.local/ghost/'}
                 };
                 const html = renderPrivateTemplate(context);
 
@@ -172,7 +168,7 @@ describe('private.hbs template translation', function () {
 
             it('renders the site description below the site title when present', function () {
                 const context = {
-                    site: {title: 'Test', description: 'A private publication', url: 'http://test.local', locale: 'en'}
+                    site: {title: 'Test', description: 'A private publication', url: 'http://test.local', locale: 'en', admin_url: 'http://test.local/ghost/'}
                 };
                 const html = renderPrivateTemplate(context);
 
@@ -182,7 +178,7 @@ describe('private.hbs template translation', function () {
 
             it('renders the signup form when self signup is enabled', function () {
                 const context = {
-                    site: {title: 'Test', url: 'http://test.local', locale: 'en', allow_self_signup: true}
+                    site: {title: 'Test', url: 'http://test.local', locale: 'en', allow_self_signup: true, admin_url: 'http://test.local/ghost/'}
                 };
                 const html = renderPrivateTemplate(context);
 
@@ -200,7 +196,7 @@ describe('private.hbs template translation', function () {
 
             it('uses the site accent color for the signup button when available', function () {
                 const context = {
-                    site: {title: 'Test', url: 'http://test.local', locale: 'en', allow_self_signup: true, accent_color: '#FFFFFF'}
+                    site: {title: 'Test', url: 'http://test.local', locale: 'en', allow_self_signup: true, accent_color: '#FFFFFF', admin_url: 'http://test.local/ghost/'}
                 };
                 const html = renderPrivateTemplate(context);
 
@@ -210,7 +206,7 @@ describe('private.hbs template translation', function () {
 
             it('does not render the signup form when self signup is disabled', function () {
                 const context = {
-                    site: {title: 'Test', url: 'http://test.local', locale: 'en', allow_self_signup: false}
+                    site: {title: 'Test', url: 'http://test.local', locale: 'en', allow_self_signup: false, admin_url: 'http://test.local/ghost/'}
                 };
                 const html = renderPrivateTemplate(context);
 
@@ -220,7 +216,7 @@ describe('private.hbs template translation', function () {
 
             it('renders English strings when locale is en', function () {
                 const context = {
-                    site: {title: 'Test', url: 'http://test.local', locale: 'en'}
+                    site: {title: 'Test', url: 'http://test.local', locale: 'en', admin_url: 'http://test.local/ghost/'}
                 };
                 const html = renderPrivateTemplate(context);
                 assertExists(html);
@@ -240,7 +236,7 @@ describe('private.hbs template translation', function () {
             it('renders German strings when locale is de', function () {
                 initLocale({useNewTranslation, locale: 'de'});
                 const context = {
-                    site: {title: 'Test', url: 'http://test.local', locale: 'de'}
+                    site: {title: 'Test', url: 'http://test.local', locale: 'de', admin_url: 'http://test.local/ghost/'}
                 };
                 const html = renderPrivateTemplate(context);
                 assertExists(html);
@@ -254,7 +250,7 @@ describe('private.hbs template translation', function () {
             it('falls back to English when locale is fr (no fr.json)', function () {
                 initLocale({useNewTranslation, locale: 'fr'});
                 const context = {
-                    site: {title: 'Test', url: 'http://test.local', locale: 'fr'}
+                    site: {title: 'Test', url: 'http://test.local', locale: 'fr', admin_url: 'http://test.local/ghost/'}
                 };
                 const html = renderPrivateTemplate(context);
                 assertExists(html);
@@ -268,7 +264,7 @@ describe('private.hbs template translation', function () {
             it('auto-opens the dialog when an error is present', function () {
                 const context = {
                     error: {message: 'Wrong code'},
-                    site: {title: 'Test', url: 'http://test.local', locale: 'en'}
+                    site: {title: 'Test', url: 'http://test.local', locale: 'en', admin_url: 'http://test.local/ghost/'}
                 };
                 const html = renderPrivateTemplate(context);
 
