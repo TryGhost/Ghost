@@ -1,3 +1,5 @@
+const tailwindConfig = `${__dirname}/tailwind.config.cjs`;
+
 module.exports = {
     extends: [
         'plugin:ghost/ts',
@@ -33,12 +35,12 @@ module.exports = {
         // Enforce kebab-case (lowercase with hyphens) for all filenames
         'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
 
-        'tailwindcss/classnames-order': ['error', {config: 'tailwind.config.cjs'}],
-        'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: 'tailwind.config.cjs'}],
-        'tailwindcss/enforces-shorthand': ['warn', {config: 'tailwind.config.cjs'}],
-        'tailwindcss/migration-from-tailwind-2': ['warn', {config: 'tailwind.config.cjs'}],
+        'tailwindcss/classnames-order': ['error', {config: tailwindConfig}],
+        'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: tailwindConfig}],
+        'tailwindcss/enforces-shorthand': ['warn', {config: tailwindConfig}],
+        'tailwindcss/migration-from-tailwind-2': ['warn', {config: tailwindConfig}],
         'tailwindcss/no-arbitrary-value': 'off',
         'tailwindcss/no-custom-classname': 'off',
-        'tailwindcss/no-contradicting-classname': ['error', {config: 'tailwind.config.cjs'}]
+        'tailwindcss/no-contradicting-classname': ['error', {config: tailwindConfig}]
     }
 };
