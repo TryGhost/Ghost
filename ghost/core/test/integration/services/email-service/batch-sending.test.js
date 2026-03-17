@@ -900,6 +900,38 @@ describe.skip('Batch sending tests', function () {
             await models.Newsletter.edit({show_comment_cta: true}, {id: defaultNewsletter.id});
         });
 
+        it('Shows share button when enabled in newsletter for public posts', async function () {
+            mockSetting('email_track_clicks', false); // Disable link replacement for this test
+
+            const defaultNewsletter = await getDefaultNewsletter();
+            await models.Newsletter.edit({show_share_button: true}, {id: defaultNewsletter.id});
+
+            try {
+                const {html} = await sendEmail(agent, {
+                    title: 'This is a test post title',
+                    mobiledoc: mobileDocExample
+                });
+
+                assert.match(html, /#\/portal\/share/);
+            } finally {
+                await models.Newsletter.edit({show_share_button: false}, {id: defaultNewsletter.id});
+            }
+        });
+
+        it('Hides share button when disabled in newsletter', async function () {
+            mockSetting('email_track_clicks', false); // Disable link replacement for this test
+
+            const defaultNewsletter = await getDefaultNewsletter();
+            await models.Newsletter.edit({show_share_button: false}, {id: defaultNewsletter.id});
+
+            const {html} = await sendEmail(agent, {
+                title: 'This is a test post title',
+                mobiledoc: mobileDocExample
+            });
+
+            assert.doesNotMatch(html, /#\/portal\/share/);
+        });
+
         it('Shows subscription details box for free members', async function () {
             // Create a new member without a first_name
             await models.Member.add({

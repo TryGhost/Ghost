@@ -1167,6 +1167,7 @@ class EmailRenderer {
 
         const postUrl = this.#getPostUrl(post);
         const isPublicPost = post.get('visibility') === 'public';
+        const showShareButton = isPublicPost && newsletter.get('show_share_button');
         const shareUrl = new URL(postUrl);
         shareUrl.hash = '/portal/share';
 
@@ -1194,7 +1195,7 @@ class EmailRenderer {
         const hasEmailOnlyFlag = post.related('posts_meta')?.get('email_only') ?? false;
         const hasFeedbackButtons = newsletter.get('feedback_enabled');
         const showCommentCta = newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag;
-        const feedbackButtonCount = (hasFeedbackButtons ? 2 : 0) + (showCommentCta ? 1 : 0) + (isPublicPost ? 1 : 0);
+        const feedbackButtonCount = (hasFeedbackButtons ? 2 : 0) + (showCommentCta ? 1 : 0) + (showShareButton ? 1 : 0);
         const feedbackButtonCellWidth = feedbackButtonCount > 0
             ? `${(100 / feedbackButtonCount).toFixed(2).replace(/\.00$/, '')}%`
             : null;
@@ -1259,7 +1260,7 @@ class EmailRenderer {
             post: {
                 title: post.get('title'),
                 url: postUrl,
-                shareUrl: isPublicPost ? shareUrl.href : null,
+                shareUrl: showShareButton ? shareUrl.href : null,
                 commentUrl: commentUrl.href,
                 authors,
                 publishedAt,

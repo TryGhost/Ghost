@@ -1265,6 +1265,7 @@ describe('Email renderer', function () {
                 name: 'Test Newsletter',
                 show_badge: false,
                 feedback_enabled: true,
+                show_share_button: true,
                 show_post_title_section: true
             };
             postUrl = 'http://example.com';
@@ -1359,6 +1360,7 @@ describe('Email renderer', function () {
                 name: 'Test Newsletter',
                 show_badge: false,
                 feedback_enabled: true,
+                show_share_button: true,
                 show_post_title_section: true
             });
             const segment = null;
@@ -1379,6 +1381,7 @@ describe('Email renderer', function () {
                 name: 'Test Newsletter',
                 show_badge: false,
                 feedback_enabled: true,
+                show_share_button: true,
                 show_post_title_section: true
             });
             const segment = null;
@@ -1425,6 +1428,7 @@ describe('Email renderer', function () {
                 name: 'Test Newsletter',
                 show_badge: false,
                 feedback_enabled: true,
+                show_share_button: true,
                 show_post_title_section: true
             });
             const segment = null;
@@ -1451,6 +1455,30 @@ describe('Email renderer', function () {
                 name: 'Test Newsletter',
                 show_badge: false,
                 feedback_enabled: true,
+                show_share_button: true,
+                show_post_title_section: true
+            });
+            const segment = null;
+            const options = {};
+
+            const response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            assert(!response.html.includes('#/portal/share'));
+        });
+
+        it('does not include share links when disabled in newsletter settings', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel({
+                header_image: null,
+                name: 'Test Newsletter',
+                show_badge: false,
+                feedback_enabled: true,
+                show_share_button: false,
                 show_post_title_section: true
             });
             const segment = null;
@@ -1747,6 +1775,7 @@ describe('Email renderer', function () {
                 name: 'Test Newsletter',
                 show_badge: true,
                 feedback_enabled: true,
+                show_share_button: true,
                 show_post_title_section: true
             });
             const segment = null;
@@ -1819,6 +1848,7 @@ describe('Email renderer', function () {
                 name: 'Test Newsletter',
                 show_badge: true,
                 feedback_enabled: true,
+                show_share_button: true,
                 show_post_title_section: true
             });
             const segment = null;
@@ -1865,6 +1895,7 @@ describe('Email renderer', function () {
                 name: 'Test Newsletter',
                 show_badge: true,
                 feedback_enabled: true,
+                show_share_button: true,
                 show_post_title_section: true
             });
             const segment = null;
@@ -2545,7 +2576,9 @@ describe('Email renderer', function () {
                 loaded: ['posts_meta'],
                 visibility: 'public'
             });
-            const newsletter = createModel({});
+            const newsletter = createModel({
+                show_share_button: true
+            });
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
             assert.equal(data.post.shareUrl, 'http://example.com/#/portal/share');
         });
@@ -2560,16 +2593,34 @@ describe('Email renderer', function () {
             });
             const newsletter = createModel({
                 feedback_enabled: true,
-                show_comment_cta: true
+                show_comment_cta: true,
+                show_share_button: true
             });
 
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
             assert.equal(data.feedbackButtonCellWidth, '25%');
         });
 
+        it('does not include share URL when the newsletter share button is disabled', async function () {
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                visibility: 'public'
+            });
+            const newsletter = createModel({
+                show_share_button: false
+            });
+
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.post.shareUrl, null);
+        });
+
         it('does not include share URL for non-public posts', async function () {
             const html = '';
-            const newsletter = createModel({});
+            const newsletter = createModel({
+                show_share_button: true
+            });
 
             for (const visibility of ['members', 'paid', 'tiers']) {
                 const post = createModel({
