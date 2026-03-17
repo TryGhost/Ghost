@@ -1,4 +1,4 @@
-// UI components —  Basic building blocks (buttons, inputs, dialogs)
+// UI components —  Basic building blocks (buttons, inputs, dialogs)
 export * from './components/ui/alert-dialog';
 export * from './components/ui/animated-number';
 export * from './components/ui/avatar';
