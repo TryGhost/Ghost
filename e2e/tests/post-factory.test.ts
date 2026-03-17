@@ -1,3 +1,5 @@
+import {PostPage} from '@/helpers/pages';
+import {PostsPage} from '@/admin-pages';
 import {createPostFactory} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
 import type {PostFactory} from '@/data-factory';
@@ -19,9 +21,9 @@ test.describe('Post Factory API Integration', () => {
         expect(post.slug).toBeTruthy();
         expect(post.status).toBe('published');
 
-        // TODO: Replace this with a Post page object
-        await page.goto(`/${post.slug}/`);
-        await expect(page.locator('h1.gh-article-title')).toContainText('Test Post from Factory');
+        const postPage = new PostPage(page);
+        await postPage.gotoPost(post.slug);
+        await expect(postPage.postTitle).toContainText('Test Post from Factory');
     });
 
     test('create a post visible in Ghost Admin', async ({page}) => {
@@ -31,9 +33,9 @@ test.describe('Post Factory API Integration', () => {
             status: 'published'
         });
 
-        // TODO: Replace with PostsList page object
-        await page.goto('/ghost/#/posts');
-        await expect(page.locator(`text="${post.title}"`).first()).toBeVisible();
+        const postsPage = new PostsPage(page);
+        await postsPage.goto();
+        await expect(postsPage.getPostByTitle(post.title)).toBeVisible();
     });
 
     test('create draft post that is not accessible on frontend', async ({page}) => {
