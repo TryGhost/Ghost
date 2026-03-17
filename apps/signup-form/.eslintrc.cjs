@@ -49,6 +49,6 @@ module.exports = {
         'tailwindcss/migration-from-tailwind-2': 'warn',
         'tailwindcss/no-arbitrary-value': 'off',
         'tailwindcss/no-custom-classname': 'off',
-        'tailwindcss/no-contradicting-classname': 'off'
+        'tailwindcss/no-contradicting-classname': 'error'
     }
 };
