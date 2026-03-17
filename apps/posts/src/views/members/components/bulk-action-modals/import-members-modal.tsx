@@ -1,28 +1,31 @@
 import {CompleteStep, ErrorStep, InitStep, MappingStep, ProcessingStep} from './import-members/components';
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, cn} from '@tryghost/shade';
-import {Label} from '@tryghost/admin-x-framework/api/labels';
 import {MembersFieldMapping, detectFieldTypes} from './import-members/mapping';
 import {buildImportResponse} from './import-members/upload';
 import {createInitialImportState, importReducer} from './import-members/reducer';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {parseCSV} from './import-members/csv';
 import {useCallback, useEffect, useMemo, useReducer, useRef} from 'react';
+import {useLabelPicker} from '@src/hooks/use-label-picker';
 
 interface ImportMembersModalProps {
     open: boolean;
-    labels: Label[];
     onOpenChange: (open: boolean) => void;
     onComplete?: () => void;
 }
 
 export function ImportMembersModal({
     open,
-    labels,
     onOpenChange,
     onComplete
 }: ImportMembersModalProps) {
     const [state, dispatch] = useReducer(importReducer, undefined, createInitialImportState);
     const errorCsvUrlRef = useRef<string | null>(null);
+
+    const labelPicker = useLabelPicker({
+        selectedSlugs: state.selectedLabelSlugs,
+        onSelectionChange: (slugs: string[]) => dispatch({type: 'SET_SELECTED_LABEL_SLUGS', selectedLabelSlugs: slugs})
+    });
 
     const revokeErrorCsvUrl = useCallback(() => {
         if (errorCsvUrlRef.current) {
@@ -160,9 +163,14 @@ export function ImportMembersModal({
 
         const formData = new FormData();
         formData.append('membersfile', state.file);
-        state.selectedLabels.forEach((labelName) => {
-            formData.append('labels', labelName);
-        });
+
+        // Convert slugs to names for the upload API
+        for (const slug of state.selectedLabelSlugs) {
+            const label = labelPicker.labels.find(l => l.slug === slug);
+            if (label) {
+                formData.append('labels', label.name);
+            }
+        }
 
         if (state.mapping) {
             const mappingJSON = state.mapping.toJSON();
@@ -249,7 +257,8 @@ export function ImportMembersModal({
         state.file,
         state.mapping,
         state.mappingError,
-        state.selectedLabels,
+        state.selectedLabelSlugs,
+        labelPicker.labels,
         revokeErrorCsvUrl,
         onComplete
     ]);
@@ -300,11 +309,10 @@ export function ImportMembersModal({
                         fileData={state.fileData}
                         hasNextRecord={hasNextRecord}
                         hasPrevRecord={hasPrevRecord}
-                        labels={labels}
+                        labelPicker={labelPicker}
                         mapping={state.mapping}
                         mappingError={state.mappingError}
                         membersCount={membersCount}
-                        selectedLabels={state.selectedLabels}
                         showMappingErrors={state.showMappingErrors}
                         status={state.status}
                         onDataPreviewIndexChange={(nextIndex) => {
@@ -312,9 +320,6 @@ export function ImportMembersModal({
                                 type: 'SET_DATA_PREVIEW_INDEX',
                                 dataPreviewIndex: nextIndex
                             });
-                        }}
-                        onSelectLabels={(selectedLabels) => {
-                            dispatch({type: 'SET_SELECTED_LABELS', selectedLabels});
                         }}
                         onStartOver={reset}
                         onUpdateMapping={handleUpdateMapping}

@@ -11,7 +11,6 @@ import {
 } from '@tryghost/shade';
 import {blobDownloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
-import {useBrowseLabels} from '@tryghost/admin-x-framework/api/labels';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBulkDeleteMembers, useBulkEditMembers} from '@tryghost/admin-x-framework/api/members';
 
@@ -39,8 +38,11 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     canBulkDelete,
     onImportComplete
 }) => {
-    const {data: labelsData} = useBrowseLabels({});
-    const labels = labelsData?.labels || [];
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [showAddLabelModal, setShowAddLabelModal] = useState(false);
+    const [showRemoveLabelModal, setShowRemoveLabelModal] = useState(false);
+    const [showUnsubscribeModal, setShowUnsubscribeModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const {data: newslettersData, isLoading: isLoadingNewsletters} = useBrowseNewsletters({
         searchParams: {filter: 'status:-archived', limit: '50'}
@@ -50,12 +52,6 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     const {mutateAsync: bulkEditAsync, isLoading: isBulkEditing} = useBulkEditMembers();
     const {mutate: bulkDelete, isLoading: isBulkDeleting} = useBulkDeleteMembers();
     const [isUnsubscribing, setIsUnsubscribing] = useState(false);
-
-    const [showImportModal, setShowImportModal] = useState(false);
-    const [showAddLabelModal, setShowAddLabelModal] = useState(false);
-    const [showRemoveLabelModal, setShowRemoveLabelModal] = useState(false);
-    const [showUnsubscribeModal, setShowUnsubscribeModal] = useState(false);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const handleExport = useCallback(async () => {
         try {
@@ -257,7 +253,6 @@ const MembersActions: React.FC<MembersActionsProps> = ({
 
             {/* Modals */}
             <ImportMembersModal
-                labels={labels}
                 open={showImportModal}
                 onComplete={onImportComplete}
                 onOpenChange={setShowImportModal}

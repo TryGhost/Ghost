@@ -15,7 +15,7 @@ export interface ImportState {
     file: File | null;
     fileData: Record<string, string>[] | null;
     mapping: MembersFieldMapping | null;
-    selectedLabels: string[];
+    selectedLabelSlugs: string[];
     dataPreviewIndex: number;
     mappingError: string | null;
     showMappingErrors: boolean;
@@ -32,7 +32,7 @@ export const createInitialImportState = (): ImportState => ({
     file: null,
     fileData: null,
     mapping: null,
-    selectedLabels: [],
+    selectedLabelSlugs: [],
     dataPreviewIndex: 0,
     mappingError: null,
     showMappingErrors: false,

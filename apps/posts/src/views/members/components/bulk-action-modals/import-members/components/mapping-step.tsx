@@ -1,5 +1,7 @@
 import {Button, DialogFooter, LoadingIndicator, LucideIcon, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn} from '@tryghost/shade';
 import {FIELD_MAPPINGS, MembersFieldMapping} from '../mapping';
+import {LabelPicker} from '@src/components/label-picker';
+import {UseLabelPickerResult} from '@src/hooks/use-label-picker';
 
 interface MappingPreviewRow {
     key: string;
@@ -17,10 +19,8 @@ interface MappingStepProps {
     dataPreviewIndex: number;
     hasPrevRecord: boolean;
     hasNextRecord: boolean;
-    selectedLabels: string[];
-    labels: Array<{id: string; name: string}>;
+    labelPicker: UseLabelPickerResult;
     onUpdateMapping: (from: string, to: string | null) => void;
-    onSelectLabels: (labels: string[]) => void;
     onDataPreviewIndexChange: (next: number) => void;
     onStartOver: () => void;
     onUpload: () => void;
@@ -36,10 +36,8 @@ export function MappingStep({
     dataPreviewIndex,
     hasPrevRecord,
     hasNextRecord,
-    selectedLabels,
-    labels,
+    labelPicker,
     onUpdateMapping,
-    onSelectLabels,
     onDataPreviewIndexChange,
     onStartOver,
     onUpload
@@ -56,7 +54,7 @@ export function MappingStep({
         <>
             <div className="mt-5 space-y-5">
                 {fileData === null ? (
-                    <div className="flex items-center justify-center rounded-md border bg-muted p-10">
+                    <div className="bg-muted flex items-center justify-center rounded-md border p-10">
                         <LoadingIndicator size="md" />
                     </div>
                 ) : (
@@ -152,36 +150,25 @@ export function MappingStep({
                         )}
 
                         {membersCount > 0 && (
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-muted-foreground text-sm">
                                 If an email address in your CSV matches an existing member, they will be updated with the mapped values.
                             </p>
                         )}
 
                         <div>
                             <label className="mb-1 block text-sm font-semibold">Label these members</label>
-                            <Select
-                                disabled={status === 'UPLOADING'}
-                                value={selectedLabels[0] || '__none__'}
-                                onValueChange={(val) => {
-                                    if (val === '__none__') {
-                                        onSelectLabels([]);
-                                    } else {
-                                        onSelectLabels([val]);
-                                    }
-                                }}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a label..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="__none__">No label</SelectItem>
-                                    {labels.map(label => (
-                                        <SelectItem key={label.id} value={label.name}>
-                                            {label.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <LabelPicker
+                                canCreateFromSearch={labelPicker.canCreateFromSearch}
+                                isCreating={labelPicker.isCreating}
+                                isDuplicateName={labelPicker.isDuplicateName}
+                                isLoading={labelPicker.isLoading}
+                                labels={labelPicker.labels}
+                                selectedSlugs={labelPicker.selectedSlugs}
+                                onCreate={labelPicker.createLabel}
+                                onDelete={labelPicker.deleteLabel}
+                                onEdit={labelPicker.editLabel}
+                                onToggle={labelPicker.toggleLabel}
+                            />
                         </div>
                     </>
                 )}

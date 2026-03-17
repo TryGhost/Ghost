@@ -8,6 +8,21 @@ vi.mock('@tryghost/admin-x-framework/helpers', () => ({
     })
 }));
 
+vi.mock('@src/hooks/use-label-picker', () => ({
+    useLabelPicker: () => ({
+        labels: [],
+        selectedSlugs: [],
+        isLoading: false,
+        toggleLabel: vi.fn(),
+        createLabel: vi.fn(),
+        editLabel: vi.fn(),
+        deleteLabel: vi.fn(),
+        isDuplicateName: () => false,
+        canCreateFromSearch: () => false,
+        isCreating: false
+    })
+}));
+
 function createFile(name: string, type: string, contents = 'content') {
     return {
         name,
@@ -52,7 +67,6 @@ describe('ImportMembersModal', () => {
         const onComplete = vi.fn();
         render(
             <ImportMembersModal
-                labels={[]}
                 open
                 onComplete={onComplete}
                 onOpenChange={() => {}}

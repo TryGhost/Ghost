@@ -16,11 +16,10 @@ vi.mock('@src/views/members/components/bulk-action-modals', () => ({
     DeleteModal: () => React.createElement('div')
 }));
 
-vi.mock('@tryghost/admin-x-framework/api/labels', () => ({
-    useBrowseLabels: () => ({
-        data: {
-            labels: []
-        }
+vi.mock('@tryghost/admin-x-framework/api/newsletters', () => ({
+    useBrowseNewsletters: () => ({
+        data: {newsletters: []},
+        isLoading: false
     })
 }));
 

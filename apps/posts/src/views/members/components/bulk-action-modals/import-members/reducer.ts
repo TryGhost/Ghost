@@ -7,7 +7,7 @@ export type ImportAction =
     | {type: 'PARSE_SUCCESS'; fileData: Record<string, string>[]; mapping: MembersFieldMapping | null; mappingError: string | null}
     | {type: 'PARSE_FAILURE'; mappingError: string}
     | {type: 'UPDATE_MAPPING'; mapping: MembersFieldMapping | null; mappingError: string | null}
-    | {type: 'SET_SELECTED_LABELS'; selectedLabels: string[]}
+    | {type: 'SET_SELECTED_LABEL_SLUGS'; selectedLabelSlugs: string[]}
     | {type: 'SET_DATA_PREVIEW_INDEX'; dataPreviewIndex: number}
     | {type: 'SET_SHOW_MAPPING_ERRORS'; showMappingErrors: boolean}
     | {type: 'SET_DRAG_OVER'; dragOver: boolean}
@@ -56,10 +56,10 @@ export function importReducer(state: ImportState, action: ImportAction): ImportS
             mapping: action.mapping,
             mappingError: action.mappingError
         };
-    case 'SET_SELECTED_LABELS':
+    case 'SET_SELECTED_LABEL_SLUGS':
         return {
             ...state,
-            selectedLabels: action.selectedLabels
+            selectedLabelSlugs: action.selectedLabelSlugs
         };
     case 'SET_DATA_PREVIEW_INDEX':
         return {
