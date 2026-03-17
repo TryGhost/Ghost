@@ -20,15 +20,15 @@ class MemberWelcomeEmailRenderer {
             let hash = options?.hash;
             return t(key, hash || options || {});
         });
-        const typographySource = fs.readFileSync(
-            path.join(__dirname, '../email-rendering/partials/typography.hbs'),
+        const contentStylesSource = fs.readFileSync(
+            path.join(__dirname, '../email-rendering/partials/content-styles.hbs'),
             'utf8'
         );
         const cardStylesSource = fs.readFileSync(
             path.join(__dirname, '../email-rendering/partials/card-styles.hbs'),
             'utf8'
         );
-        this.Handlebars.registerPartial('cardStyles', '<style>\n' + typographySource + '\n' + cardStylesSource + '\n</style>');
+        this.Handlebars.registerPartial('cardStyles', '<style>\n' + contentStylesSource + '\n' + cardStylesSource + '\n</style>');
         const wrapperSource = fs.readFileSync(
             path.join(__dirname, './email-templates/wrapper.hbs'),
             'utf8'

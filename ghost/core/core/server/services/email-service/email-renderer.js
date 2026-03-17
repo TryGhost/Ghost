@@ -855,8 +855,8 @@ class EmailRenderer {
         registerHelpers(this.#handlebars, labs, this.#t);
 
         // Partials
-        const typographySource = await fs.readFile(path.join(__dirname, '../email-rendering/partials/typography.hbs'), 'utf8');
-        this.#handlebars.registerPartial('typography', typographySource);
+        const contentStylesSource = await fs.readFile(path.join(__dirname, '../email-rendering/partials/content-styles.hbs'), 'utf8');
+        this.#handlebars.registerPartial('contentStyles', contentStylesSource);
 
         const cardStylesSource = await fs.readFile(path.join(__dirname, '../email-rendering/partials/card-styles.hbs'), 'utf8');
         this.#handlebars.registerPartial('cardStyles', cardStylesSource);
