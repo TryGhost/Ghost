@@ -774,7 +774,7 @@ export const formatPrice = (amount) => {
         ? undefined
         : {minimumFractionDigits: 2, maximumFractionDigits: 2};
 
-    return normalizedAmount.toLocaleString(undefined, options);
+    return normalizedAmount.toLocaleString('en-US', options);
 };
 
 export const createPopupNotification = ({type, status, autoHide, duration = 2600, closeable, state, message, meta = {}}) => {
