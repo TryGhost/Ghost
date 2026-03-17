@@ -59,11 +59,11 @@ Last updated: 2026-03-17 (local branch state, pending CI on latest local changes
 - [ ] Reach zero config-token runtime dependency in migrated Admin lane.
 
 ## Remaining `tailwind.config.*` Inventory (Admin Scope)
-- [ ] `apps/admin/tailwind.config.js`
+- [x] `apps/admin/tailwind.config.js`
 - [ ] `apps/shade/tailwind.config.cjs`
-- [ ] `apps/posts/tailwind.config.cjs`
-- [ ] `apps/stats/tailwind.config.cjs`
-- [ ] `apps/activitypub/tailwind.config.cjs`
+- [x] `apps/posts/tailwind.config.cjs`
+- [x] `apps/stats/tailwind.config.cjs`
+- [x] `apps/activitypub/tailwind.config.cjs`
 - [x] `apps/admin-x-settings/tailwind.config.cjs`
 - [ ] `apps/admin-x-design-system/tailwind.config.cjs`
 
