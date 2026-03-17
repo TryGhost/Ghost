@@ -60,8 +60,12 @@ export function ImportMembersModal({
             return;
         }
 
+        let ignoreReaderEvents = false;
         const reader = new FileReader();
         reader.onload = (e) => {
+            if (ignoreReaderEvents) {
+                return;
+            }
             try {
                 const text = e.target?.result as string;
                 const data = parseCSV(text);
@@ -94,12 +98,18 @@ export function ImportMembersModal({
             }
         };
         reader.onerror = () => {
+            if (ignoreReaderEvents) {
+                return;
+            }
             dispatch({
                 type: 'PARSE_FAILURE',
                 mappingError: `Failed to read file${reader.error?.message ? `: ${reader.error.message}` : ''}`
             });
         };
         reader.onabort = () => {
+            if (ignoreReaderEvents) {
+                return;
+            }
             dispatch({
                 type: 'PARSE_FAILURE',
                 mappingError: 'File read was interrupted. Please try again.'
@@ -108,6 +118,7 @@ export function ImportMembersModal({
         reader.readAsText(state.file);
 
         return () => {
+            ignoreReaderEvents = true;
             if (reader.readyState === FileReader.LOADING) {
                 reader.abort();
             }

@@ -141,7 +141,7 @@ export function detectFieldTypes(data: Record<string, string>[]): Record<string,
     // Detect value-based types (email) from sampled data
     let i = 0;
     while (i <= sampledData.length - 1) {
-        if (mapping.email && mapping.stripe_customer_id) {
+        if (mapping.email) {
             break;
         }
 

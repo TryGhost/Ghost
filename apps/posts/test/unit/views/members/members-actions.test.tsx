@@ -25,7 +25,7 @@ vi.mock('@tryghost/admin-x-framework/api/newsletters', () => ({
 
 vi.mock('@tryghost/admin-x-framework/api/members', () => ({
     useBulkEditMembers: () => ({
-        mutate: vi.fn(),
+        mutateAsync: vi.fn(),
         isLoading: false
     }),
     useBulkDeleteMembers: () => ({

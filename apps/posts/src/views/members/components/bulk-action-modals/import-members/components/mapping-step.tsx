@@ -54,7 +54,7 @@ export function MappingStep({
         <>
             <div className="mt-5 space-y-5">
                 {fileData === null ? (
-                    <div className="flex items-center justify-center rounded-md border bg-muted p-10">
+                    <div className="bg-muted flex items-center justify-center rounded-md border p-10">
                         <LoadingIndicator size="md" />
                     </div>
                 ) : (
@@ -75,6 +75,7 @@ export function MappingStep({
                                                     </span>
                                                     <div className="flex items-center">
                                                         <button
+                                                            aria-label="Show previous sample row"
                                                             className={cn(
                                                                 'rounded p-0.5 hover:bg-muted',
                                                                 !hasPrevRecord && 'cursor-default opacity-30'
@@ -86,6 +87,7 @@ export function MappingStep({
                                                             <LucideIcon.ChevronLeft className="size-4" />
                                                         </button>
                                                         <button
+                                                            aria-label="Show next sample row"
                                                             className={cn(
                                                                 'rounded p-0.5 hover:bg-muted',
                                                                 !hasNextRecord && 'cursor-default opacity-30'
@@ -150,7 +152,7 @@ export function MappingStep({
                         )}
 
                         {membersCount > 0 && (
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-muted-foreground text-sm">
                                 If an email address in your CSV matches an existing member, they will be updated with the mapped values.
                             </p>
                         )}
