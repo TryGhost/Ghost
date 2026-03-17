@@ -1,7 +1,7 @@
 import {type Page, expect, test} from '@playwright/test';
 import {globalDataRequests, mockApi, responseFixtures, settingsWithStripe} from '@tryghost/admin-x-framework/test/acceptance';
 
-test.describe('Offers Modal', () => {
+test.describe('Offers', () => {
     test('Offers Modal is available', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
@@ -62,9 +62,9 @@ test.describe('Offers Modal', () => {
         const modal = page.getByTestId('offers-modal');
         await modal.getByRole('button', {name: 'New offer'}).click();
         const addModal = page.getByTestId('add-offer-modal');
-        expect(addModal).toBeVisible();
+        await expect(addModal).toBeVisible();
         const sidebar = addModal.getByTestId('add-offer-sidebar');
-        expect(sidebar).toBeVisible();
+        await expect(sidebar).toBeVisible();
         await sidebar.getByPlaceholder(/^Black Friday$/).fill('Coffee Tuesdays');
         await sidebar.getByLabel('Amount off').fill('5');
 
@@ -102,12 +102,16 @@ test.describe('Offers Modal', () => {
         const modal = page.getByTestId('offers-modal');
         await modal.getByRole('button', {name: 'New offer'}).click();
         const addModal = page.getByTestId('add-offer-modal');
+        await addModal.getByText('First-payment', {exact: true}).first().click();
+        await page.getByTestId('select-option').filter({hasText: 'Multiple-months'}).click();
+        await addModal.getByTestId('duration-months-input').fill('0');
         await addModal.getByRole('button', {name: 'Publish'}).click();
         const sidebar = addModal.getByTestId('add-offer-sidebar');
         await expect(sidebar).toContainText(/Name is required/);
         await expect(sidebar).toContainText(/Code is required/);
-        await expect(sidebar).toContainText(/Enter an amount greater than 0./);
+        await expect(sidebar).toContainText(/Enter an amount between 1 and 100%./);
         await expect(sidebar).toContainText(/Display title is required/);
+        await expect(sidebar).toContainText(/Enter a whole number of months \(1 or more\)./);
     });
 
     test('Errors if the offer code is already taken', async ({page}) => {
@@ -131,9 +135,9 @@ test.describe('Offers Modal', () => {
         const modal = page.getByTestId('offers-modal');
         await modal.getByRole('button', {name: 'New offer'}).click();
         const addModal = page.getByTestId('add-offer-modal');
-        expect(addModal).toBeVisible();
+        await expect(addModal).toBeVisible();
         const sidebar = addModal.getByTestId('add-offer-sidebar');
-        expect(sidebar).toBeVisible();
+        await expect(sidebar).toBeVisible();
         await sidebar.getByPlaceholder(/^Black Friday$/).fill('Coffee Tuesdays');
         await sidebar.getByLabel('Amount off').fill('10');
         await addModal.getByRole('button', {name: 'Publish'}).click();
@@ -141,7 +145,7 @@ test.describe('Offers Modal', () => {
         await expect(page.getByTestId('toast-error')).toContainText(/Offer `code` must be unique. Please change and try again./);
     });
 
-    test('Shows validation hints', async ({page}) => {
+    test('Shows validation errors', async ({page}) => {
         await mockApi({page, requests: {
             browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
@@ -168,7 +172,7 @@ test.describe('Offers Modal', () => {
         const sidebar = addModal.getByTestId('add-offer-sidebar');
         await expect(sidebar).toContainText(/Name is required/);
         await expect(sidebar).toContainText(/Code is required/);
-        await expect(sidebar).toContainText(/Enter an amount greater than 0./);
+        await expect(sidebar).toContainText(/Enter an amount between 1 and 100%./);
         await expect(sidebar).toContainText(/Display title is required/);
     });
 
@@ -272,10 +276,10 @@ test.describe('Offers Modal', () => {
             code: string;
             display_title: string;
             display_description: string;
-            type: 'percent' | 'free_months';
+            type: 'percent';
             cadence: 'month' | 'year';
             amount: number;
-            duration: 'forever' | 'once' | 'repeating' | 'free_months';
+            duration: 'forever' | 'once' | 'repeating';
             duration_in_months: number | null;
             currency_restriction: boolean;
             currency: string | null;
@@ -306,7 +310,6 @@ test.describe('Offers Modal', () => {
             redemption_type: 'retention',
             tier: null
         };
-
         const createRetentionOffer = (overrides: Partial<RetentionOffer> = {}) => {
             return {
                 ...defaultRetentionOffer,
@@ -349,18 +352,17 @@ test.describe('Offers Modal', () => {
             };
         };
 
-        const openRetentionTab = async (page: Page) => {
+        const openOffersModal = async (page: Page) => {
             await page.goto('/');
             const section = page.getByTestId('offers');
             await section.getByRole('button', {name: 'Manage offers'}).click();
 
             const modal = page.getByTestId('offers-modal');
-            await modal.getByRole('tab', {name: 'Retention'}).click();
             return modal;
         };
 
         const openRetentionModal = async (page: Page, name: 'Monthly retention' | 'Yearly retention') => {
-            const modal = await openRetentionTab(page);
+            const modal = await openOffersModal(page);
             await modal.getByText(name).click();
             const retentionModal = page.getByTestId('retention-offer-modal');
             await expect(retentionModal).toBeVisible();
@@ -394,10 +396,11 @@ test.describe('Offers Modal', () => {
                         name: 'Yearly retention archived',
                         code: 'yearly-retention-archived',
                         display_title: 'Stay with us',
-                        type: 'free_months',
+                        type: 'percent',
                         cadence: 'year',
-                        amount: 2,
-                        duration: 'free_months',
+                        amount: 100,
+                        duration: 'repeating',
+                        duration_in_months: 2,
                         status: 'archived',
                         redemption_count: 9
                     }),
@@ -412,7 +415,7 @@ test.describe('Offers Modal', () => {
                 ]
             })});
 
-            const modal = await openRetentionTab(page);
+            const modal = await openOffersModal(page);
             const rows = modal.getByTestId('retention-offer-item');
             await expect(rows).toHaveCount(2);
 
@@ -441,9 +444,9 @@ test.describe('Offers Modal', () => {
                         code: 'monthly-retention-active',
                         display_title: 'Stay monthly',
                         display_description: 'Monthly description',
-                        amount: 40,
+                        amount: 100,
                         duration: 'repeating',
-                        duration_in_months: 3,
+                        duration_in_months: 2,
                         redemption_count: 7,
                         created_at: '2026-02-17T12:00:00.000Z',
                         last_redeemed: '2026-02-18T12:00:00.000Z'
@@ -454,10 +457,10 @@ test.describe('Offers Modal', () => {
                         code: 'yearly-retention-active',
                         display_title: 'Stay yearly',
                         display_description: 'Yearly description',
-                        type: 'free_months',
+                        type: 'percent',
                         cadence: 'year',
-                        amount: 2,
-                        duration: 'free_months',
+                        amount: 30,
+                        duration: 'once',
                         redemption_count: 4,
                         created_at: '2026-02-16T12:00:00.000Z',
                         last_redeemed: '2026-02-17T12:00:00.000Z'
@@ -479,10 +482,11 @@ test.describe('Offers Modal', () => {
                         name: 'Yearly retention archived',
                         code: 'yearly-retention-archived',
                         display_title: 'Older yearly retention',
-                        type: 'free_months',
+                        type: 'percent',
                         cadence: 'year',
-                        amount: 1,
-                        duration: 'free_months',
+                        amount: 100,
+                        duration: 'repeating',
+                        duration_in_months: 1,
                         status: 'archived',
                         redemption_count: 5,
                         created_at: '2026-01-25T12:00:00.000Z',
@@ -500,8 +504,7 @@ test.describe('Offers Modal', () => {
             await expect(monthlyModal.getByLabel('Enable monthly retention')).toBeChecked();
             await expect(monthlyModal.getByLabel('Display title')).toHaveValue('Stay monthly');
             await expect(monthlyModal.getByLabel('Display description')).toHaveValue('Monthly description');
-            await expect(monthlyModal.getByLabel('Amount off')).toHaveValue('40');
-            await expect(monthlyModal.getByLabel('Duration in months')).toHaveValue('3');
+            await expect(monthlyModal.getByLabel('Free months')).toHaveValue('2');
 
             await monthlyModal.getByRole('button', {name: 'Cancel'}).click();
             await modal.getByText('Yearly retention').click();
@@ -516,7 +519,7 @@ test.describe('Offers Modal', () => {
             await expect(yearlyModal.getByLabel('Enable yearly retention')).toBeChecked();
             await expect(yearlyModal.getByLabel('Display title')).toHaveValue('Stay yearly');
             await expect(yearlyModal.getByLabel('Display description')).toHaveValue('Yearly description');
-            await expect(yearlyModal.getByLabel('Free months')).toHaveValue('2');
+            await expect(yearlyModal.getByLabel('Amount off')).toHaveValue('30');
         });
 
         test('Shows validation errors for invalid retention values on save', async ({page}) => {
@@ -536,6 +539,25 @@ test.describe('Offers Modal', () => {
             await retentionModal.getByLabel('Amount off').fill('150');
             await saveButton.click();
             await expect(retentionModal.getByText('Enter an amount between 1 and 100%.')).toBeVisible();
+            await expect(saveButton).toBeEnabled();
+
+            await retentionModal.getByText('Forever', {exact: true}).first().click();
+            await page.getByTestId('select-option').filter({hasText: 'Multiple-months'}).click();
+
+            await retentionModal.getByTestId('duration-months-input').fill('1.5');
+            await saveButton.click();
+            await expect(retentionModal.getByText('Enter a whole number of months between 1 and 99.')).toBeVisible();
+
+            await retentionModal.getByTestId('duration-months-input').fill('1000');
+            await expect(retentionModal.getByText('Enter a whole number of months between 1 and 99.')).toBeVisible();
+
+            await retentionModal.getByRole('button', {name: /Free month\(s\)/}).click();
+            await retentionModal.getByLabel('Free months').fill('0');
+            await saveButton.click();
+            await expect(retentionModal.getByText('Enter a whole number of months between 1 and 99.')).toBeVisible();
+
+            await retentionModal.getByLabel('Free months').fill('1000');
+            await expect(retentionModal.getByText('Enter a whole number of months between 1 and 99.')).toBeVisible();
             await expect(saveButton).toBeEnabled();
         });
 
@@ -613,15 +635,18 @@ test.describe('Offers Modal', () => {
             expect(decodeURIComponent(params.get('display_title') || '')).toBe('Before you go');
             expect(decodeURIComponent(params.get('display_description') || '')).toBe('Please stay <script>alert(1)</script>');
             expect(params.get('redemption_type')).toBe('retention');
-            expect(params.get('type')).toBe('free_months');
-            expect(params.get('amount')).toBe('2');
+            expect(params.get('type')).toBe('percent');
+            expect(params.get('amount')).toBe('100');
+            expect(params.get('duration')).toBe('repeating');
+            expect(params.get('duration_in_months')).toBe('2');
             expect(params.get('cadence')).toBe('month');
             expect(params.get('tier_id')).toBeTruthy();
 
             await retentionModal.getByLabel('Free months').fill('');
             params = await getPreviewParams();
-            expect(params.get('type')).toBe('free_months');
-            expect(params.get('amount')).toBe('2');
+            expect(params.get('type')).toBe('percent');
+            expect(params.get('amount')).toBe('100');
+            expect(params.get('duration_in_months')).toBe('2');
 
             await retentionModal.getByRole('button', {name: /Percentage discount/}).click();
             await retentionModal.getByLabel('Amount off').fill('35');
@@ -659,7 +684,7 @@ test.describe('Offers Modal', () => {
                     cadence: 'month',
                     amount: 35,
                     duration: 'forever',
-                    duration_in_months: 0,
+                    duration_in_months: null,
                     currency: null,
                     status: 'active',
                     redemption_type: 'retention',
@@ -670,7 +695,7 @@ test.describe('Offers Modal', () => {
             });
 
             const createdOffer = (lastApiRequests.addOffer?.body as {offers: Array<{name: string; code: string}>})?.offers?.[0];
-            expect(createdOffer?.name).toMatch(/^Special offer [a-f0-9]{8}$/);
+            expect(createdOffer?.name).toMatch(/^Retention 35% off forever \([a-f0-9]{8}\)$/);
             expect(createdOffer?.code).toMatch(/^[a-f0-9]{8}$/);
         });
 
@@ -716,7 +741,9 @@ test.describe('Offers Modal', () => {
             const {lastApiRequests} = await mockApi({page, requests: getRetentionRequests({
                 retentionOffers: [createRetentionOffer({
                     id: 'retention-month-active',
-                    display_title: 'Before you go'
+                    display_title: 'Before you go',
+                    duration: 'repeating',
+                    duration_in_months: 3
                 })],
                 extraRequests: {
                     addOffer: {method: 'POST', path: '/offers/', response: {
@@ -737,6 +764,7 @@ test.describe('Offers Modal', () => {
 
             const {retentionModal} = await openRetentionModal(page, 'Monthly retention');
             await retentionModal.getByLabel('Amount off').fill('35');
+            await retentionModal.getByTestId('duration-months-input').fill('0');
             await retentionModal.getByRole('switch', {name: 'Enable monthly retention'}).click();
             await retentionModal.getByRole('button', {name: 'Save'}).click();
 
@@ -754,8 +782,8 @@ test.describe('Offers Modal', () => {
                 offers: [{
                     cadence: 'month',
                     amount: 35,
-                    duration: 'forever',
-                    duration_in_months: 0,
+                    duration: 'repeating',
+                    duration_in_months: 1,
                     status: 'archived',
                     redemption_type: 'retention',
                     tier: null,

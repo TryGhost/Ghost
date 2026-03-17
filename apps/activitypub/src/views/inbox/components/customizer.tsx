@@ -161,7 +161,7 @@ const CustomizerView: React.FC<CustomizerViewProps> = ({
     <Popover modal={false} onOpenChange={onOpenChange}>
         <PopoverTrigger asChild>
             <Button className={`size-9 rounded-full ${COLOR_OPTIONS[backgroundColor].button}`} variant='ghost'>
-                <Icon.Typography className='!size-[18px]' />
+                <Icon.Typography className='size-[18px]!' />
             </Button>
         </PopoverTrigger>
         <PopoverContent align='end' className='w-[224px]' onCloseAutoFocus={e => e.preventDefault()} onOpenAutoFocus={e => e.preventDefault()}>

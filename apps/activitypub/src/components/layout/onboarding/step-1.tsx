@@ -3,6 +3,7 @@ import React, {useState} from 'react';
 import apNodes from '@assets/images/onboarding/ap-nodes.png';
 import apNodesDark from '@assets/images/onboarding/ap-nodes-dark.png';
 import {Button, H3, LucideIcon, Skeleton} from '@tryghost/shade';
+import {sanitizeHtml} from '@src/utils/content-formatters';
 import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
 import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
@@ -45,7 +46,7 @@ const Step1: React.FC = () => {
                 </div>
                 <div className='relative z-10 h-full'>
                     <img className='absolute left-1/2 top-[calc(-280px)] w-full min-w-[1240px] max-w-[1300px] -translate-x-1/2 dark:hidden' src={apNodes} />
-                    <img className='absolute left-1/2 top-[calc(-280px)] hidden w-full min-w-[1240px] max-w-[1300px] -translate-x-1/2 dark:!visible dark:!block' src={apNodesDark} />
+                    <img className='dark:visible! dark:block! absolute left-1/2 top-[calc(-280px)] hidden w-full min-w-[1240px] max-w-[1300px] -translate-x-1/2' src={apNodesDark} />
                     <div className='relative mx-auto mt-0 flex w-96 flex-col gap-3 rounded-lg bg-white p-6 shadow-xl before:absolute before:inset-[80px] before:-z-10 before:rounded-full before:bg-[radial-gradient(circle,#4b5563,#6b7280,#9ca3af)] before:blur-[1000px] xxl:mt-[calc(-280px+20vw)] min-[1800px]:mt-14 dark:border dark:border-gray-950 dark:bg-[#101114] dark:shadow-[#1e1b4b]/5 dark:before:bg-[radial-gradient(circle,#6366f1,#a855f7,#ec4899)]'>
                         <div className='flex items-start justify-between'>
                             <APAvatar
@@ -80,7 +81,7 @@ const Step1: React.FC = () => {
                         </div>
                         <p className='leading-tight text-gray-800 dark:text-gray-600'>
                             {account?.bio ? (
-                                <span dangerouslySetInnerHTML={{__html: account.bio}} />
+                                <span dangerouslySetInnerHTML={{__html: sanitizeHtml(account.bio)}} />
                             ) : (
                                 <Skeleton count={3} randomize={true} />
                             )}

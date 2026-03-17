@@ -1,5 +1,4 @@
 const debug = require('@tryghost/debug')('members');
-const cors = require('cors');
 const bodyParser = require('body-parser');
 const express = require('../../../shared/express');
 const sentry = require('../../../shared/sentry');
@@ -7,7 +6,6 @@ const membersService = require('../../services/members');
 const stripeService = require('../../services/stripe');
 const middleware = membersService.middleware;
 const shared = require('../shared');
-const labs = require('../../../shared/labs');
 const errorHandler = require('@tryghost/mw-error-handler');
 const config = require('../../../shared/config');
 const {http} = require('@tryghost/api-framework');
@@ -15,6 +13,7 @@ const api = require('../../api').endpoints;
 
 const commentRouter = require('../comments');
 const announcementRouter = require('../announcement');
+const corsMiddleware = require('./middleware/cors');
 
 /**
  * @returns {import('express').Application}
@@ -27,7 +26,7 @@ module.exports = function setupMembersApp() {
     membersApp.use(shared.middleware.cacheControl('private'));
 
     // Support CORS for requests from the frontend
-    membersApp.use(cors({maxAge: config.get('caching:cors:maxAge')}));
+    membersApp.use(corsMiddleware);
 
     // Currently global handling for signing in with ?token= magiclinks
     membersApp.use(middleware.createSessionFromMagicLink);
@@ -74,7 +73,8 @@ module.exports = function setupMembersApp() {
     // Manage session
     membersApp.get('/api/session', middleware.getIdentityToken);
     membersApp.delete('/api/session', bodyParser.json({limit: '5mb'}), middleware.deleteSession);
-
+    
+    membersApp.get('/api/entitlements', middleware.getEntitlementToken);
     membersApp.get('/api/integrity-token', middleware.createIntegrityToken);
 
     membersApp.post(
@@ -132,7 +132,6 @@ module.exports = function setupMembersApp() {
     // Announcement
     membersApp.use(
         '/api/announcement',
-        labs.enabledMiddleware('announcementBar'),
         middleware.loadMemberSession,
         announcementRouter()
     );

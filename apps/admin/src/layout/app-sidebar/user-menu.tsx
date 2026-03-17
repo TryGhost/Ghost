@@ -11,6 +11,7 @@ import {
     Switch
 } from "@tryghost/shade"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
+import { getGhostPaths } from "@tryghost/admin-x-framework/helpers";
 import { useUserPreferences, useEditUserPreferences } from "@/hooks/user-preferences";
 import { useWhatsNew } from "@/whats-new/hooks/use-whats-new";
 import { useUpgradeStatus } from "./hooks/use-upgrade-status";
@@ -65,10 +66,11 @@ function UserMenuDarkMode() {
 
 function UserMenuSignOut() {
     const handleSignOut = () => {
-        fetch("/ghost/api/admin/session", {
+        const {apiRoot, adminRoot} = getGhostPaths();
+        fetch(`${apiRoot}/session`, {
             method: "DELETE",
         }).then(() => {
-            window.location.href = "/ghost";
+            window.location.href = adminRoot;
         }).catch((error) => {
             console.error(error);
         });
@@ -200,7 +202,7 @@ function ContributorUserMenu() {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <button
-                    className="rounded-full shadow-lg hover:shadow-xl transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 p-0.5 flex items-center justify-center border border-border dark:bg-muted bg-background"
+                    className="rounded-full shadow-lg hover:shadow-xl transition-shadow focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 p-0.5 flex items-center justify-center border border-border dark:bg-muted bg-background"
                     aria-label="Open user menu"
                 >
                     <UserMenuAvatar className="w-11 h-11" />
@@ -220,7 +222,7 @@ function ContributorUserMenu() {
                 </UserMenuHeader>
                 <DropdownMenuSeparator />
                 <UserMenuItem>
-                    <Link to="/">
+                    <Link to="/posts">
                         <LucideIcon.FileText />
                         <UserMenuItem.Label>Posts</UserMenuItem.Label>
                     </Link>

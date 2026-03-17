@@ -26,7 +26,7 @@ describe('I18n Class behavior', function () {
             i18n.init();
 
             assert.equal(i18n.locale(), 'fr');
-            assert.equal(fileSpy.calledTwice, true);
+            sinon.assert.calledTwice(fileSpy);
             assert.equal(fileSpy.secondCall.args[0], 'en');
         });
     });

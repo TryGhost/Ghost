@@ -11,6 +11,7 @@ export type Post = {
     url: string;
     slug: string;
     title: string;
+    visibility?: string;
     uuid: string;
     created_at?: string;
     updated_at?: string;

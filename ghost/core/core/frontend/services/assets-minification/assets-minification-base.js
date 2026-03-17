@@ -5,6 +5,7 @@ module.exports = class AssetsMinificationBase {
     minifier;
 
     ready = false;
+    loading = null;
 
     constructor(options = {}) {
         this.options = options;
@@ -12,6 +13,7 @@ module.exports = class AssetsMinificationBase {
 
     invalidate() {
         this.ready = false;
+        this.loading = null;
     }
 
     generateGlobs() {
@@ -50,7 +52,15 @@ module.exports = class AssetsMinificationBase {
          */
         return async function serveMiddleware(req, res, next) {
             if (!self.ready) {
-                await self.load();
+                if (!self.loading) {
+                    const pending = self.load().finally(() => {
+                        if (self.loading === pending) {
+                            self.loading = null;
+                        }
+                    });
+                    self.loading = pending;
+                }
+                await self.loading;
             }
 
             next();

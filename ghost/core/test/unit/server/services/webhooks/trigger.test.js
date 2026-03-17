@@ -54,9 +54,9 @@ describe('Webhook Service', function () {
 
             await webhookTrigger.trigger(WEBHOOK_EVENT);
 
-            assert.equal(models.Webhook.findAllByEvent.called, true);
-            assert.equal(payload.called, false);
-            assert.equal(request.called, false);
+            sinon.assert.called(models.Webhook.findAllByEvent);
+            sinon.assert.notCalled(payload);
+            sinon.assert.notCalled(request);
         });
 
         it('does not trigger payload handler when there are hooks registered for an event, but the custom integrations limit is active', async function () {
@@ -81,9 +81,9 @@ describe('Webhook Service', function () {
 
             await webhookTrigger.trigger(WEBHOOK_EVENT);
 
-            assert.equal(models.Webhook.findAllByEvent.called, true);
-            assert.equal(payload.called, false);
-            assert.equal(request.called, false);
+            sinon.assert.called(models.Webhook.findAllByEvent);
+            sinon.assert.notCalled(payload);
+            sinon.assert.notCalled(request);
         });
 
         it('triggers payload handler when there are hooks registered for an event', async function () {
@@ -107,9 +107,9 @@ describe('Webhook Service', function () {
 
             await webhookTrigger.trigger(WEBHOOK_EVENT, postModel);
 
-            assert.equal(models.Webhook.findAllByEvent.called, true);
-            assert.equal(payload.called, true);
-            assert.equal(request.called, true);
+            sinon.assert.called(models.Webhook.findAllByEvent);
+            sinon.assert.called(payload);
+            sinon.assert.called(request);
             assert.equal(request.args[0][0], WEBHOOK_TARGET_URL);
             assert.equal(request.args[0][1].body, '{"data":[1]}');
             assert.deepEqual(Object.keys(request.args[0][1].headers), ['Content-Length', 'Content-Type', 'Content-Version']);
@@ -140,9 +140,9 @@ describe('Webhook Service', function () {
 
             await webhookTrigger.trigger(WEBHOOK_EVENT, postModel);
 
-            assert.equal(models.Webhook.findAllByEvent.called, true);
-            assert.equal(payload.called, true);
-            assert.equal(request.called, true);
+            sinon.assert.called(models.Webhook.findAllByEvent);
+            sinon.assert.called(payload);
+            sinon.assert.called(request);
             assert.equal(request.args[0][0], WEBHOOK_TARGET_URL);
 
             const header = request.args[0][1].headers[SIGNATURE_HEADER];
@@ -173,9 +173,9 @@ describe('Webhook Service', function () {
 
             await webhookTrigger.trigger(WEBHOOK_EVENT, postModel);
 
-            assert.equal(models.Webhook.findAllByEvent.called, true);
-            assert.equal(payload.called, true);
-            assert.equal(request.called, true);
+            sinon.assert.called(models.Webhook.findAllByEvent);
+            sinon.assert.called(payload);
+            sinon.assert.called(request);
             assert.equal(request.args[0][0], WEBHOOK_TARGET_URL);
 
             const expectedHeader = `sha256=${crypto.createHmac('sha256', WEBHOOK_SECRET).update(`{"data":[1]}${ts}`).digest('hex')}, t=${ts}`;

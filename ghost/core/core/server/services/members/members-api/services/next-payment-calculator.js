@@ -1,3 +1,5 @@
+const getDiscountWindow = require('../utils/get-discount-window');
+
 /**
  * @typedef {import('../../../../services/offers/application/offer-mapper').OfferDTO} OfferDTO
  */
@@ -7,8 +9,9 @@
  * @prop {string} offer_id
  * @prop {string} start
  * @prop {string|null} end
- * @prop {'once'|'repeating'|'forever'|'free_months'} duration
- * @prop {'percent'|'fixed'|'free_months'} type
+ * @prop {'once'|'repeating'|'forever'} duration
+ * @prop {number|null} duration_in_months
+ * @prop {'percent'|'fixed'} type
  * @prop {number} amount
  */
 
@@ -75,6 +78,7 @@ class NextPaymentCalculator {
                 start: activeDiscount.start ? new Date(activeDiscount.start).toISOString() : null,
                 end: activeDiscount.end ? new Date(activeDiscount.end).toISOString() : null,
                 duration: offer.duration,
+                duration_in_months: offer.duration_in_months,
                 type: offer.type,
                 amount: offer.amount
             }
@@ -99,56 +103,15 @@ class NextPaymentCalculator {
      * @returns {ActiveDiscount|null}
      */
     _getActiveDiscount(subscription, offer) {
-        // Free months are based on trial periods in Stripe: they're active if the trial period is still ongoing
-        if (offer.type === 'free_months') {
-            const end = new Date(subscription.trial_end_at);
-
-            if (new Date() >= end) {
-                return null;
-            }
-
-            return {
-                start: subscription.trial_start_at,
-                end
-            };
-        }
-
-        // Other offers are based on a Stripe coupon, with a discount_start / discount_end
-        if (subscription.discount_start) {
-            return {
-                start: subscription.discount_start,
-                end: subscription.discount_end
-            };
-        }
-
-        // Backportability for old signup offers without discount_start / discount_end
-        if (offer.redemption_type !== 'signup') {
+        // Skip if there's no Stripe discount data and the offer isn't eligible for legacy backport:
+        // - signup offers are backported for legacy data without discount_start
+        // - retention offers are excluded because they were introduced after discount_start
+        //   was available, so missing discount_start means there's no active discount
+        if (!subscription.discount_start && offer.redemption_type !== 'signup') {
             return null;
         }
 
-        // Signup offers with once have already been applied to first payment
-        if (offer.duration === 'once') {
-            return null;
-        }
-
-        // Signup offer with forever don't expire
-        if (offer.duration === 'forever') {
-            return {start: subscription.start_date, end: null};
-        }
-
-        // Signup repeating offer expire after start_date + duration_in_months
-        if (offer.duration === 'repeating' && offer.duration_in_months > 0) {
-            const end = new Date(subscription.start_date);
-            end.setUTCMonth(end.getUTCMonth() + offer.duration_in_months);
-
-            if (new Date() >= end) {
-                return null;
-            }
-
-            return {start: subscription.start_date, end};
-        }
-
-        return null;
+        return getDiscountWindow(subscription, offer);
     }
 
     /**

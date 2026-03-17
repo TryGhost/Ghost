@@ -45,8 +45,12 @@ async function processOutbox() {
     try {
         await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
     } catch (err) {
-        const errorMessage = err?.message ?? 'Unknown error';
-        logging.error(`${OUTBOX_LOG_KEY} Service initialization failed: ${errorMessage}`);
+        logging.error({
+            system: {
+                event: 'outbox.init.failed'
+            },
+            err
+        }, `${OUTBOX_LOG_KEY} Service initialization failed.`);
         return `${OUTBOX_LOG_KEY} Job aborted: Service initialization failed`;
     }
 
@@ -70,7 +74,14 @@ async function processOutbox() {
         totalProcessed += processed;
         totalFailed += failed;
 
-        logging.info(`${OUTBOX_LOG_KEY} Batch complete: ${processed} processed, ${failed} failed in ${(batchDurationMs / 1000).toFixed(2)}s (${batchRate} entries/sec)`);
+        logging.info({
+            system: {
+                event: 'outbox.batch.complete',
+                entries_processed: processed,
+                entries_failed: failed,
+                duration_ms: batchDurationMs
+            }
+        }, `${OUTBOX_LOG_KEY} Batch complete: ${processed} processed, ${failed} failed in ${(batchDurationMs / 1000).toFixed(2)}s (${batchRate} entries/sec)`);
     }
 
     const durationMs = Date.now() - jobStartMs;

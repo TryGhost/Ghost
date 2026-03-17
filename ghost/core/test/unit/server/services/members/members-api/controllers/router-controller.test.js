@@ -108,12 +108,12 @@ describe('RouterController', function () {
                 end: () => {}
             });
 
-            assert.equal(getPaymentLinkSpy.calledOnce, true);
+            sinon.assert.calledOnce(getPaymentLinkSpy);
 
             // Payment link is called with the offer id in metadata
-            assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
+            sinon.assert.calledWith(getPaymentLinkSpy, sinon.match({
                 metadata: {offer: 'offer_123'}
-            })), true);
+            }));
         });
 
         it('parses newsletters from the request body', async function () {
@@ -157,13 +157,13 @@ describe('RouterController', function () {
 
             const expectedNewsletters = JSON.stringify([{id: 'abc123'}, {id: 'def456'}]);
 
-            assert.equal(getPaymentLinkSpy.calledOnce, true);
+            sinon.assert.calledOnce(getPaymentLinkSpy);
 
-            assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
+            sinon.assert.calledWith(getPaymentLinkSpy, sinon.match({
                 metadata: {
                     newsletters: expectedNewsletters
                 }
-            })), true);
+            }));
         });
 
         it('sets ghostSignupContext to has_precheckout_magic_link when checkout creates a signup magic link', async function () {
@@ -199,13 +199,13 @@ describe('RouterController', function () {
                 end: () => {}
             });
 
-            assert.equal(magicLinkService.getMagicLink.calledOnce, true);
-            assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
+            sinon.assert.calledOnce(magicLinkService.getMagicLink);
+            sinon.assert.calledWith(getPaymentLinkSpy, sinon.match({
                 successUrl: 'https://example.com/members/?token=abc123&action=signup',
                 metadata: {
                     ghostSignupContext: 'has_precheckout_magic_link'
                 }
-            })), true);
+            }));
         });
 
         it('sets ghostSignupContext to already_authenticated for authenticated members', async function () {
@@ -244,11 +244,11 @@ describe('RouterController', function () {
                 end: () => {}
             });
 
-            assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
+            sinon.assert.calledWith(getPaymentLinkSpy, sinon.match({
                 metadata: {
                     ghostSignupContext: 'already_authenticated'
                 }
-            })), true);
+            }));
         });
 
         it('sets ghostSignupContext to needs_magic_link_email when there is no member context or customer email', async function () {
@@ -275,11 +275,11 @@ describe('RouterController', function () {
                 end: () => {}
             });
 
-            assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
+            sinon.assert.calledWith(getPaymentLinkSpy, sinon.match({
                 metadata: {
                     ghostSignupContext: 'needs_magic_link_email'
                 }
-            })), true);
+            }));
         });
 
         describe('_getSubscriptionCheckoutData', function () {
@@ -480,16 +480,16 @@ describe('RouterController', function () {
                     writeHead: () => {},
                     end: () => {}
                 });
-                assert.equal(getDonationLinkSpy.calledOnce, true);
+                sinon.assert.calledOnce(getDonationLinkSpy);
 
-                assert.equal(getDonationLinkSpy.calledWith(sinon.match({
+                sinon.assert.calledWith(getDonationLinkSpy, sinon.match({
                     successUrl: 'https://example.com/?type=success',
                     cancelUrl: 'https://example.com/?type=cancel',
                     personalNote: 'SVP leave a note here',
                     metadata: {
                         test: 'hello'
                     }
-                })), true);
+                }));
             });
             it('accepts requests without a personalNote included', async function () {
                 const routerController = new RouterController({
@@ -527,16 +527,16 @@ describe('RouterController', function () {
                     writeHead: () => {},
                     end: () => {}
                 });
-                assert.equal(getDonationLinkSpy.calledOnce, true);
+                sinon.assert.calledOnce(getDonationLinkSpy);
 
-                assert.equal(getDonationLinkSpy.calledWith(sinon.match({
+                sinon.assert.calledWith(getDonationLinkSpy, sinon.match({
                     successUrl: 'https://example.com/?type=success',
                     cancelUrl: 'https://example.com/?type=cancel',
                     personalNote: '',
                     metadata: {
                         test: 'hello'
                     }
-                })), true);
+                }));
             });
             it('silently discards too-long personal notes', async function () {
                 const routerController = new RouterController({
@@ -575,15 +575,15 @@ describe('RouterController', function () {
                     writeHead: () => {},
                     end: () => {}
                 });
-                assert.equal(getDonationLinkSpy.calledOnce, true);
-                assert.equal(getDonationLinkSpy.calledWith(sinon.match({
+                sinon.assert.calledOnce(getDonationLinkSpy);
+                sinon.assert.calledWith(getDonationLinkSpy, sinon.match({
                     successUrl: 'https://example.com/?type=success',
                     cancelUrl: 'https://example.com/?type=cancel',
                     personalNote: '',
                     metadata: {
                         test: 'hello'
                     }
-                })), true);
+                }));
             });
             it('silently discards invalid personal notes', async function () {
                 const routerController = new RouterController({
@@ -622,15 +622,15 @@ describe('RouterController', function () {
                     writeHead: () => {},
                     end: () => {}
                 });
-                assert.equal(getDonationLinkSpy.calledOnce, true);
-                assert.equal(getDonationLinkSpy.calledWith(sinon.match({
+                sinon.assert.calledOnce(getDonationLinkSpy);
+                sinon.assert.calledWith(getDonationLinkSpy, sinon.match({
                     successUrl: 'https://example.com/?type=success',
                     cancelUrl: 'https://example.com/?type=cancel',
                     personalNote: '',
                     metadata: {
                         test: 'hello'
                     }
-                })), true);
+                }));
             });
             it('strips any html from the personal note', async function () {
                 const routerController = new RouterController({
@@ -669,15 +669,15 @@ describe('RouterController', function () {
                     writeHead: () => {},
                     end: () => {}
                 });
-                assert.equal(getDonationLinkSpy.calledOnce, true);
-                assert.equal(getDonationLinkSpy.calledWith(sinon.match({
+                sinon.assert.calledOnce(getDonationLinkSpy);
+                sinon.assert.calledWith(getDonationLinkSpy, sinon.match({
                     successUrl: 'https://example.com/?type=success',
                     cancelUrl: 'https://example.com/?type=cancel',
                     personalNote: 'Leave a note here',
                     metadata: {
                         test: 'hello'
                     }
-                })), true);
+                }));
             });
         });
 
@@ -735,7 +735,7 @@ describe('RouterController', function () {
 
             await routerController.createCheckoutSession(req, res);
 
-            assert.equal(res.end.calledOnce, true);
+            sinon.assert.calledOnce(res.end);
             const responseBody = JSON.parse(res.end.firstCall.args[0]);
             assert.equal(responseBody.welcomePageUrl, '/welcome-page/');
         });
@@ -793,7 +793,7 @@ describe('RouterController', function () {
 
             await routerController.createCheckoutSession(req, res);
 
-            assert.equal(res.end.calledOnce, true);
+            sinon.assert.calledOnce(res.end);
             const responseBody = JSON.parse(res.end.firstCall.args[0]);
             assert.equal(responseBody.welcomePageUrl, undefined);
         });
@@ -880,7 +880,7 @@ describe('RouterController', function () {
                 assert.equal(res.writeHead.calledOnceWith(201), true);
                 assert.equal(res.end.calledOnceWith('{}'), true);
 
-                assert.equal(sendEmailWithMagicLinkStub.calledOnce, true);
+                sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
                 assert.deepEqual(sendEmailWithMagicLinkStub.args[0][0].tokenData.newsletters, [
                     {id: newsletters[0].id},
                     {id: newsletters[1].id},
@@ -996,7 +996,7 @@ describe('RouterController', function () {
                 const controller = createRouterController();
 
                 await controller.sendMagicLink(req, res);
-                assert.equal(sendEmailWithMagicLinkStub.calledOnce, true);
+                sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
             });
 
             it('Does not send emails when honeypot is filled', async function () {
@@ -1060,8 +1060,8 @@ describe('RouterController', function () {
 
                 await routerController.sendMagicLink(req, res);
 
-                assert.equal(res.writeHead.calledWith(201, {'Content-Type': 'application/json'}), true);
-                assert.equal(res.end.calledWith(JSON.stringify({otc_ref: 'test-token-123'})), true);
+                sinon.assert.calledWith(res.writeHead, 201, {'Content-Type': 'application/json'});
+                sinon.assert.calledWith(res.end, JSON.stringify({otc_ref: 'test-token-123'}));
             });
 
             it('should not return otc_ref when no otcRef', async function () {
@@ -1069,8 +1069,8 @@ describe('RouterController', function () {
 
                 await routerController.sendMagicLink(req, res);
 
-                assert.equal(res.writeHead.calledWith(201), true);
-                assert.equal(res.end.calledWith('{}'), true);
+                sinon.assert.calledWith(res.writeHead, 201);
+                sinon.assert.calledWith(res.end, '{}');
             });
 
             it('should not return otc_ref when otcRef is undefined', async function () {
@@ -1078,8 +1078,8 @@ describe('RouterController', function () {
 
                 await routerController.sendMagicLink(req, res);
 
-                assert.equal(res.writeHead.calledWith(201), true);
-                assert.equal(res.end.calledWith('{}'), true);
+                sinon.assert.calledWith(res.writeHead, 201);
+                sinon.assert.calledWith(res.end, '{}');
             });
         });
     });
@@ -1395,7 +1395,7 @@ describe('RouterController', function () {
 
                 await assert.rejects(
                     routerController.verifyOTC(req, res),
-                    {code: 'INVALID_OTC_REF'}
+                    {code: 'INVALID_OTC'}
                 );
             });
 
@@ -1512,7 +1512,17 @@ describe('RouterController', function () {
         let res;
         let responseData;
 
-        function createMockSubscription({id = 'sub_123', status = 'active', offerId = null, trialEndAt = null, discountStart = null, discountEnd = null, cancelAtPeriodEnd = false} = {}) {
+        function createMockSubscription({
+            id = 'sub_123',
+            status = 'active',
+            offerId = null,
+            trialEndAt = null,
+            discountStart = null,
+            discountEnd = null,
+            startDate = null,
+            currentPeriodEnd = new Date('2025-06-01T00:00:00.000Z'),
+            cancelAtPeriodEnd = false
+        } = {}) {
             return {
                 id,
                 get: sinon.stub().callsFake((key) => {
@@ -1522,6 +1532,8 @@ describe('RouterController', function () {
                         trial_end_at: trialEndAt,
                         discount_start: discountStart,
                         discount_end: discountEnd,
+                        start_date: startDate,
+                        current_period_end: currentPeriodEnd,
                         cancel_at_period_end: cancelAtPeriodEnd
                     };
                     return values[key] ?? null;
@@ -1599,10 +1611,12 @@ describe('RouterController', function () {
             }, res);
 
             assert.deepEqual(responseData, {offers: []});
-            assert(offersAPIWithError.listOffersAvailableToSubscription.calledOnce);
+            sinon.assert.calledOnce(offersAPIWithError.listOffersAvailableToSubscription);
         });
 
         it('returns empty offers when subscription has an active discount', async function () {
+            mockOffersAPI.getOffer.resolves({id: 'existing_offer_123', duration: 'forever'});
+
             const routerController = createRouterController({
                 subscriptions: createMockSubscription({
                     offerId: 'existing_offer_123',
@@ -1616,12 +1630,13 @@ describe('RouterController', function () {
             }, res);
 
             assert.deepEqual(responseData, {offers: []});
-            assert(mockOffersAPI.listOffersAvailableToSubscription.notCalled);
+            sinon.assert.notCalled(mockOffersAPI.listOffersAvailableToSubscription);
         });
 
         it('returns offers when subscription has an expired discount', async function () {
-            const mockOffer = {id: 'retention_offer', name: 'Stay with us'};
+            const mockOffer = {id: 'retention_offer'};
             mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
+            mockOffersAPI.getOffer.resolves({id: 'expired_offer_123', duration: 'once'});
 
             const pastDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
             const routerController = createRouterController({
@@ -1637,11 +1652,38 @@ describe('RouterController', function () {
             }, res);
 
             assert.deepEqual(responseData, {offers: [mockOffer]});
-            assert(mockOffersAPI.listOffersAvailableToSubscription.calledOnce);
+            sinon.assert.calledOnce(mockOffersAPI.listOffersAvailableToSubscription);
+        });
+
+        it('returns offers when a one-month repeating signup offer no longer applies to the next payment', async function () {
+            const mockOffer = {id: 'retention_offer'};
+            mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
+            mockOffersAPI.getOffer.resolves({
+                id: 'expiring_repeating_offer',
+                duration: 'repeating',
+                duration_in_months: 1
+            });
+
+            const routerController = createRouterController({
+                subscriptions: createMockSubscription({
+                    offerId: 'expiring_repeating_offer',
+                    startDate: new Date('2025-05-01T00:00:00.000Z'),
+                    discountStart: new Date('2025-05-01T00:00:00.000Z'),
+                    discountEnd: new Date('2025-06-01T00:00:00.000Z'),
+                    currentPeriodEnd: new Date('2025-06-01T00:00:00.000Z')
+                })
+            });
+
+            await routerController.getMemberOffers({
+                body: {identity: 'valid-token'}
+            }, res);
+
+            assert.deepEqual(responseData, {offers: [mockOffer]});
+            sinon.assert.calledOnce(mockOffersAPI.listOffersAvailableToSubscription);
         });
 
         it('returns offers when subscription has expired once offer (legacy data, no discount_start)', async function () {
-            const mockOffer = {id: 'retention_offer', name: 'Stay with us'};
+            const mockOffer = {id: 'retention_offer'};
             mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
             mockOffersAPI.getOffer.resolves({duration: 'once'});
 
@@ -1657,7 +1699,7 @@ describe('RouterController', function () {
             }, res);
 
             assert.deepEqual(responseData, {offers: [mockOffer]});
-            assert(mockOffersAPI.listOffersAvailableToSubscription.calledOnce);
+            sinon.assert.calledOnce(mockOffersAPI.listOffersAvailableToSubscription);
         });
 
         it('returns empty offers when member has multiple active subscriptions', async function () {
@@ -1673,7 +1715,7 @@ describe('RouterController', function () {
             }, res);
 
             assert.deepEqual(responseData, {offers: []});
-            assert(mockOffersAPI.listOffersAvailableToSubscription.notCalled);
+            sinon.assert.notCalled(mockOffersAPI.listOffersAvailableToSubscription);
         });
 
         it('returns empty offers when subscription has an active trial period', async function () {
@@ -1689,11 +1731,11 @@ describe('RouterController', function () {
             }, res);
 
             assert.deepEqual(responseData, {offers: []});
-            assert(mockOffersAPI.listOffersAvailableToSubscription.notCalled);
+            sinon.assert.notCalled(mockOffersAPI.listOffersAvailableToSubscription);
         });
 
         it('returns offers when subscription trial has ended', async function () {
-            const mockOffer = {id: 'offer_123', name: 'Test Offer'};
+            const mockOffer = {id: 'offer_123'};
             mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
 
             const pastDate = new Date();
@@ -1708,11 +1750,11 @@ describe('RouterController', function () {
             }, res);
 
             assert.deepEqual(responseData, {offers: [mockOffer]});
-            assert(mockOffersAPI.listOffersAvailableToSubscription.calledOnce);
+            sinon.assert.calledOnce(mockOffersAPI.listOffersAvailableToSubscription);
         });
 
         it('returns offers when subscription has no trial period', async function () {
-            const mockOffer = {id: 'offer_123', name: 'Test Offer'};
+            const mockOffer = {id: 'offer_123'};
             mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
 
             const routerController = createRouterController({
@@ -1724,7 +1766,7 @@ describe('RouterController', function () {
             }, res);
 
             assert.deepEqual(responseData, {offers: [mockOffer]});
-            assert(mockOffersAPI.listOffersAvailableToSubscription.calledOnce);
+            sinon.assert.calledOnce(mockOffersAPI.listOffersAvailableToSubscription);
         });
     });
 });

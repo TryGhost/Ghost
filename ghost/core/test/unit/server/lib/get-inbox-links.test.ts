@@ -42,12 +42,20 @@ describe('getInboxLinks', function () {
             });
             assert.equal(result?.provider, 'gmail');
             assert(result?.desktop.startsWith('https://mail.google.com/'));
-            assert(result?.desktop.includes(encodeURIComponent(recipient)));
+            assert(result?.desktop.includes(recipient));
             assert(result?.desktop.includes(encodeURIComponent('sender@example.com')));
             assert(result?.android.startsWith('intent:'));
             assert(result?.android.includes('com.google.android.gm'));
             assert(result?.android.includes('browser_fallback_url'));
         }));
+
+        const nonAsciiResult = await getInboxLinks({
+            recipient: 'examplé@gmail.com',
+            sender: 'sendér@example.com',
+            dnsResolver: resolverThatShouldNeverBeUsed
+        });
+        assert(nonAsciiResult?.desktop.includes('exampl%C3%A9@gmail.com'));
+        assert(nonAsciiResult?.desktop.includes(encodeURIComponent('sendér@example.com')));
     });
 
     it('handles Yahoo emails', async function () {
@@ -177,6 +185,17 @@ describe('getInboxLinks', function () {
         assert(result?.android.startsWith('intent:'));
         assert(result?.android.includes('ru.mail.mailapp'));
         assert(result?.android.includes('browser_fallback_url'));
+    });
+
+    it('handles Feedbin emails', async function () {
+        const result = await getInboxLinks({
+            recipient: 'example@feedb.in',
+            sender: 'sender@example.com',
+            dnsResolver: resolverThatShouldNeverBeUsed
+        });
+        assert.equal(result?.provider, 'feedbin');
+        assert.equal(result?.desktop, 'https://feedbin.com/');
+        assert.equal(result?.android, 'https://feedbin.com/');
     });
 
     describe('DNS lookups', function () {

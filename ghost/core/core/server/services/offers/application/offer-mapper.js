@@ -11,7 +11,7 @@
  * @prop {string} display_title
  * @prop {string} display_description
  *
- * @prop {'percent'|'fixed'|'trial'|'free_months'} type
+ * @prop {'percent'|'fixed'|'trial'} type
  *
  * @prop {'month'|'year'} cadence
  * @prop {number} amount
@@ -19,7 +19,7 @@
  * @prop {boolean} currency_restriction
  * @prop {string} currency
  *
- * @prop {'once'|'repeating'|'forever'|'trial'|'free_months'} duration
+ * @prop {'once'|'repeating'|'forever'|'trial'} duration
  * @prop {null|number} duration_in_months
  *
  * @prop {'active'|'archived'} status
@@ -31,6 +31,29 @@
  * @prop {string} [tier.name]
  * @prop {string} created_at
  * @prop {string|null} last_redeemed
+ */
+
+/**
+ * @typedef {object} PublicOfferDTO
+ * @prop {string} id
+ *
+ * @prop {string} display_title
+ * @prop {string} display_description
+ *
+ * @prop {'percent'|'fixed'|'trial'} type
+ *
+ * @prop {'month'|'year'} cadence
+ * @prop {number} amount
+ *
+ * @prop {'once'|'repeating'|'forever'|'trial'} duration
+ * @prop {null|number} duration_in_months
+ *
+ * @prop {string|null} currency
+ *
+ * @prop {'active'|'archived'} status
+ * @prop {'signup'|'retention'} redemption_type
+ *
+ * @prop {{id: string}|null} tier
  */
 
 class OfferMapper {
@@ -60,6 +83,31 @@ class OfferMapper {
                 : null,
             created_at: offer.createdAt,
             last_redeemed: offer.lastRedeemed
+        };
+    }
+
+    /**
+     * Returns a DTO for a public facing offer (e.g. Portal's retention offer UI)
+     *
+     * @param {Offer} offer
+     * @returns {PublicOfferDTO}
+     */
+    static toPublicDTO(offer) {
+        return {
+            id: offer.id,
+            display_title: offer.displayTitle.value,
+            display_description: offer.displayDescription.value,
+            type: offer.type.value,
+            cadence: offer.cadence.value,
+            amount: offer.amount.value,
+            duration: offer.duration.value.type,
+            duration_in_months: offer.duration.value.type === 'repeating' ? offer.duration.value.months : null,
+            currency: offer.type.value === 'fixed' ? offer.currency.value : null,
+            status: offer.status.value,
+            redemption_type: offer.redemptionType.value,
+            tier: offer.tier
+                ? {id: offer.tier.id}
+                : null
         };
     }
 }

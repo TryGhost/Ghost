@@ -27,25 +27,25 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
     visits: {
         dataKey: 'visits',
         label: 'Visitors',
-        chartColor: 'hsl(var(--chart-blue))',
+        chartColor: 'var(--chart-blue)',
         formatter: formatNumber
     },
     views: {
         dataKey: 'pageviews',
         label: 'Pageviews',
-        chartColor: 'hsl(var(--chart-teal))',
+        chartColor: 'var(--chart-teal)',
         formatter: formatNumber
     },
     'bounce-rate': {
         dataKey: 'bounce_rate',
         label: 'Bounce rate',
-        chartColor: 'hsl(var(--chart-teal))',
+        chartColor: 'var(--chart-teal)',
         formatter: formatPercentage
     },
     'visit-duration': {
         dataKey: 'avg_session_sec',
         label: 'Visit duration',
-        chartColor: 'hsl(var(--chart-teal))',
+        chartColor: 'var(--chart-teal)',
         formatter: formatDuration
     }
 };
@@ -190,7 +190,7 @@ const Web: React.FC = () => {
                     <DateRangeSelect />
                 </NavbarActions>
                 }
-                <NavbarActions className={`${hasFilters ? '!mt-0 [grid-area:subactions] lg:!mt-[25px]' : '[grid-area:actions]'}`}>
+                <NavbarActions className={`${hasFilters ? 'mt-0! lg:mt-[25px]! [grid-area:subactions]' : '[grid-area:actions]'}`}>
                     <StatsFilter
                         filters={analyticsFilters}
                         onChange={setAnalyticsFilters}

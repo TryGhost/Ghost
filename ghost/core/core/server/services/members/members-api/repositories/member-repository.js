@@ -8,7 +8,6 @@ const ObjectId = require('bson-objectid').default;
 const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
-const addCalendarMonths = require('../utils/add-calendar-months');
 const hasActiveOffer = require('../utils/has-active-offer');
 const StartOutboxProcessingEvent = require('../../../outbox/events/start-outbox-processing-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
@@ -61,7 +60,6 @@ module.exports = class MemberRepository {
      * @param {any} deps.OfferRedemption
      * @param {any} deps.Outbox
      * @param {import('../../services/stripe-api')} deps.stripeAPIService
-     * @param {any} deps.labsService
      * @param {any} deps.productRepository
      * @param {any} deps.offersAPI
      * @param {ITokenService} deps.tokenService
@@ -82,7 +80,6 @@ module.exports = class MemberRepository {
         OfferRedemption,
         Outbox,
         stripeAPIService,
-        labsService,
         productRepository,
         offersAPI,
         tokenService,
@@ -106,7 +103,6 @@ module.exports = class MemberRepository {
         this._offersAPI = offersAPI;
         this.tokenService = tokenService;
         this._newslettersService = newslettersService;
-        this._labsService = labsService;
         this._AutomatedEmail = AutomatedEmail;
 
         DomainEvents.subscribe(OfferRedemptionEvent, async function (event) {
@@ -359,12 +355,16 @@ module.exports = class MemberRepository {
         const memberAddOptions = {...(options || {}), withRelated};
         let member;
 
-        const welcomeEmailsEnabled = this._labsService.isSet('welcomeEmails');
-        if (welcomeEmailsEnabled && WELCOME_EMAIL_SOURCES.includes(source)) {
-            const freeWelcomeEmail = this._AutomatedEmail ? await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.free}) : null;
-            const isFreeWelcomeEmailActive = freeWelcomeEmail && freeWelcomeEmail.get('lexical') && freeWelcomeEmail.get('status') === 'active';
-            const isFreeSignup = !stripeCustomer;
+        const isFreeSignup = !stripeCustomer;
+        const shouldCheckFreeWelcomeEmail = WELCOME_EMAIL_SOURCES.includes(source) && isFreeSignup;
+        let isFreeWelcomeEmailActive = false;
 
+        if (shouldCheckFreeWelcomeEmail) {
+            const freeWelcomeEmail = this._AutomatedEmail ? await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.free}) : null;
+            isFreeWelcomeEmailActive = freeWelcomeEmail && freeWelcomeEmail.get('lexical') && freeWelcomeEmail.get('status') === 'active';
+        }
+
+        if (isFreeWelcomeEmailActive && isFreeSignup) {
             const runMemberCreation = async (transacting) => {
                 const newMember = await this._Member.add({
                     ...memberData,
@@ -372,26 +372,21 @@ module.exports = class MemberRepository {
                     labels
                 }, {...memberAddOptions, transacting});
 
-                // Only send the free welcome email if:
-                // 1. The free welcome email is active
-                // 2. The member is not signing up for a paid subscription (no stripeCustomer)
-                if (isFreeWelcomeEmailActive && isFreeSignup) {
-                    const timestamp = eventData.created_at || newMember.get('created_at');
+                const timestamp = eventData.created_at || newMember.get('created_at');
 
-                    await this._Outbox.add({
-                        id: ObjectId().toHexString(),
-                        event_type: MemberCreatedEvent.name,
-                        payload: JSON.stringify({
-                            memberId: newMember.id,
-                            uuid: newMember.get('uuid'),
-                            email: newMember.get('email'),
-                            name: newMember.get('name'),
-                            source,
-                            timestamp,
-                            status: 'free'
-                        })
-                    }, {transacting});
-                }
+                await this._Outbox.add({
+                    id: ObjectId().toHexString(),
+                    event_type: MemberCreatedEvent.name,
+                    payload: JSON.stringify({
+                        memberId: newMember.id,
+                        uuid: newMember.get('uuid'),
+                        email: newMember.get('email'),
+                        name: newMember.get('name'),
+                        source,
+                        timestamp,
+                        status: 'free'
+                    })
+                }, {transacting});
 
                 return newMember;
             };
@@ -402,9 +397,7 @@ module.exports = class MemberRepository {
                 member = await this._Member.transaction(runMemberCreation);
             }
 
-            if (isFreeWelcomeEmailActive && isFreeSignup) {
-                this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: member.id}), memberAddOptions);
-            }
+            this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: member.id}), memberAddOptions);
         } else {
             member = await this._Member.add({
                 ...memberData,
@@ -812,9 +805,10 @@ module.exports = class MemberRepository {
             }
         }
 
+        // require: false so concurrent deletes don't throw "No Rows Deleted"
         return this._Member.destroy({
             id: data.id
-        }, options);
+        }, {...options, require: false});
     }
 
     async bulkDestroy(options) {
@@ -1472,7 +1466,7 @@ module.exports = class MemberRepository {
 
             const context = options?.context || {};
             const source = this._resolveContextSource(context);
-            const shouldSendPaidWelcomeEmail = this._labsService.isSet('welcomeEmails') && WELCOME_EMAIL_SOURCES.includes(source);
+            const shouldSendPaidWelcomeEmail = WELCOME_EMAIL_SOURCES.includes(source);
             let isPaidWelcomeEmailActive = false;
             if (shouldSendPaidWelcomeEmail && this._AutomatedEmail) {
                 const paidWelcomeEmail = await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.paid}, options);
@@ -1731,7 +1725,7 @@ module.exports = class MemberRepository {
         }
 
         // Check subscription doesn't already have an active offer
-        if (await hasActiveOffer(subscriptionModel, this._offersAPI)) {
+        if (await hasActiveOffer(subscriptionModel, this._offersAPI, options)) {
             throw new errors.BadRequestError({
                 message: tpl(messages.subscriptionHasOffer)
             });
@@ -1803,33 +1797,8 @@ module.exports = class MemberRepository {
         }
 
         const stripeSubscriptionId = subscriptionModel.get('subscription_id');
-        const isFreeMonthsOffer = offer.type === 'free_months';
 
-        if (isFreeMonthsOffer) {
-            const currentPeriodEnd = subscriptionModel.get('current_period_end');
-            if (!currentPeriodEnd) {
-                throw new errors.BadRequestError({
-                    message: tpl(messages.subscriptionNotActive)
-                });
-            }
-
-            const trialEndDate = addCalendarMonths(currentPeriodEnd, offer.amount);
-            const trialEnd = Math.floor(trialEndDate.getTime() / 1000);
-
-            const updatedSubscription = await this._stripeAPIService.updateSubscriptionTrialEnd(
-                stripeSubscriptionId,
-                trialEnd,
-                {prorationBehavior: 'none'}
-            );
-
-            return this.linkSubscription({
-                id: member.id,
-                subscription: updatedSubscription,
-                offerId: data.offerId
-            }, options);
-        }
-
-        // Besides free_months and trial offers, all other offers rely on a Stripe Coupon
+        // Besides trial offers, all other offers rely on a Stripe Coupon
         if (!data.couponId) {
             throw new errors.BadRequestError({
                 message: tpl(messages.offerNoCoupon)

@@ -1,4 +1,3 @@
-import '@tryghost/kg-unsplash-selector/dist/style.css';
 import Portal from '../../utils/portal';
 import React from 'react';
 import {type DefaultHeaderTypes, type PhotoType, UnsplashSearchModal} from '@tryghost/kg-unsplash-selector';

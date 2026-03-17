@@ -110,14 +110,14 @@ describe('Adapter Cache Redis', function () {
 
             checkFirstRead: {
                 const value = await cache.get(KEY, fetchData);
-                assert.equal(fetchData.callCount, 1);
+                sinon.assert.calledOnce(fetchData);
                 assert.equal(value, 'Da Value');
                 break checkFirstRead;
             }
 
             checkSecondRead: {
                 const value = await cache.get(KEY, fetchData);
-                assert.equal(fetchData.callCount, 1);
+                sinon.assert.calledOnce(fetchData);
                 assert.equal(value, 'Da Value');
                 break checkSecondRead;
             }
@@ -159,7 +159,7 @@ describe('Adapter Cache Redis', function () {
 
             checkFirstRead: {
                 const value = await cache.get(KEY, fetchData);
-                assert.equal(fetchData.callCount, 1);
+                sinon.assert.calledOnce(fetchData);
                 assert.equal(value, 'First Value');
                 break checkFirstRead;
             }
@@ -169,7 +169,7 @@ describe('Adapter Cache Redis', function () {
 
             checkSecondRead: {
                 const value = await cache.get(KEY, fetchData);
-                assert.equal(fetchData.callCount, 1);
+                sinon.assert.calledOnce(fetchData);
                 assert.equal(value, 'First Value');
                 break checkSecondRead;
             }
@@ -179,7 +179,7 @@ describe('Adapter Cache Redis', function () {
 
             checkThirdRead: {
                 const value = await cache.get(KEY, fetchData);
-                assert.equal(fetchData.callCount, 1);
+                sinon.assert.calledOnce(fetchData);
                 assert.equal(value, 'First Value');
                 break checkThirdRead;
             }
@@ -190,7 +190,7 @@ describe('Adapter Cache Redis', function () {
 
             checkFourthRead: {
                 const value = await cache.get(KEY, fetchData);
-                assert.equal(fetchData.callCount, 2);
+                sinon.assert.calledTwice(fetchData);
                 assert.equal(value, 'First Value');
                 break checkFourthRead;
             }
@@ -200,7 +200,7 @@ describe('Adapter Cache Redis', function () {
 
             checkFifthRead: {
                 const value = await cache.get(KEY, fetchData);
-                assert.equal(fetchData.callCount, 2);
+                sinon.assert.calledTwice(fetchData);
                 assert.equal(value, 'Second Value');
                 break checkFifthRead;
             }
@@ -264,7 +264,7 @@ describe('Adapter Cache Redis', function () {
 
             await cache.reset();
 
-            assert.ok(logging.error.calledOnce, 'error was logged');
+            sinon.assert.calledOnce(logging.error);
         });
     });
 });

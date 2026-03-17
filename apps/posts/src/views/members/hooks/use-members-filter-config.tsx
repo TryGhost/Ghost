@@ -1,4 +1,6 @@
-import {FilterFieldConfig, FilterFieldGroup, FilterOption, LucideIcon} from '@tryghost/shade';
+import LabelFilterRenderer from '@src/components/label-picker/label-filter-renderer';
+import React from 'react';
+import {CustomRendererProps, FilterFieldConfig, FilterFieldGroup, FilterOption, LucideIcon} from '@tryghost/shade';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
 import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {Tier} from '@tryghost/admin-x-framework/api/tiers';
@@ -13,9 +15,6 @@ export interface UseMembersFilterConfigOptions {
     emailAnalyticsEnabled?: boolean;
     labelsOptions?: FilterOption[];
     tiersOptions?: FilterOption[];
-    onLabelsSearchChange?: (search: string) => void;
-    labelsSearchValue?: string;
-    labelsLoading?: boolean;
     onTiersSearchChange?: (search: string) => void;
     tiersSearchValue?: string;
     tiersLoading?: boolean;
@@ -29,6 +28,9 @@ export interface UseMembersFilterConfigOptions {
     onEmailResourceSearchChange?: (search: string) => void;
     emailResourceSearchValue?: string;
     emailResourceLoading?: boolean;
+    // Offers
+    offersOptions?: FilterOption[];
+    hasOffers?: boolean;
     // Feature/setting flags for resource filters
     membersTrackSources?: boolean;
     emailTrackOpens?: boolean;
@@ -110,12 +112,11 @@ export function useMembersFilterConfig({
     emailAnalyticsEnabled = false,
     labelsOptions = [],
     tiersOptions = [],
-    onLabelsSearchChange,
-    labelsSearchValue,
-    labelsLoading = false,
     onTiersSearchChange,
     tiersSearchValue,
     tiersLoading = false,
+    offersOptions = [],
+    hasOffers = false,
     postResourceOptions = [],
     onPostResourceSearchChange,
     postResourceSearchValue,
@@ -169,11 +170,10 @@ export function useMembersFilterConfig({
                     value: l.slug,
                     label: l.name
                 })),
-                operators: IS_IS_NOT_OPERATORS,
+                customRenderer: props => React.createElement(LabelFilterRenderer, props as CustomRendererProps<string>),
+                defaultOperator: 'is_any_of',
+                hideOperatorSelect: true,
                 searchable: true,
-                onSearchChange: onLabelsSearchChange,
-                searchValue: labelsSearchValue,
-                isLoading: labelsLoading,
                 className: 'w-64'
             });
         }
@@ -364,6 +364,21 @@ export function useMembersFilterConfig({
                 });
             }
 
+            if (hasOffers) {
+                subscriptionFields.push({
+                    key: 'offer_redemptions',
+                    label: 'Offer',
+                    type: 'multiselect',
+                    icon: <LucideIcon.Ticket className="size-4" />,
+                    options: offersOptions,
+                    defaultOperator: 'is_any_of',
+                    hideOperatorSelect: true,
+                    autoCloseOnSelect: true,
+                    searchable: true,
+                    className: 'w-64'
+                });
+            }
+
             groups.push({
                 group: 'Subscription',
                 fields: subscriptionFields
@@ -497,12 +512,11 @@ export function useMembersFilterConfig({
         emailAnalyticsEnabled,
         labelsOptions,
         tiersOptions,
-        onLabelsSearchChange,
-        labelsSearchValue,
-        labelsLoading,
         onTiersSearchChange,
         tiersSearchValue,
         tiersLoading,
+        offersOptions,
+        hasOffers,
         postResourceOptions,
         onPostResourceSearchChange,
         postResourceSearchValue,

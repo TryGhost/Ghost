@@ -125,49 +125,6 @@ describe('PaidAccountActions', () => {
             expect(queryByText(/1 Jan 2099/)).toBeInTheDocument();
         });
 
-        test('displays "{x} month(s) free" for free_months offers', () => {
-            const products = getProductsData({numOfProducts: 1});
-            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
-
-            const trialEndAt = new Date('2099-02-01T12:00:00.000Z');
-
-            const member = getMemberData({
-                paid: true,
-                subscriptions: [
-                    getSubscriptionData({
-                        status: 'active',
-                        amount: 500,
-                        currency: 'USD',
-                        interval: 'month',
-                        offer: {
-                            type: 'free_months',
-                            amount: 1,
-                            duration: 'free_months'
-                        },
-                        trialEndAt: trialEndAt,
-                        nextPayment: getNextPaymentData({
-                            originalAmount: 500,
-                            amount: 500,
-                            interval: 'month',
-                            currency: 'USD',
-                            discount: getDiscountData({
-                                duration: 'free_months',
-                                type: 'free_months',
-                                amount: 1,
-                                end: trialEndAt.toISOString()
-                            })
-                        })
-                    })
-                ]
-            });
-
-            const {queryByText, queryByTestId} = setup({site, member});
-
-            expect(queryByText('$5.00/month')).toBeInTheDocument();
-            expect(queryByTestId('offer-label')).toBeInTheDocument();
-            expect(queryByText(/1 month free/)).toBeInTheDocument();
-        });
-
         test('displays "Complimentary" with expiry date', () => {
             const products = getProductsData({numOfProducts: 1});
             const site = getSiteData({products, portalProducts: products.map(p => p.id)});
@@ -284,7 +241,8 @@ describe('PaidAccountActions', () => {
             const products = getProductsData({numOfProducts: 1});
             const site = getSiteData({products, portalProducts: products.map(p => p.id)});
 
-            const endDate = new Date('2099-01-01T12:00:00.000Z');
+            const currentPeriodEnd = new Date('2099-04-03T12:00:00.000Z');
+            const discountEnd = new Date('2099-05-03T12:00:00.000Z');
 
             const member = getMemberData({
                 paid: true,
@@ -298,8 +256,9 @@ describe('PaidAccountActions', () => {
                             type: 'percent',
                             amount: 20,
                             duration: 'repeating',
-                            duration_in_months: 6
+                            duration_in_months: 2
                         },
+                        currentPeriodEnd: currentPeriodEnd.toISOString(),
                         nextPayment: getNextPaymentData({
                             originalAmount: 500,
                             amount: 400,
@@ -307,9 +266,10 @@ describe('PaidAccountActions', () => {
                             currency: 'USD',
                             discount: getDiscountData({
                                 duration: 'repeating',
+                                durationInMonths: 2,
                                 type: 'percent',
                                 amount: 20,
-                                end: endDate.toISOString()
+                                end: discountEnd.toISOString()
                             })
                         })
                     })
@@ -325,12 +285,61 @@ describe('PaidAccountActions', () => {
             // Should show the discounted price with end date
             expect(queryByText(/\$4\.00\/month/)).toBeInTheDocument();
             expect(queryByText(/Ends/)).toBeInTheDocument();
-            expect(queryByText(/1 Jan 2099/)).toBeInTheDocument();
+            expect(queryByText('$4.00/month — Ends 3 May 2099')).toBeInTheDocument();
         });
 
-        test('displays "Next payment" for once duration offers', () => {
+        test('displays $0.00/month - Ends {date} for free months offers', () => {
             const products = getProductsData({numOfProducts: 1});
             const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+
+            const discountEnd = new Date('2099-01-03T12:00:00.000Z');
+            const currentPeriodEnd = new Date('2099-01-03T12:00:00.000Z');
+
+            const member = getMemberData({
+                paid: true,
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'active',
+                        amount: 500,
+                        currency: 'USD',
+                        interval: 'month',
+                        offer: {
+                            type: 'percent',
+                            amount: 100,
+                            duration: 'repeating',
+                            duration_in_months: 1,
+                            redemption_type: 'retention'
+                        },
+                        currentPeriodEnd: currentPeriodEnd.toISOString(),
+                        nextPayment: getNextPaymentData({
+                            originalAmount: 500,
+                            amount: 0,
+                            interval: 'month',
+                            currency: 'USD',
+                            discount: getDiscountData({
+                                duration: 'repeating',
+                                durationInMonths: 1,
+                                type: 'percent',
+                                amount: 100,
+                                end: discountEnd.toISOString()
+                            })
+                        })
+                    })
+                ]
+            });
+
+            const {queryByText, queryByTestId} = setup({site, member});
+
+            expect(queryByText('$5.00/month')).toBeInTheDocument();
+            expect(queryByText('$5.00/month')).toHaveClass('gh-portal-account-old-price');
+            expect(queryByTestId('offer-label')).toBeInTheDocument();
+            expect(queryByText('$0.00/month — Ends 3 Jan 2099')).toBeInTheDocument();
+        });
+
+        test('displays discounted price with "Ends {date}" for once offers', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+            const currentPeriodEnd = new Date('2099-03-01T12:00:00.000Z');
 
             const member = getMemberData({
                 paid: true,
@@ -345,6 +354,7 @@ describe('PaidAccountActions', () => {
                             amount: 20,
                             duration: 'once'
                         },
+                        currentPeriodEnd: currentPeriodEnd.toISOString(),
 
                         nextPayment: getNextPaymentData({
                             originalAmount: 500,
@@ -368,8 +378,8 @@ describe('PaidAccountActions', () => {
             expect(queryByText('$5.00/month')).toBeInTheDocument();
             // Should have the offer label
             expect(queryByTestId('offer-label')).toBeInTheDocument();
-            // Should show the discounted price (without interval) with "Next payment"
-            expect(queryByText('$4.00 — Next payment')).toBeInTheDocument();
+            // Should show the discounted price with end date from current period end
+            expect(queryByText('$4.00/month — Ends 1 Mar 2099')).toBeInTheDocument();
         });
 
         test('displays fixed amount discount correctly', () => {
@@ -457,6 +467,62 @@ describe('PaidAccountActions', () => {
             expect(queryByTestId('offer-label')).toBeInTheDocument();
             // Should show the discounted yearly price
             expect(queryByText('$45.00/year — Forever')).toBeInTheDocument();
+        });
+    });
+
+    describe('Canceled badge', () => {
+        test('displays CANCELED badge when cancel_at_period_end is true', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+            const member = getMemberData({
+                paid: true,
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'active',
+                        cancelAtPeriodEnd: true,
+                        amount: 500,
+                        currency: 'USD',
+                        interval: 'month',
+                        nextPayment: getNextPaymentData({
+                            originalAmount: 500,
+                            amount: 500,
+                            interval: 'month',
+                            currency: 'USD',
+                            discount: null
+                        })
+                    })
+                ]
+            });
+
+            const {queryByText} = setup({site, member});
+            expect(queryByText('Canceled')).toBeInTheDocument();
+        });
+
+        test('does not display CANCELED badge when subscription is active', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+            const member = getMemberData({
+                paid: true,
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'active',
+                        cancelAtPeriodEnd: false,
+                        amount: 500,
+                        currency: 'USD',
+                        interval: 'month',
+                        nextPayment: getNextPaymentData({
+                            originalAmount: 500,
+                            amount: 500,
+                            interval: 'month',
+                            currency: 'USD',
+                            discount: null
+                        })
+                    })
+                ]
+            });
+
+            const {queryByText} = setup({site, member});
+            expect(queryByText('Canceled')).not.toBeInTheDocument();
         });
     });
 });

@@ -1,5 +1,5 @@
 import AppContext from '../../../../app-context';
-import {getCompExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isPaidMember, subscriptionHasFreeTrial, subscriptionHasFreeMonthsOffer} from '../../../../utils/helpers';
+import {getCompExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../../../images/icons/offer-tag.svg';
@@ -59,20 +59,10 @@ const PaidAccountActions = () => {
             );
         }
 
-        const freeMonthOffer = subscriptionHasFreeMonthsOffer({sub: subscription});
-
-        if (freeMonthOffer) {
-            return (
-                <>
-                    <p className={oldPriceClassName}>
-                        {label}
-                    </p>
-                    <FreeMonthsLabel nextPayment={nextPayment} />
-                </>
-            );
-        }
-
-        let offerLabelStr = getOfferLabel({nextPayment});
+        let offerLabelStr = getOfferLabel({
+            nextPayment,
+            currentPeriodEnd: subscription?.current_period_end
+        });
 
         if (offerLabelStr) {
             oldPriceClassName = 'gh-portal-account-old-price';
@@ -174,7 +164,12 @@ const PaidAccountActions = () => {
             <>
                 <section>
                     <div className='gh-portal-list-detail'>
-                        <h3>{planLabel}</h3>
+                        <h3>
+                            {planLabel}
+                            {subscription?.cancel_at_period_end && (
+                                <span className="gh-portal-canceled-badge">{t('Canceled')}</span>
+                            )}
+                        </h3>
                         <PlanLabel price={price} isComplimentary={isComplimentary} subscription={subscription} />
                     </div>
                     <PlanUpdateButton isPaid={isPaid} />
@@ -201,26 +196,12 @@ function FreeTrialLabel({subscription}) {
     return null;
 }
 
-// TODO: Add i18n once copy is finalized
-function FreeMonthsLabel({nextPayment}) {
-    const months = nextPayment.discount.amount;
-    const label = months === 1 ? '1 month free' : `${months} months free`;
-
-    return (
-        <p className="gh-portal-account-discountcontainer" data-testid="offer-label">
-            <OfferTagIcon className="gh-portal-account-tagicon" />
-            <span>{label}</span>
-        </p>
-    );
-}
-
 /**
  * Display discounted price if an offer is active
  *
  * Examples:
- * - "$10.00 — Next payment" (once offer)
  * - "$10.00/month — Forever" (forever offer)
- * - "$10.00/month — Ends 2026-01-01" (repeating offer)
+ * - "$10.00/month — Ends 2026-01-01" (once or repeating offer)
  *
  * @param {Object} nextPayment
  * @param {number} nextPayment.originalAmount - Original amount
@@ -229,14 +210,16 @@ function FreeMonthsLabel({nextPayment}) {
  * @param {'month'|'year'} nextPayment.interval
  * @param {Object|null} nextPayment.discount
  * @param {'once'|'repeating'|'forever'} nextPayment.discount.duration
+ * @param {number|null} nextPayment.discount.duration_in_months - Discount duration in months for "repeating" offers
  * @param {string} nextPayment.discount.start - Discount start date (ISO 8601 date string)
  * @param {string|null} nextPayment.discount.end - Discount end date (ISO 8601 date string), null for forever / once offers
  * @param {'fixed'|'percent'} nextPayment.discount.type
  * @param {number} nextPayment.discount.amount - Discount amount (e.g. 20 for 20% percent offer, or 2 for $2 fixed offer)
-
+ * @param {string} currentPeriodEnd - Subscription current period end (ISO 8601 date string)
+ *
  * @returns {string}
  */
-function getOfferLabel({nextPayment}) {
+function getOfferLabel({nextPayment, currentPeriodEnd}) {
     if (!nextPayment) {
         return '';
     }
@@ -251,20 +234,19 @@ function getOfferLabel({nextPayment}) {
     let durationLabel = '';
     if (discount.duration === 'forever') {
         durationLabel = t('Forever');
-    } else if (discount.duration === 'once') {
-        durationLabel = t('Next payment');
     } else if (discount.duration === 'repeating' && discount.end) {
         durationLabel = t('Ends {offerEndDate}', {offerEndDate: getDateString(discount.end)});
+    } else if (discount.duration === 'once' && currentPeriodEnd) {
+        // By design, "once" offers don't have a discount end in Stripe. They expire at the end of the current billing period.
+        durationLabel = t('Ends {offerEndDate}', {offerEndDate: getDateString(currentPeriodEnd)});
     }
 
     const formattedPrice = Intl.NumberFormat('en', {currency: nextPayment.currency, style: 'currency'}).format(nextPayment.amount / 100);
 
-    let displayedPrice = '';
-    if (discount.duration === 'once') {
-        displayedPrice = formattedPrice;
-    } else {
-        displayedPrice = `${formattedPrice}/${nextPayment.interval}`;
-    }
+    // Possible values for nextPayment.interval for i18n parser:
+    // t('month')
+    // t('year')
+    const displayedPrice = `${formattedPrice}/${t(nextPayment.interval)}`;
 
     return `${displayedPrice}${durationLabel ? ` — ${durationLabel}` : ''}`;
 }

@@ -38,6 +38,9 @@ export const MEMBER_FILTER_FIELDS = [
 
 export type MemberFilterField = typeof MEMBER_FILTER_FIELDS[number];
 
+// Fields that support multiselect (comma-separated values in URL)
+const MULTISELECT_FIELDS = new Set<string>(['label', 'offer_redemptions']);
+
 /**
  * Escape a string for NQL (escape single quotes)
  */
@@ -274,11 +277,14 @@ function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
 
         const parsed = parseFilterValue(queryValue);
         if (parsed) {
+            const values = MULTISELECT_FIELDS.has(field)
+                ? (parsed.value ? parsed.value.split(',') : [])
+                : [parsed.value];
             filters.push({
                 id: field,
                 field: field,
                 operator: parsed.operator,
-                values: [parsed.value]
+                values
             });
         }
     }
@@ -293,8 +299,20 @@ function filtersToSearchParams(filters: Filter[], search?: string): URLSearchPar
     const params = new URLSearchParams();
 
     for (const filter of filters) {
+        const key = filter.field;
+
+        // Multiselect fields (label, offer_redemptions) may have empty values
+        // when the filter row has just been added but no values selected yet.
+        // We still serialize them so the filter row persists in the URL.
+        if (MULTISELECT_FIELDS.has(key)) {
+            const serializedValue = filter.values.length > 0
+                ? filter.values.map(v => String(v)).join(',')
+                : '';
+            params.set(key, `${filter.operator}:${serializedValue}`);
+            continue;
+        }
+
         if (filter.values[0] !== undefined) {
-            const key = filter.field;
             const value = `${filter.operator}:${String(filter.values[0])}`;
             params.set(key, value);
         }

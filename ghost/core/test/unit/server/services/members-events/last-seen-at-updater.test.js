@@ -175,7 +175,7 @@ describe('LastSeenAtUpdater', function () {
             DomainEvents.dispatch(EmailOpenedEvent.create({memberId: '1', emailRecipientId: '1', emailId: '1', timestamp: now.toDate()}));
             await DomainEvents.allSettled();
             assert(updater.updateLastSeenAtWithoutKnownLastSeen.calledOnceWithExactly('1', now.toDate()));
-            assert(db.update.calledOnce);
+            sinon.assert.calledOnce(db.update);
         });
 
         it('Catches errors in updateLastSeenAtWithoutKnownLastSeen on EmailOpenedEvents', async function () {

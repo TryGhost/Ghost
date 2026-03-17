@@ -32,6 +32,58 @@ describe('lib/image: blog icon', function () {
             assert.deepEqual(blogIcon.getIconUrl(), [{relativeUrl: '/content/images/size/w256h256/2017/04/my-icon.png'}, undefined]);
         });
 
+        it('custom uploaded CDN png blog icon', function () {
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {
+                urlFor: (key, boolean) => [key, boolean]
+            }, settingsCache: {
+                get: (key) => {
+                    if (key === 'icon') {
+                        return 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/my-icon.png';
+                    }
+                }
+            }});
+            assert.deepEqual(blogIcon.getIconUrl(), [{relativeUrl: 'https://storage.ghost.is/c/6f/a3/site/content/images/size/w256h256/2026/02/my-icon.png'}, undefined]);
+        });
+
+        it('CDN png blog icon with absolute: true', function () {
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {
+                urlFor: (key, boolean) => [key, boolean]
+            }, settingsCache: {
+                get: (key) => {
+                    if (key === 'icon') {
+                        return 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/my-icon.png';
+                    }
+                }
+            }});
+            assert.deepEqual(blogIcon.getIconUrl({absolute: true}), [{relativeUrl: 'https://storage.ghost.is/c/6f/a3/site/content/images/size/w256h256/2026/02/my-icon.png'}, true]);
+        });
+
+        it('CDN svg blog icon gets format-converted to png', function () {
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {
+                urlFor: (key, boolean) => [key, boolean]
+            }, settingsCache: {
+                get: (key) => {
+                    if (key === 'icon') {
+                        return 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/my-icon.svg';
+                    }
+                }
+            }});
+            assert.deepEqual(blogIcon.getIconUrl(), [{relativeUrl: 'https://storage.ghost.is/c/6f/a3/site/content/images/size/w256h256/format/png/2026/02/my-icon.svg'}, undefined]);
+        });
+
+        it('CDN ico blog icon is not resized', function () {
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {
+                urlFor: (key, boolean) => [key, boolean]
+            }, settingsCache: {
+                get: (key) => {
+                    if (key === 'icon') {
+                        return 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/my-icon.ico';
+                    }
+                }
+            }});
+            assert.deepEqual(blogIcon.getIconUrl(), [{relativeUrl: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/my-icon.ico'}, undefined]);
+        });
+
         it('default ico blog icon', function () {
             const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {
                 urlFor: key => key
@@ -103,7 +155,7 @@ describe('lib/image: blog icon', function () {
             }});
 
             blogIcon.getIconPath();
-            assert.equal(stub.calledOnce, true);
+            sinon.assert.calledOnce(stub);
         });
 
         it('custom uploaded png blog icon', function () {
@@ -119,7 +171,7 @@ describe('lib/image: blog icon', function () {
             }});
 
             blogIcon.getIconPath();
-            assert.equal(stub.calledOnce, true);
+            sinon.assert.calledOnce(stub);
         });
 
         it('default ico blog icon', function () {

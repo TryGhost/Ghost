@@ -98,6 +98,36 @@ describe('User API', function () {
                 assert.equal(body.users[0].slug, 'smith-wellingsworth');
             });
     });
+    it('Can not filter users by password', async function () {
+        const hashedPassword = '$2a$10$FxFlCsNBgXw42cBj0l1GFu39jffibqTqyAGBz7uCLwetYAdBYJEe6';
+        const userId = '644fd18ca1f0b764b0279b2d';
+
+        await db.knex('users').insert({
+            id: userId,
+            slug: 'brute-force-password-test-user',
+            name: 'Brute Force Password Test User',
+            email: 'bruteforcepasswordtestuseremail@example.com',
+            password: hashedPassword,
+            status: 'active',
+            created_at: '2019-01-01 00:00:00'
+        });
+
+        try {
+            await agent.get(`users/?filter=password:'${encodeURIComponent(hashedPassword)}'`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.notEqual(body.users.length, 1,
+                        'Should not be able to filter users by password');
+                    if (body.users.length === 1) {
+                        assert.notEqual(body.users[0].id, userId,
+                            'Should not be able to filter users by password');
+                    }
+                });
+        } finally {
+            await db.knex('users').where('id', userId).del();
+        }
+    });
+
     it('Can retrieve a user by id', async function () {
         const userId = fixtureManager.get('users', 0).id;
         await agent.get(`users/${userId}/?include=roles,roles.permissions,count.posts`)
@@ -195,6 +225,27 @@ describe('User API', function () {
         } catch (err) {
             assert.equal(err.code, 'PASSWORD_INCORRECT');
         }
+    });
+
+    it('cannot modify last_seen via the API', async function () {
+        const userId = fixtureManager.get('users', 0).id;
+
+        // Set a known last_seen value directly in the database
+        const before = await models.User.findOne({id: userId});
+        const originalLastSeen = before.get('last_seen');
+
+        // Attempt to reset last_seen via the API
+        await agent.put('users/me/')
+            .body({
+                users: [{
+                    last_seen: null
+                }]
+            })
+            .expectStatus(200);
+
+        // Verify last_seen was not changed
+        const after = await models.User.findOne({id: userId});
+        assert.deepEqual(after.get('last_seen'), originalLastSeen);
     });
 
     it('can edit a user fetched from the API', async function () {

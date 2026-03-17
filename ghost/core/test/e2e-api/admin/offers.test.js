@@ -223,43 +223,6 @@ describe('Offers API', function () {
         trialOffer = body.offers[0];
     });
 
-    it('Can add a free months offer', async function () {
-        const newOffer = {
-            name: 'A month on us',
-            code: 'a-month-on-us',
-            cadence: 'month',
-            amount: 1,
-            duration: 'free_months',
-            type: 'free_months',
-            redemption_type: 'retention'
-        };
-
-        let createdOfferId = null;
-        try {
-            const {body} = await agent
-                .post(`offers/`)
-                .body({offers: [newOffer]})
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('offers')
-                })
-                .matchBodySnapshot({
-                    offers: [{
-                        id: anyObjectId,
-                        created_at: anyISODateTime
-                    }]
-                });
-
-            createdOfferId = body.offers[0].id;
-        } finally {
-            if (createdOfferId) {
-                await models.Offer.destroy({id: createdOfferId});
-            }
-        }
-    });
-
     it('Can add a retention offer without a tier', async function () {
         const newOffer = {
             name: 'Stay With Us',

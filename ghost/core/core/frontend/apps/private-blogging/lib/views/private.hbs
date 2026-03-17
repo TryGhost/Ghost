@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="no-js" lang="en">
+<html class="no-js" lang="{{@site.locale}}">
     <head>
         <meta charset="UTF-8" />
 
@@ -46,16 +46,16 @@
                             {{/if}}
                             <section class="gh-flow-content private">
                                 <header>
-                                    <h1>This site is private.</h1>
+                                    <h1>{{t "This site is private."}}</h1>
                                 </header>
                                 <form class="gh-signin" method="post" novalidate="novalidate">
                                     <div class="form-group{{#if error}} error{{/if}}">
-                                            {{input_password class="gh-input" placeholder="Password"}}
+                                            {{input_password class="gh-input" placeholder=(t "Password")}}
                                             {{#if error}}
                                                 <p class="main-error">{{error.message}}</p>
                                             {{/if}}
                                     </div>
-                                    <button class="gh-btn" type="submit"><span>Access site &rarr;</span></button>
+                                    <button class="gh-btn" type="submit"><span>{{t "Access site"}} &rarr;</span></button>
                                 </form>
                             </section>
                         </div>

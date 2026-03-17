@@ -21,8 +21,8 @@ export const TransistorPodcastsActionStyles = `
 
 export const TRANSISTOR_DEFAULTS = {
     heading: 'Podcasts',
-    description: 'Access private podcast feed',
-    button_text: 'View',
+    description: 'Access your RSS feeds',
+    button_text: 'Manage',
     url_template: 'https://partner.transistor.fm/ghost/{memberUuid}'
 };
 
@@ -33,14 +33,11 @@ const TransistorPodcastsAction = ({hasPodcasts, memberUuid, settings = {}}) => {
         return null;
     }
 
-    // Translate if using a known default, otherwise display custom text as-is
-    const maybeTranslate = (value, key) => {
-        return value === TRANSISTOR_DEFAULTS[key] ? t(value) : value;
-    };
-
-    const heading = maybeTranslate(settings.heading, 'heading') || t(TRANSISTOR_DEFAULTS.heading);
-    const description = maybeTranslate(settings.description, 'description') || t(TRANSISTOR_DEFAULTS.description);
-    const buttonText = maybeTranslate(settings.button_text, 'button_text') || t(TRANSISTOR_DEFAULTS.button_text);
+    // Translate default strings for i18n; custom admin-configured strings are displayed as-is
+    const isDefault = (value, key) => !value || value === TRANSISTOR_DEFAULTS[key];
+    const heading = isDefault(settings.heading, 'heading') ? t('Podcasts') : settings.heading;
+    const description = isDefault(settings.description, 'description') ? t('Access your RSS feeds') : settings.description;
+    const buttonText = isDefault(settings.button_text, 'button_text') ? t('Manage') : settings.button_text;
     const urlTemplate = settings.url_template || TRANSISTOR_DEFAULTS.url_template;
     const transistorUrl = urlTemplate.replace('{memberUuid}', memberUuid);
 

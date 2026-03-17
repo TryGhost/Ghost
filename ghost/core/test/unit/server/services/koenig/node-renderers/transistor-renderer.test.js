@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {callRenderer, html, assertPrettifiesTo, visibility} = require('../test-utils');
+const {callRenderer, visibility} = require('../test-utils');
 
 describe('services/koenig/node-renderers/transistor-renderer', function () {
     function getTestData(overrides = {}) {
@@ -13,71 +13,51 @@ describe('services/koenig/node-renderers/transistor-renderer', function () {
     }
 
     function renderForWeb(data, options) {
-        return callRenderer('transistor', data, options);
+        return callRenderer('transistor', data, {siteUuid: 'test-site-uuid', accentColor: '#ff0000', ...options});
     }
 
     function renderForEmail(data, options) {
-        return callRenderer('transistor', data, {...options, target: 'email'});
+        return callRenderer('transistor', data, {siteUuid: 'test-site-uuid', accentColor: '#ff0000', ...options, target: 'email'});
     }
 
     describe('web', function () {
-        it('renders iframe with URL-encoded %7Buuid%7D placeholder', function () {
+        it('renders iframe embed with data-src', function () {
             const result = renderForWeb(getTestData());
 
-            assert.ok(result.html.includes('src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D'));
+            assert.ok(result.html.includes('<iframe'));
+            assert.ok(result.html.includes('data-src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D?ctx=test-site-uuid"'));
             assert.ok(result.html.includes('data-kg-transistor-embed'));
         });
 
-        it('includes accent color as query param', function () {
-            const result = renderForWeb(getTestData({accentColor: '#ff0000'}));
-
-            assert.ok(result.html.includes('color=ff0000'));
-        });
-
-        it('includes background color as query param', function () {
-            const result = renderForWeb(getTestData({backgroundColor: '#000000'}));
-
-            assert.ok(result.html.includes('background=000000'));
-        });
-
-        it('includes both color params when both are set', function () {
-            const result = renderForWeb(getTestData({
-                accentColor: '#ff0000',
-                backgroundColor: '#000000'
-            }));
-
-            assert.ok(result.html.includes('color=ff0000'));
-            assert.ok(result.html.includes('background=000000'));
-        });
-
-        it('renders without color params when colors are not set', function () {
-            const result = renderForWeb(getTestData({
-                accentColor: null,
-                backgroundColor: null
-            }));
-
-            assert.ok(result.html.includes('src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D"'));
-            assert.ok(!result.html.includes('color='));
-            assert.ok(!result.html.includes('background='));
-        });
-
-        it('matches snapshot for default test data', function () {
+        it('renders noscript fallback iframe', function () {
             const result = renderForWeb(getTestData());
 
-            assertPrettifiesTo(result.html, html`
-                <figure class="kg-card kg-transistor-card">
-                    <iframe
-                        width="100%"
-                        height="325"
-                        title="Transistor podcasts"
-                        frameborder="no"
-                        scrolling="no"
-                        seamless=""
-                        src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D?color=15171A&amp;background=ffffff"
-                        data-kg-transistor-embed=""
-                    ></iframe>
-                </figure>
-            `);
+            assert.ok(result.html.includes('<noscript>'));
+            assert.ok(result.html.includes('src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D?ctx=test-site-uuid"'));
+        });
+
+        it('renders embed script with background detection and resize listener', function () {
+            const result = renderForWeb(getTestData());
+
+            assert.ok(result.html.includes('<script>'));
+            assert.ok(result.html.includes('initTransistorEmbed'));
+            assert.ok(result.html.includes('colorToRgb'));
+            assert.ok(result.html.includes('event.data.type === \'resize\''));
+            assert.ok(result.html.includes('partner.transistor.fm'));
+            assert.ok(result.html.includes('Number.isSafeInteger'));
+        });
+
+        it('includes siteUuid as ctx param', function () {
+            const result = renderForWeb(getTestData(), {siteUuid: 'my-site-uuid'});
+
+            assert.ok(result.html.includes('ctx=my-site-uuid'));
+        });
+
+        it('renders without ctx param when siteUuid is not provided', function () {
+            const result = callRenderer('transistor', getTestData(), {});
+
+            assert.ok(result.html.includes('data-src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D"'));
+            assert.ok(!result.html.includes('ctx='));
         });
     });
 
