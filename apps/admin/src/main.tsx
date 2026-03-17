@@ -8,6 +8,7 @@ import { ShadeApp } from "@tryghost/shade";
 import { routes } from "./routes.tsx";
 import { navigateTo } from "./utils/navigation";
 import { AppProvider } from "./providers/app-provider";
+import { useColorMode } from "./hooks/use-color-mode";
 
 const framework = {
     ghostVersion: "",
@@ -33,18 +34,25 @@ const framework = {
     },
 };
 
+function Root() {
+    const {effectiveDark} = useColorMode();
+    return (
+        <ShadeApp
+            className="shade-admin"
+            darkMode={effectiveDark}
+            fetchKoenigLexical={null}
+        >
+            <App />
+        </ShadeApp>
+    );
+}
+
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
         <FrameworkProvider {...framework}>
             <RouterProvider prefix={"/"} routes={routes}>
                 <AppProvider>
-                    <ShadeApp
-                        className="shade-admin"
-                        darkMode={false}
-                        fetchKoenigLexical={null}
-                    >
-                        <App />
-                    </ShadeApp>
+                    <Root />
                 </AppProvider>
             </RouterProvider>
         </FrameworkProvider>

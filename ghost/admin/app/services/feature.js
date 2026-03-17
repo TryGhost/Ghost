@@ -102,6 +102,7 @@ export default class FeatureService extends Service {
     fetch() {
         return this.settings.fetch().then(() => {
             this.set('_user', this.session.user);
+            this._setupSystemThemeListener();
             return this._setAdminTheme().then(() => true);
         });
     }
@@ -147,7 +148,17 @@ export default class FeatureService extends Service {
         let nightShift = enabled;
 
         if (typeof nightShift === 'undefined') {
-            nightShift = enabled || this.nightShift;
+            // Check the new colorScheme field first, fall back to legacy nightShift
+            const colorScheme = this.get('accessibility.colorScheme');
+            if (colorScheme === 'system') {
+                nightShift = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            } else if (colorScheme === 'dark') {
+                nightShift = true;
+            } else if (colorScheme === 'light') {
+                nightShift = false;
+            } else {
+                nightShift = this.nightShift;
+            }
         }
 
         document.documentElement.classList.toggle('dark', nightShift ?? false);
@@ -159,5 +170,28 @@ export default class FeatureService extends Service {
             $('link[title=dark]').prop('disabled', true);
             document.documentElement.classList.remove('dark');
         });
+    }
+
+    _setupSystemThemeListener() {
+        if (this._systemThemeCleanup) {
+            return;
+        }
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        const handler = () => {
+            const colorScheme = this.get('accessibility.colorScheme');
+            if (colorScheme === 'system') {
+                this._setAdminTheme();
+            }
+        };
+        mq.addEventListener('change', handler);
+        this._systemThemeCleanup = () => mq.removeEventListener('change', handler);
+    }
+
+    willDestroy() {
+        super.willDestroy(...arguments);
+        if (this._systemThemeCleanup) {
+            this._systemThemeCleanup();
+            this._systemThemeCleanup = null;
+        }
     }
 }

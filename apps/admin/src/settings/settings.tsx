@@ -1,8 +1,11 @@
 import { App } from "@tryghost/admin-x-settings/src/app";
 import { createPortal } from "react-dom";
 import { fetchKoenigLexical } from "@/utils/fetch-koenig-lexical";
+import { useColorMode } from "@/hooks/use-color-mode";
 
 export default function Settings() {
+    const {effectiveDark} = useColorMode();
+
     return createPortal(
         <div
             className="shade shade-admin"
@@ -14,7 +17,7 @@ export default function Settings() {
         >
             <App
                 designSystem={{
-                    darkMode: false,
+                    darkMode: effectiveDark,
                     fetchKoenigLexical,
                 }}
             />

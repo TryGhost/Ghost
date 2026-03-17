@@ -24,13 +24,36 @@ export const NavigationPreferencesSchema = z.looseObject({
     }),
 });
 
+const ColorSchemeSchema = z.enum(['light', 'dark', 'system']);
+export type ColorSchemeValue = z.infer<typeof ColorSchemeSchema>;
+
 const PreferencesSchema = z.looseObject({
     whatsNew: WhatsNewPreferencesSchema.optional().catch(undefined),
     nightShift: z.boolean().optional(),
+    colorScheme: ColorSchemeSchema.optional(),
     navigation: NavigationPreferencesSchema.default(DEFAULT_NAVIGATION_PREFERENCES).catch(DEFAULT_NAVIGATION_PREFERENCES),
 });
 
 export type Preferences = z.infer<typeof PreferencesSchema>;
+
+/**
+ * Resolve the effective color scheme from user preferences.
+ * - If `colorScheme` is explicitly set, use it.
+ * - If only legacy `nightShift` is set, map it: true → 'dark', false → 'light'.
+ * - If neither is set (new user), default to 'system'.
+ */
+export function resolveColorScheme(prefs: Preferences | undefined): ColorSchemeValue {
+    if (prefs?.colorScheme) {
+        return prefs.colorScheme;
+    }
+    if (prefs?.nightShift === true) {
+        return 'dark';
+    }
+    if (prefs?.nightShift === false) {
+        return 'light';
+    }
+    return 'system';
+}
 export type WhatsNewPreferences = z.infer<typeof WhatsNewPreferencesSchema>;
 export type NavigationPreferences = z.infer<typeof NavigationPreferencesSchema>;
 

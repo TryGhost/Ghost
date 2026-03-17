@@ -8,11 +8,12 @@ import {
     Indicator,
     LucideIcon,
     SidebarMenuButton,
-    Switch
+    ToggleGroup,
+    ToggleGroupItem
 } from "@tryghost/shade"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { getGhostPaths } from "@tryghost/admin-x-framework/helpers";
-import { useUserPreferences, useEditUserPreferences } from "@/hooks/user-preferences";
+import { useColorMode } from "@/hooks/use-color-mode";
 import { useWhatsNew } from "@/whats-new/hooks/use-whats-new";
 import { useUpgradeStatus } from "./hooks/use-upgrade-status";
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
@@ -20,6 +21,7 @@ import { UserMenuItem } from "./user-menu-item";
 import { UserMenuAvatar } from "./user-menu-avatar";
 import { UserMenuHeader } from "./user-menu-header";
 import { Link } from "@tryghost/admin-x-framework";
+import type { ColorSchemeValue } from "@/hooks/user-preferences";
 
 function UserMenuProfile() {
     const currentUser = useCurrentUser();
@@ -34,33 +36,34 @@ function UserMenuProfile() {
     );
 }
 
-function UserMenuDarkMode() {
-    const {data: preferences} = useUserPreferences();
-    const {mutateAsync: editPreferences, isLoading: isEditingPreferences} = useEditUserPreferences();
-
-    const setNightShift = (nightShift: boolean) => {
-        void editPreferences({nightShift});
-    };
+function UserMenuColorScheme() {
+    const {scheme, setColorScheme} = useColorMode();
 
     return (
-        <UserMenuItem
-            asChild={false}
-            onSelect={(e: Event) => {
-                e.preventDefault();
-                setNightShift(!preferences?.nightShift);
-            }}
-        >
-            <LucideIcon.Moon />
-            <UserMenuItem.Label className="flex-1">Dark mode</UserMenuItem.Label>
-            <Switch
-                size='sm'
-                checked={preferences?.nightShift ?? false}
-                disabled={isEditingPreferences}
-                onCheckedChange={setNightShift}
-                onClick={(e: React.MouseEvent<HTMLElement>) => e.stopPropagation()}
-                tabIndex={-1}
-            />
-        </UserMenuItem>
+        <div className="flex items-center gap-2 px-2 py-1.5 text-base">
+            <LucideIcon.Palette className="size-4 shrink-0" />
+            <span className="flex-1">Appearance</span>
+            <ToggleGroup
+                type="single"
+                value={scheme}
+                className="h-auto gap-px p-px"
+                onValueChange={(value: string) => {
+                    if (value) {
+                        setColorScheme(value as ColorSchemeValue);
+                    }
+                }}
+            >
+                <ToggleGroupItem aria-label="Light mode" className="h-6 min-w-6 px-1.5 [&_svg]:size-3.5" value="light">
+                    <LucideIcon.Sun />
+                </ToggleGroupItem>
+                <ToggleGroupItem aria-label="System theme" className="h-6 min-w-6 px-1.5 [&_svg]:size-3.5" value="system">
+                    <LucideIcon.Monitor />
+                </ToggleGroupItem>
+                <ToggleGroupItem aria-label="Dark mode" className="h-6 min-w-6 px-1.5 [&_svg]:size-3.5" value="dark">
+                    <LucideIcon.Moon />
+                </ToggleGroupItem>
+            </ToggleGroup>
+        </div>
     );
 }
 
@@ -169,7 +172,7 @@ function UserMenu(props: UserMenuProps) {
                         <UserMenuItem.Label>Resources & guides</UserMenuItem.Label>
                     </a>
                 </UserMenuItem>
-                <UserMenuDarkMode />
+                <UserMenuColorScheme />
                 <DropdownMenuSeparator />
                 <UserMenuSignOut />
             </DropdownMenuContent>
@@ -235,7 +238,7 @@ function ContributorUserMenu() {
                 </UserMenuItem>
                 <DropdownMenuSeparator />
                 <UserMenuProfile />
-                <UserMenuDarkMode />
+                <UserMenuColorScheme />
                 <DropdownMenuSeparator />
                 <UserMenuSignOut />
             </DropdownMenuContent>

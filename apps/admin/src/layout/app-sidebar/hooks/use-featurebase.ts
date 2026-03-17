@@ -2,7 +2,7 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {getFeaturebaseToken} from '@tryghost/admin-x-framework';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useFeatureFlag} from '@/hooks/use-feature-flag';
-import {useUserPreferences} from '@/hooks/user-preferences';
+import {useColorMode} from '@/hooks/use-color-mode';
 import {deferred, type Deferred} from '@/utils/deferred';
 
 type FeaturebaseCallback = (err: unknown, data?: unknown) => void;
@@ -56,13 +56,13 @@ interface Featurebase {
  */
 export function useFeaturebase(): Featurebase {
     const {data: config} = useBrowseConfig();
-    const {data: preferences} = useUserPreferences();
+    const {effectiveDark} = useColorMode();
     const featureFlagEnabled = useFeatureFlag('featurebaseFeedback');
     const [shouldLoad, setShouldLoad] = useState(false);
 
     const {organization, enabled} = config?.config.featurebase ?? {};
     const featurebaseEnabled = !!(featureFlagEnabled && enabled);
-    const theme = preferences?.nightShift ? 'dark' : 'light';
+    const theme = effectiveDark ? 'dark' : 'light';
 
     // Token is only fetched once shouldLoad becomes true (on user interaction)
     const {data: tokenData} = getFeaturebaseToken({
