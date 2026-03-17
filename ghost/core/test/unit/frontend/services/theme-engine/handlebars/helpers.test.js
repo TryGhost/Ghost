@@ -45,16 +45,7 @@ describe('Helpers', function () {
             'search' // experimental, not yet in gscan
         ];
 
-        // Helpers that are available for themes but gscan doesn't know about yet.
-        // When gscan is updated, remove entries here — the test will fail if you
-        // add a new helper without updating either this list or gscan.
-        const pendingGscanUpdate = [
-            'json',
-            'color_to_rgba',
-            'contrast_text_color'
-        ];
-
-        it('should track helpers not yet known to gscan', function () {
+        it('all theme-facing helpers should be known to gscan', function () {
             const gscanSpec = require('gscan/lib/specs/v6');
             const gscanKnownHelpers = new Set(gscanSpec.knownHelpers);
 
@@ -67,12 +58,9 @@ describe('Helpers', function () {
                 .filter(h => !internalHelpers.includes(h))
                 .filter(h => !gscanKnownHelpers.has(h));
 
-            // This assertion ensures the missing set matches exactly what we expect.
-            // If you add a new helper, it will fail until you either:
-            //   1. Add it to gscan's knownHelpers (preferred), or
-            //   2. Add it to pendingGscanUpdate with a tracking issue
-            assert.deepEqual(missing.sort(), pendingGscanUpdate.sort(),
-                'gscan helper mismatch. If you added a new helper, update gscan or add to pendingGscanUpdate.'
+            assert.deepEqual(missing, [],
+                `Helpers in core/frontend/helpers/ missing from gscan knownHelpers: ${missing.join(', ')}. ` +
+                'Add them to gscan before merging.'
             );
         });
     });
