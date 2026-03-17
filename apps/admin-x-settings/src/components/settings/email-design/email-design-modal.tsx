@@ -58,15 +58,15 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
             >
                 <div className="flex h-full">
                     {/* Left: Preview */}
-                    <div className="hidden flex-1 flex-col bg-gray-50 dark:bg-black [@media(min-width:801px)]:flex">
+                    <div className="bg-gray-50 hidden flex-1 flex-col dark:bg-black [@media(min-width:801px)]:flex">
                         <div className="flex flex-1 items-center justify-center overflow-y-auto p-8">
                             {preview}
                         </div>
                     </div>
 
                     {/* Right: Sidebar */}
-                    <div className="flex size-full flex-col border-l border-gray-200 dark:border-gray-900 [@media(min-width:801px)]:w-[400px] [@media(min-width:801px)]:shrink-0">
-                        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-5 dark:border-gray-900">
+                    <div className="border-gray-200 dark:border-gray-900 flex size-full flex-col border-l [@media(min-width:801px)]:w-[400px] [@media(min-width:801px)]:shrink-0">
+                        <div className="border-gray-200 dark:border-gray-900 flex items-center justify-between border-b px-6 py-5">
                             <DialogTitle>{title}</DialogTitle>
                             <div className="flex items-center gap-2">
                                 <Button variant="outline" onClick={handleClose}>Close</Button>
