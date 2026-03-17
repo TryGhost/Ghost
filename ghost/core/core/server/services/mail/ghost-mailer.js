@@ -144,6 +144,11 @@ module.exports = class GhostMailer {
             if (settingsCache.get('email_track_opens')) {
                 messageToSend['o:tracking-opens'] = true;
             }
+            if (messageToSend.headers) {
+                for (const [key, value] of Object.entries(messageToSend.headers)) {
+                    messageToSend[`h:${key}`] = value;
+                }
+            }
         }
 
         const response = await this.sendMail(messageToSend);

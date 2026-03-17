@@ -469,6 +469,23 @@ describe('Mail: Ghostmailer', function () {
             sinon.assert.called(warnStub);
         });
 
+        it('should copy headers to h: prefixed keys for Mailgun transport', async function () {
+            mailer = new mail.GhostMailer();
+            mailer.state.usingMailgun = true;
+            const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
+            sandbox.stub(settingsCache, 'get').returns(false);
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'test',
+                html: 'content'
+            });
+
+            const sentMessage = sendMailSpy.firstCall.args[0];
+            assert.ok(sentMessage['h:Sender'], 'h:Sender should be set');
+            assert.equal(sentMessage['h:Sender'], sentMessage.from);
+        });
+
         it('should not add tag when not using Mailgun transport', async function () {
             configUtils.set({
                 hostSettings: {siteId: '999999'}
