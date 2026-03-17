@@ -37,12 +37,9 @@ describe('Helpers', function () {
     });
 
     describe('gscan compatibility', function () {
-        // Ghost helpers that are not intended for theme developers and are
-        // legitimately absent from gscan's knownHelpers.
+        // Ghost helpers that are intentionally absent from gscan's knownHelpers.
         const internalHelpers = [
-            'raw', // internal helper used by Ghost's own templates
-            'collection', // experimental, not yet stable for themes
-            'search' // experimental, not yet in gscan
+            'collection' // experimental, not yet stable for themes
         ];
 
         it('all theme-facing helpers should be known to gscan', function () {
