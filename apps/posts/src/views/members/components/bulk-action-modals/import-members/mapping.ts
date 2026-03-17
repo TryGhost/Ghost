@@ -71,7 +71,8 @@ export class MembersFieldMapping {
 }
 
 /**
- * Mirrors the legacy Ember member import validator sampling behavior.
+ * Locate 10 non-empty cells from the start/middle(ish)/end of each column (30 non-empty values in total).
+ * If the data contains 30 rows or fewer, all rows should be validated.
  */
 export function sampleData(data: Record<string, string>[], validationSampleSize = 30): Record<string, string>[] {
     if (!data || data.length <= validationSampleSize) {
@@ -111,6 +112,11 @@ export function sampleData(data: Record<string, string>[], validationSampleSize 
     return validatedSet;
 }
 
+/**
+ * Detects supported data types and auto-detects email by value.
+ *
+ * Returned mapping object contains mappings accepted by the members upload API.
+ */
 export function detectFieldTypes(data: Record<string, string>[]): Record<string, string> {
     const sampledData = sampleData(data);
     const mapping: Record<string, string> = {};
