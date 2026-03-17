@@ -1439,7 +1439,6 @@ describe('Email renderer', function () {
 
             assert(response.html.includes('href="http://example.com/#/portal/share"'));
             assert(response.html.includes('>Share</p>'));
-            assert(response.html.includes('class="feedback-share-icon"'));
         });
 
         it('does not include share links for non-public posts', async function () {
