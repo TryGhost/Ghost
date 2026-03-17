@@ -58,11 +58,11 @@ function CommentReportsModal({
                                     className="text-muted-foreground/50 shrink-0"
                                     size={16}
                                 />
-                                <span className="text-muted-foreground shrink-0">
+                                <span className="shrink-0 text-muted-foreground">
                                     {comment.created_at &&
                                         formatTimestamp(comment.created_at)}
                                 </span>
-                                <span className="text-muted-foreground shrink-0">
+                                <span className="shrink-0 text-muted-foreground">
                                     on
                                 </span>
                                 <span className="min-w-0 truncate font-medium text-gray-800 dark:text-gray-400">
@@ -101,7 +101,7 @@ function CommentReportsModal({
                                                 memberId={report.member?.id}
                                             />
                                             {/* Red flag overlay */}
-                                            <div className="bg-red absolute -bottom-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full text-white">
+                                            <div className="absolute -bottom-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-red text-white">
                                                 <LucideIcon.Flag
                                                     className="size-2.5"
                                                     fill="currentColor"
@@ -113,7 +113,7 @@ function CommentReportsModal({
                                                 'Deleted member'}
                                         </span>
                                     </div>
-                                    <span className="text-muted-foreground shrink-0 text-sm">
+                                    <span className="shrink-0 text-sm text-muted-foreground">
                                         {formatTimestamp(report.created_at)}
                                     </span>
                                 </div>

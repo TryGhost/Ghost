@@ -56,7 +56,7 @@ export function CommentHeader({
                 <div className="whitespace-nowrap">
                     {memberId && onAuthorClick ? (
                         <Button
-                            className="text-primary flex h-auto items-center gap-1.5 truncate p-0 font-semibold hover:opacity-70"
+                            className="flex h-auto items-center gap-1.5 truncate p-0 font-semibold text-primary hover:opacity-70"
                             variant="link"
                             onClick={onAuthorClick}
                         >
@@ -73,7 +73,7 @@ export function CommentHeader({
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <span data-testid="commenting-disabled-indicator">
-                                    <LucideIcon.MessageCircleOff className="text-muted-foreground size-3.5" />
+                                    <LucideIcon.MessageCircleOff className="size-3.5 text-muted-foreground" />
                                 </span>
                             </TooltipTrigger>
                             <TooltipContent>Comments disabled</TooltipContent>
@@ -89,7 +89,7 @@ export function CommentHeader({
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <span className="text-muted-foreground cursor-default text-sm">
+                                    <span className="cursor-default text-sm text-muted-foreground">
                                         {formatTimestamp(createdAt)}
                                     </span>
                                 </TooltipTrigger>
@@ -102,7 +102,7 @@ export function CommentHeader({
                 </div>
                 {postTitle && (
                     <>
-                        <div className="text-muted-foreground shrink-0">on</div>
+                        <div className="shrink-0 text-muted-foreground">on</div>
                         <div className="min-w-0 truncate">
                             {onPostClick ? (
                                 <Button

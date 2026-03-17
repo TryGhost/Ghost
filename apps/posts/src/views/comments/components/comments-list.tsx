@@ -35,7 +35,7 @@ const PlaceholderRow = forwardRef<HTMLDivElement>(function PlaceholderRow(
         >
             <div className="relative z-10 h-24 animate-pulse">
                 <div
-                    className="bg-muted h-full rounded-md"
+                    className="h-full rounded-md bg-muted"
                     data-testid="loading-placeholder"
                 />
             </div>
@@ -187,7 +187,7 @@ function CommentsList({
                                                 </span>
                                                 &nbsp;
                                                 <Link
-                                                    className="text-muted-foreground hover:text-foreground text-sm font-normal"
+                                                    className="text-sm font-normal text-muted-foreground hover:text-foreground"
                                                     data-testid="replied-to-link"
                                                     to={
                                                         buildThreadLink(
