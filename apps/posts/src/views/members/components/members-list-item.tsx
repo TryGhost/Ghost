@@ -62,7 +62,7 @@ function MembersListItemName({item}: { item: Member }) {
                 </div>
                 {item.name && item.email && (
                     <div
-                        className="truncate text-sm text-muted-foreground"
+                        className="text-muted-foreground truncate text-sm"
                         data-testid="member-email"
                     >
                         {item.email}
@@ -86,7 +86,7 @@ function MembersListItemStatus({
             <div className="min-w-0">
                 <div className="text-sm">{getStatusLabel(status)}</div>
                 {tierNames && (
-                    <div className="truncate text-xs text-muted-foreground">
+                    <div className="text-muted-foreground truncate text-xs">
                         {tierNames}
                     </div>
                 )}
@@ -136,7 +136,7 @@ function MembersListItemCreated({createdAt}: { createdAt: string }) {
             <div className="text-sm">
                 {moment.utc(createdAt).format('D MMM YYYY')}
             </div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-muted-foreground text-xs">
                 {moment.utc(createdAt).fromNow()}
             </div>
         </div>
@@ -179,10 +179,3 @@ function MembersListItem({
 }
 
 export default MembersListItem;
-export {
-    MembersListItemName,
-    MembersListItemStatus,
-    MembersListItemOpenRate,
-    MembersListItemLocation,
-    MembersListItemCreated
-};

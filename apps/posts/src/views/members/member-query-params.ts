@@ -19,7 +19,7 @@ interface BuildMemberOperationParamsOptions {
     search: string;
 }
 
-export function getMemberActiveColumns(filters: Filter[]): ActiveColumn[] {
+function getMemberActiveColumns(filters: Filter[]): ActiveColumn[] {
     const columns = new Map<string, ActiveColumn>();
 
     for (const filter of filters) {

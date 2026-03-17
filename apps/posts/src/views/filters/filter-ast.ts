@@ -4,7 +4,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value) && !(value instanceof RegExp);
 }
 
-export function extractFieldName(node: AstNode): string | undefined {
+function extractFieldName(node: AstNode): string | undefined {
     const keys = Object.keys(node);
 
     if (keys.length !== 1) {

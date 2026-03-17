@@ -142,7 +142,7 @@ function compactValues<T>(values: OptionalValue<T>[]): T[] {
     return values.filter((value): value is T => Boolean(value));
 }
 
-export function buildRetentionOfferIdMap(offers: Offer[]): Map<string, string[]> {
+function buildRetentionOfferIdMap(offers: Offer[]): Map<string, string[]> {
     const map = new Map<string, string[]>();
     const monthlyIds: string[] = [];
     const yearlyIds: string[] = [];

@@ -1,7 +1,6 @@
 import {
     buildMemberListSearchParams,
-    buildMemberOperationParams,
-    getMemberActiveColumns
+    buildMemberOperationParams
 } from './member-query-params';
 import {describe, expect, it} from 'vitest';
 import type {Filter} from '@tryghost/shade';
@@ -34,36 +33,6 @@ describe('member-query-params', () => {
             filter: 'label:[vip]+subscriptions.status:active',
             search: 'jamie'
         });
-    });
-
-    it('derives active columns from field metadata without a separate map', () => {
-        const filters: Filter[] = [
-            {
-                id: '1',
-                field: 'label',
-                operator: 'is-any',
-                values: ['vip']
-            },
-            {
-                id: '2',
-                field: 'subscriptions.current_period_end',
-                operator: 'is-or-less',
-                values: ['2024-01-01']
-            }
-        ];
-
-        expect(getMemberActiveColumns(filters)).toEqual([
-            {
-                key: 'labels',
-                label: 'Labels',
-                include: 'labels'
-            },
-            {
-                key: 'subscriptions.current_period_end',
-                label: 'Next billing date',
-                include: 'subscriptions'
-            }
-        ]);
     });
 
     it('builds member operation params for filtered, searched, and unscoped actions', () => {
