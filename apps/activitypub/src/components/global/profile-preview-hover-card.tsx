@@ -109,7 +109,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
             </HoverCardTrigger>
             <HoverCardContent
                 align={align}
-                className='w-[320px] cursor-default rounded-2xl border-0 p-5 text-left text-gray-900 shadow-[0_5px_24px_0px_rgba(0,0,0,0.02),0px_2px_5px_0px_rgba(0,0,0,0.07),0px_0px_1px_0px_rgba(0,0,0,0.25)] outline-hidden dark:bg-[#101114] dark:shadow-none'
+                className='outline-hidden w-[320px] cursor-default rounded-2xl border-0 p-5 text-left text-gray-900 shadow-[0_5px_24px_0px_rgba(0,0,0,0.02),0px_2px_5px_0px_rgba(0,0,0,0.07),0px_0px_1px_0px_rgba(0,0,0,0.25)] dark:bg-[#101114] dark:shadow-none'
                 side={side}
                 sideOffset={12}
                 onClick={e => e.stopPropagation()}
@@ -170,7 +170,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
                     {isLoading ? (
                         <Skeleton className='h-4 w-48' />
                     ) : !hasLoadingError && bio ? (
-                        <div dangerouslySetInnerHTML={{__html: sanitizeHtml(bio)}} className='leading-tight dark:text-gray-300 [&_.invisible]:hidden [&_a]:text-[#00a4eb] [&_a:hover]:underline' />
+                        <div dangerouslySetInnerHTML={{__html: sanitizeHtml(bio)}} className='leading-tight dark:text-gray-300 [&_.invisible]:hidden [&_a:hover]:underline [&_a]:text-[#00a4eb]' />
                     ) : null}
                 </div>
             </HoverCardContent>

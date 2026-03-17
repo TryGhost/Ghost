@@ -15,7 +15,7 @@ function RepliesLine({hasReplies}: {hasReplies: boolean}) {
 
     return (
         <div
-            className="mb-2 h-full w-px grow rounded bg-gradient-to-b from-muted-foreground/20 from-70% to-transparent"
+            className="from-muted-foreground/20 mb-2 h-full w-px grow rounded bg-gradient-to-b from-70% to-transparent"
             data-testid="replies-line"
         />
     );
@@ -105,7 +105,7 @@ function CommentRow({comment, isReply = false, isSelectedComment = false, select
 
                     {/* Render nested replies INSIDE the parent comment */}
                     {hasReplies && comment.replies && (
-                        <div className="mt-7 mb-4 -ml-2 pl-2 md:mt-8 md:mb-0 md:-ml-3 md:pl-3">
+                        <div className="-ml-2 mb-4 mt-7 pl-2 md:-ml-3 md:mb-0 md:mt-8 md:pl-3">
                             {comment.replies.map(reply => (
                                 <CommentRow
                                     key={reply.id}

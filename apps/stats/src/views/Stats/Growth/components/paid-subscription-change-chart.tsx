@@ -452,7 +452,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                                                                 {paidChangeChartConfig[name as keyof typeof paidChangeChartConfig]?.label || name}
                                                             </span>
                                                         </div>
-                                                        <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium text-foreground tabular-nums">
+                                                        <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
                                                             {displayValue}
                                                         </div>
                                                     </div>
@@ -461,7 +461,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                                                 <span className='text-sm text-muted-foreground'>
                                                     Net change
                                                 </span>
-                                                <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium text-foreground tabular-nums">
+                                                <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
                                                     {netChangeFormatted}
                                                 </div>
                                             </div>

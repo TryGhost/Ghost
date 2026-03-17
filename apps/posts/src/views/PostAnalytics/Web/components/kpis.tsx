@@ -65,7 +65,7 @@ const Kpis:React.FC<KpisProps> = ({data, range}) => {
         <Card>
             <CardContent>
                 <Tabs defaultValue={currentTab} variant='kpis'>
-                    <TabsList className="-mx-6 hidden grid-cols-2 md:visible! md:grid!">
+                    <TabsList className="md:visible! md:grid! -mx-6 hidden grid-cols-2">
                         <KpiTabTrigger value="visits" onClick={() => {
                             setCurrentTab('visits');
                         }}>

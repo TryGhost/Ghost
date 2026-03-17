@@ -76,7 +76,7 @@ const SuggestedProfiles: React.FC = () => {
 
     return (
         <>
-            <div className='pt-4 pb-7'>
+            <div className='pb-7 pt-4'>
                 <div className='mb-3 flex items-center justify-between'>
                     <H4 className='text-lg font-semibold text-black dark:text-white'>More people to follow</H4>
                     <Button className='px-0 font-medium text-gray-700 hover:text-black dark:text-gray-600 dark:hover:text-white' variant='link' onClick={() => navigate('/explore')}>
@@ -87,7 +87,7 @@ const SuggestedProfiles: React.FC = () => {
                 <div className='relative'>
                     {canScrollLeft && (
                         <Button
-                            className='absolute top-1/2 -left-10 z-10 size-10 -translate-y-1/2 text-gray-700 hover:bg-transparent max-lg:hidden dark:text-gray-600 dark:hover:text-white'
+                            className='absolute -left-10 top-1/2 z-10 size-10 -translate-y-1/2 text-gray-700 hover:bg-transparent max-lg:hidden dark:text-gray-600 dark:hover:text-white'
                             variant='ghost'
                             onClick={scrollLeft}
                         >
@@ -97,7 +97,7 @@ const SuggestedProfiles: React.FC = () => {
 
                     {canScrollRight && (
                         <Button
-                            className='absolute top-1/2 -right-10 z-10 size-10 -translate-y-1/2 text-gray-700 hover:bg-transparent max-lg:hidden dark:text-gray-600 dark:hover:text-white'
+                            className='absolute -right-10 top-1/2 z-10 size-10 -translate-y-1/2 text-gray-700 hover:bg-transparent max-lg:hidden dark:text-gray-600 dark:hover:text-white'
                             variant='ghost'
                             onClick={scrollRight}
                         >
@@ -121,7 +121,7 @@ const SuggestedProfiles: React.FC = () => {
                                 onClick={!isLoadingSuggestedProfiles && profile ? () => navigate(`/profile/${profile.handle}`) : undefined}
                             >
                                 <Button
-                                    className='absolute top-1 right-2 hidden p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                                    className='absolute right-2 top-1 hidden p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                                     variant='link'
                                     onClick={(e) => {
                                         e.stopPropagation();

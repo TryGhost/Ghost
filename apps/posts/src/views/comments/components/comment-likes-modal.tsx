@@ -46,7 +46,7 @@ function CommentLikesModal({comment, open, onOpenChange}: CommentLikesModalProps
                                 <span className="shrink-0 font-semibold">
                                     {comment.member?.name || 'Unknown'}
                                 </span>
-                                <LucideIcon.Dot className="shrink-0 text-muted-foreground/50" size={16} />
+                                <LucideIcon.Dot className="text-muted-foreground/50 shrink-0" size={16} />
                                 <span className="shrink-0 text-muted-foreground">
                                     {comment.created_at && formatTimestamp(comment.created_at)}
                                 </span>
@@ -80,7 +80,7 @@ function CommentLikesModal({comment, open, onOpenChange}: CommentLikesModalProps
                                                 memberId={like.member?.id}
                                             />
                                             {/* Heart overlay */}
-                                            <div className="absolute -right-0.5 -bottom-0.5 flex size-4 items-center justify-center rounded-full bg-pink-500 text-white">
+                                            <div className="absolute -bottom-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-pink-500 text-white">
                                                 <LucideIcon.Heart className="size-2.5" fill="currentColor" />
                                             </div>
                                         </div>
