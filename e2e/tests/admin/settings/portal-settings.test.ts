@@ -4,7 +4,7 @@ import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Portal Settings', () => {
-    test('default link opens Portal', async ({page}) => {
+    test('default link opens portal - navigates to portal', async ({page}) => {
         const settingsPage = new SettingsPage(page);
         await settingsPage.goto();
         await settingsPage.portalSection.openCustomizeModal();
@@ -17,7 +17,7 @@ test.describe('Ghost Admin - Portal Settings', () => {
         await expect(portalPage.portalFrameBody).toBeVisible();
     });
 
-    test('sign in link opens Portal sign in page', async ({page}) => {
+    test('sign in link opens portal - navigates to sign in page', async ({page}) => {
         const settingsPage = new SettingsPage(page);
         await settingsPage.goto();
         await settingsPage.portalSection.openCustomizeModal();
@@ -31,7 +31,7 @@ test.describe('Ghost Admin - Portal Settings', () => {
         await expect(signInPage.continueButton).toBeVisible();
     });
 
-    test('sign up link opens Portal sign up page', async ({page}) => {
+    test('sign up link opens portal - navigates to sign up page', async ({page}) => {
         const settingsPage = new SettingsPage(page);
         await settingsPage.goto();
         await settingsPage.portalSection.openCustomizeModal();
