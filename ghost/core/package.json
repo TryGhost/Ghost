@@ -31,7 +31,7 @@
     "pretest": "yarn build:assets",
     "test": "yarn test:unit",
     "test:base": "mocha --reporter dot --node-option import=tsx --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js,test.ts",
-    "test:single": "yarn test:base --timeout=60000",
+    "test:single": "f() { q=$(echo \"$1\" | sed 's/\\.test\\.[jt]s$//'); case \"$q\" in */*) yarn test:base --timeout=60000 \"$1\" ;; *) yarn test:base --timeout=60000 \"test/**/*$q*.test.{js,ts}\" ;; esac; }; f",
     "test:all": "yarn test:unit && yarn test:integration && yarn test:e2e && yarn lint",
     "test:debug": "DEBUG=ghost:test* yarn test",
     "test:unit": "c8 yarn test:unit:${GHOST_UNIT_TEST_VARIANT:-base}",
