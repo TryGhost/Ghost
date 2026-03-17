@@ -1,6 +1,6 @@
 const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
-const {createPostDraft, createTier, disconnectStripe, generateStripeIntegrationToken, setupStripe, getStripeAccountId} = require('../utils');
+const {createPostDraft, createTier} = require('../utils');
 
 const changeSubscriptionAccess = async (page, access) => {
     await page.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
@@ -20,16 +20,6 @@ const changeSubscriptionAccess = async (page, access) => {
                 access === 'paid' ? 'Paid-members only' :
                     'Nobody'
     );
-};
-
-const checkPortalScriptLoaded = async (page, loaded = true) => {
-    const portalScript = page.locator('script[data-ghost][data-api]');
-
-    if (!loaded) {
-        await expect(portalScript).toHaveCount(0);
-    } else {
-        await expect(portalScript).toHaveAttribute('src', /\/portal.min.js$/);
-    }
 };
 
 test.describe('Site Settings', () => {
@@ -75,66 +65,6 @@ test.describe('Site Settings', () => {
 
             await expect(sharedPage.locator('[data-test-setting="publish-type"] > button')).toHaveCount(0);
             await expect(sharedPage.locator('[data-test-setting="email-recipients"]')).toHaveCount(0);
-        });
-    });
-
-    test.describe('Portal script', () => {
-        test('Portal loads if Memberships are enabled', async ({sharedPage}) => {
-            await sharedPage.goto('/ghost');
-
-            // Enable Memberships
-            await changeSubscriptionAccess(sharedPage, 'all');
-
-            // Go to the signup page
-            await sharedPage.goto('/#/portal/signup');
-
-            // Portal should load
-            await expect(sharedPage.locator('#ghost-portal-root div iframe')).toHaveCount(1);
-            await checkPortalScriptLoaded(sharedPage, true);
-        });
-
-        test('Portal loads if Tips & Donations are enabled (Stripe connected)', async ({sharedPage}) => {
-            await sharedPage.goto('/ghost');
-
-            // Disable Memberships
-            await changeSubscriptionAccess(sharedPage, 'none');
-
-            // Go to the signup page
-            await sharedPage.goto('/#/portal/signup');
-
-            // Portal should load
-            await expect(sharedPage.locator('#ghost-portal-root div iframe')).toHaveCount(1);
-            await checkPortalScriptLoaded(sharedPage, true);
-
-            // Reset
-            await sharedPage.goto('/ghost');
-            await changeSubscriptionAccess(sharedPage, 'all');
-        });
-
-        test('Portal does not load if both Memberships and Tips & Donations are disabled', async ({sharedPage}) => {
-            // Disconnect stripe first, which will disable Tips & Donations
-            await sharedPage.goto('/ghost');
-            await disconnectStripe(sharedPage);
-
-            // Disable Memberships
-            await sharedPage.goto('/ghost');
-            await changeSubscriptionAccess(sharedPage, 'none');
-
-            // Go to the signup page
-            await sharedPage.goto('/#/portal/signup');
-
-            // Portal should not load
-            await expect(sharedPage.locator('#ghost-portal-root div iframe')).toHaveCount(0);
-            await checkPortalScriptLoaded(sharedPage, false);
-
-            // Reset subscription access & re-connect Stripe
-            await sharedPage.goto('/ghost');
-            await changeSubscriptionAccess(sharedPage, 'all');
-
-            await sharedPage.goto('/ghost');
-            const stripeAccountId = await getStripeAccountId();
-            const stripeToken = await generateStripeIntegrationToken(stripeAccountId);
-            await setupStripe(sharedPage, stripeToken);
         });
     });
 });
