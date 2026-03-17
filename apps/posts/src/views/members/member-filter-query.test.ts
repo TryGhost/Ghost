@@ -35,6 +35,22 @@ describe('member-filter-query', () => {
         ]);
     });
 
+    it('parses legacy scalar set filters and preserves singleton offer ids', () => {
+        const parsed = parseMemberFilter('offer_redemptions:\'offer_123\'', 'UTC');
+
+        expect(stripIds(parsed)).toEqual([
+            {field: 'offer_redemptions', operator: 'is-any', values: ['offer_123']}
+        ]);
+
+        expect(serializeMemberFilters(parsed, 'UTC')).toBe('offer_redemptions:\'offer_123\'');
+    });
+
+    it('parses legacy scalar label filters into set predicates', () => {
+        expect(stripIds(parseMemberFilter('label:vip', 'UTC'))).toEqual([
+            {field: 'label', operator: 'is-any', values: ['vip']}
+        ]);
+    });
+
     it('parses unwrapped Ember compounds at the root', () => {
         expect(stripIds(parseMemberFilter('subscribed:true+email_disabled:0', 'UTC'))).toEqual([
             {field: 'subscribed', operator: 'is', values: ['subscribed']}

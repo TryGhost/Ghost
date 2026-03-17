@@ -38,6 +38,13 @@ const labelContext: CodecContext = {
     timezone: 'UTC'
 };
 
+const offerContext: CodecContext = {
+    key: 'offer_redemptions',
+    pattern: 'offer_redemptions',
+    params: {},
+    timezone: 'UTC'
+};
+
 const countContext: CodecContext = {
     key: 'email_count',
     pattern: 'email_count',
@@ -214,6 +221,19 @@ describe('setCodec', () => {
         });
     });
 
+    it('parses singleton set values through scalar NQL operators', () => {
+        expect(setCodec().parse(nql.parse('label:vip') as never, labelContext)).toEqual({
+            field: 'label',
+            operator: 'is-any',
+            values: ['vip']
+        });
+        expect(setCodec().parse(nql.parse('label:-vip') as never, labelContext)).toEqual({
+            field: 'label',
+            operator: 'is-not-any',
+            values: ['vip']
+        });
+    });
+
     it('serializes set membership canonically', () => {
         const predicate: FilterPredicate = {
             id: '1',
@@ -223,6 +243,17 @@ describe('setCodec', () => {
         };
 
         expect(setCodec().serialize(predicate, labelContext)).toEqual(['label:[alpha,vip]']);
+    });
+
+    it('can serialize singleton string values as quoted scalars', () => {
+        const predicate: FilterPredicate = {
+            id: '1',
+            field: 'offer_redemptions',
+            operator: 'is-any',
+            values: ['offer_123']
+        };
+
+        expect(setCodec({quoteStrings: true, serializeSingletonAsScalar: true}).serialize(predicate, offerContext)).toEqual(['offer_redemptions:\'offer_123\'']);
     });
 });
 

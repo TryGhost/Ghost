@@ -40,6 +40,7 @@ const SET_OPERATOR_SYMBOLS: Record<string, string> = {
 interface CodecConfig {
     field?: string;
     quoteStrings?: boolean;
+    serializeSingletonAsScalar?: boolean;
 }
 
 function getCodecField(config: CodecConfig | undefined, key: string): string {
@@ -204,11 +205,11 @@ export function setCodec(config?: CodecConfig): FilterCodec {
             const comparator = extractComparator(node as Record<string, unknown>);
             const field = getCodecField(config, ctx.key);
 
-            if (!comparator || comparator.field !== field || !Array.isArray(comparator.value)) {
+            if (!comparator || comparator.field !== field) {
                 return null;
             }
 
-            if (comparator.operator === '$in') {
+            if (comparator.operator === '$in' && Array.isArray(comparator.value)) {
                 return {
                     field: ctx.key,
                     operator: 'is-any',
@@ -216,11 +217,27 @@ export function setCodec(config?: CodecConfig): FilterCodec {
                 };
             }
 
-            if (comparator.operator === '$nin') {
+            if (comparator.operator === '$nin' && Array.isArray(comparator.value)) {
                 return {
                     field: ctx.key,
                     operator: 'is-not-any',
                     values: comparator.value
+                };
+            }
+
+            if (comparator.operator === '$eq') {
+                return {
+                    field: ctx.key,
+                    operator: 'is-any',
+                    values: [comparator.value]
+                };
+            }
+
+            if (comparator.operator === '$ne') {
+                return {
+                    field: ctx.key,
+                    operator: 'is-not-any',
+                    values: [comparator.value]
                 };
             }
 
@@ -239,7 +256,13 @@ export function setCodec(config?: CodecConfig): FilterCodec {
                 return null;
             }
 
-            return [`${field}:${operator}[${normalizeMultiValue(predicate.values).join(',')}]`];
+            const values = normalizeMultiValue(predicate.values);
+
+            if (config?.serializeSingletonAsScalar && values.length === 1) {
+                return [`${field}:${operator}${serializeScalarValue(values[0], config)}`];
+            }
+
+            return [`${field}:${operator}[${values.map(value => serializeScalarValue(value, config)).join(',')}]`];
         }
     };
 }

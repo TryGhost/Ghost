@@ -466,6 +466,6 @@ export const memberFields = defineFields({
                 label: 'Offer'
             }
         },
-        codec: setCodec()
+        codec: setCodec({quoteStrings: true, serializeSingletonAsScalar: true})
     }
 });
