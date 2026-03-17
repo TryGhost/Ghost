@@ -10,7 +10,7 @@ function normalize(file) {
 }
 
 function isInWorkspace(file, workspace) {
-    const normalizedFile = normalize(file);
+    const normalizedFile = normalize(path.relative(process.cwd(), file));
     const normalizedWorkspace = normalize(workspace);
 
     return normalizedFile === normalizedWorkspace || normalizedFile.startsWith(`${normalizedWorkspace}/`);
