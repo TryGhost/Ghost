@@ -1,6 +1,5 @@
 import {BasePage, pageGotoOptions} from '@/helpers/pages';
 import {Locator, Page, Response, test} from '@playwright/test';
-import {expect} from '@/helpers/playwright';
 
 declare global {
     interface Window {
@@ -34,11 +33,19 @@ class PortalSection extends BasePage {
         await this.portalScript.waitFor({state: 'attached'});
         await this.portalRoot.waitFor({state: 'attached'});
 
-        // Use expect.toPass to retry click + popup check until Portal is ready
-        await expect(async () => {
+        // Retry until Portal finishes async init and can react to the click.
+        for (let attempt = 0; attempt < 5; attempt++) {
             await link.click();
-            await expect(this.portalIframe).toBeVisible();
-        }).toPass();
+
+            try {
+                await this.portalIframe.waitFor({state: 'visible', timeout: 1000});
+                return;
+            } catch {
+                // Keep retrying until Portal's hashchange listener is ready.
+            }
+        }
+
+        throw new Error('Portal popup did not open');
     }
 
     async isPortalOpen(): Promise<boolean> {

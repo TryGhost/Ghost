@@ -1,5 +1,5 @@
 import {BasePage} from '@/helpers/pages';
-import {Locator, Page, expect} from '@playwright/test';
+import {Locator, Page} from '@playwright/test';
 
 export class PortalSection extends BasePage {
     readonly section: Locator;
@@ -24,12 +24,17 @@ export class PortalSection extends BasePage {
     }
 
     async openLinksTab(): Promise<void> {
+        if (await this.linksTab.getAttribute('aria-selected') === 'true') {
+            return;
+        }
+
         await this.linksTab.click();
-        await expect(this.linksTab).toHaveAttribute('aria-selected', 'true');
     }
 
     async getLinkValue(label: string): Promise<string> {
         await this.openLinksTab();
-        return await this.portalModal.getByLabel(label).inputValue();
+        const linkInput = this.portalModal.getByLabel(label);
+        await linkInput.waitFor({state: 'visible'});
+        return await linkInput.inputValue();
     }
 }
