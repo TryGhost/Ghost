@@ -31,6 +31,7 @@ interface UseMemberFilterFieldsOptions {
 type OfferOption = FilterOption<string>;
 type SearchableFieldOverrides = Pick<FilterFieldConfig, 'options' | 'onSearchChange' | 'searchValue' | 'isLoading'>;
 type OptionalValue<T> = T | null | false | undefined;
+type FieldSpec = string | {key: string; overrides?: Partial<FilterFieldConfig>};
 
 interface OperatorOption {
     value: string;
@@ -60,55 +61,35 @@ const MEMBER_OPERATOR_LABELS = {
     0: 'Less like this'
 };
 
-function getFieldIcon(key: string) {
-    switch (key) {
-    case 'name':
-        return React.createElement(LucideIcon.User, {className: 'size-4'});
-    case 'email':
-    case 'subscribed':
-        return React.createElement(LucideIcon.Mail, {className: 'size-4'});
-    case 'label':
-        return React.createElement(LucideIcon.Tag, {className: 'size-4'});
-    case 'last_seen_at':
-        return React.createElement(LucideIcon.Eye, {className: 'size-4'});
-    case 'created_at':
-        return React.createElement(LucideIcon.Calendar, {className: 'size-4'});
-    case 'signup':
-        return React.createElement(LucideIcon.UserPlus, {className: 'size-4'});
-    case 'tier_id':
-    case 'subscriptions.status':
-        return React.createElement(LucideIcon.CreditCard, {className: 'size-4'});
-    case 'status':
-        return React.createElement(LucideIcon.UserCircle, {className: 'size-4'});
-    case 'subscriptions.plan_interval':
-        return React.createElement(LucideIcon.CalendarClock, {className: 'size-4'});
-    case 'subscriptions.start_date':
-        return React.createElement(LucideIcon.CalendarPlus, {className: 'size-4'});
-    case 'subscriptions.current_period_end':
-        return React.createElement(LucideIcon.CalendarArrowDown, {className: 'size-4'});
-    case 'conversion':
-        return React.createElement(LucideIcon.ArrowRightLeft, {className: 'size-4'});
-    case 'email_count':
-    case 'emails.post_id':
-        return React.createElement(LucideIcon.Send, {className: 'size-4'});
-    case 'email_opened_count':
-    case 'opened_emails.post_id':
-        return React.createElement(LucideIcon.MailOpen, {className: 'size-4'});
-    case 'email_open_rate':
-        return React.createElement(LucideIcon.Percent, {className: 'size-4'});
-    case 'clicked_links.post_id':
-        return React.createElement(LucideIcon.MousePointerClick, {className: 'size-4'});
-    case 'newsletter_feedback':
-        return React.createElement(LucideIcon.MessageSquare, {className: 'size-4'});
-    case 'offer_redemptions':
-        return React.createElement(LucideIcon.Ticket, {className: 'size-4'});
-    default:
-        if (key.startsWith('newsletters.')) {
-            return React.createElement(LucideIcon.Newspaper, {className: 'size-4'});
-        }
+const FIELD_ICONS: Record<string, React.ComponentType<{className?: string}>> = {
+    name: LucideIcon.User,
+    email: LucideIcon.Mail,
+    subscribed: LucideIcon.Mail,
+    label: LucideIcon.Tag,
+    last_seen_at: LucideIcon.Eye,
+    created_at: LucideIcon.Calendar,
+    signup: LucideIcon.UserPlus,
+    tier_id: LucideIcon.CreditCard,
+    status: LucideIcon.UserCircle,
+    'subscriptions.plan_interval': LucideIcon.CalendarClock,
+    'subscriptions.status': LucideIcon.CreditCard,
+    'subscriptions.start_date': LucideIcon.CalendarPlus,
+    'subscriptions.current_period_end': LucideIcon.CalendarArrowDown,
+    conversion: LucideIcon.ArrowRightLeft,
+    email_count: LucideIcon.Send,
+    email_opened_count: LucideIcon.MailOpen,
+    email_open_rate: LucideIcon.Percent,
+    'emails.post_id': LucideIcon.Send,
+    'opened_emails.post_id': LucideIcon.MailOpen,
+    'clicked_links.post_id': LucideIcon.MousePointerClick,
+    newsletter_feedback: LucideIcon.MessageSquare,
+    offer_redemptions: LucideIcon.Ticket
+};
 
-        return undefined;
-    }
+function getFieldIcon(key: string) {
+    const Icon = FIELD_ICONS[key] ?? (key.startsWith('newsletters.') ? LucideIcon.Newspaper : undefined);
+
+    return Icon ? React.createElement(Icon, {className: 'size-4'}) : undefined;
 }
 
 function createFieldConfig(
@@ -129,8 +110,18 @@ function createFieldConfig(
     };
 }
 
-function createDateFieldConfig(key: string, defaultValue: string) {
-    return createFieldConfig(key, {defaultValue});
+function createFieldConfigs(specs: Array<FieldSpec | false | null | undefined>): FilterFieldConfig[] {
+    return specs.flatMap((spec) => {
+        if (!spec) {
+            return [];
+        }
+
+        if (typeof spec === 'string') {
+            return [createFieldConfig(spec)];
+        }
+
+        return [createFieldConfig(spec.key, spec.overrides)];
+    });
 }
 
 function createSearchableFieldOverrides(
@@ -325,67 +316,75 @@ export function useMemberFilterFields({
             emailResourceLoading
         );
 
-        const basicFields = compactValues<FilterFieldConfig>([
-            createFieldConfig('name'),
-            createFieldConfig('email'),
-            labelsOptions.length > 0 && createFieldConfig('label', {
-                type: 'select',
-                options: labelsOptions,
-                customRenderer: props => React.createElement(LabelFilterRenderer, props as CustomRendererProps<string>)
-            }),
-            activeNewsletters.length <= 1 && createFieldConfig('subscribed'),
-            createDateFieldConfig('last_seen_at', today),
-            createDateFieldConfig('created_at', today),
-            membersTrackSources && createFieldConfig('signup', postSearchOverrides)
+        const basicFields = createFieldConfigs([
+            'name',
+            'email',
+            labelsOptions.length > 0 && {
+                key: 'label',
+                overrides: {
+                    type: 'select',
+                    options: labelsOptions,
+                    customRenderer: props => React.createElement(LabelFilterRenderer, props as CustomRendererProps<string>)
+                }
+            },
+            activeNewsletters.length <= 1 && 'subscribed',
+            {key: 'last_seen_at', overrides: {defaultValue: today}},
+            {key: 'created_at', overrides: {defaultValue: today}},
+            membersTrackSources && {key: 'signup', overrides: postSearchOverrides}
         ]);
 
         const newsletterFields = activeNewsletters.length > 1
-            ? [
-                createFieldConfig('subscribed', {
-                    label: 'All newsletters',
-                    options: [
-                        {value: 'subscribed', label: 'Subscribed to at least one'},
-                        {value: 'unsubscribed', label: 'Unsubscribed from all'},
-                        {value: 'email-disabled', label: 'Email disabled'}
-                    ]
-                }),
-                ...activeNewsletters.map(newsletter => createFieldConfig(`newsletters.${newsletter.slug}`, {
-                    label: newsletter.name
+            ? createFieldConfigs([
+                {
+                    key: 'subscribed',
+                    overrides: {
+                        label: 'All newsletters',
+                        options: [
+                            {value: 'subscribed', label: 'Subscribed to at least one'},
+                            {value: 'unsubscribed', label: 'Unsubscribed from all'},
+                            {value: 'email-disabled', label: 'Email disabled'}
+                        ]
+                    }
+                },
+                ...activeNewsletters.map(newsletter => ({
+                    key: `newsletters.${newsletter.slug}`,
+                    overrides: {label: newsletter.name}
                 }))
-            ]
+            ])
             : null;
 
         const subscriptionFields = paidMembersEnabled
-            ? compactValues<FilterFieldConfig>([
-                hasMultipleTiers && createFieldConfig('tier_id', {
-                    options: tiersOptions
-                }),
-                createFieldConfig('status'),
-                createFieldConfig('subscriptions.plan_interval'),
-                createFieldConfig('subscriptions.status'),
-                createDateFieldConfig('subscriptions.start_date', today),
-                createDateFieldConfig('subscriptions.current_period_end', today),
-                membersTrackSources && createFieldConfig('conversion', postSearchOverrides),
-                offers.length > 0 && createFieldConfig('offer_redemptions', {
-                    options: offerOptions,
-                    customValueRenderer: values => renderOfferFilterValues(values as string[], offerOptions, offerLabels)
-                })
+            ? createFieldConfigs([
+                hasMultipleTiers && {key: 'tier_id', overrides: {options: tiersOptions}},
+                'status',
+                'subscriptions.plan_interval',
+                'subscriptions.status',
+                {key: 'subscriptions.start_date', overrides: {defaultValue: today}},
+                {key: 'subscriptions.current_period_end', overrides: {defaultValue: today}},
+                membersTrackSources && {key: 'conversion', overrides: postSearchOverrides},
+                offers.length > 0 && {
+                    key: 'offer_redemptions',
+                    overrides: {
+                        options: offerOptions,
+                        customValueRenderer: values => renderOfferFilterValues(values as string[], offerOptions, offerLabels)
+                    }
+                }
             ])
             : null;
 
         const emailFields = emailAnalyticsEnabled
-            ? compactValues<FilterFieldConfig>([
-                createFieldConfig('email_count'),
-                createFieldConfig('email_opened_count'),
-                emailTrackOpens && createFieldConfig('email_open_rate'),
-                createFieldConfig('emails.post_id', emailSearchOverrides),
-                emailTrackOpens && createFieldConfig('opened_emails.post_id', emailSearchOverrides),
-                emailTrackClicks && createFieldConfig('clicked_links.post_id', emailSearchOverrides),
-                audienceFeedbackEnabled && createFieldConfig('newsletter_feedback', emailSearchOverrides)
+            ? createFieldConfigs([
+                'email_count',
+                'email_opened_count',
+                emailTrackOpens && 'email_open_rate',
+                {key: 'emails.post_id', overrides: emailSearchOverrides},
+                emailTrackOpens && {key: 'opened_emails.post_id', overrides: emailSearchOverrides},
+                emailTrackClicks && {key: 'clicked_links.post_id', overrides: emailSearchOverrides},
+                audienceFeedbackEnabled && {key: 'newsletter_feedback', overrides: emailSearchOverrides}
             ])
             : null;
 
-        return compactValues<FilterFieldGroup>([
+        return compactValues([
             {group: 'Basic', fields: basicFields},
             newsletterFields && {group: 'Newsletters', fields: newsletterFields},
             subscriptionFields && {group: 'Subscription', fields: subscriptionFields},

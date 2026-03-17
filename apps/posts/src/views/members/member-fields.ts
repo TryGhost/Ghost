@@ -19,6 +19,127 @@ const SUBSCRIPTION_STATUS_OPTIONS: Array<{value: string; label: string}> = [
     {value: 'incomplete_expired', label: 'Incomplete - Expired'}
 ];
 
+function createActiveColumnMetadata(key: string, label: string, include?: string) {
+    return {
+        activeColumn: {
+            key,
+            label,
+            ...(include ? {include} : {})
+        }
+    };
+}
+
+function createTextField(label: string, className: string) {
+    return {
+        operators: TEXT_OPERATORS,
+        ui: {
+            label,
+            type: 'text' as const,
+            placeholder: `Enter ${label.toLowerCase()}...`,
+            defaultOperator: 'is',
+            className
+        },
+        ...textNql()
+    };
+}
+
+function createSetField(
+    label: string,
+    metadata?: {activeColumn?: {key: string; label: string; include?: string}},
+    config: {
+        quoteStrings?: boolean;
+        serializeSingletonAsScalar?: boolean;
+    } = {}
+) {
+    return {
+        operators: SET_OPERATORS,
+        ui: {
+            label,
+            type: 'multiselect' as const,
+            searchable: true,
+            className: 'w-64',
+            defaultOperator: 'is-any'
+        },
+        ...(metadata ? {metadata} : {}),
+        ...setNql({
+            quoteStrings: config.quoteStrings,
+            serializeSingletonAsScalar: config.serializeSingletonAsScalar
+        })
+    };
+}
+
+function createScalarSelectField(
+    label: string,
+    options?: Array<{value: string; label: string}>,
+    config: {
+        searchable?: boolean;
+        placeholder?: string;
+        className?: string;
+        quoteStrings?: boolean;
+        metadata?: {activeColumn?: {key: string; label: string; include?: string}};
+    } = {}
+) {
+    return {
+        operators: SCALAR_OPERATORS,
+        ui: {
+            label,
+            type: 'select' as const,
+            searchable: config.searchable ?? false,
+            ...(config.placeholder ? {placeholder: config.placeholder} : {}),
+            ...(config.className ? {className: config.className} : {})
+        },
+        ...(options ? {options} : {}),
+        ...(config.metadata ? {metadata: config.metadata} : {}),
+        ...scalarNql({quoteStrings: config.quoteStrings})
+    };
+}
+
+function createDateField(label: string, metadata?: {activeColumn?: {key: string; label: string; include?: string}}) {
+    return {
+        operators: DATE_OPERATORS,
+        ui: {
+            label,
+            type: 'date' as const,
+            defaultOperator: 'is-or-less',
+            className: 'w-40'
+        },
+        ...(metadata ? {metadata} : {}),
+        ...memberDateNql
+    };
+}
+
+function createNumberField(
+    label: string,
+    config: {
+        max?: number;
+        suffix?: string;
+    } = {}
+) {
+    return {
+        operators: NUMBER_OPERATORS,
+        ui: {
+            label,
+            type: 'number' as const,
+            defaultOperator: 'is',
+            defaultValue: 0,
+            min: 0,
+            ...(config.max !== undefined ? {max: config.max} : {}),
+            ...(config.suffix ? {suffix: config.suffix} : {}),
+            className: 'w-24'
+        },
+        ...numberNql()
+    };
+}
+
+function createEmailPostField(label: string) {
+    return createScalarSelectField(label, undefined, {
+        searchable: true,
+        placeholder: 'Select an email...',
+        className: 'w-64',
+        quoteStrings: true
+    });
+}
+
 function formatDateValue(value: unknown, timezone: string): string | null {
     if (typeof value !== 'string' || !value) {
         return null;
@@ -158,46 +279,9 @@ const feedbackNql: FilterFieldNql = {
 };
 
 export const memberFields = defineFields({
-    name: {
-        operators: TEXT_OPERATORS,
-        ui: {
-            label: 'Name',
-            type: 'text',
-            placeholder: 'Enter name...',
-            defaultOperator: 'is',
-            className: 'w-48'
-        },
-        ...textNql()
-    },
-    email: {
-        operators: TEXT_OPERATORS,
-        ui: {
-            label: 'Email',
-            type: 'text',
-            placeholder: 'Enter email...',
-            defaultOperator: 'is',
-            className: 'w-64'
-        },
-        ...textNql()
-    },
-    label: {
-        operators: SET_OPERATORS,
-        ui: {
-            label: 'Label',
-            type: 'multiselect',
-            searchable: true,
-            className: 'w-64',
-            defaultOperator: 'is-any'
-        },
-        metadata: {
-            activeColumn: {
-                key: 'labels',
-                label: 'Labels',
-                include: 'labels'
-            }
-        },
-        ...setNql()
-    },
+    name: createTextField('Name', 'w-48'),
+    email: createTextField('Email', 'w-64'),
+    label: createSetField('Label', createActiveColumnMetadata('labels', 'Labels', 'labels')),
     subscribed: {
         operators: SCALAR_OPERATORS,
         ui: {
@@ -212,37 +296,14 @@ export const memberFields = defineFields({
         ],
         ...subscribedNql
     },
-    last_seen_at: {
-        operators: DATE_OPERATORS,
-        ui: {
-            label: 'Last seen',
-            type: 'date',
-            defaultOperator: 'is-or-less',
-            className: 'w-40'
-        },
-        ...memberDateNql
-    },
-    created_at: {
-        operators: DATE_OPERATORS,
-        ui: {
-            label: 'Created',
-            type: 'date',
-            defaultOperator: 'is-or-less',
-            className: 'w-40'
-        },
-        ...memberDateNql
-    },
-    signup: {
-        operators: SCALAR_OPERATORS,
-        ui: {
-            label: 'Signed up on post/page',
-            type: 'select',
-            searchable: true,
-            placeholder: 'Select a post or page...',
-            className: 'w-64'
-        },
-        ...scalarNql({quoteStrings: true})
-    },
+    last_seen_at: createDateField('Last seen'),
+    created_at: createDateField('Created'),
+    signup: createScalarSelectField('Signed up on post/page', undefined, {
+        searchable: true,
+        placeholder: 'Select a post or page...',
+        className: 'w-64',
+        quoteStrings: true
+    }),
     'newsletters.:slug': {
         operators: ['is'],
         ui: {
@@ -257,191 +318,41 @@ export const memberFields = defineFields({
         ],
         ...newsletterNql
     },
-    tier_id: {
-        operators: SET_OPERATORS,
-        ui: {
-            label: 'Membership tier',
-            type: 'multiselect',
-            searchable: true,
-            className: 'w-64',
-            defaultOperator: 'is-any'
-        },
-        metadata: {
-            activeColumn: {
-                key: 'tiers',
-                label: 'Tiers',
-                include: 'tiers'
-            }
-        },
-        ...setNql()
-    },
-    status: {
-        operators: SCALAR_OPERATORS,
-        ui: {
-            label: 'Member status',
-            type: 'select',
-            searchable: false
-        },
-        options: [
-            {value: 'paid', label: 'Paid'},
-            {value: 'free', label: 'Free'},
-            {value: 'comped', label: 'Complimentary'}
-        ],
-        ...scalarNql()
-    },
-    'subscriptions.plan_interval': {
-        operators: SCALAR_OPERATORS,
-        ui: {
-            label: 'Billing period',
-            type: 'select',
-            searchable: false
-        },
-        options: [
-            {value: 'month', label: 'Monthly'},
-            {value: 'year', label: 'Yearly'}
-        ],
-        metadata: {
-            activeColumn: {
-                key: 'subscriptions.plan_interval',
-                label: 'Billing period',
-                include: 'subscriptions'
-            }
-        },
-        ...scalarNql()
-    },
-    'subscriptions.status': {
-        operators: SCALAR_OPERATORS,
-        ui: {
-            label: 'Stripe subscription status',
-            type: 'select',
-            searchable: false
-        },
-        options: SUBSCRIPTION_STATUS_OPTIONS,
-        metadata: {
-            activeColumn: {
-                key: 'subscriptions.status',
-                label: 'Subscription status',
-                include: 'subscriptions'
-            }
-        },
-        ...scalarNql()
-    },
-    'subscriptions.start_date': {
-        operators: DATE_OPERATORS,
-        ui: {
-            label: 'Paid start date',
-            type: 'date',
-            defaultOperator: 'is-or-less',
-            className: 'w-40'
-        },
-        metadata: {
-            activeColumn: {
-                key: 'subscriptions.start_date',
-                label: 'Paid start date',
-                include: 'subscriptions'
-            }
-        },
-        ...memberDateNql
-    },
-    'subscriptions.current_period_end': {
-        operators: DATE_OPERATORS,
-        ui: {
-            label: 'Next billing date',
-            type: 'date',
-            defaultOperator: 'is-or-less',
-            className: 'w-40'
-        },
-        metadata: {
-            activeColumn: {
-                key: 'subscriptions.current_period_end',
-                label: 'Next billing date',
-                include: 'subscriptions'
-            }
-        },
-        ...memberDateNql
-    },
-    conversion: {
-        operators: SCALAR_OPERATORS,
-        ui: {
-            label: 'Subscription started on post/page',
-            type: 'select',
-            searchable: true,
-            placeholder: 'Select a post or page...',
-            className: 'w-64'
-        },
-        ...scalarNql({quoteStrings: true})
-    },
-    email_count: {
-        operators: NUMBER_OPERATORS,
-        ui: {
-            label: 'Emails sent (all time)',
-            type: 'number',
-            defaultOperator: 'is',
-            defaultValue: 0,
-            min: 0,
-            className: 'w-24'
-        },
-        ...numberNql()
-    },
-    email_opened_count: {
-        operators: NUMBER_OPERATORS,
-        ui: {
-            label: 'Emails opened (all time)',
-            type: 'number',
-            defaultOperator: 'is',
-            defaultValue: 0,
-            min: 0,
-            className: 'w-24'
-        },
-        ...numberNql()
-    },
-    email_open_rate: {
-        operators: NUMBER_OPERATORS,
-        ui: {
-            label: 'Open rate (all time)',
-            type: 'number',
-            defaultOperator: 'is',
-            defaultValue: 0,
-            min: 0,
-            max: 100,
-            suffix: '%',
-            className: 'w-24'
-        },
-        ...numberNql()
-    },
-    'emails.post_id': {
-        operators: SCALAR_OPERATORS,
-        ui: {
-            label: 'Sent email',
-            type: 'select',
-            searchable: true,
-            placeholder: 'Select an email...',
-            className: 'w-64'
-        },
-        ...scalarNql({quoteStrings: true})
-    },
-    'opened_emails.post_id': {
-        operators: SCALAR_OPERATORS,
-        ui: {
-            label: 'Opened email',
-            type: 'select',
-            searchable: true,
-            placeholder: 'Select an email...',
-            className: 'w-64'
-        },
-        ...scalarNql({quoteStrings: true})
-    },
-    'clicked_links.post_id': {
-        operators: SCALAR_OPERATORS,
-        ui: {
-            label: 'Clicked email',
-            type: 'select',
-            searchable: true,
-            placeholder: 'Select an email...',
-            className: 'w-64'
-        },
-        ...scalarNql({quoteStrings: true})
-    },
+    tier_id: createSetField('Membership tier', createActiveColumnMetadata('tiers', 'Tiers', 'tiers')),
+    status: createScalarSelectField('Member status', [
+        {value: 'paid', label: 'Paid'},
+        {value: 'free', label: 'Free'},
+        {value: 'comped', label: 'Complimentary'}
+    ]),
+    'subscriptions.plan_interval': createScalarSelectField('Billing period', [
+        {value: 'month', label: 'Monthly'},
+        {value: 'year', label: 'Yearly'}
+    ], {
+        metadata: createActiveColumnMetadata('subscriptions.plan_interval', 'Billing period', 'subscriptions')
+    }),
+    'subscriptions.status': createScalarSelectField('Stripe subscription status', SUBSCRIPTION_STATUS_OPTIONS, {
+        metadata: createActiveColumnMetadata('subscriptions.status', 'Subscription status', 'subscriptions')
+    }),
+    'subscriptions.start_date': createDateField(
+        'Paid start date',
+        createActiveColumnMetadata('subscriptions.start_date', 'Paid start date', 'subscriptions')
+    ),
+    'subscriptions.current_period_end': createDateField(
+        'Next billing date',
+        createActiveColumnMetadata('subscriptions.current_period_end', 'Next billing date', 'subscriptions')
+    ),
+    conversion: createScalarSelectField('Subscription started on post/page', undefined, {
+        searchable: true,
+        placeholder: 'Select a post or page...',
+        className: 'w-64',
+        quoteStrings: true
+    }),
+    email_count: createNumberField('Emails sent (all time)'),
+    email_opened_count: createNumberField('Emails opened (all time)'),
+    email_open_rate: createNumberField('Open rate (all time)', {max: 100, suffix: '%'}),
+    'emails.post_id': createEmailPostField('Sent email'),
+    'opened_emails.post_id': createEmailPostField('Opened email'),
+    'clicked_links.post_id': createEmailPostField('Clicked email'),
     newsletter_feedback: {
         operators: ['1', '0'],
         ui: {
@@ -454,21 +365,12 @@ export const memberFields = defineFields({
         },
         ...feedbackNql
     },
-    offer_redemptions: {
-        operators: SET_OPERATORS,
-        ui: {
-            label: 'Offer',
-            type: 'multiselect',
-            searchable: true,
-            className: 'w-64',
-            defaultOperator: 'is-any'
-        },
-        metadata: {
-            activeColumn: {
-                key: 'offer_redemptions',
-                label: 'Offer'
-            }
-        },
-        ...setNql()
-    }
+    offer_redemptions: createSetField(
+        'Offer',
+        createActiveColumnMetadata('offer_redemptions', 'Offer'),
+        {
+            quoteStrings: true,
+            serializeSingletonAsScalar: true
+        }
+    )
 });
