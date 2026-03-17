@@ -3,6 +3,10 @@ import {isAndroidChrome} from '../../utils/is-android-chrome';
 import {getOwn} from '../../utils/get-own';
 import {t} from '../../utils/i18n';
 
+/**
+ * @typedef {'gmail' | 'yahoo' | 'outlook' | 'proton' | 'icloud' | 'hey' | 'aol' | 'mailru' | 'feedbin' | 'dev-mailpit'} Provider
+ */
+
 const gmailIcon = (
     <svg height="24" width="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 49.4 512 399.4200000000001"><g fill="none" fillRule="evenodd"><g fillRule="nonzero"><path d="M34.91 448.818h81.454V251L0 163.727V413.91c0 19.287 15.622 34.91 34.91 34.91z" fill="#4285f4"/><path d="M395.636 448.818h81.455c19.287 0 34.909-15.622 34.909-34.909V163.727L395.636 251z" fill="#34a853"/><path d="M395.636 99.727V251L512 163.727v-46.545c0-43.142-49.25-67.782-83.782-41.891z" fill="#fbbc04"/></g><path d="M116.364 251V99.727L256 204.455 395.636 99.727V251L256 355.727z" fill="#ea4335"/><path d="M0 117.182v46.545L116.364 251V99.727L83.782 75.291C49.25 49.4 0 74.04 0 117.18z" fill="#c5221f" fillRule="nonzero"/></g></svg>
 );
@@ -44,17 +48,31 @@ const PROVIDER_ICONS = {
     'dev-mailpit': defaultEmailIcon
 };
 
-const PROVIDER_LABELS = {
-    gmail: t('Open Gmail'),
-    outlook: t('Open Outlook'),
-    yahoo: t('Open Yahoo Mail'),
-    proton: t('Open Proton Mail'),
-    icloud: t('Open iCloud Mail'),
-    hey: t('Open Hey'),
-    aol: t('Open AOL Mail'),
-    mailru: t('Open Mail.ru'),
-    feedbin: t('Open Feedbin'),
-    'dev-mailpit': 'Open Mailpit (development only)'
+const getProviderLabel = (provider) => {
+    switch (provider) {
+    case 'gmail':
+        return t('Open Gmail');
+    case 'outlook':
+        return t('Open Outlook');
+    case 'yahoo':
+        return t('Open Yahoo Mail');
+    case 'proton':
+        return t('Open Proton Mail');
+    case 'icloud':
+        return t('Open iCloud Mail');
+    case 'hey':
+        return t('Open Hey');
+    case 'aol':
+        return t('Open AOL Mail');
+    case 'mailru':
+        return t('Open Mail.ru');
+    case 'feedbin':
+        return t('Open Feedbin');
+    case 'dev-mailpit':
+        return 'Open Mailpit (development only)';
+    default:
+        return t('Open email');
+    }
 };
 
 /**
@@ -62,7 +80,7 @@ const PROVIDER_LABELS = {
  * @param {object} props.inboxLinks
  * @param {string} props.inboxLinks.android
  * @param {string} props.inboxLinks.desktop
- * @param {'gmail' | 'yahoo' | 'outlook' | 'proton' | 'icloud' | 'hey' | 'aol' | 'mailru' | 'feedbin' | 'dev-mailpit'} props.inboxLinks.provider
+ * @param {Provider} props.inboxLinks.provider
  */
 function InboxLinkButton({
     inboxLinks: {android, desktop, provider}
@@ -75,7 +93,7 @@ function InboxLinkButton({
             className='gh-portal-btn gh-portal-btn-inbox-link'
         >
             {getOwn(PROVIDER_ICONS, provider) ?? defaultEmailIcon}
-            <span>{getOwn(PROVIDER_LABELS, provider) ?? t('Open email')}</span>
+            <span>{getProviderLabel(provider)}</span>
         </a>
     );
 }
