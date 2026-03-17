@@ -151,7 +151,8 @@ class MemberWelcomeEmailService {
                 name: member.name,
                 email: member.email
             },
-            siteSettings: this.#getSiteSettings()
+            siteSettings: this.#getSiteSettings(),
+            managePreferencesUrl: settingsHelpers.createUnsubscribeUrl(member.uuid)
         });
 
         const senderOptions = await this.#getSenderOptions();
@@ -204,12 +205,14 @@ class MemberWelcomeEmailService {
             name: 'Jamie Larson',
             email: email
         };
+        const siteSettings = this.#getSiteSettings();
 
         const {html, text, subject: renderedSubject} = await this.#renderer.render({
             lexical,
             subject,
             member: testMember,
-            siteSettings: this.#getSiteSettings()
+            siteSettings,
+            managePreferencesUrl: new URL('#/portal/account/newsletters', siteSettings.url).href
         });
 
         // Test sends should always reflect the latest newsletter sender settings.

@@ -92,9 +92,10 @@ class MemberWelcomeEmailRenderer {
      * @param {string} options.subject - Email subject (may contain template variables)
      * @param {Object} options.member - Member data (name, email)
      * @param {Object} options.siteSettings - Site settings (title, url, accentColor)
+     * @param {string} [options.managePreferencesUrl] - Optional footer manage preferences URL override
      * @returns {Promise<{html: string, text: string, subject: string}>}
      */
-    async render({lexical, subject, member, siteSettings}) {
+    async render({lexical, subject, member, siteSettings, managePreferencesUrl}) {
         let content;
         try {
             content = await lexicalLib.render(lexical, {target: 'email'});
@@ -122,7 +123,7 @@ class MemberWelcomeEmailRenderer {
             return url;
         }, {base: siteSettings.url});
 
-        const managePreferencesUrl = new URL('#/portal/account/newsletters', siteSettings.url).href;
+        const resolvedManagePreferencesUrl = managePreferencesUrl || new URL('#/portal/account/newsletters', siteSettings.url).href;
         const year = new Date().getFullYear();
         const accentColor = siteSettings.accentColor || '#15212A';
         const accentContrastColor = textColorForBackgroundColor(accentColor).hex();
@@ -143,7 +144,7 @@ class MemberWelcomeEmailRenderer {
             buttonColor: accentColor,
             buttonTextColor: accentContrastColor,
             buttonBorderRadius: '6px',
-            managePreferencesUrl,
+            managePreferencesUrl: resolvedManagePreferencesUrl,
             year
         });
 
