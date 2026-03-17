@@ -8,12 +8,12 @@ const debug = baseDebug('e2e:fake-stripe');
 export class FakeStripeServer {
     private server: http.Server | null = null;
     private readonly app = express();
-    private readonly _port: number;
+    private _port: number;
     private readonly customers: Map<string, StripeCustomer> = new Map();
     private readonly subscriptions: Map<string, StripeSubscription> = new Map();
     private readonly paymentMethods: Map<string, StripePaymentMethod> = new Map();
 
-    constructor(port: number) {
+    constructor(port = 0) {
         this._port = port;
         this.setupRoutes();
     }
@@ -37,6 +37,14 @@ export class FakeStripeServer {
     async start(): Promise<void> {
         return new Promise((resolve, reject) => {
             this.server = this.app.listen(this._port, () => {
+                const address = this.server?.address();
+
+                if (!address || typeof address === 'string') {
+                    reject(new Error('Fake Stripe server did not expose a TCP port'));
+                    return;
+                }
+
+                this._port = address.port;
                 resolve();
             });
             this.server.on('error', reject);
