@@ -257,6 +257,11 @@
             }
 
             const integrityTokenRes = await fetch(siteUrl + '/members/api/integrity-token/', {method: 'GET'});
+
+            if (!integrityTokenRes.ok) {
+                throw new Error('Failed to fetch integrity token');
+            }
+
             const integrityToken = await integrityTokenRes.text();
             const response = await fetch(siteUrl + '/members/api/send-magic-link/', {
                 method: 'POST',

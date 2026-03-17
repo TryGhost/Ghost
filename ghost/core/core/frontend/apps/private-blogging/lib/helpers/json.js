@@ -9,7 +9,13 @@ module.exports = function json(value, options) {
         payload = options.hash;
     }
 
-    const serialized = JSON.stringify(payload)
+    const raw = JSON.stringify(payload);
+
+    if (raw === undefined) {
+        return new SafeString('null');
+    }
+
+    const serialized = raw
         .replace(/</g, '\\u003C')
         .replace(/>/g, '\\u003E')
         .replace(/&/g, '\\u0026')

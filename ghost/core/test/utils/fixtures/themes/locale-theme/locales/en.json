@@ -18,5 +18,6 @@
     "Thanks! Now check your email to confirm.": "Thanks! Now check your email to confirm.",
     "Signups from this email domain are currently restricted.": "Signups from this email domain are currently restricted.",
     "Too many sign-up attempts, try again later": "Too many sign-up attempts, try again later",
-    "Failed to send magic link email": "Failed to send magic link email"
+    "Failed to send magic link email": "Failed to send magic link email",
+    "Site owner login": "Site owner login"
 }

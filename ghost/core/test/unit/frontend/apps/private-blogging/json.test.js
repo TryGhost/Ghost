@@ -14,4 +14,10 @@ describe('{{json}} helper', function () {
 
         assert.equal(output, '{"foo":"bar","count":1}');
     });
+
+    it('returns "null" for undefined input', function () {
+        const output = String(json(undefined));
+
+        assert.equal(output, 'null');
+    });
 });

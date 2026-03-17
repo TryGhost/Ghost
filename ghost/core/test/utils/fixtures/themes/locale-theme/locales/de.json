@@ -18,5 +18,6 @@
     "Thanks! Now check your email to confirm.": "Danke! Bitte sieh jetzt in deinem Posteingang nach, um zu bestaetigen.",
     "Signups from this email domain are currently restricted.": "Anmeldungen mit dieser E-Mail-Domain sind derzeit eingeschraenkt.",
     "Too many sign-up attempts, try again later": "Zu viele Anmeldeversuche. Bitte versuche es spaeter erneut.",
-    "Failed to send magic link email": "Die Magic-Link-E-Mail konnte nicht gesendet werden"
+    "Failed to send magic link email": "Die Magic-Link-E-Mail konnte nicht gesendet werden",
+    "Site owner login": "Eigentümer-Login"
 }

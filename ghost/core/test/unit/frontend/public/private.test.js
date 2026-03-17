@@ -119,6 +119,7 @@ describe('private.js', function () {
         setupEnvironment();
 
         env.window.fetch.onFirstCall().resolves({
+            ok: true,
             text: async () => 'integrity-token'
         });
         env.window.fetch.onSecondCall().resolves({
@@ -169,6 +170,7 @@ describe('private.js', function () {
         setupEnvironment();
 
         env.window.fetch.onFirstCall().resolves({
+            ok: true,
             text: async () => 'integrity-token'
         });
         env.window.fetch.onSecondCall().resolves({
@@ -193,6 +195,33 @@ describe('private.js', function () {
         assert.equal(form.dataset.state, 'idle');
         assert.equal(feedback.dataset.state, 'error');
         assert.equal(feedback.textContent, 'Please enter a valid email address');
+    });
+
+    it('shows generic error when integrity token fetch fails', async function () {
+        setupEnvironment();
+
+        env.window.fetch.onFirstCall().resolves({
+            ok: false,
+            status: 500,
+            text: async () => 'Internal Server Error'
+        });
+
+        loadScript(env, scriptContent);
+
+        const form = env.document.querySelector('[data-ghost-private-subscribe-form]');
+        const emailInput = env.document.querySelector('input[data-members-email]');
+        const feedback = env.document.querySelector('[data-ghost-private-subscribe-feedback]');
+
+        emailInput.value = 'jamie@example.com';
+        emailInput.checkValidity = () => true;
+
+        form.dispatchEvent(new env.window.Event('submit', {bubbles: true, cancelable: true}));
+        await flushAsyncWork();
+
+        sinon.assert.calledOnce(env.window.fetch);
+        assert.equal(form.dataset.state, 'idle');
+        assert.equal(feedback.dataset.state, 'error');
+        assert.equal(feedback.textContent, 'Something went wrong, please try again.');
     });
 
     it('falls back to inline dialog rendering when showModal is unavailable', function () {

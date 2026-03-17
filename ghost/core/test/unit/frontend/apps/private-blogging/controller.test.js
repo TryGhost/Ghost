@@ -248,6 +248,7 @@ describe('private.hbs template translation', function () {
                 assert(html.includes('placeholder="Zugangscode"'));
                 assert(html.includes('Eingeben'));
                 assert(html.includes('Zugangscode eingeben'));
+                assert(html.includes('Eigentümer-Login'));
             });
 
             it('falls back to English when locale is fr (no fr.json)', function () {
