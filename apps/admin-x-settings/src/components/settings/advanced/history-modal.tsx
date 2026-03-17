@@ -237,7 +237,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                                         <div className='text-sm'>
                                             {getActionTitle(action)}{isBulkAction(action) ? '' : ': '}
                                             {!isBulkAction(action) && <HistoryActionDescription action={action} />}
-                                            {action.count ? <> {action.count} times</> : null}
+                                            {action.count ? <> {action.count.toLocaleString()} times</> : null}
                                             <span> &mdash; by {action.actor?.name || action.actor?.slug}</span>
                                         </div>
                                     }

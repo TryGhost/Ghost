@@ -14,7 +14,7 @@ const ShowRepliesButton: React.FC<ShowRepliesButtonProps> = ({count, onClick, va
 
     const getButtonText = () => {
         if (count && count > 0) {
-            return `Show ${count} more ${count === 1 ? 'reply' : 'replies'}`;
+            return `Show ${count.toLocaleString()} more ${count === 1 ? 'reply' : 'replies'}`;
         }
 
         switch (variant) {
