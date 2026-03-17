@@ -57,7 +57,7 @@
                                     {{#if @site.allow_self_signup}}
                                         <form class="gh-private-signup-form gh-signin" data-ghost-private-subscribe-form data-members-form="subscribe" data-site-url="{{@site.url}}" data-state="idle" novalidate="novalidate">
                                             <div class="gh-private-signup-fields">
-                                                <input class="gh-input gh-private-signup-input" type="email" placeholder="{{t "Your email address"}}" autocomplete="email" required data-members-email>
+                                                <input class="gh-input gh-private-signup-input" type="email" placeholder="{{t "Your email address"}}" aria-label="{{t "Your email address"}}" autocomplete="email" required data-members-email>
                                                 <button class="gh-btn gh-private-signup-btn" type="submit">
                                                     <span class="gh-private-signup-btn-content">
                                                         <b class="gh-private-signup-btn-label">{{t "Subscribe"}}</b>
@@ -128,7 +128,6 @@
             subscriptionConfirmedMessage=(t "Subscription confirmed!")
             restrictedDomainMessage=(t "Signups from this email domain are currently restricted.")
             tooManyAttemptsMessage=(t "Too many sign-up attempts, try again later")
-            failedMagicLinkMessage=(t "Failed to send magic link email")
         }}</script>
         <script src="{{asset "public/private.js" hasMinFile="true"}}" defer></script>
     </body>

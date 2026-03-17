@@ -116,7 +116,7 @@ const filesToMinify = [
             const bundleStatus = buildConfig.bundle ? 'bundled + minified' : 'minified';
             logging.debug(`✓ ${file.src} → ${file.dest} (${bundleStatus})`);
         } catch (error) {
-            logging.error(`✗ Error processing ${file.src}:`, error);
+            console.error(`✗ Error processing ${file.src}:`, error);
             process.exit(1);
         }
     }

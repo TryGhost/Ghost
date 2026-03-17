@@ -17,8 +17,7 @@ describe('private.js', function () {
         confirmEmailMessage: 'Thanks! Now check your email to confirm.',
         subscriptionConfirmedMessage: 'Subscription confirmed!',
         restrictedDomainMessage: 'Signups from this email domain are currently restricted.',
-        tooManyAttemptsMessage: 'Too many sign-up attempts, try again later',
-        failedMagicLinkMessage: 'Failed to send magic link email'
+        tooManyAttemptsMessage: 'Too many sign-up attempts, try again later'
     };
 
     function getHtml(configOverrides = {}) {
@@ -176,7 +175,7 @@ describe('private.js', function () {
         env.window.fetch.onSecondCall().resolves({
             ok: false,
             json: async () => ({
-                errors: [{message: 'email is not valid'}]
+                errors: [{message: 'email is not valid', type: 'ValidationError'}]
             })
         });
 
@@ -195,6 +194,95 @@ describe('private.js', function () {
         assert.equal(form.dataset.state, 'idle');
         assert.equal(feedback.dataset.state, 'error');
         assert.equal(feedback.textContent, 'Please enter a valid email address');
+    });
+
+    it('normalizes rate-limit errors by type rather than exact message', async function () {
+        setupEnvironment();
+
+        env.window.fetch.onFirstCall().resolves({
+            ok: true,
+            text: async () => 'integrity-token'
+        });
+        env.window.fetch.onSecondCall().resolves({
+            ok: false,
+            json: async () => ({
+                errors: [{message: 'Too many sign-in attempts try again in 14 minutes', type: 'TooManyRequestsError'}]
+            })
+        });
+
+        loadScript(env, scriptContent);
+
+        const form = env.document.querySelector('[data-ghost-private-subscribe-form]');
+        const emailInput = env.document.querySelector('input[data-members-email]');
+        const feedback = env.document.querySelector('[data-ghost-private-subscribe-feedback]');
+
+        emailInput.value = 'jamie@example.com';
+        emailInput.checkValidity = () => true;
+
+        form.dispatchEvent(new env.window.Event('submit', {bubbles: true, cancelable: true}));
+        await flushAsyncWork();
+
+        assert.equal(feedback.textContent, 'Too many sign-up attempts, try again later');
+    });
+
+    it('normalizes restricted domain errors by keyword rather than exact message', async function () {
+        setupEnvironment();
+
+        env.window.fetch.onFirstCall().resolves({
+            ok: true,
+            text: async () => 'integrity-token'
+        });
+        env.window.fetch.onSecondCall().resolves({
+            ok: false,
+            json: async () => ({
+                errors: [{message: 'Signups from this email domain are currently restricted.', type: 'BadRequestError'}]
+            })
+        });
+
+        loadScript(env, scriptContent);
+
+        const form = env.document.querySelector('[data-ghost-private-subscribe-form]');
+        const emailInput = env.document.querySelector('input[data-members-email]');
+        const feedback = env.document.querySelector('[data-ghost-private-subscribe-feedback]');
+
+        emailInput.value = 'jamie@blocked.com';
+        emailInput.checkValidity = () => true;
+
+        form.dispatchEvent(new env.window.Event('submit', {bubbles: true, cancelable: true}));
+        await flushAsyncWork();
+
+        assert.equal(feedback.textContent, 'Signups from this email domain are currently restricted.');
+    });
+
+    it('trims whitespace from email before validation', async function () {
+        setupEnvironment();
+
+        env.window.fetch.onFirstCall().resolves({
+            ok: true,
+            text: async () => 'integrity-token'
+        });
+        env.window.fetch.onSecondCall().resolves({
+            ok: true
+        });
+
+        loadScript(env, scriptContent);
+
+        const form = env.document.querySelector('[data-ghost-private-subscribe-form]');
+        const emailInput = env.document.querySelector('input[data-members-email]');
+
+        emailInput.value = '  jamie@example.com  ';
+        emailInput.checkValidity = function () {
+            // After trim, value should already be clean when checkValidity is called
+            assert.equal(this.value, 'jamie@example.com', 'email should be trimmed before checkValidity');
+            return true;
+        };
+
+        form.dispatchEvent(new env.window.Event('submit', {bubbles: true, cancelable: true}));
+        await flushAsyncWork();
+
+        // Verify the trimmed email is sent in the request body
+        const requestBody = JSON.parse(env.window.fetch.secondCall.args[1].body);
+        assert.equal(requestBody.email, 'jamie@example.com');
     });
 
     it('shows generic error when integrity token fetch fails', async function () {

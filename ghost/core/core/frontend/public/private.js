@@ -34,8 +34,7 @@
         confirmEmail: config.confirmEmailMessage || 'Thanks! Now check your email to confirm.',
         subscriptionConfirmed: config.subscriptionConfirmedMessage || 'Subscription confirmed!',
         restrictedDomain: config.restrictedDomainMessage || 'Signups from this email domain are currently restricted.',
-        tooManyAttempts: config.tooManyAttemptsMessage || 'Too many sign-up attempts, try again later',
-        failedMagicLink: config.failedMagicLinkMessage || 'Failed to send magic link email'
+        tooManyAttempts: config.tooManyAttemptsMessage || 'Too many sign-up attempts, try again later'
     };
     const successResetDelay = Number.isFinite(config.successResetDelay) ? config.successResetDelay : 1000;
 
@@ -111,25 +110,24 @@
         window.history.replaceState({}, '', nextUrl);
     };
 
-    const normalizeSubscribeErrorMessage = function (message) {
-        if (!message) {
+    const normalizeSubscribeErrorMessage = function (error) {
+        if (!error || !error.message) {
             return messages.genericError;
         }
+
+        var message = error.message;
+        var type = error.type || '';
 
         if (/email is not valid/i.test(message) || /valid email address/i.test(message)) {
             return messages.invalidEmail;
         }
 
-        if (message === 'Signups from this email domain are currently restricted.') {
-            return messages.restrictedDomain;
-        }
-
-        if (message === 'Too many sign-up attempts, try again later') {
+        if (type === 'TooManyRequestsError') {
             return messages.tooManyAttempts;
         }
 
-        if (message === 'Failed to send magic link email') {
-            return messages.failedMagicLink;
+        if (/restricted/i.test(message)) {
+            return messages.restrictedDomain;
         }
 
         return messages.genericError;
@@ -218,6 +216,8 @@
         event.preventDefault();
         clearSubscribeSuccessTimeout();
 
+        subscribeInput.value = subscribeInput.value.trim();
+
         if (!subscribeInput.checkValidity()) {
             setSubscribeFormState('idle');
             setSubscribeFeedback(messages.invalidEmail, 'error');
@@ -275,7 +275,7 @@
 
                 try {
                     const body = await response.json();
-                    message = normalizeSubscribeErrorMessage(body?.errors?.[0]?.message) || message;
+                    message = normalizeSubscribeErrorMessage(body?.errors?.[0]) || message;
                 } catch (error) {
                     // Ignore parse failures and use the default message.
                 }
