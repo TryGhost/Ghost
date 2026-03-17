@@ -19,7 +19,7 @@ interface postAnalyticsProps {}
 
 const FunnelArrow: React.FC = () => {
     return (
-        <div className='md:visible! md:flex! bg-background text-muted-foreground absolute -right-4 top-1/2 z-10 hidden size-8 -translate-y-1/2 items-center justify-center   rounded-full border'>
+        <div className='md:visible! md:flex! absolute -right-4 top-1/2 z-10 hidden size-8 -translate-y-1/2 items-center justify-center rounded-full border   bg-background text-muted-foreground'>
             <LucideIcon.ChevronRight className='ml-0.5' size={16} strokeWidth={1.5}/>
         </div>
     );
@@ -37,10 +37,10 @@ const BlockTooltip:React.FC<BlockTooltipProps> = ({
     avgValue
 }) => {
     return (
-        <div className='bg-background absolute left-1/2 top-6 z-50 flex w-[200px] -translate-x-1/2 flex-col items-stretch gap-1.5 rounded-md px-4 py-2 text-sm opacity-0 shadow-md transition-all group-hover/block:top-3 group-hover/block:opacity-100'>
+        <div className='absolute left-1/2 top-6 z-50 flex w-[200px] -translate-x-1/2 flex-col items-stretch gap-1.5 rounded-md bg-background px-4 py-2 text-sm opacity-0 shadow-md transition-all group-hover/block:top-3 group-hover/block:opacity-100'>
             <div className='flex items-center justify-between gap-4'>
-                <div className='text-muted-foreground flex items-center gap-2'>
-                    <div className='bg-chart-blue size-2 rounded-full opacity-50'
+                <div className='flex items-center gap-2 text-muted-foreground'>
+                    <div className='size-2 rounded-full bg-chart-blue opacity-50'
                         style={{
                             backgroundColor: dataColor
                         }}
@@ -52,8 +52,8 @@ const BlockTooltip:React.FC<BlockTooltipProps> = ({
                 </div>
             </div>
             <div className='flex items-center justify-between gap-4'>
-                <div className='text-muted-foreground flex items-center gap-2'>
-                    <div className='bg-chart-gray size-2 rounded-full opacity-80'></div>
+                <div className='flex items-center gap-2 text-muted-foreground'>
+                    <div className='size-2 rounded-full bg-chart-gray opacity-80'></div>
                     Average
                 </div>
                 <div className='text-right font-mono'>
@@ -297,7 +297,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         <KpiCardLabel onClick={() => {
                                             navigateToMembers(`emails.post_id:${postId}`);
                                         }}>
-                                            <div className='bg-chart-purple ml-0.5 size-[9px] rounded-full opacity-50'></div>
+                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-purple opacity-50'></div>
                                     Sent
                                         </KpiCardLabel>
                                         <KpiCardContent>
@@ -315,7 +315,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             <KpiCardLabel onClick={() => {
                                                 navigateToMembers(`opened_emails.post_id:${postId}`);
                                             }}>
-                                                <div className='bg-chart-blue ml-0.5 size-[9px] rounded-full opacity-50'></div>
+                                                <div className='ml-0.5 size-[9px] rounded-full bg-chart-blue opacity-50'></div>
                                                 Opened
                                             </KpiCardLabel>
                                             <KpiCardContent>
@@ -334,7 +334,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             <KpiCardLabel onClick={() => {
                                                 navigateToMembers(`clicked_links.post_id:${postId}`);
                                             }}>
-                                                <div className='bg-chart-teal ml-0.5 size-[9px] rounded-full opacity-50'></div>
+                                                <div className='ml-0.5 size-[9px] rounded-full bg-chart-teal opacity-50'></div>
                                                 Clicked
                                             </KpiCardLabel>
                                             <KpiCardContent>
@@ -446,7 +446,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                     <div ref={containerRef} className='flex w-full items-center gap-2'>
                                                                         <Input
                                                                             ref={inputRef}
-                                                                            className="border-border bg-background z-50 h-7 w-full text-sm"
+                                                                            className="z-50 h-7 w-full border-border bg-background text-sm"
                                                                             value={editedUrl}
                                                                             onChange={e => setEditedUrl(e.target.value)}
                                                                         />
@@ -460,7 +460,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                 ) : (
                                                                     <>
                                                                         <Button
-                                                                            className='bg-background mr-2 shrink-0'
+                                                                            className='mr-2 shrink-0 bg-background'
                                                                             size='sm'
                                                                             variant='outline'
                                                                             onClick={() => handleEdit(linkId)}
@@ -502,7 +502,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             {!isLoading && topLinks.length > 1 &&
                                     <CardFooter>
                                         <div className='flex w-full items-start justify-between gap-3'>
-                                            <div className='text-green mt-2 flex items-start gap-2 pl-4 text-sm'>
+                                            <div className='mt-2 flex items-start gap-2 pl-4 text-sm text-green'>
                                                 <LucideIcon.ArrowUp size={20} strokeWidth={1.5} />
                                                 Sent a broken link? You can update it!
                                             </div>
