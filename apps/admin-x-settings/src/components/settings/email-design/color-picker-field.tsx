@@ -21,6 +21,7 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({title, value, onChan
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                     <button
+                        aria-label={title}
                         className="aspect-square size-7 rounded-full p-1"
                         style={{background: 'conic-gradient(from 0deg, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%), hsl(360, 100%, 50%))'}}
                         title={title}

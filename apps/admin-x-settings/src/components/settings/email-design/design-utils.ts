@@ -16,7 +16,7 @@ export interface ResolvedEmailColors {
     secondaryHeaderTextColor: string;
 }
 
-const VALID_HEX = /#([0-9a-f]{3}){1,2}$/i;
+const VALID_HEX = /^#(?:[0-9a-f]{3}){1,2}$/i;
 
 function resolveBackgroundColor(settings: EmailDesignSettings): string {
     if (VALID_HEX.test(settings.background_color)) {
@@ -25,10 +25,13 @@ function resolveBackgroundColor(settings: EmailDesignSettings): string {
     return '#ffffff';
 }
 
-function resolveHeaderBackgroundColor(settings: EmailDesignSettings): string {
+function resolveHeaderBackgroundColor(settings: EmailDesignSettings, accentColor: string): string {
     const value = settings.header_background_color;
     if (!value || value === 'transparent') {
         return 'transparent';
+    }
+    if (value === 'accent') {
+        return accentColor;
     }
     if (VALID_HEX.test(value)) {
         return value;
@@ -101,7 +104,7 @@ function resolveDividerColor(settings: EmailDesignSettings, accentColor: string)
 
 export function resolveAllColors(settings: EmailDesignSettings, accentColor: string): ResolvedEmailColors {
     const bgColor = resolveBackgroundColor(settings);
-    const headerBgColor = resolveHeaderBackgroundColor(settings);
+    const headerBgColor = resolveHeaderBackgroundColor(settings, accentColor);
     const buttonColor = resolveButtonColor(settings, accentColor, bgColor);
 
     const textColor = textColorForBackgroundColor(bgColor).hex();
