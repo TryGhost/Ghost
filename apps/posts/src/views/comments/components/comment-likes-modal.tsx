@@ -59,11 +59,11 @@ function CommentLikesModal({
                                     className="text-muted-foreground/50 shrink-0"
                                     size={16}
                                 />
-                                <span className="text-muted-foreground shrink-0">
+                                <span className="shrink-0 text-muted-foreground">
                                     {comment.created_at &&
                                         formatTimestamp(comment.created_at)}
                                 </span>
-                                <span className="text-muted-foreground shrink-0">
+                                <span className="shrink-0 text-muted-foreground">
                                     on
                                 </span>
                                 <span className="min-w-0 truncate font-medium text-gray-800 dark:text-gray-400">
@@ -114,13 +114,13 @@ function CommentLikesModal({
                                                 'Deleted member'}
                                         </span>
                                     </div>
-                                    <span className="text-muted-foreground shrink-0 text-sm">
+                                    <span className="shrink-0 text-sm text-muted-foreground">
                                         {formatTimestamp(like.created_at)}
                                     </span>
                                 </div>
                             ))}
                             {remainingCount > 0 && (
-                                <div className="text-muted-foreground pt-1 text-center text-sm">
+                                <div className="pt-1 text-center text-sm text-muted-foreground">
                                     and {remainingCount} more
                                 </div>
                             )}
