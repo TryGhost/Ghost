@@ -67,9 +67,6 @@
     "moment-timezone": "0.5.45",
     "nwsapi": "2.2.12"
   },
-  "lint-staged": {
-    "*.{js,ts,tsx,jsx,cjs}": "eslint"
-  },
   "devDependencies": {
     "@actions/core": "1.11.1",
     "chalk": "4.1.2",

@@ -8,12 +8,12 @@ const debug = baseDebug('e2e:fake-stripe');
 export class FakeStripeServer {
     private server: http.Server | null = null;
     private readonly app = express();
-    private readonly _port: number;
+    private _port: number;
     private readonly customers: Map<string, StripeCustomer> = new Map();
     private readonly subscriptions: Map<string, StripeSubscription> = new Map();
     private readonly paymentMethods: Map<string, StripePaymentMethod> = new Map();
 
-    constructor(port: number) {
+    constructor(port = 0) {
         this._port = port;
         this.setupRoutes();
     }
@@ -37,6 +37,14 @@ export class FakeStripeServer {
     async start(): Promise<void> {
         return new Promise((resolve, reject) => {
             this.server = this.app.listen(this._port, () => {
+                const address = this.server?.address();
+
+                if (!address || typeof address === 'string') {
+                    reject(new Error('Fake Stripe server did not expose a TCP port'));
+                    return;
+                }
+
+                this._port = address.port;
                 resolve();
             });
             this.server.on('error', reject);
@@ -96,7 +104,7 @@ export class FakeStripeServer {
             res.status(200).json(response);
         });
 
-        // GET /v1/subscriptions/:id — returns subscription
+        // GET /v1/subscriptions/:id — returns subscription (supports expand[0]=... and expand[]=...)
         this.app.get('/v1/subscriptions/:id', (req, res) => {
             const subscriptionId = req.params.id;
             const subscription = this.subscriptions.get(subscriptionId);
@@ -107,8 +115,21 @@ export class FakeStripeServer {
                 return;
             }
 
-            debug(`Returning subscription: ${subscriptionId}`);
-            res.status(200).json(subscription);
+            const rawExpand = req.query.expand ?? req.query['expand[]'];
+            const expand: string[] = Array.isArray(rawExpand)
+                ? rawExpand.filter((v): v is string => typeof v === 'string')
+                : (typeof rawExpand === 'string' ? [rawExpand] : []);
+            const response = {...subscription} as Record<string, unknown>;
+
+            if (expand.includes('default_payment_method') && typeof subscription.default_payment_method === 'string') {
+                const pm = this.paymentMethods.get(subscription.default_payment_method);
+                if (pm) {
+                    response.default_payment_method = pm;
+                }
+            }
+
+            debug(`Returning subscription: ${subscriptionId} (expand: ${expand.join(', ') || 'none'})`);
+            res.status(200).json(response);
         });
 
         // GET /v1/payment_methods/:id — returns payment method
