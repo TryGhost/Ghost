@@ -4,15 +4,16 @@ import {globalDataRequests, mockApi, responseFixtures, settingsWithStripe} from 
 test.describe('Offers', () => {
     test('Offers Modal is available', async ({page}) => {
         await mockApi({page, requests: {
+            browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
         }});
         await page.goto('/');
         const section = page.getByTestId('offers');
-        await section.getByRole('button', {name: 'Add offer'}).click();
-        const addModal = page.getByTestId('add-offer-modal');
-        await expect(addModal).toBeVisible();
+        await section.getByRole('button', {name: 'Manage offers'}).click();
+        const modal = page.getByTestId('offers-modal');
+        await expect(modal).toBeVisible();
     });
 
     test('Offers Add Modal is available', async ({page}) => {
@@ -192,9 +193,9 @@ test.describe('Offers', () => {
         await manageButton.click();
         const modal = page.getByTestId('offers-modal');
         await expect(modal).toBeVisible();
-        await expect(modal.getByText('Active')).toHaveAttribute('aria-selected', 'true');
         await expect(modal).toContainText('First offer');
         await expect(modal).toContainText('Second offer');
+        await expect(modal).not.toContainText('Third offer');
     });
 
     test('Can view archived offers', async ({page}) => {
@@ -210,8 +211,8 @@ test.describe('Offers', () => {
         const section = page.getByTestId('offers');
         await section.getByRole('button', {name: 'Manage offers'}).click();
         const modal = page.getByTestId('offers-modal');
-        await modal.getByText('Archived').click();
-        await expect(modal.getByText('Archived')).toHaveAttribute('aria-selected', 'true');
+        await modal.getByRole('button', {name: 'Filter options'}).click();
+        await modal.getByLabel('Show archived').check();
         await expect(modal).toContainText('Third offer');
     });
 
@@ -236,7 +237,6 @@ test.describe('Offers', () => {
         const section = page.getByTestId('offers');
         await section.getByRole('button', {name: 'Manage offers'}).click();
         const modal = page.getByTestId('offers-modal');
-        await expect(modal.getByText('Active')).toHaveAttribute('aria-selected', 'true');
         await expect(modal).toContainText('First offer');
         await modal.getByText('First offer').click();
 
@@ -333,19 +333,6 @@ test.describe('Offers', () => {
                     }
                 },
                 ...globalDataRequests,
-                browseConfig: {
-                    method: 'GET',
-                    path: '/config/',
-                    response: {
-                        config: {
-                            ...responseFixtures.config.config,
-                            labs: {
-                                ...responseFixtures.config.config?.labs,
-                                retentionOffers: true
-                            }
-                        }
-                    }
-                },
                 browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
                 browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
                 ...extraRequests

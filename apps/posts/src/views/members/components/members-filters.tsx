@@ -11,6 +11,8 @@ import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useMembersFilterConfig} from '../hooks/use-members-filter-config';
 import {useResourceSearch} from '../hooks/use-resource-search';
 
+const EMPTY_OFFERS: Offer[] = [];
+
 /**
  * Build a map of synthetic retention IDs to their underlying real offer IDs.
  * e.g. 'retention:month' -> ['offer-id-1', 'offer-id-2']
@@ -42,25 +44,23 @@ function buildRetentionOfferIdMap(offers: Offer[]): Map<string, string[]> {
 
 /**
  * Build offer filter options, grouping retention offers into
- * "Monthly Retention" / "Yearly Retention" when the labs flag is enabled.
+ * "Monthly Retention" / "Yearly Retention".
  */
-function buildOfferOptions(offers: Offer[], retentionOffersEnabled: boolean, retentionMap: Map<string, string[]>): FilterOption[] {
+function buildOfferOptions(offers: Offer[], retentionMap: Map<string, string[]>): FilterOption[] {
     const options: FilterOption[] = [];
 
     for (const offer of offers) {
-        if (retentionOffersEnabled && offer.redemption_type === 'retention') {
+        if (offer.redemption_type === 'retention') {
             continue;
         }
         options.push({value: offer.id, label: offer.name});
     }
 
-    if (retentionOffersEnabled) {
-        if (retentionMap.has('retention:month')) {
-            options.push({value: 'retention:month', label: 'Monthly Retention'});
-        }
-        if (retentionMap.has('retention:year')) {
-            options.push({value: 'retention:year', label: 'Yearly Retention'});
-        }
+    if (retentionMap.has('retention:month')) {
+        options.push({value: 'retention:month', label: 'Monthly Retention'});
+    }
+    if (retentionMap.has('retention:year')) {
+        options.push({value: 'retention:year', label: 'Yearly Retention'});
     }
 
     return options;
@@ -91,28 +91,27 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const emailTrackOpens = getSettingValue<boolean>(settings, 'email_track_opens') === true;
     const emailTrackClicks = getSettingValue<boolean>(settings, 'email_track_clicks') === true;
     const audienceFeedbackEnabled = configData?.config?.labs?.audienceFeedback === true;
-    const retentionOffersEnabled = configData?.config?.labs?.retentionOffers === true;
     const siteTimezone = getSiteTimezone(settings);
 
     // Get data
     const labels = labelsData?.labels || [];
     const tiers = tiersData?.tiers || [];
     const newsletters = newslettersData?.newsletters || [];
-    const offers = offersData?.offers || [];
+    const offers = offersData?.offers ?? EMPTY_OFFERS;
     const activePaidTiers = tiers.filter(t => t.type === 'paid' && t.active);
     const hasMultipleTiers = activePaidTiers.length > 1;
 
     // Build offer options with retention grouping
     const retentionMap = useMemo(() => {
-        return retentionOffersEnabled ? buildRetentionOfferIdMap(offers) : new Map<string, string[]>();
-    }, [offers, retentionOffersEnabled]);
+        return buildRetentionOfferIdMap(offers);
+    }, [offers]);
 
     const offersOptions = useMemo(() => {
-        return buildOfferOptions(offers, retentionOffersEnabled, retentionMap);
-    }, [offers, retentionOffersEnabled, retentionMap]);
+        return buildOfferOptions(offers, retentionMap);
+    }, [offers, retentionMap]);
 
-    // When retention grouping is active, translate between synthetic IDs (for display)
-    // and real offer IDs (stored in URL / sent to API)
+    // When grouped retention options are available, translate between synthetic IDs
+    // (for display) and real offer IDs (stored in URL / sent to API)
     const displayFilters = useMemo(() => {
         if (retentionMap.size === 0) {
             return filters;

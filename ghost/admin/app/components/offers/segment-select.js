@@ -19,7 +19,6 @@ const RETENTION_OFFER_OPTIONS = [
 
 export default class OffersSegmentSelect extends Component {
     @service store;
-    @service feature;
 
     @tracked _options = [];
     @tracked offers = [];
@@ -160,7 +159,6 @@ export default class OffersSegmentSelect extends Component {
     @task
     *fetchOptionsTask() {
         const options = yield [];
-        const retentionOffersEnabled = Boolean(this.feature.labs?.retentionOffers);
 
         const offers = yield this.store.findAll('offer');
         this.offers = offers;
@@ -172,7 +170,7 @@ export default class OffersSegmentSelect extends Component {
             };
 
             offers.forEach((offer) => {
-                if (retentionOffersEnabled && offer.redemptionType === 'retention') {
+                if (offer.redemptionType === 'retention') {
                     return;
                 }
 
@@ -183,9 +181,7 @@ export default class OffersSegmentSelect extends Component {
                 });
             });
 
-            if (retentionOffersEnabled) {
-                offersGroup.options.push(...this.getRetentionOptions(offers));
-            }
+            offersGroup.options.push(...this.getRetentionOptions(offers));
 
             if (offersGroup.options.length > 0) {
                 options.push(offersGroup);

@@ -19,13 +19,13 @@ module.exports = async function hasActiveOffer(subscriptionModel, offersAPI, opt
         current_period_end: subscriptionModel.get('current_period_end')
     };
 
-    // Check for active trial (trial offers)
+    // Check for active trial
     const trialEndAt = subscriptionModel.get('trial_end_at');
     if (trialEndAt && new Date(trialEndAt) > new Date()) {
         return true;
     }
 
-    // Fallback: legacy data where discount_start was never populated
+    // Check for active offer
     const offerId = subscriptionModel.get('offer_id');
     if (!offerId) {
         return false;
