@@ -1,8 +1,50 @@
+import {PortalPage, SignInPage, SignUpPage} from '@/helpers/pages';
 import {SettingsPage} from '@/admin-pages';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Portal Settings', () => {
+    test('default link opens portal - navigates to portal', async ({page}) => {
+        const settingsPage = new SettingsPage(page);
+        await settingsPage.goto();
+        await settingsPage.portalSection.openCustomizeModal();
+
+        const portalUrl = await settingsPage.portalSection.getLinkValue('Default:');
+        await page.goto(portalUrl);
+
+        const portalPage = new PortalPage(page);
+        await portalPage.waitForPortalToOpen();
+        await expect(portalPage.portalFrameBody).toBeVisible();
+    });
+
+    test('sign in link opens portal - navigates to sign in page', async ({page}) => {
+        const settingsPage = new SettingsPage(page);
+        await settingsPage.goto();
+        await settingsPage.portalSection.openCustomizeModal();
+
+        const portalUrl = await settingsPage.portalSection.getLinkValue('Sign in');
+        await page.goto(portalUrl);
+
+        const signInPage = new SignInPage(page);
+        await signInPage.waitForPortalToOpen();
+        await expect(signInPage.emailInput).toBeVisible();
+        await expect(signInPage.continueButton).toBeVisible();
+    });
+
+    test('sign up link opens portal - navigates to sign up page', async ({page}) => {
+        const settingsPage = new SettingsPage(page);
+        await settingsPage.goto();
+        await settingsPage.portalSection.openCustomizeModal();
+
+        const portalUrl = await settingsPage.portalSection.getLinkValue('Sign up');
+        await page.goto(portalUrl);
+
+        const signUpPage = new SignUpPage(page);
+        await signUpPage.waitForPortalToOpen();
+        await expect(signUpPage.emailInput).toBeVisible();
+        await expect(signUpPage.signupButton).toBeVisible();
+    });
+
     test('shows free tier toggle in the Portal settings modal when Stripe is disconnected', async ({page}) => {
         const settingsService = new SettingsService(page.request);
         await settingsService.setStripeDisconnected();
