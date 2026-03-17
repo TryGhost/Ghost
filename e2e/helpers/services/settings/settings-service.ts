@@ -10,6 +10,7 @@ export interface SettingsResponse {
 }
 
 export type CommentsEnabled = 'all' | 'paid' | 'off';
+export type MembersSignupAccess = 'all' | 'invite' | 'paid' | 'none';
 
 export class SettingsService {
     private readonly request: APIRequest;
@@ -51,6 +52,10 @@ export class SettingsService {
      */
     async setCommentsEnabled(value: CommentsEnabled) {
         return await this.updateSettings([{key: 'comments_enabled', value}]);
+    }
+
+    async setMembersSignupAccess(value: MembersSignupAccess) {
+        return await this.updateSettings([{key: 'members_signup_access', value}]);
     }
 
     /**

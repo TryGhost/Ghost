@@ -67,11 +67,46 @@ export default tseslint.config([
         }
     },
 
+    // Keep assertions in test files and Playwright-specific helpers.
+    {
+        files: ['**/*.ts', '**/*.mjs'],
+        ignores: [
+            'tests/**/*.ts',
+            'helpers/playwright/**/*.ts',
+            'visual-regression/**/*.ts'
+        ],
+        rules: {
+            'no-restricted-syntax': ['error',
+                {
+                    selector: "ImportSpecifier[imported.name='expect'][parent.source.value='@playwright/test']",
+                    message: 'Keep Playwright expect assertions in test files.'
+                },
+                {
+                    selector: "ImportSpecifier[imported.name='expect'][parent.source.value='@/helpers/playwright']",
+                    message: 'Keep Playwright expect assertions in test files.'
+                }
+            ]
+        }
+    },
+
     // Playwright-specific recommended rules config for test files
     {
         files: ['tests/**/*.ts', 'helpers/playwright/**/*.ts', 'helpers/pages/**/*.ts'],
         rules: {
             ...playwrightPlugin.configs.recommended.rules
+        }
+    },
+
+    // Keep raw page selectors out of tests so page objects remain the primary interface.
+    {
+        files: ['tests/**/*.ts'],
+        rules: {
+            'no-restricted-syntax': ['error',
+                {
+                    selector: "CallExpression[callee.object.name='page'][callee.property.name='locator']",
+                    message: 'Use page objects or higher-level page methods instead of page.locator() in test files.'
+                }
+            ]
         }
     }
 ]);
