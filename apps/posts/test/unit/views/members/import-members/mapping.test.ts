@@ -28,6 +28,25 @@ describe('mapping helpers', () => {
         expect(mapping.name).toBe('first_name');
     });
 
+    it('detects supported fields even when column values are empty', () => {
+        // Generate >30 rows so sampleData kicks in
+        const rows = Array.from({length: 50}, (_, i) => ({
+            email: `user${i}@example.com`,
+            name: `User ${i}`,
+            note: '',
+            subscribed_to_emails: '',
+            labels: ''
+        }));
+
+        const mapping = detectFieldTypes(rows);
+
+        expect(mapping.email).toBe('email');
+        expect(mapping.name).toBe('name');
+        expect(mapping.note).toBe('note');
+        expect(mapping.subscribed_to_emails).toBe('subscribed_to_emails');
+        expect(mapping.labels).toBe('labels');
+    });
+
     it('updates mapping while preventing duplicate targets', () => {
         const mapping = new MembersFieldMapping({email: 'Email', name: 'Name'});
         const updated = mapping.updateMapping('Name', 'email');

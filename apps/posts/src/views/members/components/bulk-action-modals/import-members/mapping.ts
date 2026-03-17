@@ -121,6 +121,24 @@ export function detectFieldTypes(data: Record<string, string>[]): Record<string,
     const sampledData = sampleData(data);
     const mapping: Record<string, string> = {};
 
+    // Match column headers against supported types using all headers from the
+    // original data. sampleData only keeps keys with non-empty values, so
+    // entirely-empty columns (e.g. an empty "note" column) would be missed if
+    // we only checked sampled entries.
+    if (data.length > 0) {
+        for (const key of Object.keys(data[0])) {
+            if (!mapping.name && /name/i.test(key)) {
+                mapping.name = key;
+                continue;
+            }
+
+            if (!mapping[key] && SUPPORTED_TYPES.includes(key) && !AUTO_DETECTED_TYPES.includes(key)) {
+                mapping[key] = key;
+            }
+        }
+    }
+
+    // Detect value-based types (email) from sampled data
     let i = 0;
     while (i <= sampledData.length - 1) {
         if (mapping.email && mapping.stripe_customer_id) {
@@ -131,16 +149,6 @@ export function detectFieldTypes(data: Record<string, string>[]): Record<string,
         for (const [key, value] of Object.entries(entry)) {
             if (!mapping.email && value && EMAIL_REGEX.test(value)) {
                 mapping.email = key;
-                continue;
-            }
-
-            if (!mapping.name && /name/i.test(key)) {
-                mapping.name = key;
-                continue;
-            }
-
-            if (!mapping[key] && SUPPORTED_TYPES.includes(key) && !AUTO_DETECTED_TYPES.includes(key)) {
-                mapping[key] = key;
             }
         }
 
