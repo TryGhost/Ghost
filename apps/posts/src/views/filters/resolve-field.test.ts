@@ -9,10 +9,8 @@ const fields = defineFields({
             label: 'Status',
             type: 'select'
         },
-        codec: {
-            parse: () => null,
-            serialize: () => null
-        }
+        fromNql: () => null,
+        toNql: () => null
     },
     'newsletters.:slug': {
         operators: ['is'],
@@ -20,10 +18,8 @@ const fields = defineFields({
             label: 'Newsletter',
             type: 'select'
         },
-        codec: {
-            parse: () => null,
-            serialize: () => null
-        }
+        fromNql: () => null,
+        toNql: () => null
     },
     author: {
         operators: ['is'],
@@ -32,10 +28,8 @@ const fields = defineFields({
             label: 'Author',
             type: 'select'
         },
-        codec: {
-            parse: () => null,
-            serialize: () => null
-        }
+        fromNql: () => null,
+        toNql: () => null
     }
 });
 

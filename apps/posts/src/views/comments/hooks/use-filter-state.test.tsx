@@ -1,5 +1,5 @@
 import {MemoryRouter, useSearchParams} from 'react-router';
-import {act, renderHook} from '@testing-library/react';
+import {act, renderHook, waitFor} from '@testing-library/react';
 import {describe, expect, it, vi} from 'vitest';
 import {useFilterState} from './use-filter-state';
 
@@ -18,7 +18,7 @@ function createWrapper(initialEntry: string) {
 }
 
 describe('useFilterState', () => {
-    it('reads Ember-style filter params', () => {
+    it('reads browser filter params', () => {
         const {result} = renderHook(() => {
             const state = useFilterState();
             const [searchParams] = useSearchParams();
@@ -27,7 +27,7 @@ describe('useFilterState', () => {
                 ...state,
                 search: searchParams.toString()
             };
-        }, {wrapper: createWrapper('/?filter=count.reports:>0')});
+        }, {wrapper: createWrapper('/?reported=is:true')});
 
         expect(result.current.filters).toEqual([
             {
@@ -38,10 +38,10 @@ describe('useFilterState', () => {
             }
         ]);
         expect(result.current.nql).toBe('count.reports:>0');
-        expect(result.current.search).toBe('filter=count.reports%3A%3E0');
+        expect(result.current.search).toBe('reported=is%3Atrue');
     });
 
-    it('writes canonical Ember filter params and clears them', () => {
+    it('writes browser filter params and clears only filter params', () => {
         const {result} = renderHook(() => {
             const state = useFilterState();
             const [searchParams] = useSearchParams();
@@ -50,7 +50,7 @@ describe('useFilterState', () => {
                 ...state,
                 search: searchParams.toString()
             };
-        }, {wrapper: createWrapper('/')});
+        }, {wrapper: createWrapper('/?thread=comment_123')});
 
         act(() => {
             result.current.setFilters([
@@ -63,20 +63,111 @@ describe('useFilterState', () => {
             ], {replace: false});
         });
 
-        expect(result.current.search).toBe(
-            'filter=created_at%3A%3C%3D%272024-01-01T23%3A59%3A59.999Z%27%2Bcreated_at%3A%3E%3D%272024-01-01T00%3A00%3A00.000Z%27'
-        );
+        expect(result.current.search).toBe('thread=comment_123&created_at=is%3A2024-01-01');
 
         act(() => {
             result.current.clearFilters({replace: false});
         });
 
-        expect(result.current.search).toBe('');
+        expect(result.current.search).toBe('thread=comment_123');
+    });
+
+    it('imports legacy filter params once and preserves unrelated params', async () => {
+        const {result} = renderHook(() => {
+            const state = useFilterState();
+            const [searchParams] = useSearchParams();
+
+            return {
+                ...state,
+                search: searchParams.toString()
+            };
+        }, {wrapper: createWrapper('/?filter=count.reports:>0&thread=comment_123')});
+
+        expect(result.current.filters).toEqual([
+            {
+                id: 'reported:1',
+                field: 'reported',
+                operator: 'is',
+                values: ['true']
+            }
+        ]);
+
+        await waitFor(() => {
+            expect(result.current.search).toBe('thread=comment_123&reported=is%3Atrue');
+        });
+    });
+
+    it('prefers browser filter params when both new and legacy formats are present', async () => {
+        const {result} = renderHook(() => {
+            const state = useFilterState();
+            const [searchParams] = useSearchParams();
+
+            return {
+                ...state,
+                search: searchParams.toString()
+            };
+        }, {wrapper: createWrapper('/?reported=is:false&filter=count.reports:>0')});
+
+        expect(result.current.filters).toEqual([
+            {
+                id: 'reported:1',
+                field: 'reported',
+                operator: 'is',
+                values: ['false']
+            }
+        ]);
+
+        await waitFor(() => {
+            expect(result.current.search).toBe('reported=is%3Afalse');
+        });
+    });
+
+    it('falls back to legacy import when browser filter params are malformed', async () => {
+        const {result} = renderHook(() => {
+            const state = useFilterState();
+            const [searchParams] = useSearchParams();
+
+            return {
+                ...state,
+                search: searchParams.toString()
+            };
+        }, {wrapper: createWrapper('/?reported=broken&filter=count.reports:>0&thread=comment_123')});
+
+        expect(result.current.filters).toEqual([
+            {
+                id: 'reported:1',
+                field: 'reported',
+                operator: 'is',
+                values: ['true']
+            }
+        ]);
+
+        await waitFor(() => {
+            expect(result.current.search).toBe('thread=comment_123&reported=is%3Atrue');
+        });
+    });
+
+    it('fails closed on malformed legacy filter params', async () => {
+        const {result} = renderHook(() => {
+            const state = useFilterState();
+            const [searchParams] = useSearchParams();
+
+            return {
+                ...state,
+                search: searchParams.toString()
+            };
+        }, {wrapper: createWrapper('/?filter=created_at:(')});
+
+        expect(result.current.filters).toEqual([]);
+
+        await waitFor(() => {
+            expect(result.current.search).toBe('');
+        });
     });
 
     it('tracks the single-id quick filter state', () => {
         const {result} = renderHook(() => useFilterState(), {
-            wrapper: createWrapper('/?filter=id:comment_123')
+            wrapper: createWrapper('/?id=is:comment_123')
         });
 
         expect(result.current.isSingleIdFilter).toBe(true);

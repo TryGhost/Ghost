@@ -30,6 +30,7 @@ interface UseMemberFilterFieldsOptions {
 
 type OfferOption = FilterOption<string>;
 type SearchableFieldOverrides = Pick<FilterFieldConfig, 'options' | 'onSearchChange' | 'searchValue' | 'isLoading'>;
+type OptionalValue<T> = T | null | false | undefined;
 
 interface OperatorOption {
     value: string;
@@ -144,6 +145,10 @@ function createSearchableFieldOverrides(
         searchValue,
         isLoading: options.length === 0 && isLoading
     };
+}
+
+function compactValues<T>(values: OptionalValue<T>[]): T[] {
+    return values.filter((value): value is T => Boolean(value));
 }
 
 export function buildRetentionOfferIdMap(offers: Offer[]): Map<string, string[]> {
@@ -303,47 +308,39 @@ export function useMemberFilterFields({
     siteTimezone = 'UTC'
 }: UseMemberFilterFieldsOptions): FilterFieldGroup[] {
     return useMemo(() => {
-        const groups: FilterFieldGroup[] = [];
         const activeNewsletters = newsletters.filter(newsletter => newsletter.status !== 'archived');
         const offerOptions = buildOfferOptions(offers);
         const offerLabels = createOfferLabelMap(offers);
         const today = moment.tz(siteTimezone).format('YYYY-MM-DD');
+        const postSearchOverrides = createSearchableFieldOverrides(
+            postResourceOptions,
+            onPostResourceSearchChange,
+            postResourceSearchValue,
+            postResourceLoading
+        );
+        const emailSearchOverrides = createSearchableFieldOverrides(
+            emailResourceOptions,
+            onEmailResourceSearchChange,
+            emailResourceSearchValue,
+            emailResourceLoading
+        );
 
-        const basicFields: FilterFieldConfig[] = [
+        const basicFields = compactValues<FilterFieldConfig>([
             createFieldConfig('name'),
-            createFieldConfig('email')
-        ];
-
-        if (labelsOptions.length > 0) {
-            basicFields.push(createFieldConfig('label', {
+            createFieldConfig('email'),
+            labelsOptions.length > 0 && createFieldConfig('label', {
                 type: 'select',
                 options: labelsOptions,
                 customRenderer: props => React.createElement(LabelFilterRenderer, props as CustomRendererProps<string>)
-            }));
-        }
-
-        if (activeNewsletters.length <= 1) {
-            basicFields.push(createFieldConfig('subscribed'));
-        }
-
-        basicFields.push(
+            }),
+            activeNewsletters.length <= 1 && createFieldConfig('subscribed'),
             createDateFieldConfig('last_seen_at', today),
-            createDateFieldConfig('created_at', today)
-        );
+            createDateFieldConfig('created_at', today),
+            membersTrackSources && createFieldConfig('signup', postSearchOverrides)
+        ]);
 
-        if (membersTrackSources) {
-            basicFields.push(createFieldConfig('signup', createSearchableFieldOverrides(
-                postResourceOptions,
-                onPostResourceSearchChange,
-                postResourceSearchValue,
-                postResourceLoading
-            )));
-        }
-
-        groups.push({group: 'Basic', fields: basicFields});
-
-        if (activeNewsletters.length > 1) {
-            const newsletterFields: FilterFieldConfig[] = [
+        const newsletterFields = activeNewsletters.length > 1
+            ? [
                 createFieldConfig('subscribed', {
                     label: 'All newsletters',
                     options: [
@@ -351,102 +348,49 @@ export function useMemberFilterFields({
                         {value: 'unsubscribed', label: 'Unsubscribed from all'},
                         {value: 'email-disabled', label: 'Email disabled'}
                     ]
-                })
-            ];
-
-            for (const newsletter of activeNewsletters) {
-                newsletterFields.push(createFieldConfig(`newsletters.${newsletter.slug}`, {
+                }),
+                ...activeNewsletters.map(newsletter => createFieldConfig(`newsletters.${newsletter.slug}`, {
                     label: newsletter.name
-                }));
-            }
+                }))
+            ]
+            : null;
 
-            groups.push({group: 'Newsletters', fields: newsletterFields});
-        }
-
-        if (paidMembersEnabled) {
-            const subscriptionFields: FilterFieldConfig[] = [];
-
-            if (hasMultipleTiers) {
-                subscriptionFields.push(createFieldConfig('tier_id', {
+        const subscriptionFields = paidMembersEnabled
+            ? compactValues<FilterFieldConfig>([
+                hasMultipleTiers && createFieldConfig('tier_id', {
                     options: tiersOptions
-                }));
-            }
-
-            subscriptionFields.push(
+                }),
                 createFieldConfig('status'),
                 createFieldConfig('subscriptions.plan_interval'),
                 createFieldConfig('subscriptions.status'),
                 createDateFieldConfig('subscriptions.start_date', today),
-                createDateFieldConfig('subscriptions.current_period_end', today)
-            );
-
-            if (membersTrackSources) {
-                subscriptionFields.push(createFieldConfig('conversion', createSearchableFieldOverrides(
-                    postResourceOptions,
-                    onPostResourceSearchChange,
-                    postResourceSearchValue,
-                    postResourceLoading
-                )));
-            }
-
-            if (offers.length > 0) {
-                subscriptionFields.push(createFieldConfig('offer_redemptions', {
+                createDateFieldConfig('subscriptions.current_period_end', today),
+                membersTrackSources && createFieldConfig('conversion', postSearchOverrides),
+                offers.length > 0 && createFieldConfig('offer_redemptions', {
                     options: offerOptions,
                     customValueRenderer: values => renderOfferFilterValues(values as string[], offerOptions, offerLabels)
-                }));
-            }
+                })
+            ])
+            : null;
 
-            groups.push({group: 'Subscription', fields: subscriptionFields});
-        }
-
-        if (emailAnalyticsEnabled) {
-            const emailFields: FilterFieldConfig[] = [
+        const emailFields = emailAnalyticsEnabled
+            ? compactValues<FilterFieldConfig>([
                 createFieldConfig('email_count'),
-                createFieldConfig('email_opened_count')
-            ];
+                createFieldConfig('email_opened_count'),
+                emailTrackOpens && createFieldConfig('email_open_rate'),
+                createFieldConfig('emails.post_id', emailSearchOverrides),
+                emailTrackOpens && createFieldConfig('opened_emails.post_id', emailSearchOverrides),
+                emailTrackClicks && createFieldConfig('clicked_links.post_id', emailSearchOverrides),
+                audienceFeedbackEnabled && createFieldConfig('newsletter_feedback', emailSearchOverrides)
+            ])
+            : null;
 
-            if (emailTrackOpens) {
-                emailFields.push(createFieldConfig('email_open_rate'));
-            }
-
-            emailFields.push(createFieldConfig('emails.post_id', createSearchableFieldOverrides(
-                emailResourceOptions,
-                onEmailResourceSearchChange,
-                emailResourceSearchValue,
-                emailResourceLoading
-            )));
-
-            if (emailTrackOpens) {
-                emailFields.push(createFieldConfig('opened_emails.post_id', createSearchableFieldOverrides(
-                    emailResourceOptions,
-                    onEmailResourceSearchChange,
-                    emailResourceSearchValue,
-                    emailResourceLoading
-                )));
-            }
-
-            if (emailTrackClicks) {
-                emailFields.push(createFieldConfig('clicked_links.post_id', createSearchableFieldOverrides(
-                    emailResourceOptions,
-                    onEmailResourceSearchChange,
-                    emailResourceSearchValue,
-                    emailResourceLoading
-                )));
-            }
-
-            if (audienceFeedbackEnabled) {
-                emailFields.push(createFieldConfig('newsletter_feedback', createSearchableFieldOverrides(
-                    emailResourceOptions,
-                    onEmailResourceSearchChange,
-                    emailResourceSearchValue,
-                    emailResourceLoading
-                )));
-            }
-
-            groups.push({group: 'Email', fields: emailFields});
-        }
-
-        return groups;
+        return compactValues<FilterFieldGroup>([
+            {group: 'Basic', fields: basicFields},
+            newsletterFields && {group: 'Newsletters', fields: newsletterFields},
+            subscriptionFields && {group: 'Subscription', fields: subscriptionFields},
+            emailFields && {group: 'Email', fields: emailFields}
+        ]);
     }, [
         audienceFeedbackEnabled,
         emailAnalyticsEnabled,

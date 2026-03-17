@@ -1,15 +1,16 @@
 import {commentFields} from './comment-fields';
 import {describe, expect, it} from 'vitest';
-import type {CodecContext, FilterPredicate} from '../filters/filter-types';
+import type {Filter} from '@tryghost/shade';
+import type {NqlContext} from '../filters/filter-types';
 
-const createdAtContext: CodecContext = {
+const createdAtContext: NqlContext = {
     key: 'created_at',
     pattern: 'created_at',
     params: {},
     timezone: 'UTC'
 };
 
-const reportedContext: CodecContext = {
+const reportedContext: NqlContext = {
     key: 'reported',
     pattern: 'reported',
     params: {},
@@ -53,38 +54,38 @@ describe('commentFields', () => {
         });
     });
 
-    it('uses local codecs for comment-specific fields', () => {
-        expect(commentFields.created_at.codec).not.toBe(commentFields.status.codec);
-        expect(commentFields.reported.codec).not.toBe(commentFields.status.codec);
+    it('uses local NQL handlers for comment-specific fields', () => {
+        expect(commentFields.created_at.toNql).not.toBe(commentFields.status.toNql);
+        expect(commentFields.reported.toNql).not.toBe(commentFields.status.toNql);
     });
 });
 
-describe('commentDateCodec', () => {
+describe('commentDateNql', () => {
     it('serializes exact dates as UTC day bounds', () => {
-        const predicate: FilterPredicate = {
+        const filter: Filter = {
             id: '1',
             field: 'created_at',
             operator: 'is',
             values: ['2024-01-01']
         };
 
-        expect(commentFields.created_at.codec.serialize(predicate, createdAtContext)).toEqual([
+        expect(commentFields.created_at.toNql(filter, createdAtContext)).toEqual([
             'created_at:>=\'2024-01-01T00:00:00.000Z\'',
             'created_at:<=\'2024-01-01T23:59:59.999Z\''
         ]);
     });
 });
 
-describe('reportedCodec', () => {
+describe('reportedNql', () => {
     it('serializes reported yes/no state', () => {
-        expect(commentFields.reported.codec.serialize({
+        expect(commentFields.reported.toNql({
             id: '1',
             field: 'reported',
             operator: 'is',
             values: ['true']
         }, reportedContext)).toEqual(['count.reports:>0']);
 
-        expect(commentFields.reported.codec.serialize({
+        expect(commentFields.reported.toNql({
             id: '2',
             field: 'reported',
             operator: 'is',

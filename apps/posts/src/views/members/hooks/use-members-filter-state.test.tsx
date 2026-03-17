@@ -1,5 +1,5 @@
 import {MemoryRouter, useSearchParams} from 'react-router';
-import {act, renderHook} from '@testing-library/react';
+import {act, renderHook, waitFor} from '@testing-library/react';
 import {describe, expect, it, vi} from 'vitest';
 import {useMembersFilterState} from './use-members-filter-state';
 import type {ReactNode} from 'react';
@@ -80,9 +80,9 @@ describe('useMembersFilterState', () => {
         };
     });
 
-    it('reads Ember-style filter params and keeps search separate', () => {
+    it('reads browser filter params and keeps search separate', () => {
         const {result} = renderHook(() => useMembersFilterState(), {
-            wrapper: createWrapper('/?filter=status:paid&search=jamie')
+            wrapper: createWrapper('/?status=is:paid&search=jamie')
         });
 
         expect(result.current.filters).toEqual([
@@ -94,10 +94,11 @@ describe('useMembersFilterState', () => {
             }
         ]);
         expect(result.current.search).toBe('jamie');
+        expect(result.current.nql).toBe('status:paid');
         expect(result.current.hasFilterOrSearch).toBe(true);
     });
 
-    it('writes canonical Ember filter params', () => {
+    it('writes browser filter params and preserves search', () => {
         const {result} = renderHook(() => {
             const state = useMembersFilterState();
             const [searchParams] = useSearchParams();
@@ -106,7 +107,7 @@ describe('useMembersFilterState', () => {
                 ...state,
                 query: searchParams.toString()
             };
-        }, {wrapper: createWrapper('/')});
+        }, {wrapper: createWrapper('/?search=jamie')});
 
         act(() => {
             result.current.setFilters([
@@ -125,7 +126,100 @@ describe('useMembersFilterState', () => {
             ], {replace: false});
         });
 
-        expect(result.current.query).toBe('filter=emails.post_id%3A%27post_123%27%2Bstatus%3Apaid');
+        expect(result.current.query).toBe('search=jamie&emails.post_id=is%3Apost_123&status=is%3Apaid');
+    });
+
+    it('imports legacy filter params once and rewrites them immediately', async () => {
+        const {result} = renderHook(() => {
+            const state = useMembersFilterState();
+            const [searchParams] = useSearchParams();
+
+            return {
+                ...state,
+                query: searchParams.toString()
+            };
+        }, {wrapper: createWrapper('/?filter=status:paid&search=jamie')});
+
+        expect(result.current.filters).toEqual([
+            {
+                id: 'status:1',
+                field: 'status',
+                operator: 'is',
+                values: ['paid']
+            }
+        ]);
+
+        await waitFor(() => {
+            expect(result.current.query).toBe('search=jamie&status=is%3Apaid');
+        });
+    });
+
+    it('prefers browser filter params when both new and legacy formats are present', async () => {
+        const {result} = renderHook(() => {
+            const state = useMembersFilterState();
+            const [searchParams] = useSearchParams();
+
+            return {
+                ...state,
+                query: searchParams.toString()
+            };
+        }, {wrapper: createWrapper('/?status=is:paid&filter=status:free')});
+
+        expect(result.current.filters).toEqual([
+            {
+                id: 'status:1',
+                field: 'status',
+                operator: 'is',
+                values: ['paid']
+            }
+        ]);
+
+        await waitFor(() => {
+            expect(result.current.query).toBe('status=is%3Apaid');
+        });
+    });
+
+    it('falls back to legacy import when browser filter params are malformed', async () => {
+        const {result} = renderHook(() => {
+            const state = useMembersFilterState();
+            const [searchParams] = useSearchParams();
+
+            return {
+                ...state,
+                query: searchParams.toString()
+            };
+        }, {wrapper: createWrapper('/?status=broken&filter=status:paid&search=jamie')});
+
+        expect(result.current.filters).toEqual([
+            {
+                id: 'status:1',
+                field: 'status',
+                operator: 'is',
+                values: ['paid']
+            }
+        ]);
+
+        await waitFor(() => {
+            expect(result.current.query).toBe('search=jamie&status=is%3Apaid');
+        });
+    });
+
+    it('fails closed on malformed legacy filter params', async () => {
+        const {result} = renderHook(() => {
+            const state = useMembersFilterState();
+            const [searchParams] = useSearchParams();
+
+            return {
+                ...state,
+                query: searchParams.toString()
+            };
+        }, {wrapper: createWrapper('/?filter=status:(')});
+
+        expect(result.current.filters).toEqual([]);
+
+        await waitFor(() => {
+            expect(result.current.query).toBe('');
+        });
     });
 
     it('preserves search when clearing filters', () => {
@@ -137,7 +231,7 @@ describe('useMembersFilterState', () => {
                 ...state,
                 query: searchParams.toString()
             };
-        }, {wrapper: createWrapper('/?filter=status:paid&search=jamie')});
+        }, {wrapper: createWrapper('/?status=is:paid&search=jamie')});
 
         act(() => {
             result.current.clearFilters({replace: false});
@@ -157,7 +251,7 @@ describe('useMembersFilterState', () => {
                 ...state,
                 query: searchParams.toString()
             };
-        }, {wrapper: createWrapper('/?filter=status:paid&search=jamie')});
+        }, {wrapper: createWrapper('/?status=is:paid&search=jamie')});
 
         act(() => {
             result.current.clearAll({replace: false});

@@ -1,11 +1,11 @@
 import {defineFields} from '../filters/filter-types';
 import {extractComparator} from '../filters/filter-ast';
 import {getDayBoundsInUtc} from '../filters/filter-normalization';
-import {scalarCodec, textCodec} from '../filters/filter-codecs';
-import type {FilterCodec} from '../filters/filter-types';
+import {scalarNql, textNql} from '../filters/filter-nql';
+import type {FilterFieldNql} from '../filters/filter-types';
 
-const commentDateCodec: FilterCodec = {
-    parse(node, ctx) {
+const commentDateNql: FilterFieldNql = {
+    fromNql(node, ctx) {
         const comparator = extractComparator(node as Record<string, unknown>);
 
         if (!comparator || comparator.field !== ctx.key) {
@@ -34,22 +34,22 @@ const commentDateCodec: FilterCodec = {
 
         return null;
     },
-    serialize(predicate, ctx) {
-        const value = predicate.values[0];
+    toNql(filter, ctx) {
+        const value = filter.values[0];
 
         if (typeof value !== 'string' || !value) {
             return null;
         }
 
-        if (predicate.operator === 'before') {
+        if (filter.operator === 'before') {
             return [`${ctx.key}:<'${value}'`];
         }
 
-        if (predicate.operator === 'after') {
+        if (filter.operator === 'after') {
             return [`${ctx.key}:>'${value}'`];
         }
 
-        if (predicate.operator === 'is') {
+        if (filter.operator === 'is') {
             const {start, end} = getDayBoundsInUtc(value, ctx.timezone);
 
             return [
@@ -62,8 +62,8 @@ const commentDateCodec: FilterCodec = {
     }
 };
 
-const reportedCodec: FilterCodec = {
-    parse(node, ctx) {
+const reportedNql: FilterFieldNql = {
+    fromNql(node, ctx) {
         const comparator = extractComparator(node as Record<string, unknown>);
 
         if (!comparator || comparator.field !== 'count.reports') {
@@ -88,10 +88,10 @@ const reportedCodec: FilterCodec = {
 
         return null;
     },
-    serialize(predicate) {
-        const value = predicate.values[0];
+    toNql(filter) {
+        const value = filter.values[0];
 
-        if (predicate.operator !== 'is') {
+        if (filter.operator !== 'is') {
             return null;
         }
 
@@ -115,7 +115,7 @@ export const commentFields = defineFields({
             type: 'text',
             hidden: true
         },
-        codec: scalarCodec()
+        ...scalarNql()
     },
     status: {
         operators: ['is'],
@@ -129,7 +129,7 @@ export const commentFields = defineFields({
             {value: 'published', label: 'Published'},
             {value: 'hidden', label: 'Hidden'}
         ],
-        codec: scalarCodec()
+        ...scalarNql()
     },
     created_at: {
         operators: ['is', 'before', 'after'],
@@ -138,7 +138,7 @@ export const commentFields = defineFields({
             type: 'date',
             className: 'w-full max-w-32'
         },
-        codec: commentDateCodec
+        ...commentDateNql
     },
     body: {
         operators: ['contains', 'does-not-contain'],
@@ -151,7 +151,7 @@ export const commentFields = defineFields({
             className: 'w-full max-w-48',
             popoverContentClassName: 'w-full max-w-48'
         },
-        codec: textCodec({field: 'html'})
+        ...textNql({field: 'html'})
     },
     post: {
         operators: ['is', 'is-not'],
@@ -163,7 +163,7 @@ export const commentFields = defineFields({
             className: 'w-full max-w-80',
             popoverContentClassName: 'w-full max-w-[calc(100vw-32px)] max-w-80'
         },
-        codec: scalarCodec({field: 'post_id'})
+        ...scalarNql({field: 'post_id'})
     },
     author: {
         operators: ['is', 'is-not'],
@@ -175,7 +175,7 @@ export const commentFields = defineFields({
             className: 'w-80',
             popoverContentClassName: 'w-80'
         },
-        codec: scalarCodec({field: 'member_id'})
+        ...scalarNql({field: 'member_id'})
     },
     reported: {
         operators: ['is'],
@@ -190,6 +190,6 @@ export const commentFields = defineFields({
             {value: 'true', label: 'Yes'},
             {value: 'false', label: 'No'}
         ],
-        codec: reportedCodec
+        ...reportedNql
     }
 });

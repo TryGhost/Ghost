@@ -1,15 +1,16 @@
 import {describe, expect, it} from 'vitest';
 import {memberFields} from './member-fields';
-import type {CodecContext, FilterPredicate} from '../filters/filter-types';
+import type {Filter} from '@tryghost/shade';
+import type {NqlContext} from '../filters/filter-types';
 
-const dateContext: CodecContext = {
+const dateContext: NqlContext = {
     key: 'created_at',
     pattern: 'created_at',
     params: {},
     timezone: 'UTC'
 };
 
-const newsletterContext: CodecContext = {
+const newsletterContext: NqlContext = {
     key: 'newsletters.weekly',
     pattern: 'newsletters.:slug',
     params: {slug: 'weekly'},
@@ -103,11 +104,11 @@ describe('memberFields', () => {
         });
     });
 
-    it('uses local codecs for member-specific fields', () => {
-        expect(memberFields.created_at.codec).not.toBe(memberFields.status.codec);
-        expect(memberFields.subscribed.codec).not.toBe(memberFields.status.codec);
-        expect(memberFields['newsletters.:slug'].codec).not.toBe(memberFields.status.codec);
-        expect(memberFields.newsletter_feedback.codec).not.toBe(memberFields.status.codec);
+    it('uses local NQL handlers for member-specific fields', () => {
+        expect(memberFields.created_at.toNql).not.toBe(memberFields.status.toNql);
+        expect(memberFields.subscribed.toNql).not.toBe(memberFields.status.toNql);
+        expect(memberFields['newsletters.:slug'].toNql).not.toBe(memberFields.status.toNql);
+        expect(memberFields.newsletter_feedback.toNql).not.toBe(memberFields.status.toNql);
     });
 
     it('keeps subscribed parsing out of shared parse aliases', () => {
@@ -115,31 +116,31 @@ describe('memberFields', () => {
     });
 });
 
-describe('memberDateCodec', () => {
+describe('memberDateNql', () => {
     it('serializes date boundaries in UTC day bounds', () => {
-        const predicate: FilterPredicate = {
+        const filter: Filter = {
             id: '1',
             field: 'created_at',
             operator: 'is-or-less',
             values: ['2024-01-01']
         };
 
-        expect(memberFields.created_at.codec.serialize(predicate, dateContext)).toEqual([
+        expect(memberFields.created_at.toNql(filter, dateContext)).toEqual([
             'created_at:<=\'2024-01-01T23:59:59.999Z\''
         ]);
     });
 });
 
-describe('newsletterCodec', () => {
+describe('newsletterNql', () => {
     it('serializes newsletter subscription state from a pattern field', () => {
-        const predicate: FilterPredicate = {
+        const filter: Filter = {
             id: '1',
             field: 'newsletters.weekly',
             operator: 'is',
             values: ['subscribed']
         };
 
-        expect(memberFields['newsletters.:slug'].codec.serialize(predicate, newsletterContext)).toEqual([
+        expect(memberFields['newsletters.:slug'].toNql(filter, newsletterContext)).toEqual([
             '(newsletters.slug:weekly+email_disabled:0)'
         ]);
     });

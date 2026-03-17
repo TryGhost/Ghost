@@ -1,10 +1,10 @@
-import {dispatchSimpleNodes, parseFilterToAst, serializePredicates, stampPredicates} from '../filters/filter-query-core';
+import {importSimpleLegacyNodes, parseLegacyFilterToAst, stampImportedFilters} from '../filters/legacy-filter-import';
 import {memberFields} from './member-fields';
 import type {AstNode} from '../filters/filter-ast';
 import type {Filter} from '@tryghost/shade';
-import type {FilterPredicate, ParsedPredicate} from '../filters/filter-types';
+import type {UnstampedFilter} from '../filters/filter-types';
 
-type CompoundMatcher = (node: AstNode) => ParsedPredicate | null;
+type CompoundMatcher = (node: AstNode) => UnstampedFilter | null;
 
 function getCompoundChildren(node: AstNode): {operator: '$and' | '$or'; children: AstNode[]} | null {
     if (Array.isArray(node.$and)) {
@@ -18,7 +18,7 @@ function getCompoundChildren(node: AstNode): {operator: '$and' | '$or'; children
     return null;
 }
 
-function matchSubscribedNode(node: AstNode): ParsedPredicate | null {
+function matchSubscribedNode(node: AstNode): UnstampedFilter | null {
     if (typeof node.email_disabled === 'number') {
         if (node.email_disabled === 1) {
             return {
@@ -75,7 +75,7 @@ function matchSubscribedNode(node: AstNode): ParsedPredicate | null {
     return null;
 }
 
-function matchNewsletterGroupedNode(node: AstNode): ParsedPredicate | null {
+function matchNewsletterGroupedNode(node: AstNode): UnstampedFilter | null {
     const compound = getCompoundChildren(node);
 
     if (!compound || compound.children.length !== 2) {
@@ -129,7 +129,7 @@ function matchNewsletterGroupedNode(node: AstNode): ParsedPredicate | null {
     return null;
 }
 
-function matchFeedbackGroupedNode(node: AstNode): ParsedPredicate | null {
+function matchFeedbackGroupedNode(node: AstNode): UnstampedFilter | null {
     const compound = getCompoundChildren(node);
 
     if (!compound || compound.operator !== '$and' || compound.children.length !== 2) {
@@ -160,35 +160,15 @@ function matchFeedbackGroupedNode(node: AstNode): ParsedPredicate | null {
     };
 }
 
-const MEMBER_COMPOUND_MATCHERS: CompoundMatcher[] = [
+const MEMBER_COMPOUND_IMPORTERS: CompoundMatcher[] = [
     matchSubscribedNode,
     matchNewsletterGroupedNode,
     matchFeedbackGroupedNode
 ];
 
-function matchesMemberCompound(node: AstNode): boolean {
-    return MEMBER_COMPOUND_MATCHERS.some(matcher => Boolean(matcher(node)));
-}
-
-function hasUnsupportedMemberOrCompound(node: AstNode): boolean {
-    const compound = getCompoundChildren(node);
-
-    if (compound) {
-        if (compound.operator === '$or' && !matchesMemberCompound(node)) {
-            return true;
-        }
-
-        return compound.children.some(child => hasUnsupportedMemberOrCompound(child as AstNode));
-    }
-
-    return Object.values(node).some((value) => {
-        return value !== null && typeof value === 'object' && !Array.isArray(value) && hasUnsupportedMemberOrCompound(value as AstNode);
-    });
-}
-
-function parseMemberNode(node: AstNode, timezone: string): ParsedPredicate[] {
-    for (const matcher of MEMBER_COMPOUND_MATCHERS) {
-        const parsed = matcher(node);
+function importLegacyMemberNode(node: AstNode, timezone: string): UnstampedFilter[] {
+    for (const importer of MEMBER_COMPOUND_IMPORTERS) {
+        const parsed = importer(node);
 
         if (parsed) {
             return [parsed];
@@ -198,36 +178,18 @@ function parseMemberNode(node: AstNode, timezone: string): ParsedPredicate[] {
     const compound = getCompoundChildren(node);
 
     if (compound?.operator === '$and') {
-        return compound.children.flatMap(child => parseMemberNode(child, timezone));
+        return compound.children.flatMap(child => importLegacyMemberNode(child, timezone));
     }
 
-    return dispatchSimpleNodes([node], memberFields, timezone);
+    return importSimpleLegacyNodes([node], memberFields, timezone);
 }
 
-export function parseMemberFilter(filter: string | undefined, timezone: string): FilterPredicate[] {
-    const ast = parseFilterToAst(filter ?? '');
+export function importLegacyMemberFilters(filter: string | undefined, timezone: string): Filter[] {
+    const ast = parseLegacyFilterToAst(filter ?? '');
 
     if (!ast) {
         return [];
     }
 
-    return stampPredicates(parseMemberNode(ast, timezone));
-}
-
-export function hasUnsupportedMemberOrFilter(filter: string | undefined): boolean {
-    const ast = parseFilterToAst(filter ?? '');
-
-    if (!ast) {
-        return false;
-    }
-
-    return hasUnsupportedMemberOrCompound(ast);
-}
-
-export function serializeMemberFilters(predicates: FilterPredicate[], timezone: string): string | undefined {
-    return serializePredicates(predicates, memberFields, timezone);
-}
-
-export function compileMemberFilters(filters: Filter[], timezone: string): string | undefined {
-    return serializePredicates(filters, memberFields, timezone);
+    return stampImportedFilters(importLegacyMemberNode(ast, timezone));
 }

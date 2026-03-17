@@ -1,8 +1,12 @@
-import type {CodecContext, FilterField} from './filter-types';
+import type {FilterField, NqlContext} from './filter-types';
 
 interface ResolvedField {
     definition: FilterField;
-    context: CodecContext;
+    context: NqlContext;
+}
+
+interface ResolveFieldOptions {
+    allowParseKeys?: boolean;
 }
 
 function matchPattern(pattern: string, key: string): Record<string, string> | null {
@@ -32,7 +36,7 @@ function matchPattern(pattern: string, key: string): Record<string, string> | nu
     return params;
 }
 
-export function resolveField<TFields extends Record<string, FilterField>>(fields: TFields, key: string, timezone: string): ResolvedField | undefined {
+export function resolveField<TFields extends Record<string, FilterField>>(fields: TFields, key: string, timezone: string, options: ResolveFieldOptions = {}): ResolvedField | undefined {
     const exactDefinition = fields[key];
 
     if (exactDefinition) {
@@ -47,20 +51,22 @@ export function resolveField<TFields extends Record<string, FilterField>>(fields
         };
     }
 
-    for (const [fieldKey, definition] of Object.entries(fields)) {
-        if (!definition.parseKeys?.includes(key)) {
-            continue;
-        }
-
-        return {
-            definition,
-            context: {
-                key: fieldKey,
-                pattern: fieldKey,
-                params: {},
-                timezone
+    if (options.allowParseKeys ?? true) {
+        for (const [fieldKey, definition] of Object.entries(fields)) {
+            if (!definition.parseKeys?.includes(key)) {
+                continue;
             }
-        };
+
+            return {
+                definition,
+                context: {
+                    key: fieldKey,
+                    pattern: fieldKey,
+                    params: {},
+                    timezone
+                }
+            };
+        }
     }
 
     for (const [pattern, definition] of Object.entries(fields)) {

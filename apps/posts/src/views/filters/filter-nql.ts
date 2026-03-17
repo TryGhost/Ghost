@@ -1,6 +1,6 @@
-import {escapeNqlString} from './filter-normalization';
+import {escapeNqlString, normalizeMultiValue} from './filter-normalization';
 import {extractComparator} from './filter-ast';
-import type {FilterCodec} from './filter-types';
+import type {FilterFieldNql} from './filter-types';
 
 const SCALAR_OPERATORS: Record<string, string> = {
     $eq: 'is',
@@ -39,21 +39,16 @@ const SET_OPERATOR_SYMBOLS: Record<string, string> = {
 
 const UNQUOTED_TOKEN_PATTERN = /^[A-Za-z0-9_.-]+$/;
 
-interface CodecConfig {
+interface NqlConfig {
     field?: string;
     quoteStrings?: boolean;
-    serializeSingletonAsScalar?: boolean;
 }
 
-function getCodecField(config: CodecConfig | undefined, key: string): string {
+function getNqlField(config: NqlConfig | undefined, key: string): string {
     return config?.field ?? key;
 }
 
-function normalizeMultiValue(values: unknown[]): string[] {
-    return values.map(value => String(value)).sort((left, right) => left.localeCompare(right));
-}
-
-function serializeScalarValue(value: unknown, config?: CodecConfig): string {
+function serializeScalarValue(value: unknown, config?: NqlConfig): string {
     if (typeof value === 'string') {
         if (config?.quoteStrings || value.startsWith('-') || !UNQUOTED_TOKEN_PATTERN.test(value)) {
             return escapeNqlString(value);
@@ -99,11 +94,11 @@ function normalizeRegexValue(pattern: RegExp): string {
     return source.replace(/\\([\\.^$|?*+()[\]{}\/-])/g, '$1');
 }
 
-export function scalarCodec(config?: CodecConfig): FilterCodec {
+export function scalarNql(config?: NqlConfig): FilterFieldNql {
     return {
-        parse(node, ctx) {
+        fromNql(node, ctx) {
             const comparator = extractComparator(node as Record<string, unknown>);
-            const field = getCodecField(config, ctx.key);
+            const field = getNqlField(config, ctx.key);
 
             if (!comparator || comparator.field !== field) {
                 return null;
@@ -121,19 +116,19 @@ export function scalarCodec(config?: CodecConfig): FilterCodec {
                 values: [comparator.value]
             };
         },
-        serialize(predicate, ctx) {
-            const value = predicate.values[0];
-            const field = getCodecField(config, ctx.key);
+        toNql(filter, ctx) {
+            const value = filter.values[0];
+            const field = getNqlField(config, ctx.key);
 
             if (value === undefined || value === null || value === '') {
                 return null;
             }
 
-            if (predicate.operator === 'is') {
+            if (filter.operator === 'is') {
                 return [`${field}:${serializeScalarValue(value, config)}`];
             }
 
-            if (predicate.operator === 'is-not') {
+            if (filter.operator === 'is-not') {
                 return [`${field}:-${serializeScalarValue(value, config)}`];
             }
 
@@ -142,11 +137,11 @@ export function scalarCodec(config?: CodecConfig): FilterCodec {
     };
 }
 
-export function textCodec(config?: CodecConfig): FilterCodec {
+export function textNql(config?: NqlConfig): FilterFieldNql {
     return {
-        parse(node, ctx) {
+        fromNql(node, ctx) {
             const comparator = extractComparator(node as Record<string, unknown>);
-            const field = getCodecField(config, ctx.key);
+            const field = getNqlField(config, ctx.key);
 
             if (!comparator || comparator.field !== field) {
                 return null;
@@ -178,19 +173,19 @@ export function textCodec(config?: CodecConfig): FilterCodec {
 
             return null;
         },
-        serialize(predicate, ctx) {
-            const rawValue = predicate.values[0];
-            const field = getCodecField(config, ctx.key);
+        toNql(filter, ctx) {
+            const rawValue = filter.values[0];
+            const field = getNqlField(config, ctx.key);
 
             if (typeof rawValue !== 'string') {
                 return null;
             }
 
-            if (predicate.operator === 'is') {
+            if (filter.operator === 'is') {
                 return [`${field}:${escapeNqlString(rawValue)}`];
             }
 
-            const operator = TEXT_OPERATOR_SYMBOLS[predicate.operator];
+            const operator = TEXT_OPERATOR_SYMBOLS[filter.operator];
 
             if (!operator) {
                 return null;
@@ -201,17 +196,17 @@ export function textCodec(config?: CodecConfig): FilterCodec {
     };
 }
 
-export function setCodec(config?: CodecConfig): FilterCodec {
+export function setNql(config?: NqlConfig): FilterFieldNql {
     return {
-        parse(node, ctx) {
+        fromNql(node, ctx) {
             const comparator = extractComparator(node as Record<string, unknown>);
-            const field = getCodecField(config, ctx.key);
+            const field = getNqlField(config, ctx.key);
 
-            if (!comparator || comparator.field !== field) {
+            if (!comparator || comparator.field !== field || !Array.isArray(comparator.value)) {
                 return null;
             }
 
-            if (comparator.operator === '$in' && Array.isArray(comparator.value)) {
+            if (comparator.operator === '$in') {
                 return {
                     field: ctx.key,
                     operator: 'is-any',
@@ -219,61 +214,39 @@ export function setCodec(config?: CodecConfig): FilterCodec {
                 };
             }
 
-            if (comparator.operator === '$nin' && Array.isArray(comparator.value)) {
+            if (comparator.operator === '$nin') {
                 return {
                     field: ctx.key,
                     operator: 'is-not-any',
                     values: comparator.value
-                };
-            }
-
-            if (comparator.operator === '$eq') {
-                return {
-                    field: ctx.key,
-                    operator: 'is-any',
-                    values: [comparator.value]
-                };
-            }
-
-            if (comparator.operator === '$ne') {
-                return {
-                    field: ctx.key,
-                    operator: 'is-not-any',
-                    values: [comparator.value]
                 };
             }
 
             return null;
         },
-        serialize(predicate, ctx) {
-            const field = getCodecField(config, ctx.key);
+        toNql(filter, ctx) {
+            const field = getNqlField(config, ctx.key);
 
-            if (!predicate.values.length) {
+            if (!filter.values.length) {
                 return null;
             }
 
-            const operator = SET_OPERATOR_SYMBOLS[predicate.operator];
+            const operator = SET_OPERATOR_SYMBOLS[filter.operator];
 
             if (operator === undefined) {
                 return null;
             }
 
-            const values = normalizeMultiValue(predicate.values);
-
-            if (config?.serializeSingletonAsScalar && values.length === 1) {
-                return [`${field}:${operator}${serializeScalarValue(values[0], config)}`];
-            }
-
-            return [`${field}:${operator}[${values.map(value => serializeScalarValue(value, config)).join(',')}]`];
+            return [`${field}:${operator}[${normalizeMultiValue(filter.values).join(',')}]`];
         }
     };
 }
 
-export function numberCodec(config?: CodecConfig): FilterCodec {
+export function numberNql(config?: NqlConfig): FilterFieldNql {
     return {
-        parse(node, ctx) {
+        fromNql(node, ctx) {
             const comparator = extractComparator(node as Record<string, unknown>);
-            const field = getCodecField(config, ctx.key);
+            const field = getNqlField(config, ctx.key);
 
             if (!comparator || comparator.field !== field || typeof comparator.value !== 'number') {
                 return null;
@@ -291,9 +264,9 @@ export function numberCodec(config?: CodecConfig): FilterCodec {
                 values: [comparator.value]
             };
         },
-        serialize(predicate, ctx) {
-            const rawValue = predicate.values[0];
-            const field = getCodecField(config, ctx.key);
+        toNql(filter, ctx) {
+            const rawValue = filter.values[0];
+            const field = getNqlField(config, ctx.key);
             const value = typeof rawValue === 'string'
                 ? rawValue.trim() === ''
                     ? NaN
@@ -304,7 +277,7 @@ export function numberCodec(config?: CodecConfig): FilterCodec {
                 return null;
             }
 
-            const operator = NUMBER_OPERATOR_SYMBOLS[predicate.operator];
+            const operator = NUMBER_OPERATOR_SYMBOLS[filter.operator];
 
             if (operator === undefined) {
                 return null;

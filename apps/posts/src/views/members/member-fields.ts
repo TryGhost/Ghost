@@ -1,15 +1,8 @@
 import moment from 'moment-timezone';
 import {defineFields} from '../filters/filter-types';
-import {escapeNqlString} from '../filters/filter-normalization';
-import {numberCodec, scalarCodec, setCodec, textCodec} from '../filters/filter-codecs';
-import type {FilterCodec} from '../filters/filter-types';
-
-function getDayBoundsInUtc(date: string, timezone: string): {start: string; end: string} {
-    const start = moment.tz(date, 'YYYY-MM-DD', timezone).startOf('day').utc().toISOString();
-    const end = moment.tz(date, 'YYYY-MM-DD', timezone).endOf('day').utc().toISOString();
-
-    return {start, end};
-}
+import {escapeNqlString, getDayBoundsInUtc} from '../filters/filter-normalization';
+import {numberNql, scalarNql, setNql, textNql} from '../filters/filter-nql';
+import type {FilterFieldNql} from '../filters/filter-types';
 
 const TEXT_OPERATORS = ['is', 'contains', 'does-not-contain', 'starts-with', 'ends-with'] as const;
 const DATE_OPERATORS = ['is-less', 'is-or-less', 'is-greater', 'is-or-greater'] as const;
@@ -40,8 +33,8 @@ function formatDateValue(value: unknown, timezone: string): string | null {
     return parsed.format('YYYY-MM-DD');
 }
 
-const memberDateCodec: FilterCodec = {
-    parse(node, ctx) {
+const memberDateNql: FilterFieldNql = {
+    fromNql(node, ctx) {
         const entry = Object.entries(node as Record<string, unknown>)[0];
 
         if (!entry || entry[0] !== ctx.key || typeof entry[1] !== 'object' || entry[1] === null) {
@@ -68,8 +61,8 @@ const memberDateCodec: FilterCodec = {
             return null;
         }
     },
-    serialize(predicate, ctx) {
-        const value = predicate.values[0];
+    toNql(filter, ctx) {
+        const value = filter.values[0];
 
         if (typeof value !== 'string' || !value) {
             return null;
@@ -77,7 +70,7 @@ const memberDateCodec: FilterCodec = {
 
         const {start, end} = getDayBoundsInUtc(value, ctx.timezone);
 
-        switch (predicate.operator) {
+        switch (filter.operator) {
         case 'is-less':
             return [`${ctx.key}:<'${start}'`];
         case 'is-or-less':
@@ -92,31 +85,31 @@ const memberDateCodec: FilterCodec = {
     }
 };
 
-const subscribedCodec: FilterCodec = {
-    parse() {
+const subscribedNql: FilterFieldNql = {
+    fromNql() {
         return null;
     },
-    serialize(predicate) {
-        const value = predicate.values[0];
+    toNql(filter) {
+        const value = filter.values[0];
 
-        if (predicate.operator !== 'is' && predicate.operator !== 'is-not') {
+        if (filter.operator !== 'is' && filter.operator !== 'is-not') {
             return null;
         }
 
         if (value === 'email-disabled') {
-            return predicate.operator === 'is'
+            return filter.operator === 'is'
                 ? ['(email_disabled:1)']
                 : ['(email_disabled:0)'];
         }
 
         if (value === 'subscribed') {
-            return predicate.operator === 'is'
+            return filter.operator === 'is'
                 ? ['(subscribed:true+email_disabled:0)']
                 : ['(subscribed:false,email_disabled:1)'];
         }
 
         if (value === 'unsubscribed') {
-            return predicate.operator === 'is'
+            return filter.operator === 'is'
                 ? ['(subscribed:false+email_disabled:0)']
                 : ['(subscribed:true,email_disabled:1)'];
         }
@@ -125,15 +118,15 @@ const subscribedCodec: FilterCodec = {
     }
 };
 
-const newsletterCodec: FilterCodec = {
-    parse() {
+const newsletterNql: FilterFieldNql = {
+    fromNql() {
         return null;
     },
-    serialize(predicate, ctx) {
+    toNql(filter, ctx) {
         const slug = ctx.params.slug;
-        const value = predicate.values[0];
+        const value = filter.values[0];
 
-        if (!slug || predicate.operator !== 'is') {
+        if (!slug || filter.operator !== 'is') {
             return null;
         }
 
@@ -149,18 +142,18 @@ const newsletterCodec: FilterCodec = {
     }
 };
 
-const feedbackCodec: FilterCodec = {
-    parse() {
+const feedbackNql: FilterFieldNql = {
+    fromNql() {
         return null;
     },
-    serialize(predicate) {
-        const postId = predicate.values[0];
+    toNql(filter) {
+        const postId = filter.values[0];
 
-        if (typeof postId !== 'string' || !postId || (predicate.operator !== '1' && predicate.operator !== '0')) {
+        if (typeof postId !== 'string' || !postId || (filter.operator !== '1' && filter.operator !== '0')) {
             return null;
         }
 
-        return [`(feedback.post_id:${escapeNqlString(postId)}+feedback.score:${predicate.operator})`];
+        return [`(feedback.post_id:${escapeNqlString(postId)}+feedback.score:${filter.operator})`];
     }
 };
 
@@ -174,7 +167,7 @@ export const memberFields = defineFields({
             defaultOperator: 'is',
             className: 'w-48'
         },
-        codec: textCodec()
+        ...textNql()
     },
     email: {
         operators: TEXT_OPERATORS,
@@ -185,7 +178,7 @@ export const memberFields = defineFields({
             defaultOperator: 'is',
             className: 'w-64'
         },
-        codec: textCodec()
+        ...textNql()
     },
     label: {
         operators: SET_OPERATORS,
@@ -203,7 +196,7 @@ export const memberFields = defineFields({
                 include: 'labels'
             }
         },
-        codec: setCodec()
+        ...setNql()
     },
     subscribed: {
         operators: SCALAR_OPERATORS,
@@ -217,7 +210,7 @@ export const memberFields = defineFields({
             {value: 'unsubscribed', label: 'Unsubscribed'},
             {value: 'email-disabled', label: 'Email disabled'}
         ],
-        codec: subscribedCodec
+        ...subscribedNql
     },
     last_seen_at: {
         operators: DATE_OPERATORS,
@@ -227,7 +220,7 @@ export const memberFields = defineFields({
             defaultOperator: 'is-or-less',
             className: 'w-40'
         },
-        codec: memberDateCodec
+        ...memberDateNql
     },
     created_at: {
         operators: DATE_OPERATORS,
@@ -237,7 +230,7 @@ export const memberFields = defineFields({
             defaultOperator: 'is-or-less',
             className: 'w-40'
         },
-        codec: memberDateCodec
+        ...memberDateNql
     },
     signup: {
         operators: SCALAR_OPERATORS,
@@ -248,7 +241,7 @@ export const memberFields = defineFields({
             placeholder: 'Select a post or page...',
             className: 'w-64'
         },
-        codec: scalarCodec({quoteStrings: true})
+        ...scalarNql({quoteStrings: true})
     },
     'newsletters.:slug': {
         operators: ['is'],
@@ -262,7 +255,7 @@ export const memberFields = defineFields({
             {value: 'subscribed', label: 'Subscribed'},
             {value: 'unsubscribed', label: 'Unsubscribed'}
         ],
-        codec: newsletterCodec
+        ...newsletterNql
     },
     tier_id: {
         operators: SET_OPERATORS,
@@ -280,7 +273,7 @@ export const memberFields = defineFields({
                 include: 'tiers'
             }
         },
-        codec: setCodec()
+        ...setNql()
     },
     status: {
         operators: SCALAR_OPERATORS,
@@ -294,7 +287,7 @@ export const memberFields = defineFields({
             {value: 'free', label: 'Free'},
             {value: 'comped', label: 'Complimentary'}
         ],
-        codec: scalarCodec()
+        ...scalarNql()
     },
     'subscriptions.plan_interval': {
         operators: SCALAR_OPERATORS,
@@ -314,7 +307,7 @@ export const memberFields = defineFields({
                 include: 'subscriptions'
             }
         },
-        codec: scalarCodec()
+        ...scalarNql()
     },
     'subscriptions.status': {
         operators: SCALAR_OPERATORS,
@@ -331,7 +324,7 @@ export const memberFields = defineFields({
                 include: 'subscriptions'
             }
         },
-        codec: scalarCodec()
+        ...scalarNql()
     },
     'subscriptions.start_date': {
         operators: DATE_OPERATORS,
@@ -348,7 +341,7 @@ export const memberFields = defineFields({
                 include: 'subscriptions'
             }
         },
-        codec: memberDateCodec
+        ...memberDateNql
     },
     'subscriptions.current_period_end': {
         operators: DATE_OPERATORS,
@@ -365,7 +358,7 @@ export const memberFields = defineFields({
                 include: 'subscriptions'
             }
         },
-        codec: memberDateCodec
+        ...memberDateNql
     },
     conversion: {
         operators: SCALAR_OPERATORS,
@@ -376,7 +369,7 @@ export const memberFields = defineFields({
             placeholder: 'Select a post or page...',
             className: 'w-64'
         },
-        codec: scalarCodec({quoteStrings: true})
+        ...scalarNql({quoteStrings: true})
     },
     email_count: {
         operators: NUMBER_OPERATORS,
@@ -388,7 +381,7 @@ export const memberFields = defineFields({
             min: 0,
             className: 'w-24'
         },
-        codec: numberCodec()
+        ...numberNql()
     },
     email_opened_count: {
         operators: NUMBER_OPERATORS,
@@ -400,7 +393,7 @@ export const memberFields = defineFields({
             min: 0,
             className: 'w-24'
         },
-        codec: numberCodec()
+        ...numberNql()
     },
     email_open_rate: {
         operators: NUMBER_OPERATORS,
@@ -414,7 +407,7 @@ export const memberFields = defineFields({
             suffix: '%',
             className: 'w-24'
         },
-        codec: numberCodec()
+        ...numberNql()
     },
     'emails.post_id': {
         operators: SCALAR_OPERATORS,
@@ -425,7 +418,7 @@ export const memberFields = defineFields({
             placeholder: 'Select an email...',
             className: 'w-64'
         },
-        codec: scalarCodec({quoteStrings: true})
+        ...scalarNql({quoteStrings: true})
     },
     'opened_emails.post_id': {
         operators: SCALAR_OPERATORS,
@@ -436,7 +429,7 @@ export const memberFields = defineFields({
             placeholder: 'Select an email...',
             className: 'w-64'
         },
-        codec: scalarCodec({quoteStrings: true})
+        ...scalarNql({quoteStrings: true})
     },
     'clicked_links.post_id': {
         operators: SCALAR_OPERATORS,
@@ -447,7 +440,7 @@ export const memberFields = defineFields({
             placeholder: 'Select an email...',
             className: 'w-64'
         },
-        codec: scalarCodec({quoteStrings: true})
+        ...scalarNql({quoteStrings: true})
     },
     newsletter_feedback: {
         operators: ['1', '0'],
@@ -459,7 +452,7 @@ export const memberFields = defineFields({
             className: 'w-64',
             defaultOperator: '1'
         },
-        codec: feedbackCodec
+        ...feedbackNql
     },
     offer_redemptions: {
         operators: SET_OPERATORS,
@@ -476,6 +469,6 @@ export const memberFields = defineFields({
                 label: 'Offer'
             }
         },
-        codec: setCodec({quoteStrings: true, serializeSingletonAsScalar: true})
+        ...setNql()
     }
 });

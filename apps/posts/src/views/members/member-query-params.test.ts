@@ -4,11 +4,11 @@ import {
     getMemberActiveColumns
 } from './member-query-params';
 import {describe, expect, it} from 'vitest';
-import type {FilterPredicate} from '../filters/filter-types';
+import type {Filter} from '@tryghost/shade';
 
 describe('member-query-params', () => {
     it('keeps search separate while deriving includes from active field metadata', () => {
-        const filters: FilterPredicate[] = [
+        const filters: Filter[] = [
             {
                 id: '1',
                 field: 'subscriptions.status',
@@ -37,7 +37,7 @@ describe('member-query-params', () => {
     });
 
     it('derives active columns from field metadata without a separate map', () => {
-        const filters: FilterPredicate[] = [
+        const filters: Filter[] = [
             {
                 id: '1',
                 field: 'label',

@@ -1,6 +1,6 @@
 import {memberFields} from './member-fields';
 import {resolveField} from '../filters/resolve-field';
-import type {FilterPredicate} from '../filters/filter-types';
+import type {Filter} from '@tryghost/shade';
 
 type ActiveColumn = {
     key: string;
@@ -9,7 +9,7 @@ type ActiveColumn = {
 };
 
 interface BuildMemberListSearchParamsOptions {
-    filters: FilterPredicate[];
+    filters: Filter[];
     nql?: string;
     search: string;
 }
@@ -19,7 +19,7 @@ interface BuildMemberOperationParamsOptions {
     search: string;
 }
 
-export function getMemberActiveColumns(filters: FilterPredicate[]): ActiveColumn[] {
+export function getMemberActiveColumns(filters: Filter[]): ActiveColumn[] {
     const columns = new Map<string, ActiveColumn>();
 
     for (const filter of filters) {
@@ -33,7 +33,7 @@ export function getMemberActiveColumns(filters: FilterPredicate[]): ActiveColumn
     return Array.from(columns.values());
 }
 
-function getMemberIncludes(filters: FilterPredicate[]): string {
+function getMemberIncludes(filters: Filter[]): string {
     const includes = new Set(['labels', 'tiers']);
 
     for (const column of getMemberActiveColumns(filters)) {

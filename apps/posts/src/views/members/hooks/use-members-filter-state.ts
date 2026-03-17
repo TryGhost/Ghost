@@ -1,7 +1,10 @@
+import {compileMemberFilters, hasUnsupportedMemberOrFilter} from '../member-filter-query';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
-import {hasUnsupportedMemberOrFilter, parseMemberFilter, serializeMemberFilters} from '../member-filter-query';
+import {importLegacyMemberFilters} from '../member-filter-import';
+import {memberFields} from '../member-fields';
+import {parseBrowserFilters, replaceBrowserFiltersInSearchParams} from '../../filters/browser-filter-params';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
-import {useCallback, useMemo} from 'react';
+import {useCallback, useEffect, useMemo} from 'react';
 import {useSearchParams} from 'react-router';
 import type {Filter} from '@tryghost/shade';
 
@@ -20,18 +23,9 @@ interface UseMembersFilterStateReturn {
     hasFilterOrSearch: boolean;
 }
 
-function toSearchParams(filters: Filter[], search: string, timezone: string): URLSearchParams {
-    const params = new URLSearchParams();
-    const filter = serializeMemberFilters(filters, timezone);
-
-    if (filter) {
-        params.set('filter', filter);
-    }
-
-    if (search) {
-        params.set('search', search);
-    }
-
+function rewriteBrowserParams(currentParams: URLSearchParams, filters: Filter[]): URLSearchParams {
+    const params = replaceBrowserFiltersInSearchParams(currentParams, filters, memberFields);
+    params.delete('filter');
     return params;
 }
 
@@ -48,50 +42,79 @@ export function useMembersFilterState(): UseMembersFilterStateReturn {
         return getSiteTimezone(settingsData.settings ?? []);
     }, [settingsData]);
     const timezone = resolvedTimezone ?? 'Etc/UTC';
-    const shouldPreserveRawFilter = Boolean(filterParam) && (!resolvedTimezone || hasUnsupportedOrFilter);
+
+    const browserFilters = useMemo(() => {
+        return parseBrowserFilters(searchParams, memberFields);
+    }, [searchParams]);
+
+    const shouldPreserveRawFilter = browserFilters.length === 0 && Boolean(filterParam) && (!resolvedTimezone || hasUnsupportedOrFilter);
 
     const filters = useMemo(() => {
-        if (hasUnsupportedOrFilter) {
+        if (browserFilters.length > 0) {
+            return browserFilters;
+        }
+
+        if (shouldPreserveRawFilter) {
             return [];
         }
 
-        return parseMemberFilter(filterParam, timezone);
-    }, [filterParam, hasUnsupportedOrFilter, timezone]);
+        return importLegacyMemberFilters(filterParam, timezone);
+    }, [browserFilters, filterParam, shouldPreserveRawFilter, timezone]);
 
     const search = useMemo(() => {
         return searchParams.get('search') ?? '';
     }, [searchParams]);
 
+    useEffect(() => {
+        const legacyFilter = filterParam;
+        const rewrittenBrowserParams = rewriteBrowserParams(searchParams, browserFilters);
+
+        if (browserFilters.length > 0) {
+            if (rewrittenBrowserParams.toString() !== searchParams.toString()) {
+                setSearchParams(rewrittenBrowserParams, {replace: true});
+            }
+
+            return;
+        }
+
+        if (!legacyFilter || shouldPreserveRawFilter) {
+            return;
+        }
+
+        const importedFilters = importLegacyMemberFilters(legacyFilter, timezone);
+        const rewrittenParams = rewriteBrowserParams(searchParams, importedFilters);
+
+        if (rewrittenParams.toString() !== searchParams.toString()) {
+            setSearchParams(rewrittenParams, {replace: true});
+        }
+    }, [browserFilters, filterParam, searchParams, setSearchParams, shouldPreserveRawFilter, timezone]);
+
     const setFilters = useCallback((nextFilters: Filter[], options: SetFiltersOptions = {}) => {
         const replace = options.replace ?? true;
+        const params = rewriteBrowserParams(searchParams, nextFilters);
 
-        setSearchParams(toSearchParams(nextFilters, search, timezone), {replace});
-    }, [search, setSearchParams, timezone]);
+        setSearchParams(params, {replace});
+    }, [searchParams, setSearchParams]);
 
     const setSearch = useCallback((nextSearch: string, options: SetFiltersOptions = {}) => {
         const replace = options.replace ?? true;
-        const params = new URLSearchParams();
-
-        if (shouldPreserveRawFilter && filterParam) {
-            params.set('filter', filterParam);
-        } else {
-            const filter = serializeMemberFilters(filters, timezone);
-
-            if (filter) {
-                params.set('filter', filter);
-            }
-        }
+        const params = shouldPreserveRawFilter && filterParam
+            ? new URLSearchParams(searchParams)
+            : rewriteBrowserParams(searchParams, filters);
 
         if (nextSearch) {
             params.set('search', nextSearch);
+        } else {
+            params.delete('search');
         }
 
         setSearchParams(params, {replace});
-    }, [filterParam, filters, setSearchParams, shouldPreserveRawFilter, timezone]);
+    }, [filterParam, filters, searchParams, setSearchParams, shouldPreserveRawFilter]);
 
     const clearFilters = useCallback(({replace = true}: SetFiltersOptions = {}) => {
-        setSearchParams(toSearchParams([], search, timezone), {replace});
-    }, [search, setSearchParams, timezone]);
+        const params = rewriteBrowserParams(searchParams, []);
+        setSearchParams(params, {replace});
+    }, [searchParams, setSearchParams]);
 
     const clearAll = useCallback(({replace = true}: SetFiltersOptions = {}) => {
         setSearchParams(new URLSearchParams(), {replace});
@@ -102,7 +125,7 @@ export function useMembersFilterState(): UseMembersFilterStateReturn {
             return filterParam;
         }
 
-        return serializeMemberFilters(filters, timezone);
+        return compileMemberFilters(filters, timezone);
     }, [filterParam, filters, shouldPreserveRawFilter, timezone]);
 
     return {
@@ -113,6 +136,6 @@ export function useMembersFilterState(): UseMembersFilterStateReturn {
         setSearch,
         clearFilters,
         clearAll,
-        hasFilterOrSearch: Boolean(filterParam) || search.length > 0
+        hasFilterOrSearch: Boolean(filterParam) || filters.length > 0 || search.length > 0
     };
 }

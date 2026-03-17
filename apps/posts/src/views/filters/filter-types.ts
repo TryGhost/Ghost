@@ -1,22 +1,17 @@
-export interface FilterPredicate {
-    id: string;
-    field: string;
-    operator: string;
-    values: unknown[];
-}
+import type {Filter} from '@tryghost/shade';
 
-export type ParsedPredicate = Omit<FilterPredicate, 'id'>;
+export type UnstampedFilter = Omit<Filter, 'id'>;
 
-export interface CodecContext {
+export interface NqlContext {
     key: string;
     pattern: string;
     params: Record<string, string>;
     timezone: string;
 }
 
-export interface FilterCodec {
-    parse: (node: unknown, ctx: CodecContext) => ParsedPredicate | null;
-    serialize: (predicate: FilterPredicate, ctx: CodecContext) => string[] | null;
+export interface FilterFieldNql {
+    fromNql: (node: unknown, ctx: NqlContext) => UnstampedFilter | null;
+    toNql: (filter: Filter, ctx: NqlContext) => string[] | null;
 }
 
 export interface FilterField {
@@ -35,7 +30,8 @@ export interface FilterField {
             include?: string;
         };
     };
-    codec: FilterCodec;
+    fromNql: FilterFieldNql['fromNql'];
+    toNql: FilterFieldNql['toNql'];
 }
 
 export function defineFields<TFields extends Record<string, FilterField>>(fields: TFields): TFields {
