@@ -41,6 +41,28 @@ describe('useFilterState', () => {
         expect(result.current.search).toBe('reported=is%3Atrue');
     });
 
+    it('reads the shipped mainline comment operator spellings', () => {
+        const {result} = renderHook(() => useFilterState(), {
+            wrapper: createWrapper('/?post=is_not:post_123&body=not_contains:ghost')
+        });
+
+        expect(result.current.filters).toEqual([
+            {
+                id: 'post:1',
+                field: 'post',
+                operator: 'is_not',
+                values: ['post_123']
+            },
+            {
+                id: 'body:1',
+                field: 'body',
+                operator: 'not_contains',
+                values: ['ghost']
+            }
+        ]);
+        expect(result.current.nql).toBe('html:-~\'ghost\'+post_id:-post_123');
+    });
+
     it('writes browser filter params and clears only filter params', () => {
         const {result} = renderHook(() => {
             const state = useFilterState();
@@ -72,7 +94,7 @@ describe('useFilterState', () => {
         expect(result.current.search).toBe('thread=comment_123');
     });
 
-    it('imports legacy filter params once and preserves unrelated params', async () => {
+    it('ignores legacy filter params entirely', async () => {
         const {result} = renderHook(() => {
             const state = useFilterState();
             const [searchParams] = useSearchParams();
@@ -83,85 +105,11 @@ describe('useFilterState', () => {
             };
         }, {wrapper: createWrapper('/?filter=count.reports:>0&thread=comment_123')});
 
-        expect(result.current.filters).toEqual([
-            {
-                id: 'reported:1',
-                field: 'reported',
-                operator: 'is',
-                values: ['true']
-            }
-        ]);
-
-        await waitFor(() => {
-            expect(result.current.search).toBe('thread=comment_123&reported=is%3Atrue');
-        });
-    });
-
-    it('prefers browser filter params when both new and legacy formats are present', async () => {
-        const {result} = renderHook(() => {
-            const state = useFilterState();
-            const [searchParams] = useSearchParams();
-
-            return {
-                ...state,
-                search: searchParams.toString()
-            };
-        }, {wrapper: createWrapper('/?reported=is:false&filter=count.reports:>0')});
-
-        expect(result.current.filters).toEqual([
-            {
-                id: 'reported:1',
-                field: 'reported',
-                operator: 'is',
-                values: ['false']
-            }
-        ]);
-
-        await waitFor(() => {
-            expect(result.current.search).toBe('reported=is%3Afalse');
-        });
-    });
-
-    it('falls back to legacy import when browser filter params are malformed', async () => {
-        const {result} = renderHook(() => {
-            const state = useFilterState();
-            const [searchParams] = useSearchParams();
-
-            return {
-                ...state,
-                search: searchParams.toString()
-            };
-        }, {wrapper: createWrapper('/?reported=broken&filter=count.reports:>0&thread=comment_123')});
-
-        expect(result.current.filters).toEqual([
-            {
-                id: 'reported:1',
-                field: 'reported',
-                operator: 'is',
-                values: ['true']
-            }
-        ]);
-
-        await waitFor(() => {
-            expect(result.current.search).toBe('thread=comment_123&reported=is%3Atrue');
-        });
-    });
-
-    it('fails closed on malformed legacy filter params', async () => {
-        const {result} = renderHook(() => {
-            const state = useFilterState();
-            const [searchParams] = useSearchParams();
-
-            return {
-                ...state,
-                search: searchParams.toString()
-            };
-        }, {wrapper: createWrapper('/?filter=created_at:(')});
-
         expect(result.current.filters).toEqual([]);
+        expect(result.current.nql).toBeUndefined();
 
         await waitFor(() => {
-            expect(result.current.search).toBe('');
+            expect(result.current.search).toBe('filter=count.reports%3A%3E0&thread=comment_123');
         });
     });
 

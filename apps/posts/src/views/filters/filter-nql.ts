@@ -1,4 +1,4 @@
-import {escapeNqlString, normalizeMultiValue} from './filter-normalization';
+import {escapeNqlString, normalizeMultiValue, normalizeOperator} from './filter-normalization';
 import {extractComparator} from './filter-ast';
 import type {FilterFieldNql} from './filter-types';
 
@@ -42,6 +42,7 @@ const UNQUOTED_TOKEN_PATTERN = /^[A-Za-z0-9_.-]+$/;
 interface NqlConfig {
     field?: string;
     quoteStrings?: boolean;
+    serializeSingletonAsScalar?: boolean;
 }
 
 function getNqlField(config: NqlConfig | undefined, key: string): string {
@@ -119,16 +120,17 @@ export function scalarNql(config?: NqlConfig): FilterFieldNql {
         toNql(filter, ctx) {
             const value = filter.values[0];
             const field = getNqlField(config, ctx.key);
+            const operator = normalizeOperator(filter.operator);
 
             if (value === undefined || value === null || value === '') {
                 return null;
             }
 
-            if (filter.operator === 'is') {
+            if (operator === 'is') {
                 return [`${field}:${serializeScalarValue(value, config)}`];
             }
 
-            if (filter.operator === 'is-not') {
+            if (operator === 'is-not') {
                 return [`${field}:-${serializeScalarValue(value, config)}`];
             }
 
@@ -176,22 +178,23 @@ export function textNql(config?: NqlConfig): FilterFieldNql {
         toNql(filter, ctx) {
             const rawValue = filter.values[0];
             const field = getNqlField(config, ctx.key);
+            const operator = normalizeOperator(filter.operator);
 
             if (typeof rawValue !== 'string') {
                 return null;
             }
 
-            if (filter.operator === 'is') {
+            if (operator === 'is') {
                 return [`${field}:${escapeNqlString(rawValue)}`];
             }
 
-            const operator = TEXT_OPERATOR_SYMBOLS[filter.operator];
+            const symbol = TEXT_OPERATOR_SYMBOLS[operator];
 
-            if (!operator) {
+            if (!symbol) {
                 return null;
             }
 
-            return [`${field}:${operator}${escapeNqlString(rawValue)}`];
+            return [`${field}:${symbol}${escapeNqlString(rawValue)}`];
         }
     };
 }
@@ -202,11 +205,11 @@ export function setNql(config?: NqlConfig): FilterFieldNql {
             const comparator = extractComparator(node as Record<string, unknown>);
             const field = getNqlField(config, ctx.key);
 
-            if (!comparator || comparator.field !== field || !Array.isArray(comparator.value)) {
+            if (!comparator || comparator.field !== field) {
                 return null;
             }
 
-            if (comparator.operator === '$in') {
+            if (comparator.operator === '$in' && Array.isArray(comparator.value)) {
                 return {
                     field: ctx.key,
                     operator: 'is-any',
@@ -214,7 +217,7 @@ export function setNql(config?: NqlConfig): FilterFieldNql {
                 };
             }
 
-            if (comparator.operator === '$nin') {
+            if (comparator.operator === '$nin' && Array.isArray(comparator.value)) {
                 return {
                     field: ctx.key,
                     operator: 'is-not-any',
@@ -222,22 +225,45 @@ export function setNql(config?: NqlConfig): FilterFieldNql {
                 };
             }
 
+            if (comparator.operator === '$eq') {
+                return {
+                    field: ctx.key,
+                    operator: 'is-any',
+                    values: [comparator.value]
+                };
+            }
+
+            if (comparator.operator === '$ne') {
+                return {
+                    field: ctx.key,
+                    operator: 'is-not-any',
+                    values: [comparator.value]
+                };
+            }
+
             return null;
         },
         toNql(filter, ctx) {
             const field = getNqlField(config, ctx.key);
+            const operator = normalizeOperator(filter.operator);
 
             if (!filter.values.length) {
                 return null;
             }
 
-            const operator = SET_OPERATOR_SYMBOLS[filter.operator];
+            const symbol = SET_OPERATOR_SYMBOLS[operator];
 
-            if (operator === undefined) {
+            if (symbol === undefined) {
                 return null;
             }
 
-            return [`${field}:${operator}[${normalizeMultiValue(filter.values).join(',')}]`];
+            const values = normalizeMultiValue(filter.values);
+
+            if (config?.serializeSingletonAsScalar && values.length === 1) {
+                return [`${field}:${symbol}${serializeScalarValue(values[0], config)}`];
+            }
+
+            return [`${field}:${symbol}[${values.map(value => serializeScalarValue(value, config)).join(',')}]`];
         }
     };
 }
@@ -272,18 +298,19 @@ export function numberNql(config?: NqlConfig): FilterFieldNql {
                     ? NaN
                     : Number(rawValue)
                 : rawValue;
+            const operator = normalizeOperator(filter.operator);
 
             if (typeof value !== 'number' || Number.isNaN(value)) {
                 return null;
             }
 
-            const operator = NUMBER_OPERATOR_SYMBOLS[filter.operator];
+            const symbol = NUMBER_OPERATOR_SYMBOLS[operator];
 
-            if (operator === undefined) {
+            if (symbol === undefined) {
                 return null;
             }
 
-            return [`${field}:${operator}${value}`];
+            return [`${field}:${symbol}${value}`];
         }
     };
 }

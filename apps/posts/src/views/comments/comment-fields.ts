@@ -1,37 +1,10 @@
 import {defineFields} from '../filters/filter-types';
-import {extractComparator} from '../filters/filter-ast';
 import {getDayBoundsInUtc} from '../filters/filter-normalization';
 import {scalarNql, textNql} from '../filters/filter-nql';
 import type {FilterFieldNql} from '../filters/filter-types';
 
 const commentDateNql: FilterFieldNql = {
-    fromNql(node, ctx) {
-        const comparator = extractComparator(node as Record<string, unknown>);
-
-        if (!comparator || comparator.field !== ctx.key) {
-            return null;
-        }
-
-        if (typeof comparator.value !== 'string') {
-            return null;
-        }
-
-        if (comparator.operator === '$lt') {
-            return {
-                field: ctx.key,
-                operator: 'before',
-                values: [comparator.value]
-            };
-        }
-
-        if (comparator.operator === '$gt') {
-            return {
-                field: ctx.key,
-                operator: 'after',
-                values: [comparator.value]
-            };
-        }
-
+    fromNql() {
         return null;
     },
     toNql(filter, ctx) {
@@ -63,29 +36,7 @@ const commentDateNql: FilterFieldNql = {
 };
 
 const reportedNql: FilterFieldNql = {
-    fromNql(node, ctx) {
-        const comparator = extractComparator(node as Record<string, unknown>);
-
-        if (!comparator || comparator.field !== 'count.reports') {
-            return null;
-        }
-
-        if (comparator.operator === '$eq' && comparator.value === 0) {
-            return {
-                field: ctx.key,
-                operator: 'is',
-                values: ['false']
-            };
-        }
-
-        if (comparator.operator === '$gt' && comparator.value === 0) {
-            return {
-                field: ctx.key,
-                operator: 'is',
-                values: ['true']
-            };
-        }
-
+    fromNql() {
         return null;
     },
     toNql(filter) {
@@ -141,8 +92,7 @@ export const commentFields = defineFields({
         ...commentDateNql
     },
     body: {
-        operators: ['contains', 'does-not-contain'],
-        parseKeys: ['html'],
+        operators: ['contains', 'not_contains'],
         ui: {
             label: 'Text',
             type: 'text',
@@ -154,8 +104,7 @@ export const commentFields = defineFields({
         ...textNql({field: 'html'})
     },
     post: {
-        operators: ['is', 'is-not'],
-        parseKeys: ['post_id'],
+        operators: ['is', 'is_not'],
         ui: {
             label: 'Post',
             type: 'select',
@@ -166,8 +115,7 @@ export const commentFields = defineFields({
         ...scalarNql({field: 'post_id'})
     },
     author: {
-        operators: ['is', 'is-not'],
-        parseKeys: ['member_id'],
+        operators: ['is', 'is_not'],
         ui: {
             label: 'Author',
             type: 'select',
@@ -179,7 +127,6 @@ export const commentFields = defineFields({
     },
     reported: {
         operators: ['is'],
-        parseKeys: ['count.reports'],
         ui: {
             label: 'Reported',
             type: 'select',

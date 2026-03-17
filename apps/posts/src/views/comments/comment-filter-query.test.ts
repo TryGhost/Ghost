@@ -49,6 +49,15 @@ describe('comment-filter-query', () => {
         expect(compileCommentFilters(filters, 'UTC')).toBe('id:comment_123');
     });
 
+    it('compiles the shipped mainline comment operator spellings', () => {
+        const filters: Filter[] = [
+            {id: '1', field: 'post', operator: 'is_not', values: ['post_123']},
+            {id: '2', field: 'body', operator: 'not_contains', values: ['ghost']}
+        ];
+
+        expect(compileCommentFilters(filters, 'UTC')).toBe('html:-~\'ghost\'+post_id:-post_123');
+    });
+
     it('sorts clauses canonically on serialize', () => {
         const filters: Filter[] = [
             {id: '2', field: 'status', operator: 'is', values: ['published']},

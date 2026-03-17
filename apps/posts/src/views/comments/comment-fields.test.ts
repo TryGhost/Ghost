@@ -32,7 +32,7 @@ describe('commentFields', () => {
 
     it('keeps the expected static picker config for resource selects', () => {
         expect(commentFields.author).toMatchObject({
-            operators: ['is', 'is-not'],
+            operators: ['is', 'is_not'],
             ui: {
                 label: 'Author',
                 type: 'select',
@@ -43,7 +43,7 @@ describe('commentFields', () => {
         });
 
         expect(commentFields.post).toMatchObject({
-            operators: ['is', 'is-not'],
+            operators: ['is', 'is_not'],
             ui: {
                 label: 'Post',
                 type: 'select',
@@ -57,6 +57,7 @@ describe('commentFields', () => {
     it('uses local NQL handlers for comment-specific fields', () => {
         expect(commentFields.created_at.toNql).not.toBe(commentFields.status.toNql);
         expect(commentFields.reported.toNql).not.toBe(commentFields.status.toNql);
+        expect(commentFields.body.operators).toEqual(['contains', 'not_contains']);
     });
 });
 
