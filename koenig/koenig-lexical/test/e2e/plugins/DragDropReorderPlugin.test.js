@@ -159,16 +159,10 @@ test.describe('Drag Drop Reorder Plugin', async function () {
         `, {ignoreCardContents: true});
 
         const imageBBox = await page.locator('[data-kg-card="image"]').boundingBox();
-        // :not(figure p) avoids the p element that is the nested editor for the image card caption
-        const paragraphBBox = await page.locator('p:not(figure p)').boundingBox();
-        const toBBox = {
-            x: paragraphBBox.x,
-            y: paragraphBBox.y + paragraphBBox.height + 45 + 40, // 40 = height of the caption that appears on mousedown
-            width: paragraphBBox.width,
-            height: paragraphBBox.height
-        };
 
-        await dragMouse(page, imageBBox, toBBox, 'start', 'start', true, 1000, 100);
+        await twoPhaseDragToBottom(page, imageBBox);
+        await page.waitForTimeout(100);
+        await page.mouse.up();
 
         // Click on the paragraph to deselect the card after drop
         // (Chrome for Testing keeps the card selected after drag & drop unlike old Chromium)
@@ -217,16 +211,8 @@ test.describe('Drag Drop Reorder Plugin', async function () {
         `, {ignoreCardContents: true});
 
         const imageBBox = await page.locator('[data-kg-card="image"]').boundingBox();
-        // :not(figure p) avoids the p element that is the nested editor for the image card caption
-        const paragraphBBox = await page.locator('p:not(figure p)').boundingBox();
-        const toBBox = {
-            x: paragraphBBox.x,
-            y: paragraphBBox.y + paragraphBBox.height + 35 + 40, // 40 = height of the caption that appears on mousedown
-            width: paragraphBBox.width,
-            height: paragraphBBox.height
-        };
 
-        await dragMouse(page, imageBBox, toBBox, 'start', 'start', false, 100, 100);
+        await twoPhaseDragToBottom(page, imageBBox);
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -240,9 +226,35 @@ test.describe('Drag Drop Reorder Plugin', async function () {
 
         const indicator = await page.locator('#koenig-drag-drop-indicator');
         await expect(await indicator).toBeVisible();
+
+        // Release the mouse to clean up drag state
+        await page.mouse.up();
     });
 });
 
 async function insertDivider(page) {
     await insertCard(page, {cardName: 'divider'});
+}
+
+// Two-phase drag: move partway first, wait for caption and CSS transitions
+// to settle, then measure paragraph's actual position and move into its
+// bottom half. A single fast drag races against the 250ms CSS transition
+// that shifts the paragraph during drag. Leaves the mouse held down so
+// the caller can mouse.up() (for drop tests) or assert mid-drag state.
+async function twoPhaseDragToBottom(page, imageBBox) {
+    await page.mouse.move(imageBBox.x, imageBBox.y);
+    await page.mouse.down();
+
+    // Move past the HR card to trigger the drop indicator and transforms
+    const hrBBox = await page.locator('hr').boundingBox();
+    await page.mouse.move(imageBBox.x, hrBBox.y + hrBBox.height, {steps: 50});
+
+    // Wait for caption appearance and CSS transitions to settle
+    await page.waitForTimeout(300);
+
+    // Measure paragraph's actual visual position (includes caption shift + transform)
+    // :not(figure p) avoids the p element that is the nested editor for the image card caption
+    const shiftedParagraphBBox = await page.locator('p:not(figure p)').boundingBox();
+    const targetY = shiftedParagraphBBox.y + shiftedParagraphBBox.height * 0.75;
+    await page.mouse.move(imageBBox.x, targetY, {steps: 10});
 }
