@@ -1,5 +1,5 @@
-const assert = require('assert/strict');
-const {lexicalToMobiledoc} = require('../');
+import assert from 'assert/strict';
+import {lexicalToMobiledoc} from '../src/index.js';
 
 const MOBILEDOC_VERSION = '0.3.1';
 const GHOST_VERSION = '4.0';

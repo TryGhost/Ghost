@@ -1,23 +1,19 @@
-const assert = require('assert/strict');
+import assert from 'assert/strict';
+import {lexicalToMobiledoc, mobiledocToLexical} from '../src/index.js';
 
 describe('Exports', function () {
     it('includes both converter functions', function () {
-        const converters = require('../');
-
-        assert.ok(converters);
-        assert.ok(converters.lexicalToMobiledoc);
-        assert.equal(typeof converters.lexicalToMobiledoc, 'function');
-        assert.ok(converters.mobiledocToLexical);
-        assert.equal(typeof converters.mobiledocToLexical, 'function');
+        assert.ok(lexicalToMobiledoc);
+        assert.equal(typeof lexicalToMobiledoc, 'function');
+        assert.ok(mobiledocToLexical);
+        assert.equal(typeof mobiledocToLexical, 'function');
     });
 
     it('lexicalToMobiledoc runs without error', function () {
-        const converters = require('../');
-        assert.ok(converters.lexicalToMobiledoc('{}'));
+        assert.ok(lexicalToMobiledoc('{}'));
     });
 
     it('mobiledocToLexical runs without error', function () {
-        const converters = require('../');
-        assert.ok(converters.mobiledocToLexical('{}'));
+        assert.ok(mobiledocToLexical('{}'));
     });
 });

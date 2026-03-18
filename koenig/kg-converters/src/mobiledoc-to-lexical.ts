@@ -1,7 +1,49 @@
+// Mobiledoc types - arrays represent the mobiledoc wire format
+// [tagName, [attributes...]] e.g. ['a', ['href', 'https://...']]
+type MobiledocMarkup = [string, ...unknown[]];
+// [atomName, atomValue, atomPayload]
+type MobiledocAtom = [string, unknown, unknown];
+// [cardName, cardPayload]
+type MobiledocCard = [string, Record<string, unknown>];
+// [typeIdentifier, ...rest] where typeIdentifier determines the structure
+type MobiledocSection = [number, ...unknown[]];
+// [textTypeIdentifier, openMarkupIndexes, numberOfClosedMarkups, value]
+type MobiledocMarker = [number, number[], number, unknown];
+
+interface MobiledocDocument {
+    markups: MobiledocMarkup[];
+    atoms: MobiledocAtom[];
+    cards: MobiledocCard[];
+    sections: MobiledocSection[];
+}
+
+// Lexical types
+interface LexicalNode {
+    type: string;
+    version: number;
+    children?: LexicalNode[];
+    direction?: string | null;
+    format?: string | number;
+    indent?: number;
+    text?: string;
+    [key: string]: unknown;
+}
+
+interface LexicalDocument {
+    root: {
+        children: LexicalNode[];
+        direction: string | null;
+        format: string;
+        indent: number;
+        type: string;
+        version: number;
+    };
+}
+
 const BLANK_DOC = {
     root: {
-        children: [],
-        direction: null,
+        children: [] as LexicalNode[],
+        direction: null as string | null,
         format: '',
         indent: 0,
         type: 'root',
@@ -9,7 +51,7 @@ const BLANK_DOC = {
     }
 };
 
-const TAG_TO_LEXICAL_NODE = {
+const TAG_TO_LEXICAL_NODE: Record<string, Record<string, unknown>> = {
     p: {
         type: 'paragraph'
     },
@@ -52,14 +94,14 @@ const TAG_TO_LEXICAL_NODE = {
     }
 };
 
-const ATOM_TO_LEXICAL_NODE = {
+const ATOM_TO_LEXICAL_NODE: Record<string, LexicalNode> = {
     'soft-return': {
         type: 'linebreak',
         version: 1
     }
 };
 
-const MARKUP_TO_FORMAT = {
+const MARKUP_TO_FORMAT: Record<string, number> = {
     strong: 1,
     b: 1,
     em: 1 << 1,
@@ -71,20 +113,20 @@ const MARKUP_TO_FORMAT = {
     sup: 1 << 6
 };
 
-const CARD_NAME_MAP = {
+const CARD_NAME_MAP: Record<string, string> = {
     code: 'codeblock',
     hr: 'horizontalrule'
 };
 
-const CARD_PROPERTY_MAP = {
+const CARD_PROPERTY_MAP: Record<string, Record<string, string>> = {
     embed: {
         type: 'embedType'
     }
 };
 
-const CARD_FIXES_MAP = {
-    callout: (payload) => {
-        if (payload.backgroundColor && !payload.backgroundColor.match(/^[a-zA-Z\d-]+$/)) {
+const CARD_FIXES_MAP: Record<string, (payload: Record<string, unknown>) => Record<string, unknown>> = {
+    callout: (payload: Record<string, unknown>) => {
+        if (payload.backgroundColor && !(payload.backgroundColor as string).match(/^[a-zA-Z\d-]+$/)) {
             payload.backgroundColor = 'white';
         }
 
@@ -92,12 +134,12 @@ const CARD_FIXES_MAP = {
     }
 };
 
-export function mobiledocToLexical(serializedMobiledoc) {
+export function mobiledocToLexical(serializedMobiledoc: string | null | undefined): string {
     if (serializedMobiledoc === null || serializedMobiledoc === undefined || serializedMobiledoc === '') {
         return JSON.stringify(BLANK_DOC);
     }
 
-    const mobiledoc = JSON.parse(serializedMobiledoc);
+    const mobiledoc = JSON.parse(serializedMobiledoc) as MobiledocDocument;
 
     if (!mobiledoc.sections) {
         return JSON.stringify(BLANK_DOC);
@@ -105,14 +147,14 @@ export function mobiledocToLexical(serializedMobiledoc) {
 
     const lexical = buildEmptyDoc();
 
-    mobiledoc.sections.forEach(child => addRootChild(child, mobiledoc, lexical));
+    mobiledoc.sections.forEach((child: MobiledocSection) => addRootChild(child, mobiledoc, lexical));
 
     return JSON.stringify(lexical);
 }
 
 /* internal functions ------------------------------------------------------- */
 
-function buildEmptyDoc() {
+function buildEmptyDoc(): LexicalDocument {
     return {
         root: {
             children: [],
@@ -125,7 +167,7 @@ function buildEmptyDoc() {
     };
 }
 
-function addRootChild(child, mobiledoc, lexical) {
+function addRootChild(child: MobiledocSection, mobiledoc: MobiledocDocument, lexical: LexicalDocument): void {
     const sectionTypeIdentifier = child[0];
     if (sectionTypeIdentifier === 1) {
         // Markup (text) section
@@ -136,7 +178,7 @@ function addRootChild(child, mobiledoc, lexical) {
         // Otherwise direction should be null
         // Not sure if this is necessary:
         // if we don't plan to support RTL, we could just set 'ltr' in all cases and ignore null
-        if (lexicalChild.children?.length > 0) {
+        if (lexicalChild.children && lexicalChild.children.length > 0) {
             lexical.root.direction = 'ltr';
         }
     } else if (sectionTypeIdentifier === 2) {
@@ -154,9 +196,9 @@ function addRootChild(child, mobiledoc, lexical) {
     }
 }
 
-function convertMarkupSectionToLexical(section, mobiledoc) {
-    const tagName = section[1]; // e.g. 'p'
-    const markers = section[2]; // e.g. [[0, [0], 0, "Hello world"]]
+function convertMarkupSectionToLexical(section: MobiledocSection, mobiledoc: MobiledocDocument): LexicalNode {
+    const tagName = section[1] as string; // e.g. 'p'
+    const markers = section[2] as MobiledocMarker[]; // e.g. [[0, [0], 0, "Hello world"]]
 
     // Create an empty Lexical node from the tag name
     // We will add nodes to the children array later
@@ -167,15 +209,15 @@ function convertMarkupSectionToLexical(section, mobiledoc) {
     return lexicalNode;
 }
 
-function populateLexicalNodeWithMarkers(lexicalNode, markers, mobiledoc) {
+function populateLexicalNodeWithMarkers(lexicalNode: LexicalNode, markers: MobiledocMarker[], mobiledoc: MobiledocDocument): void {
     const markups = mobiledoc.markups;
     const atoms = mobiledoc.atoms;
 
     // Initiate some variables before looping over all the markers
-    let openMarkups = []; // tracks which markup tags are open for the current marker
-    let linkNode = undefined; // tracks current link node or undefined if no a tag is open
-    let href = undefined; // tracks the href for the current link node or undefined if no a tag is open
-    let rel = undefined; //tracks the rel attribute for the current link node or undefined if no a tag is open
+    const openMarkups: MobiledocMarkup[] = []; // tracks which markup tags are open for the current marker
+    let linkNode: LexicalNode | undefined = undefined; // tracks current link node or undefined if no a tag is open
+    let href: string | undefined = undefined; // tracks the href for the current link node or undefined if no a tag is open
+    let rel: string | undefined = undefined; //tracks the rel attribute for the current link node or undefined if no a tag is open
     let openLinkMarkup = false; // tracks whether the current node is a link node
 
     // loop over markers and convert each one to lexical
@@ -193,7 +235,7 @@ function populateLexicalNodeWithMarkers(lexicalNode, markers, mobiledoc) {
 
         // If the current marker is an atom, convert the atom to Lexical and add to the node
         if (markerType === 'atom') {
-            const atom = atoms[value];
+            const atom = atoms[value as number];
             const atomName = atom[0];
             const childNode = ATOM_TO_LEXICAL_NODE[atomName];
             embedChildNode(lexicalNode, childNode);
@@ -201,17 +243,18 @@ function populateLexicalNodeWithMarkers(lexicalNode, markers, mobiledoc) {
         }
 
         // calculate which markups are open for the current marker
-        openMarkupsIndexes.forEach((markupIndex) => {
+        openMarkupsIndexes.forEach((markupIndex: number) => {
             const markup = markups[markupIndex];
             // Extract the href from the markup if it's a link
             if (markup[0] === 'a') {
                 openLinkMarkup = true;
-                if (markup[1] && markup[1][0] === 'href') {
-                    href = markup[1][1];
+                const attrs = markup[1] as unknown[] | undefined;
+                if (attrs && attrs[0] === 'href') {
+                    href = attrs[1] as string;
                 }
 
-                if (markup[1] && markup[1][2] === 'rel') {
-                    rel = markup[1][3];
+                if (attrs && attrs[2] === 'rel') {
+                    rel = attrs[3] as string;
                 }
             }
             // Add the markup to the list of open markups
@@ -229,10 +272,10 @@ function populateLexicalNodeWithMarkers(lexicalNode, markers, mobiledoc) {
                 linkNode = linkNode !== undefined ? linkNode : createEmptyLexicalNode('a', {url: href, rel: rel || null});
 
                 // Create a text node and add it to the link node
-                const textNode = createTextNode(value, format);
+                const textNode = createTextNode(value as string, format);
                 embedChildNode(linkNode, textNode);
             } else {
-                const textNode = createTextNode(value, format);
+                const textNode = createTextNode(value as string, format);
                 embedChildNode(lexicalNode, textNode);
             }
         }
@@ -256,7 +299,7 @@ function populateLexicalNodeWithMarkers(lexicalNode, markers, mobiledoc) {
 }
 
 // Creates a text node from the given text and format
-function createTextNode(text, format) {
+function createTextNode(text: string, format: number): LexicalNode {
     return {
         detail: 0,
         format: format,
@@ -269,28 +312,29 @@ function createTextNode(text, format) {
 }
 
 // Creates an empty Lexical node from the given tag name and additional attributes
-function createEmptyLexicalNode(tagName, attributes = {}) {
+function createEmptyLexicalNode(tagName: string, attributes: Record<string, unknown> = {}): LexicalNode {
     const nodeParams = TAG_TO_LEXICAL_NODE[tagName];
-    const node = {
+    const node: LexicalNode = {
         children: [],
         direction: 'ltr',
         format: '',
         indent: 0,
         ...nodeParams,
         ...attributes,
+        type: (nodeParams?.type as string) || (attributes.type as string) || tagName,
         version: 1
     };
     return node;
 }
 
 // Adds a child node to a parent node
-function embedChildNode(parentNode, childNode) {
+function embedChildNode(parentNode: LexicalNode, childNode: LexicalNode | undefined): void {
     // If there is no child node, do nothing
     if (!childNode) {
         return;
     }
     // Add textNode to node's children
-    parentNode.children.push(childNode);
+    parentNode.children!.push(childNode);
 
     // If there is any text (e.g. not a blank text node), set the direction to ltr
     if (childNode && 'text' in childNode && childNode.text) {
@@ -301,32 +345,35 @@ function embedChildNode(parentNode, childNode) {
 // Lexical stores formats as a bitmask
 // Mobiledoc stores formats as a list of open markup tags
 // This function converts a list of open tags to a bitmask compatible with lexical
-function convertMarkupTagsToLexicalFormatBitmask(tags) {
+function convertMarkupTagsToLexicalFormatBitmask(tags: MobiledocMarkup[]): number {
     let format = 0;
     tags.forEach((tag) => {
-        if (tag in MARKUP_TO_FORMAT) {
-            format = format | MARKUP_TO_FORMAT[tag];
+        const tagName = tag[0] as string;
+        if (tagName in MARKUP_TO_FORMAT) {
+            format = format | MARKUP_TO_FORMAT[tagName];
         }
     });
     return format;
 }
 
-function convertListSectionToLexical(child, mobiledoc) {
-    const tag = child[1];
+function convertListSectionToLexical(child: MobiledocSection, mobiledoc: MobiledocDocument): LexicalNode {
+    const tag = child[1] as string;
+    const listItems = child[2] as MobiledocMarker[][] | undefined;
     const listType = tag === 'ul' ? 'bullet' : 'number';
     const listNode = createEmptyLexicalNode(tag, {tag, type: 'list', listType, start: 1, direction: 'ltr'});
 
-    child[2]?.forEach((listItem, i) => {
+    listItems?.forEach((listItem: MobiledocMarker[], i: number) => {
         const listItemNode = createEmptyLexicalNode('li', {type: 'listitem', value: i + 1, direction: 'ltr'});
         populateLexicalNodeWithMarkers(listItemNode, listItem, mobiledoc);
-        listNode.children.push(listItemNode);
+        listNode.children!.push(listItemNode);
     });
 
     return listNode;
 }
 
-function convertCardSectionToLexical(child, mobiledoc) {
-    let [cardName, payload] = mobiledoc.cards[child[1]];
+function convertCardSectionToLexical(child: MobiledocSection, mobiledoc: MobiledocDocument): LexicalNode {
+    const cardIndex = child[1] as number;
+    let [cardName, payload] = mobiledoc.cards[cardIndex];
 
     // rename card if there's a difference between mobiledoc and lexical
     cardName = CARD_NAME_MAP[cardName] || cardName;
@@ -347,7 +394,7 @@ function convertCardSectionToLexical(child, mobiledoc) {
     }
 
     delete payload.type;
-    const decoratorNode = {type: cardName, ...payload};
+    const decoratorNode: LexicalNode = {type: cardName, ...payload} as LexicalNode;
 
     return decoratorNode;
 }

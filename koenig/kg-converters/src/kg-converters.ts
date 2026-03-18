@@ -1,4 +1,4 @@
-import {lexicalToMobiledoc} from './lexical-to-mobiledoc';
-import {mobiledocToLexical} from './mobiledoc-to-lexical';
+import {lexicalToMobiledoc} from './lexical-to-mobiledoc.js';
+import {mobiledocToLexical} from './mobiledoc-to-lexical.js';
 
 export {lexicalToMobiledoc, mobiledocToLexical};
