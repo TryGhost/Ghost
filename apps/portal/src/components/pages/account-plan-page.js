@@ -302,16 +302,20 @@ function getRetentionOfferMessage(offer, originalPrice, currency, amountOff, sub
         return t('Enjoy {amountOff} off forever.', {amountOff});
     }
 
+    // This is here for i18n.  Don't remove it.  Possible values of offer.cadence are 'month' and 'year', so:
+    // t('month')
+    // t('year')
+
     if (offer.duration === 'once') {
-        return t('Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.', {amountOff, currency, originalPrice, cadence: offer.cadence});
+        return t('Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.', {amountOff, currency, originalPrice, cadence: t(offer.cadence)});
     }
 
     if (offer.duration === 'repeating' && offer.duration_in_months === 1) {
-        return t('Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.', {amountOff, currency, originalPrice, cadence: offer.cadence});
+        return t('Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.', {amountOff, currency, originalPrice, cadence: t(offer.cadence)});
     }
 
     if (offer.duration === 'repeating' && offer.duration_in_months > 1) {
-        return t('Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.', {amountOff, durationInMonths: offer.duration_in_months, currency, originalPrice, cadence: offer.cadence});
+        return t('Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.', {amountOff, durationInMonths: offer.duration_in_months, currency, originalPrice, cadence: t(offer.cadence)});
     }
 
     return '';
