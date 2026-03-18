@@ -18,6 +18,10 @@ module.exports = function input_password(options) { // eslint-disable-line camel
         extras += ` placeholder="${options.hash.placeholder}"`;
     }
 
+    if (options.hash['data-1p-ignore']) {
+        extras += ' data-1p-ignore';
+    }
+
     const output = templates.input({
         type: 'password',
         name: 'password',

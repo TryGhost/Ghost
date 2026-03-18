@@ -462,8 +462,8 @@ describe('Unit: Util: subscription-data', function () {
             const data = getSubscriptionData(sub);
 
             expect(data.hasActiveDiscount).to.be.true;
-            expect(data.discountedPrice).to.deep.equal({currencySymbol: '$', nonDecimalAmount: 25});
-            expect(data.originalPrice).to.deep.equal({currencySymbol: '$', nonDecimalAmount: 50});
+            expect(data.discountedPrice).to.deep.equal({currencySymbol: '$', nonDecimalAmount: 25, amount: 2500});
+            expect(data.originalPrice).to.deep.equal({currencySymbol: '$', nonDecimalAmount: 50, amount: 5000});
         });
 
         it('does not set hasActiveDiscount when no discount', function () {
@@ -596,8 +596,8 @@ describe('Unit: Util: subscription-data', function () {
                 }
             });
             expect(result).to.deep.equal({
-                discountedPrice: {currencySymbol: '$', nonDecimalAmount: 25},
-                originalPrice: {currencySymbol: '$', nonDecimalAmount: 50}
+                discountedPrice: {currencySymbol: '$', nonDecimalAmount: 25, amount: 2500},
+                originalPrice: {currencySymbol: '$', nonDecimalAmount: 50, amount: 5000}
             });
         });
 
@@ -612,8 +612,8 @@ describe('Unit: Util: subscription-data', function () {
                 }
             });
             expect(result).to.deep.equal({
-                discountedPrice: {currencySymbol: '€', nonDecimalAmount: 70},
-                originalPrice: {currencySymbol: '€', nonDecimalAmount: 100}
+                discountedPrice: {currencySymbol: '€', nonDecimalAmount: 70, amount: 7000},
+                originalPrice: {currencySymbol: '€', nonDecimalAmount: 100, amount: 10000}
             });
         });
     });
