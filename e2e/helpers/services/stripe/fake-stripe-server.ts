@@ -157,6 +157,13 @@ export class FakeStripeServer {
         this.app.post('/v1/prices', (req, res) => {
             const interval = this.parsePriceInterval(req.body.recurring?.interval);
             const requestedProductId = this.parseString(req.body.product);
+
+            if (requestedProductId && !this.products.has(requestedProductId)) {
+                debug(`Cannot create price for missing product: ${requestedProductId}`);
+                res.status(400).json({error: {type: 'invalid_request_error', message: 'No such product'}});
+                return;
+            }
+
             const syntheticProduct = requestedProductId ? null : buildProduct();
             const productId = requestedProductId ?? syntheticProduct!.id;
 
@@ -402,7 +409,8 @@ export class FakeStripeServer {
             ...(this.parseBoolean(subscriptionData.trial_from_plan) ? {trial_from_plan: true} : {}),
             ...(typeof parsedTrialDays === 'number' ? {trial_period_days: parsedTrialDays} : {}),
             items: items
-                .map(item => ({plan: this.parseString(item.plan) ?? ''}))
+                .filter((item): item is {plan?: string} => item !== null && typeof item === 'object')
+                .map(item => ({plan: this.parseString(item?.plan) ?? ''}))
                 .filter(item => item.plan),
             metadata: this.parseMetadata(subscriptionData.metadata)
         };
@@ -418,10 +426,11 @@ export class FakeStripeServer {
             : Object.values(value as Record<string, {price?: string; quantity?: number | string}>);
 
         return lineItems
+            .filter((item): item is {price?: string; quantity?: number | string} => item !== null && typeof item === 'object')
             .map((item) => {
                 return {
-                    price: this.parseString(item.price) ?? '',
-                    quantity: this.parseNumber(item.quantity) ?? 1
+                    price: this.parseString(item?.price) ?? '',
+                    quantity: this.parseNumber(item?.quantity) ?? 1
                 };
             })
             .filter(item => item.price);
