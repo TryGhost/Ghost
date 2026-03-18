@@ -293,7 +293,7 @@ export const ShareModalStyles = `
             order: 2;
         }
 
-        .gh-portal-share-action.facebook {
+        .gh-portal-share-action.linkedin {
             order: 3;
         }
 
@@ -455,6 +455,14 @@ const createEmailShareLink = ({shareTitle, shareUrl}) => {
     return `mailto:${params.length ? `?${params.join('&')}` : ''}`;
 };
 
+const createLinkedinShareLink = ({shareTitle, shareUrl}) => {
+    return createShareLink('https://www.linkedin.com/shareArticle', {
+        mini: 'true',
+        url: shareUrl,
+        title: shareTitle
+    });
+};
+
 const ShareModal = () => {
     const [copied, setCopied] = useState(false);
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
@@ -477,7 +485,7 @@ const ShareModal = () => {
             facebook: createShareLink('https://www.facebook.com/sharer/sharer.php', {u: shareUrl}),
             email: createEmailShareLink({shareTitle, shareUrl}),
             threads: createShareLink('https://www.threads.net/intent/post', {text: threadsText}),
-            linkedin: createShareLink('https://www.linkedin.com/sharing/share-offsite/', {url: shareUrl}),
+            linkedin: createLinkedinShareLink({shareTitle, shareUrl}),
             bluesky: createShareLink('https://bsky.app/intent/compose', {text: threadsText})
         };
     }, [shareTitle, shareUrl]);
@@ -616,15 +624,15 @@ const ShareModal = () => {
                 </a>
 
                 <a
-                    className='gh-portal-btn gh-portal-share-action facebook'
-                    href={socialLinks.facebook}
+                    className='gh-portal-btn gh-portal-share-action linkedin'
+                    href={socialLinks.linkedin}
                     target='_blank'
                     rel='noopener noreferrer'
-                    aria-label={t('Facebook')}
-                    title={t('Facebook')}
+                    aria-label={t('LinkedIn')}
+                    title={t('LinkedIn')}
                 >
                     <span className='gh-portal-share-icon' aria-hidden='true'>
-                        <FacebookIcon />
+                        <LinkedinIcon />
                     </span>
                 </a>
 
@@ -659,16 +667,16 @@ const ShareModal = () => {
                         <div className='gh-portal-share-more-menu' role='menu' aria-label={t('More options')}>
                             <a
                                 className='gh-portal-share-more-item'
-                                href={socialLinks.linkedin}
+                                href={socialLinks.facebook}
                                 target='_blank'
                                 rel='noopener noreferrer'
                                 role='menuitem'
                                 onClick={onClickMoreItem}
                             >
                                 <span className='gh-portal-share-more-item-icon' aria-hidden='true'>
-                                    <LinkedinIcon />
+                                    <FacebookIcon />
                                 </span>
-                                <span>{t('LinkedIn')}</span>
+                                <span>{t('Facebook')}</span>
                             </a>
                             <a
                                 className='gh-portal-share-more-item'
