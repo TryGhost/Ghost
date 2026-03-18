@@ -95,13 +95,13 @@ describe('ShareModal', () => {
         const actions = Array.from(container.querySelector('.gh-portal-share-actions').children);
         expect(actions[0]).toHaveClass('gh-portal-share-action', 'copy');
         expect(actions[1]).toHaveClass('gh-portal-share-action', 'twitter');
-        expect(actions[2]).toHaveClass('gh-portal-share-action', 'facebook');
+        expect(actions[2]).toHaveClass('gh-portal-share-action', 'linkedin');
         expect(actions[3]).toHaveClass('gh-portal-share-action', 'email');
         expect(actions[4]).toHaveClass('gh-portal-share-more');
 
         const copyButton = getByRole('button', {name: 'Copy link'});
         const twitterLink = getByRole('link', {name: 'X (Twitter)'});
-        const facebookLink = getByRole('link', {name: 'Facebook'});
+        const linkedInLink = getByRole('link', {name: 'LinkedIn'});
         const emailLink = getByRole('link', {name: 'Email'});
         const moreOptionsButton = getByRole('button', {name: 'More options'});
 
@@ -110,15 +110,17 @@ describe('ShareModal', () => {
         expect(queryByRole('menu')).not.toBeInTheDocument();
 
         const twitterUrl = new URL(twitterLink.getAttribute('href'));
-        const facebookUrl = new URL(facebookLink.getAttribute('href'));
+        const linkedInUrl = new URL(linkedInLink.getAttribute('href'));
         const emailUrl = new URL(emailLink.getAttribute('href'));
 
         expect(twitterUrl.origin + twitterUrl.pathname).toBe('https://twitter.com/intent/tweet');
         expect(twitterUrl.searchParams.get('url')).toBe('https://example.com/post?ref=test');
         expect(twitterUrl.searchParams.get('text')).toBe('Example post title');
 
-        expect(facebookUrl.origin + facebookUrl.pathname).toBe('https://www.facebook.com/sharer/sharer.php');
-        expect(facebookUrl.searchParams.get('u')).toBe('https://example.com/post?ref=test');
+        expect(linkedInUrl.origin + linkedInUrl.pathname).toBe('https://www.linkedin.com/shareArticle');
+        expect(linkedInUrl.searchParams.get('mini')).toBe('true');
+        expect(linkedInUrl.searchParams.get('url')).toBe('https://example.com/post?ref=test');
+        expect(linkedInUrl.searchParams.get('title')).toBe('Example post title');
 
         expect(emailUrl.protocol).toBe('mailto:');
         expect(emailUrl.searchParams.get('subject')).toBe('Example post title');
@@ -134,16 +136,16 @@ describe('ShareModal', () => {
         expect(moreOptionsButton).toHaveAttribute('aria-expanded', 'true');
         expect(getByRole('menu')).toBeInTheDocument();
 
-        const linkedInLink = getByRole('menuitem', {name: 'LinkedIn'});
+        const facebookLink = getByRole('menuitem', {name: 'Facebook'});
         const threadsLink = getByRole('menuitem', {name: 'Threads'});
         const blueskyLink = getByRole('menuitem', {name: 'Bluesky'});
 
-        const linkedInUrl = new URL(linkedInLink.getAttribute('href'));
+        const facebookUrl = new URL(facebookLink.getAttribute('href'));
         const threadsUrl = new URL(threadsLink.getAttribute('href'));
         const blueskyUrl = new URL(blueskyLink.getAttribute('href'));
 
-        expect(linkedInUrl.origin + linkedInUrl.pathname).toBe('https://www.linkedin.com/sharing/share-offsite/');
-        expect(linkedInUrl.searchParams.get('url')).toBe('https://example.com/post?ref=test');
+        expect(facebookUrl.origin + facebookUrl.pathname).toBe('https://www.facebook.com/sharer/sharer.php');
+        expect(facebookUrl.searchParams.get('u')).toBe('https://example.com/post?ref=test');
 
         expect(threadsUrl.origin + threadsUrl.pathname).toBe('https://www.threads.net/intent/post');
         expect(threadsUrl.searchParams.get('text')).toBe('Example post title https://example.com/post?ref=test');
@@ -186,9 +188,7 @@ describe('ShareModal', () => {
 
         const {getByRole, getByText, queryByTestId} = setup();
 
-        fireEvent.click(getByRole('button', {name: 'More options'}));
-
-        const linkedInLink = getByRole('menuitem', {name: 'LinkedIn'});
+        const linkedInLink = getByRole('link', {name: 'LinkedIn'});
         const linkedInUrl = new URL(linkedInLink.getAttribute('href'));
 
         expect(linkedInUrl.searchParams.get('url')).toBe(window.location.href);
