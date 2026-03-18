@@ -13,8 +13,7 @@ import {
     HeadingWeightField,
     ImageCornersField,
     LinkColorField,
-    LinkStyleField,
-    SectionTitleColorField
+    LinkStyleField
 } from '../../email-design/design-fields';
 import {DEFAULT_EMAIL_DESIGN, type EmailDesignSettings} from '../../email-design/types';
 import {EmailDesignProvider} from '../../email-design/email-design-context';
@@ -146,7 +145,6 @@ const DesignTab: React.FC = () => (
         <section>
             <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Body</h4>
             <div className="flex flex-col gap-4">
-                <SectionTitleColorField />
                 <ButtonColorField />
                 <ButtonStyleField />
                 <ButtonCornersField />
