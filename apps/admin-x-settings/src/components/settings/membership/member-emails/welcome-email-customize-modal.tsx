@@ -2,6 +2,7 @@ import EmailDesignModal from '../../email-design/email-design-modal';
 import EmailPreview from '../../email-design/email-preview';
 import HeaderImageField from '../../email-design/header-image-field';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import ShowBadgeField from '../../email-design/show-badge-field';
 import {
     BackgroundColorField,
     BodyFontField,
@@ -37,6 +38,7 @@ interface GeneralSettings {
     replyToEmail: string;
     headerImage: string;
     showPublicationTitle: boolean;
+    showBadge: boolean;
     emailFooter: string;
 }
 
@@ -96,6 +98,10 @@ const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange
                         onChange={e => onGeneralChange({emailFooter: e.target.value})}
                     />
                 </div>
+                <ShowBadgeField
+                    value={generalSettings.showBadge}
+                    onChange={checked => onGeneralChange({showBadge: checked})}
+                />
             </div>
         </section>
     </div>
@@ -177,6 +183,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
         replyToEmail: supportEmailAddress || defaultEmailAddress || '',
         headerImage: '',
         showPublicationTitle: true,
+        showBadge: true,
         emailFooter: ''
     });
 
@@ -209,6 +216,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                         senderEmail={defaultEmailAddress || `noreply@${emailDomain}`}
                         senderName={generalSettings.senderName || siteTitle || 'Your site'}
                         settings={designSettings}
+                        showBadge={generalSettings.showBadge}
                         showPublicationTitle={generalSettings.showPublicationTitle}
                         subject={`Welcome to ${generalSettings.senderName || siteTitle || 'our publication'}`}
                     />

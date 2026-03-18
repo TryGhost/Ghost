@@ -1,5 +1,5 @@
 import React from 'react';
-import {cn} from '@tryghost/shade';
+import {GhostOrb, cn} from '@tryghost/shade';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {resolveAllColors} from './design-utils';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -12,6 +12,7 @@ interface EmailPreviewProps {
     subject?: string;
     headerImage?: string;
     showPublicationTitle?: boolean;
+    showBadge?: boolean;
     emailFooter?: string;
 }
 
@@ -151,7 +152,7 @@ const ActionButton: React.FC<{
     );
 };
 
-const Footer: React.FC<{siteTitle?: string; emailFooter?: string; color: string}> = ({siteTitle, emailFooter, color}) => (
+const Footer: React.FC<{siteTitle?: string; emailFooter?: string; showBadge?: boolean; color: string; textColor: string}> = ({siteTitle, emailFooter, showBadge, color, textColor}) => (
     <div
         className="px-12 pb-10 text-center text-xs"
         style={{color}}
@@ -164,12 +165,18 @@ const Footer: React.FC<{siteTitle?: string; emailFooter?: string; color: string}
         <p className="mb-2 mt-0">
             {siteTitle || 'Your publication'} &mdash; Unsubscribe
         </p>
+        {showBadge && (
+            <div className="flex items-center justify-center gap-1 pt-2 text-xs font-semibold" style={{color: textColor}}>
+                <GhostOrb className="size-4" />
+                <span>Powered by Ghost</span>
+            </div>
+        )}
     </div>
 );
 
 // --- Main component ---
 
-const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, senderEmail, subject, headerImage, showPublicationTitle = true, emailFooter}) => {
+const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, senderEmail, subject, headerImage, showPublicationTitle = true, showBadge = true, emailFooter}) => {
     const {settings: globalSettings, siteData} = useGlobalData();
     const [siteTitle] = getSettingValues<string>(globalSettings, ['title']);
     const accentColor = siteData.accent_color;
@@ -225,7 +232,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
 
                 <Divider color={colors.dividerColor} />
 
-                <Footer color={colors.secondaryTextColor} emailFooter={emailFooter} siteTitle={siteTitle} />
+                <Footer color={colors.secondaryTextColor} emailFooter={emailFooter} showBadge={showBadge} siteTitle={siteTitle} textColor={colors.textColor} />
             </div>
         </div>
     );
