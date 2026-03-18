@@ -90,10 +90,10 @@ const Members: React.FC = () => {
                             hasFilterOrSearch={hasFilterOrSearch}
                             memberCount={totalMembers}
                             nql={nql}
+                            search={search}
                             onImportComplete={() => {
                                 void refetch();
                             }}
-                            search={search}
                         />
                     </Header.ActionGroup>
                 </Header.Actions>

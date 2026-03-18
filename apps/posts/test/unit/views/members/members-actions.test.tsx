@@ -44,8 +44,9 @@ describe('MembersActions', () => {
 
         render(
             <MembersActions
-                isFiltered={false}
+                hasFilterOrSearch={false}
                 memberCount={10}
+                search=""
                 canBulkDelete
                 onImportComplete={onImportComplete}
             />
