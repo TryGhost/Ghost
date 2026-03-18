@@ -1,5 +1,5 @@
 import React, {useCallback, useState} from 'react';
-import {AddLabelModal, DeleteModal, RemoveLabelModal, UnsubscribeModal} from './bulk-action-modals';
+import {AddLabelModal, DeleteModal, ImportMembersModal, RemoveLabelModal, UnsubscribeModal} from './bulk-action-modals';
 import {
     Button,
     DropdownMenu,
@@ -19,6 +19,7 @@ interface MembersActionsProps {
     memberCount: number;
     nql?: string;
     canBulkDelete: boolean;
+    onImportComplete?: () => void;
 }
 
 async function exportMembers(filter?: string): Promise<void> {
@@ -34,8 +35,15 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     isFiltered,
     memberCount,
     nql,
-    canBulkDelete
+    canBulkDelete,
+    onImportComplete
 }) => {
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [showAddLabelModal, setShowAddLabelModal] = useState(false);
+    const [showRemoveLabelModal, setShowRemoveLabelModal] = useState(false);
+    const [showUnsubscribeModal, setShowUnsubscribeModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
     const {data: newslettersData, isLoading: isLoadingNewsletters} = useBrowseNewsletters({
         searchParams: {filter: 'status:-archived', limit: '50'}
     });
@@ -44,11 +52,6 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     const {mutateAsync: bulkEditAsync, isLoading: isBulkEditing} = useBulkEditMembers();
     const {mutate: bulkDelete, isLoading: isBulkDeleting} = useBulkDeleteMembers();
     const [isUnsubscribing, setIsUnsubscribing] = useState(false);
-
-    const [showAddLabelModal, setShowAddLabelModal] = useState(false);
-    const [showRemoveLabelModal, setShowRemoveLabelModal] = useState(false);
-    const [showUnsubscribeModal, setShowUnsubscribeModal] = useState(false);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const handleExport = useCallback(async () => {
         try {
@@ -190,11 +193,17 @@ const MembersActions: React.FC<MembersActionsProps> = ({
             {/* Actions Dropdown */}
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline">
+                    <Button data-testid="members-actions" variant="outline">
                         <LucideIcon.MoreHorizontal className="size-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                    {/* Import */}
+                    <DropdownMenuItem onClick={() => setShowImportModal(true)}>
+                        <LucideIcon.Upload className="mr-2 size-4" />
+                        Import members
+                    </DropdownMenuItem>
+
                     {memberCount > 0 && (
                         <>
                             {/* Export */}
@@ -243,6 +252,11 @@ const MembersActions: React.FC<MembersActionsProps> = ({
             </Button>
 
             {/* Modals */}
+            <ImportMembersModal
+                open={showImportModal}
+                onComplete={onImportComplete}
+                onOpenChange={setShowImportModal}
+            />
             <AddLabelModal
                 isLoading={isBulkEditing}
                 memberCount={memberCount}
