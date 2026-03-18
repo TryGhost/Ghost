@@ -21,7 +21,11 @@ yarn test
 
 ### Dev Environment Mode (Recommended for Development)
 
-Dev mode is the default (`GHOST_E2E_MODE=dev`). Start infra with `yarn dev` (or `infra:up`) before running tests:
+If `GHOST_E2E_MODE` is unset, the e2e shell entrypoints auto-select:
+- `dev` when the local admin dev server is reachable on `http://127.0.0.1:5174`
+- `build` otherwise
+
+To use dev mode, start `yarn dev` before running tests:
 
 ```bash
 # Terminal 1: Start dev environment (from repository root)
@@ -33,6 +37,7 @@ yarn test
 
 If infra is already running, `yarn workspace @tryghost/e2e infra:up` is safe to run again.
 For dev-mode test runs, `infra:up` also ensures required local Ghost/gateway dev images exist.
+If you want to force a mode, set `GHOST_E2E_MODE=dev` or `GHOST_E2E_MODE=build` explicitly.
 
 ### Analytics Development Flow
 
@@ -181,11 +186,14 @@ Tests use [Project Dependencies](https://playwright.dev/docs/test-global-setup-t
 ### Playwright Fixtures
 
 [Playwright Fixtures](https://playwright.dev/docs/test-fixtures) are defined in `helpers/playwright/fixture.ts` and provide reusable test setup/teardown logic.
-For example, a `ghostInstance` fixture creates a new Ghost instance with its own database for each test, to ensure isolation between tests.
+The fixture resolves isolation mode per test file:
+- Default: per-file isolation (one Ghost environment cycle per file)
+- Opt-in per-test: call `usePerTestIsolation()` from `@/helpers/playwright/isolation` at the root of the file
+- Forced per-test: any run with `fullyParallel: true`
 
-### Test Isolation 
+### Test Isolation
 
-Test isolation is extremely important to avoid flaky tests that are hard to debug. For the most part, you shouldn't have to worry about this when writing tests, because each test gets a fresh Ghost instance with its own database.
+Test isolation is still automatic, but no longer always per-test.
 
 Infrastructure (MySQL, Redis, Mailpit, Tinybird) must already be running before tests start. Use `yarn dev` or `yarn workspace @tryghost/e2e infra:up`.
 
@@ -193,9 +201,36 @@ Global setup (`tests/global.setup.ts`) does:
 - Cleans up e2e containers and test databases
 - Creates a base database, starts Ghost, waits for health, snapshots the DB
 
-Per-test (`helpers/playwright/fixture.ts`) does:
-- Clones a new database from the snapshot
+Per-file mode (`helpers/playwright/fixture.ts`) does:
+- Clones a new database from snapshot at file boundary
 - Restarts Ghost with the new database and waits for readiness
+- Reuses that environment for tests in the file
+
+Per-test mode (`helpers/playwright/fixture.ts`) does:
+- Clones a new database from snapshot for each test
+- Restarts Ghost with the new database and waits for readiness
+
+Environment identity for per-file reuse:
+- `config` participates in the environment identity.
+- `labs` participates in the environment identity.
+- If either changes between tests in the same file, the shared per-file Ghost environment is recycled before reuse.
+- `stripeEnabled` does not participate in per-file reuse. It always forces per-test isolation because Ghost must boot against a per-test fake Stripe server.
+
+Fixture option behavior:
+- `config`: use for boot-time Ghost config that should get a fresh environment when it changes.
+- `labs`: use for labs flags that should get a fresh environment when they change.
+- `stripeEnabled`: use for Stripe-backed tests; this always runs each test with a fully isolated Ghost environment.
+
+Escape hatch:
+- `resetEnvironment()` is supported only in `beforeEach` hooks for per-file tests.
+- Use it only before resolving stateful fixtures such as `baseURL`, `page`, `pageWithAuthenticatedUser`, or `ghostAccountOwner`.
+- Safe hook pattern: `test.beforeEach(async ({resetEnvironment}) => { ... })`
+- Unsupported pattern: calling `resetEnvironment()` after `page` or an authenticated session has already been created.
+- ESLint catches the obvious misuse cases, but the runtime guard in the fixture remains the hard safety check.
+
+Opting into per-test isolation:
+- Use `usePerTestIsolation()` from `@/helpers/playwright/isolation` at the root of the file.
+- This configures both Playwright parallel mode and the fixture isolation in one call.
 
 Global teardown (`tests/global.teardown.ts`) does:
 - Cleans up e2e containers and test databases (infra services stay running)

@@ -10,7 +10,7 @@ const debug = baseDebug('e2e:EnvironmentManager');
 /**
  * Environment modes for E2E testing.
  * 
- * - dev: Uses dev infrastructure with hot-reloading dev servers (default)
+ * - dev: Uses dev infrastructure with hot-reloading dev servers
  * - build: Uses pre-built image (local or registry, controlled by GHOST_E2E_IMAGE)
  */
 export type EnvironmentMode = 'dev' | 'build';
@@ -20,7 +20,7 @@ type GhostEnvOverrides = GhostConfig | Record<string, string>;
  * Orchestrates e2e test environment.
  * 
  * Supports two modes controlled by GHOST_E2E_MODE environment variable:
- * - dev (default): Uses dev infrastructure with hot-reloading
+ * - dev: Uses dev infrastructure with hot-reloading
  * - build: Uses pre-built image (set GHOST_E2E_IMAGE for registry images)
  * 
  * All modes use the same infrastructure (MySQL, Redis, Mailpit, Tinybird)
@@ -50,7 +50,12 @@ export class EnvironmentManager {
      */
     private detectMode(): EnvironmentMode {
         const envMode = process.env.GHOST_E2E_MODE;
-        return (envMode === 'build') ? 'build' : 'dev'; // Default to dev mode
+        if (envMode === 'build' || envMode === 'dev') {
+            return envMode;
+        }
+
+        logging.warn('GHOST_E2E_MODE is not set; defaulting to build mode. Use the e2e shell entrypoints for automatic mode resolution.');
+        return 'build';
     }
 
     /**
