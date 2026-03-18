@@ -125,7 +125,7 @@ const post = await postFactory.create({userId: user.id});
 - Use nested `test.describe.configure({mode: ...})` (mode toggles are root-level only)
 - Call `resetEnvironment()` after resolving `baseURL`, `page`, `pageWithAuthenticatedUser`, or `ghostAccountOwner`
 - Hard-coded waits (`waitForTimeout`)
-- networkidle in waits** (`networkidle`) 
+- networkidle in waits (`networkidle`)
 - Test dependencies (Test B needs Test A)
 - Direct database manipulation
 - Multiple scenarios in one test
