@@ -220,6 +220,8 @@ The `ghostInstance` fixture provides:
 - `baseUrl`: The URL of the Ghost instance
 - `database`: Database name for this test
 - `port`: Port number the instance is running on
+
+Additional standalone fixtures exported from `helpers/playwright/fixture.ts` and re-exported by `@/helpers/playwright`:
 - `resolvedIsolation`: `'per-file' | 'per-test'`
 - `resetEnvironment()`: force a full environment recycle in per-file mode before stateful fixtures are resolved
 
@@ -232,12 +234,13 @@ test.beforeEach(async ({resetEnvironment, resolvedIsolation}) => {
 ```
 
 Isolation rules:
-- Default is per-file isolation.
-- Call `usePerTestIsolation()` at the root of a file to switch to per-test isolation.
+- Default is per-file isolation, so the underlying Ghost environment can be reused across tests in the same file.
+- Call `usePerTestIsolation()` at the root of a file to switch to per-test isolation and force a fresh Ghost environment for each test.
 - Import it from `@/helpers/playwright/isolation`.
 - `config` and `labs` participate in the per-file environment identity. If either changes, the shared environment is recycled.
 - `stripeEnabled` always forces per-test isolation because Ghost must boot against a per-test fake Stripe server.
 - `resetEnvironment()` is a hook-only escape hatch. Do not call it after `baseURL`, `page`, `pageWithAuthenticatedUser`, or `ghostAccountOwner` has already been resolved.
+- Do not treat `resetEnvironment()` as an in-test cleanup step. If you recycle the environment, you must re-establish any stateful fixtures, and the supported pattern is to call it in `beforeEach` before those fixtures are created.
 - ESLint catches direct misuse, but the runtime guard in the fixture is the final enforcement.
 
 When to use each option:
