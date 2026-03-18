@@ -108,7 +108,7 @@ export function MappingStep({
                                         {currentlyDisplayedData.length > 0 ? (
                                             currentlyDisplayedData.map(row => (
                                                 <TableRow key={row.key}>
-                                                    <TableCell className="break-all text-sm font-medium">{row.key}</TableCell>
+                                                    <TableCell className="text-sm font-medium break-all">{row.key}</TableCell>
                                                     <TableCell className={cn('break-all text-sm', !row.value && 'text-muted-foreground')}>
                                                         {row.value || '\u00A0'}
                                                     </TableCell>
