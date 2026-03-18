@@ -13,9 +13,18 @@ function getDayBoundsInUtc(date: string, timezone: string): {start: string; end:
 
 const TEXT_OPERATORS = ['is', 'contains', 'does-not-contain', 'starts-with', 'ends-with'] as const;
 const DATE_OPERATORS = ['is-less', 'is-or-less', 'is-greater', 'is-or-greater'] as const;
-const NUMBER_OPERATORS = ['is', 'is-greater', 'is-less'] as const;
+const NUMBER_OPERATORS = ['is', 'is-greater', 'is-or-greater', 'is-less', 'is-or-less'] as const;
 const SCALAR_OPERATORS = ['is', 'is-not'] as const;
 const SET_OPERATORS = ['is-any', 'is-not-any'] as const;
+const SUBSCRIPTION_STATUS_OPTIONS = [
+    {value: 'active', label: 'Active'},
+    {value: 'trialing', label: 'Trialing'},
+    {value: 'canceled', label: 'Canceled'},
+    {value: 'unpaid', label: 'Unpaid'},
+    {value: 'past_due', label: 'Past Due'},
+    {value: 'incomplete', label: 'Incomplete'},
+    {value: 'incomplete_expired', label: 'Incomplete - Expired'}
+] as const;
 
 function formatDateValue(value: unknown, timezone: string): string | null {
     if (typeof value !== 'string' || !value) {
@@ -314,6 +323,7 @@ export const memberFields = defineFields({
             type: 'select',
             searchable: false
         },
+        options: SUBSCRIPTION_STATUS_OPTIONS,
         metadata: {
             activeColumn: {
                 key: 'subscriptions.status',

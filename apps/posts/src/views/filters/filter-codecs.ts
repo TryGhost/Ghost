@@ -180,7 +180,7 @@ export function textCodec(config?: CodecConfig): FilterCodec {
             const rawValue = predicate.values[0];
             const field = getCodecField(config, ctx.key);
 
-            if (typeof rawValue !== 'string' || !rawValue) {
+            if (typeof rawValue !== 'string') {
                 return null;
             }
 
@@ -292,8 +292,13 @@ export function numberCodec(config?: CodecConfig): FilterCodec {
         serialize(predicate, ctx) {
             const rawValue = predicate.values[0];
             const field = getCodecField(config, ctx.key);
+            const value = typeof rawValue === 'string'
+                ? rawValue.trim() === ''
+                    ? NaN
+                    : Number(rawValue)
+                : rawValue;
 
-            if (typeof rawValue !== 'number' || Number.isNaN(rawValue)) {
+            if (typeof value !== 'number' || Number.isNaN(value)) {
                 return null;
             }
 
@@ -303,7 +308,7 @@ export function numberCodec(config?: CodecConfig): FilterCodec {
                 return null;
             }
 
-            return [`${field}:${operator}${rawValue}`];
+            return [`${field}:${operator}${value}`];
         }
     };
 }

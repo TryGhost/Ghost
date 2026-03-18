@@ -50,11 +50,30 @@ describe('memberFields', () => {
         expect(memberFields.tier_id.operators).toEqual(['is-any', 'is-not-any']);
         expect(memberFields['newsletters.:slug'].operators).toEqual(['is']);
         expect(memberFields.newsletter_feedback.operators).toEqual(['1', '0']);
+        expect(memberFields.email_count.operators).toEqual([
+            'is',
+            'is-greater',
+            'is-or-greater',
+            'is-less',
+            'is-or-less'
+        ]);
         expect(memberFields.created_at.operators).toEqual([
             'is-less',
             'is-or-less',
             'is-greater',
             'is-or-greater'
+        ]);
+    });
+
+    it('keeps the expected subscription status options', () => {
+        expect(memberFields['subscriptions.status'].options).toEqual([
+            {value: 'active', label: 'Active'},
+            {value: 'trialing', label: 'Trialing'},
+            {value: 'canceled', label: 'Canceled'},
+            {value: 'unpaid', label: 'Unpaid'},
+            {value: 'past_due', label: 'Past Due'},
+            {value: 'incomplete', label: 'Incomplete'},
+            {value: 'incomplete_expired', label: 'Incomplete - Expired'}
         ]);
     });
 

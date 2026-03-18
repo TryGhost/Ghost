@@ -189,6 +189,17 @@ describe('textCodec', () => {
         expect(textCodec().serialize(predicate, emailContext)).toBeNull();
     });
 
+    it('serializes empty text values so URL-synced filters stay editable', () => {
+        const predicate: FilterPredicate = {
+            id: '1',
+            field: 'email',
+            operator: 'is',
+            values: ['']
+        };
+
+        expect(textCodec().serialize(predicate, emailContext)).toEqual(['email:\'\'']);
+    });
+
     it('supports mapped NQL field names', () => {
         const bodyCodec = textCodec({field: 'html'});
 
@@ -291,5 +302,16 @@ describe('numberCodec', () => {
         };
 
         expect(numberCodec().serialize(predicate, countContext)).toBeNull();
+    });
+
+    it('serializes numeric strings from the filter input', () => {
+        const predicate: FilterPredicate = {
+            id: '1',
+            field: 'email_count',
+            operator: 'is-or-less',
+            values: ['10']
+        };
+
+        expect(numberCodec().serialize(predicate, countContext)).toEqual(['email_count:<=10']);
     });
 });
