@@ -1,8 +1,10 @@
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
+import {parseFilterToAst} from '../../filters/filter-query-core';
 import {parseMemberFilter, serializeMemberFilters} from '../member-filter-query';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useCallback, useMemo} from 'react';
 import {useSearchParams} from 'react-router';
+import type {AstNode} from '../../filters/filter-ast';
 import type {Filter} from '@tryghost/shade';
 
 type SetFiltersAction = Filter[] | ((prevFilters: Filter[]) => Filter[]);
@@ -37,10 +39,29 @@ function toSearchParams(filters: Filter[], search: string, timezone: string): UR
     return params;
 }
 
+function hasOrCompound(node: AstNode | undefined): boolean {
+    if (!node) {
+        return false;
+    }
+
+    if (Array.isArray(node.$or)) {
+        return true;
+    }
+
+    if (Array.isArray(node.$and) && node.$and.some(child => hasOrCompound(child as AstNode))) {
+        return true;
+    }
+
+    return Object.values(node).some((value) => {
+        return value !== null && typeof value === 'object' && !Array.isArray(value) && hasOrCompound(value as AstNode);
+    });
+}
+
 export function useMembersFilterState(): UseMembersFilterStateReturn {
     const [searchParams, setSearchParams] = useSearchParams();
     const {data: settingsData} = useBrowseSettings({});
     const filterParam = useMemo(() => searchParams.get('filter') ?? undefined, [searchParams]);
+    const filterAst = useMemo(() => parseFilterToAst(filterParam ?? ''), [filterParam]);
     const resolvedTimezone = useMemo(() => {
         if (!settingsData) {
             return null;
@@ -49,6 +70,7 @@ export function useMembersFilterState(): UseMembersFilterStateReturn {
         return getSiteTimezone(settingsData.settings ?? []);
     }, [settingsData]);
     const timezone = resolvedTimezone ?? 'Etc/UTC';
+    const shouldPreserveRawFilter = Boolean(filterParam) && (!resolvedTimezone || hasOrCompound(filterAst));
 
     const filters = useMemo(() => {
         return parseMemberFilter(filterParam, timezone);
@@ -69,7 +91,7 @@ export function useMembersFilterState(): UseMembersFilterStateReturn {
         const replace = options.replace ?? true;
         const params = new URLSearchParams();
 
-        if (!resolvedTimezone && filterParam) {
+        if (shouldPreserveRawFilter && filterParam) {
             params.set('filter', filterParam);
         } else {
             const filter = serializeMemberFilters(filters, timezone);
@@ -84,7 +106,7 @@ export function useMembersFilterState(): UseMembersFilterStateReturn {
         }
 
         setSearchParams(params, {replace});
-    }, [filterParam, filters, resolvedTimezone, setSearchParams, timezone]);
+    }, [filterParam, filters, setSearchParams, shouldPreserveRawFilter, timezone]);
 
     const clearFilters = useCallback(({replace = true}: SetFiltersOptions = {}) => {
         setSearchParams(toSearchParams([], search, timezone), {replace});
@@ -95,12 +117,12 @@ export function useMembersFilterState(): UseMembersFilterStateReturn {
     }, [setSearchParams]);
 
     const nql = useMemo(() => {
-        if (!resolvedTimezone) {
+        if (shouldPreserveRawFilter) {
             return filterParam;
         }
 
         return serializeMemberFilters(filters, timezone);
-    }, [filterParam, filters, resolvedTimezone, timezone]);
+    }, [filterParam, filters, shouldPreserveRawFilter, timezone]);
 
     return {
         filters,

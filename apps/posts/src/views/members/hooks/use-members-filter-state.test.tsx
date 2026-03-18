@@ -21,6 +21,28 @@ function createWrapper(initialEntry: string) {
 }
 
 describe('useMembersFilterState', () => {
+    it('preserves legacy OR filters when updating search params', () => {
+        const {result} = renderHook(() => {
+            const state = useMembersFilterState();
+            const [searchParams] = useSearchParams();
+
+            return {
+                ...state,
+                query: searchParams.toString()
+            };
+        }, {
+            wrapper: createWrapper('/?filter=status:paid,label:vip&search=jamie')
+        });
+
+        expect(result.current.nql).toBe('status:paid,label:vip');
+
+        act(() => {
+            result.current.setSearch('alex', {replace: false});
+        });
+
+        expect(result.current.query).toBe('filter=status%3Apaid%2Clabel%3Avip&search=alex');
+    });
+
     it('preserves raw date filters while settings are unresolved', () => {
         settingsData = undefined;
 
