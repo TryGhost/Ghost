@@ -1,13 +1,25 @@
 {
   "name": "@tryghost/kg-default-atoms",
   "version": "5.1.7",
-  "repository": "https://github.com/TryGhost/Koenig/tree/master/packages/kg-default-atoms",
+  "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-default-atoms",
   "author": "Ghost Foundation",
   "license": "MIT",
-  "main": "index.js",
+  "main": "build/cjs/index.js",
+  "module": "build/esm/index.js",
+  "types": "build/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/esm/index.d.ts",
+      "import": "./build/esm/index.js",
+      "require": "./build/cjs/index.js"
+    }
+  },
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
+    "prepare": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
+    "pretest": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json && tsc -p tsconfig.test.json",
+    "test": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha --require tsx './test/**/*.test.ts'",
     "lint": "eslint . --cache",
     "posttest": "yarn lint"
   },
@@ -15,14 +27,24 @@
     "node": "^22.13.1 || ^24.0.0"
   },
   "files": [
-    "index.js",
-    "lib"
+    "build"
   ],
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
+    "@eslint/js": "9.28.0",
+    "@types/mocha": "10.0.10",
+    "@types/node": "22.15.29",
+    "@types/should": "13.0.0",
+    "@types/sinon": "17.0.4",
     "c8": "11.0.0",
-    "simple-dom": "1.4.0"
+    "mocha": "11.7.5",
+    "should": "13.2.3",
+    "simple-dom": "1.4.0",
+    "sinon": "21.0.1",
+    "tsx": "4.19.4",
+    "typescript": "5.8.3",
+    "typescript-eslint": "8.33.1"
   }
 }

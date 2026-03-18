@@ -1,3 +1,3 @@
-const softReturn = require('./soft-return');
+import softReturn from './soft-return.js';
 
-module.exports = [softReturn];
+export const atoms = [softReturn];

@@ -1,19 +1,18 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('../utils');
-require('../utils');
+import '../utils/index.js';
+import atom from '../../src/atoms/soft-return.js';
+import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
+import type {SerializableNode} from '@simple-dom/interface';
 
-const atom = require('../../lib/atoms/soft-return');
-const SimpleDom = require('simple-dom');
-const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
+const serializer = new HTMLSerializer(voidMap);
 
 describe('Soft return atom', function () {
     it('generates a `br` tag', function () {
-        let opts = {
+        const opts = {
             env: {
-                dom: new SimpleDom.Document()
+                dom: new SimpleDomDocument()
             }
         };
 
-        serializer.serialize(atom.render(opts)).should.match('<br>');
+        serializer.serialize(atom.render(opts) as SerializableNode).should.match('<br>');
     });
 });

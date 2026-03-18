@@ -1,42 +1,33 @@
-import {fixupPluginRules} from '@eslint/compat';
+import {defineConfig} from 'eslint/config';
 import eslint from '@eslint/js';
 import ghostPlugin from 'eslint-plugin-ghost';
-import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
-const ghost = fixupPluginRules(ghostPlugin);
-
-export default [
+export default defineConfig([
     {ignores: ['build/**']},
-    eslint.configs.recommended,
     {
-        files: ['**/*.js'],
-        plugins: {ghost},
+        files: ['**/*.ts'],
+        extends: [
+            eslint.configs.recommended,
+            tseslint.configs.recommended
+        ],
         languageOptions: {
-            globals: globals.node
+            parserOptions: {ecmaVersion: 2022, sourceType: 'module'}
         },
+        plugins: {ghost: ghostPlugin},
         rules: {
-            ...ghostPlugin.configs.node.rules,
-            // match ESLint 8 behavior for catch clause variables
-            'no-unused-vars': ['error', {caughtErrors: 'none'}],
-            // disable rules incompatible with ESLint 9 flat config
-            'ghost/filenames/match-exported-class': 'off',
-            'ghost/filenames/match-exported': 'off',
-            'ghost/filenames/match-regex': 'off'
+            ...ghostPlugin.configs.ts.rules,
+            '@typescript-eslint/no-explicit-any': 'error'
         }
     },
     {
-        files: ['test/**/*.js'],
-        plugins: {ghost},
-        languageOptions: {
-            globals: {
-                ...globals.node,
-                ...globals.mocha,
-                should: true,
-                sinon: true
-            }
-        },
+        files: ['test/**/*.ts'],
         rules: {
-            ...ghostPlugin.configs.test.rules
+            ...ghostPlugin.configs['ts-test'].rules,
+            'ghost/mocha/no-global-tests': 'off',
+            'ghost/mocha/handle-done-callback': 'off',
+            'ghost/mocha/no-mocha-arrows': 'off',
+            'ghost/mocha/max-top-level-suites': 'off'
         }
     }
-];
+]);
