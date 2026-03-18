@@ -102,8 +102,9 @@ const BodyContent: React.FC<{
     fontFamily: string;
     linkColor: string;
     linkUnderline: boolean;
+    linkItalic: boolean;
     linkBold: boolean;
-}> = ({siteTitle, textColor, fontFamily, linkColor, linkUnderline, linkBold}) => (
+}> = ({siteTitle, textColor, fontFamily, linkColor, linkUnderline, linkItalic, linkBold}) => (
     <div
         className="px-12 pb-4 text-base leading-relaxed"
         style={{color: textColor, fontFamily}}
@@ -113,7 +114,7 @@ const BodyContent: React.FC<{
         </p>
         <p className="mb-[1.2em] mt-0">
             You can customize the <a
-                className={cn('no-underline', linkUnderline && 'underline', linkBold && 'font-bold')}
+                className={cn('no-underline', linkUnderline && 'underline', linkItalic && 'italic', linkBold && 'font-bold')}
                 href="#"
                 style={{color: linkColor}}
                 onClick={e => e.preventDefault()}
@@ -209,6 +210,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
                     fontFamily={bodyFont}
                     linkBold={settings.link_style === 'bold'}
                     linkColor={colors.linkColor}
+                    linkItalic={settings.link_style === 'regular'}
                     linkUnderline={settings.link_style === 'underline'}
                     siteTitle={siteTitle}
                     textColor={colors.textColor}
