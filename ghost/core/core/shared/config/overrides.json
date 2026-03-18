@@ -46,6 +46,7 @@
             "extensions": [
                 ".pdf",
                 ".json",
+                ".jsonld",
                 ".ods",
                 ".odt",
                 ".pptx",

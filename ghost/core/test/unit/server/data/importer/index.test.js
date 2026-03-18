@@ -42,7 +42,7 @@ describe('Importer', function () {
 
         it('gets the correct extensions', function () {
             assert(Array.isArray(ImportManager.getExtensions()));
-            assert.equal(ImportManager.getExtensions().length, 54);
+            assert.equal(ImportManager.getExtensions().length, 55);
             assert(ImportManager.getExtensions().includes('.csv'));
             assert(ImportManager.getExtensions().includes('.json'));
             assert(ImportManager.getExtensions().includes('.zip'));
@@ -108,7 +108,7 @@ describe('Importer', function () {
         });
 
         it('globs extensions correctly', function () {
-            const extGlob = '+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.mp4|.webm|.ogv|.mp3|.wav|.ogg|.m4a|.pdf|.json|.ods|.odt|.pptx|.rtf|.txt|.xls|.xlsx|.xml|.apkg|.css|.csv|.doc|.docx|.epub|.gpx|.html|.ics|.ipynb|.js|.key|.kml|.md|.mobi|.mov|.otf|.pages|.paprikarecipes|.psd|.py|.skp|.woff|.woff2|.xlsb|.xlsm|.yaml|.zip|.markdown)';
+            const extGlob = '+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.mp4|.webm|.ogv|.mp3|.wav|.ogg|.m4a|.pdf|.json|.jsonld|.ods|.odt|.pptx|.rtf|.txt|.xls|.xlsx|.xml|.apkg|.css|.csv|.doc|.docx|.epub|.gpx|.html|.ics|.ipynb|.js|.key|.kml|.md|.mobi|.mov|.otf|.pages|.paprikarecipes|.psd|.py|.skp|.woff|.woff2|.xlsb|.xlsm|.yaml|.zip|.markdown)';
             assert.equal(ImportManager.getGlobPattern(ImportManager.getExtensions()), extGlob);
             assert.equal(ImportManager.getGlobPattern(ImportManager.getDirectories()), '+(images|content|media|files)');
             assert.equal(ImportManager.getGlobPattern(JSONHandler.extensions), '+(.json)');

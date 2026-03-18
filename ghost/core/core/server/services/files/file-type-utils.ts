@@ -1,7 +1,7 @@
-const path = require('path');
-const mime = require('mime-types');
+import path from 'path';
+import {lookup} from 'mime-types';
 
-const CONTENT_TYPE_OVERRIDES = new Map([
+const CONTENT_TYPE_OVERRIDES = new Map<string, string>([
     ['.html', 'text/plain'],
     ['.htm', 'text/plain'],
     ['.js', 'text/plain'],
@@ -9,7 +9,7 @@ const CONTENT_TYPE_OVERRIDES = new Map([
     ['.xml', 'text/plain']
 ]);
 
-const BROWSER_RENDERABLE_TYPES = new Set([
+const BROWSER_RENDERABLE_TYPES = new Set<string>([
     'image/jpeg',
     'image/png',
     'image/gif',
@@ -34,11 +34,8 @@ const BROWSER_RENDERABLE_TYPES = new Set([
  * 1. Override map — forced to text/plain to prevent browser execution
  * 2. Browser-renderable — type preserved as safe for browser rendering
  * 3. Fallback — application/octet-stream to force download
- *
- * @param {string} filename
- * @returns {string} content type to store
  */
-function getStorageContentType(filename) {
+function getStorageContentType(filename: string): string {
     const ext = path.extname(filename).toLowerCase();
 
     const override = CONTENT_TYPE_OVERRIDES.get(ext);
@@ -46,7 +43,7 @@ function getStorageContentType(filename) {
         return override;
     }
 
-    const mimeType = mime.lookup(ext);
+    const mimeType = lookup(ext);
     if (mimeType && BROWSER_RENDERABLE_TYPES.has(mimeType)) {
         return mimeType;
     }
@@ -54,6 +51,6 @@ function getStorageContentType(filename) {
     return 'application/octet-stream';
 }
 
-module.exports = {
+export {
     getStorageContentType
 };
