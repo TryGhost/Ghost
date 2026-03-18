@@ -21,7 +21,7 @@ function createWrapper(initialEntry: string) {
 }
 
 describe('useMembersFilterState', () => {
-    it('preserves legacy OR filters when updating search params', () => {
+    it('preserves unsupported OR filters when updating search params', () => {
         const {result} = renderHook(() => {
             const state = useMembersFilterState();
             const [searchParams] = useSearchParams();
@@ -34,6 +34,7 @@ describe('useMembersFilterState', () => {
             wrapper: createWrapper('/?filter=status:paid,label:vip&search=jamie')
         });
 
+        expect(result.current.filters).toEqual([]);
         expect(result.current.nql).toBe('status:paid,label:vip');
 
         act(() => {
@@ -41,6 +42,16 @@ describe('useMembersFilterState', () => {
         });
 
         expect(result.current.query).toBe('filter=status%3Apaid%2Clabel%3Avip&search=alex');
+    });
+
+    it('does not partially hydrate filters when unsupported OR compounds are present', () => {
+        const {result} = renderHook(() => useMembersFilterState(), {
+            wrapper: createWrapper('/?filter=(status:paid,label:vip)%2Bcreated_at%3A%3C%3D%272024-02-01T23%3A59%3A59.999Z%27')
+        });
+
+        expect(result.current.filters).toEqual([]);
+        expect(result.current.nql).toBe('(status:paid,label:vip)+created_at:<=\'2024-02-01T23:59:59.999Z\'');
+        expect(result.current.hasFilterOrSearch).toBe(true);
     });
 
     it('preserves raw date filters while settings are unresolved', () => {

@@ -165,6 +165,26 @@ const MEMBER_COMPOUND_MATCHERS: CompoundMatcher[] = [
     matchFeedbackGroupedNode
 ];
 
+function matchesMemberCompound(node: AstNode): boolean {
+    return MEMBER_COMPOUND_MATCHERS.some(matcher => Boolean(matcher(node)));
+}
+
+function hasUnsupportedMemberOrCompound(node: AstNode): boolean {
+    const compound = getCompoundChildren(node);
+
+    if (compound) {
+        if (compound.operator === '$or' && !matchesMemberCompound(node)) {
+            return true;
+        }
+
+        return compound.children.some(child => hasUnsupportedMemberOrCompound(child as AstNode));
+    }
+
+    return Object.values(node).some((value) => {
+        return value !== null && typeof value === 'object' && !Array.isArray(value) && hasUnsupportedMemberOrCompound(value as AstNode);
+    });
+}
+
 function parseMemberNode(node: AstNode, timezone: string): ParsedPredicate[] {
     for (const matcher of MEMBER_COMPOUND_MATCHERS) {
         const parsed = matcher(node);
@@ -191,6 +211,16 @@ export function parseMemberFilter(filter: string | undefined, timezone: string):
     }
 
     return stampPredicates(parseMemberNode(ast, timezone));
+}
+
+export function hasUnsupportedMemberOrFilter(filter: string | undefined): boolean {
+    const ast = parseFilterToAst(filter ?? '');
+
+    if (!ast) {
+        return false;
+    }
+
+    return hasUnsupportedMemberOrCompound(ast);
 }
 
 export function serializeMemberFilters(predicates: FilterPredicate[], timezone: string): string | undefined {
