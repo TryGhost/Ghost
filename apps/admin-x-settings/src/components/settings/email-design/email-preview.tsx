@@ -87,11 +87,11 @@ const PublicationHeader: React.FC<{
     );
 };
 
-const Divider: React.FC<{color: string; dividerStyle?: string}> = ({color, dividerStyle = 'solid'}) => (
+const Divider: React.FC<{color: string}> = ({color}) => (
     <div className="px-12 py-4">
         <hr
             className="m-0 border-0 border-t"
-            style={{borderColor: color, borderStyle: dividerStyle}}
+            style={{borderColor: color}}
         />
     </div>
 );
@@ -204,7 +204,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
                     textColor={colors.headerTextColor}
                 />
 
-                <Divider color={colors.dividerColor} dividerStyle={settings.divider_style} />
+                <Divider color={colors.dividerColor} />
 
                 <BodyContent
                     fontFamily={bodyFont}
@@ -223,7 +223,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
                     cornerClass={buttonCornerClass}
                 />
 
-                <Divider color={colors.dividerColor} dividerStyle={settings.divider_style} />
+                <Divider color={colors.dividerColor} />
 
                 <Footer color={colors.secondaryTextColor} emailFooter={emailFooter} siteTitle={siteTitle} />
             </div>
