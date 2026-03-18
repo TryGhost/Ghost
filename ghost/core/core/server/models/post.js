@@ -1204,6 +1204,7 @@ Post = ghostBookshelf.Model.extend({
 
             findAll: ['columns', 'filter'],
             destroy: ['destroyAll', 'destroyBy'],
+            add: ['email_segment', 'newsletter'],
             edit: ['filter', 'email_segment', 'force_rerender', 'newsletter', 'save_revision', 'convert_to_lexical']
         };
 

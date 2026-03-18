@@ -218,6 +218,44 @@ describe('PostEmailHandler', function () {
             );
         });
 
+        it('validates when creating a new post with newsletter option (no id)', async function () {
+            setupNewsletter();
+
+            const frame = {
+                options: {newsletter: 'test-newsletter'},
+                data: {posts: [{status: 'published'}]}
+            };
+
+            await postEmailHandler.validateBeforeSave(frame);
+
+            sinon.assert.notCalled(mockModels.Post.findOne);
+            sinon.assert.calledOnce(mockEmailService.checkCanSendEmail);
+        });
+
+        it('skips validation when creating a new post without newsletter (no id)', async function () {
+            const frame = {
+                options: {},
+                data: {posts: [{status: 'published'}]}
+            };
+
+            await postEmailHandler.validateBeforeSave(frame);
+
+            sinon.assert.notCalled(mockModels.Post.findOne);
+            sinon.assert.notCalled(mockEmailService.checkCanSendEmail);
+        });
+
+        it('skips validation when creating a new draft post with newsletter (no id)', async function () {
+            const frame = {
+                options: {newsletter: 'test-newsletter'},
+                data: {posts: [{status: 'draft'}]}
+            };
+
+            await postEmailHandler.validateBeforeSave(frame);
+
+            sinon.assert.notCalled(mockModels.Post.findOne);
+            sinon.assert.notCalled(mockEmailService.checkCanSendEmail);
+        });
+
         it('propagates checkCanSendEmail errors', async function () {
             setupExistingPost({newsletterId: 'newsletter-123'});
             setupNewsletter();

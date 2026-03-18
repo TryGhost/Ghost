@@ -31,10 +31,13 @@ class PostEmailHandler {
             return;
         }
 
-        const existingPost = await this.models.Post.findOne(
-            {id: frame.options.id, status: 'all'},
-            {columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter']}
-        );
+        let existingPost = null;
+        if (frame.options.id) {
+            existingPost = await this.models.Post.findOne(
+                {id: frame.options.id, status: 'all'},
+                {columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter']}
+            );
+        }
         const previousStatus = existingPost?.get('status');
 
         const hasNewsletter = frame.options.newsletter || existingPost?.get('newsletter_id');

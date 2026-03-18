@@ -911,6 +911,94 @@ describe('Posts API', function () {
         assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
     });
 
+    it('Can create and send a post with newsletter in a single request', async function () {
+        const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
+
+        const post = {
+            title: 'Single request publish + email',
+            status: 'published',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            created_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate()
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts/?newsletter=' + newsletterSlug))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        assert.equal(res.body.posts[0].status, 'published');
+        assert.equal(res.body.posts[0].newsletter.id, newsletterId);
+        assert.equal(res.body.posts[0].email_segment, 'all');
+
+        const id = res.body.posts[0].id;
+
+        const model = await models.Post.findOne({id}, testUtils.context.internal);
+        assert.equal(model.get('newsletter_id'), newsletterId);
+
+        const email = await models.Email.findOne({post_id: id}, testUtils.context.internal);
+        assertExists(email);
+        assert.equal(email.get('newsletter_id'), newsletterId);
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
+    });
+
+    it('Can create and send an email-only post in a single request', async function () {
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
+
+        const post = {
+            title: 'Single request email-only',
+            status: 'published',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            created_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate(),
+            email_only: true
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts/?newsletter=' + newsletterSlug + '&email_segment=all'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        assert.equal(res.body.posts[0].status, 'sent');
+        assert.equal(res.body.posts[0].email_only, true);
+
+        const id = res.body.posts[0].id;
+
+        const email = await models.Email.findOne({post_id: id}, testUtils.context.internal);
+        assertExists(email);
+        assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
+    });
+
+    it('Creating a draft post ignores newsletter option', async function () {
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
+
+        const post = {
+            title: 'Draft with newsletter param',
+            status: 'draft',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post')
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts/?newsletter=' + newsletterSlug))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        assert.equal(res.body.posts[0].status, 'draft');
+        assert.equal(res.body.posts[0].newsletter, null);
+
+        const id = res.body.posts[0].id;
+
+        const email = await models.Email.findOne({post_id: id}, testUtils.context.internal);
+        assert.equal(email, null);
+    });
+
     it('Interprets sent as published for a post with email', async function () {
         const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
         const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;

@@ -386,6 +386,162 @@ describe('Posts Service', function () {
         });
     });
 
+    describe('addPost', function () {
+        let postsService;
+        let mockModels;
+        let mockEmailService;
+        let postEmailHandlerStub;
+        let mockPostModel;
+
+        function createMockPostModel({status = 'draft', newsletterId = null} = {}) {
+            const get = sinon.stub();
+            get.withArgs('status').returns(status);
+            get.withArgs('newsletter_id').returns(newsletterId);
+            return {
+                get,
+                set: sinon.stub(),
+                toJSON: sinon.stub().returns({id: 'post-123'})
+            };
+        }
+
+        beforeEach(function () {
+            mockPostModel = createMockPostModel();
+
+            mockModels = {
+                Post: {
+                    findOne: sinon.stub(),
+                    add: sinon.stub().resolves(mockPostModel)
+                },
+                Member: {
+                    findPage: sinon.stub()
+                },
+                Newsletter: {
+                    findOne: sinon.stub()
+                }
+            };
+
+            mockEmailService = {
+                checkCanSendEmail: sinon.stub().resolves(),
+                createEmail: sinon.stub().resolves({id: 'email-123'}),
+                retryEmail: sinon.stub()
+            };
+
+            postsService = new PostsService({
+                models: mockModels,
+                emailService: mockEmailService
+            });
+
+            postEmailHandlerStub = {
+                validateBeforeSave: sinon.stub().resolves(),
+                createOrRetryEmail: sinon.stub().resolves()
+            };
+
+            postsService.postEmailHandler = postEmailHandlerStub;
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('calls postEmailHandler.validateBeforeSave', async function () {
+            const frame = {
+                options: {newsletter: 'test-newsletter'},
+                data: {posts: [{title: 'Test', status: 'published'}]}
+            };
+
+            await postsService.addPost(frame);
+
+            sinon.assert.calledOnceWithExactly(postEmailHandlerStub.validateBeforeSave, frame);
+        });
+
+        it('propagates validation errors from validateBeforeSave', async function () {
+            postEmailHandlerStub.validateBeforeSave.rejects(new Error('Validation failed'));
+
+            const frame = {
+                options: {newsletter: 'test-newsletter'},
+                data: {posts: [{title: 'Test', status: 'published'}]}
+            };
+
+            await assert.rejects(
+                postsService.addPost(frame),
+                (err) => {
+                    assert.equal(err.message, 'Validation failed');
+                    return true;
+                }
+            );
+
+            sinon.assert.notCalled(mockModels.Post.add);
+        });
+
+        it('creates email when post is published with newsletter', async function () {
+            mockPostModel = createMockPostModel({status: 'published', newsletterId: 'newsletter-123'});
+            mockModels.Post.add.resolves(mockPostModel);
+
+            const frame = {
+                options: {newsletter: 'test-newsletter'},
+                data: {posts: [{title: 'Test', status: 'published'}]}
+            };
+
+            await postsService.addPost(frame);
+
+            sinon.assert.calledOnceWithExactly(mockEmailService.createEmail, mockPostModel);
+            sinon.assert.calledOnce(mockPostModel.set);
+        });
+
+        it('creates email when post status is sent (email-only)', async function () {
+            mockPostModel = createMockPostModel({status: 'sent', newsletterId: 'newsletter-123'});
+            mockModels.Post.add.resolves(mockPostModel);
+
+            const frame = {
+                options: {newsletter: 'test-newsletter'},
+                data: {posts: [{title: 'Test', status: 'published'}]}
+            };
+
+            await postsService.addPost(frame);
+
+            sinon.assert.calledOnceWithExactly(mockEmailService.createEmail, mockPostModel);
+        });
+
+        it('does not create email for draft posts', async function () {
+            mockPostModel = createMockPostModel({status: 'draft'});
+            mockModels.Post.add.resolves(mockPostModel);
+
+            const frame = {
+                options: {},
+                data: {posts: [{title: 'Test', status: 'draft'}]}
+            };
+
+            await postsService.addPost(frame);
+
+            sinon.assert.notCalled(mockEmailService.createEmail);
+        });
+
+        it('does not create email when no newsletter_id', async function () {
+            mockPostModel = createMockPostModel({status: 'published', newsletterId: null});
+            mockModels.Post.add.resolves(mockPostModel);
+
+            const frame = {
+                options: {},
+                data: {posts: [{title: 'Test', status: 'published'}]}
+            };
+
+            await postsService.addPost(frame);
+
+            sinon.assert.notCalled(mockEmailService.createEmail);
+        });
+
+        it('returns the model', async function () {
+            const frame = {
+                options: {},
+                data: {posts: [{title: 'Test', status: 'draft'}]}
+            };
+
+            const result = await postsService.addPost(frame);
+
+            assert.equal(result, mockPostModel);
+        });
+    });
+
     describe('getChanges', function () {
         let postsService;
 

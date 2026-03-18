@@ -37,6 +37,25 @@ class PostsService {
         return posts;
     }
 
+    async addPost(frame) {
+        await this.postEmailHandler.validateBeforeSave(frame);
+
+        const model = await this.models.Post.add(frame.data.posts[0], frame.options);
+
+        // For new posts, model.wasChanged() returns false after add() since
+        // Bookshelf resets _changed. We call createEmail directly instead of
+        // going through createOrRetryEmail which relies on wasChanged/previous.
+        const status = model.get('status');
+        if (model.get('newsletter_id') && (status === 'published' || status === 'sent')) {
+            const email = await this.emailService.createEmail(model);
+            if (email) {
+                model.set('email', email);
+            }
+        }
+
+        return model;
+    }
+
     async readPost(frame) {
         const model = await this.models.Post.findOne(frame.data, frame.options);
 

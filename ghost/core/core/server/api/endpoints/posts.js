@@ -156,7 +156,9 @@ const controller = {
         options: [
             'include',
             'formats',
-            'source'
+            'source',
+            'email_segment',
+            'newsletter'
         ],
         validation: {
             options: {
@@ -172,7 +174,7 @@ const controller = {
             unsafeAttrs: unsafeAttrs
         },
         async query(frame) {
-            const model = await models.Post.add(frame.data.posts[0], frame.options);
+            const model = await postsService.addPost(frame);
             if (model.get('status') === 'published') {
                 frame.setHeader('X-Cache-Invalidate', '/*');
             }
