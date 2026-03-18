@@ -1,73 +1,89 @@
 import crypto from 'crypto';
+import type Stripe from 'stripe';
+
+// Keep fake Stripe HTTP responses close to Stripe's published shapes so Ghost interacts
+// with realistic field names, enums, and nullability at the API boundary. Internal fake
+// request/recorded state stays local and minimal because it exists only to support tests,
+// not to model Stripe end to end.
 
 function generateId(prefix: string): string {
     return `${prefix}_${crypto.randomBytes(8).toString('hex')}`;
 }
 
-export interface StripeCustomer {
-    id: string;
-    object: 'customer';
-    name: string;
-    email: string;
-    subscriptions: {
-        type: 'list';
-        data: StripeSubscription[];
-    };
-}
+type StripeList<T> = Pick<Stripe.ApiList<T>, 'data' | 'object'>;
+type StripePriceInterval = NonNullable<Stripe.Price['recurring']>['interval'];
 
-export interface StripePrice {
-    id: string;
-    object: 'price';
-    unit_amount: number;
-    currency: string;
-    recurring: {
-        interval: string;
-    };
+export type StripeProduct = Pick<Stripe.Product, 'active' | 'id' | 'name' | 'object'>;
+
+export type StripePrice = Omit<Pick<Stripe.Price, 'active' | 'currency' | 'id' | 'nickname' | 'object' | 'product' | 'recurring' | 'type' | 'unit_amount'>, 'product' | 'recurring' | 'unit_amount'> & {
     product: string;
-    type: 'recurring';
-    active: boolean;
-    nickname: string | null;
-}
+    recurring: {interval: StripePriceInterval} | null;
+    unit_amount: NonNullable<Stripe.Price['unit_amount']>;
+};
 
-export interface StripePaymentMethod {
-    id: string;
-    object: 'payment_method';
+export type StripePaymentMethod = Omit<Pick<Stripe.PaymentMethod, 'billing_details' | 'card' | 'id' | 'object' | 'type'>, 'billing_details' | 'card' | 'type'> & {
+    billing_details: {name: string};
+    card: Pick<NonNullable<Stripe.PaymentMethod.Card>, 'brand' | 'country' | 'exp_month' | 'exp_year' | 'last4'>;
     type: 'card';
-    card: {
-        brand: string;
-        last4: string;
-        exp_month: number;
-        exp_year: number;
-        country: string;
-    };
-    billing_details: {
-        name: string;
-    };
-}
+};
 
-export interface StripeSubscription {
-    id: string;
-    object: 'subscription';
-    status: string;
-    cancel_at_period_end: boolean;
-    canceled_at: number | null;
-    current_period_end: number;
-    start_date: number;
-    default_payment_method: string | null;
-    items: {
-        type: 'list';
-        data: Array<{price: StripePrice}>;
-    };
+type StripeSubscriptionItem = Omit<Pick<Stripe.SubscriptionItem, 'price'>, 'price'> & {
+    price: StripePrice;
+};
+
+export type StripeSubscription = Omit<Pick<Stripe.Subscription, 'cancel_at_period_end' | 'canceled_at' | 'current_period_end' | 'customer' | 'default_payment_method' | 'id' | 'items' | 'object' | 'start_date' | 'status'>, 'customer' | 'default_payment_method' | 'items'> & {
     customer: string;
-}
+    default_payment_method: string | null;
+    items: StripeList<StripeSubscriptionItem>;
+};
 
-export interface StripeEvent {
-    id: string;
-    object: 'event';
-    type: string;
+export type StripeCustomer = Omit<Pick<Stripe.Customer, 'email' | 'id' | 'name' | 'object'>, 'email' | 'name'> & {
+    email: string;
+    name: string;
+    subscriptions: StripeList<StripeSubscription>;
+};
+
+export type StripeEvent = Pick<Stripe.Event, 'id' | 'object' | 'type'> & {
     data: {
         object: Record<string, unknown>;
         previous_attributes?: Record<string, unknown>;
+    };
+};
+
+export type StripeCheckoutSessionResponse = Omit<Pick<Stripe.Checkout.Session, 'cancel_url' | 'customer' | 'customer_email' | 'id' | 'metadata' | 'mode' | 'object' | 'success_url' | 'url'>, 'customer' | 'customer_email' | 'metadata' | 'url'> & {
+    customer: string | null;
+    customer_email: string | null;
+    metadata: Stripe.Metadata;
+    url: string;
+};
+
+export interface StripeCheckoutSessionRequest {
+    line_items?: Array<{price: string; quantity: number}>;
+    subscription_data?: {
+        items: Array<{plan: string}>;
+        metadata?: Record<string, unknown>;
+        trial_from_plan?: boolean;
+        trial_period_days?: number;
+    };
+}
+
+export interface RecordedStripeCheckoutSession {
+    request: StripeCheckoutSessionRequest;
+    response: StripeCheckoutSessionResponse;
+}
+
+interface CheckoutSessionOverrides {
+    request?: Partial<StripeCheckoutSessionRequest>;
+    response?: Partial<StripeCheckoutSessionResponse>;
+}
+
+export function buildProduct(overrides: Partial<StripeProduct> = {}): StripeProduct {
+    return {
+        id: generateId('prod'),
+        object: 'product',
+        active: true,
+        name: 'Test Product',
+        ...overrides
     };
 }
 
@@ -111,7 +127,7 @@ export function buildCustomer(opts: {id?: string; email: string; name: string}):
         name: opts.name,
         email: opts.email,
         subscriptions: {
-            type: 'list',
+            object: 'list',
             data: []
         }
     };
@@ -120,11 +136,11 @@ export function buildCustomer(opts: {id?: string; email: string; name: string}):
 export function buildSubscription(opts: {
     id?: string;
     customerId: string;
+    paymentMethod?: StripePaymentMethod | null;
+    price?: StripePrice;
     priceId?: string;
     productId?: string;
-    status?: string;
-    price?: StripePrice;
-    paymentMethod?: StripePaymentMethod | null;
+    status?: Stripe.Subscription.Status;
 }): StripeSubscription {
     const price = opts.price ?? buildPrice({
         id: opts.priceId,
@@ -141,7 +157,7 @@ export function buildSubscription(opts: {
         start_date: Math.floor(Date.now() / 1000),
         default_payment_method: opts.paymentMethod?.id ?? null,
         items: {
-            type: 'list',
+            object: 'list',
             data: [{price}]
         },
         customer: opts.customerId
@@ -183,8 +199,8 @@ export function buildSubscriptionCreatedEvent(opts: {
 }
 
 export function buildSubscriptionUpdatedEvent(opts: {
-    subscription: StripeSubscription;
     previousAttributes?: Record<string, unknown>;
+    subscription: StripeSubscription;
 }): StripeEvent {
     return {
         id: generateId('evt'),
@@ -214,8 +230,8 @@ export function buildSubscriptionDeletedEvent(opts: {
 }
 
 export function buildInvoicePaymentSucceededEvent(opts: {
-    subscription: StripeSubscription;
     amount?: number;
+    subscription: StripeSubscription;
 }): StripeEvent {
     const price = opts.subscription.items.data[0]?.price;
     return {
@@ -232,12 +248,32 @@ export function buildInvoicePaymentSucceededEvent(opts: {
                 amount_paid: opts.amount ?? price?.unit_amount ?? 0,
                 currency: price?.currency ?? 'usd',
                 lines: {
-                    type: 'list',
+                    object: 'list',
                     data: [{
                         price: price as unknown as Record<string, unknown>
                     }]
                 }
             }
+        }
+    };
+}
+
+export function buildCheckoutSession(overrides: CheckoutSessionOverrides = {}): RecordedStripeCheckoutSession {
+    const id = overrides.response?.id ?? generateId('cs');
+
+    return {
+        request: {...(overrides.request ?? {})},
+        response: {
+            id,
+            object: 'checkout.session',
+            mode: 'subscription',
+            url: `http://localhost/checkout/sessions/${id}`,
+            customer: null,
+            customer_email: null,
+            success_url: 'http://localhost:2368/?stripe=success',
+            cancel_url: 'http://localhost:2368/?stripe=cancel',
+            metadata: {},
+            ...(overrides.response ?? {})
         }
     };
 }
