@@ -62,6 +62,9 @@ function loadNconf(options) {
     // Check if the URL in config has a protocol
     localUtils.checkUrlProtocol(nconf.get('url'));
 
+    // Strip /ghost from admin:url if present — urlFor adds it automatically
+    localUtils.sanitizeAdminUrl(nconf);
+
     // Ensure that the content path exists
     localUtils.doesContentPathExist(nconf.get('paths:contentPath'));
 
