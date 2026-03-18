@@ -30,14 +30,19 @@ test.describe('Site Settings', () => {
 
             // check the site is protected by a password
             await frontendPage.goto('/');
-            await expect(frontendPage.getByRole('button', {name: 'Access site →'})).toBeVisible();
+            await expect(frontendPage).toHaveURL(/\/private\/\?r=%2F/);
+            await expect(frontendPage.getByRole('link', {name: 'Enter access code'})).toBeVisible();
+
+            await frontendPage.getByRole('link', {name: 'Enter access code'}).click();
+            await expect(frontendPage.getByRole('dialog', {name: 'Enter access code'})).toBeVisible();
+            await expect(frontendPage.getByRole('button', {name: /Enter/})).toBeVisible();
 
             // @NOTE: site access doesn't not work because Playwright ignores cookies set
             //        during the redirect response. Possibly related to https://github.com/microsoft/playwright/issues/5236
             // assert /private/?r=%2F
             // assert should not see the site front page
             // await frontendPage.getByPlaceholder('Password').fill(sitePassword);
-            // await frontendPage.getByRole('button', {name: 'Access site →'}).click();
+            // await frontendPage.getByRole('button', {name: /Enter/}).click();
             // await frontendPage.waitForSelector('.site-title');
             // await expect(frontendPage.locator('.site-title')).toHaveText('The Local Test');
 
