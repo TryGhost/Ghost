@@ -212,6 +212,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                 preview={
                     <EmailPreview
                         emailFooter={generalSettings.emailFooter}
+                        footerLinkText="Manage your preferences"
                         headerImage={generalSettings.headerImage}
                         senderEmail={defaultEmailAddress || `noreply@${emailDomain}`}
                         senderName={generalSettings.senderName || siteTitle || 'Your site'}

@@ -14,6 +14,7 @@ interface EmailPreviewProps {
     showPublicationTitle?: boolean;
     showBadge?: boolean;
     emailFooter?: string;
+    footerLinkText?: string;
 }
 
 // --- Helper functions ---
@@ -152,7 +153,7 @@ const ActionButton: React.FC<{
     );
 };
 
-const Footer: React.FC<{siteTitle?: string; emailFooter?: string; showBadge?: boolean; color: string; textColor: string}> = ({siteTitle, emailFooter, showBadge, color, textColor}) => (
+const Footer: React.FC<{siteTitle?: string; footerLinkText?: string; emailFooter?: string; showBadge?: boolean; color: string; textColor: string}> = ({siteTitle, footerLinkText = 'Unsubscribe', emailFooter, showBadge, color, textColor}) => (
     <div
         className="px-12 pb-10 text-center text-xs"
         style={{color}}
@@ -163,7 +164,7 @@ const Footer: React.FC<{siteTitle?: string; emailFooter?: string; showBadge?: bo
             </p>
         )}
         <p className="mb-2 mt-0">
-            {siteTitle || 'Your publication'} &mdash; Unsubscribe
+            {siteTitle || 'Your publication'} &copy; {new Date().getFullYear()} &mdash; <span className="underline">{footerLinkText}</span>
         </p>
         {showBadge && (
             <div className="flex items-center justify-center gap-1 pt-2 text-xs font-semibold" style={{color: textColor}}>
@@ -176,7 +177,7 @@ const Footer: React.FC<{siteTitle?: string; emailFooter?: string; showBadge?: bo
 
 // --- Main component ---
 
-const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, senderEmail, subject, headerImage, showPublicationTitle = true, showBadge = true, emailFooter}) => {
+const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, senderEmail, subject, headerImage, showPublicationTitle = true, showBadge = true, emailFooter, footerLinkText}) => {
     const {settings: globalSettings, siteData} = useGlobalData();
     const [siteTitle] = getSettingValues<string>(globalSettings, ['title']);
     const accentColor = siteData.accent_color;
@@ -232,7 +233,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
 
                 <Divider color={colors.dividerColor} />
 
-                <Footer color={colors.secondaryTextColor} emailFooter={emailFooter} showBadge={showBadge} siteTitle={siteTitle} textColor={colors.textColor} />
+                <Footer color={colors.secondaryTextColor} emailFooter={emailFooter} footerLinkText={footerLinkText} showBadge={showBadge} siteTitle={siteTitle} textColor={colors.textColor} />
             </div>
         </div>
     );
