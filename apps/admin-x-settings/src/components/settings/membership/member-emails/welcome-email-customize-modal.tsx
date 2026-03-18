@@ -1,5 +1,6 @@
 import EmailDesignModal from '../../email-design/email-design-modal';
 import EmailPreview from '../../email-design/email-preview';
+import HeaderImageField from '../../email-design/header-image-field';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {
     BackgroundColorField,
@@ -75,29 +76,10 @@ const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange
         <section>
             <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Content</h4>
             <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1.5">
-                    <label className="text-sm">Header image</label>
-                    {generalSettings.headerImage ? (
-                        <div className="border-gray-200 dark:border-gray-800 relative overflow-hidden rounded-md border">
-                            <img
-                                alt="Header"
-                                className="h-auto w-full"
-                                src={generalSettings.headerImage}
-                            />
-                            <button
-                                className="absolute right-2 top-2 rounded bg-black/50 px-2 py-1 text-xs text-white hover:bg-black/70"
-                                type="button"
-                                onClick={() => onGeneralChange({headerImage: ''})}
-                            >
-                                Remove
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="border-gray-300 text-gray-400 dark:border-gray-700 flex h-24 items-center justify-center rounded-md border border-dashed text-sm">
-                            630x140 recommended. Use a transparent PNG for best results on any background.
-                        </div>
-                    )}
-                </div>
+                <HeaderImageField
+                    value={generalSettings.headerImage}
+                    onChange={url => onGeneralChange({headerImage: url})}
+                />
                 <div className="flex items-center justify-between">
                     <span className="text-sm">Publication title</span>
                     <Switch

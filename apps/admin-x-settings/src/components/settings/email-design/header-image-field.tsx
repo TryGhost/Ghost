@@ -1,0 +1,52 @@
+import React from 'react';
+import {Dropzone} from '@tryghost/shade';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
+
+interface HeaderImageFieldProps {
+    value: string;
+    onChange: (url: string) => void;
+}
+
+const HeaderImageField: React.FC<HeaderImageFieldProps> = ({value, onChange}) => {
+    const {mutateAsync: uploadImage} = useUploadImage();
+
+    const handleUpload = async (file: File) => {
+        const imageUrl = getImageUrl(await uploadImage({file}));
+        onChange(imageUrl);
+    };
+
+    return (
+        <div className="flex flex-col gap-1.5">
+            <label className="text-sm">Header image</label>
+            {value ? (
+                <div className="border-gray-200 dark:border-gray-800 relative overflow-hidden rounded-md border">
+                    <img
+                        alt="Header"
+                        className="h-auto w-full"
+                        src={value}
+                    />
+                    <button
+                        className="absolute right-2 top-2 rounded bg-black/50 px-2 py-1 text-xs text-white hover:bg-black/70"
+                        type="button"
+                        onClick={() => onChange('')}
+                    >
+                        Remove
+                    </button>
+                </div>
+            ) : (
+                <>
+                    <Dropzone
+                        accept={{'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']}}
+                        className="flex h-24 items-center justify-center p-0 text-sm"
+                        onDropAccepted={files => files[0] && handleUpload(files[0])}
+                    >
+                        <span className="text-gray-400">Upload header image</span>
+                    </Dropzone>
+                    <span className="text-gray-400 text-xs">1200x600 recommended. Use a transparent PNG for best results on any background.</span>
+                </>
+            )}
+        </div>
+    );
+};
+
+export default HeaderImageField;
