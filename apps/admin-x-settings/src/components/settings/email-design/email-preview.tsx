@@ -26,7 +26,7 @@ function resolveButtonCorners(corners: string | undefined): string {
     case 'square': return 'rounded-none';
     case 'pill': return 'rounded-full';
     case 'rounded':
-    default: return 'rounded-[5px]';
+    default: return 'rounded-[6px]';
     }
 }
 
