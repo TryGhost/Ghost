@@ -15,15 +15,16 @@ interface EmailPreviewProps {
     showBadge?: boolean;
     emailFooter?: string;
     footerLinkText?: string;
+    children?: React.ReactNode;
 }
 
 // --- Helper functions ---
 
-function resolveFontFamily(category: string | undefined) {
+export function resolveFontFamily(category: string | undefined) {
     return category === 'serif' ? 'Georgia, serif' : '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 }
 
-function resolveButtonCorners(corners: string | undefined): string {
+export function resolveButtonCorners(corners: string | undefined): string {
     switch (corners) {
     case 'square': return 'rounded-none';
     case 'pill': return 'rounded-full';
@@ -32,7 +33,7 @@ function resolveButtonCorners(corners: string | undefined): string {
     }
 }
 
-function resolveImageCorners(corners: string | undefined): string {
+export function resolveImageCorners(corners: string | undefined): string {
     return corners === 'rounded' ? 'rounded-md' : '';
 }
 
@@ -89,70 +90,6 @@ const PublicationHeader: React.FC<{
     );
 };
 
-const Divider: React.FC<{color: string}> = ({color}) => (
-    <div className="px-12 py-4">
-        <hr
-            className="m-0 border-0 border-t"
-            style={{borderColor: color}}
-        />
-    </div>
-);
-
-const BodyContent: React.FC<{
-    siteTitle?: string;
-    textColor: string;
-    fontFamily: string;
-    linkColor: string;
-    linkUnderline: boolean;
-    linkItalic: boolean;
-    linkBold: boolean;
-}> = ({siteTitle, textColor, fontFamily, linkColor, linkUnderline, linkItalic, linkBold}) => (
-    <div
-        className="px-12 pb-4 text-base leading-relaxed"
-        style={{color: textColor, fontFamily}}
-    >
-        <p className="mb-[1.2em] mt-0">
-            Welcome to {siteTitle || 'our publication'}! We&#39;re glad you&#39;re here. This is a preview of how your welcome email will look with the current design settings.
-        </p>
-        <p className="mb-[1.2em] mt-0">
-            You can customize the <a
-                className={cn('no-underline', linkUnderline && 'underline', linkItalic && 'italic', linkBold && 'font-bold')}
-                href="#"
-                style={{color: linkColor}}
-                onClick={e => e.preventDefault()}
-            >
-                colors, fonts, and styles
-            </a> to match your brand.
-        </p>
-    </div>
-);
-
-const ActionButton: React.FC<{
-    buttonStyle?: string;
-    buttonColor: string;
-    buttonTextColor?: string;
-    cornerClass: string;
-}> = ({buttonStyle, buttonColor, buttonTextColor, cornerClass}) => {
-    const isOutline = buttonStyle === 'outline';
-
-    return (
-        <div className="px-12 pb-6">
-            <a
-                className={cn('inline-block px-5 py-2 text-center text-sm font-bold no-underline', cornerClass, isOutline && 'border')}
-                href="#"
-                style={{
-                    color: isOutline ? buttonColor : buttonTextColor,
-                    backgroundColor: isOutline ? undefined : buttonColor,
-                    borderColor: isOutline ? buttonColor : undefined
-                }}
-                onClick={e => e.preventDefault()}
-            >
-                Subscribe
-            </a>
-        </div>
-    );
-};
-
 const Footer: React.FC<{siteTitle?: string; footerLinkText?: string; emailFooter?: string; showBadge?: boolean; color: string; textColor: string}> = ({siteTitle, footerLinkText = 'Unsubscribe', emailFooter, showBadge, color, textColor}) => (
     <div
         className="px-12 pb-10 text-center text-xs"
@@ -177,15 +114,13 @@ const Footer: React.FC<{siteTitle?: string; footerLinkText?: string; emailFooter
 
 // --- Main component ---
 
-const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, senderEmail, subject, headerImage, showPublicationTitle = true, showBadge = true, emailFooter, footerLinkText}) => {
+const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, senderEmail, subject, headerImage, showPublicationTitle = true, showBadge = true, emailFooter, footerLinkText, children}) => {
     const {settings: globalSettings, siteData} = useGlobalData();
     const [siteTitle] = getSettingValues<string>(globalSettings, ['title']);
     const accentColor = siteData.accent_color;
 
     const colors = resolveAllColors(settings, accentColor);
     const titleFont = resolveFontFamily(settings.title_font_category);
-    const bodyFont = resolveFontFamily(settings.body_font_category);
-    const buttonCornerClass = resolveButtonCorners(settings.button_corners);
     const imageCornerClass = resolveImageCorners(settings.image_corners);
 
     const hasEnvelope = !!(senderName || senderEmail || subject);
@@ -212,26 +147,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
                     textColor={colors.headerTextColor}
                 />
 
-                <Divider color={colors.dividerColor} />
-
-                <BodyContent
-                    fontFamily={bodyFont}
-                    linkBold={settings.link_style === 'bold'}
-                    linkColor={colors.linkColor}
-                    linkItalic={settings.link_style === 'regular'}
-                    linkUnderline={settings.link_style === 'underline'}
-                    siteTitle={siteTitle}
-                    textColor={colors.textColor}
-                />
-
-                <ActionButton
-                    buttonColor={colors.buttonColor}
-                    buttonStyle={settings.button_style}
-                    buttonTextColor={colors.buttonTextColor}
-                    cornerClass={buttonCornerClass}
-                />
-
-                <Divider color={colors.dividerColor} />
+                {children}
 
                 <Footer color={colors.secondaryTextColor} emailFooter={emailFooter} footerLinkText={footerLinkText} showBadge={showBadge} siteTitle={siteTitle} textColor={colors.textColor} />
             </div>

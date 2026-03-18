@@ -3,6 +3,7 @@ import EmailPreview from '../../email-design/email-preview';
 import HeaderImageField from '../../email-design/header-image-field';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import ShowBadgeField from '../../email-design/show-badge-field';
+import WelcomeEmailPreviewContent from '../../email-design/welcome-email-preview-content';
 import {
     BackgroundColorField,
     BodyFontField,
@@ -220,7 +221,9 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                         showBadge={generalSettings.showBadge}
                         showPublicationTitle={generalSettings.showPublicationTitle}
                         subject={`Welcome to ${generalSettings.senderName || siteTitle || 'our publication'}`}
-                    />
+                    >
+                        <WelcomeEmailPreviewContent />
+                    </EmailPreview>
                 }
                 sidebar={
                     <Sidebar
