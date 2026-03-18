@@ -13,10 +13,25 @@ const STRIPE_SECRET_KEY = 'sk_test_e2eTestKey';
 const STRIPE_PUBLISHABLE_KEY = 'pk_test_e2eTestKey';
 
 type ResolvedIsolation = 'per-file' | 'per-test';
+type LabsFlags = Record<string, boolean>;
+
+/**
+ * The subset of fixture options that defines whether a per-file environment can
+ * be reused for the next test in the same file.
+ *
+ * Any new fixture option that changes persistent Ghost state or boot-time config
+ * must make an explicit choice:
+ * - include it here so it participates in environment reuse, or
+ * - force per-test isolation instead of participating in per-file reuse.
+ */
+interface EnvironmentIdentity {
+    config?: GhostConfig;
+    labs?: LabsFlags;
+}
 
 interface PerFileInstanceCache {
     suiteKey: string;
-    configSignature: string;
+    environmentSignature: string;
     instance: GhostInstance;
 }
 
@@ -29,6 +44,8 @@ interface TestEnvironmentContext {
     holder: GhostInstance;
     resolvedIsolation: ResolvedIsolation;
     cycle: () => Promise<void>;
+    getResetEnvironmentBlocker: () => string | null;
+    markResetEnvironmentBlocker: (fixtureName: string) => void;
 }
 
 interface InternalFixtures {
@@ -57,11 +74,16 @@ export interface GhostConfig {
 
 export interface GhostInstanceFixture {
     ghostInstance: GhostInstance;
+    // Opt a file into per-test isolation without relying on Playwright-wide fullyParallel.
     isolation?: 'per-test';
     resolvedIsolation: ResolvedIsolation;
+    // Hook-only escape hatch for per-file mode before stateful fixtures are resolved.
     resetEnvironment: () => Promise<void>;
-    labs?: Record<string, boolean>;
+    // Participates in per-file environment identity.
+    labs?: LabsFlags;
+    // Participates in per-file environment identity.
     config?: GhostConfig;
+    // Forces per-test isolation because Ghost boots against a per-test fake Stripe server.
     stripeEnabled?: boolean;
     stripeServer?: FakeStripeServer;
     stripe?: StripeTestService;
@@ -73,8 +95,20 @@ export interface GhostInstanceFixture {
     };
 }
 
-function getConfigSignature(config?: GhostConfig): string {
-    return JSON.stringify(config ?? {});
+function getStableObjectSignature<T extends object>(values?: T): string {
+    return JSON.stringify(
+        Object.fromEntries(
+            Object.entries(values ?? {})
+                .sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey))
+        )
+    );
+}
+
+function getEnvironmentSignature(identity: EnvironmentIdentity): string {
+    return JSON.stringify({
+        config: getStableObjectSignature(identity.config),
+        labs: getStableObjectSignature(identity.labs)
+    });
 }
 
 function getSuiteKey(testInfo: TestInfo): string {
@@ -163,9 +197,11 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         auto: true
     }],
 
-    _testEnvironmentContext: async ({config, isolation, stripeEnabled, stripeServer}, use, testInfo: TestInfo) => {
+    _testEnvironmentContext: async ({config, isolation, labs, stripeEnabled, stripeServer}, use, testInfo: TestInfo) => {
         const environmentManager = await getEnvironmentManager();
         const requestedIsolation = getResolvedIsolation(testInfo, isolation);
+        // Stripe-enabled tests boot Ghost against a per-test fake Stripe server,
+        // so they cannot safely participate in per-file environment reuse.
         const resolvedIsolation = stripeEnabled ? 'per-test' : requestedIsolation;
         const suiteKey = getSuiteKey(testInfo);
         const stripeConfig = stripeEnabled && stripeServer ? {
@@ -178,7 +214,14 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
             secretKey: STRIPE_SECRET_KEY,
             publishableKey: STRIPE_PUBLISHABLE_KEY
         } : undefined;
-        const configSignature = getConfigSignature(mergedConfig);
+        const environmentIdentity: EnvironmentIdentity = {
+            config: mergedConfig,
+            labs
+        };
+        const environmentSignature = getEnvironmentSignature(environmentIdentity);
+        const resetEnvironmentGuard = {
+            blocker: null as string | null
+        };
 
         if (resolvedIsolation === 'per-test') {
             const perTestInstance = await environmentManager.perTestSetup({
@@ -199,6 +242,10 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
                 resolvedIsolation,
                 cycle: async () => {
                     debug('resetEnvironment() is a no-op in per-test isolation mode');
+                },
+                getResetEnvironmentBlocker: () => resetEnvironmentGuard.blocker,
+                markResetEnvironmentBlocker: (fixtureName: string) => {
+                    resetEnvironmentGuard.blocker ??= fixtureName;
                 }
             });
 
@@ -208,7 +255,7 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
 
         const mustRecyclePerFileInstance = !cachedPerFileInstance ||
             cachedPerFileInstance.suiteKey !== suiteKey ||
-            cachedPerFileInstance.configSignature !== configSignature;
+            cachedPerFileInstance.environmentSignature !== environmentSignature;
 
         if (mustRecyclePerFileInstance) {
             const previousPerFileInstance = cachedPerFileInstance?.instance;
@@ -218,7 +265,7 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
             });
             cachedPerFileInstance = {
                 suiteKey,
-                configSignature,
+                environmentSignature,
                 instance: nextPerFileInstance
             };
             cachedPerFileGhostAccountOwner = null;
@@ -248,7 +295,7 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
 
             cachedPerFileInstance = {
                 suiteKey,
-                configSignature,
+                environmentSignature,
                 instance: nextInstance
             };
             cachedPerFileGhostAccountOwner = null;
@@ -260,7 +307,11 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         await use({
             holder,
             resolvedIsolation,
-            cycle
+            cycle,
+            getResetEnvironmentBlocker: () => resetEnvironmentGuard.blocker,
+            markResetEnvironmentBlocker: (fixtureName: string) => {
+                resetEnvironmentGuard.blocker ??= fixtureName;
+            }
         });
     },
 
@@ -306,6 +357,17 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
                 return;
             }
 
+            // Only support resetEnvironment() before stateful fixtures such as the
+            // baseURL, authenticated user session, or page have been materialized.
+            const blocker = _testEnvironmentContext.getResetEnvironmentBlocker();
+            if (blocker) {
+                throw new Error(
+                    `[e2e fixture] resetEnvironment() must be called before resolving ` +
+                    `"${blocker}". Use it in a beforeEach hook that only depends on ` +
+                    'resetEnvironment and fixtures that remain valid after a recycle.'
+                );
+            }
+
             await _testEnvironmentContext.cycle();
         });
     },
@@ -321,7 +383,8 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         await use(service);
     },
 
-    baseURL: async ({ghostInstance}, use) => {
+    baseURL: async ({ghostInstance, _testEnvironmentContext}, use) => {
+        _testEnvironmentContext.markResetEnvironmentBlocker('baseURL');
         await use(ghostInstance.baseUrl);
     },
 
@@ -330,6 +393,8 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         if (!ghostInstance.baseUrl) {
             throw new Error('baseURL is not defined');
         }
+
+        _testEnvironmentContext.markResetEnvironmentBlocker('ghostAccountOwner');
 
         if (_testEnvironmentContext.resolvedIsolation === 'per-file' && cachedPerFileGhostAccountOwner) {
             await use(cachedPerFileGhostAccountOwner);
@@ -357,6 +422,8 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
             throw new Error('baseURL is not defined');
         }
 
+        _testEnvironmentContext.markResetEnvironmentBlocker('pageWithAuthenticatedUser');
+
         const pageWithAuthenticatedUser =
             _testEnvironmentContext.resolvedIsolation === 'per-file' && cachedPerFileAuthenticatedSession
                 ? await setupAuthenticatedPageFromStorageState(browser, ghostInstance.baseUrl, cachedPerFileAuthenticatedSession)
@@ -374,7 +441,9 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
     },
 
     // Extract the page from pageWithAuthenticatedUser and apply labs/stripe settings
-    page: async ({pageWithAuthenticatedUser, labs}, use) => {
+    page: async ({pageWithAuthenticatedUser, labs, _testEnvironmentContext}, use) => {
+        _testEnvironmentContext.markResetEnvironmentBlocker('page');
+
         const page = pageWithAuthenticatedUser.page;
 
         const labsFlagsSpecified = labs && Object.keys(labs).length > 0;

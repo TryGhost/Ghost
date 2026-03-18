@@ -210,8 +210,23 @@ Per-test mode (`helpers/playwright/fixture.ts`) does:
 - Clones a new database from snapshot for each test
 - Restarts Ghost with the new database and waits for readiness
 
+Environment identity for per-file reuse:
+- `config` participates in the environment identity.
+- `labs` participates in the environment identity.
+- If either changes between tests in the same file, the shared per-file Ghost environment is recycled before reuse.
+- `stripeEnabled` does not participate in per-file reuse. It always forces per-test isolation because Ghost must boot against a per-test fake Stripe server.
+
+Fixture option behavior:
+- `config`: use for boot-time Ghost config that should get a fresh environment when it changes.
+- `labs`: use for labs flags that should get a fresh environment when they change.
+- `stripeEnabled`: use for Stripe-backed tests; this always runs each test with a fully isolated Ghost environment.
+
 Escape hatch:
-- `resetEnvironment()` can be used in `beforeEach/afterEach` to force a full recycle in per-file mode.
+- `resetEnvironment()` is supported only in `beforeEach` hooks for per-file tests.
+- Use it only before resolving stateful fixtures such as `baseURL`, `page`, `pageWithAuthenticatedUser`, or `ghostAccountOwner`.
+- Safe hook pattern: `test.beforeEach(async ({resetEnvironment}) => { ... })`
+- Unsupported pattern: calling `resetEnvironment()` after `page` or an authenticated session has already been created.
+- ESLint catches the obvious misuse cases, but the runtime guard in the fixture remains the hard safety check.
 
 Opting into per-test isolation:
 - Use `usePerTestIsolation()` from `@/helpers/playwright/isolation` at the root of the file.

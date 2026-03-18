@@ -112,7 +112,9 @@ const post = await postFactory.create({userId: user.id});
 
 ### DO ✅
 - Use `usePerTestIsolation()` from `@/helpers/playwright/isolation` if a file needs per-test isolation
-- Use `resetEnvironment()` in hooks when you need a forced recycle inside per-file mode
+- Treat `config` and `labs` as environment-identity inputs: changing them should be an intentional part of test setup
+- Use `resetEnvironment()` only in `beforeEach` hooks when you need a forced recycle inside per-file mode
+- Keep `stripeEnabled` tests in per-test mode; the fixture forces this automatically
 - Use factories for all test data
 - Use Playwright's auto-waiting
 - Run tests multiple times to ensure stability
@@ -121,6 +123,7 @@ const post = await postFactory.create({userId: user.id});
 ### DON'T ❌
 - Use `test.describe.parallel(...)` or `test.describe.serial(...)` in e2e tests
 - Use nested `test.describe.configure({mode: ...})` (mode toggles are root-level only)
+- Call `resetEnvironment()` after resolving `baseURL`, `page`, `pageWithAuthenticatedUser`, or `ghostAccountOwner`
 - Hard-coded waits (`waitForTimeout`)
 - networkidle in waits** (`networkidle`) 
 - Test dependencies (Test B needs Test A)
