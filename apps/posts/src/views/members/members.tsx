@@ -118,7 +118,7 @@ const Members: React.FC = () => {
                         <h2 className="mb-2 text-xl font-medium">
                             Error loading members
                         </h2>
-                        <p className="mb-4 text-muted-foreground">
+                        <p className="text-muted-foreground mb-4">
                             Please reload the page to try again
                         </p>
                         <Button onClick={() => window.location.reload()}>
@@ -129,7 +129,7 @@ const Members: React.FC = () => {
                     <div className="flex h-full flex-col items-center justify-center">
                         {hasFilterOrSearch ? (
                             <>
-                                <EmptyIndicator title="No members match the current filter">
+                                <EmptyIndicator title="No matching members found.">
                                     <LucideIcon.Users />
                                 </EmptyIndicator>
                                 <Button
