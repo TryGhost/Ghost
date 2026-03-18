@@ -527,7 +527,11 @@ function Results({posts, authors, tags}) {
     }, [allResults]);
 
     useEffect(() => {
-        let keyUphandler = (event) => {
+        let keyDownHandler = (event) => {
+            // keyCode 229 is the IME composition key for legacy browsers
+            if (event.isComposing || event.keyCode === 229) {
+                return;
+            }
             const selectedResultIdx = allResults.findIndex((d) => {
                 return d.id === selectedResult;
             });
@@ -548,11 +552,12 @@ function Results({posts, authors, tags}) {
         };
 
         const containeRefNode = containerRef?.current;
-        containeRefNode?.ownerDocument.removeEventListener('keyup', keyUphandler);
-        containeRefNode?.ownerDocument.addEventListener('keyup', keyUphandler);
+        const doc = containeRefNode?.ownerDocument;
+        doc?.removeEventListener('keydown', keyDownHandler);
+        doc?.addEventListener('keydown', keyDownHandler);
 
         return () => {
-            containeRefNode?.ownerDocument?.removeEventListener('keyup', keyUphandler);
+            doc?.removeEventListener('keydown', keyDownHandler);
         };
     }, [allResults, selectedResult]);
 
