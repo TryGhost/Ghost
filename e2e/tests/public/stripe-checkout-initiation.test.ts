@@ -11,10 +11,10 @@ interface CheckoutSessionResponse {
 // coverage, and this should stay thin or be removed if it becomes redundant.
 // TODO: REMOVE TEST
 
-test.describe('Public - Stripe Checkout Initiation', () => {
+test.describe('Ghost Public - Stripe Checkout Initiation', () => {
     test.use({stripeEnabled: true});
 
-    test('paid tier syncs to fake Stripe and checkout returns a fake session URL', async ({page, stripe}) => {
+    test('paid tier syncs to fake stripe - checkout returns a fake session url', async ({page, stripe}) => {
         const tiersService = new TiersService(page.request);
         const memberFactory = createMemberFactory(page.request);
         const tierName = `Stripe Tier ${Date.now()}`;

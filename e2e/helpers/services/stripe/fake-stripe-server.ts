@@ -156,8 +156,16 @@ export class FakeStripeServer {
 
         this.app.post('/v1/prices', (req, res) => {
             const interval = this.parsePriceInterval(req.body.recurring?.interval);
+            const requestedProductId = this.parseString(req.body.product);
+            const syntheticProduct = requestedProductId ? null : buildProduct();
+            const productId = requestedProductId ?? syntheticProduct!.id;
+
+            if (syntheticProduct) {
+                this.upsertProduct(syntheticProduct);
+            }
+
             const price = buildPrice({
-                product: this.parseString(req.body.product) ?? buildProduct().id,
+                product: productId,
                 active: this.parseBoolean(req.body.active, true),
                 nickname: this.parseString(req.body.nickname) ?? null,
                 currency: this.parseString(req.body.currency) ?? 'usd',
