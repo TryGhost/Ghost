@@ -52,6 +52,10 @@ const messages = {
     thumbnail: {
         missingFile: 'Please select a thumbnail.',
         invalidFile: 'Please select a valid thumbnail.'
+    },
+    files: {
+        missingFile: 'Please select a file.',
+        invalidFile: 'The file type you uploaded is not supported. You can zip your file and upload it as a .zip.'
     }
 };
 
@@ -356,11 +360,49 @@ const mediaValidation = function ({type}) {
     };
 };
 
+/**
+ * Extension-only validation for file uploads.
+ * Unlike validation() which checks both extension and client MIME type,
+ * this only validates the extension against the allowlist. The client-sent
+ * MIME type is unreliable and irrelevant — we derive the storage content
+ * type from the extension via getStorageContentType().
+ *
+ * @param {Object} options
+ * @param {String} options.type - config key under uploads (e.g. 'files')
+ * @returns {import('express').RequestHandler}
+ */
+const fileValidation = function ({type}) {
+    return function fileUploadValidation(req, res, next) {
+        const extensions = (config.get('uploads')[type] && config.get('uploads')[type].extensions) || [];
+
+        req.file = req.file || {};
+        req.file.name = req.file.originalname;
+        req.file.type = req.file.mimetype;
+
+        if (!checkFileExists(req.file)) {
+            return next(new errors.ValidationError({
+                message: tpl(messages[type].missingFile)
+            }));
+        }
+
+        req.file.ext = path.extname(req.file.name).toLowerCase();
+
+        if (!extensions.includes(req.file.ext)) {
+            return next(new errors.UnsupportedMediaTypeError({
+                message: tpl(messages[type].invalidFile, {extensions: extensions})
+            }));
+        }
+
+        next();
+    };
+};
+
 module.exports = {
     single,
     media,
     validation,
-    mediaValidation
+    mediaValidation,
+    fileValidation
 };
 
 // Exports for testing only
