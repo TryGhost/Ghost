@@ -115,9 +115,9 @@ export class MembersPage extends AdminPage {
     readonly filterSection: FilterSection;
     readonly settingsSection: SettingsSection;
 
-    constructor(page: Page) {
+    constructor(page: Page, {route = 'members'}: {route?: string} = {}) {
         super(page);
-        this.pageUrl = '/ghost/#/members';
+        this.pageUrl = `/ghost/#/${route}`;
 
         this.membersActionsButton = page.getByTestId('members-actions');
         this.newMemberButton = page.getByRole('link', {name: 'New member'});
