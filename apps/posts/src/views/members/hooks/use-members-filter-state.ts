@@ -2,7 +2,7 @@ import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {parseMemberFilter, serializeMemberFilters} from '../member-filter-query';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useCallback, useMemo} from 'react';
-import {useSearchParams} from '@tryghost/admin-x-framework';
+import {useSearchParams} from 'react-router';
 import type {Filter} from '@tryghost/shade';
 
 type SetFiltersAction = Filter[] | ((prevFilters: Filter[]) => Filter[]);
@@ -40,11 +40,19 @@ function toSearchParams(filters: Filter[], search: string, timezone: string): UR
 export function useMembersFilterState(): UseMembersFilterStateReturn {
     const [searchParams, setSearchParams] = useSearchParams();
     const {data: settingsData} = useBrowseSettings({});
-    const timezone = useMemo(() => getSiteTimezone(settingsData?.settings ?? []), [settingsData?.settings]);
+    const filterParam = useMemo(() => searchParams.get('filter') ?? undefined, [searchParams]);
+    const resolvedTimezone = useMemo(() => {
+        if (!settingsData) {
+            return null;
+        }
+
+        return getSiteTimezone(settingsData.settings ?? []);
+    }, [settingsData]);
+    const timezone = resolvedTimezone ?? 'Etc/UTC';
 
     const filters = useMemo(() => {
-        return parseMemberFilter(searchParams.get('filter') ?? undefined, timezone);
-    }, [searchParams, timezone]);
+        return parseMemberFilter(filterParam, timezone);
+    }, [filterParam, timezone]);
 
     const search = useMemo(() => {
         return searchParams.get('search') ?? '';
@@ -59,9 +67,24 @@ export function useMembersFilterState(): UseMembersFilterStateReturn {
 
     const setSearch = useCallback((nextSearch: string, options: SetFiltersOptions = {}) => {
         const replace = options.replace ?? true;
+        const params = new URLSearchParams();
 
-        setSearchParams(toSearchParams(filters, nextSearch, timezone), {replace});
-    }, [filters, setSearchParams, timezone]);
+        if (!resolvedTimezone && filterParam) {
+            params.set('filter', filterParam);
+        } else {
+            const filter = serializeMemberFilters(filters, timezone);
+
+            if (filter) {
+                params.set('filter', filter);
+            }
+        }
+
+        if (nextSearch) {
+            params.set('search', nextSearch);
+        }
+
+        setSearchParams(params, {replace});
+    }, [filterParam, filters, resolvedTimezone, setSearchParams, timezone]);
 
     const clearFilters = useCallback(({replace = true}: SetFiltersOptions = {}) => {
         setSearchParams(toSearchParams([], search, timezone), {replace});
@@ -71,7 +94,13 @@ export function useMembersFilterState(): UseMembersFilterStateReturn {
         setSearchParams(new URLSearchParams(), {replace});
     }, [setSearchParams]);
 
-    const nql = useMemo(() => serializeMemberFilters(filters, timezone), [filters, timezone]);
+    const nql = useMemo(() => {
+        if (!resolvedTimezone) {
+            return filterParam;
+        }
+
+        return serializeMemberFilters(filters, timezone);
+    }, [filterParam, filters, resolvedTimezone, timezone]);
 
     return {
         filters,
@@ -81,6 +110,6 @@ export function useMembersFilterState(): UseMembersFilterStateReturn {
         setSearch,
         clearFilters,
         clearAll,
-        hasFilterOrSearch: filters.length > 0 || search.length > 0
+        hasFilterOrSearch: Boolean(filterParam) || search.length > 0
     };
 }

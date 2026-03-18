@@ -4,11 +4,13 @@ import {describe, expect, it, vi} from 'vitest';
 import {useMembersFilterState} from './use-members-filter-state';
 import type {ReactNode} from 'react';
 
+let settingsData: {settings: Array<{key: string; value: string}>} | undefined = {
+    settings: [{key: 'timezone', value: 'UTC'}]
+};
+
 vi.mock('@tryghost/admin-x-framework/api/settings', () => ({
     useBrowseSettings: () => ({
-        data: {
-            settings: [{key: 'timezone', value: 'UTC'}]
-        }
+        data: settingsData
     })
 }));
 
@@ -19,6 +21,32 @@ function createWrapper(initialEntry: string) {
 }
 
 describe('useMembersFilterState', () => {
+    it('preserves raw date filters while settings are unresolved', () => {
+        settingsData = undefined;
+
+        const {result} = renderHook(() => {
+            const state = useMembersFilterState();
+            const [searchParams] = useSearchParams();
+
+            return {
+                ...state,
+                query: searchParams.toString()
+            };
+        }, {
+            wrapper: createWrapper('/?filter=created_at%3A%3C%3D%272024-02-01T22%3A59%3A59.999Z%27&search=jamie')
+        });
+
+        act(() => {
+            result.current.setSearch('alex', {replace: false});
+        });
+
+        expect(result.current.query).toBe('filter=created_at%3A%3C%3D%272024-02-01T22%3A59%3A59.999Z%27&search=alex');
+
+        settingsData = {
+            settings: [{key: 'timezone', value: 'UTC'}]
+        };
+    });
+
     it('reads Ember-style filter params and keeps search separate', () => {
         const {result} = renderHook(() => useMembersFilterState(), {
             wrapper: createWrapper('/?filter=status:paid&search=jamie')
