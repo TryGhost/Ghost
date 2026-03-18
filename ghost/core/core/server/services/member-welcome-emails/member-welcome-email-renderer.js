@@ -1,8 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const htmlToPlaintext = require('@tryghost/html-to-plaintext');
-const juice = require('juice');
 const lexicalLib = require('../../lib/lexical');
+const {finalize} = require('../email-rendering/finalize');
 const errors = require('@tryghost/errors');
 const {textColorForBackgroundColor} = require('@tryghost/color-utils');
 const {MESSAGES} = require('./constants');
@@ -21,11 +20,15 @@ class MemberWelcomeEmailRenderer {
             let hash = options?.hash;
             return t(key, hash || options || {});
         });
-        const cardStylesSource = fs.readFileSync(
-            path.join(__dirname, './email-templates/partials/card-styles.hbs'),
+        const contentStylesSource = fs.readFileSync(
+            path.join(__dirname, '../email-rendering/partials/content-styles.hbs'),
             'utf8'
         );
-        this.Handlebars.registerPartial('cardStyles', cardStylesSource);
+        const cardStylesSource = fs.readFileSync(
+            path.join(__dirname, '../email-rendering/partials/card-styles.hbs'),
+            'utf8'
+        );
+        this.Handlebars.registerPartial('cardStyles', '<style>\n' + contentStylesSource + '\n' + cardStylesSource + '\n</style>');
         const wrapperSource = fs.readFileSync(
             path.join(__dirname, './email-templates/wrapper.hbs'),
             'utf8'
@@ -139,6 +142,8 @@ class MemberWelcomeEmailRenderer {
             hasRoundedImageCorners: false,
             sectionTitleColor: null,
             titleWeight: '700',
+            titleStrongWeight: '800',
+            linkColor: accentColor,
             hasOutlineButtons: false,
             buttonColor: accentColor,
             buttonTextColor: accentContrastColor,
@@ -147,8 +152,7 @@ class MemberWelcomeEmailRenderer {
             year
         });
 
-        const inlinedHtml = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
-        const text = htmlToPlaintext.email(inlinedHtml);
+        const {html: inlinedHtml, plaintext: text} = finalize(html);
 
         return {
             html: inlinedHtml,
