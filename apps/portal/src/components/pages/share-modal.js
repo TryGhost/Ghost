@@ -293,20 +293,16 @@ export const ShareModalStyles = `
             order: 2;
         }
 
-        .gh-portal-share-action.threads {
+        .gh-portal-share-action.facebook {
             order: 3;
         }
 
-        .gh-portal-share-action.facebook {
+        .gh-portal-share-action.email {
             order: 4;
         }
 
-        .gh-portal-share-action.email {
-            order: 5;
-        }
-
         .gh-portal-share-action.more {
-            order: 6;
+            order: 5;
         }
 
         .gh-portal-share-more {
@@ -589,19 +585,6 @@ const ShareModal = () => {
                 </button>
 
                 <a
-                    className='gh-portal-btn gh-portal-share-action email'
-                    href={socialLinks.email}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    aria-label={t('Email')}
-                    title={t('Email')}
-                >
-                    <span className='gh-portal-share-icon' aria-hidden='true'>
-                        <EnvelopeIcon />
-                    </span>
-                </a>
-
-                <a
                     className='gh-portal-btn gh-portal-share-action twitter'
                     href={socialLinks.twitter}
                     target='_blank'
@@ -624,6 +607,19 @@ const ShareModal = () => {
                 >
                     <span className='gh-portal-share-icon' aria-hidden='true'>
                         <FacebookIcon />
+                    </span>
+                </a>
+
+                <a
+                    className='gh-portal-btn gh-portal-share-action email'
+                    href={socialLinks.email}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    aria-label={t('Email')}
+                    title={t('Email')}
+                >
+                    <span className='gh-portal-share-icon' aria-hidden='true'>
+                        <EnvelopeIcon />
                     </span>
                 </a>
 
