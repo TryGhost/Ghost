@@ -360,6 +360,51 @@ describe('Account Plan Page', () => {
         expect(queryByText('Save 20% on your next billing cycle. Then $10/month.')).toBeInTheDocument();
     });
 
+    test('renders yearly retention offers', async () => {
+        const paidProduct = getProductData({
+            name: 'Basic',
+            monthlyPrice: getPriceData({interval: 'month', amount: 1000, currency: 'usd'}),
+            yearlyPrice: getPriceData({interval: 'year', amount: 10000, currency: 'usd'})
+        });
+        const products = [paidProduct, getProductData({type: 'free'})];
+        const site = getSiteData({
+            products,
+            portalProducts: [paidProduct.id]
+        });
+        const member = getMemberData({
+            paid: true,
+            subscriptions: [
+                getSubscriptionData({
+                    status: 'active',
+                    interval: 'year',
+                    amount: paidProduct.yearlyPrice.amount,
+                    currency: 'USD',
+                    priceId: paidProduct.yearlyPrice.id
+                })
+            ]
+        });
+
+        const retentionOffer = {
+            ...getOfferData({
+                type: 'percent',
+                amount: 20,
+                cadence: 'year',
+                duration: 'once',
+                tierId: paidProduct.id,
+                tierName: paidProduct.name
+            }),
+            redemption_type: 'retention'
+        };
+
+        const {queryByRole, queryByText} = customSetup({site, member, offers: [retentionOffer]});
+        const cancelButton = queryByRole('button', {name: 'Cancel subscription'});
+
+        fireEvent.click(cancelButton);
+
+        expect(queryByText('20% off')).toBeInTheDocument();
+        expect(queryByText('Save 20% on your next billing cycle. Then $100/year.')).toBeInTheDocument();
+    });
+
     test('renders rounded cents for percent retention offers', async () => {
         const paidProduct = getProductData({
             name: 'Basic',

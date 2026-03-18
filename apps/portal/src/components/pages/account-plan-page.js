@@ -80,6 +80,15 @@ function getConfirmationPageTitle({confirmationType, pendingOffer}) {
     }
 }
 
+function translateCadence(cadence) {
+    if (cadence === 'month') {
+        return t('month');
+    } else if (cadence === 'year') {
+        return t('year');
+    }
+    return cadence;
+}
+
 const Header = ({showConfirmation, confirmationType, pendingOffer}) => {
     const {member} = useContext(AppContext);
     let title = isPaidMember({member}) ? t('Change plan') : t('Choose a plan');
@@ -152,7 +161,7 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
         planStartingMessage = t('Starting today');
     }
     const priceString = formatNumber(plan.price);
-    const planStartMessage = `${plan.currency_symbol}${priceString}/${t(plan.interval)} – ${planStartingMessage}`;
+    const planStartMessage = `${plan.currency_symbol}${priceString}/${translateCadence(plan.interval)} – ${planStartingMessage}`;
     const product = getProductFromPrice({site, priceId: plan?.id});
     const priceLabel = hasMultipleProductsFeature({site}) ? product?.name : t('Price');
     if (type === 'changePlan') {
@@ -302,20 +311,16 @@ function getRetentionOfferMessage(offer, originalPrice, currency, amountOff, sub
         return t('Enjoy {amountOff} off forever.', {amountOff});
     }
 
-    // This is here for i18n.  Don't remove it.  Possible values of offer.cadence are 'month' and 'year', so:
-    // t('month')
-    // t('year')
-
     if (offer.duration === 'once') {
-        return t('Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.', {amountOff, currency, originalPrice, cadence: t(offer.cadence)});
+        return t('Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.', {amountOff, currency, originalPrice, cadence: translateCadence(offer.cadence)});
     }
 
     if (offer.duration === 'repeating' && offer.duration_in_months === 1) {
-        return t('Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.', {amountOff, currency, originalPrice, cadence: t(offer.cadence)});
+        return t('Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.', {amountOff, currency, originalPrice, cadence: translateCadence(offer.cadence)});
     }
 
     if (offer.duration === 'repeating' && offer.duration_in_months > 1) {
-        return t('Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.', {amountOff, durationInMonths: offer.duration_in_months, currency, originalPrice, cadence: t(offer.cadence)});
+        return t('Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.', {amountOff, durationInMonths: offer.duration_in_months, currency, originalPrice, cadence: translateCadence(offer.cadence)});
     }
 
     return '';
