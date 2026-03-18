@@ -321,28 +321,46 @@ export const ShareModalStyles = `
 
 `;
 
+const getHostWindow = () => {
+    try {
+        if (window.parent && window.parent !== window) {
+            // Accessing parent.location can throw when cross-origin.
+            void window.parent.location.href;
+            return window.parent;
+        }
+    } catch (_) {
+        // Ignore and use the iframe context.
+    }
+
+    return window;
+};
+
+const getHostDocument = () => {
+    return getHostWindow().document;
+};
+
 const getCanonicalUrl = () => {
-    return document.querySelector('link[rel="canonical"]')?.href || '';
+    return getHostDocument().querySelector('link[rel="canonical"]')?.href || '';
 };
 
 const getOgTitle = () => {
-    return document.querySelector('meta[property="og:title"]')?.content || '';
+    return getHostDocument().querySelector('meta[property="og:title"]')?.content || '';
 };
 
 const getOgDescription = () => {
-    return document.querySelector('meta[property="og:description"]')?.content || '';
+    return getHostDocument().querySelector('meta[property="og:description"]')?.content || '';
 };
 
 const getMetaDescription = () => {
-    return document.querySelector('meta[name="description"]')?.content || '';
+    return getHostDocument().querySelector('meta[name="description"]')?.content || '';
 };
 
 const getOgImage = () => {
-    return document.querySelector('meta[property="og:image"]')?.content || '';
+    return getHostDocument().querySelector('meta[property="og:image"]')?.content || '';
 };
 
 const getTwitterImage = () => {
-    return document.querySelector('meta[name="twitter:image"]')?.content || '';
+    return getHostDocument().querySelector('meta[name="twitter:image"]')?.content || '';
 };
 
 const getFavicon = () => {
@@ -352,7 +370,7 @@ const getFavicon = () => {
         'link[rel="apple-touch-icon"]'
     ];
     for (const selector of selectors) {
-        const faviconLink = document.querySelector(selector);
+        const faviconLink = getHostDocument().querySelector(selector);
         if (faviconLink?.href) {
             return faviconLink.href;
         }
@@ -361,15 +379,15 @@ const getFavicon = () => {
 };
 
 const getOgSiteName = () => {
-    return document.querySelector('meta[property="og:site_name"]')?.content || '';
+    return getHostDocument().querySelector('meta[property="og:site_name"]')?.content || '';
 };
 
 const getApplicationName = () => {
-    return document.querySelector('meta[name="application-name"]')?.content || '';
+    return getHostDocument().querySelector('meta[name="application-name"]')?.content || '';
 };
 
 const getMetaAuthor = () => {
-    const author = document.querySelector('meta[name="author"]')?.content || '';
+    const author = getHostDocument().querySelector('meta[name="author"]')?.content || '';
     if (author && !/^https?:\/\//i.test(author)) {
         return author;
     }
@@ -377,15 +395,15 @@ const getMetaAuthor = () => {
 };
 
 const getTwitterCreator = () => {
-    return document.querySelector('meta[name="twitter:creator"]')?.content || '';
+    return getHostDocument().querySelector('meta[name="twitter:creator"]')?.content || '';
 };
 
 const getShareUrl = () => {
-    return getCanonicalUrl() || window.location.href;
+    return getCanonicalUrl() || getHostWindow().location.href;
 };
 
 const getShareTitle = () => {
-    return getOgTitle() || document.title || '';
+    return getOgTitle() || getHostDocument().title || '';
 };
 
 const getShareExcerpt = () => {
