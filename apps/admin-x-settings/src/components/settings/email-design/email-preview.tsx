@@ -30,6 +30,10 @@ function resolveButtonCorners(corners: string | undefined): string {
     }
 }
 
+function resolveImageCorners(corners: string | undefined): string {
+    return corners === 'rounded' ? 'rounded-md' : '';
+}
+
 // --- Sub-components ---
 
 const EnvelopeHeader: React.FC<{senderName?: string; senderEmail?: string; subject?: string}> = ({senderName, senderEmail, subject}) => {
@@ -173,6 +177,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
     const titleFont = resolveFontFamily(settings.title_font_category);
     const bodyFont = resolveFontFamily(settings.body_font_category);
     const buttonCornerClass = resolveButtonCorners(settings.button_corners);
+    const imageCornerClass = resolveImageCorners(settings.image_corners);
 
     const hasEnvelope = !!(senderName || senderEmail || subject);
 
@@ -186,7 +191,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
             >
                 {headerImage && (
                     <div className="px-12 pt-8">
-                        <img alt="Header" className="h-auto w-full" src={headerImage} />
+                        <img alt="Header" className={cn('h-auto w-full', imageCornerClass)} src={headerImage} />
                     </div>
                 )}
 
