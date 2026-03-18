@@ -54,7 +54,7 @@ export function MappingStep({
         <>
             <div className="mt-5 space-y-5">
                 {fileData === null ? (
-                    <div className="bg-muted flex items-center justify-center rounded-md border p-10">
+                    <div className="flex items-center justify-center rounded-md border bg-muted p-10">
                         <LoadingIndicator size="md" />
                     </div>
                 ) : (
@@ -152,7 +152,7 @@ export function MappingStep({
                         )}
 
                         {membersCount > 0 && (
-                            <p className="text-muted-foreground text-sm">
+                            <p className="text-sm text-muted-foreground">
                                 If an email address in your CSV matches an existing member, they will be updated with the mapped values.
                             </p>
                         )}
