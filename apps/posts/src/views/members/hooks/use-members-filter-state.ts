@@ -5,8 +5,6 @@ import {useCallback, useMemo} from 'react';
 import {useSearchParams} from 'react-router';
 import type {Filter} from '@tryghost/shade';
 
-type SetFiltersAction = Filter[] | ((prevFilters: Filter[]) => Filter[]);
-
 interface SetFiltersOptions {
     replace?: boolean;
 }
@@ -15,7 +13,7 @@ interface UseMembersFilterStateReturn {
     filters: Filter[];
     nql: string | undefined;
     search: string;
-    setFilters: (action: SetFiltersAction, options?: SetFiltersOptions) => void;
+    setFilters: (filters: Filter[], options?: SetFiltersOptions) => void;
     setSearch: (search: string, options?: SetFiltersOptions) => void;
     clearFilters: (options?: SetFiltersOptions) => void;
     clearAll: (options?: SetFiltersOptions) => void;
@@ -64,12 +62,11 @@ export function useMembersFilterState(): UseMembersFilterStateReturn {
         return searchParams.get('search') ?? '';
     }, [searchParams]);
 
-    const setFilters = useCallback((action: SetFiltersAction, options: SetFiltersOptions = {}) => {
-        const newFilters = typeof action === 'function' ? action(filters) : action;
+    const setFilters = useCallback((nextFilters: Filter[], options: SetFiltersOptions = {}) => {
         const replace = options.replace ?? true;
 
-        setSearchParams(toSearchParams(newFilters, search, timezone), {replace});
-    }, [filters, search, setSearchParams, timezone]);
+        setSearchParams(toSearchParams(nextFilters, search, timezone), {replace});
+    }, [search, setSearchParams, timezone]);
 
     const setSearch = useCallback((nextSearch: string, options: SetFiltersOptions = {}) => {
         const replace = options.replace ?? true;
