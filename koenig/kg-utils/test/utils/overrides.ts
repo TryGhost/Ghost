@@ -5,8 +5,8 @@
 import should from 'should';
 import sinon from 'sinon';
 
-Object.defineProperty(globalThis, 'should', {value: should.noConflict(), writable: true, configurable: true});
-should.extend();
+Object.defineProperty(globalThis, 'should', {value: (should as unknown as {noConflict(): typeof should}).noConflict(), writable: true, configurable: true});
+(should as unknown as {extend(): void}).extend();
 
 // Sinon is a simple case
 // Sinon is a global in our eslint test config
