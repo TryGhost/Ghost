@@ -116,7 +116,7 @@ describe('scalarNql', () => {
     });
 
     it('quotes scalar strings with reserved NQL characters', () => {
-        expect(scalarCodec().serialize({
+        expect(scalarNql().toNql({
             id: '1',
             field: 'status',
             operator: 'is',
@@ -193,14 +193,14 @@ describe('textNql', () => {
     });
 
     it('serializes empty text values so URL-synced filters stay editable', () => {
-        const predicate: FilterPredicate = {
+        const filter: Filter = {
             id: '1',
             field: 'email',
             operator: 'is',
             values: ['']
         };
 
-        expect(textCodec().serialize(predicate, emailContext)).toEqual(['email:\'\'']);
+        expect(textNql().toNql(filter, emailContext)).toEqual(['email:\'\'']);
     });
 
     it('supports mapped NQL field names', () => {
@@ -247,14 +247,14 @@ describe('setNql', () => {
     });
 
     it('quotes set values that contain reserved list characters', () => {
-        const predicate: FilterPredicate = {
+        const filter: Filter = {
             id: '1',
             field: 'label',
             operator: 'is-any',
             values: ['vip,alpha', 'beta']
         };
 
-        expect(setCodec().serialize(predicate, labelContext)).toEqual(['label:[beta,\'vip,alpha\']']);
+        expect(setNql().toNql(filter, labelContext)).toEqual(['label:[beta,\'vip,alpha\']']);
     });
 });
 
@@ -295,13 +295,13 @@ describe('numberNql', () => {
     });
 
     it('serializes numeric strings from the filter input', () => {
-        const predicate: FilterPredicate = {
+        const filter: Filter = {
             id: '1',
             field: 'email_count',
             operator: 'is-or-less',
             values: ['10']
         };
 
-        expect(numberCodec().serialize(predicate, countContext)).toEqual(['email_count:<=10']);
+        expect(numberNql().toNql(filter, countContext)).toEqual(['email_count:<=10']);
     });
 });
