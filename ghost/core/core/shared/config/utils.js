@@ -75,6 +75,32 @@ const sanitizeDatabaseProperties = function sanitizeDatabaseProperties(nconf) {
     }
 };
 
+/**
+ * Ensure admin:url does not contain /ghost/ in the path.
+ * urlFor('admin', true) appends /ghost/ automatically, so including it
+ * in the config value produces a doubled path like /ghost/ghost/.
+ */
+const sanitizeAdminUrl = function sanitizeAdminUrl(nconf) {
+    const adminUrl = nconf.get('admin:url');
+
+    if (!adminUrl) {
+        return;
+    }
+
+    try {
+        const parsed = new URL(adminUrl);
+
+        if (parsed.pathname.replace(/\/+$/, '').endsWith('/ghost')) {
+            const logging = require('@tryghost/logging');
+            parsed.pathname = parsed.pathname.replace(/\/ghost\/*$/, '/');
+            nconf.set('admin:url', parsed.toString().replace(/\/+$/, ''));
+            logging.warn(`admin:url should not contain /ghost — Ghost adds this automatically. Corrected to ${nconf.get('admin:url')}`);
+        }
+    } catch (e) {
+        // invalid URL — checkUrlProtocol will catch this separately
+    }
+};
+
 const getNodeEnv = () => {
     return process.env.NODE_ENV || 'development';
 };
@@ -93,6 +119,7 @@ module.exports = {
     doesContentPathExist,
     checkUrlProtocol,
     sanitizeDatabaseProperties,
+    sanitizeAdminUrl,
     getNodeEnv,
     jsoncFormat
 };
