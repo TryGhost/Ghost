@@ -23,19 +23,26 @@ const WelcomeEmailPreviewContent: React.FC = () => {
         settings.link_style === 'bold' && 'font-bold'
     );
 
+    const bodyFontClasses = cn(
+        settings.body_font_category === 'serif' ? 'font-serif text-[1.8rem]' : 'text-[1.7rem] tracking-tight'
+    );
+
     return (
         <>
             {/* Divider */}
-            <div className="px-12 py-4">
+            <div className="px-[7rem] py-4">
                 <hr className="m-0 border-0 border-t" style={{borderColor: colors.dividerColor}} />
             </div>
 
             {/* Body content */}
-            <div className="px-12 pb-4" style={{color: colors.textColor, fontFamily: bodyFont}}>
-                <p className="mb-[1.2em] mt-0 text-base leading-relaxed">
+            <div
+                className={cn('px-[7rem] pb-4 leading-[27.2px]', bodyFontClasses)}
+                style={{color: colors.textColor, fontFamily: bodyFont}}
+            >
+                <p className="mb-6 mt-0">
                     Welcome to {siteTitle || 'our publication'}! We&#39;re glad you&#39;re here. This is a preview of how your welcome email will look with the current design settings.
                 </p>
-                <p className="mb-[1.2em] mt-0 text-base leading-relaxed">
+                <p className="mb-6 mt-0">
                     You can customize the{' '}
                     <a
                         className={linkClasses}
@@ -50,19 +57,20 @@ const WelcomeEmailPreviewContent: React.FC = () => {
             </div>
 
             {/* Button */}
-            <div className="px-12 pb-6">
+            <div className="px-[7rem] pb-6">
                 <a
                     className={cn(
-                        'inline-block px-5 py-2 text-center text-sm font-bold no-underline',
+                        'inline-block border px-[18px] py-2 font-sans text-[15px] no-underline',
                         buttonCornerClass,
-                        isOutline && 'border'
+                        isOutline ? 'bg-transparent' : 'border-transparent',
+                        settings.link_style === 'bold' ? 'font-bold' : 'font-semibold'
                     )}
                     href="#"
-                    style={{
-                        color: isOutline ? colors.buttonColor : colors.buttonTextColor,
-                        backgroundColor: isOutline ? undefined : colors.buttonColor,
-                        borderColor: isOutline ? colors.buttonColor : undefined
-                    }}
+                    style={
+                        isOutline
+                            ? {borderColor: colors.buttonColor, color: colors.buttonColor}
+                            : {backgroundColor: colors.buttonColor, color: colors.buttonTextColor}
+                    }
                     onClick={e => e.preventDefault()}
                 >
                     Subscribe
@@ -70,7 +78,7 @@ const WelcomeEmailPreviewContent: React.FC = () => {
             </div>
 
             {/* Divider */}
-            <div className="px-12 py-4">
+            <div className="px-[7rem] py-4">
                 <hr className="m-0 border-0 border-t" style={{borderColor: colors.dividerColor}} />
             </div>
         </>

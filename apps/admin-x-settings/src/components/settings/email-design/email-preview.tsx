@@ -45,20 +45,20 @@ const EnvelopeHeader: React.FC<{senderName?: string; senderEmail?: string; subje
     }
 
     return (
-        <div className="border-gray-200 dark:border-gray-800 dark:bg-gray-950 rounded-t-lg border border-b-0 bg-white px-6 py-4 text-sm">
+        <div className="flex-column flex min-h-[77px] justify-center border-b border-grey-200 bg-white px-6 text-sm text-grey-700">
             {senderName && (
                 <div className="flex gap-2">
-                    <span className="font-semibold">{senderName}</span>
-                    {senderEmail && <span className="text-gray-500">&lt;{senderEmail}&gt;</span>}
+                    <span className="font-semibold text-grey-900">{senderName}</span>
+                    {senderEmail && <span>&lt;{senderEmail}&gt;</span>}
                 </div>
             )}
             {senderEmail && (
-                <div className="text-gray-500">
-                    To: <span className="text-gray-700 dark:text-gray-300">subscriber@example.com</span>
+                <div>
+                    <span className="font-semibold text-grey-900">To:</span> subscriber@example.com
                 </div>
             )}
             {subject && (
-                <div className="mt-1">{subject}</div>
+                <div className="mt-1 text-grey-900">{subject}</div>
             )}
         </div>
     );
@@ -77,11 +77,11 @@ const PublicationHeader: React.FC<{
 
     return (
         <div
-            className="px-12 pb-4 pt-10 text-center"
+            className="px-[7rem] py-3 text-center"
             style={{backgroundColor: backgroundColor === 'transparent' ? undefined : backgroundColor}}
         >
             <h4
-                className="text-sm font-semibold uppercase tracking-wide"
+                className="mb-1 text-[1.6rem] font-bold uppercase leading-tight tracking-tight"
                 style={{color: textColor, fontFamily}}
             >
                 {siteTitle}
@@ -91,22 +91,25 @@ const PublicationHeader: React.FC<{
 };
 
 const Footer: React.FC<{siteTitle?: string; footerLinkText?: string; emailFooter?: string; showBadge?: boolean; color: string; textColor: string}> = ({siteTitle, footerLinkText = 'Unsubscribe', emailFooter, showBadge, color, textColor}) => (
-    <div
-        className="px-12 pb-10 text-center text-xs"
-        style={{color}}
-    >
+    <div className="flex flex-col items-center pt-10">
         {emailFooter && (
-            <p className="mb-2 mt-0 whitespace-pre-line">
+            <div
+                className="whitespace-pre-line break-words px-8 py-3 text-center text-[1.3rem] leading-base"
+                style={{color}}
+            >
                 {emailFooter}
-            </p>
+            </div>
         )}
-        <p className="mb-2 mt-0">
-            {siteTitle || 'Your publication'} &copy; {new Date().getFullYear()} &mdash; <span className="underline">{footerLinkText}</span>
-        </p>
+        <div className="px-8 pb-14 pt-3 text-center text-[1.3rem]">
+            <span style={{color}}>{siteTitle || 'Your publication'} &copy; {new Date().getFullYear()} &mdash; </span>
+            <span className="underline" style={{color}}>{footerLinkText}</span>
+        </div>
         {showBadge && (
-            <div className="flex items-center justify-center gap-1 pt-2 text-xs font-semibold" style={{color: textColor}}>
-                <GhostOrb className="size-4" />
-                <span>Powered by Ghost</span>
+            <div className="flex flex-col items-center pb-[40px] pt-[10px]">
+                <span className="inline-flex items-center px-2 py-1 text-[1.25rem] font-semibold tracking-tight" style={{color: textColor}}>
+                    <GhostOrb className="mr-[6px] size-4" />
+                    <span>Powered by Ghost</span>
+                </span>
             </div>
         )}
     </div>
@@ -123,29 +126,29 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
     const titleFont = resolveFontFamily(settings.title_font_category);
     const imageCornerClass = resolveImageCorners(settings.image_corners);
 
-    const hasEnvelope = !!(senderName || senderEmail || subject);
-
     return (
-        <div className="mx-auto w-full max-w-[600px]">
+        <div className="mx-auto w-full max-w-[700px] overflow-hidden rounded-[4px] text-black shadow-sm">
             <EnvelopeHeader senderEmail={senderEmail} senderName={senderName} subject={subject} />
 
             <div
-                className={cn('w-full overflow-hidden border border-gray-200 dark:border-gray-800', hasEnvelope ? 'rounded-b-lg' : 'rounded-lg')}
+                className="w-full overflow-y-auto text-sm"
                 style={{backgroundColor: colors.backgroundColor}}
             >
-                {headerImage && (
-                    <div className="px-12 pt-8">
-                        <img alt="Header" className={cn('h-auto w-full', imageCornerClass)} src={headerImage} />
-                    </div>
-                )}
+                <div className="px-[7rem]" style={{backgroundColor: colors.headerBackgroundColor === 'transparent' ? undefined : colors.headerBackgroundColor}}>
+                    {headerImage && (
+                        <div className="pt-8">
+                            <img alt="Header" className={cn('h-auto w-full', imageCornerClass)} src={headerImage} />
+                        </div>
+                    )}
 
-                <PublicationHeader
-                    backgroundColor={colors.headerBackgroundColor}
-                    fontFamily={titleFont}
-                    showTitle={showPublicationTitle}
-                    siteTitle={siteTitle}
-                    textColor={colors.headerTextColor}
-                />
+                    <PublicationHeader
+                        backgroundColor="transparent"
+                        fontFamily={titleFont}
+                        showTitle={showPublicationTitle}
+                        siteTitle={siteTitle}
+                        textColor={colors.headerTextColor}
+                    />
+                </div>
 
                 {children}
 
