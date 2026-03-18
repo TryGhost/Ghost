@@ -5,7 +5,7 @@ import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
 import {MultipleProductsPlansSection} from '../common/plans-section';
 import {getDateString} from '../../utils/date-time';
-import {addMonths, formatNumber, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
+import {addMonths, formatNumber, formatPrice, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import {t} from '../../utils/i18n';
 
@@ -322,9 +322,11 @@ const RetentionOfferSection = ({subscription, offer, onAcceptOffer, onDeclineOff
     const isAcceptingOffer = action === 'applyOffer:running';
 
     const price = getPriceFromSubscription({subscription});
-    const originalPrice = formatNumber(price.amount / 100);
+    const originalAmount = price.amount / 100;
+    const originalPrice = formatPrice(originalAmount);
     const currency = getCurrencySymbol(price.currency);
-    const discountedPrice = formatNumber(getUpdatedOfferPrice({offer, price}));
+    const updatedAmount = getUpdatedOfferPrice({offer, price});
+    const discountedPrice = formatPrice(updatedAmount);
     const amountOff = getOfferOffAmount({offer});
 
     const cadenceLabel = offer.cadence === 'month' ? t('Monthly') : t('Yearly');
