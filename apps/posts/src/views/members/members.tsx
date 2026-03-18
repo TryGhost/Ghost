@@ -51,6 +51,7 @@ const Members: React.FC = () => {
         isFetching,
         isFetchingNextPage,
         isRefetching,
+        refetch,
         fetchNextPage,
         hasNextPage
     } = useBrowseMembersInfinite({
@@ -92,6 +93,9 @@ const Members: React.FC = () => {
                             isFiltered={isFiltered}
                             memberCount={totalMembers}
                             nql={nql}
+                            onImportComplete={() => {
+                                void refetch();
+                            }}
                         />
                     </Header.ActionGroup>
                 </Header.Actions>

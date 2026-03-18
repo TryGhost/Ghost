@@ -9,6 +9,7 @@ export interface UseLabelPickerOptions {
 export interface UseLabelPickerResult {
     labels: Label[];
     selectedSlugs: string[];
+
     isLoading: boolean;
     toggleLabel: (slug: string) => void;
     createLabel: (name: string) => Promise<Label | undefined>;

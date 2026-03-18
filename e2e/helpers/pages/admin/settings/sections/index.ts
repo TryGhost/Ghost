@@ -3,5 +3,6 @@ export {LabsSection} from './labs-section';
 export {IntegrationsSection} from './integrations-section';
 export {DesignSection} from './design-section';
 export {MemberWelcomeEmailsSection} from './member-welcome-emails-section';
+export {PortalSection} from './portal-section';
 export {IntegrationModal, INTEGRATIONS} from './integration-modal';
 export type {IntegrationConfig, IntegrationName} from './integration-modal';

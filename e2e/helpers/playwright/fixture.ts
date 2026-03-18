@@ -8,7 +8,6 @@ import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/sign-in
 import {setupUser} from '@/helpers/utils';
 
 const debug = baseDebug('e2e:ghost-fixture');
-const STRIPE_FAKE_SERVER_PORT = 40000 + parseInt(process.env.TEST_PARALLEL_INDEX || '0', 10);
 const STRIPE_SECRET_KEY = 'sk_test_e2eTestKey';
 const STRIPE_PUBLISHABLE_KEY = 'pk_test_e2eTestKey';
 
@@ -80,9 +79,9 @@ export const test = base.extend<GhostInstanceFixture>({
             return;
         }
 
-        const server = new FakeStripeServer(STRIPE_FAKE_SERVER_PORT);
+        const server = new FakeStripeServer();
         await server.start();
-        debug('Fake Stripe server started on port', STRIPE_FAKE_SERVER_PORT);
+        debug('Fake Stripe server started on port', server.port);
 
         await use(server);
 
@@ -93,9 +92,9 @@ export const test = base.extend<GhostInstanceFixture>({
     // Each test gets its own Ghost instance with isolated database.
     ghostInstance: async ({config, stripeEnabled, stripeServer}, use, testInfo: TestInfo) => {
         debug('Setting up Ghost instance for test:', testInfo.title);
-        const stripeConfig = stripeEnabled ? {
+        const stripeConfig = stripeEnabled && stripeServer ? {
             STRIPE_API_HOST: 'host.docker.internal',
-            STRIPE_API_PORT: String(STRIPE_FAKE_SERVER_PORT),
+            STRIPE_API_PORT: String(stripeServer.port),
             STRIPE_API_PROTOCOL: 'http'
         } : {};
         const mergedConfig = {...(config || {}), ...stripeConfig};
