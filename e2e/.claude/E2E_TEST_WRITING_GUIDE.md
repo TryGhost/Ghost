@@ -221,15 +221,10 @@ The `ghostInstance` fixture provides:
 - `database`: Database name for this test
 - `port`: Port number the instance is running on
 - `resolvedIsolation`: `'per-file' | 'per-test'`
-- `resetEnvironment()`: force a full environment recycle in per-file mode
+- `resetEnvironment()`: force a full environment recycle in per-file mode before stateful fixtures are resolved
 
 ```typescript
-test('example with fixtures', async ({page, ghostInstance, resolvedIsolation, resetEnvironment}) => {
-    // page is already authenticated
-    // ghostInstance provides instance details if needed
-    // resolvedIsolation shows active mode for this test
-    console.log('Testing on:', ghostInstance.baseUrl);
-
+test.beforeEach(async ({resetEnvironment, resolvedIsolation}) => {
     if (resolvedIsolation === 'per-file') {
         await resetEnvironment();
     }
@@ -240,6 +235,16 @@ Isolation rules:
 - Default is per-file isolation.
 - Call `usePerTestIsolation()` at the root of a file to switch to per-test isolation.
 - Import it from `@/helpers/playwright/isolation`.
+- `config` and `labs` participate in the per-file environment identity. If either changes, the shared environment is recycled.
+- `stripeEnabled` always forces per-test isolation because Ghost must boot against a per-test fake Stripe server.
+- `resetEnvironment()` is a hook-only escape hatch. Do not call it after `baseURL`, `page`, `pageWithAuthenticatedUser`, or `ghostAccountOwner` has already been resolved.
+- ESLint catches direct misuse, but the runtime guard in the fixture is the final enforcement.
+
+When to use each option:
+- `config`: for boot-time Ghost config such as billing URLs or force-upgrade flags.
+- `labs`: for tests that need specific labs flags on or off.
+- `stripeEnabled`: for tests that need the fake Stripe server and Stripe-backed Ghost boot config.
+- `usePerTestIsolation()`: for whole files that mutate shared state heavily and should never reuse a Ghost environment across tests.
 
 ## Data Factories
 
