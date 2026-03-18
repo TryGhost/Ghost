@@ -33,7 +33,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@eslint/js": "9.28.0",
+    "@eslint/js": "9.39.4",
     "@types/mocha": "10.0.10",
     "@types/node": "22.15.29",
     "@types/should": "13.0.0",
