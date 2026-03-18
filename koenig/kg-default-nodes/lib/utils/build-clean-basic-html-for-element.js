@@ -1,4 +1,4 @@
-import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
+import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 
 export function buildCleanBasicHtmlForElement(domNode) {
     return function _cleanBasicHtml(html, additionalOptions = {}) {

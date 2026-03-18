@@ -1,9 +1,9 @@
 import CodeBlockIcon from '../assets/icons/kg-card-type-gen-embed.svg?react';
-import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {CodeBlockNode as BaseCodeBlockNode} from '@tryghost/kg-default-nodes';
 import {CodeBlockNodeComponent} from './CodeBlockNodeComponent';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
+import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 

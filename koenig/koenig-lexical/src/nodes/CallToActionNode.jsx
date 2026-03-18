@@ -1,10 +1,10 @@
 import EmailCtaCardIcon from '../assets/icons/kg-card-type-email-cta.svg?react';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
-import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {BASIC_NODES} from '../index.js';
 import {CallToActionNode as BaseCallToActionNode} from '@tryghost/kg-default-nodes';
 import {CallToActionNodeComponent} from './CallToActionNodeComponent';
+import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 

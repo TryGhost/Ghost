@@ -2,10 +2,10 @@ import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import MINIMAL_NODES from './MinimalNodes';
 import SignupCardIcon from '../assets/icons/kg-card-type-signup.svg?react';
 import SignupNodeComponent from './SignupNodeComponent';
-import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {SignupNode as BaseSignupNode} from '@tryghost/kg-default-nodes';
+import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 

@@ -1,2 +1,4 @@
+build/
 cjs/
 es/
+tsconfig.tsbuildinfo

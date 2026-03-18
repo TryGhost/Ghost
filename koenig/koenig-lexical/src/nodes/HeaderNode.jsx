@@ -3,10 +3,10 @@ import HeaderNodeComponent from './header/v2/HeaderNodeComponent';
 import HeaderNodeComponentV1 from './header/v1/HeaderNodeComponent';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import MINIMAL_NODES from './MinimalNodes';
-import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {HeaderNode as BaseHeaderNode} from '@tryghost/kg-default-nodes';
+import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 

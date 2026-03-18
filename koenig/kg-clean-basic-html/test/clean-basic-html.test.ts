@@ -1,16 +1,17 @@
 // Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('./utils');
+// import testUtils from './utils/index.js';
+import './utils/index.js';
 
-const {JSDOM} = require('jsdom');
-const cleanBasicHtml = require('../');
+import should from 'should';
+import {JSDOM} from 'jsdom';
+import {cleanBasicHtml} from '../src/clean-basic-html.js';
 
 describe('cleanBasicHtml', function () {
-    let options = {};
+    let options: {createDocument: (html: string) => Document};
 
     before(function () {
         options = {
-            createDocument(html) {
+            createDocument(html: string) {
                 return (new JSDOM(html)).window.document;
             }
         };

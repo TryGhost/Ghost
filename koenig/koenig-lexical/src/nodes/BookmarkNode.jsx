@@ -1,9 +1,9 @@
 import BookmarkCardIcon from '../assets/icons/kg-card-type-bookmark.svg?react';
-import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {BookmarkNode as BaseBookmarkNode} from '@tryghost/kg-default-nodes';
 import {BookmarkNodeComponent} from './BookmarkNodeComponent';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
+import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 

@@ -1,12 +1,12 @@
 import GIFIcon from '../assets/icons/kg-card-type-gif.svg?react';
 import ImageCardIcon from '../assets/icons/kg-card-type-image.svg?react';
 import UnsplashIcon from '../assets/icons/kg-card-type-unsplash.svg?react';
-import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {ImageNode as BaseImageNode} from '@tryghost/kg-default-nodes';
 import {ImageNodeComponent} from './ImageNodeComponent';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
 import {OPEN_TENOR_SELECTOR_COMMAND, OPEN_UNSPLASH_SELECTOR_COMMAND} from '../plugins/KoenigSelectorPlugin.jsx';
+import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 

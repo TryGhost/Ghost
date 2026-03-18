@@ -5,11 +5,11 @@ import SpotifyIcon from '../assets/icons/kg-card-type-spotify.svg?react';
 import VimeoIcon from '../assets/icons/kg-card-type-vimeo.svg?react';
 import XIcon from '../assets/icons/kg-card-type-x.svg?react';
 import YouTubeIcon from '../assets/icons/kg-card-type-youtube.svg?react';
-import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {EmbedNode as BaseEmbedNode} from '@tryghost/kg-default-nodes';
 import {EmbedNodeComponent} from './EmbedNodeComponent';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
+import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 

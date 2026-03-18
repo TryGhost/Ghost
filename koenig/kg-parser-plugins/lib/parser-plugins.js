@@ -7,7 +7,7 @@
  * These functions are used to proces nodes during parsing from DOM -> mobiledoc
  */
 
-import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
+import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 
 import * as audioCard from './cards/audio';
 import * as buttonCard from './cards/button';
