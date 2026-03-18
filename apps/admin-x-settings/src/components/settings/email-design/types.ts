@@ -24,7 +24,7 @@ export const DEFAULT_EMAIL_DESIGN: EmailDesignSettings = {
     body_font_category: 'sans_serif',
     header_background_color: '#ffffff',
     post_title_color: null,
-    title_alignment: 'left',
+    title_alignment: 'center',
     section_title_color: null,
     button_color: null,
     button_style: 'fill',
