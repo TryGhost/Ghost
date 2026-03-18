@@ -9,6 +9,20 @@ module.exports = function (Bookshelf) {
 
     Bookshelf.Model = Bookshelf.Model.extend({
         /**
+         * Strip `lock` from options before eager loading relations.
+         *
+         * Bookshelf propagates `lock` (e.g. 'forUpdate') to all eager-loaded
+         * relation queries via _handleEager. This causes FOR UPDATE locks on
+         * tags, authors, and other relation tables during post edits — creating
+         * a large lock surface that leads to database deadlocks under concurrent
+         * writes. The FOR UPDATE lock is only needed on the primary row fetch,
+         * not on relation loading.
+         */
+        _handleEager: function _handleEager(response, options) {
+            return ParentModel.prototype._handleEager.call(this, response, _.omit(options, 'lock'));
+        },
+
+        /**
          * Bookshelf's .format() is run when fetching as well as saving.
          * We need a way to transform attributes only on save so we override
          * .sync() which is run on every database operation where we can
