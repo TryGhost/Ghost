@@ -98,6 +98,10 @@ describe('file-type-utils', function () {
                 assert.equal(getStorageContentType('video.mp4'), 'video/mp4');
             });
 
+            it('.mov -> video/quicktime', function () {
+                assert.equal(getStorageContentType('video.mov'), 'video/quicktime');
+            });
+
             it('.webm -> video/webm', function () {
                 assert.equal(getStorageContentType('video.webm'), 'video/webm');
             });

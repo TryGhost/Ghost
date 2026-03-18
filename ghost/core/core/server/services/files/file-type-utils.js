@@ -25,6 +25,7 @@ const BROWSER_RENDERABLE_TYPES = new Set([
     'audio/ogg',
     'audio/mp4',
     'video/mp4',
+    'video/quicktime',
     'video/webm',
     'font/otf',
     'font/woff',
