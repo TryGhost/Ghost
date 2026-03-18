@@ -211,6 +211,27 @@ describe('Themes middleware', function () {
         });
     });
 
+    describe('updateLocalTemplateOptions', function () {
+        it('includes admin_url in site data', function (done) {
+            executeMiddleware(middleware, req, res, function next(err) {
+                try {
+                    assert.equal(err, undefined);
+
+                    sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
+                    const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
+                    const data = templateOptions.data;
+
+                    assert(data.site.admin_url, 'admin_url should be set in site data');
+                    assert.equal(typeof data.site.admin_url, 'string');
+
+                    done();
+                } catch (error) {
+                    done(error);
+                }
+            });
+        });
+    });
+
     describe('Preview Mode', function () {
         it('calls updateLocalTemplateOptions with correct data when one parameter is set', function (done) {
             const previewString = 'c=%23000fff';

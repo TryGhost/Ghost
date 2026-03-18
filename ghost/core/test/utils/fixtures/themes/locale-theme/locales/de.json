@@ -5,6 +5,19 @@
     "Already have an account?": "Hast du bereits ein Konto?",
     "Page {page} of {totalPages}": "Seite {page} von {totalPages}",
     "This site is private.": "Diese Seite ist privat.",
-    "Password": "Passwort",
-    "Access site": "Seite aufrufen"
+    "Access code": "Zugangscode",
+    "Access site": "Seite aufrufen",
+    "Enter": "Eingeben",
+    "Enter access code": "Zugangscode eingeben",
+    "Close": "Schließen",
+    "Your email address": "Deine E-Mail-Adresse",
+    "Subscribe": "Abonnieren",
+    "Please enter a valid email address": "Bitte gib eine gültige E-Mail-Adresse ein",
+    "Something went wrong, please try again.": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    "Subscription confirmed!": "Abonnement bestaetigt!",
+    "Thanks! Now check your email to confirm.": "Danke! Bitte sieh jetzt in deinem Posteingang nach, um zu bestaetigen.",
+    "Signups from this email domain are currently restricted.": "Anmeldungen mit dieser E-Mail-Domain sind derzeit eingeschraenkt.",
+    "Too many sign-up attempts, try again later": "Zu viele Anmeldeversuche. Bitte versuche es spaeter erneut.",
+    "Failed to send magic link email": "Die Magic-Link-E-Mail konnte nicht gesendet werden",
+    "Site owner login": "Eigentümer-Login"
 }
