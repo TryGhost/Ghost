@@ -120,6 +120,15 @@ describe('scalarCodec', () => {
             timezone: 'UTC'
         })).toEqual(['emails.post_id:\'post_123\'']);
     });
+
+    it('quotes scalar strings with reserved NQL characters', () => {
+        expect(scalarCodec().serialize({
+            id: '1',
+            field: 'status',
+            operator: 'is',
+            values: ['-paid']
+        }, statusContext)).toEqual(['status:\'-paid\'']);
+    });
 });
 
 describe('textCodec', () => {
@@ -265,6 +274,17 @@ describe('setCodec', () => {
         };
 
         expect(setCodec({quoteStrings: true, serializeSingletonAsScalar: true}).serialize(predicate, offerContext)).toEqual(['offer_redemptions:\'offer_123\'']);
+    });
+
+    it('quotes set values that contain reserved list characters', () => {
+        const predicate: FilterPredicate = {
+            id: '1',
+            field: 'label',
+            operator: 'is-any',
+            values: ['vip,alpha', 'beta']
+        };
+
+        expect(setCodec().serialize(predicate, labelContext)).toEqual(['label:[beta,\'vip,alpha\']']);
     });
 });
 

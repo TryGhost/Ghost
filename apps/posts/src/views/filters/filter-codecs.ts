@@ -37,6 +37,8 @@ const SET_OPERATOR_SYMBOLS: Record<string, string> = {
     'is-not-any': '-'
 };
 
+const UNQUOTED_TOKEN_PATTERN = /^[A-Za-z0-9_.-]+$/;
+
 interface CodecConfig {
     field?: string;
     quoteStrings?: boolean;
@@ -53,7 +55,7 @@ function normalizeMultiValue(values: unknown[]): string[] {
 
 function serializeScalarValue(value: unknown, config?: CodecConfig): string {
     if (typeof value === 'string') {
-        if (config?.quoteStrings || /\s/.test(value)) {
+        if (config?.quoteStrings || value.startsWith('-') || !UNQUOTED_TOKEN_PATTERN.test(value)) {
             return escapeNqlString(value);
         }
 
