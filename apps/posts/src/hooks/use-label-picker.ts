@@ -19,8 +19,8 @@ export interface UseLabelPickerResult {
     canCreateFromSearch: (inputValue: string) => boolean;
     isCreating: boolean;
 
-    // Server-side search + infinite scroll
-    onSearchChange: (search: string) => void;
+    // Search + infinite scroll (undefined onSearchChange = local filtering)
+    onSearchChange: ((search: string) => void) | undefined;
     searchValue: string;
     onLoadMore: () => void;
     hasMore: boolean;
@@ -38,6 +38,7 @@ export function useLabelPicker({
     const [searchValue, setSearchValue] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const timerRef = useRef<ReturnType<typeof setTimeout>>();
+    const useLocalSearchRef = useRef(false);
 
     useEffect(() => {
         return () => {
@@ -49,7 +50,7 @@ export function useLabelPicker({
 
     const searchParams = useMemo(() => {
         const params: Record<string, string> = {limit: '100'};
-        if (debouncedSearch.trim()) {
+        if (!useLocalSearchRef.current && debouncedSearch.trim()) {
             params.filter = `name:~'${escapeNqlValue(debouncedSearch.trim())}'`;
         }
         return params;
@@ -57,6 +58,11 @@ export function useLabelPicker({
 
     const {data: labelsData, isLoading, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage} = useBrowseInfiniteLabels({searchParams});
     const labels = useMemo(() => labelsData?.labels || [], [labelsData]);
+
+    // Once the initial load completes with all items on one page, switch to local search
+    if (!isLoading && !hasNextPage && labels.length > 0 && !debouncedSearch.trim()) {
+        useLocalSearchRef.current = true;
+    }
 
     const {mutateAsync: createLabelMutation, isLoading: isCreating} = useCreateLabel();
     const {mutateAsync: editLabelMutation} = useEditLabel();
@@ -72,6 +78,10 @@ export function useLabelPicker({
 
         if (timerRef.current) {
             clearTimeout(timerRef.current);
+        }
+
+        if (useLocalSearchRef.current) {
+            return;
         }
 
         timerRef.current = setTimeout(() => {
@@ -145,8 +155,8 @@ export function useLabelPicker({
         }
     }, [deleteLabelMutation, labels, onSelectionChange]);
 
-    const isSearchPending = searchValue !== debouncedSearch && searchValue.trim() !== '';
-    const isSearchFetching = debouncedSearch.trim() !== '' && isFetching;
+    const isSearchPending = !useLocalSearchRef.current && searchValue !== debouncedSearch && searchValue.trim() !== '';
+    const isSearchFetching = !useLocalSearchRef.current && debouncedSearch.trim() !== '' && isFetching;
 
     return {
         labels,
@@ -159,7 +169,8 @@ export function useLabelPicker({
         isDuplicateName,
         canCreateFromSearch,
         isCreating,
-        onSearchChange,
+        // Return undefined when using local search so the picker uses client-side filtering
+        onSearchChange: useLocalSearchRef.current ? undefined : onSearchChange,
         searchValue,
         onLoadMore,
         hasMore: hasNextPage ?? false,

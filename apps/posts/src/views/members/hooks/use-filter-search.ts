@@ -52,6 +52,9 @@ export function useFilterSearch<T, K extends keyof T & string>({
     const [debouncedValue, setDebouncedValue] = useState('');
     const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
+    // Track whether the initial (no-search) query returned all items
+    const useLocalSearchRef = useRef(false);
+
     useEffect(() => {
         return () => {
             if (timerRef.current) {
@@ -67,11 +70,17 @@ export function useFilterSearch<T, K extends keyof T & string>({
             clearTimeout(timerRef.current);
         }
 
+        // Skip debounce + server query when filtering locally
+        if (useLocalSearchRef.current) {
+            return;
+        }
+
         timerRef.current = setTimeout(() => {
             setDebouncedValue(search);
         }, debounceMs);
     }, [debounceMs]);
 
+    // Only include search filter in query params when using server-side search
     const searchParams = useMemo(() => {
         const params: Record<string, string> = {limit};
         const filters: string[] = [];
@@ -80,7 +89,7 @@ export function useFilterSearch<T, K extends keyof T & string>({
             filters.push(baseFilter);
         }
 
-        if (debouncedValue.trim() && buildSearchFilter) {
+        if (!useLocalSearchRef.current && debouncedValue.trim() && buildSearchFilter) {
             filters.push(buildSearchFilter(escapeNqlValue(debouncedValue.trim())));
         }
 
@@ -93,7 +102,7 @@ export function useFilterSearch<T, K extends keyof T & string>({
 
     const {data, isLoading, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage} = useQuery({searchParams});
 
-    const options = useMemo(() => {
+    const allOptions = useMemo(() => {
         if (!data) {
             return [];
         }
@@ -107,10 +116,24 @@ export function useFilterSearch<T, K extends keyof T & string>({
         }));
     }, [data, dataKey, valueKey, labelKey]);
 
-    const initialCountRef = useRef(0);
-    if (!debouncedValue.trim() && options.length > 0) {
-        initialCountRef.current = options.length;
+    // Once the initial load completes with all items on one page, switch to local search
+    if (!isLoading && !hasNextPage && allOptions.length > 0 && !debouncedValue.trim()) {
+        useLocalSearchRef.current = true;
     }
+
+    const initialCountRef = useRef(0);
+    if (!debouncedValue.trim() && allOptions.length > 0) {
+        initialCountRef.current = allOptions.length;
+    }
+
+    // Apply local filtering when all items are loaded
+    const options = useMemo(() => {
+        if (useLocalSearchRef.current && inputValue.trim()) {
+            const term = inputValue.trim().toLowerCase();
+            return allOptions.filter(opt => opt.label.toLowerCase().includes(term));
+        }
+        return allOptions;
+    }, [allOptions, inputValue]);
 
     const onLoadMore = useCallback(() => {
         if (hasNextPage && !isFetchingNextPage) {
@@ -118,13 +141,13 @@ export function useFilterSearch<T, K extends keyof T & string>({
         }
     }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-    const isSearchPending = inputValue !== debouncedValue && inputValue.trim() !== '';
-    const isSearchFetching = debouncedValue.trim() !== '' && isFetching;
+    const isSearchPending = !useLocalSearchRef.current && inputValue !== debouncedValue && inputValue.trim() !== '';
+    const isSearchFetching = !useLocalSearchRef.current && debouncedValue.trim() !== '' && isFetching;
 
     return {
         options,
         initialCount: initialCountRef.current,
-        isLoading: (options.length === 0 && isLoading) || isSearchPending || isSearchFetching,
+        isLoading: (allOptions.length === 0 && isLoading) || isSearchPending || isSearchFetching,
         searchValue: inputValue,
         onSearchChange,
         onLoadMore,

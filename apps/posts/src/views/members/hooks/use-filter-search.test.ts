@@ -318,4 +318,110 @@ describe('useFilterSearch', () => {
         const searchCall = useQuery.mock.calls[useQuery.mock.calls.length - 1];
         expect(searchCall[0].searchParams.filter).toBe('type:paid+name:~\'gold\'');
     });
+
+    describe('local search fallback', () => {
+        it('filters locally when initial query returns all items (no next page)', () => {
+            const items = [{id: 'a', name: 'Alpha'}, {id: 'b', name: 'Beta'}, {id: 'c', name: 'Charlie'}];
+            const useQuery = createMockQuery(items);
+
+            const {result} = renderHook(() => useFilterSearch<MockResponse, 'items'>({
+                useQuery,
+                dataKey: 'items',
+                valueKey: 'id',
+                labelKey: 'name',
+                buildSearchFilter: (term: string) => `name:~'${term}'`
+            }));
+
+            // All 3 items returned, hasNextPage is false — local search should activate
+            expect(result.current.options).toHaveLength(3);
+
+            act(() => {
+                result.current.onSearchChange('alp');
+            });
+
+            // Should filter immediately without debounce
+            expect(result.current.options).toEqual([
+                {value: 'a', label: 'Alpha'}
+            ]);
+            expect(result.current.isLoading).toBe(false);
+
+            // Should NOT have triggered a new server query with search filter
+            const lastCall = useQuery.mock.calls[useQuery.mock.calls.length - 1];
+            expect(lastCall[0].searchParams.filter).toBeUndefined();
+        });
+
+        it('uses server search when initial query has more pages', () => {
+            const items = [{id: 'a', name: 'Alpha'}, {id: 'b', name: 'Beta'}];
+            const useQuery = vi.fn().mockReturnValue({
+                data: {items} as MockResponse,
+                isLoading: false,
+                isFetching: false,
+                fetchNextPage: vi.fn(),
+                hasNextPage: true,
+                isFetchingNextPage: false
+            });
+
+            const {result} = renderHook(() => useFilterSearch<MockResponse, 'items'>({
+                useQuery,
+                dataKey: 'items',
+                valueKey: 'id',
+                labelKey: 'name',
+                buildSearchFilter: (term: string) => `name:~'${term}'`
+            }));
+
+            act(() => {
+                result.current.onSearchChange('alp');
+                vi.advanceTimersByTime(300);
+            });
+
+            // Should use server search (debounced query with filter)
+            const lastCall = useQuery.mock.calls[useQuery.mock.calls.length - 1];
+            expect(lastCall[0].searchParams.filter).toBe('name:~\'alp\'');
+        });
+
+        it('shows all items when local search is cleared', () => {
+            const items = [{id: 'a', name: 'Alpha'}, {id: 'b', name: 'Beta'}];
+            const useQuery = createMockQuery(items);
+
+            const {result} = renderHook(() => useFilterSearch<MockResponse, 'items'>({
+                useQuery,
+                dataKey: 'items',
+                valueKey: 'id',
+                labelKey: 'name',
+                buildSearchFilter: (term: string) => `name:~'${term}'`
+            }));
+
+            act(() => {
+                result.current.onSearchChange('alp');
+            });
+
+            expect(result.current.options).toHaveLength(1);
+
+            act(() => {
+                result.current.onSearchChange('');
+            });
+
+            expect(result.current.options).toHaveLength(2);
+        });
+
+        it('local search is case-insensitive', () => {
+            const items = [{id: 'a', name: 'Alpha'}, {id: 'b', name: 'BETA'}];
+            const useQuery = createMockQuery(items);
+
+            const {result} = renderHook(() => useFilterSearch<MockResponse, 'items'>({
+                useQuery,
+                dataKey: 'items',
+                valueKey: 'id',
+                labelKey: 'name'
+            }));
+
+            act(() => {
+                result.current.onSearchChange('beta');
+            });
+
+            expect(result.current.options).toEqual([
+                {value: 'b', label: 'BETA'}
+            ]);
+        });
+    });
 });
