@@ -50,17 +50,25 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 
     const labelSearch = useFilterSearch({
         useQuery: useBrowseInfiniteLabels,
-        extractItems: useCallback(
-            (data: LabelsResponseType) => data.labels.map(l => ({value: l.slug, label: l.name})), []),
-        buildSearchFilter: useCallback((term: string) => `name:~'${term}'`, []),
+        extractItems: useCallback((data: LabelsResponseType) => {
+            return data.labels.map(label => ({value: label.slug, label: label.name}));
+        }, []),
+        buildSearchFilter: useCallback((term: string) => {
+            return `name:~'${term}'`;
+        }, []),
         limit: '100'
     });
 
     const tierSearch = useFilterSearch({
         useQuery: useBrowseTiers,
-        extractItems: useCallback(
-            (data: TiersResponseType) => data.tiers.filter(t => t.type === 'paid' && t.active).map(t => ({value: t.id, label: t.name})), []),
-        buildSearchFilter: useCallback((term: string) => `name:~'${term}'`, []),
+        extractItems: useCallback((data: TiersResponseType) => {
+            return data.tiers
+                .filter(tier => tier.type === 'paid' && tier.active)
+                .map(tier => ({value: tier.id, label: tier.name}));
+        }, []),
+        buildSearchFilter: useCallback((term: string) => {
+            return `name:~'${term}'`;
+        }, []),
         limit: '100'
     });
 
