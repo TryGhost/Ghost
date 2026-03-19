@@ -182,7 +182,7 @@ export function textCodec(config?: CodecConfig): FilterCodec {
             const rawValue = predicate.values[0];
             const field = getCodecField(config, ctx.key);
 
-            if (typeof rawValue !== 'string') {
+            if (typeof rawValue !== 'string' || rawValue === '') {
                 return null;
             }
 

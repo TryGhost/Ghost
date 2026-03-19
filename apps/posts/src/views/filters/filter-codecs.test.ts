@@ -198,7 +198,7 @@ describe('textCodec', () => {
         expect(textCodec().serialize(predicate, emailContext)).toBeNull();
     });
 
-    it('serializes empty text values so URL-synced filters stay editable', () => {
+    it('does not serialize empty text values', () => {
         const predicate: FilterPredicate = {
             id: '1',
             field: 'email',
@@ -206,7 +206,7 @@ describe('textCodec', () => {
             values: ['']
         };
 
-        expect(textCodec().serialize(predicate, emailContext)).toEqual(['email:\'\'']);
+        expect(textCodec().serialize(predicate, emailContext)).toBeNull();
     });
 
     it('supports mapped NQL field names', () => {

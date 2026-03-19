@@ -150,6 +150,47 @@ describe('useMembersFilterState', () => {
         expect(result.current.search).toBe('jamie');
     });
 
+    it('keeps incomplete text filters locally while preserving serializable filters in the URL', () => {
+        const {result} = renderHook(() => {
+            const state = useMembersFilterState('UTC');
+            const [searchParams] = useSearchParams();
+
+            return {
+                ...state,
+                query: searchParams.toString()
+            };
+        }, {wrapper: createWrapper('/?filter=label:vip')});
+
+        act(() => {
+            result.current.setFilters([
+                ...result.current.filters,
+                {
+                    id: 'name:2',
+                    field: 'name',
+                    operator: 'is',
+                    values: ['']
+                }
+            ], {replace: false});
+        });
+
+        expect(result.current.query).toBe('filter=label%3A%5Bvip%5D');
+        expect(result.current.nql).toBe('label:[vip]');
+        expect(result.current.filters).toEqual([
+            {
+                id: 'label:1',
+                field: 'label',
+                operator: 'is-any',
+                values: ['vip']
+            },
+            {
+                id: 'name:2',
+                field: 'name',
+                operator: 'is',
+                values: ['']
+            }
+        ]);
+    });
+
     it('can clear both filters and search for empty-state reset flows', () => {
         const {result} = renderHook(() => {
             const state = useMembersFilterState('UTC');
