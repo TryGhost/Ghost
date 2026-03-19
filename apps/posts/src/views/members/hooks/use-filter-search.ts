@@ -116,8 +116,11 @@ export function useFilterSearch<T, K extends keyof T & string>({
         }));
     }, [data, dataKey, valueKey, labelKey]);
 
-    // Once the initial load completes with all items on one page, switch to local search
-    if (!isLoading && !hasNextPage && allOptions.length > 0 && !debouncedValue.trim()) {
+    // Once the initial load completes with all items on one page, switch to local search.
+    // Uses the isEnd flag from the query's returnData rather than hasNextPage, which
+    // can be unreliable when defaultNextPageParams doesn't return undefined.
+    const isEnd = data && typeof data === 'object' && 'isEnd' in data && (data as Record<string, unknown>).isEnd === true;
+    if (!isLoading && isEnd && allOptions.length > 0 && !debouncedValue.trim()) {
         useLocalSearchRef.current = true;
     }
 

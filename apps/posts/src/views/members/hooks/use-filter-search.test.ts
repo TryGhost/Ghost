@@ -9,11 +9,12 @@ interface MockItem {
 
 interface MockResponse {
     items: MockItem[];
+    isEnd?: boolean;
 }
 
-function createMockQuery(items: MockItem[] = []) {
+function createMockQuery(items: MockItem[] = [], {isEnd = true}: {isEnd?: boolean} = {}) {
     return vi.fn().mockReturnValue({
-        data: {items} as MockResponse,
+        data: {items, isEnd} as MockResponse,
         isLoading: false,
         isFetching: false,
         fetchNextPage: vi.fn(),
@@ -353,7 +354,7 @@ describe('useFilterSearch', () => {
         it('uses server search when initial query has more pages', () => {
             const items = [{id: 'a', name: 'Alpha'}, {id: 'b', name: 'Beta'}];
             const useQuery = vi.fn().mockReturnValue({
-                data: {items} as MockResponse,
+                data: {items, isEnd: false} as MockResponse,
                 isLoading: false,
                 isFetching: false,
                 fetchNextPage: vi.fn(),

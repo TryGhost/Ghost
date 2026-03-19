@@ -60,7 +60,7 @@ export function useLabelPicker({
     const labels = useMemo(() => labelsData?.labels || [], [labelsData]);
 
     // Once the initial load completes with all items on one page, switch to local search
-    if (!isLoading && !hasNextPage && labels.length > 0 && !debouncedSearch.trim()) {
+    if (!isLoading && labelsData?.isEnd && labels.length > 0 && !debouncedSearch.trim()) {
         useLocalSearchRef.current = true;
     }
 

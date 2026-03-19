@@ -34,15 +34,10 @@ const dataType = 'TiersResponseType';
 export const useBrowseTiers = createInfiniteQuery<TiersResponseType & {isEnd: boolean}>({
     dataType,
     path: '/tiers/',
-    defaultNextPageParams: (lastPage, otherParams) => {
-        if (!lastPage.meta?.pagination.next) {
-            return undefined;
-        }
-        return {
-            ...otherParams,
-            page: lastPage.meta.pagination.next.toString()
-        };
-    },
+    defaultNextPageParams: (lastPage, otherParams) => ({
+        ...otherParams,
+        page: (lastPage.meta?.pagination.next || 1).toString()
+    }),
     returnData: (originalData) => {
         const {pages} = originalData as InfiniteData<TiersResponseType>;
         const tiers = pages.flatMap(page => page.tiers);
