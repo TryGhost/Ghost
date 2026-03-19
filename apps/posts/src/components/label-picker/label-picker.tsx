@@ -511,28 +511,23 @@ const InlinePopover: React.FC<InlinePopoverProps> = ({
                 </button>
             </PopoverTrigger>
             <PopoverContent align={align} alignOffset={alignOffset} className="w-64 p-0">
-                {isLoading ? (
-                    <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
-                        Loading labels...
-                    </div>
-                ) : (
-                    <InlineList
-                        canCreateFromSearch={canCreateFromSearch}
-                        hasMore={hasMore}
-                        isCreating={isCreating}
-                        isDuplicateName={isDuplicateName}
-                        isLoadingMore={isLoadingMore}
-                        labels={labels}
-                        selectedLabels={selectedLabels}
-                        selectedSlugs={selectedSlugs}
-                        onCreate={onCreate}
-                        onDelete={onDelete}
-                        onEdit={onEdit}
-                        onLoadMore={onLoadMore}
-                        onSearchChange={onSearchChange}
-                        onToggle={onToggle}
-                    />
-                )}
+                <InlineList
+                    canCreateFromSearch={canCreateFromSearch}
+                    hasMore={hasMore}
+                    isCreating={isCreating}
+                    isDuplicateName={isDuplicateName}
+                    isLoading={isLoading}
+                    isLoadingMore={isLoadingMore}
+                    labels={labels}
+                    selectedLabels={selectedLabels}
+                    selectedSlugs={selectedSlugs}
+                    onCreate={onCreate}
+                    onDelete={onDelete}
+                    onEdit={onEdit}
+                    onLoadMore={onLoadMore}
+                    onSearchChange={onSearchChange}
+                    onToggle={onToggle}
+                />
             </PopoverContent>
         </Popover>
     );
@@ -545,6 +540,7 @@ interface InlineListProps {
     selectedLabels: Label[];
     selectedSlugs: string[];
     onToggle: (slug: string) => void;
+    isLoading?: boolean;
     canCreateFromSearch?: (inputValue: string) => boolean;
     onCreate?: (name: string) => Promise<Label | undefined>;
     isCreating?: boolean;
@@ -557,7 +553,7 @@ interface InlineListProps {
     isLoadingMore?: boolean;
 }
 
-const InlineList: React.FC<InlineListProps> = ({selectedLabels, onSearchChange, onLoadMore, hasMore, isLoadingMore, ...rest}) => {
+const InlineList: React.FC<InlineListProps> = ({selectedLabels, isLoading, onSearchChange, onLoadMore, hasMore, isLoadingMore, ...rest}) => {
     const [search, setSearch] = useState('');
     const handleScrollEnd = useScrollEndDetection(onLoadMore, hasMore, isLoadingMore);
 
@@ -584,16 +580,23 @@ const InlineList: React.FC<InlineListProps> = ({selectedLabels, onSearchChange, 
                 />
             </div>
             <CommandList className="max-h-64 overflow-y-auto" onScroll={handleScrollEnd}>
-                <LabelListItems
-                    {...rest}
-                    isLoadingMore={isLoadingMore}
-                    search={search}
-                    serverSearch={!!onSearchChange}
-                    onSearchClear={() => {
-                        setSearch('');
-                        onSearchChange?.('');
-                    }}
-                />
+                {isLoading ? (
+                    <div className="flex items-center justify-center px-2 py-1.5 text-sm text-muted-foreground">
+                        <LucideIcon.Loader2 className="mr-2 size-4 animate-spin" />
+                        Loading...
+                    </div>
+                ) : (
+                    <LabelListItems
+                        {...rest}
+                        isLoadingMore={isLoadingMore}
+                        search={search}
+                        serverSearch={!!onSearchChange}
+                        onSearchClear={() => {
+                            setSearch('');
+                            onSearchChange?.('');
+                        }}
+                    />
+                )}
             </CommandList>
         </Command>
     );

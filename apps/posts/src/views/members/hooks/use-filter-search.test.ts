@@ -15,6 +15,7 @@ function createMockQuery(items: MockItem[] = []) {
     return vi.fn().mockReturnValue({
         data: {items} as MockResponse,
         isLoading: false,
+        isFetching: false,
         fetchNextPage: vi.fn(),
         hasNextPage: false,
         isFetchingNextPage: false
@@ -112,6 +113,7 @@ describe('useFilterSearch', () => {
         const useQuery = vi.fn().mockReturnValue({
             data: {items: []} as MockResponse,
             isLoading: false,
+            isFetching: false,
             fetchNextPage,
             hasNextPage: true,
             isFetchingNextPage: true
@@ -139,6 +141,7 @@ describe('useFilterSearch', () => {
         const useQuery = vi.fn().mockReturnValue({
             data: {items: []} as MockResponse,
             isLoading: false,
+            isFetching: false,
             fetchNextPage,
             hasNextPage: true,
             isFetchingNextPage: false
@@ -182,6 +185,7 @@ describe('useFilterSearch', () => {
         const useQuery = vi.fn().mockReturnValue({
             data: undefined as MockResponse | undefined,
             isLoading: true,
+            isFetching: true,
             fetchNextPage: vi.fn(),
             hasNextPage: false,
             isFetchingNextPage: false
@@ -195,6 +199,97 @@ describe('useFilterSearch', () => {
         }));
 
         expect(result.current.isLoading).toBe(true);
+    });
+
+    it('reports isLoading while debouncing a search term', () => {
+        const useQuery = createMockQuery([{id: 'a', name: 'Alpha'}]);
+
+        const {result} = renderHook(() => useFilterSearch<MockResponse, 'items'>({
+            useQuery,
+            dataKey: 'items',
+            valueKey: 'id',
+            labelKey: 'name',
+            buildSearchFilter: (term: string) => `name:~'${term}'`
+        }));
+
+        expect(result.current.isLoading).toBe(false);
+
+        act(() => {
+            result.current.onSearchChange('alp');
+        });
+
+        // Should be loading while debouncing
+        expect(result.current.isLoading).toBe(true);
+
+        act(() => {
+            vi.advanceTimersByTime(300);
+        });
+
+        // After debounce, not fetching so not loading
+        expect(result.current.isLoading).toBe(false);
+    });
+
+    it('reports isLoading while query is fetching search results', () => {
+        const useQuery = vi.fn().mockReturnValue({
+            data: {items: [{id: 'a', name: 'Alpha'}]} as MockResponse,
+            isLoading: false,
+            isFetching: true,
+            fetchNextPage: vi.fn(),
+            hasNextPage: false,
+            isFetchingNextPage: false
+        });
+
+        const {result} = renderHook(() => useFilterSearch<MockResponse, 'items'>({
+            useQuery,
+            dataKey: 'items',
+            valueKey: 'id',
+            labelKey: 'name',
+            buildSearchFilter: (term: string) => `name:~'${term}'`
+        }));
+
+        // Trigger a search and advance past debounce
+        act(() => {
+            result.current.onSearchChange('alp');
+            vi.advanceTimersByTime(300);
+        });
+
+        // Should be loading because isFetching is true and there's a search term
+        expect(result.current.isLoading).toBe(true);
+    });
+
+    it('does not report isLoading when isFetching on initial load with no search', () => {
+        const useQuery = vi.fn().mockReturnValue({
+            data: {items: [{id: 'a', name: 'Alpha'}]} as MockResponse,
+            isLoading: false,
+            isFetching: true,
+            fetchNextPage: vi.fn(),
+            hasNextPage: false,
+            isFetchingNextPage: false
+        });
+
+        const {result} = renderHook(() => useFilterSearch<MockResponse, 'items'>({
+            useQuery,
+            dataKey: 'items',
+            valueKey: 'id',
+            labelKey: 'name'
+        }));
+
+        // isFetching but no search term — should not show loading
+        expect(result.current.isLoading).toBe(false);
+    });
+
+    it('tracks initialCount from first unfiltered results', () => {
+        const items = [{id: 'a', name: 'Alpha'}, {id: 'b', name: 'Beta'}, {id: 'c', name: 'Charlie'}];
+        const useQuery = createMockQuery(items);
+
+        const {result} = renderHook(() => useFilterSearch<MockResponse, 'items'>({
+            useQuery,
+            dataKey: 'items',
+            valueKey: 'id',
+            labelKey: 'name'
+        }));
+
+        expect(result.current.initialCount).toBe(3);
     });
 
     it('combines baseFilter with search filter', () => {

@@ -1126,7 +1126,7 @@ function SelectOptionsPopover<T = unknown>({
                     )}
                     <CommandList className="outline-hidden" onScroll={handleScrollEnd}>
                         {field.isLoading ? (
-                            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                            <div className="flex items-center justify-center px-2 py-1.5 text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 size-4 animate-spin" />
                                 {context.i18n.loading}
                             </div>
@@ -1284,7 +1284,7 @@ function SelectOptionsPopover<T = unknown>({
                     )}
                     <CommandList className="outline-hidden" onScroll={handleScrollEnd}>
                         {field.isLoading ? (
-                            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                            <div className="flex items-center justify-center px-2 py-1.5 text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 size-4 animate-spin" />
                                 {context.i18n.loading}
                             </div>
@@ -1753,7 +1753,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                     )}
                     <CommandList className="outline-hidden">
                         {field.isLoading ? (
-                            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                            <div className="flex items-center justify-center px-2 py-1.5 text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 size-4 animate-spin" />
                                 {context.i18n.loading}
                             </div>

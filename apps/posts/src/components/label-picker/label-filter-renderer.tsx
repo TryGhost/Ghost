@@ -13,6 +13,7 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({values, onC
         <LabelPicker
             hasMore={picker.hasMore}
             isDuplicateName={picker.isDuplicateName}
+            isLoading={picker.isLoading}
             isLoadingMore={picker.isLoadingMore}
             labels={picker.labels}
             selectedSlugs={picker.selectedSlugs}

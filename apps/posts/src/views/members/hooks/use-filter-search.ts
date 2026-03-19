@@ -9,6 +9,7 @@ export interface UseFilterSearchOptions<T, K extends keyof T & string> {
     useQuery: (options?: InfiniteQueryHookOptions<T>) => {
         data: T | undefined;
         isLoading: boolean;
+        isFetching: boolean;
         fetchNextPage: () => void;
         hasNextPage?: boolean;
         isFetchingNextPage: boolean;
@@ -24,6 +25,7 @@ export interface UseFilterSearchOptions<T, K extends keyof T & string> {
 
 export interface UseFilterSearchReturn {
     options: FilterOption<string>[];
+    initialCount: number;
     isLoading: boolean;
     searchValue: string;
     onSearchChange: (search: string) => void;
@@ -89,7 +91,7 @@ export function useFilterSearch<T, K extends keyof T & string>({
         return params;
     }, [limit, baseFilter, debouncedValue, buildSearchFilter]);
 
-    const {data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage} = useQuery({searchParams});
+    const {data, isLoading, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage} = useQuery({searchParams});
 
     const options = useMemo(() => {
         if (!data) {
@@ -105,15 +107,24 @@ export function useFilterSearch<T, K extends keyof T & string>({
         }));
     }, [data, dataKey, valueKey, labelKey]);
 
+    const initialCountRef = useRef(0);
+    if (!debouncedValue.trim() && options.length > 0) {
+        initialCountRef.current = options.length;
+    }
+
     const onLoadMore = useCallback(() => {
         if (hasNextPage && !isFetchingNextPage) {
             fetchNextPage();
         }
     }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
+    const isSearchPending = inputValue !== debouncedValue && inputValue.trim() !== '';
+    const isSearchFetching = debouncedValue.trim() !== '' && isFetching;
+
     return {
         options,
-        isLoading: options.length === 0 && isLoading,
+        initialCount: initialCountRef.current,
+        isLoading: (options.length === 0 && isLoading) || isSearchPending || isSearchFetching,
         searchValue: inputValue,
         onSearchChange,
         onLoadMore,

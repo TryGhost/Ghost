@@ -78,7 +78,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 
     const newsletters = newslettersData?.newsletters || [];
     const offers = useMemo(() => offersData?.offers ?? EMPTY_OFFERS, [offersData?.offers]);
-    const hasMultipleTiers = tierSearch.options.length > 1;
+    const hasMultipleTiers = tierSearch.initialCount > 1;
 
     const offersOptions = useMemo(() => {
         return buildOfferOptions(offers);

@@ -55,7 +55,7 @@ export function useLabelPicker({
         return params;
     }, [debouncedSearch]);
 
-    const {data: labelsData, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage} = useBrowseInfiniteLabels({searchParams});
+    const {data: labelsData, isLoading, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage} = useBrowseInfiniteLabels({searchParams});
     const labels = useMemo(() => labelsData?.labels || [], [labelsData]);
 
     const {mutateAsync: createLabelMutation, isLoading: isCreating} = useCreateLabel();
@@ -145,10 +145,13 @@ export function useLabelPicker({
         }
     }, [deleteLabelMutation, labels, onSelectionChange]);
 
+    const isSearchPending = searchValue !== debouncedSearch && searchValue.trim() !== '';
+    const isSearchFetching = debouncedSearch.trim() !== '' && isFetching;
+
     return {
         labels,
         selectedSlugs,
-        isLoading,
+        isLoading: isLoading || isSearchPending || isSearchFetching,
         toggleLabel,
         createLabel,
         editLabel,
