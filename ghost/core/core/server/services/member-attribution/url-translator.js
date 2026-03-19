@@ -135,12 +135,7 @@ class UrlTranslator {
         switch (type) {
         case 'post':
         case 'page': {
-            // First try default lookup (finds published posts and pages)
-            let post = await this.models.Post.findOne({id}, {require: false});
-            if (!post) {
-                // Try email-only posts (status:sent) which are excluded by default filters
-                post = await this.models.Post.findOne({id, status: 'sent'}, {require: false});
-            }
+            const post = await this.models.Post.findOne({id}, {require: false, filter: 'type:[post,page]+status:[published,sent]'});
             if (!post) {
                 return null;
             }
