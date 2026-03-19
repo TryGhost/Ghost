@@ -13,6 +13,7 @@ type ChartDataItem = {
     free: number;
     paid: number;
     comped: number;
+    gifted: number;
     mrr: number;
     paid_subscribed?: number;
     paid_canceled?: number;
@@ -48,6 +49,7 @@ const isValidTab = (tab: string | null | undefined): tab is KpiTab => {
 // Extended data type for paid members chart with additional tooltip fields
 type PaidMembersChartDataItem = GhAreaChartDataItem & {
     comped: number;
+    gifted: number;
     paid_subscribed?: number;
 };
 
@@ -64,8 +66,8 @@ const PaidMembersTooltipContent = ({active, payload, range, color, showBreakdown
     }
 
     const data = payload[0].payload;
-    const {date, formattedValue, label, comped} = data;
-    const paidSubscriptions = data.value - (comped || 0);
+    const {date, formattedValue, label, comped, gifted} = data;
+    const paidSubscriptions = data.value - (comped || 0) - (gifted || 0);
 
     return (
         <div className="min-w-[200px] rounded-lg border bg-background px-3 py-2 shadow-lg">
@@ -83,6 +85,12 @@ const PaidMembersTooltipContent = ({active, payload, range, color, showBreakdown
                             <div className='flex grow items-center justify-between gap-5'>
                                 <div className="text-sm text-muted-foreground">Complimentary</div>
                                 <div className="font-mono text-xs">{(comped !== undefined && comped > 0) ? (formatNumber(comped)) : '0'}</div>
+                            </div>
+                        </div>
+                        <div className='flex items-center gap-2'>
+                            <div className='flex grow items-center justify-between gap-5'>
+                                <div className="text-sm text-muted-foreground">Gifted</div>
+                                <div className="font-mono text-xs">{(gifted !== undefined && gifted > 0) ? (formatNumber(gifted)) : '0'}</div>
                             </div>
                         </div>
                         <Separator />
@@ -183,6 +191,7 @@ const GrowthKPIs: React.FC<{
                     formattedValue: formatNumber(item.paid),
                     label: 'Paid members',
                     comped: item.comped,
+                    gifted: item.gifted,
                     paid_subscribed: item.paid_subscribed
                 };
             });

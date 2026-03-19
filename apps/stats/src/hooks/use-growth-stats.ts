@@ -8,7 +8,7 @@ import {useMemo} from 'react';
 export type DiffDirection = 'up' | 'down' | 'same';
 
 // Calculate totals from member data
-const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem[], dateFrom: string, memberCountTotals?: {paid: number; free: number; comped: number}) => {
+const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem[], dateFrom: string, memberCountTotals?: {paid: number; free: number; comped: number; gifted: number}) => {
     if (!memberData.length) {
         return {
             totalMembers: 0,
@@ -32,12 +32,12 @@ const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
 
     // Use current totals from API meta if available (like Ember), otherwise use latest time series data
     const currentTotals = memberCountTotals || memberData[memberData.length - 1];
-    const latest = memberData.length > 0 ? memberData[memberData.length - 1] : {free: 0, paid: 0, comped: 0};
+    const latest = memberData.length > 0 ? memberData[memberData.length - 1] : {free: 0, paid: 0, comped: 0, gifted: 0};
 
     const latestMrr = mrrData.length > 0 ? mrrData[mrrData.length - 1] : {mrr: 0};
 
     // Calculate total members using current totals (like Ember dashboard)
-    const totalMembers = currentTotals.free + currentTotals.paid + currentTotals.comped;
+    const totalMembers = currentTotals.free + currentTotals.paid + currentTotals.comped + currentTotals.gifted;
 
     const totalMrr = latestMrr.mrr;
 
@@ -59,7 +59,7 @@ const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
     if (memberData.length > 1) {
         // Get first day in range
         const first = memberData[0];
-        const firstTotal = first.free + first.paid + first.comped;
+        const firstTotal = first.free + first.paid + first.comped + first.gifted;
 
         if (firstTotal > 0) {
             const totalChange = ((totalMembers - firstTotal) / firstTotal) * 100;
@@ -73,8 +73,8 @@ const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
             directions.free = freeChange > 0 ? 'up' : freeChange < 0 ? 'down' : 'same';
         }
 
-        const firstPaidTotal = first.paid + first.comped;
-        const latestPaidTotal = latest.paid + latest.comped;
+        const firstPaidTotal = first.paid + first.comped + first.gifted;
+        const latestPaidTotal = latest.paid + latest.comped + latest.gifted;
         
         if (firstPaidTotal > 0) {
             const paidChange = ((latestPaidTotal - firstPaidTotal) / firstPaidTotal) * 100;
@@ -130,7 +130,7 @@ const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
     return {
         totalMembers,
         freeMembers: currentTotals.free,
-        paidMembers: currentTotals.paid + currentTotals.comped,
+        paidMembers: currentTotals.paid + currentTotals.comped + currentTotals.gifted,
         mrr: totalMrr,
         percentChanges,
         directions
@@ -168,7 +168,8 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
         const free = lastMemberItem?.free ?? 0;
         const paid = lastMemberItem?.paid ?? 0;
         const comped = lastMemberItem?.comped ?? 0;
-        const paidTotal = paid + comped;
+        const gifted = lastMemberItem?.gifted ?? 0;
+        const paidTotal = paid + comped + gifted;
         const value = free + paidTotal;
         const mrr = lastMrrItem?.mrr ?? 0;
         const paidSubscribed = lastMemberItem?.paid_subscribed ?? 0;
@@ -180,6 +181,7 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
             free,
             paid: paidTotal,
             comped,
+            gifted,
             mrr,
             paid_subscribed: paidSubscribed,
             paid_canceled: paidCanceled,

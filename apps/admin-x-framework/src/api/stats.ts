@@ -22,6 +22,7 @@ export type MemberStatusItem = {
     paid: number;
     free: number;
     comped: number;
+    gifted: number;
     paid_subscribed: number;
     paid_canceled: number;
 }
@@ -33,6 +34,7 @@ export type MemberCountHistoryResponseType = {
             paid: number;
             free: number;
             comped: number;
+            gifted: number;
         }
     };
 }

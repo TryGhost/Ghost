@@ -68,10 +68,10 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
             }));
     }, [tierObjects]);
 
-    // Calculate complimentary member signups (change in comped) within date range
-    const compedSignups = useMemo(() => {
+    // Calculate complimentary and gifted member signups (change in comped/gifted) within date range
+    const {compedSignups, giftedSignups} = useMemo(() => {
         if (!memberCountResponse?.stats || memberCountResponse.stats.length === 0) {
-            return 0;
+            return {compedSignups: 0, giftedSignups: 0};
         }
 
         const stats = memberCountResponse.stats;
@@ -85,20 +85,20 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
         });
 
         if (filteredStats.length === 0) {
-            return 0;
+            return {compedSignups: 0, giftedSignups: 0};
         }
 
         // Sort by date to get first and last in range
         const sortedStats = [...filteredStats].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
         );
 
-        const firstComped = sortedStats[0].comped;
-        const lastComped = sortedStats[sortedStats.length - 1].comped;
+        const compedDelta = sortedStats[sortedStats.length - 1].comped - sortedStats[0].comped;
+        const giftedDelta = sortedStats[sortedStats.length - 1].gifted - sortedStats[0].gifted;
 
-        // Return the delta (new complimentary signups in the period)
-        // Only return positive values (new signups, not removals)
-        const delta = lastComped - firstComped;
-        return delta > 0 ? delta : 0;
+        return {
+            compedSignups: compedDelta > 0 ? compedDelta : 0,
+            giftedSignups: giftedDelta > 0 ? giftedDelta : 0
+        };
     }, [memberCountResponse, dateFrom, dateTo]);
 
     // Process subscription data for billing period breakdown (cadence) - NEW SUBSCRIBERS in date range
@@ -130,6 +130,11 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
             cadenceTotals.complimentary = compedSignups;
         }
 
+        // Add gifted signups if any exist
+        if (giftedSignups > 0) {
+            cadenceTotals.gifted = giftedSignups;
+        }
+
         // Convert to array format for pie chart
         const chartData = Object.entries(cadenceTotals).map(([cadence, count], index) => {
             // Map cadence values to display labels and colors
@@ -149,6 +154,10 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
                 label = 'Complimentary';
                 fillGradient = 'url(#gradientBlue)';
                 solidColor = 'var(--chart-blue)';
+            } else if (cadence === 'gifted') {
+                label = 'Gifted';
+                fillGradient = 'url(#gradientGreen)';
+                solidColor = 'var(--chart-green)';
             }
 
             return {
@@ -161,7 +170,7 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
         });
 
         return chartData;
-    }, [subscriptionStatsResponse, dateFrom, dateTo, compedSignups]);
+    }, [subscriptionStatsResponse, dateFrom, dateTo, compedSignups, giftedSignups]);
 
     // Process subscription data for tier breakdown - NEW SUBSCRIBERS in date range
     const tierData = useMemo(() => {
