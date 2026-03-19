@@ -1280,6 +1280,79 @@ describe('Members API', function () {
         });
     });
 
+    it('Can create a comped member with labels via API', async function () {
+        const stripeService = require('../../../core/server/services/stripe');
+        const fakePrice = {
+            id: 'price_1',
+            product: '',
+            active: true,
+            nickname: 'Complimentary',
+            unit_amount: 0,
+            currency: 'usd',
+            type: 'recurring',
+            recurring: {
+                interval: 'year'
+            }
+        };
+        const fakeSubscription = {
+            id: 'sub_1',
+            customer: 'cus_1',
+            status: 'active',
+            cancel_at_period_end: false,
+            metadata: {},
+            current_period_end: Date.now() / 1000,
+            start_date: Date.now() / 1000,
+            plan: fakePrice,
+            items: {
+                data: [{
+                    price: fakePrice
+                }]
+            }
+        };
+        sinon.stub(stripeService.api, 'createCustomer').callsFake(async function (data) {
+            return {
+                id: 'cus_1',
+                email: data.email
+            };
+        });
+        sinon.stub(stripeService.api, 'createPrice').resolves(fakePrice);
+        sinon.stub(stripeService.api, 'createSubscription').resolves(fakeSubscription);
+        sinon.stub(stripeService.api, 'getSubscription').resolves(fakeSubscription);
+        sinon.stub(stripeService.api, 'getCustomer').resolves({
+            id: 'cus_1',
+            invoice_settings: {
+                default_payment_method: null
+            }
+        });
+
+        const newMember = {
+            name: 'Comped with Labels',
+            email: 'comped-with-labels@test.com',
+            comped: true,
+            labels: [{name: 'VIP'}, {name: 'Complimentary'}],
+            newsletters: [newsletters[0]]
+        };
+
+        const {body} = await agent
+            .post(`/members/`)
+            .body({members: [newMember]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(1, 1))
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyLocationFor('members')
+            });
+
+        const member = body.members[0];
+        assert.equal(member.status, 'comped', 'Member should have comped status');
+        assert.equal(member.labels.length, 2, 'Member should have 2 labels');
+        assert.ok(member.labels.find(l => l.name === 'VIP'), 'Member should have VIP label');
+        assert.ok(member.labels.find(l => l.name === 'Complimentary'), 'Member should have Complimentary label');
+    });
+
     it('Can add complimentary subscription by assigning a product to a member', async function () {
         const initialMember = {
             name: 'Name',
@@ -2727,6 +2800,7 @@ describe('Members API', function () {
             .expectStatus(200)
             .matchBodySnapshot({
                 members: [
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
                     buildMemberMatcherShallowIncludesWithTiers(1, 1),
                     buildMemberMatcherShallowIncludesWithTiers(1, 1),
                     buildMemberMatcherShallowIncludesWithTiers(1, 1),

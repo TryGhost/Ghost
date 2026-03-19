@@ -403,7 +403,7 @@ module.exports = class MemberBREADService {
         }
 
         if (data.comped) {
-            await this.memberRepository.setComplimentarySubscription(model, options);
+            await this.memberRepository.setComplimentarySubscription(model, sharedOptions);
         }
 
         return this.read({id: model.id}, options);
