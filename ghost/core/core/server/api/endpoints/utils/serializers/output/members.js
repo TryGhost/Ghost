@@ -154,6 +154,7 @@ function serializeMember(member, options) {
     const json = member.toJSON ? member.toJSON(options) : member;
 
     const comped = json.status === 'comped';
+    const gifted = json.status === 'gifted';
 
     const subscriptions = json.subscriptions || [];
 
@@ -171,6 +172,7 @@ function serializeMember(member, options) {
         subscriptions: subscriptions,
         avatar_image: json.avatar_image,
         comped: comped,
+        gifted: gifted,
         email_count: json.email_count,
         email_opened_count: json.email_opened_count,
         email_open_rate: json.email_open_rate,
@@ -264,7 +266,7 @@ function createSerializer(debugString, serialize) {
  * @prop {number} email_opened_count
  * @prop {number} email_open_rate
  * @prop {null|SerializedEmailRecipient[]} email_recipients
- * @prop {'free'|'paid'|'comped'} status
+ * @prop {'free'|'paid'|'comped'|'gifted'} status
  * @prop {boolean} can_comment
  * @prop {null|{disabled: boolean, disabled_reason: string, disabled_until: string|null}} commenting
  */
