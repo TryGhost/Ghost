@@ -62,7 +62,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         extractItems: useCallback((data: TiersResponseType) => {
             return data.tiers.map(tier => ({value: tier.id, label: tier.name}));
         }, []),
-        baseFilter: 'type:paid+active:true',
+        baseFilter: 'type:paid',
         buildSearchFilter: useCallback((term: string) => `name:~'${term}'`, []),
         limit: '100'
     });
