@@ -29,6 +29,11 @@ const MemberStatusEvent = ghostBookshelf.Model.extend({
                     ELSE 0 END
                 ) as comped_delta`))
                 .select(knex.raw(`SUM(
+                    CASE WHEN to_status='gifted' THEN 1
+                    WHEN from_status='gifted' THEN -1
+                    ELSE 0 END
+                ) as gifted_delta`))
+                .select(knex.raw(`SUM(
                     CASE WHEN to_status='free' THEN 1
                     WHEN from_status='free' THEN -1
                     ELSE 0 END
