@@ -1,6 +1,9 @@
 import EmailDesignModal from '../../email-design/email-design-modal';
 import EmailPreview from '../../email-design/email-preview';
+import HeaderImageField from '../../email-design/header-image-field';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import ShowBadgeField from '../../email-design/show-badge-field';
+import WelcomeEmailPreviewContent from '../../email-design/welcome-email-preview-content';
 import {
     BackgroundColorField,
     BodyFontField,
@@ -13,8 +16,7 @@ import {
     HeadingWeightField,
     ImageCornersField,
     LinkColorField,
-    LinkStyleField,
-    SectionTitleColorField
+    LinkStyleField
 } from '../../email-design/design-fields';
 import {DEFAULT_EMAIL_DESIGN, type EmailDesignSettings} from '../../email-design/types';
 import {EmailDesignProvider} from '../../email-design/email-design-context';
@@ -37,6 +39,7 @@ interface GeneralSettings {
     replyToEmail: string;
     headerImage: string;
     showPublicationTitle: boolean;
+    showBadge: boolean;
     emailFooter: string;
 }
 
@@ -76,29 +79,10 @@ const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange
         <section>
             <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Content</h4>
             <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1.5">
-                    <label className="text-sm">Header image</label>
-                    {generalSettings.headerImage ? (
-                        <div className="border-gray-200 dark:border-gray-800 relative overflow-hidden rounded-md border">
-                            <img
-                                alt="Header"
-                                className="h-auto w-full"
-                                src={generalSettings.headerImage}
-                            />
-                            <button
-                                className="absolute right-2 top-2 rounded bg-black/50 px-2 py-1 text-xs text-white hover:bg-black/70"
-                                type="button"
-                                onClick={() => onGeneralChange({headerImage: ''})}
-                            >
-                                Remove
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="border-gray-300 text-gray-400 dark:border-gray-700 flex h-24 items-center justify-center rounded-md border border-dashed text-sm">
-                            630x140 recommended. Use a transparent PNG for best results on any background.
-                        </div>
-                    )}
-                </div>
+                <HeaderImageField
+                    value={generalSettings.headerImage}
+                    onChange={url => onGeneralChange({headerImage: url})}
+                />
                 <div className="flex items-center justify-between">
                     <span className="text-sm">Publication title</span>
                     <Switch
@@ -115,6 +99,10 @@ const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange
                         onChange={e => onGeneralChange({emailFooter: e.target.value})}
                     />
                 </div>
+                <ShowBadgeField
+                    value={generalSettings.showBadge}
+                    onChange={checked => onGeneralChange({showBadge: checked})}
+                />
             </div>
         </section>
     </div>
@@ -146,7 +134,6 @@ const DesignTab: React.FC = () => (
         <section>
             <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Body</h4>
             <div className="flex flex-col gap-4">
-                <SectionTitleColorField />
                 <ButtonColorField />
                 <ButtonStyleField />
                 <ButtonCornersField />
@@ -197,6 +184,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
         replyToEmail: supportEmailAddress || defaultEmailAddress || '',
         headerImage: '',
         showPublicationTitle: true,
+        showBadge: true,
         emailFooter: ''
     });
 
@@ -225,13 +213,17 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                 preview={
                     <EmailPreview
                         emailFooter={generalSettings.emailFooter}
+                        footerLinkText="Manage your preferences"
                         headerImage={generalSettings.headerImage}
                         senderEmail={defaultEmailAddress || `noreply@${emailDomain}`}
                         senderName={generalSettings.senderName || siteTitle || 'Your site'}
                         settings={designSettings}
+                        showBadge={generalSettings.showBadge}
                         showPublicationTitle={generalSettings.showPublicationTitle}
                         subject={`Welcome to ${generalSettings.senderName || siteTitle || 'our publication'}`}
-                    />
+                    >
+                        <WelcomeEmailPreviewContent />
+                    </EmailPreview>
                 }
                 sidebar={
                     <Sidebar

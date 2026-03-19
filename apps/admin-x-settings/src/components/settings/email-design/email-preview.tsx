@@ -1,5 +1,5 @@
 import React from 'react';
-import {cn} from '@tryghost/shade';
+import {GhostOrb, cn} from '@tryghost/shade';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {resolveAllColors} from './design-utils';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -12,25 +12,28 @@ interface EmailPreviewProps {
     subject?: string;
     headerImage?: string;
     showPublicationTitle?: boolean;
+    showBadge?: boolean;
     emailFooter?: string;
+    footerLinkText?: string;
+    children?: React.ReactNode;
 }
 
 // --- Helper functions ---
 
-function resolveFontFamily(category: string | undefined) {
+export function resolveFontFamily(category: string | undefined) {
     return category === 'serif' ? 'Georgia, serif' : '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 }
 
-function resolveButtonCorners(corners: string | undefined): string {
+export function resolveButtonCorners(corners: string | undefined): string {
     switch (corners) {
     case 'square': return 'rounded-none';
     case 'pill': return 'rounded-full';
     case 'rounded':
-    default: return 'rounded-[5px]';
+    default: return 'rounded-[6px]';
     }
 }
 
-function resolveImageCorners(corners: string | undefined): string {
+export function resolveImageCorners(corners: string | undefined): string {
     return corners === 'rounded' ? 'rounded-md' : '';
 }
 
@@ -42,20 +45,20 @@ const EnvelopeHeader: React.FC<{senderName?: string; senderEmail?: string; subje
     }
 
     return (
-        <div className="border-gray-200 dark:border-gray-800 dark:bg-gray-950 rounded-t-lg border border-b-0 bg-white px-6 py-4 text-sm">
+        <div className="flex-column flex min-h-[77px] justify-center border-b border-grey-200 bg-white px-6 text-sm text-grey-700">
             {senderName && (
                 <div className="flex gap-2">
-                    <span className="font-semibold">{senderName}</span>
-                    {senderEmail && <span className="text-gray-500">&lt;{senderEmail}&gt;</span>}
+                    <span className="font-semibold text-grey-900">{senderName}</span>
+                    {senderEmail && <span>&lt;{senderEmail}&gt;</span>}
                 </div>
             )}
             {senderEmail && (
-                <div className="text-gray-500">
-                    To: <span className="text-gray-700 dark:text-gray-300">subscriber@example.com</span>
+                <div>
+                    <span className="font-semibold text-grey-900">To:</span> subscriber@example.com
                 </div>
             )}
             {subject && (
-                <div className="mt-1">{subject}</div>
+                <div className="mt-1 text-grey-900">{subject}</div>
             )}
         </div>
     );
@@ -74,11 +77,11 @@ const PublicationHeader: React.FC<{
 
     return (
         <div
-            className="px-12 pb-4 pt-10 text-center"
+            className="px-[7rem] py-3 text-center"
             style={{backgroundColor: backgroundColor === 'transparent' ? undefined : backgroundColor}}
         >
             <h4
-                className="text-sm font-semibold uppercase tracking-wide"
+                className="mb-1 text-[1.6rem] font-bold uppercase leading-tight tracking-tight"
                 style={{color: textColor, fontFamily}}
             >
                 {siteTitle}
@@ -87,143 +90,69 @@ const PublicationHeader: React.FC<{
     );
 };
 
-const Divider: React.FC<{color: string; dividerStyle?: string}> = ({color, dividerStyle = 'solid'}) => (
-    <div className="px-12 py-4">
-        <hr
-            className="m-0 border-0 border-t"
-            style={{borderColor: color, borderStyle: dividerStyle}}
-        />
-    </div>
-);
-
-const BodyContent: React.FC<{
-    siteTitle?: string;
-    textColor: string;
-    fontFamily: string;
-    linkColor: string;
-    linkUnderline: boolean;
-    linkBold: boolean;
-}> = ({siteTitle, textColor, fontFamily, linkColor, linkUnderline, linkBold}) => (
-    <div
-        className="px-12 pb-4 text-base leading-relaxed"
-        style={{color: textColor, fontFamily}}
-    >
-        <p className="mb-[1.2em] mt-0">
-            Welcome to {siteTitle || 'our publication'}! We&#39;re glad you&#39;re here. This is a preview of how your welcome email will look with the current design settings.
-        </p>
-        <p className="mb-[1.2em] mt-0">
-            You can customize the <a
-                className={cn('no-underline', linkUnderline && 'underline', linkBold && 'font-bold')}
-                href="#"
-                style={{color: linkColor}}
-                onClick={e => e.preventDefault()}
-            >
-                colors, fonts, and styles
-            </a> to match your brand.
-        </p>
-    </div>
-);
-
-const ActionButton: React.FC<{
-    buttonStyle?: string;
-    buttonColor: string;
-    buttonTextColor?: string;
-    cornerClass: string;
-}> = ({buttonStyle, buttonColor, buttonTextColor, cornerClass}) => {
-    const isOutline = buttonStyle === 'outline';
-
-    return (
-        <div className="px-12 pb-6">
-            <a
-                className={cn('inline-block px-5 py-2 text-center text-sm font-bold no-underline', cornerClass, isOutline && 'border')}
-                href="#"
-                style={{
-                    color: isOutline ? buttonColor : buttonTextColor,
-                    backgroundColor: isOutline ? undefined : buttonColor,
-                    borderColor: isOutline ? buttonColor : undefined
-                }}
-                onClick={e => e.preventDefault()}
-            >
-                Subscribe
-            </a>
-        </div>
-    );
-};
-
-const Footer: React.FC<{siteTitle?: string; emailFooter?: string; color: string}> = ({siteTitle, emailFooter, color}) => (
-    <div
-        className="px-12 pb-10 text-center text-xs"
-        style={{color}}
-    >
+const Footer: React.FC<{siteTitle?: string; footerLinkText?: string; emailFooter?: string; showBadge?: boolean; color: string; textColor: string}> = ({siteTitle, footerLinkText = 'Unsubscribe', emailFooter, showBadge, color, textColor}) => (
+    <div className="flex flex-col items-center pt-10">
         {emailFooter && (
-            <p className="mb-2 mt-0 whitespace-pre-line">
+            <div
+                className="whitespace-pre-line break-words px-8 py-3 text-center text-[1.3rem] leading-base"
+                style={{color}}
+            >
                 {emailFooter}
-            </p>
+            </div>
         )}
-        <p className="mb-2 mt-0">
-            {siteTitle || 'Your publication'} &mdash; Unsubscribe
-        </p>
+        <div className="px-8 pb-14 pt-3 text-center text-[1.3rem]">
+            <span style={{color}}>{siteTitle || 'Your publication'} &copy; {new Date().getFullYear()} &mdash; </span>
+            <span className="underline" style={{color}}>{footerLinkText}</span>
+        </div>
+        {showBadge && (
+            <div className="flex flex-col items-center pb-[40px] pt-[10px]">
+                <span className="inline-flex items-center px-2 py-1 text-[1.25rem] font-semibold tracking-tight" style={{color: textColor}}>
+                    <GhostOrb className="mr-[6px] size-4" />
+                    <span>Powered by Ghost</span>
+                </span>
+            </div>
+        )}
     </div>
 );
 
 // --- Main component ---
 
-const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, senderEmail, subject, headerImage, showPublicationTitle = true, emailFooter}) => {
+const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, senderEmail, subject, headerImage, showPublicationTitle = true, showBadge = true, emailFooter, footerLinkText, children}) => {
     const {settings: globalSettings, siteData} = useGlobalData();
     const [siteTitle] = getSettingValues<string>(globalSettings, ['title']);
     const accentColor = siteData.accent_color;
 
     const colors = resolveAllColors(settings, accentColor);
     const titleFont = resolveFontFamily(settings.title_font_category);
-    const bodyFont = resolveFontFamily(settings.body_font_category);
-    const buttonCornerClass = resolveButtonCorners(settings.button_corners);
     const imageCornerClass = resolveImageCorners(settings.image_corners);
 
-    const hasEnvelope = !!(senderName || senderEmail || subject);
-
     return (
-        <div className="mx-auto w-full max-w-[600px]">
+        <div className="mx-auto w-full max-w-[700px] overflow-hidden rounded-[4px] text-black shadow-sm">
             <EnvelopeHeader senderEmail={senderEmail} senderName={senderName} subject={subject} />
 
             <div
-                className={cn('w-full overflow-hidden border border-gray-200 dark:border-gray-800', hasEnvelope ? 'rounded-b-lg' : 'rounded-lg')}
+                className="w-full overflow-y-auto text-sm"
                 style={{backgroundColor: colors.backgroundColor}}
             >
-                {headerImage && (
-                    <div className="px-12 pt-8">
-                        <img alt="Header" className={cn('h-auto w-full', imageCornerClass)} src={headerImage} />
-                    </div>
-                )}
+                <div className="px-[7rem]" style={{backgroundColor: colors.headerBackgroundColor === 'transparent' ? undefined : colors.headerBackgroundColor}}>
+                    {headerImage && (
+                        <div className="pt-8">
+                            <img alt="Header" className={cn('h-auto w-full', imageCornerClass)} src={headerImage} />
+                        </div>
+                    )}
 
-                <PublicationHeader
-                    backgroundColor={colors.headerBackgroundColor}
-                    fontFamily={titleFont}
-                    showTitle={showPublicationTitle}
-                    siteTitle={siteTitle}
-                    textColor={colors.headerTextColor}
-                />
+                    <PublicationHeader
+                        backgroundColor="transparent"
+                        fontFamily={titleFont}
+                        showTitle={showPublicationTitle}
+                        siteTitle={siteTitle}
+                        textColor={colors.headerTextColor}
+                    />
+                </div>
 
-                <Divider color={colors.dividerColor} dividerStyle={settings.divider_style} />
+                {children}
 
-                <BodyContent
-                    fontFamily={bodyFont}
-                    linkBold={settings.link_style === 'bold'}
-                    linkColor={colors.linkColor}
-                    linkUnderline={settings.link_style === 'underline'}
-                    siteTitle={siteTitle}
-                    textColor={colors.textColor}
-                />
-
-                <ActionButton
-                    buttonColor={colors.buttonColor}
-                    buttonStyle={settings.button_style}
-                    buttonTextColor={colors.buttonTextColor}
-                    cornerClass={buttonCornerClass}
-                />
-
-                <Divider color={colors.dividerColor} dividerStyle={settings.divider_style} />
-
-                <Footer color={colors.secondaryTextColor} emailFooter={emailFooter} siteTitle={siteTitle} />
+                <Footer color={colors.secondaryTextColor} emailFooter={emailFooter} footerLinkText={footerLinkText} showBadge={showBadge} siteTitle={siteTitle} textColor={colors.textColor} />
             </div>
         </div>
     );
