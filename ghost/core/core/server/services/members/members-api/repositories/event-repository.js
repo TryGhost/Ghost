@@ -1023,6 +1023,7 @@ module.exports = class EventRepository {
                     date: result.date,
                     paid: result.paid_delta,
                     comped: result.comped_delta,
+                    gifted: result.gifted_delta,
                     free: result.free_delta
                 }];
             }
@@ -1030,6 +1031,7 @@ module.exports = class EventRepository {
                 date: result.date,
                 paid: result.paid_delta + accumulator[index - 1].paid,
                 comped: result.comped_delta + accumulator[index - 1].comped,
+                gifted: result.gifted_delta + accumulator[index - 1].gifted,
                 free: result.free_delta + accumulator[index - 1].free
             }]);
         }, []);
