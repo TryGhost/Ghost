@@ -51,8 +51,7 @@ const UnsplashGalleryColumns: React.FC<UnsplashGalleryColumnsProps> = (props) =>
 
     return (
         props?.columns.map((array, index) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <MasonryColumn key={index}>
+            <MasonryColumn key={array[0]?.id ?? `empty-${index}`}>
                 {
                     array.map((payload: Photo) => (
                         <UnsplashImage

@@ -2,7 +2,6 @@ import dts from 'vite-plugin-dts';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import {defineConfig} from 'vite';
-import {peerDependencies} from './package.json';
 
 export default defineConfig({
     build: {

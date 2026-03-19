@@ -47,7 +47,6 @@ export class InMemoryUnsplashProvider implements IUnsplashProvider {
         return this.SEARCH_IS_RUNNING;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     triggerDownload(_photo: Pick<Photo, 'links'>): void {
         // no-op for in-memory provider
     }
