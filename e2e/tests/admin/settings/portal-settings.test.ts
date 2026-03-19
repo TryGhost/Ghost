@@ -1,6 +1,7 @@
 import {PortalPage, SignInPage, SignUpPage} from '@/helpers/pages';
 import {SettingsPage} from '@/admin-pages';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
+import {TiersService} from '@/helpers/services/tiers/tiers-service';
 import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Portal Settings', () => {
@@ -54,5 +55,47 @@ test.describe('Ghost Admin - Portal Settings', () => {
         await settingsPage.portalSection.openCustomizeModal();
 
         await expect(settingsPage.portalSection.freeTierToggleLabel).toBeVisible();
+    });
+
+    test.describe('paid signup links', () => {
+        test.use({stripeEnabled: true});
+
+        test('monthly signup link opens fake stripe checkout - navigates to checkout', async ({page}) => {
+            const tiersService = new TiersService(page.request);
+            await tiersService.createTier({
+                name: `Monthly Portal Tier ${Date.now()}`,
+                currency: 'usd',
+                monthly_price: 500,
+                yearly_price: 5000
+            });
+
+            const settingsPage = new SettingsPage(page);
+            await settingsPage.goto();
+            await settingsPage.portalSection.openCustomizeModal();
+
+            const portalUrl = await settingsPage.portalSection.getLinkValue('Signup / Monthly');
+            await page.goto(portalUrl);
+
+            await expect(page.getByRole('heading', {name: 'Fake Stripe Checkout'})).toBeVisible();
+        });
+
+        test('yearly signup link opens fake stripe checkout - navigates to checkout', async ({page}) => {
+            const tiersService = new TiersService(page.request);
+            await tiersService.createTier({
+                name: `Yearly Portal Tier ${Date.now()}`,
+                currency: 'usd',
+                monthly_price: 500,
+                yearly_price: 5000
+            });
+
+            const settingsPage = new SettingsPage(page);
+            await settingsPage.goto();
+            await settingsPage.portalSection.openCustomizeModal();
+
+            const portalUrl = await settingsPage.portalSection.getLinkValue('Signup / Yearly');
+            await page.goto(portalUrl);
+
+            await expect(page.getByRole('heading', {name: 'Fake Stripe Checkout'})).toBeVisible();
+        });
     });
 });
