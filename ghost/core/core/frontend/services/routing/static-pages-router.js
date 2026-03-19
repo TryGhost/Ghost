@@ -24,7 +24,7 @@ class StaticPagesRouter extends ParentRouter {
             // @NOTE: url options are only required when registering urls in express.
             //        e.g. the UrlService will access the routes and doesn't want to know about possible url options
             if (options.withUrlOptions) {
-                return urlUtils.urlJoin(this.permalinks.value, '/:options(edit)?/');
+                return urlUtils.urlJoin(this.permalinks.value, '/:options(edit|share)?/');
             }
 
             return this.permalinks.value;

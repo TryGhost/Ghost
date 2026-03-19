@@ -66,7 +66,7 @@ describe('Unit - frontend/data/entry-lookup', function () {
 
     describe('posts', function () {
         const routerOptions = {
-            permalinks: '/:slug/:options(edit)?/',
+            permalinks: '/:slug/:options(edit|share)?/',
             query: {controller: 'posts', resource: 'posts'}
         };
 
@@ -123,6 +123,19 @@ describe('Unit - frontend/data/entry-lookup', function () {
                 assertExists(lookup.entry);
                 assert.equal(lookup.entry.url, posts[0].url);
                 assert.equal(lookup.isEditURL, true);
+            });
+        });
+
+        it('can handle a share url', function () {
+            const testUrl = `http://127.0.0.1:2369${posts[0].url}share/`;
+
+            return data.entryLookup(testUrl, routerOptions, locals).then(function (lookup) {
+                sinon.assert.calledOnce(postsReadStub);
+                sinon.assert.notCalled(pagesReadStub);
+                assertExists(lookup.entry);
+                assert.equal(lookup.entry.url, posts[0].url);
+                assert.equal(lookup.isShareURL, true);
+                assert.equal(lookup.isUnknownOption, false);
             });
         });
     });
