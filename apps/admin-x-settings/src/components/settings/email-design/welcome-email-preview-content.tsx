@@ -1,8 +1,8 @@
+import CoverImage from '../../../assets/images/user-cover.jpg';
 import React from 'react';
 import {cn} from '@tryghost/shade';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {resolveAllColors} from './design-utils';
-import {resolveButtonCorners, resolveFontFamily} from './design-utils';
+import {resolveAllColors, resolveButtonCorners, resolveFontFamily} from './design-utils';
 import {useEmailDesign} from './email-design-context';
 import {useGlobalData} from '../../providers/global-data-provider';
 
@@ -29,9 +29,14 @@ const WelcomeEmailPreviewContent: React.FC = () => {
 
     return (
         <>
-            {/* Divider */}
-            <div className="px-[7rem] py-4">
-                <hr className="m-0 border-0 border-t" style={{borderColor: colors.dividerColor}} />
+            {/* Heading */}
+            <div className="px-[7rem] pt-8">
+                <h3
+                    className="mb-[13px] text-[2.6rem] font-bold leading-supertight"
+                    style={{color: colors.textColor}}
+                >
+                    Thanks for subscribing
+                </h3>
             </div>
 
             {/* Body content */}
@@ -40,20 +45,30 @@ const WelcomeEmailPreviewContent: React.FC = () => {
                 style={{color: colors.textColor, fontFamily: bodyFont}}
             >
                 <p className="mb-6 mt-0">
-                    Welcome to {siteTitle || 'our publication'}! We&#39;re glad you&#39;re here. This is a preview of how your welcome email will look with the current design settings.
+                    This is a preview of what your welcome email will look like when new members sign up to {siteTitle || 'your publication'}.
                 </p>
                 <p className="mb-6 mt-0">
-                    You can customize the{' '}
+                    You can customize the design using the settings on the right &ndash; from{' '}
                     <a
                         className={linkClasses}
                         href="#"
                         style={{color: colors.linkColor}}
                         onClick={e => e.preventDefault()}
                     >
-                        colors, fonts, and styles
+                        colors and fonts
                     </a>{' '}
-                    to match your brand.
+                    to buttons and images &ndash; to make it feel like part of your brand.
                 </p>
+                <hr className="my-[52px] border-0 border-t" style={{borderColor: colors.dividerColor}} />
+
+                <p className="mb-6 mt-0">
+                    The actual content of your welcome email can be edited separately. This preview is just here to help you get the design right.
+                </p>
+
+                {/* Image */}
+                <div className="mb-6 h-[unset] w-full max-w-[600px] bg-cover bg-no-repeat">
+                    <img alt="" className="min-h-full min-w-full shrink-0" src={CoverImage} />
+                </div>
             </div>
 
             {/* Button */}
@@ -73,7 +88,7 @@ const WelcomeEmailPreviewContent: React.FC = () => {
                     }
                     onClick={e => e.preventDefault()}
                 >
-                    Subscribe
+                    Get started
                 </a>
             </div>
 
