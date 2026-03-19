@@ -106,6 +106,12 @@ export function useLabelPicker({
         }
         const result = await createLabelMutation({name: trimmed});
         const newLabel = result?.labels?.[0];
+        // Add to cache immediately so the label is resolvable before the
+        // invalidation refetch completes (the picker toggles the slug right
+        // after this returns).
+        if (newLabel) {
+            selectedLabelCacheRef.current.set(newLabel.slug, newLabel);
+        }
         return newLabel;
     }, [createLabelMutation, isDuplicateName]);
 
@@ -117,11 +123,16 @@ export function useLabelPicker({
         const oldLabel = labels.find(l => l.id === id);
         const result = await editLabelMutation({id, name: trimmed});
         const updatedLabel = result?.labels?.[0];
-        // If the slug changed and the old slug was selected, swap it
-        if (oldLabel && updatedLabel && oldLabel.slug !== updatedLabel.slug) {
-            const current = selectedSlugsRef.current;
-            if (current.includes(oldLabel.slug)) {
-                onSelectionChange(current.map(s => (s === oldLabel.slug ? updatedLabel.slug : s)));
+        if (oldLabel && updatedLabel) {
+            // Update cache so the edited label is resolvable before refetch
+            selectedLabelCacheRef.current.delete(oldLabel.slug);
+            selectedLabelCacheRef.current.set(updatedLabel.slug, updatedLabel);
+            // If the slug changed and the old slug was selected, swap it
+            if (oldLabel.slug !== updatedLabel.slug) {
+                const current = selectedSlugsRef.current;
+                if (current.includes(oldLabel.slug)) {
+                    onSelectionChange(current.map(s => (s === oldLabel.slug ? updatedLabel.slug : s)));
+                }
             }
         }
     }, [editLabelMutation, isDuplicateName, labels, onSelectionChange]);
@@ -130,6 +141,7 @@ export function useLabelPicker({
         const label = labels.find(l => l.id === id);
         await deleteLabelMutation(id);
         if (label) {
+            selectedLabelCacheRef.current.delete(label.slug);
             const current = selectedSlugsRef.current;
             if (current.includes(label.slug)) {
                 onSelectionChange(current.filter(s => s !== label.slug));
