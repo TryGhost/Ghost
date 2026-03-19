@@ -227,6 +227,8 @@ describe('Portal Data links:', () => {
             expect(popupFrame).toBeInTheDocument();
             const shareTitle = within(popupFrame.contentDocument).queryByText(/^Share$/i);
             expect(shareTitle).toBeInTheDocument();
+            const poweredBy = within(popupFrame.contentDocument).queryByText(/Powered by Ghost/i);
+            expect(poweredBy).not.toBeInTheDocument();
         });
 
         test('does not open share page with legacy #/portal/share path', async () => {
