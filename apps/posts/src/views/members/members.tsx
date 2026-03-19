@@ -38,7 +38,6 @@ const Members: React.FC = () => {
         isError,
         isFetching,
         isFetchingNextPage,
-        isRefetching,
         refetch,
         fetchNextPage,
         hasNextPage
@@ -49,9 +48,7 @@ const Members: React.FC = () => {
 
     const shouldShowLoading = shouldShowMembersLoading({
         isFetching,
-        isFetchingNextPage,
-        isRefetching,
-        memberCount: data?.members.length ?? 0
+        isFetchingNextPage
     });
 
     const totalMembers = data?.meta?.pagination?.total ?? 0;

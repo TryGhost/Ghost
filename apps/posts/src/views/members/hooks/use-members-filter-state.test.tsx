@@ -1,12 +1,13 @@
 import {MemoryRouter, useSearchParams} from 'react-router';
 import {act, renderHook} from '@testing-library/react';
-import {describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useMembersFilterState} from './use-members-filter-state';
 import type {ReactNode} from 'react';
 
-let settingsData: {settings: Array<{key: string; value: string}>} | undefined = {
+const defaultSettingsData = {
     settings: [{key: 'timezone', value: 'UTC'}]
 };
+let settingsData: {settings: Array<{key: string; value: string}>} | undefined = defaultSettingsData;
 
 vi.mock('@tryghost/admin-x-framework/api/settings', () => ({
     useBrowseSettings: () => ({
@@ -21,6 +22,12 @@ function createWrapper(initialEntry: string) {
 }
 
 describe('useMembersFilterState', () => {
+    beforeEach(() => {
+        settingsData = {
+            settings: [...defaultSettingsData.settings]
+        };
+    });
+
     it('preserves unsupported OR filters when updating search params', () => {
         const {result} = renderHook(() => {
             const state = useMembersFilterState();
@@ -69,15 +76,14 @@ describe('useMembersFilterState', () => {
             wrapper: createWrapper('/?filter=created_at%3A%3C%3D%272024-02-01T22%3A59%3A59.999Z%27&search=jamie')
         });
 
+        expect(result.current.filters).toEqual([]);
+        expect(result.current.nql).toBe('created_at:<=\'2024-02-01T22:59:59.999Z\'');
+
         act(() => {
             result.current.setSearch('alex', {replace: false});
         });
 
         expect(result.current.query).toBe('filter=created_at%3A%3C%3D%272024-02-01T22%3A59%3A59.999Z%27&search=alex');
-
-        settingsData = {
-            settings: [{key: 'timezone', value: 'UTC'}]
-        };
     });
 
     it('reads Ember-style filter params and keeps search separate', () => {

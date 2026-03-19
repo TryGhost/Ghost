@@ -1,5 +1,5 @@
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
-import {hasUnsupportedMemberOrFilter, parseMemberFilter, serializeMemberFilters} from '../member-filter-query';
+import {hasTimezoneSensitiveMemberFilter, hasUnsupportedMemberOrFilter, parseMemberFilter, serializeMemberFilters} from '../member-filter-query';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useCallback, useMemo} from 'react';
 import {useSearchParams} from 'react-router';
@@ -40,6 +40,7 @@ export function useMembersFilterState(): UseMembersFilterStateReturn {
     const {data: settingsData} = useBrowseSettings({});
     const filterParam = useMemo(() => searchParams.get('filter') ?? undefined, [searchParams]);
     const hasUnsupportedOrFilter = useMemo(() => hasUnsupportedMemberOrFilter(filterParam), [filterParam]);
+    const hasTimezoneSensitiveFilter = useMemo(() => hasTimezoneSensitiveMemberFilter(filterParam), [filterParam]);
     const resolvedTimezone = useMemo(() => {
         if (!settingsData) {
             return null;
@@ -48,15 +49,15 @@ export function useMembersFilterState(): UseMembersFilterStateReturn {
         return getSiteTimezone(settingsData.settings ?? []);
     }, [settingsData]);
     const timezone = resolvedTimezone ?? 'Etc/UTC';
-    const shouldPreserveRawFilter = Boolean(filterParam) && (!resolvedTimezone || hasUnsupportedOrFilter);
+    const shouldPreserveRawFilter = Boolean(filterParam) && (hasUnsupportedOrFilter || (!resolvedTimezone && hasTimezoneSensitiveFilter));
 
     const filters = useMemo(() => {
-        if (hasUnsupportedOrFilter) {
+        if (shouldPreserveRawFilter) {
             return [];
         }
 
         return parseMemberFilter(filterParam, timezone);
-    }, [filterParam, hasUnsupportedOrFilter, timezone]);
+    }, [filterParam, shouldPreserveRawFilter, timezone]);
 
     const search = useMemo(() => {
         return searchParams.get('search') ?? '';

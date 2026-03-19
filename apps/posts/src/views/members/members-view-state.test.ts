@@ -5,9 +5,7 @@ describe('members-view-state', () => {
     it('keeps showing the loading state during non-pagination refetches', () => {
         expect(shouldShowMembersLoading({
             isFetching: true,
-            isFetchingNextPage: false,
-            isRefetching: true,
-            memberCount: 1
+            isFetchingNextPage: false
         })).toBe(true);
     });
 

@@ -4,6 +4,12 @@ import type {AstNode} from '../filters/filter-ast';
 import type {FilterPredicate, ParsedPredicate} from '../filters/filter-types';
 
 type CompoundMatcher = (node: AstNode) => ParsedPredicate | null;
+const TIMEZONE_SENSITIVE_MEMBER_FIELDS = new Set([
+    'last_seen_at',
+    'created_at',
+    'subscriptions.start_date',
+    'subscriptions.current_period_end'
+]);
 
 function getCompoundChildren(node: AstNode): {operator: '$and' | '$or'; children: AstNode[]} | null {
     if (Array.isArray(node.$and)) {
@@ -185,6 +191,28 @@ function hasUnsupportedMemberOrCompound(node: AstNode): boolean {
     });
 }
 
+function hasTimezoneSensitiveMemberField(node: AstNode): boolean {
+    if (Object.keys(node).some(key => TIMEZONE_SENSITIVE_MEMBER_FIELDS.has(key))) {
+        return true;
+    }
+
+    const compound = getCompoundChildren(node);
+
+    if (compound) {
+        return compound.children.some(child => hasTimezoneSensitiveMemberField(child as AstNode));
+    }
+
+    return Object.values(node).some((value) => {
+        if (Array.isArray(value)) {
+            return value.some((child) => {
+                return child !== null && typeof child === 'object' && hasTimezoneSensitiveMemberField(child as AstNode);
+            });
+        }
+
+        return value !== null && typeof value === 'object' && hasTimezoneSensitiveMemberField(value as AstNode);
+    });
+}
+
 function parseMemberNode(node: AstNode, timezone: string): ParsedPredicate[] {
     for (const matcher of MEMBER_COMPOUND_MATCHERS) {
         const parsed = matcher(node);
@@ -221,6 +249,16 @@ export function hasUnsupportedMemberOrFilter(filter: string | undefined): boolea
     }
 
     return hasUnsupportedMemberOrCompound(ast);
+}
+
+export function hasTimezoneSensitiveMemberFilter(filter: string | undefined): boolean {
+    const ast = parseFilterToAst(filter ?? '');
+
+    if (!ast) {
+        return false;
+    }
+
+    return hasTimezoneSensitiveMemberField(ast);
 }
 
 export function serializeMemberFilters(predicates: FilterPredicate[], timezone: string): string | undefined {
