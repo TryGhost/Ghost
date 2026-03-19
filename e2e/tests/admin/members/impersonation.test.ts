@@ -26,7 +26,6 @@ test.describe('Ghost Admin - Member Impersonation', () => {
         await memberDetailsPage.goto(magicLink);
 
         const homePage = new HomePage(page);
-        await homePage.waitUntilLoaded();
         await homePage.openAccountPortal();
 
         const portal = new PortalPage(page);
