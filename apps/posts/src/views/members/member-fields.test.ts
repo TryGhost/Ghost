@@ -53,9 +53,7 @@ describe('memberFields', () => {
         expect(memberFields.email_count.operators).toEqual([
             'is',
             'is-greater',
-            'is-or-greater',
-            'is-less',
-            'is-or-less'
+            'is-less'
         ]);
         expect(memberFields.created_at.operators).toEqual([
             'is-less',

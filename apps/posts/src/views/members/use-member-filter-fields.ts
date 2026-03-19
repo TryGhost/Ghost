@@ -49,7 +49,8 @@ function createOperatorOptions(
     }));
 }
 
-const MEMBER_OPERATOR_LABELS = {
+const MEMBER_OPERATOR_LABELS: Record<string, string> = {
+    'is-any': 'is any of',
     'is-not-any': 'is none of',
     'does-not-contain': 'does not contain',
     'is-less': 'before',
@@ -58,6 +59,11 @@ const MEMBER_OPERATOR_LABELS = {
     'is-or-greater': 'on or after',
     1: 'More like this',
     0: 'Less like this'
+};
+
+const NUMBER_OPERATOR_LABELS: Record<string, string> = {
+    'is-greater': 'is greater than',
+    'is-less': 'is less than'
 };
 
 function getFieldIcon(key: string) {
@@ -113,7 +119,8 @@ function getFieldIcon(key: string) {
 
 function createFieldConfig(
     key: string,
-    overrides: Partial<FilterFieldConfig> = {}
+    overrides: Partial<FilterFieldConfig> = {},
+    operatorLabels: Record<string, string> = MEMBER_OPERATOR_LABELS
 ): FilterFieldConfig {
     const field = key.startsWith('newsletters.')
         ? memberFields['newsletters.:slug']
@@ -123,7 +130,7 @@ function createFieldConfig(
         key,
         ...field.ui,
         icon: getFieldIcon(key),
-        operators: createOperatorOptions(field.operators, {labels: MEMBER_OPERATOR_LABELS}),
+        operators: createOperatorOptions(field.operators, {labels: operatorLabels}),
         ...('options' in field && field.options ? {options: field.options} : {}),
         ...overrides
     };
@@ -425,12 +432,12 @@ export function useMemberFilterFields({
 
         if (emailAnalyticsEnabled) {
             const emailFields: FilterFieldConfig[] = [
-                createFieldConfig('email_count'),
-                createFieldConfig('email_opened_count')
+                createFieldConfig('email_count', {}, NUMBER_OPERATOR_LABELS),
+                createFieldConfig('email_opened_count', {}, NUMBER_OPERATOR_LABELS)
             ];
 
             if (emailTrackOpens) {
-                emailFields.push(createFieldConfig('email_open_rate'));
+                emailFields.push(createFieldConfig('email_open_rate', {}, NUMBER_OPERATOR_LABELS));
             }
 
             emailFields.push(createFieldConfig('emails.post_id', createSearchableFieldOverrides(
