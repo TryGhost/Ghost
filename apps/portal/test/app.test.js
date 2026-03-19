@@ -63,7 +63,7 @@ describe('App', function () {
         expect(link.getAttribute('href')).toBe('#/portal/signup');
     });
 
-    test('transforms share links on render', async () => {
+    test('does not transform hash share links on render', async () => {
         const link = document.createElement('a');
         link.setAttribute('href', 'http://example.com/#/share');
         document.body.appendChild(link);
@@ -75,7 +75,7 @@ describe('App', function () {
 
         await utils.findByTitle(/portal-popup/i);
 
-        expect(link.getAttribute('href')).toBe('#/share');
+        expect(link.getAttribute('href')).toBe('http://example.com/#/share');
     });
 
     test('prefers locale prop over site locale for i18n language', async () => {

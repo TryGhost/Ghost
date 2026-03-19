@@ -4,9 +4,12 @@ import {t} from './i18n';
 export function removePortalLinkFromUrl() {
     const [path] = window.location.hash.substr(1).split('?');
     const portalLinkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
-    const shareLinkRegex = /^\/share\/?$/;
-    if (path && (portalLinkRegex.test(path) || shareLinkRegex.test(path))) {
-        window.history.pushState('', document.title, window.location.pathname + window.location.search);
+    const pathnameParts = (window.location.pathname || '').split('/').filter(Boolean);
+    const hasSharePathSuffix = pathnameParts.length > 1 && pathnameParts[pathnameParts.length - 1] === 'share';
+    const pathname = hasSharePathSuffix ? window.location.pathname.replace(/\/share\/?$/, '/') : window.location.pathname;
+
+    if ((path && portalLinkRegex.test(path)) || hasSharePathSuffix) {
+        window.history.pushState('', document.title, pathname + window.location.search);
     }
 }
 

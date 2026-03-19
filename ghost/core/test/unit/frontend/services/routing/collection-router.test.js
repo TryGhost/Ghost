@@ -62,7 +62,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             assert.equal(mountRouteSpy.args[1][1], controllers.collection);
 
             // permalinks
-            assert.equal(mountRouteSpy.args[2][0], '/:slug/:options(edit)?/');
+            assert.equal(mountRouteSpy.args[2][0], '/:slug/:options(edit|share)?/');
             assert.equal(mountRouteSpy.args[2][1], controllers.entry);
 
             sinon.assert.calledOnce(mountRouterSpy);
@@ -108,7 +108,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             assert.equal(mountRouteSpy.args[1][1], controllers.collection);
 
             // permalinks
-            assert.equal(mountRouteSpy.args[2][0], '/blog/:year/:slug/:options(edit)?/');
+            assert.equal(mountRouteSpy.args[2][0], '/blog/:year/:slug/:options(edit|share)?/');
             assert.equal(mountRouteSpy.args[2][1], controllers.entry);
 
             sinon.assert.calledOnce(mountRouterSpy);
@@ -140,7 +140,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             assert.deepEqual(res.routerOptions, {
                 type: 'collection',
                 filter: undefined,
-                permalinks: '/:slug/:options(edit)?/',
+                permalinks: '/:slug/:options(edit|share)?/',
                 query: {controller: 'posts', resource: 'posts'},
                 frontPageTemplate: 'home',
                 templates: [],
@@ -168,7 +168,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             assert.deepEqual(res.routerOptions, {
                 type: 'collection',
                 filter: undefined,
-                permalinks: '/:slug/:options(edit)?/',
+                permalinks: '/:slug/:options(edit|share)?/',
                 query: {controller: 'posts', resource: 'posts'},
                 frontPageTemplate: 'home',
                 templates: ['index', 'home'],

@@ -75,7 +75,7 @@ module.exports = function entryController(req, res, next) {
              *
              * Ensure we redirect to the correct post url including subdirectory.
              */
-            if (urlUtils.absoluteToRelative(entry.url, {withoutSubdirectory: true}) !== req.path) {
+            if (!lookup.isShareURL && urlUtils.absoluteToRelative(entry.url, {withoutSubdirectory: true}) !== req.path) {
                 debug('redirect');
 
                 return urlUtils.redirect301(res, url.format({
