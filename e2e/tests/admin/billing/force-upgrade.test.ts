@@ -1,5 +1,6 @@
 import {BillingPage, NAV_ITEMS, SidebarPage} from '@/helpers/pages';
 import {expect, test} from '@/helpers/playwright';
+import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
 const MOCK_BILLING_URL = 'https://billing.mock.test';
 
@@ -29,6 +30,8 @@ const FORCE_UPGRADE_BMA_HTML = `
 </body>
 </html>
 `;
+
+usePerTestIsolation();
 
 test.describe('Ghost Admin - Force Upgrade Mode', () => {
     test.use({

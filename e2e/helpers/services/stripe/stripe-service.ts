@@ -12,7 +12,14 @@ import {
     buildSubscriptionDeletedEvent,
     buildSubscriptionUpdatedEvent
 } from './builders';
-import type {StripeCustomer, StripePaymentMethod, StripePrice, StripeSubscription} from './builders';
+import type {
+    RecordedStripeCheckoutSession,
+    StripeCustomer,
+    StripePaymentMethod,
+    StripePrice,
+    StripeProduct,
+    StripeSubscription
+} from './builders';
 
 const debug = baseDebug('e2e:stripe-service');
 
@@ -30,6 +37,22 @@ export class StripeTestService {
     constructor(server: FakeStripeServer, webhookClient: WebhookClient) {
         this.server = server;
         this.webhookClient = webhookClient;
+    }
+
+    getProducts(): StripeProduct[] {
+        return this.server.getProducts();
+    }
+
+    getPrices(): StripePrice[] {
+        return this.server.getPrices();
+    }
+
+    getCustomers(): StripeCustomer[] {
+        return this.server.getCustomers();
+    }
+
+    getCheckoutSessions(): RecordedStripeCheckoutSession[] {
+        return this.server.getCheckoutSessions();
     }
 
     async createPaidMemberViaWebhooks(opts: {email: string; name: string}): Promise<CreatedPaidMember> {
