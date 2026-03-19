@@ -88,6 +88,7 @@ module.exports = class MemberBREADService {
                 } else {
                     startDate = moment(productAddEvent.created_at);
                 }
+                const nickname = member.status === 'gifted' ? 'Gifted' : 'Complimentary';
                 member.subscriptions.push({
                     id: '',
                     tier: product,
@@ -98,7 +99,7 @@ module.exports = class MemberBREADService {
                     },
                     plan: {
                         id: '',
-                        nickname: 'Complimentary',
+                        nickname: nickname,
                         interval: 'year',
                         currency: 'USD',
                         amount: 0
@@ -112,7 +113,7 @@ module.exports = class MemberBREADService {
                     price: {
                         id: '',
                         price_id: '',
-                        nickname: 'Complimentary',
+                        nickname: nickname,
                         amount: 0,
                         interval: 'year',
                         type: 'recurring',

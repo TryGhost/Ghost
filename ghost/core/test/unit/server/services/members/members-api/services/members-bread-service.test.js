@@ -367,6 +367,7 @@ describe('MemberBreadService', function () {
 
             memberModelStub.toJSON.returns({
                 ...memberModelJSON,
+                status: 'comped',
                 subscriptions: subscriptionsJSON,
                 products: productsJSON,
                 productEvents: productEventsJSON
@@ -415,6 +416,71 @@ describe('MemberBreadService', function () {
                     product: {
                         id: '',
                         product_id: productsJSON[1].id
+                    }
+                }
+            });
+        });
+
+        it('returns a member with a gifted subscription', async function () {
+            const productsJSON = [
+                {
+                    id: 'prod_123',
+                    expiry_at: new Date('2023-10-13T15:15:00')
+                }
+            ];
+            const productEventsJSON = [
+                {
+                    product_id: productsJSON[0].id,
+                    created_at: new Date('2023-09-13T15:15:00'),
+                    action: 'added'
+                }
+            ];
+            const subscriptionsJSON = [];
+            const subscriptionModels = [];
+
+            memberModelStub.related
+                .withArgs('stripeSubscriptions')
+                .returns(subscriptionModels);
+
+            memberModelStub.toJSON.returns({
+                ...memberModelJSON,
+                status: 'gifted',
+                subscriptions: subscriptionsJSON,
+                products: productsJSON,
+                productEvents: productEventsJSON
+            });
+
+            memberRepositoryStub.isActiveSubscriptionStatus = sinon.stub().returns(false);
+
+            const memberBreadService = getService();
+            const member = await memberBreadService.read({id: MEMBER_ID});
+
+            assert.equal(member.subscriptions.length, 1);
+
+            const giftedSubscription = member.subscriptions[0];
+
+            sinon.assert.match(giftedSubscription, {
+                id: '',
+                tier: productsJSON[0],
+                plan: {
+                    id: '',
+                    nickname: 'Gifted',
+                    interval: 'year',
+                    currency: 'USD',
+                    amount: 0
+                },
+                status: 'active',
+                price: {
+                    id: '',
+                    price_id: '',
+                    nickname: 'Gifted',
+                    amount: 0,
+                    interval: 'year',
+                    type: 'recurring',
+                    currency: 'USD',
+                    product: {
+                        id: '',
+                        product_id: productsJSON[0].id
                     }
                 }
             });
