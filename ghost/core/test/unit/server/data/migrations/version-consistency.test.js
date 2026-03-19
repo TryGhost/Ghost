@@ -14,10 +14,6 @@ function getVersionFolders() {
         .filter(f => /^\d+\.\d+$/.test(f));
 }
 
-function getLatestVersionFolder(folders) {
-    return folders.sort((a, b) => semver.compare(semver.coerce(a), semver.coerce(b))).pop();
-}
-
 describe('Migration version consistency', function () {
     it('all migration folders should be runnable at current package.json version', function () {
         const pkg = require('../../../../../package.json');
@@ -40,9 +36,9 @@ describe('Migration version consistency', function () {
         );
     });
 
-    it('new migrations should only be added to the latest version folder', function () {
-        const folders = getVersionFolders();
-        const latestVersion = getLatestVersionFolder(folders);
+    it('new migrations should only target the next minor version', function () {
+        const pkg = require('../../../../../package.json');
+        const currentVersion = pkg.version.match(/^(\d+\.)?(\d+)/)[0];
 
         // Get newly added migration files compared to origin/main
         let newFiles;
@@ -62,22 +58,23 @@ describe('Migration version consistency', function () {
             return;
         }
 
-        // Extract version folder from each new migration file path
+        // New migrations must be in a version folder greater than the current package.json version
         const migrationsInOldVersions = newFiles.filter((file) => {
             const match = file.match(/migrations\/versions\/(\d+\.\d+)\//);
             if (!match) {
                 return false;
             }
-            return match[1] !== latestVersion;
+            const folderVersion = match[1];
+            return !semver.gt(semver.coerce(folderVersion), semver.coerce(currentVersion));
         });
 
         assert.equal(
             migrationsInOldVersions.length,
             0,
-            `New migrations must be added to the latest version folder (${latestVersion}), ` +
-            `but found new migrations in previous versions:\n` +
+            `New migrations must target the next minor version (greater than ${currentVersion}), ` +
+            `but found new migrations in current or previous versions:\n` +
             migrationsInOldVersions.map(f => `  - ${f}`).join('\n') + '\n' +
-            `Adding migrations to previous versions can cause them to not run or corrupt the database.`
+            `Adding migrations to current or previous versions can cause them to not run or corrupt the database.`
         );
     });
 });
