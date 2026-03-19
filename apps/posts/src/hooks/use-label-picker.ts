@@ -1,5 +1,5 @@
 import {Label, useBrowseInfiniteLabels, useCreateLabel, useDeleteLabel, useEditLabel} from '@tryghost/admin-x-framework/api/labels';
-import {escapeNqlValue} from '@src/utils/nql';
+import {escapeNqlString} from '@src/views/filters/filter-normalization';
 import {useCallback, useMemo, useRef} from 'react';
 import {useInfiniteSearch} from './use-infinite-search';
 
@@ -29,7 +29,7 @@ export interface UseLabelPickerResult {
     isLoadingMore: boolean;
 }
 
-const buildLabelSearchFilter = (term: string) => `name:~'${escapeNqlValue(term)}'`;
+const buildLabelSearchFilter = (term: string) => `name:~${escapeNqlString(term)}`;
 
 export function useLabelPicker({
     selectedSlugs,
