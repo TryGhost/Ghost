@@ -298,7 +298,8 @@ export const memberFields = defineFields({
         options: [
             {value: 'paid', label: 'Paid'},
             {value: 'free', label: 'Free'},
-            {value: 'comped', label: 'Complimentary'}
+            {value: 'comped', label: 'Complimentary'},
+            {value: 'gifted', label: 'Gifted'}
         ],
         codec: scalarCodec()
     },

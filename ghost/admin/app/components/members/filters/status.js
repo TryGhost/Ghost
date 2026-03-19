@@ -8,6 +8,7 @@ export const STATUS_FILTER = {
     options: [
         {label: 'Paid', name: 'paid'},
         {label: 'Free', name: 'free'},
-        {label: 'Complimentary', name: 'comped'}
+        {label: 'Complimentary', name: 'comped'},
+        {label: 'Gifted', name: 'gifted'}
     ]
 };
