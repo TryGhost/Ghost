@@ -1,4 +1,5 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useCallback, useMemo, useRef, useState} from 'react';
+import {useDebounce} from 'use-debounce';
 import type {FilterOption} from '@tryghost/shade';
 import type {InfiniteQueryHookOptions} from '@tryghost/admin-x-framework/hooks';
 
@@ -49,38 +50,12 @@ export function useFilterSearch<T, K extends keyof T & string>({
     debounceMs = 250
 }: UseFilterSearchOptions<T, K>): UseFilterSearchReturn {
     const [inputValue, setInputValue] = useState('');
-    const [debouncedValue, setDebouncedValue] = useState('');
-    const timerRef = useRef<ReturnType<typeof setTimeout>>();
-
-    // Track whether the initial (no-search) query returned all items
     const useLocalSearchRef = useRef(false);
 
-    useEffect(() => {
-        return () => {
-            if (timerRef.current) {
-                clearTimeout(timerRef.current);
-            }
-        };
-    }, []);
+    // Debounce is only used for server-side search; local search filters immediately
+    const [debouncedValue] = useDebounce(inputValue, debounceMs);
+    const serverSearchTerm = useLocalSearchRef.current ? '' : debouncedValue;
 
-    const onSearchChange = useCallback((search: string) => {
-        setInputValue(search);
-
-        if (timerRef.current) {
-            clearTimeout(timerRef.current);
-        }
-
-        // Skip debounce + server query when filtering locally
-        if (useLocalSearchRef.current) {
-            return;
-        }
-
-        timerRef.current = setTimeout(() => {
-            setDebouncedValue(search);
-        }, debounceMs);
-    }, [debounceMs]);
-
-    // Only include search filter in query params when using server-side search
     const searchParams = useMemo(() => {
         const params: Record<string, string> = {limit};
         const filters: string[] = [];
@@ -89,8 +64,8 @@ export function useFilterSearch<T, K extends keyof T & string>({
             filters.push(baseFilter);
         }
 
-        if (!useLocalSearchRef.current && debouncedValue.trim() && buildSearchFilter) {
-            filters.push(buildSearchFilter(escapeNqlValue(debouncedValue.trim())));
+        if (serverSearchTerm.trim() && buildSearchFilter) {
+            filters.push(buildSearchFilter(escapeNqlValue(serverSearchTerm.trim())));
         }
 
         if (filters.length > 0) {
@@ -98,7 +73,7 @@ export function useFilterSearch<T, K extends keyof T & string>({
         }
 
         return params;
-    }, [limit, baseFilter, debouncedValue, buildSearchFilter]);
+    }, [limit, baseFilter, serverSearchTerm, buildSearchFilter]);
 
     const {data, isLoading, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage} = useQuery({searchParams});
 
@@ -120,12 +95,12 @@ export function useFilterSearch<T, K extends keyof T & string>({
     // Uses the isEnd flag from the query's returnData rather than hasNextPage, which
     // can be unreliable when defaultNextPageParams doesn't return undefined.
     const isEnd = data && typeof data === 'object' && 'isEnd' in data && (data as Record<string, unknown>).isEnd === true;
-    if (!isLoading && isEnd && allOptions.length > 0 && !debouncedValue.trim()) {
+    if (!isLoading && isEnd && allOptions.length > 0 && !serverSearchTerm.trim()) {
         useLocalSearchRef.current = true;
     }
 
     const initialCountRef = useRef(0);
-    if (!debouncedValue.trim() && allOptions.length > 0) {
+    if (!serverSearchTerm.trim() && allOptions.length > 0) {
         initialCountRef.current = allOptions.length;
     }
 
@@ -152,7 +127,7 @@ export function useFilterSearch<T, K extends keyof T & string>({
         initialCount: initialCountRef.current,
         isLoading: (allOptions.length === 0 && isLoading) || isSearchPending || isSearchFetching,
         searchValue: inputValue,
-        onSearchChange,
+        onSearchChange: setInputValue,
         onLoadMore,
         hasMore: hasNextPage ?? false,
         isLoadingMore: isFetchingNextPage

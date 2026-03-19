@@ -1,5 +1,6 @@
 import {Label, useBrowseInfiniteLabels, useCreateLabel, useDeleteLabel, useEditLabel} from '@tryghost/admin-x-framework/api/labels';
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useCallback, useMemo, useRef, useState} from 'react';
+import {useDebounce} from 'use-debounce';
 
 export interface UseLabelPickerOptions {
     selectedSlugs: string[];
@@ -36,31 +37,24 @@ export function useLabelPicker({
     onSelectionChange
 }: UseLabelPickerOptions): UseLabelPickerResult {
     const [searchValue, setSearchValue] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
-    const timerRef = useRef<ReturnType<typeof setTimeout>>();
     const useLocalSearchRef = useRef(false);
 
-    useEffect(() => {
-        return () => {
-            if (timerRef.current) {
-                clearTimeout(timerRef.current);
-            }
-        };
-    }, []);
+    const [debouncedSearch] = useDebounce(searchValue, 250);
+    const serverSearchTerm = useLocalSearchRef.current ? '' : debouncedSearch;
 
     const searchParams = useMemo(() => {
         const params: Record<string, string> = {limit: '100'};
-        if (!useLocalSearchRef.current && debouncedSearch.trim()) {
-            params.filter = `name:~'${escapeNqlValue(debouncedSearch.trim())}'`;
+        if (serverSearchTerm.trim()) {
+            params.filter = `name:~'${escapeNqlValue(serverSearchTerm.trim())}'`;
         }
         return params;
-    }, [debouncedSearch]);
+    }, [serverSearchTerm]);
 
     const {data: labelsData, isLoading, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage} = useBrowseInfiniteLabels({searchParams});
     const labels = useMemo(() => labelsData?.labels || [], [labelsData]);
 
     // Once the initial load completes with all items on one page, switch to local search
-    if (!isLoading && labelsData?.isEnd && labels.length > 0 && !debouncedSearch.trim()) {
+    if (!isLoading && labelsData?.isEnd && labels.length > 0 && !serverSearchTerm.trim()) {
         useLocalSearchRef.current = true;
     }
 
@@ -72,22 +66,6 @@ export function useLabelPicker({
     // avoiding stale closures and keeping callbacks stable
     const selectedSlugsRef = useRef(selectedSlugs);
     selectedSlugsRef.current = selectedSlugs;
-
-    const onSearchChange = useCallback((search: string) => {
-        setSearchValue(search);
-
-        if (timerRef.current) {
-            clearTimeout(timerRef.current);
-        }
-
-        if (useLocalSearchRef.current) {
-            return;
-        }
-
-        timerRef.current = setTimeout(() => {
-            setDebouncedSearch(search);
-        }, 250);
-    }, []);
 
     const onLoadMore = useCallback(() => {
         if (hasNextPage && !isFetchingNextPage) {
@@ -170,7 +148,7 @@ export function useLabelPicker({
         canCreateFromSearch,
         isCreating,
         // Return undefined when using local search so the picker uses client-side filtering
-        onSearchChange: useLocalSearchRef.current ? undefined : onSearchChange,
+        onSearchChange: useLocalSearchRef.current ? undefined : setSearchValue,
         searchValue,
         onLoadMore,
         hasMore: hasNextPage ?? false,
