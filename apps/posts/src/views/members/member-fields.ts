@@ -31,6 +31,12 @@ function formatDateValue(value: unknown, timezone: string): string | null {
         return null;
     }
 
+    const legacyUtc = moment.utc(value, ['YYYY-MM-DD HH:mm:ss.SSS', 'YYYY-MM-DD HH:mm:ss'], true);
+
+    if (legacyUtc.isValid()) {
+        return legacyUtc.tz(timezone).format('YYYY-MM-DD');
+    }
+
     const parsed = moment.tz(value, moment.ISO_8601, true, timezone);
 
     if (!parsed.isValid()) {

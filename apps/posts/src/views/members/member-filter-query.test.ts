@@ -87,6 +87,22 @@ describe('member-filter-query', () => {
         expect(serializeMemberFilters(parsed, 'UTC')).toBe('created_at:<=\'2024-01-01T23:59:59.999Z\'');
     });
 
+    it('parses legacy Ember member date URLs without ISO timezone markers', () => {
+        const parsed = parseMemberFilter('subscriptions.start_date:<=\'2022-02-01 23:59:59\'', 'UTC');
+
+        expect(stripIds(parsed)).toEqual([
+            {field: 'subscriptions.start_date', operator: 'is-or-less', values: ['2022-02-01']}
+        ]);
+    });
+
+    it('parses legacy Ember UTC date URLs relative to the site timezone', () => {
+        const parsed = parseMemberFilter('subscriptions.start_date:<=\'2022-02-01 23:59:59\'', 'Europe/Stockholm');
+
+        expect(stripIds(parsed)).toEqual([
+            {field: 'subscriptions.start_date', operator: 'is-or-less', values: ['2022-02-02']}
+        ]);
+    });
+
     it('round-trips member date boundaries in site timezones', () => {
         const parsed = parseMemberFilter('created_at:<=\'2024-02-01T22:59:59.999Z\'', 'Europe/Stockholm');
 
