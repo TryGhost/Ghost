@@ -22,11 +22,13 @@ class MembersStatsService {
         const paidEvent = rows.find(c => c.status === 'paid');
         const freeEvent = rows.find(c => c.status === 'free');
         const compedEvent = rows.find(c => c.status === 'comped');
+        const giftedEvent = rows.find(c => c.status === 'gifted');
 
         return {
             paid: paidEvent ? paidEvent.total : 0,
             free: freeEvent ? freeEvent.total : 0,
-            comped: compedEvent ? compedEvent.total : 0
+            comped: compedEvent ? compedEvent.total : 0,
+            gifted: giftedEvent ? giftedEvent.total : 0
         };
     }
 
@@ -58,6 +60,11 @@ class MembersStatsService {
                 WHEN from_status='comped' THEN -1
                 ELSE 0 END
             ) as comped_delta`))
+            .select(knex.raw(`SUM(
+                CASE WHEN to_status='gifted' THEN 1
+                WHEN from_status='gifted' THEN -1
+                ELSE 0 END
+            ) as gifted_delta`))
             .select(knex.raw(`SUM(
                 CASE WHEN to_status='free' THEN 1
                 WHEN from_status='free' THEN -1
@@ -118,6 +125,7 @@ class MembersStatsService {
         let runningPaid = totals.paid;
         let runningFree = totals.free;
         let runningComped = totals.comped;
+        let runningGifted = totals.gifted;
 
         const historicalTotalsMap = new Map();
         
@@ -135,6 +143,7 @@ class MembersStatsService {
                 paid: Math.max(0, runningPaid),
                 free: Math.max(0, runningFree),
                 comped: Math.max(0, runningComped),
+                gifted: Math.max(0, runningGifted),
                 paid_subscribed: row.paid_subscribed,
                 paid_canceled: row.paid_canceled
             });
@@ -143,6 +152,7 @@ class MembersStatsService {
             runningPaid -= row.paid_subscribed - row.paid_canceled;
             runningFree -= row.free_delta;
             runningComped -= row.comped_delta;
+            runningGifted -= row.gifted_delta;
         }
 
         // Generate complete date range from startDate to today
@@ -153,7 +163,8 @@ class MembersStatsService {
         let lastKnownTotals = {
             paid: Math.max(0, runningPaid), // Historical baseline before all events
             free: Math.max(0, runningFree),
-            comped: Math.max(0, runningComped)
+            comped: Math.max(0, runningComped),
+            gifted: Math.max(0, runningGifted)
         };
 
         while (currentDate.isSameOrBefore(endDateMoment)) {
@@ -165,13 +176,15 @@ class MembersStatsService {
                 lastKnownTotals = {
                     paid: eventData.paid,
                     free: eventData.free,
-                    comped: eventData.comped
+                    comped: eventData.comped,
+                    gifted: eventData.gifted
                 };
                 results.push({
                     date: dateStr,
                     paid: eventData.paid,
                     free: eventData.free,
                     comped: eventData.comped,
+                    gifted: eventData.gifted,
                     paid_subscribed: eventData.paid_subscribed,
                     paid_canceled: eventData.paid_canceled
                 });
@@ -182,6 +195,7 @@ class MembersStatsService {
                     paid: lastKnownTotals.paid,
                     free: lastKnownTotals.free,
                     comped: lastKnownTotals.comped,
+                    gifted: lastKnownTotals.gifted,
                     paid_subscribed: 0,
                     paid_canceled: 0
                 });
@@ -206,7 +220,7 @@ class MembersStatsService {
      * @returns {Object} Sparse date range data
      */
     _generateSparseRange(rows, totals, today) {
-        let {paid, free, comped} = totals;
+        let {paid, free, comped, gifted} = totals;
         const cumulativeResults = [];
 
         rows.sort((a, b) => moment(a.date).valueOf() - moment(b.date).valueOf());
@@ -226,6 +240,7 @@ class MembersStatsService {
                 paid: Math.max(0, paid),
                 free: Math.max(0, free),
                 comped: Math.max(0, comped),
+                gifted: Math.max(0, gifted),
 
                 // Deltas
                 paid_subscribed: row.paid_subscribed,
@@ -236,6 +251,7 @@ class MembersStatsService {
             paid -= row.paid_subscribed - row.paid_canceled;
             free -= row.free_delta;
             comped -= row.comped_delta;
+            gifted -= row.gifted_delta;
         }
 
         // Now also add the oldest day we have left over (this one will be zero, which is also needed as a data point for graphs)
@@ -246,6 +262,7 @@ class MembersStatsService {
             paid: Math.max(0, paid),
             free: Math.max(0, free),
             comped: Math.max(0, comped),
+            gifted: Math.max(0, gifted),
 
             // Deltas
             paid_subscribed: 0,
@@ -270,6 +287,7 @@ module.exports = MembersStatsService;
  * @property {number} paid_subscribed Paid members that subscribed on this day
  * @property {number} paid_canceled Paid members that canceled on this day
  * @property {number} comped_delta Total net comped members on this day
+ * @property {number} gifted_delta Total net gifted members on this day
  * @property {number} free_delta Total net members on this day
  */
 
@@ -279,6 +297,7 @@ module.exports = MembersStatsService;
  * @property {number} paid Total paid members
  * @property {number} free Total free members
  * @property {number} comped Total comped members
+ * @property {number} gifted Total gifted members
  */
 
 /**
@@ -287,6 +306,7 @@ module.exports = MembersStatsService;
  * @property {number} paid Total paid members
  * @property {number} free Total free members
  * @property {number} comped Total comped members
+ * @property {number} gifted Total gifted members
  * @property {number} paid_subscribed Paid members that subscribed on this day
  * @property {number} paid_canceled Paid members that canceled on this day
  */

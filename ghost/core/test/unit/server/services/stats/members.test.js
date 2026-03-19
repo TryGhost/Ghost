@@ -12,7 +12,7 @@ describe('MembersStatsService', function () {
         /**
          * @type {MembersStatsService.TotalMembersByStatus}
          */
-        const currentCounts = {paid: 0, free: 0, comped: 0};
+        const currentCounts = {paid: 0, free: 0, comped: 0, gifted: 0};
         /**
          * @type {MembersStatsService.MemberStatusDelta[]}
          */
@@ -81,8 +81,12 @@ describe('MembersStatsService', function () {
                 id: 'id',
                 status: 'comped'
             }));
+            const giftedMembers = Array.from({length: currentCounts.gifted}).map(() => ({
+                id: 'id',
+                status: 'gifted'
+            }));
 
-            await db('members').insert(paidMembers.concat(freeMembers, compedMembers));
+            await db('members').insert(paidMembers.concat(freeMembers, compedMembers, giftedMembers));
 
             /**
              * @typedef {object} StatusEvent
@@ -111,7 +115,8 @@ describe('MembersStatsService', function () {
                 const paidCanceled = generateEvents('paid', -event.paid_canceled, event.date);
                 const freeSubscribed = generateEvents('free', event.free_delta, event.date);
                 const compedSubscribed = generateEvents('comped', event.comped_delta, event.date);
-                return memo.concat(paidSubscribed, paidCanceled, freeSubscribed, compedSubscribed);
+                const giftedSubscribed = generateEvents('gifted', event.gifted_delta, event.date);
+                return memo.concat(paidSubscribed, paidCanceled, freeSubscribed, compedSubscribed, giftedSubscribed);
             }, []);
 
             if (toInsert.length) {
@@ -125,6 +130,7 @@ describe('MembersStatsService', function () {
             currentCounts.paid = 1;
             currentCounts.free = 2;
             currentCounts.comped = 3;
+            currentCounts.gifted = 4;
 
             await setupDB();
 
@@ -135,6 +141,7 @@ describe('MembersStatsService', function () {
                 paid: 1,
                 free: 2,
                 comped: 3,
+                gifted: 4,
                 paid_subscribed: 0,
                 paid_canceled: 0
             });
@@ -149,7 +156,8 @@ describe('MembersStatsService', function () {
                     paid_subscribed: 4,
                     paid_canceled: 3,
                     free_delta: 2,
-                    comped_delta: 3
+                    comped_delta: 3,
+                    gifted_delta: 0
                 }
             ];
 
@@ -157,6 +165,7 @@ describe('MembersStatsService', function () {
             currentCounts.paid = 1;
             currentCounts.free = 2;
             currentCounts.comped = 3;
+            currentCounts.gifted = 4;
 
             await setupDB();
 
@@ -167,6 +176,7 @@ describe('MembersStatsService', function () {
                     paid: 0,
                     free: 0,
                     comped: 0,
+                    gifted: 4,
                     paid_subscribed: 0,
                     paid_canceled: 0
                 },
@@ -175,6 +185,7 @@ describe('MembersStatsService', function () {
                     paid: 1,
                     free: 2,
                     comped: 3,
+                    gifted: 4,
                     paid_subscribed: 4,
                     paid_canceled: 3
                 }
@@ -190,14 +201,16 @@ describe('MembersStatsService', function () {
                     paid_subscribed: 2,
                     paid_canceled: 1,
                     free_delta: 0,
-                    comped_delta: 0
+                    comped_delta: 0,
+                    gifted_delta: 0
                 },
                 {
                     date: todayDate,
                     paid_subscribed: 4,
                     paid_canceled: 3,
                     free_delta: 2,
-                    comped_delta: 3
+                    comped_delta: 3,
+                    gifted_delta: 0
                 }
             ];
 
@@ -205,6 +218,7 @@ describe('MembersStatsService', function () {
             currentCounts.paid = 2;
             currentCounts.free = 3;
             currentCounts.comped = 4;
+            currentCounts.gifted = 5;
 
             await setupDB();
 
@@ -215,6 +229,7 @@ describe('MembersStatsService', function () {
                     paid: 0,
                     free: 1,
                     comped: 1,
+                    gifted: 5,
                     paid_subscribed: 0,
                     paid_canceled: 0
                 },
@@ -223,6 +238,7 @@ describe('MembersStatsService', function () {
                     paid: 1,
                     free: 1,
                     comped: 1,
+                    gifted: 5,
                     paid_subscribed: 2,
                     paid_canceled: 1
                 },
@@ -231,6 +247,7 @@ describe('MembersStatsService', function () {
                     paid: 2,
                     free: 3,
                     comped: 4,
+                    gifted: 5,
                     paid_subscribed: 4,
                     paid_canceled: 3
                 }
@@ -246,21 +263,24 @@ describe('MembersStatsService', function () {
                     paid_subscribed: 2,
                     paid_canceled: 1,
                     free_delta: 2,
-                    comped_delta: 10
+                    comped_delta: 10,
+                    gifted_delta: 0
                 },
                 {
                     date: yesterdayDate,
                     paid_subscribed: 2,
                     paid_canceled: 1,
                     free_delta: -100,
-                    comped_delta: 0
+                    comped_delta: 0,
+                    gifted_delta: 0
                 },
                 {
                     date: todayDate,
                     paid_subscribed: 4,
                     paid_canceled: 3,
                     free_delta: 100,
-                    comped_delta: 3
+                    comped_delta: 3,
+                    gifted_delta: 0
                 }
             ];
 
@@ -268,6 +288,7 @@ describe('MembersStatsService', function () {
             currentCounts.paid = 2;
             currentCounts.free = 3;
             currentCounts.comped = 4;
+            currentCounts.gifted = 5;
 
             await setupDB();
 
@@ -278,6 +299,7 @@ describe('MembersStatsService', function () {
                     paid: 0,
                     free: 1,
                     comped: 0,
+                    gifted: 5,
                     paid_subscribed: 0,
                     paid_canceled: 0
                 },
@@ -287,6 +309,7 @@ describe('MembersStatsService', function () {
                     // note that this shouldn't be 100 (which is also what we test here):
                     free: 3,
                     comped: 1,
+                    gifted: 5,
                     paid_subscribed: 2,
                     paid_canceled: 1
                 },
@@ -296,6 +319,7 @@ describe('MembersStatsService', function () {
                     // never return negative numbers, this is in fact -997:
                     free: 0,
                     comped: 1,
+                    gifted: 5,
                     paid_subscribed: 2,
                     paid_canceled: 1
                 },
@@ -304,6 +328,7 @@ describe('MembersStatsService', function () {
                     paid: 2,
                     free: 3,
                     comped: 4,
+                    gifted: 5,
                     paid_subscribed: 4,
                     paid_canceled: 3
                 }
@@ -319,21 +344,24 @@ describe('MembersStatsService', function () {
                     paid_subscribed: 1,
                     paid_canceled: 0,
                     free_delta: 1,
-                    comped_delta: 0
+                    comped_delta: 0,
+                    gifted_delta: 0
                 },
                 {
                     date: todayDate,
                     paid_subscribed: 4,
                     paid_canceled: 3,
                     free_delta: 2,
-                    comped_delta: 3
+                    comped_delta: 3,
+                    gifted_delta: 0
                 },
                 {
                     date: tomorrowDate,
                     paid_subscribed: 10,
                     paid_canceled: 5,
                     free_delta: 8,
-                    comped_delta: 9
+                    comped_delta: 9,
+                    gifted_delta: 0
                 }
             ];
 
@@ -341,6 +369,7 @@ describe('MembersStatsService', function () {
             currentCounts.paid = 1;
             currentCounts.free = 2;
             currentCounts.comped = 3;
+            currentCounts.gifted = 4;
 
             await setupDB();
 
@@ -351,6 +380,7 @@ describe('MembersStatsService', function () {
                     paid: 0,
                     free: 0,
                     comped: 0,
+                    gifted: 4,
                     paid_subscribed: 0,
                     paid_canceled: 0
                 },
@@ -359,6 +389,7 @@ describe('MembersStatsService', function () {
                     paid: 0,
                     free: 0,
                     comped: 0,
+                    gifted: 4,
                     paid_subscribed: 1,
                     paid_canceled: 0
                 },
@@ -367,6 +398,7 @@ describe('MembersStatsService', function () {
                     paid: 1,
                     free: 2,
                     comped: 3,
+                    gifted: 4,
                     paid_subscribed: 4,
                     paid_canceled: 3
                 }
@@ -382,21 +414,24 @@ describe('MembersStatsService', function () {
                     paid_subscribed: 2,
                     paid_canceled: 1,
                     free_delta: 2,
-                    comped_delta: 1
+                    comped_delta: 1,
+                    gifted_delta: 0
                 },
                 {
                     date: yesterdayDate,
                     paid_subscribed: 1,
                     paid_canceled: 0,
                     free_delta: 1,
-                    comped_delta: 0
+                    comped_delta: 0,
+                    gifted_delta: 0
                 },
                 {
                     date: todayDate,
                     paid_subscribed: 4,
                     paid_canceled: 3,
                     free_delta: 2,
-                    comped_delta: 3
+                    comped_delta: 3,
+                    gifted_delta: 0
                 }
             ];
 
@@ -404,6 +439,7 @@ describe('MembersStatsService', function () {
             currentCounts.paid = 3;
             currentCounts.free = 5;
             currentCounts.comped = 4;
+            currentCounts.gifted = 6;
 
             await setupDB();
 
@@ -421,6 +457,7 @@ describe('MembersStatsService', function () {
                     paid: 2,
                     free: 3,
                     comped: 1,
+                    gifted: 6,
                     paid_subscribed: 1,
                     paid_canceled: 0
                 },
@@ -429,6 +466,7 @@ describe('MembersStatsService', function () {
                     paid: 3,
                     free: 5,
                     comped: 4,
+                    gifted: 6,
                     paid_subscribed: 4,
                     paid_canceled: 3
                 }
@@ -447,14 +485,16 @@ describe('MembersStatsService', function () {
                     paid_subscribed: 1,
                     paid_canceled: 0,
                     free_delta: 1,
-                    comped_delta: 0
+                    comped_delta: 0,
+                    gifted_delta: 0
                 },
                 {
                     date: oneDayAgoDate,
                     paid_subscribed: 1,
                     paid_canceled: 0,
                     free_delta: 1,
-                    comped_delta: 0
+                    comped_delta: 0,
+                    gifted_delta: 0
                 }
                 // Note: No events on 2 days ago - should be forward-filled
             ];
@@ -462,6 +502,7 @@ describe('MembersStatsService', function () {
             currentCounts.paid = 2;
             currentCounts.free = 2;
             currentCounts.comped = 0;
+            currentCounts.gifted = 1;
 
             await setupDB();
 
