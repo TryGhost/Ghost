@@ -1437,7 +1437,7 @@ describe('Email renderer', function () {
                 options
             );
 
-            assert(response.html.includes('href="http://example.com/#/share"'));
+            assert(response.html.includes('href="http://example.com/share/"'));
             assert(response.html.includes('>Share</p>'));
         });
 
@@ -1463,7 +1463,7 @@ describe('Email renderer', function () {
                 options
             );
 
-            assert(!response.html.includes('#/share'));
+            assert(!response.html.includes('/share/'));
         });
 
         it('uses custom excerpt as preheader', async function () {
@@ -1852,7 +1852,7 @@ describe('Email renderer', function () {
                 '#',
                 'http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%',
                 'http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%',
-                'http://example.com/#/share',
+                'http://example.com/share/',
                 '%%{unsubscribe_url}%%',
                 'https://ghost.org/?via=pbg-newsletter'
             ]);
@@ -2545,7 +2545,7 @@ describe('Email renderer', function () {
             });
             const newsletter = createModel({});
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
-            assert.equal(data.post.shareUrl, 'http://example.com/#/share');
+            assert.equal(data.post.shareUrl, 'http://example.com/share/');
         });
 
         it('calculates footer feedback button widths based on visible actions', async function () {
