@@ -1437,7 +1437,7 @@ describe('Email renderer', function () {
                 options
             );
 
-            assert(response.html.includes('href="http://example.com/#/portal/share"'));
+            assert(response.html.includes('href="http://example.com/#/share"'));
             assert(response.html.includes('>Share</p>'));
         });
 
@@ -1463,7 +1463,7 @@ describe('Email renderer', function () {
                 options
             );
 
-            assert(!response.html.includes('#/portal/share'));
+            assert(!response.html.includes('#/share'));
         });
 
         it('uses custom excerpt as preheader', async function () {
@@ -1796,7 +1796,7 @@ describe('Email renderer', function () {
                 '#',
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%`,
                 `http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%`,
-                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded%23%2Fportal%2Fshare`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded%23%2Fshare`,
                 `%%{unsubscribe_url}%%`,
                 `https://ghost.org/?via=pbg-newsletter&source_tracking=site`
             ]);
@@ -1852,7 +1852,7 @@ describe('Email renderer', function () {
                 '#',
                 'http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%',
                 'http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%',
-                'http://example.com/#/portal/share',
+                'http://example.com/#/share',
                 '%%{unsubscribe_url}%%',
                 'https://ghost.org/?via=pbg-newsletter'
             ]);
@@ -1908,7 +1908,7 @@ describe('Email renderer', function () {
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexample.com%2F%3Fref%3D123%26source_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%`,
                 `http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%`,
-                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded%23%2Fportal%2Fshare`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded%23%2Fshare`,
                 `%%{unsubscribe_url}%%`,
                 `https://ghost.org/?via=pbg-newsletter&source_tracking=site`
             ]);
@@ -2545,7 +2545,7 @@ describe('Email renderer', function () {
             });
             const newsletter = createModel({});
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
-            assert.equal(data.post.shareUrl, 'http://example.com/#/portal/share');
+            assert.equal(data.post.shareUrl, 'http://example.com/#/share');
         });
 
         it('calculates footer feedback button widths based on visible actions', async function () {

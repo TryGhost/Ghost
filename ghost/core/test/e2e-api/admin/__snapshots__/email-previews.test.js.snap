@@ -767,7 +767,7 @@ table.body h2 span {
                                         <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
                                             <tr>
                                                     <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
-                                                        <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/portal/share\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
+                                                        <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/share\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
                                                             <img src=\\"https://static.ghost.org/v6.0.0/images/share-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Share\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
                                                             <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4em; word-break: break-word; font-size: 13px;\\">Share</p>
                                                         </a>
@@ -973,7 +973,7 @@ Another email card with a similar replacement, Jamie
 Share
 
 
-[http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/portal/share]
+[http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/share]
 
 
 
@@ -1703,7 +1703,7 @@ table.body h2 span {
                                         <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
                                             <tr>
                                                     <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
-                                                        <a href=\\"http://127.0.0.1:2369/html-ipsum/#/portal/share\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
+                                                        <a href=\\"http://127.0.0.1:2369/html-ipsum/#/share\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
                                                             <img src=\\"https://static.ghost.org/v6.0.0/images/share-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Share\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
                                                             <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4em; word-break: break-word; font-size: 13px;\\">Share</p>
                                                         </a>
@@ -1926,7 +1926,7 @@ Header Level 3
 Share
 
 
-[http://127.0.0.1:2369/html-ipsum/#/portal/share]
+[http://127.0.0.1:2369/html-ipsum/#/share]
 
 
 
@@ -2682,7 +2682,7 @@ table.body h2 span {
                                         <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
                                             <tr>
                                                     <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
-                                                        <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/portal/share\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
+                                                        <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/share\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
                                                             <img src=\\"https://static.ghost.org/v6.0.0/images/share-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Share\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
                                                             <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4em; word-break: break-word; font-size: 13px;\\">Share</p>
                                                         </a>
@@ -2882,7 +2882,7 @@ Testing links [https://ghost.org/] in email excerpt and apostrophes '
 Share
 
 
-[http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/portal/share]
+[http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/share]
 
 
 
@@ -3987,7 +3987,7 @@ table.body h2 span {
                                         <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
                                             <tr>
                                                     <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
-                                                        <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/portal/share\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
+                                                        <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/share\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
                                                             <img src=\\"https://static.ghost.org/v6.0.0/images/share-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Share\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
                                                             <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4em; word-break: break-word; font-size: 13px;\\">Share</p>
                                                         </a>
@@ -4194,7 +4194,7 @@ Testing links [https://ghost.org/] in email excerpt and apostrophes '
 Share
 
 
-[http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/portal/share]
+[http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/share]
 
 
 
@@ -5325,7 +5325,7 @@ table.body h2 span {
                                         <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
                                             <tr>
                                                     <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
-                                                        <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/portal/share\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
+                                                        <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/share\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
                                                             <img src=\\"https://static.ghost.org/v6.0.0/images/share-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Share\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
                                                             <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4em; word-break: break-word; font-size: 13px;\\">Share</p>
                                                         </a>
@@ -5532,7 +5532,7 @@ Testing links [https://ghost.org/] in email excerpt and apostrophes '
 Share
 
 
-[http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/portal/share]
+[http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/share]
 
 
 
