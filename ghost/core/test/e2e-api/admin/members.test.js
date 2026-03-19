@@ -2805,6 +2805,7 @@ describe('Members API', function () {
                     buildMemberMatcherShallowIncludesWithTiers(1, 1),
                     buildMemberMatcherShallowIncludesWithTiers(1, 1),
                     buildMemberMatcherShallowIncludesWithTiers(1, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
                     buildMemberMatcherShallowIncludesWithTiers(1, 0),
                     buildMemberMatcherShallowIncludesWithTiers(1, 2),
                     buildMemberMatcherShallowIncludesWithTiers(1, 1)
