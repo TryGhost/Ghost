@@ -153,6 +153,74 @@ describe('useMemberFilterFields', () => {
         expect(offerField?.customValueRenderer).toBeTypeOf('function');
     });
 
+    it('wires label search/scroll props when provided', () => {
+        const labelSearchProps = {
+            onSearchChange: vi.fn(),
+            searchValue: 'vip',
+            isLoading: false,
+            onLoadMore: vi.fn(),
+            hasMore: true,
+            isLoadingMore: false
+        };
+
+        const {result} = renderHook(() => useMemberFilterFields({
+            labelsOptions: [{value: 'vip', label: 'VIP'}],
+            labelSearchProps,
+            siteTimezone: 'UTC'
+        }));
+
+        const basicFields = result.current.find(group => group.group === 'Basic')?.fields ?? [];
+        const labelField = basicFields.find(field => field.key === 'label');
+
+        expect(labelField?.onSearchChange).toBe(labelSearchProps.onSearchChange);
+        expect(labelField?.searchValue).toBe('vip');
+        expect(labelField?.onLoadMore).toBe(labelSearchProps.onLoadMore);
+        expect(labelField?.hasMore).toBe(true);
+        expect(labelField?.isLoadingMore).toBe(false);
+    });
+
+    it('wires tier search/scroll props when provided', () => {
+        const tierSearchProps = {
+            onSearchChange: vi.fn(),
+            searchValue: 'gold',
+            isLoading: false,
+            onLoadMore: vi.fn(),
+            hasMore: false,
+            isLoadingMore: false
+        };
+
+        const {result} = renderHook(() => useMemberFilterFields({
+            tiersOptions: [{value: 't1', label: 'Gold'}],
+            tierSearchProps,
+            hasMultipleTiers: true,
+            paidMembersEnabled: true,
+            siteTimezone: 'UTC'
+        }));
+
+        const subscriptionFields = result.current.find(group => group.group === 'Subscription')?.fields ?? [];
+        const tierField = subscriptionFields.find(field => field.key === 'tier_id');
+
+        expect(tierField?.onSearchChange).toBe(tierSearchProps.onSearchChange);
+        expect(tierField?.searchValue).toBe('gold');
+        expect(tierField?.onLoadMore).toBe(tierSearchProps.onLoadMore);
+        expect(tierField?.hasMore).toBe(false);
+    });
+
+    it('does not include search/scroll props when not provided (backward compat)', () => {
+        const {result} = renderHook(() => useMemberFilterFields({
+            labelsOptions: [{value: 'vip', label: 'VIP'}],
+            siteTimezone: 'UTC'
+        }));
+
+        const basicFields = result.current.find(group => group.group === 'Basic')?.fields ?? [];
+        const labelField = basicFields.find(field => field.key === 'label');
+
+        expect(labelField?.onSearchChange).toBeUndefined();
+        expect(labelField?.onLoadMore).toBeUndefined();
+        expect(labelField?.hasMore).toBeUndefined();
+        expect(labelField?.isLoadingMore).toBeUndefined();
+    });
+
     it('renders direct retention offer ids with the fetched offer label', () => {
         const {result} = renderHook(() => useMemberFilterFields({
             paidMembersEnabled: true,

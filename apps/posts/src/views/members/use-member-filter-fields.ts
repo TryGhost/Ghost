@@ -5,9 +5,13 @@ import {CustomRendererProps, FilterFieldConfig, FilterFieldGroup, FilterOption, 
 import {memberFields} from './member-fields';
 import type {Offer} from '@tryghost/admin-x-framework/api/offers';
 
+type FilterSearchProps = Pick<FilterFieldConfig, 'onSearchChange' | 'searchValue' | 'isLoading' | 'onLoadMore' | 'hasMore' | 'isLoadingMore'>;
+
 interface UseMemberFilterFieldsOptions {
     labelsOptions?: FilterOption[];
+    labelSearchProps?: FilterSearchProps;
     tiersOptions?: FilterOption[];
+    tierSearchProps?: FilterSearchProps;
     newsletters?: Array<{slug: string; name: string; status?: string}>;
     hydratedNewsletterSlugs?: string[];
     hasMultipleTiers?: boolean;
@@ -290,7 +294,9 @@ function renderOfferFilterValues(values: string[], options: OfferOption[], offer
 
 export function useMemberFilterFields({
     labelsOptions = [],
+    labelSearchProps,
     tiersOptions = [],
+    tierSearchProps,
     newsletters = [],
     hydratedNewsletterSlugs = [],
     hasMultipleTiers = false,
@@ -333,11 +339,12 @@ export function useMemberFilterFields({
             createFieldConfig('email')
         ];
 
-        if (labelsOptions.length > 0) {
+        if (labelsOptions.length > 0 || labelSearchProps) {
             basicFields.push(createFieldConfig('label', {
                 type: 'select',
                 options: labelsOptions,
-                customRenderer: props => React.createElement(LabelFilterRenderer, props as CustomRendererProps<string>)
+                customRenderer: props => React.createElement(LabelFilterRenderer, props as CustomRendererProps<string>),
+                ...labelSearchProps
             }));
         }
 
@@ -399,7 +406,8 @@ export function useMemberFilterFields({
 
             if (hasMultipleTiers) {
                 subscriptionFields.push(createFieldConfig('tier_id', {
-                    options: tiersOptions
+                    options: tiersOptions,
+                    ...tierSearchProps
                 }));
             }
 
@@ -487,6 +495,7 @@ export function useMemberFilterFields({
         emailTrackClicks,
         emailTrackOpens,
         hasMultipleTiers,
+        labelSearchProps,
         labelsOptions,
         membersTrackSources,
         newsletters,
@@ -499,6 +508,7 @@ export function useMemberFilterFields({
         postResourceOptions,
         postResourceSearchValue,
         siteTimezone,
+        tierSearchProps,
         tiersOptions
     ]);
 }

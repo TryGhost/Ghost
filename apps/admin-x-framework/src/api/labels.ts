@@ -1,4 +1,5 @@
-import {Meta, createMutation, createQuery} from '../utils/api/hooks';
+import {InfiniteData} from '@tanstack/react-query';
+import {Meta, createInfiniteQuery, createMutation, createQuery} from '../utils/api/hooks';
 
 export type Label = {
     id: string;
@@ -18,6 +19,26 @@ const dataType = 'LabelsResponseType';
 export const useBrowseLabels = createQuery<LabelsResponseType>({
     dataType,
     path: '/labels/'
+});
+
+export const useBrowseInfiniteLabels = createInfiniteQuery<LabelsResponseType & {isEnd: boolean}>({
+    dataType: 'InfiniteLabelsResponseType',
+    path: '/labels/',
+    defaultNextPageParams: (lastPage, otherParams) => ({
+        ...otherParams,
+        page: (lastPage.meta?.pagination.next || 1).toString()
+    }),
+    returnData: (originalData) => {
+        const {pages} = originalData as InfiniteData<LabelsResponseType>;
+        const labels = pages.flatMap(page => page.labels);
+        const meta = pages[pages.length - 1].meta;
+
+        return {
+            labels,
+            meta,
+            isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
+        };
+    }
 });
 
 export const useCreateLabel = createMutation<LabelsResponseType, Pick<Label, 'name'>>({

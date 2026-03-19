@@ -1,5 +1,5 @@
-import {Label, useBrowseLabels, useCreateLabel, useDeleteLabel, useEditLabel} from '@tryghost/admin-x-framework/api/labels';
-import {useCallback, useMemo, useRef} from 'react';
+import {Label, useBrowseInfiniteLabels, useCreateLabel, useDeleteLabel, useEditLabel} from '@tryghost/admin-x-framework/api/labels';
+import {useCallback, useMemo, useRef, useState} from 'react';
 
 export interface UseLabelPickerOptions {
     selectedSlugs: string[];
@@ -18,13 +18,36 @@ export interface UseLabelPickerResult {
     isDuplicateName: (name: string, excludeId?: string) => boolean;
     canCreateFromSearch: (inputValue: string) => boolean;
     isCreating: boolean;
+
+    // Server-side search + infinite scroll
+    onSearchChange: (search: string) => void;
+    searchValue: string;
+    onLoadMore: () => void;
+    hasMore: boolean;
+    isLoadingMore: boolean;
+}
+
+function escapeNqlValue(term: string): string {
+    return term.replace(/'/g, '\'\'');
 }
 
 export function useLabelPicker({
     selectedSlugs,
     onSelectionChange
 }: UseLabelPickerOptions): UseLabelPickerResult {
-    const {data: labelsData, isLoading} = useBrowseLabels({searchParams: {limit: '100'}});
+    const [searchValue, setSearchValue] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const timerRef = useRef<ReturnType<typeof setTimeout>>();
+
+    const searchParams = useMemo(() => {
+        const params: Record<string, string> = {limit: '100'};
+        if (debouncedSearch.trim()) {
+            params.filter = `name:~'${escapeNqlValue(debouncedSearch.trim())}'`;
+        }
+        return params;
+    }, [debouncedSearch]);
+
+    const {data: labelsData, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage} = useBrowseInfiniteLabels({searchParams});
     const labels = useMemo(() => labelsData?.labels || [], [labelsData]);
 
     const {mutateAsync: createLabelMutation, isLoading: isCreating} = useCreateLabel();
@@ -35,6 +58,24 @@ export function useLabelPicker({
     // avoiding stale closures and keeping callbacks stable
     const selectedSlugsRef = useRef(selectedSlugs);
     selectedSlugsRef.current = selectedSlugs;
+
+    const onSearchChange = useCallback((search: string) => {
+        setSearchValue(search);
+
+        if (timerRef.current) {
+            clearTimeout(timerRef.current);
+        }
+
+        timerRef.current = setTimeout(() => {
+            setDebouncedSearch(search);
+        }, 250);
+    }, []);
+
+    const onLoadMore = useCallback(() => {
+        if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+        }
+    }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
     const toggleLabel = useCallback((slug: string) => {
         const current = selectedSlugsRef.current;
@@ -106,6 +147,11 @@ export function useLabelPicker({
         deleteLabel,
         isDuplicateName,
         canCreateFromSearch,
-        isCreating
+        isCreating,
+        onSearchChange,
+        searchValue,
+        onLoadMore,
+        hasMore: hasNextPage,
+        isLoadingMore: isFetchingNextPage
     };
 }

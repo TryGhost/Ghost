@@ -762,6 +762,10 @@ export interface FilterFieldConfig<T = unknown> {
     onValueChange?: (values: T[]) => void;
     // Auto-close dropdown after selection (even for multiselect types)
     autoCloseOnSelect?: boolean;
+    // Infinite scroll support
+    onLoadMore?: () => void;
+    hasMore?: boolean;
+    isLoadingMore?: boolean;
 }
 
 // Helper functions to handle both flat and grouped field configurations
@@ -1000,6 +1004,20 @@ interface SelectOptionsPopoverProps<T = unknown> {
     inline?: boolean;
 }
 
+function useScrollEndDetection(onLoadMore?: () => void, hasMore?: boolean, isLoadingMore?: boolean) {
+    const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+        if (!onLoadMore || !hasMore || isLoadingMore) {
+            return;
+        }
+        const target = e.currentTarget;
+        if (target.scrollTop + target.clientHeight >= target.scrollHeight - 50) {
+            onLoadMore();
+        }
+    }, [onLoadMore, hasMore, isLoadingMore]);
+
+    return handleScroll;
+}
+
 function SelectOptionsPopover<T = unknown>({
     field,
     values,
@@ -1012,6 +1030,8 @@ function SelectOptionsPopover<T = unknown>({
     // Track selected options separately so they persist during async search
     const [cachedSelectedOptions, setCachedSelectedOptions] = useState<FilterOption<T>[]>([]);
     const context = useFilterContext();
+
+    const handleScrollEnd = useScrollEndDetection(field.onLoadMore, field.hasMore, field.isLoadingMore);
 
     // Sync searchInput with controlled searchValue
     useEffect(() => {
@@ -1104,7 +1124,7 @@ function SelectOptionsPopover<T = unknown>({
                             onValueChange={handleSearchChange}
                         />
                     )}
-                    <CommandList className="outline-hidden">
+                    <CommandList className="outline-hidden" onScroll={handleScrollEnd}>
                         {field.isLoading ? (
                             <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 size-4 animate-spin" />
@@ -1196,6 +1216,12 @@ function SelectOptionsPopover<T = unknown>({
                                 </CommandGroup>
                             </>
                         )}
+
+                        {field.isLoadingMore && (
+                            <div className="flex items-center justify-center py-2 text-sm text-muted-foreground">
+                                <Loader2 className="mr-2 size-4 animate-spin" />
+                            </div>
+                        )}
                     </CommandList>
                 </Command>
             </div>
@@ -1256,7 +1282,7 @@ function SelectOptionsPopover<T = unknown>({
                             onValueChange={handleSearchChange}
                         />
                     )}
-                    <CommandList className="outline-hidden">
+                    <CommandList className="outline-hidden" onScroll={handleScrollEnd}>
                         {field.isLoading ? (
                             <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 size-4 animate-spin" />
@@ -1334,6 +1360,12 @@ function SelectOptionsPopover<T = unknown>({
                                     ))}
                                 </CommandGroup>
                             </>
+                        )}
+
+                        {field.isLoadingMore && (
+                            <div className="flex items-center justify-center py-2 text-sm text-muted-foreground">
+                                <Loader2 className="mr-2 size-4 animate-spin" />
+                            </div>
                         )}
                     </CommandList>
                 </Command>
