@@ -43,7 +43,6 @@ async function openPortalAsMember(page: Page, email: string) {
     await memberDetailsPage.goto(magicLink);
 
     const homePage = new HomePage(page);
-    await homePage.waitUntilLoaded();
     await homePage.openAccountPortal();
 
     const portalAccountPage = new PortalAccountPage(page);
