@@ -8,12 +8,15 @@ import React, {useMemo} from 'react';
 import {Button, EmptyIndicator, Header, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
 import {buildMemberListSearchParams} from './member-query-params';
 import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
+import {getSiteTimezone} from '@src/utils/get-site-timezone';
+import {shouldDelayMembersDateFilterHydration, useMembersFilterState} from './hooks/use-members-filter-state';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
-import {useMembersFilterState} from './hooks/use-members-filter-state';
+import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
+import {useSearchParams} from 'react-router';
 
-const Members: React.FC = () => {
-    const {filters, nql, search, setFilters, hasFilterOrSearch, clearAll} = useMembersFilterState();
+const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
+    const {filters, nql, search, setFilters, hasFilterOrSearch, clearAll} = useMembersFilterState(timezone);
     const {data: configData} = useBrowseConfig();
 
     // Check if email analytics is enabled
@@ -152,6 +155,33 @@ const Members: React.FC = () => {
             </MembersContent>
         </MembersLayout>
     );
+};
+
+const Members: React.FC = () => {
+    const [searchParams] = useSearchParams();
+    const {data: settingsData} = useBrowseSettings({});
+    const filterParam = searchParams.get('filter') ?? undefined;
+    const shouldDelayHydration = shouldDelayMembersDateFilterHydration(filterParam, Boolean(settingsData));
+
+    if (shouldDelayHydration) {
+        return (
+            <MembersLayout>
+                <MembersHeader
+                    isLoading={true}
+                    totalMembers={0}
+                />
+                <MembersContent>
+                    <div className="flex h-full items-center justify-center">
+                        <LoadingIndicator size="lg" />
+                    </div>
+                </MembersContent>
+            </MembersLayout>
+        );
+    }
+
+    const timezone = getSiteTimezone(settingsData?.settings ?? []);
+
+    return <MembersPage timezone={timezone} />;
 };
 
 export default Members;

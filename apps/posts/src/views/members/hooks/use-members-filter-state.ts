@@ -1,7 +1,5 @@
-import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {hasTimezoneSensitiveMemberFilter, parseMemberFilter, serializeMemberFilters} from '../member-filter-query';
-import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
-import {useCallback, useMemo} from 'react';
+import {useCallback, useEffect, useMemo} from 'react';
 import {useSearchParams} from 'react-router';
 import type {Filter} from '@tryghost/shade';
 
@@ -20,19 +18,23 @@ interface UseMembersFilterStateReturn {
     hasFilterOrSearch: boolean;
 }
 
-function getFilterParam(filters: Filter[], timezone: string, preservedFilter?: string): string | undefined {
-    const serializedFilter = serializeMemberFilters(filters, timezone);
-
-    if (preservedFilter && serializedFilter) {
-        return `${preservedFilter}+${serializedFilter}`;
-    }
-
-    return preservedFilter ?? serializedFilter;
+interface ToSearchParamsOptions {
+    baseSearchParams: URLSearchParams;
+    filters: Filter[];
+    search: string;
+    timezone: string;
 }
 
-function toSearchParams(filters: Filter[], search: string, timezone: string, preservedFilter?: string): URLSearchParams {
-    const params = new URLSearchParams();
-    const filter = getFilterParam(filters, timezone, preservedFilter);
+export function shouldDelayMembersDateFilterHydration(filterParam: string | undefined, hasResolvedTimezone: boolean): boolean {
+    return Boolean(filterParam) && !hasResolvedTimezone && hasTimezoneSensitiveMemberFilter(filterParam);
+}
+
+function toSearchParams({baseSearchParams, filters, search, timezone}: ToSearchParamsOptions): URLSearchParams {
+    const params = new URLSearchParams(baseSearchParams);
+    const filter = serializeMemberFilters(filters, timezone);
+
+    params.delete('filter');
+    params.delete('search');
 
     if (filter) {
         params.set('filter', filter);
@@ -45,60 +47,75 @@ function toSearchParams(filters: Filter[], search: string, timezone: string, pre
     return params;
 }
 
-export function useMembersFilterState(): UseMembersFilterStateReturn {
+export function useMembersFilterState(timezone: string): UseMembersFilterStateReturn {
     const [searchParams, setSearchParams] = useSearchParams();
-    const {data: settingsData} = useBrowseSettings({});
     const filterParam = useMemo(() => searchParams.get('filter') ?? undefined, [searchParams]);
-    const hasTimezoneSensitiveFilter = useMemo(() => hasTimezoneSensitiveMemberFilter(filterParam), [filterParam]);
-    const resolvedTimezone = useMemo(() => {
-        if (!settingsData) {
-            return null;
-        }
-
-        return getSiteTimezone(settingsData.settings ?? []);
-    }, [settingsData]);
-    const timezone = resolvedTimezone ?? 'Etc/UTC';
-    const shouldPreserveRawFilter = Boolean(filterParam) && !resolvedTimezone && hasTimezoneSensitiveFilter;
-    const preservedFilter = shouldPreserveRawFilter ? filterParam : undefined;
 
     const filters = useMemo(() => {
-        if (shouldPreserveRawFilter) {
-            return [];
-        }
-
         return parseMemberFilter(filterParam, timezone);
-    }, [filterParam, shouldPreserveRawFilter, timezone]);
+    }, [filterParam, timezone]);
 
     const search = useMemo(() => {
         return searchParams.get('search') ?? '';
     }, [searchParams]);
 
+    const nql = useMemo(() => {
+        return serializeMemberFilters(filters, timezone);
+    }, [filters, timezone]);
+
+    useEffect(() => {
+        const currentQuery = searchParams.toString();
+        const nextParams = toSearchParams({
+            baseSearchParams: searchParams,
+            filters,
+            search,
+            timezone
+        });
+        const nextQuery = nextParams.toString();
+
+        if (nextQuery !== currentQuery) {
+            setSearchParams(nextParams, {replace: true});
+        }
+    }, [filters, search, searchParams, setSearchParams, timezone]);
+
     const setFilters = useCallback((nextFilters: Filter[], options: SetFiltersOptions = {}) => {
         const replace = options.replace ?? true;
 
-        setSearchParams(toSearchParams(nextFilters, search, timezone, preservedFilter), {replace});
-    }, [preservedFilter, search, setSearchParams, timezone]);
+        setSearchParams(toSearchParams({
+            baseSearchParams: searchParams,
+            filters: nextFilters,
+            search,
+            timezone
+        }), {replace});
+    }, [search, searchParams, setSearchParams, timezone]);
 
     const setSearch = useCallback((nextSearch: string, options: SetFiltersOptions = {}) => {
         const replace = options.replace ?? true;
-        setSearchParams(toSearchParams(filters, nextSearch, timezone, preservedFilter), {replace});
-    }, [filters, preservedFilter, setSearchParams, timezone]);
+        setSearchParams(toSearchParams({
+            baseSearchParams: searchParams,
+            filters,
+            search: nextSearch,
+            timezone
+        }), {replace});
+    }, [filters, searchParams, setSearchParams, timezone]);
 
     const clearFilters = useCallback(({replace = true}: SetFiltersOptions = {}) => {
-        setSearchParams(toSearchParams([], search, timezone), {replace});
-    }, [search, setSearchParams, timezone]);
+        setSearchParams(toSearchParams({
+            baseSearchParams: searchParams,
+            filters: [],
+            search,
+            timezone
+        }), {replace});
+    }, [search, searchParams, setSearchParams, timezone]);
 
     const clearAll = useCallback(({replace = true}: SetFiltersOptions = {}) => {
-        setSearchParams(new URLSearchParams(), {replace});
-    }, [setSearchParams]);
-
-    const nql = useMemo(() => {
-        if (shouldPreserveRawFilter) {
-            return filterParam;
-        }
-
-        return serializeMemberFilters(filters, timezone);
-    }, [filterParam, filters, shouldPreserveRawFilter, timezone]);
+        setSearchParams(toSearchParams({
+            baseSearchParams: searchParams,
+            filters: [],
+            search: '',
+            timezone
+        }), {replace});
+    }, [searchParams, setSearchParams, timezone]);
 
     return {
         filters,
@@ -108,6 +125,6 @@ export function useMembersFilterState(): UseMembersFilterStateReturn {
         setSearch,
         clearFilters,
         clearAll,
-        hasFilterOrSearch: Boolean(filterParam) || search.length > 0
+        hasFilterOrSearch: Boolean(nql) || search.length > 0
     };
 }
