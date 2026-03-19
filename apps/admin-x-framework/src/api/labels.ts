@@ -1,5 +1,5 @@
 import {InfiniteData} from '@tanstack/react-query';
-import {Meta, createInfiniteQuery, createMutation, createQuery} from '../utils/api/hooks';
+import {Meta, createInfiniteQuery, createMutation} from '../utils/api/hooks';
 
 export type Label = {
     id: string;
@@ -16,13 +16,8 @@ export interface LabelsResponseType {
 
 const dataType = 'LabelsResponseType';
 
-export const useBrowseLabels = createQuery<LabelsResponseType>({
-    dataType,
-    path: '/labels/'
-});
-
 export const useBrowseInfiniteLabels = createInfiniteQuery<LabelsResponseType & {isEnd: boolean}>({
-    dataType: 'InfiniteLabelsResponseType',
+    dataType,
     path: '/labels/',
     defaultNextPageParams: (lastPage, otherParams) => (lastPage.meta?.pagination.next
         ? {
@@ -47,42 +42,18 @@ export const useCreateLabel = createMutation<LabelsResponseType, Pick<Label, 'na
     method: 'POST',
     path: () => '/labels/',
     body: label => ({labels: [label]}),
-    updateQueries: {
-        dataType,
-        emberUpdateType: 'createOrUpdate',
-        update: (newData, currentData) => {
-            const current = currentData as LabelsResponseType;
-            return current && {...current, labels: current.labels.concat(newData.labels)};
-        }
-    }
+    invalidateQueries: {dataType}
 });
 
 export const useEditLabel = createMutation<LabelsResponseType, Pick<Label, 'id' | 'name'>>({
     method: 'PUT',
     path: label => `/labels/${label.id}/`,
     body: label => ({labels: [label]}),
-    updateQueries: {
-        dataType,
-        emberUpdateType: 'createOrUpdate',
-        update: (newData, currentData) => {
-            const current = currentData as LabelsResponseType;
-            return current && {
-                ...current,
-                labels: current.labels.map(label => newData.labels.find(({id}) => id === label.id) || label)
-            };
-        }
-    }
+    invalidateQueries: {dataType}
 });
 
 export const useDeleteLabel = createMutation<void, string>({
     method: 'DELETE',
     path: id => `/labels/${id}/`,
-    updateQueries: {
-        dataType,
-        emberUpdateType: 'delete',
-        update: (_, currentData, id) => {
-            const current = currentData as LabelsResponseType;
-            return current && {...current, labels: current.labels.filter(label => label.id !== id)};
-        }
-    }
+    invalidateQueries: {dataType}
 });

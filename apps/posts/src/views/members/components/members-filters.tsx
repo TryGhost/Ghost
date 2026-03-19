@@ -6,6 +6,7 @@ import {
     toOfferFilterDisplayValues,
     useMemberFilterFields
 } from '../use-member-filter-fields';
+import {escapeNqlValue} from '@src/utils/nql';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
@@ -53,7 +54,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         dataKey: 'labels',
         valueKey: 'slug',
         labelKey: 'name',
-        buildSearchFilter: (term: string) => `name:~'${term}'`,
+        buildSearchFilter: (term: string) => `name:~'${escapeNqlValue(term)}'`,
         limit: '100'
     });
 
@@ -63,7 +64,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         valueKey: 'id',
         labelKey: 'name',
         baseFilter: 'type:paid',
-        buildSearchFilter: (term: string) => `name:~'${term}'`,
+        buildSearchFilter: (term: string) => `name:~'${escapeNqlValue(term)}'`,
         limit: '100'
     });
 

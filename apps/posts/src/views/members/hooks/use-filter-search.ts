@@ -1,5 +1,5 @@
-import {useCallback, useMemo, useRef, useState} from 'react';
-import {useDebounce} from 'use-debounce';
+import {useInfiniteSearch} from '@src/hooks/use-infinite-search';
+import {useMemo, useRef} from 'react';
 import type {FilterOption} from '@tryghost/shade';
 import type {InfiniteQueryHookOptions} from '@tryghost/admin-x-framework/hooks';
 
@@ -35,10 +35,6 @@ export interface UseFilterSearchReturn {
     isLoadingMore: boolean;
 }
 
-function escapeNqlValue(term: string): string {
-    return term.replace(/'/g, '\'\'');
-}
-
 export function useFilterSearch<T, K extends keyof T & string>({
     useQuery,
     dataKey,
@@ -49,39 +45,20 @@ export function useFilterSearch<T, K extends keyof T & string>({
     limit = '100',
     debounceMs = 250
 }: UseFilterSearchOptions<T, K>): UseFilterSearchReturn {
-    const [inputValue, setInputValue] = useState('');
-    const useLocalSearchRef = useRef(false);
-
-    // Debounce is only used for server-side search; local search filters immediately
-    const [debouncedValue] = useDebounce(inputValue, debounceMs);
-    const serverSearchTerm = useLocalSearchRef.current ? '' : debouncedValue;
-
-    const searchParams = useMemo(() => {
-        const params: Record<string, string> = {limit};
-        const filters: string[] = [];
-
-        if (baseFilter) {
-            filters.push(baseFilter);
-        }
-
-        if (serverSearchTerm.trim() && buildSearchFilter) {
-            filters.push(buildSearchFilter(escapeNqlValue(serverSearchTerm.trim())));
-        }
-
-        if (filters.length > 0) {
-            params.filter = filters.join('+');
-        }
-
-        return params;
-    }, [limit, baseFilter, serverSearchTerm, buildSearchFilter]);
-
-    const {data, isLoading, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage} = useQuery({searchParams});
+    const search = useInfiniteSearch({
+        useQuery,
+        baseFilter,
+        buildSearchFilter,
+        limit,
+        debounceMs,
+        hasData: data => Array.isArray(data[dataKey]) && (data[dataKey] as unknown[]).length > 0
+    });
 
     const allOptions = useMemo(() => {
-        if (!data) {
+        if (!search.data) {
             return [];
         }
-        const items = data[dataKey];
+        const items = search.data[dataKey];
         if (!Array.isArray(items)) {
             return [];
         }
@@ -89,44 +66,32 @@ export function useFilterSearch<T, K extends keyof T & string>({
             value: String(item[valueKey]),
             label: String(item[labelKey])
         }));
-    }, [data, dataKey, valueKey, labelKey]);
+    }, [search.data, dataKey, valueKey, labelKey]);
 
-    // Once the initial load completes with all items on one page, switch to local search
-    if (!isLoading && !hasNextPage && allOptions.length > 0 && !serverSearchTerm.trim()) {
-        useLocalSearchRef.current = true;
-    }
-
+    // Track count from initial unfiltered results.  Set during render (not
+    // useEffect) so the value is available in the same render pass.
     const initialCountRef = useRef(0);
-    if (!serverSearchTerm.trim() && allOptions.length > 0) {
+    if (allOptions.length > 0 && (search.isLocalSearch || search.searchValue.trim() === '')) {
         initialCountRef.current = allOptions.length;
     }
 
     // Apply local filtering when all items are loaded
     const options = useMemo(() => {
-        if (useLocalSearchRef.current && inputValue.trim()) {
-            const term = inputValue.trim().toLowerCase();
+        if (search.isLocalSearch && search.searchValue.trim()) {
+            const term = search.searchValue.trim().toLowerCase();
             return allOptions.filter(opt => opt.label.toLowerCase().includes(term));
         }
         return allOptions;
-    }, [allOptions, inputValue]);
-
-    const onLoadMore = useCallback(() => {
-        if (hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
-        }
-    }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
-
-    const isSearchPending = !useLocalSearchRef.current && inputValue !== debouncedValue && inputValue.trim() !== '';
-    const isSearchFetching = !useLocalSearchRef.current && debouncedValue.trim() !== '' && isFetching;
+    }, [allOptions, search.isLocalSearch, search.searchValue]);
 
     return {
         options,
         initialCount: initialCountRef.current,
-        isLoading: (allOptions.length === 0 && isLoading) || isSearchPending || isSearchFetching,
-        searchValue: inputValue,
-        onSearchChange: setInputValue,
-        onLoadMore,
-        hasMore: hasNextPage ?? false,
-        isLoadingMore: isFetchingNextPage
+        isLoading: (allOptions.length === 0 && search.isLoading) || search.isSearchLoading,
+        searchValue: search.searchValue,
+        onSearchChange: search.onSearchChange,
+        onLoadMore: search.onLoadMore,
+        hasMore: search.hasMore,
+        isLoadingMore: search.isLoadingMore
     };
 }

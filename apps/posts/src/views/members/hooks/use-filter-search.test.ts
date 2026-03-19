@@ -12,13 +12,13 @@ interface MockResponse {
     isEnd?: boolean;
 }
 
-function createMockQuery(items: MockItem[] = [], {isEnd = true}: {isEnd?: boolean} = {}) {
+function createMockQuery(items: MockItem[] = [], {isEnd = true, hasNextPage = false}: {isEnd?: boolean; hasNextPage?: boolean} = {}) {
     return vi.fn().mockReturnValue({
         data: {items, isEnd} as MockResponse,
         isLoading: false,
         isFetching: false,
         fetchNextPage: vi.fn(),
-        hasNextPage: false,
+        hasNextPage,
         isFetchingNextPage: false
     });
 }
@@ -97,11 +97,15 @@ describe('useFilterSearch', () => {
 
         act(() => {
             result.current.onSearchChange('test');
+        });
+        act(() => {
             vi.advanceTimersByTime(300);
         });
 
         act(() => {
             result.current.onSearchChange('');
+        });
+        act(() => {
             vi.advanceTimersByTime(300);
         });
 
@@ -162,7 +166,7 @@ describe('useFilterSearch', () => {
         expect(fetchNextPage).toHaveBeenCalledOnce();
     });
 
-    it('escapes single quotes in search terms', () => {
+    it('passes raw search term to buildSearchFilter (caller handles escaping)', () => {
         const useQuery = createMockQuery();
         const buildSearchFilter = vi.fn((term: string) => `name:~'${term}'`);
 
@@ -176,10 +180,12 @@ describe('useFilterSearch', () => {
 
         act(() => {
             result.current.onSearchChange('it\'s');
+        });
+        act(() => {
             vi.advanceTimersByTime(300);
         });
 
-        expect(buildSearchFilter).toHaveBeenCalledWith('it\'\'s');
+        expect(buildSearchFilter).toHaveBeenCalledWith('it\'s');
     });
 
     it('reports isLoading only when there are no options and query is loading', () => {
@@ -202,8 +208,9 @@ describe('useFilterSearch', () => {
         expect(result.current.isLoading).toBe(true);
     });
 
-    it('reports isLoading while debouncing a search term', () => {
-        const useQuery = createMockQuery([{id: 'a', name: 'Alpha'}]);
+    it('reports isLoading while debouncing a search term (server search)', () => {
+        // hasNextPage: true forces server search (local search would be instant, no loading)
+        const useQuery = createMockQuery([{id: 'a', name: 'Alpha'}], {hasNextPage: true});
 
         const {result} = renderHook(() => useFilterSearch<MockResponse, 'items'>({
             useQuery,
@@ -219,7 +226,7 @@ describe('useFilterSearch', () => {
             result.current.onSearchChange('alp');
         });
 
-        // Should be loading while debouncing
+        // Should be loading while debouncing (server search pending)
         expect(result.current.isLoading).toBe(true);
 
         act(() => {
@@ -230,13 +237,14 @@ describe('useFilterSearch', () => {
         expect(result.current.isLoading).toBe(false);
     });
 
-    it('reports isLoading while query is fetching search results', () => {
+    it('reports isLoading while query is fetching search results (server search)', () => {
+        // hasNextPage: true forces server search
         const useQuery = vi.fn().mockReturnValue({
             data: {items: [{id: 'a', name: 'Alpha'}]} as MockResponse,
             isLoading: false,
             isFetching: true,
             fetchNextPage: vi.fn(),
-            hasNextPage: false,
+            hasNextPage: true,
             isFetchingNextPage: false
         });
 
@@ -251,6 +259,8 @@ describe('useFilterSearch', () => {
         // Trigger a search and advance past debounce
         act(() => {
             result.current.onSearchChange('alp');
+        });
+        act(() => {
             vi.advanceTimersByTime(300);
         });
 
@@ -276,6 +286,26 @@ describe('useFilterSearch', () => {
         }));
 
         // isFetching but no search term — should not show loading
+        expect(result.current.isLoading).toBe(false);
+    });
+
+    it('does not report isLoading for search when local search is active', () => {
+        // hasNextPage: false + items → local search activates
+        const useQuery = createMockQuery([{id: 'a', name: 'Alpha'}]);
+
+        const {result} = renderHook(() => useFilterSearch<MockResponse, 'items'>({
+            useQuery,
+            dataKey: 'items',
+            valueKey: 'id',
+            labelKey: 'name',
+            buildSearchFilter: (term: string) => `name:~'${term}'`
+        }));
+
+        act(() => {
+            result.current.onSearchChange('alp');
+        });
+
+        // Local search is instant — no loading state
         expect(result.current.isLoading).toBe(false);
     });
 
@@ -313,6 +343,8 @@ describe('useFilterSearch', () => {
         // Search adds to the base filter
         act(() => {
             result.current.onSearchChange('gold');
+        });
+        act(() => {
             vi.advanceTimersByTime(300);
         });
 
@@ -372,6 +404,8 @@ describe('useFilterSearch', () => {
 
             act(() => {
                 result.current.onSearchChange('alp');
+            });
+            act(() => {
                 vi.advanceTimersByTime(300);
             });
 
