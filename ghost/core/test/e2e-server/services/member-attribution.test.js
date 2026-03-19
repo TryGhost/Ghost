@@ -90,14 +90,14 @@ describe('Member Attribution Service', function () {
                     type: 'post'
                 });
 
-                // Unpublish this post
+                // Unpublish this post — attribution should still resolve
+                // because we use internal context to find posts regardless of status
                 await models.Post.edit({status: 'draft'}, {id});
 
                 assertObjectMatches(await attribution.fetchResource(), {
-                    id: null,
-                    url: absoluteUrl,
-                    type: 'url',
-                    title: urlWithoutSubdirectory
+                    id: post.id,
+                    type: 'post',
+                    title: post.get('title')
                 });
 
                 await models.Post.edit({status: 'published'}, {id});
