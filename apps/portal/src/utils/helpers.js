@@ -65,6 +65,13 @@ export function isComplimentaryMember({member = {}}) {
     return false;
 }
 
+export function isGiftedMember({member = {}}) {
+    if (!member) {
+        return false;
+    }
+    return member.status === 'gifted';
+}
+
 export function isPaidMember({member = {}}) {
     return (member && member.paid);
 }

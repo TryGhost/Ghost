@@ -1,5 +1,5 @@
 import AppContext from '../../../../app-context';
-import {getCompExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
+import {getCompExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isGiftedMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../../../images/icons/offer-tag.svg';
@@ -24,7 +24,7 @@ const PaidAccountActions = () => {
         }
     };
 
-    const PlanLabel = ({price, isComplimentary, subscription}) => {
+    const PlanLabel = ({price, isComplimentary, isGifted, subscription}) => {
         const {next_payment: nextPayment} = subscription || {};
 
         let label = '';
@@ -34,7 +34,13 @@ const PaidAccountActions = () => {
         }
 
         const compExpiry = getCompExpiry({member});
-        if (isComplimentary) {
+        if (isGifted) {
+            if (compExpiry) {
+                label = `${t('Gifted')} - ${t('Expires {expiryDate}', {expiryDate: compExpiry})}`;
+            } else {
+                label = t('Gifted');
+            }
+        } else if (isComplimentary) {
             if (compExpiry) {
                 label = `${t('Complimentary')} - ${t('Expires {expiryDate}', {expiryDate: compExpiry})}`;
             } else {
@@ -144,8 +150,9 @@ const PaidAccountActions = () => {
 
     const subscription = getMemberSubscription({member});
     const isComplimentary = isComplimentaryMember({member});
+    const isGifted = isGiftedMember({member});
     const isPaid = isPaidMember({member});
-    if (subscription || isComplimentary) {
+    if (subscription || isComplimentary || isGifted) {
         const {
             price,
             default_payment_card_last4: defaultCardLast4
@@ -170,11 +177,11 @@ const PaidAccountActions = () => {
                                 <span className="gh-portal-canceled-badge">{t('Canceled')}</span>
                             )}
                         </h3>
-                        <PlanLabel price={price} isComplimentary={isComplimentary} subscription={subscription} />
+                        <PlanLabel price={price} isComplimentary={isComplimentary} isGifted={isGifted} subscription={subscription} />
                     </div>
                     <PlanUpdateButton isPaid={isPaid} />
                 </section>
-                <BillingSection isComplimentary={isComplimentary} defaultCardLast4={defaultCardLast4} />
+                <BillingSection isComplimentary={isComplimentary || isGifted} defaultCardLast4={defaultCardLast4} />
             </>
         );
     }

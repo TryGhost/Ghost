@@ -1,7 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
-import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice, getProductFromPrice, getFreeTierTitle, getFreeTierDescription, getFreeProduct, getFreeProductBenefits, getSupportAddress, formatNumber, isCookiesDisabled, hasOnlyFreeProduct, isMemberActivePrice, hasFreeTrialTier, isComplimentaryMember} from '../../utils/helpers';
+import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice, getProductFromPrice, getFreeTierTitle, getFreeTierDescription, getFreeProduct, getFreeProductBenefits, getSupportAddress, formatNumber, isCookiesDisabled, hasOnlyFreeProduct, isMemberActivePrice, hasFreeTrialTier, isComplimentaryMember, isGiftedMember} from '../../utils/helpers';
 import AppContext from '../../app-context';
 import calculateDiscount from '../../utils/discount';
 import Interpolate from '@doist/react-interpolate';
@@ -956,6 +956,7 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
     const activeInterval = getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval});
 
     const isComplimentary = isComplimentaryMember({member});
+    const isGifted = isGiftedMember({member});
     const hasOnlyFree = hasOnlyFreeProduct({site});
 
     useEffect(() => {
@@ -967,7 +968,14 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
     }, [selectedPrice.id, onPlanSelect]);
 
     if (products.length === 0) {
-        if (isComplimentary) {
+        if (isGifted) {
+            const supportAddress = getSupportAddress({site});
+            return (
+                <p style={{textAlign: 'center'}}>
+                    {t('Please contact {supportAddress} to adjust your gift subscription.', {supportAddress})}
+                </p>
+            );
+        } else if (isComplimentary) {
             const supportAddress = getSupportAddress({site});
             return (
                 <p style={{textAlign: 'center'}}>
