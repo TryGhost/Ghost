@@ -60,10 +60,9 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const tierSearch = useFilterSearch({
         useQuery: useBrowseTiers,
         extractItems: useCallback((data: TiersResponseType) => {
-            return data.tiers
-                .filter(tier => tier.type === 'paid' && tier.active)
-                .map(tier => ({value: tier.id, label: tier.name}));
+            return data.tiers.map(tier => ({value: tier.id, label: tier.name}));
         }, []),
+        baseFilter: 'type:paid+active:true',
         buildSearchFilter: useCallback((term: string) => `name:~'${term}'`, []),
         limit: '100'
     });

@@ -11,6 +11,7 @@ export interface UseFilterSearchOptions<T> {
         isFetchingNextPage: boolean;
     };
     extractItems: (data: T) => Array<{ value: string; label: string }>;
+    baseFilter?: string;
     buildSearchFilter?: (term: string) => string;
     limit?: string;
     debounceMs?: number;
@@ -33,6 +34,7 @@ function escapeNqlValue(term: string): string {
 export function useFilterSearch<T>({
     useQuery,
     extractItems,
+    baseFilter,
     buildSearchFilter,
     limit = '100',
     debounceMs = 250
@@ -55,13 +57,22 @@ export function useFilterSearch<T>({
 
     const searchParams = useMemo(() => {
         const params: Record<string, string> = {limit};
+        const filters: string[] = [];
+
+        if (baseFilter) {
+            filters.push(baseFilter);
+        }
 
         if (debouncedValue.trim() && buildSearchFilter) {
-            params.filter = buildSearchFilter(escapeNqlValue(debouncedValue.trim()));
+            filters.push(buildSearchFilter(escapeNqlValue(debouncedValue.trim())));
+        }
+
+        if (filters.length > 0) {
+            params.filter = filters.join('+');
         }
 
         return params;
-    }, [limit, debouncedValue, buildSearchFilter]);
+    }, [limit, baseFilter, debouncedValue, buildSearchFilter]);
 
     const {data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage} = useQuery({searchParams});
 
