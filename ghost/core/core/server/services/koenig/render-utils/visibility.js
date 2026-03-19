@@ -1,7 +1,7 @@
 const {renderEmptyContainer} = require('./render-empty-container');
 
 const ALL_MEMBERS_SEGMENT = 'status:free,status:-free';
-const PAID_MEMBERS_SEGMENT = 'status:-free'; // paid + comped
+const PAID_MEMBERS_SEGMENT = 'status:-free'; // paid + comped + gifted
 const FREE_MEMBERS_SEGMENT = 'status:free';
 const NO_MEMBERS_SEGMENT = '';
 
