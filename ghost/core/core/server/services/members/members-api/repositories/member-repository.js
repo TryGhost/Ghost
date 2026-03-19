@@ -331,7 +331,7 @@ module.exports = class MemberRepository {
         };
 
         if (memberData.products && memberData.products.length === 1) {
-            memberStatusData.status = 'comped';
+            memberStatusData.status = memberData.gifted ? 'gifted' : 'comped';
         }
 
         // Subscribe members to default newsletters
@@ -624,8 +624,8 @@ module.exports = class MemberRepository {
                         throw new errors.BadRequestError({message: tpl(messages.addProductWithActiveSubscription)});
                     }
 
-                    // CASE: We are changing products & there were not active stripe subscriptions - the member is "comped"
-                    memberStatusData.status = 'comped';
+                    // CASE: We are changing products & there were no active stripe subscriptions - the member is "comped" or "gifted"
+                    memberStatusData.status = memberData.gifted ? 'gifted' : 'comped';
                 }
             }
         }
@@ -1326,7 +1326,15 @@ module.exports = class MemberRepository {
 
         let memberProducts = (await memberModel.related('products').fetch(options)).toJSON();
         const oldMemberProducts = memberModel.related('products').toJSON();
-        let status = memberProducts.length === 0 ? 'free' : 'comped';
+        let status;
+        if (memberProducts.length === 0) {
+            status = 'free';
+        } else {
+            // Member has products but no active subscription - preserve gifted status
+            // if they were gifted, otherwise fall back to comped
+            const currentStatus = memberModel.get('status');
+            status = currentStatus === 'gifted' ? 'gifted' : 'comped';
+        }
         if (!stripeCustomerSubscriptionModelShouldBeDeleted && this.isActiveSubscriptionStatus(stripeSubscriptionData.status)) {
             if (this.isComplimentarySubscription(stripeSubscriptionData)) {
                 status = 'comped';
