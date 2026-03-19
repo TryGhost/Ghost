@@ -13,7 +13,7 @@ import {useBrowseInfiniteLabels} from '@tryghost/admin-x-framework/api/labels';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {useFilterSearch} from '../hooks/use-filter-search';
+import {useFilterSearch, useFilterSearchParams} from '../hooks/use-filter-search';
 import {useResourceSearch} from '../hooks/use-resource-search';
 
 interface MembersFiltersProps {
@@ -48,21 +48,18 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const {data: settingsData} = useBrowseSettings({});
     const {data: configData} = useBrowseConfig({});
 
-    const labelSearch = useFilterSearch({
-        useQuery: useBrowseInfiniteLabels,
-        extractItems: useCallback(
-            (data: {labels: Array<{slug: string; name: string}>}) => data.labels.map(l => ({value: l.slug, label: l.name})), []),
-        buildSearchFilter: useCallback((term: string) => `name:~'${term}'`, []),
-        limit: '100'
-    });
+    const buildNameFilter = useCallback((term: string) => `name:~'${term}'`, []);
+    const labelSearchParams = useFilterSearchParams(buildNameFilter);
+    const labelQueryResult = useBrowseInfiniteLabels({searchParams: {limit: '100', ...labelSearchParams.searchParams}});
+    const extractLabels = useCallback(
+        (data: {labels: Array<{slug: string; name: string}>}) => data.labels.map(l => ({value: l.slug, label: l.name})), []);
+    const labelSearch = {...useFilterSearch({queryResult: labelQueryResult, extractItems: extractLabels}), ...labelSearchParams};
 
-    const tierSearch = useFilterSearch({
-        useQuery: useBrowseTiers,
-        extractItems: useCallback(
-            (data: {tiers: Array<{id: string; name: string; type: string; active: boolean}>}) => data.tiers.filter(t => t.type === 'paid' && t.active).map(t => ({value: t.id, label: t.name})), []),
-        buildSearchFilter: useCallback((term: string) => `name:~'${term}'`, []),
-        limit: '100'
-    });
+    const tierSearchParams = useFilterSearchParams(buildNameFilter);
+    const tierQueryResult = useBrowseTiers({searchParams: {limit: '100', ...tierSearchParams.searchParams}});
+    const extractTiers = useCallback(
+        (data: {tiers: Array<{id: string; name: string; type: string; active: boolean}>}) => data.tiers.filter(t => t.type === 'paid' && t.active).map(t => ({value: t.id, label: t.name})), []);
+    const tierSearch = {...useFilterSearch({queryResult: tierQueryResult, extractItems: extractTiers}), ...tierSearchParams};
 
     const settings = settingsData?.settings || [];
     const paidMembersEnabled = getSettingValue<boolean>(settings, 'paid_members_enabled') === true;

@@ -151,7 +151,7 @@ export function useLabelPicker({
         onSearchChange,
         searchValue,
         onLoadMore,
-        hasMore: hasNextPage,
+        hasMore: hasNextPage ?? false,
         isLoadingMore: isFetchingNextPage
     };
 }
