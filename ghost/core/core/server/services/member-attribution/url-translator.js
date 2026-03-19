@@ -61,10 +61,13 @@ class UrlTranslator {
         if (item.type) {
             const resource = await this.getResourceById(item.id, item.type);
             if (resource) {
+                // Email-only posts (status:sent) have no public URL — the URL
+                // service returns /404/ for them. Use the /email/:uuid path instead.
+                const isEmailOnly = item.type === 'post' && resource.get('status') === 'sent';
                 return {
                     type: item.type,
                     id: item.id,
-                    url: this.getUrlByResourceId(item.id, {absolute: false})
+                    url: isEmailOnly ? `/email/${resource.get('uuid')}/` : this.getUrlByResourceId(item.id, {absolute: false})
                 };
             }
 
@@ -132,7 +135,7 @@ class UrlTranslator {
         switch (type) {
         case 'post':
         case 'page': {
-            const post = await this.models.Post.findOne({id}, {require: false});
+            const post = await this.models.Post.findOne({id}, {require: false, context: {internal: true}});
             if (!post) {
                 return null;
             }
