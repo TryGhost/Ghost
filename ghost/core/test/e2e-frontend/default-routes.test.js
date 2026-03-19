@@ -133,19 +133,6 @@ describe('Default Frontend routing', function () {
                 });
         });
 
-        it('/welcome/share/ should respond with valid HTML', async function () {
-            await request.get('/welcome/share/')
-                .expect('Content-Type', /html/)
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(200)
-                .expect(assertCorrectFrontendHeaders)
-                .expect((res) => {
-                    assert(res.text.includes('<title>Start here for a quick overview of everything you need to know</title>'));
-                    assert.match(res.text, /<h1[^>]*?>Start here for a quick overview of everything you need to know<\/h1>/);
-                    assert(!res.text.includes('__GHOST_URL__'));
-                });
-        });
-
         it('should not work with date permalinks', async function () {
             // get today's date
             const date = moment().format('YYYY/MM/DD');

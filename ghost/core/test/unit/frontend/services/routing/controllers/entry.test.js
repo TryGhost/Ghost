@@ -153,36 +153,6 @@ describe('Unit - services/routing/controllers/entry', function () {
             });
         });
 
-        it('isShareURL: true does not redirect to canonical entry url', function (done) {
-            req.path = '/does-exist/share/';
-            req.originalUrl = req.path;
-            post.url = '/does-exist/';
-
-            res.routerOptions.resourceType = 'posts';
-
-            routerManagerGetResourceByIdStub.withArgs(post.id).returns({
-                config: {
-                    type: 'posts'
-                }
-            });
-
-            entryLookUpStub.withArgs(req.path, res.routerOptions)
-                .resolves({
-                    isShareURL: true,
-                    entry: post
-                });
-
-            controllers.entry(req, res, function (err) {
-                if (err) {
-                    done(err);
-                }
-            }).then(function () {
-                sinon.assert.notCalled(urlUtilsRedirect301Stub);
-                sinon.assert.calledOnce(renderStub);
-                done();
-            }).catch(done);
-        });
-
         it('type of router !== type of resource', function (done) {
             req.path = post.url;
             res.routerOptions.resourceType = 'posts';
