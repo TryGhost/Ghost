@@ -48,6 +48,7 @@
     "Comment preferences updated.": "",
     "Comments": "",
     "Complimentary": "",
+    "Gifted": "",
     "Confirm": "",
     "Confirm cancellation": "",
     "Confirm subscription": "",
@@ -152,6 +153,7 @@
     "Plan checkout was cancelled.": "",
     "Plan upgrade was cancelled.": "",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "",
+    "Please contact {supportAddress} to adjust your gift subscription.": "",
     "Please enter {fieldName}": "",
     "Please fill in required fields": "",
     "Podcasts": "",
@@ -248,6 +250,7 @@
     "your inbox": "",
     "Your input helps shape what gets published.": "",
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
+    "Your gift subscription will expire on {expiryDate}": "",
     "Your subscription will expire on {expiryDate}": "",
     "Your subscription will renew on {renewalDate}": "",
     "Your subscription will start on {subscriptionStart}": ""

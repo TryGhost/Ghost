@@ -8,6 +8,7 @@
     "Complete your sign up to {siteTitle}!": "",
     "complimentary": "",
     "Confirm email address": "",
+    "gifted": "",
     "Confirm signup": "",
     "Confirm your email address": "",
     "Confirm your email update for {siteTitle}!": "",
@@ -78,6 +79,7 @@
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "",
     "Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.": "",
     "Your subscription has expired.": "",
+    "Your gift subscription will expire on {date}.": "",
     "Your subscription will expire on {date}.": "",
     "Your subscription will renew on {date}.": "",
     "Your verification code for {siteTitle}": ""
