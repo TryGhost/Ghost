@@ -398,22 +398,8 @@ const getTwitterCreator = () => {
     return getHostDocument().querySelector('meta[name="twitter:creator"]')?.content || '';
 };
 
-const normalizeShareUrl = (url) => {
-    if (!url) {
-        return '';
-    }
-
-    try {
-        const normalized = new URL(url, getHostWindow().location.href);
-        normalized.pathname = normalized.pathname.replace(/\/share\/?$/, '/');
-        return normalized.href;
-    } catch (_) {
-        return url;
-    }
-};
-
 const getShareUrl = () => {
-    return normalizeShareUrl(getCanonicalUrl()) || normalizeShareUrl(getHostWindow().location.href);
+    return getCanonicalUrl() || getHostWindow().location.href;
 };
 
 const getShareTitle = () => {
