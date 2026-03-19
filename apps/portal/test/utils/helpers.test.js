@@ -647,12 +647,12 @@ describe('Helpers - ', () => {
             expect(window.location.hash).toBe('');
         });
 
-        test('clears /share from end of the path', () => {
-            window.history.pushState({}, '', '/post/test/share/?ref=mail');
+        test('clears #/share links from URL hash', () => {
+            window.history.pushState({}, '', '/post/test?ref=mail#/share');
 
             removePortalLinkFromUrl();
 
-            expect(window.location.pathname).toBe('/post/test/');
+            expect(window.location.pathname).toBe('/post/test');
             expect(window.location.search).toBe('?ref=mail');
             expect(window.location.hash).toBe('');
         });

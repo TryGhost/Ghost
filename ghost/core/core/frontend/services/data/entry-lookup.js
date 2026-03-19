@@ -17,7 +17,6 @@ function entryLookup(postUrl, routerOptions, locals) {
     const targetPath = url.parse(postUrl).path;
     const permalinks = routerOptions.permalinks;
     let isEditURL = false;
-    let isShareURL = false;
 
     // CASE: e.g. /:slug/ -> { slug: 'value' }
     const matchFunc = routeMatch(permalinks);
@@ -28,23 +27,14 @@ function entryLookup(postUrl, routerOptions, locals) {
     debug(permalinks);
 
     // CASE 1: no matches, resolve
-    // CASE 2: params can be empty e.g. permalink is /featured/:options(edit|share)?/ and path is /featured/
+    // CASE 2: params can be empty e.g. permalink is /featured/:options(edit)?/ and path is /featured/
     if (params === false || !Object.keys(params).length) {
         return Promise.resolve();
     }
 
-    if (params.options) {
-        const option = params.options.toLowerCase();
-
-        // CASE: redirect if url contains `/edit/` at the end
-        if (option === 'edit') {
-            isEditURL = true;
-        }
-
-        // CASE: keep `/share/` as a valid entry URL option
-        if (option === 'share') {
-            isShareURL = true;
-        }
+    // CASE: redirect if url contains `/edit/` at the end
+    if (params.options && params.options.toLowerCase() === 'edit') {
+        isEditURL = true;
     }
 
     let options = {
@@ -65,8 +55,7 @@ function entryLookup(postUrl, routerOptions, locals) {
             return {
                 entry: entry,
                 isEditURL: isEditURL,
-                isShareURL: isShareURL,
-                isUnknownOption: (isEditURL || isShareURL) ? false : !!params.options
+                isUnknownOption: isEditURL ? false : !!params.options
             };
         });
 }

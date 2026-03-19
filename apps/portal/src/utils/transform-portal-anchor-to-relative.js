@@ -1,7 +1,7 @@
 export function transformPortalAnchorToRelative(anchor) {
     const href = anchor.getAttribute('href');
     const url = new URL(href, window.location.origin);
-    const supportedHashPrefixes = ['#/portal'];
+    const supportedHashPrefixes = ['#/portal', '#/share'];
     const hasSupportedHashPrefix = supportedHashPrefixes.some(prefix => url.hash.startsWith(prefix));
     const hasRelativeSupportedHashPrefix = supportedHashPrefixes.some(prefix => href.startsWith(prefix));
 

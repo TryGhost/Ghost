@@ -526,21 +526,13 @@ export default class App extends React.Component {
             };
         }
 
-        const pathnameParts = (window.location.pathname || '').split('/').filter(Boolean);
-        const isSharePath = pathnameParts.length > 1 && pathnameParts[pathnameParts.length - 1] === 'share';
-        if (isSharePath) {
-            return {
-                showPopup: true,
-                page: 'share'
-            };
-        }
-
         const [path, hashQueryString] = window.location.hash.substr(1).split('?');
         const hashQuery = new URLSearchParams(hashQueryString ?? '');
         const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
         const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/yearly$/;
         const offersRegex = /^offers\/(\w+?)\/?$/;
         const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
+        const shareRegex = /^\/share\/?$/;
         const feedbackRegex = /^\/feedback\/(\w+?)\/(\w+?)\/?$/;
 
         if (path && feedbackRegex.test(path)) {
@@ -570,10 +562,17 @@ export default class App extends React.Component {
                 }
             }
         }
+        if (path && shareRegex.test(path)) {
+            return {
+                showPopup: true,
+                page: 'share'
+            };
+        }
+
         if (path && linkRegex.test(path)) {
             const [,pagePath] = path.match(linkRegex);
 
-            // `#/portal/share` is deprecated and should not open share.
+            // `#/portal/share` has been replaced with `#/share`.
             if (pagePath === 'share') {
                 return {};
             }
@@ -1133,7 +1132,7 @@ export default class App extends React.Component {
      * portal. Especially useful for copy/pasted links from Admin screens.
      */
     transformPortalLinksToRelative() {
-        document.querySelectorAll('a[href*="#/portal"]').forEach(transformPortalAnchorToRelative);
+        document.querySelectorAll('a[href*="#/portal"], a[href*="#/share"]').forEach(transformPortalAnchorToRelative);
     }
 
     render() {

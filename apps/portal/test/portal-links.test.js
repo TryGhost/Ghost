@@ -87,15 +87,10 @@ describe('Portal Data links:', () => {
         delete window.location;
         window.location = {assign: locationMock};
         window.location.href = (new URL('https://portal.localhost')).href;
-        window.location.hash = '';
-        window.location.search = '';
-        window.location.pathname = '/';
     });
     afterEach(() => {
         vi.restoreAllMocks();
         window.location.hash = '';
-        window.location.search = '';
-        window.location.pathname = '/';
     });
     describe('#/portal', () => {
         test('opens default portal page', async () => {
@@ -194,9 +189,9 @@ describe('Portal Data links:', () => {
         });
     });
 
-    describe('/:entry/share/', () => {
+    describe('#/share', () => {
         test('opens portal share page', async () => {
-            window.location.pathname = '/welcome/share/';
+            window.location.hash = '#/share';
             let {
                 popupFrame, triggerButtonFrame, ...utils
             } = await setup({
