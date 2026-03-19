@@ -323,6 +323,7 @@ module.exports = function apiRoutes() {
     router.post('/files/upload',
         mw.authAdminApi,
         apiMw.upload.single('file'),
+        apiMw.upload.fileValidation({type: 'files'}),
         http(api.files.upload)
     );
 
