@@ -11,6 +11,7 @@ import {
     getSupportAddress,
     getDefaultNewsletterSender,
     getUrlHistory,
+    removePortalLinkFromUrl,
     hasMultipleProducts,
     isActiveOffer,
     isRetentionOffer,
@@ -632,6 +633,36 @@ describe('Helpers - ', () => {
             const urlHistory = getUrlHistory();
             expect(sessionStorage.getItem).toHaveBeenCalled();
             expect(urlHistory).toBeUndefined();
+        });
+    });
+
+    describe('removePortalLinkFromUrl', () => {
+        test('clears #/portal links from URL hash', () => {
+            window.history.pushState({}, '', '/members?filter=all#/portal/account');
+
+            removePortalLinkFromUrl();
+
+            expect(window.location.pathname).toBe('/members');
+            expect(window.location.search).toBe('?filter=all');
+            expect(window.location.hash).toBe('');
+        });
+
+        test('clears #/share links from URL hash', () => {
+            window.history.pushState({}, '', '/post/test?ref=mail#/share');
+
+            removePortalLinkFromUrl();
+
+            expect(window.location.pathname).toBe('/post/test');
+            expect(window.location.search).toBe('?ref=mail');
+            expect(window.location.hash).toBe('');
+        });
+
+        test('does not clear unrelated hashes', () => {
+            window.history.pushState({}, '', '/post/test?ref=mail#/not-portal');
+
+            removePortalLinkFromUrl();
+
+            expect(window.location.hash).toBe('#/not-portal');
         });
     });
 
