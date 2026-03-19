@@ -143,7 +143,7 @@ export const ShareModalStyles = `
         justify-content: center;
         border: none;
         color: var(--white);
-        background: var(--black);
+        background: var(--brandcolor, #3eb0ef);
         gap: 8px;
     }
 
