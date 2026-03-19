@@ -15,7 +15,12 @@ const MembersHeader: React.FC<MembersHeaderProps> = ({
     return (
         <Header className="pb-6! relative md:sticky" variant="inline-nav">
             <Header.Title>
-                Members {!isLoading && <span className="font-normal text-muted-foreground">{totalMembers.toLocaleString()}</span>}
+                Members{' '}
+                {!isLoading && (
+                    <span className="font-normal text-muted-foreground">
+                        {totalMembers.toLocaleString()}
+                    </span>
+                )}
             </Header.Title>
             {children}
         </Header>

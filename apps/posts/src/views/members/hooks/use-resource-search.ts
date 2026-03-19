@@ -1,22 +1,16 @@
+import {buildResourceFilter} from './resource-search-filter';
 import {useBrowsePages} from '@tryghost/admin-x-framework/api/pages';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useCallback, useMemo, useState} from 'react';
 import type {FilterOption} from '@tryghost/shade';
 
-export type ResourceType = 'post' | 'email';
+type ResourceType = 'post' | 'email';
 
 interface UseResourceSearchReturn {
     options: FilterOption<string>[];
     isLoading: boolean;
     searchValue: string;
     onSearchChange: (search: string) => void;
-}
-
-function buildFilter(baseFilter: string, search: string): string {
-    if (!search) {
-        return baseFilter;
-    }
-    return `${baseFilter}+title:~'${search.replace(/'/g, '\\\'')}'`;
 }
 
 /**
@@ -30,7 +24,7 @@ export function useResourceSearch(resourceType: ResourceType): UseResourceSearch
 
     const isPostType = resourceType === 'post';
 
-    const postFilter = buildFilter(
+    const postFilter = buildResourceFilter(
         isPostType ? 'status:published' : '(status:published,status:sent)+newsletter_id:-null',
         searchValue
     );
@@ -46,7 +40,7 @@ export function useResourceSearch(resourceType: ResourceType): UseResourceSearch
 
     const {data: pagesData, isLoading: pagesLoading} = useBrowsePages({
         searchParams: {
-            filter: buildFilter('status:published', searchValue),
+            filter: buildResourceFilter('status:published', searchValue),
             limit: '25',
             fields: 'id,title',
             order: 'published_at DESC'
