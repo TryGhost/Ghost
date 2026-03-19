@@ -6,14 +6,15 @@ const {api} = require('../services/proxy');
  *     free: number;
  *     paid: number;
  *     comped: number;
+ *     gifted: number;
  *     total: number;
  * }>}
  */
 async function getMemberStats() {
     let memberStats = this.data || await api.stats.memberCountHistory.query();
-    const {free, paid, comped} = memberStats.meta.totals;
-    let total = free + paid + comped;
-    return {free, paid, comped, total};
+    const {free, paid, comped, gifted} = memberStats.meta.totals;
+    let total = free + paid + comped + gifted;
+    return {free, paid, comped, gifted, total};
 }
 
 /**

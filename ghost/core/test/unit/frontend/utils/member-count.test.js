@@ -35,10 +35,10 @@ const getMemberStatsMock = [
 describe('Member Count', function () {
     it('should return total members', async function () {
         const meta = {data: {
-            meta: {totals: {paid: 1000, free: 500, comped: 500}}
+            meta: {totals: {paid: 1000, free: 500, comped: 500, gifted: 100}}
         }};
         const members = await getMemberStats.call(meta);
-        assert.equal(members.total, 2000);
+        assert.equal(members.total, 2100);
     });
 
     it('should return rounded numbers in correct format', function () {
