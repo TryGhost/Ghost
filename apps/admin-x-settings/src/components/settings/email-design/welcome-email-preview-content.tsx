@@ -2,7 +2,7 @@ import React from 'react';
 import {cn} from '@tryghost/shade';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {resolveAllColors} from './design-utils';
-import {resolveButtonCorners, resolveFontFamily} from './email-preview';
+import {resolveButtonCorners, resolveFontFamily} from './design-utils';
 import {useEmailDesign} from './email-design-context';
 import {useGlobalData} from '../../providers/global-data-provider';
 

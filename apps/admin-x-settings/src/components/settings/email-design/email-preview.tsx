@@ -1,7 +1,7 @@
 import React from 'react';
 import {GhostOrb, cn} from '@tryghost/shade';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {resolveAllColors} from './design-utils';
+import {resolveAllColors, resolveFontFamily, resolveImageCorners} from './design-utils';
 import {useGlobalData} from '../../providers/global-data-provider';
 import type {EmailDesignSettings} from './types';
 
@@ -16,25 +16,6 @@ interface EmailPreviewProps {
     emailFooter?: string;
     footerLinkText?: string;
     children?: React.ReactNode;
-}
-
-// --- Helper functions ---
-
-export function resolveFontFamily(category: string | undefined) {
-    return category === 'serif' ? 'Georgia, serif' : '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-}
-
-export function resolveButtonCorners(corners: string | undefined): string {
-    switch (corners) {
-    case 'square': return 'rounded-none';
-    case 'pill': return 'rounded-full';
-    case 'rounded':
-    default: return 'rounded-[6px]';
-    }
-}
-
-export function resolveImageCorners(corners: string | undefined): string {
-    return corners === 'rounded' ? 'rounded-md' : '';
 }
 
 // --- Sub-components ---
