@@ -23,8 +23,8 @@ export default class MembersStatsService extends Service {
         if (!stats) {
             return 0;
         }
-        const {free, paid, comped} = stats.meta.totals;
-        const total = free + paid + comped || 0;
+        const {free, paid, comped, gifted} = stats.meta.totals;
+        const total = free + paid + comped + gifted || 0;
         return total;
     }
 
@@ -124,7 +124,8 @@ export default class MembersStatsService extends Service {
             paid: initialDateInRangeVal ? initialDateInRangeVal.paid : 0,
             free: initialDateInRangeVal ? initialDateInRangeVal.free : 0,
             comped: initialDateInRangeVal ? initialDateInRangeVal.comped : 0,
-            total: initialDateInRangeVal ? (initialDateInRangeVal.paid + initialDateInRangeVal.free + initialDateInRangeVal.comped) : 0
+            gifted: initialDateInRangeVal ? initialDateInRangeVal.gifted : 0,
+            total: initialDateInRangeVal ? (initialDateInRangeVal.paid + initialDateInRangeVal.free + initialDateInRangeVal.comped + initialDateInRangeVal.gifted) : 0
         };
         while (currentRangeDate.isBefore(endDate)) {
             let dateStr = currentRangeDate.format('YYYY-MM-DD');
@@ -133,7 +134,8 @@ export default class MembersStatsService extends Service {
                 paid: dataOnDate.paid,
                 free: dataOnDate.free,
                 comped: dataOnDate.comped,
-                total: dataOnDate.paid + dataOnDate.free + dataOnDate.comped
+                gifted: dataOnDate.gifted,
+                total: dataOnDate.paid + dataOnDate.free + dataOnDate.comped + dataOnDate.gifted
             } : lastVal;
             lastVal = output[dateStr];
             currentRangeDate = currentRangeDate.add(1, 'day');

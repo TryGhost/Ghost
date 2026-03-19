@@ -18,6 +18,7 @@ export default function mockStats(server) {
                     paid: 0,
                     free: 2,
                     comped: 0,
+                    gifted: 0,
                     paid_subscribed: 0,
                     paid_canceled: 0
                 },
@@ -26,6 +27,7 @@ export default function mockStats(server) {
                     paid: 0,
                     free: 2,
                     comped: 0,
+                    gifted: 0,
                     paid_subscribed: 2,
                     paid_canceled: 0
                 },
@@ -34,6 +36,7 @@ export default function mockStats(server) {
                     paid: 0,
                     free: 12,
                     comped: 0,
+                    gifted: 0,
                     paid_subscribed: 0,
                     paid_canceled: 0
                 },
@@ -42,6 +45,7 @@ export default function mockStats(server) {
                     paid: 0,
                     free: 35,
                     comped: 0,
+                    gifted: 0,
                     paid_subscribed: 0,
                     paid_canceled: 0
                 },
@@ -50,6 +54,7 @@ export default function mockStats(server) {
                     paid: 0,
                     free: 38,
                     comped: 1,
+                    gifted: 0,
                     paid_subscribed: 0,
                     paid_canceled: 0
                 }
@@ -58,7 +63,8 @@ export default function mockStats(server) {
                 totals: {
                     paid: 0,
                     free: 38,
-                    comped: 1
+                    comped: 1,
+                    gifted: 0
                 }
             }
         };

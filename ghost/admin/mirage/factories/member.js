@@ -24,6 +24,10 @@ export default Factory.extend({
         status: 'comped'
     }),
 
+    gifted: trait({
+        status: 'gifted'
+    }),
+
     afterCreate(member, server) {
         const newslettersToSignup = server.schema.newsletters.where({subscribeOnSignup: true});
 
