@@ -189,9 +189,9 @@ describe('Portal Data links:', () => {
         });
     });
 
-    describe('#/portal/share', () => {
+    describe('#/share', () => {
         test('opens portal share page', async () => {
-            window.location.hash = '#/portal/share';
+            window.location.hash = '#/share';
             let {
                 popupFrame, triggerButtonFrame, ...utils
             } = await setup({
@@ -203,6 +203,19 @@ describe('Portal Data links:', () => {
             expect(popupFrame).toBeInTheDocument();
             const shareTitle = within(popupFrame.contentDocument).queryByText(/^Share$/i);
             expect(shareTitle).toBeInTheDocument();
+        });
+
+        test('does not open share page with legacy #/portal/share path', async () => {
+            window.location.hash = '#/portal/share';
+            const {
+                triggerButtonFrame, queryByTitle
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                showPopup: false
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(queryByTitle(/portal-popup/i)).not.toBeInTheDocument();
         });
     });
 

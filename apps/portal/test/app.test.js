@@ -63,6 +63,21 @@ describe('App', function () {
         expect(link.getAttribute('href')).toBe('#/portal/signup');
     });
 
+    test('transforms share links on render', async () => {
+        const link = document.createElement('a');
+        link.setAttribute('href', 'http://example.com/#/share');
+        document.body.appendChild(link);
+
+        const ghostApi = setupApi();
+        const utils = appRender(
+            <App siteUrl="http://example.com" api={ghostApi} />
+        );
+
+        await utils.findByTitle(/portal-popup/i);
+
+        expect(link.getAttribute('href')).toBe('#/share');
+    });
+
     test('prefers locale prop over site locale for i18n language', async () => {
         const ghostApi = setupApi({
             site: {

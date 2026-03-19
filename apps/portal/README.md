@@ -22,7 +22,7 @@ By default, the script adds a default floating trigger button on the bottom righ
 
 Its possible to add custom trigger button of your own by adding data attribute `data-portal` to any HTML tag on page, and also specify a specific [page](https://github.com/TryGhost/Ghost/blob/main/ghost/portal/src/pages.js#L13-L22) to open from it by using it as `data-portal=signup`.
 
-Share modal can be opened with `data-portal="share"` (or `#/portal/share`).
+Share modal can be opened with `data-portal="share"` (or `#/share`).
 
 Default (zero-config) usage:
 ```html
