@@ -7,19 +7,10 @@ import MembersList from './components/members-list';
 import React, {useMemo} from 'react';
 import {Button, EmptyIndicator, Header, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
 import {buildMemberListSearchParams} from './member-query-params';
+import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
 import {useMembersFilterState} from './hooks/use-members-filter-state';
-
-// Filters that restrict bulk delete
-const BULK_DELETE_RESTRICTED_FILTERS = [
-    'subscriptions.plan_interval',
-    'subscriptions.status',
-    'subscriptions.start_date',
-    'subscriptions.current_period_end',
-    'conversion',
-    'offer_redemptions'
-];
 
 const Members: React.FC = () => {
     const {filters, nql, search, setFilters, hasFilterOrSearch, clearAll} = useMembersFilterState();
@@ -30,8 +21,8 @@ const Members: React.FC = () => {
 
     // Check if bulk delete is permitted (not allowed if subscription filters are active)
     const canBulkDelete = useMemo(() => {
-        return !filters.some(f => BULK_DELETE_RESTRICTED_FILTERS.includes(f.field));
-    }, [filters]);
+        return canBulkDeleteMembers(filters, nql);
+    }, [filters, nql]);
 
     // Build search params for the API query, merging with defaults so we don't lose include/limit/order
     const searchParams = useMemo(() => {
@@ -56,8 +47,12 @@ const Members: React.FC = () => {
         keepPreviousData: true
     });
 
-    // Keep showing the spinner while refetching into or out of an empty result set.
-    const shouldShowLoading = isFetching && !isFetchingNextPage && (!isRefetching || !(data?.members.length));
+    const shouldShowLoading = shouldShowMembersLoading({
+        isFetching,
+        isFetchingNextPage,
+        isRefetching,
+        memberCount: data?.members.length ?? 0
+    });
 
     const totalMembers = data?.meta?.pagination?.total ?? 0;
     const hasFilters = filters.length > 0;
