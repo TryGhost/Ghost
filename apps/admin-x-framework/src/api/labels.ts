@@ -24,10 +24,12 @@ export const useBrowseLabels = createQuery<LabelsResponseType>({
 export const useBrowseInfiniteLabels = createInfiniteQuery<LabelsResponseType & {isEnd: boolean}>({
     dataType: 'InfiniteLabelsResponseType',
     path: '/labels/',
-    defaultNextPageParams: (lastPage, otherParams) => ({
-        ...otherParams,
-        page: (lastPage.meta?.pagination.next || 1).toString()
-    }),
+    defaultNextPageParams: (lastPage, otherParams) => (lastPage.meta?.pagination.next
+        ? {
+            ...otherParams,
+            page: lastPage.meta.pagination.next.toString()
+        }
+        : undefined),
     returnData: (originalData) => {
         const {pages} = originalData as InfiniteData<LabelsResponseType>;
         const labels = pages.flatMap(page => page.labels);
