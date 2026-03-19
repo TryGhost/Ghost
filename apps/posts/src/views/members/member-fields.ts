@@ -13,7 +13,7 @@ function getDayBoundsInUtc(date: string, timezone: string): {start: string; end:
 
 const TEXT_OPERATORS = ['is', 'contains', 'does-not-contain', 'starts-with', 'ends-with'] as const;
 const DATE_OPERATORS = ['is-less', 'is-or-less', 'is-greater', 'is-or-greater'] as const;
-const NUMBER_OPERATORS = ['is', 'is-greater', 'is-or-greater', 'is-less', 'is-or-less'] as const;
+const NUMBER_OPERATORS = ['is', 'is-greater', 'is-less'] as const;
 const SCALAR_OPERATORS = ['is', 'is-not'] as const;
 const SET_OPERATORS = ['is-any', 'is-not-any'] as const;
 const SUBSCRIPTION_STATUS_OPTIONS: Array<{value: string; label: string}> = [
@@ -177,7 +177,7 @@ export const memberFields = defineFields({
             label: 'Name',
             type: 'text',
             placeholder: 'Enter name...',
-            defaultOperator: 'is',
+            defaultOperator: 'contains',
             className: 'w-48'
         },
         codec: textCodec()
@@ -188,7 +188,7 @@ export const memberFields = defineFields({
             label: 'Email',
             type: 'text',
             placeholder: 'Enter email...',
-            defaultOperator: 'is',
+            defaultOperator: 'contains',
             className: 'w-64'
         },
         codec: textCodec()
