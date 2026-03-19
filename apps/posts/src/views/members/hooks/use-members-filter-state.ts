@@ -1,321 +1,47 @@
-import {useCallback, useMemo} from 'react';
-import {useSearchParams} from '@tryghost/admin-x-framework';
+import {hasTimezoneSensitiveMemberFilter, parseMemberFilter, serializeMemberFilters} from '../member-filter-query';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useSearchParams} from 'react-router';
 import type {Filter} from '@tryghost/shade';
 
-/**
- * Member filter field keys - single source of truth for filter definitions
- */
-export const MEMBER_FILTER_FIELDS = [
-    // Basic filters
-    'name',
-    'email',
-    'label',
-    'subscribed',
-    'last_seen_at',
-    'created_at',
-    'signup',
-    // Newsletter filters (dynamic, prefixed with newsletters.slug:)
-    'newsletters',
-    // Subscription filters
-    'tier_id',
-    'status',
-    'subscriptions.plan_interval',
-    'subscriptions.status',
-    'subscriptions.start_date',
-    'subscriptions.current_period_end',
-    'conversion',
-    // Email filters
-    'email_count',
-    'email_opened_count',
-    'email_open_rate',
-    'emails.post_id',
-    'opened_emails.post_id',
-    'clicked_links.post_id',
-    'newsletter_feedback',
-    // Optional
-    'offer_redemptions'
-] as const;
-
-export type MemberFilterField = typeof MEMBER_FILTER_FIELDS[number];
-
-// Fields that support multiselect (comma-separated values in URL)
-const MULTISELECT_FIELDS = new Set<string>(['label', 'offer_redemptions']);
-
-/**
- * Escape a string for NQL (escape single quotes)
- */
-function escapeNqlString(value: string): string {
-    return '\'' + value.replace(/'/g, '\\\'') + '\'';
+interface SetFiltersOptions {
+    replace?: boolean;
 }
 
-/**
- * Map UI operator names to NQL operators
- */
-function getFilterRelationOperator(relation: string): string {
-    const relationMap: Record<string, string> = {
-        'is-less': '<',
-        'is-or-less': '<=',
-        is: '',
-        'is-not': '-',
-        'is-greater': '>',
-        'is-or-greater': '>=',
-        contains: '~',
-        'does-not-contain': '-~',
-        'starts-with': '~^',
-        'ends-with': '~$',
-        // Shade filter operators (mapped to our internal names)
-        before: '<',
-        after: '>',
-        is_not: '-',
-        is_any_of: '',
-        is_not_any_of: '-',
-        greater_than: '>',
-        less_than: '<',
-        equals: '',
-        not_equals: '-'
-    };
-
-    return relationMap[relation] ?? '';
+interface UseMembersFilterStateReturn {
+    filters: Filter[];
+    nql: string | undefined;
+    search: string;
+    setFilters: (filters: Filter[], options?: SetFiltersOptions) => void;
+    setSearch: (search: string, options?: SetFiltersOptions) => void;
+    clearFilters: (options?: SetFiltersOptions) => void;
+    clearAll: (options?: SetFiltersOptions) => void;
+    hasFilterOrSearch: boolean;
 }
 
-/**
- * Build NQL filter string from filter array
- */
-export function buildMemberNqlFilter(filters: Filter[]): string | undefined {
-    const parts: string[] = [];
-
-    for (const filter of filters) {
-        if (!filter.values[0] && filter.values[0] !== 0) {
-            continue;
-        }
-
-        const field = filter.field;
-        const operator = filter.operator;
-        const value = filter.values[0];
-        const relationStr = getFilterRelationOperator(operator);
-
-        // Handle newsletter filters with dynamic keys (e.g., newsletters.weekly-digest)
-        if (field.startsWith('newsletters.')) {
-            const slug = field.replace('newsletters.', '');
-            const subscriptionStatus = String(value);
-            if (subscriptionStatus === 'subscribed') {
-                parts.push(`(newsletters.slug:${slug}+email_disabled:0)`);
-            } else {
-                parts.push(`(newsletters.slug:-${slug},email_disabled:1)`);
-            }
-            continue;
-        }
-
-        switch (field) {
-        // Text filters (name, email)
-        case 'name':
-        case 'email': {
-            const escapedValue = escapeNqlString(String(value));
-            parts.push(`${field}:${relationStr}${escapedValue}`);
-            break;
-        }
-
-        // Array filters (label, tier_id, offer_redemptions)
-        case 'label':
-        case 'tier_id':
-        case 'offer_redemptions': {
-            if (Array.isArray(filter.values) && filter.values.length > 0) {
-                const filterValue = '[' + filter.values.join(',') + ']';
-                parts.push(`${field}:${relationStr}${filterValue}`);
-            } else if (value) {
-                parts.push(`${field}:${relationStr}${value}`);
-            }
-            break;
-        }
-
-        // Status filter
-        case 'status': {
-            parts.push(`status:${relationStr}${value}`);
-            break;
-        }
-
-        // Subscribed filter (complex NQL)
-        case 'subscribed': {
-            if (value === 'email-disabled') {
-                if (operator === 'is') {
-                    parts.push('(email_disabled:1)');
-                } else {
-                    parts.push('(email_disabled:0)');
-                }
-            } else if (operator === 'is' || operator === 'is_any_of') {
-                if (value === 'subscribed') {
-                    parts.push('(subscribed:true+email_disabled:0)');
-                } else {
-                    parts.push('(subscribed:false+email_disabled:0)');
-                }
-            } else {
-                // is-not
-                if (value === 'subscribed') {
-                    parts.push('(subscribed:false,email_disabled:1)');
-                } else {
-                    parts.push('(subscribed:true,email_disabled:1)');
-                }
-            }
-            break;
-        }
-
-        // Newsletter filters (dynamic)
-        case 'newsletters': {
-            // Value format: "slug:subscribed" or "slug:unsubscribed"
-            const [slug, subscriptionStatus] = String(value).split(':');
-            if (subscriptionStatus === 'subscribed' || (operator === 'is' && subscriptionStatus !== 'unsubscribed')) {
-                parts.push(`(newsletters.slug:${slug}+email_disabled:0)`);
-            } else {
-                parts.push(`(newsletters.slug:-${slug},email_disabled:1)`);
-            }
-            break;
-        }
-
-        // Date filters
-        case 'last_seen_at':
-        case 'created_at':
-        case 'subscriptions.start_date':
-        case 'subscriptions.current_period_end': {
-            const dateValue = String(value);
-            parts.push(`${field}:${relationStr}'${dateValue}'`);
-            break;
-        }
-
-        // Number filters
-        case 'email_count':
-        case 'email_opened_count':
-        case 'email_open_rate': {
-            parts.push(`${field}:${relationStr}${value}`);
-            break;
-        }
-
-        // Subscription plan interval
-        case 'subscriptions.plan_interval': {
-            parts.push(`subscriptions.plan_interval:${relationStr}${value}`);
-            break;
-        }
-
-        // Subscription status
-        case 'subscriptions.status': {
-            parts.push(`subscriptions.status:${relationStr}${value}`);
-            break;
-        }
-
-        // Resource filters — value is a post/page ID
-        case 'signup':
-        case 'conversion':
-        case 'emails.post_id':
-        case 'opened_emails.post_id':
-        case 'clicked_links.post_id': {
-            parts.push(`${field}:${relationStr}'${value}'`);
-            break;
-        }
-
-        // Audience feedback — operator is the score, value is the post ID
-        case 'newsletter_feedback': {
-            // NQL: (feedback.post_id:'<postId>'+feedback.score:<0or1>)
-            const score = operator; // '1' = More like this, '0' = Less like this
-            parts.push(`(feedback.post_id:'${value}'+feedback.score:${score})`);
-            break;
-        }
-
-        default:
-            // Generic fallback
-            if (typeof value === 'string' && value.includes(' ')) {
-                parts.push(`${field}:${relationStr}'${value}'`);
-            } else {
-                parts.push(`${field}:${relationStr}${value}`);
-            }
-        }
-    }
-
-    return parts.length ? parts.join('+') : undefined;
+interface ToSearchParamsOptions {
+    baseSearchParams: URLSearchParams;
+    filters: Filter[];
+    search: string;
+    timezone: string;
 }
 
-/**
- * Parse a filter value from URL format: "operator:value"
- * e.g., "is:paid", "contains:hello"
- */
-function parseFilterValue(queryValue: string): {operator: string; value: string} | null {
-    if (!queryValue) {
-        return null;
-    }
-
-    const colonIndex = queryValue.indexOf(':');
-    if (colonIndex <= 0) {
-        return null;
-    }
-
-    return {
-        operator: queryValue.substring(0, colonIndex),
-        value: queryValue.substring(colonIndex + 1)
-    };
+export function shouldDelayMembersDateFilterHydration(
+    filterParam: string | undefined,
+    hasResolvedTimezone: boolean,
+    isSettingsLoading: boolean = !hasResolvedTimezone
+): boolean {
+    return Boolean(filterParam) && isSettingsLoading && !hasResolvedTimezone && hasTimezoneSensitiveMemberFilter(filterParam);
 }
 
-/**
- * Parse URL search params into Filter objects
- */
-function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
-    const filters: Filter[] = [];
+function toSearchParams({baseSearchParams, filters, search, timezone}: ToSearchParamsOptions): URLSearchParams {
+    const params = new URLSearchParams(baseSearchParams);
+    const filter = serializeMemberFilters(filters, timezone);
 
-    for (const [field, queryValue] of searchParams.entries()) {
-        // Skip non-filter params
-        if (field === 'search') {
-            continue;
-        }
+    params.delete('filter');
+    params.delete('search');
 
-        // Handle newsletter filters which have dynamic keys (e.g., newsletters.weekly-digest)
-        const isNewsletterFilter = field.startsWith('newsletters.');
-
-        if (!isNewsletterFilter && !MEMBER_FILTER_FIELDS.includes(field as MemberFilterField)) {
-            continue;
-        }
-
-        if (!queryValue) {
-            continue;
-        }
-
-        const parsed = parseFilterValue(queryValue);
-        if (parsed) {
-            const values = MULTISELECT_FIELDS.has(field)
-                ? (parsed.value ? parsed.value.split(',') : [])
-                : [parsed.value];
-            filters.push({
-                id: field,
-                field: field,
-                operator: parsed.operator,
-                values
-            });
-        }
-    }
-
-    return filters;
-}
-
-/**
- * Serialize filters to URL search params format
- */
-function filtersToSearchParams(filters: Filter[], search?: string): URLSearchParams {
-    const params = new URLSearchParams();
-
-    for (const filter of filters) {
-        const key = filter.field;
-
-        // Multiselect fields (label, offer_redemptions) may have empty values
-        // when the filter row has just been added but no values selected yet.
-        // We still serialize them so the filter row persists in the URL.
-        if (MULTISELECT_FIELDS.has(key)) {
-            const serializedValue = filter.values.length > 0
-                ? filter.values.map(v => String(v)).join(',')
-                : '';
-            params.set(key, `${filter.operator}:${serializedValue}`);
-            continue;
-        }
-
-        if (filter.values[0] !== undefined) {
-            const value = `${filter.operator}:${String(filter.values[0])}`;
-            params.set(key, value);
-        }
+    if (filter) {
+        params.set('filter', filter);
     }
 
     if (search) {
@@ -325,66 +51,112 @@ function filtersToSearchParams(filters: Filter[], search?: string): URLSearchPar
     return params;
 }
 
-type SetFiltersAction = Filter[] | ((prevFilters: Filter[]) => Filter[]);
-
-interface SetFiltersOptions {
-    replace?: boolean;
-}
-
-interface UseFilterStateReturn {
-    filters: Filter[];
-    nql: string | undefined;
-    search: string;
-    setFilters: (action: SetFiltersAction, options?: SetFiltersOptions) => void;
-    setSearch: (search: string, options?: SetFiltersOptions) => void;
-    clearFilters: (options?: SetFiltersOptions) => void;
-    isFiltered: boolean;
-}
-
-/**
- * Hook to sync member filter state with URL query parameters
- *
- * URL format: ?status=is:paid&label=is:vip&search=john
- */
-export function useMembersFilterState(): UseFilterStateReturn {
+export function useMembersFilterState(timezone: string): UseMembersFilterStateReturn {
     const [searchParams, setSearchParams] = useSearchParams();
+    const lastWrittenQueryRef = useRef<string | null>(null);
+    const filterParam = useMemo(() => searchParams.get('filter') ?? undefined, [searchParams]);
+    const currentQuery = useMemo(() => searchParams.toString(), [searchParams]);
 
-    // Parse filters from URL
-    const filters = useMemo(() => {
-        return searchParamsToFilters(searchParams);
-    }, [searchParams]);
+    const parsedFilters = useMemo(() => {
+        return parseMemberFilter(filterParam, timezone);
+    }, [filterParam, timezone]);
+    const [filters, setDraftFilters] = useState<Filter[]>(parsedFilters);
 
-    // Get search from URL
     const search = useMemo(() => {
         return searchParams.get('search') ?? '';
     }, [searchParams]);
 
-    // Update URL when filters change
-    const setFilters = useCallback((action: SetFiltersAction, options: SetFiltersOptions = {}) => {
-        const newFilters = typeof action === 'function' ? action(filters) : action;
-        const currentSearch = searchParams.get('search') ?? undefined;
-        const newParams = filtersToSearchParams(newFilters, currentSearch);
+    const nql = useMemo(() => {
+        return serializeMemberFilters(filters, timezone);
+    }, [filters, timezone]);
 
+    useEffect(() => {
+        if (currentQuery !== lastWrittenQueryRef.current) {
+            setDraftFilters(parsedFilters);
+            lastWrittenQueryRef.current = currentQuery;
+        }
+    }, [currentQuery, parsedFilters]);
+
+    useEffect(() => {
+        if (lastWrittenQueryRef.current !== null && currentQuery !== lastWrittenQueryRef.current) {
+            return;
+        }
+
+        const nextParams = toSearchParams({
+            baseSearchParams: searchParams,
+            filters,
+            search,
+            timezone
+        });
+        const nextQuery = nextParams.toString();
+
+        if (nextQuery !== currentQuery) {
+            lastWrittenQueryRef.current = nextQuery;
+            setSearchParams(nextParams, {replace: true});
+        }
+    }, [currentQuery, filters, search, searchParams, setSearchParams, timezone]);
+
+    const setFilters = useCallback((nextFilters: Filter[], options: SetFiltersOptions = {}) => {
         const replace = options.replace ?? true;
-        setSearchParams(newParams, {replace});
-    }, [filters, searchParams, setSearchParams]);
+        const nextParams = toSearchParams({
+            baseSearchParams: searchParams,
+            filters: nextFilters,
+            search,
+            timezone
+        });
 
-    // Update URL when search changes
-    const setSearch = useCallback((newSearch: string, options: SetFiltersOptions = {}) => {
-        const newParams = filtersToSearchParams(filters, newSearch || undefined);
+        setDraftFilters(nextFilters);
+        lastWrittenQueryRef.current = nextParams.toString();
+        setSearchParams(nextParams, {replace});
+    }, [search, searchParams, setSearchParams, timezone]);
 
+    const setSearch = useCallback((nextSearch: string, options: SetFiltersOptions = {}) => {
         const replace = options.replace ?? true;
-        setSearchParams(newParams, {replace});
-    }, [filters, setSearchParams]);
+        const nextParams = toSearchParams({
+            baseSearchParams: searchParams,
+            filters,
+            search: nextSearch,
+            timezone
+        });
 
-    // Clear all filter params from URL
+        lastWrittenQueryRef.current = nextParams.toString();
+        setSearchParams(nextParams, {replace});
+    }, [filters, searchParams, setSearchParams, timezone]);
+
     const clearFilters = useCallback(({replace = true}: SetFiltersOptions = {}) => {
-        setSearchParams(new URLSearchParams(), {replace});
-    }, [setSearchParams]);
+        const nextParams = toSearchParams({
+            baseSearchParams: searchParams,
+            filters: [],
+            search,
+            timezone
+        });
 
-    const nql = useMemo(() => buildMemberNqlFilter(filters), [filters]);
+        setDraftFilters([]);
+        lastWrittenQueryRef.current = nextParams.toString();
+        setSearchParams(nextParams, {replace});
+    }, [search, searchParams, setSearchParams, timezone]);
 
-    const isFiltered = filters.length > 0 || search.length > 0;
+    const clearAll = useCallback(({replace = true}: SetFiltersOptions = {}) => {
+        const nextParams = toSearchParams({
+            baseSearchParams: searchParams,
+            filters: [],
+            search: '',
+            timezone
+        });
 
-    return {filters, nql, search, setFilters, setSearch, clearFilters, isFiltered};
+        setDraftFilters([]);
+        lastWrittenQueryRef.current = nextParams.toString();
+        setSearchParams(nextParams, {replace});
+    }, [searchParams, setSearchParams, timezone]);
+
+    return {
+        filters,
+        nql,
+        search,
+        setFilters,
+        setSearch,
+        clearFilters,
+        clearAll,
+        hasFilterOrSearch: Boolean(nql) || search.length > 0
+    };
 }
