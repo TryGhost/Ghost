@@ -5,7 +5,6 @@
     "{amount} off for first {number} months.": "Эхний {number} сард {amount} хямдралтай.",
     "{amount} off for first {period}.": "Эхний {period}-д {amount} хямдралтай.",
     "{amount} off forever.": "Үүрд {amount} хямдралтай.",
-    "{amountOff} off": "",
     "{discount}% discount": "{discount}% хямдрал",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} хаяг руу {newsletterName} товхимол цаашид ирэхгүй болно.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} хаяг руу таны сэтгэгдэлд хариу бичихэд имэйл ирэхгүй болно.",

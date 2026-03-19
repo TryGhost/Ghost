@@ -5,7 +5,6 @@
     "{amount} off for first {number} months.": "ลด {amount} สำหรับ {number} เดือนแรก",
     "{amount} off for first {period}.": "ลด {amount} สำหรับ {period} ไตรมาสแรก",
     "{amount} off forever.": "ลด {amount} ตลอดไป",
-    "{amountOff} off": "",
     "{discount}% discount": "ส่วนลด {discount}%",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} นี้จะไม่ได้รับจดหมายข่าวจาก {newsletterName} อีกต่อไป",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} จะไม่ได้รับอีเมลอีกต่อไป เมื่อมีคนตอบกลับความคิดเห็นของคุณ",

@@ -5,7 +5,6 @@
     "{amount} off for first {number} months.": "{amount} soodustust esimeseks {number} kuuks.",
     "{amount} off for first {period}.": "{amount} soodustust esimeseks {period}ks.",
     "{amount} off forever.": "{amount} soodustust igaveseks.",
-    "{amountOff} off": "",
     "{discount}% discount": "{discount}% allahindlus",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} ei saa enam {newsletterName} uudiskirja.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} ei saa enam e-kirju, kui keegi vastab teie kommentaaridele.",

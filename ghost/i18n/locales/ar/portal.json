@@ -5,7 +5,6 @@
     "{amount} off for first {number} months.": "شهور {number} لأول {amount} خصم",
     "{amount} off for first {period}.": ".{period} لأول{amount} خصم  ",
     "{amount} off forever.": "تخفيض {amount} مدى الحياة",
-    "{amountOff} off": "",
     "{discount}% discount": "{discount}% خصم",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "الإخبارية {newsletterName} بعد الآن نشرة {memberEmail} لن يتلقى ",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": ".بعد الآن رسائل بريد إلكتروني عندما يرد أحد على تعليقاتك {memberEmail} لم يتلقى",

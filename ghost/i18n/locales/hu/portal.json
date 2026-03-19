@@ -5,7 +5,6 @@
     "{amount} off for first {number} months.": "{amount} kedvezmény az első {number} hónapig.",
     "{amount} off for first {period}.": "{amount} kedvezmény eddig: {period}",
     "{amount} off forever.": "{amount} kedvezmény örökké",
-    "{amountOff} off": "",
     "{discount}% discount": "{discount}% kedvezmény",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "A(z) {memberEmail} cím többé nem kap {newsletterName} hírlevelet",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "A(z) {memberEmail} többé nem kap e-mailt, ha valaki válaszol a hozzászólásaira.",

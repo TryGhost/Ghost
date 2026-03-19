@@ -5,7 +5,6 @@
     "{amount} off for first {number} months.": "প্রথম {number} মাসের জন্য {amount} ছাড়।",
     "{amount} off for first {period}.": "প্রথম {period} এর জন্য {amount} ছাড়।",
     "{amount} off forever.": "চিরতরে {amount} ছাড়।",
-    "{amountOff} off": "",
     "{discount}% discount": "{discount}% ছাড়",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} আর {newsletterName} নিউজলেটার পাবেন না।",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} আপনার মন্তব্যের উত্তর দিলে আর ইমেল পাবেন না।",

@@ -5,7 +5,6 @@
     "{amount} off for first {number} months.": "{amount} afsláttur fyrstu {number} mánuðina.",
     "{amount} off for first {period}.": "{amount} afsláttur fyrsta {period}",
     "{amount} off forever.": "{amount} afsláttur um ókomna tíð.",
-    "{amountOff} off": "",
     "{discount}% discount": "{discount}% afsláttur",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} fær framvegis ekki fréttabréf frá {newsletterName}.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} fær framvegis ekki tölvupóst þegar einhver svarar ummælum þínum.",

@@ -996,3 +996,13 @@ export function isRecentMember({member}) {
 
     return diffHours < 24;
 }
+
+// Translate cadence to human readable string
+export function translateCadence(cadence) {
+    if (cadence === 'month') {
+        return t('month');
+    } else if (cadence === 'year') {
+        return t('year');
+    }
+    return cadence;
+}

@@ -5,7 +5,6 @@
     "{amount} off for first {number} months.": "첫 {number}개월 {amount} 할인.",
     "{amount} off for first {period}.": "첫 {period} {amount} 할인.",
     "{amount} off forever.": "{amount} 영원히 할인.",
-    "{amountOff} off": "",
     "{discount}% discount": "{discount}% 할인",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail}님은 {newsletterName} 뉴스레터를 더 이상 받지 않으실 것이에요.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail}님은 다른 사람이 댓글에 답변할 때 이메일을 더 이상 받지 않으실 것이에요.",
