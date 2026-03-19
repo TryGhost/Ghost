@@ -1,5 +1,20 @@
 import {useCallback, useMemo, useRef, useState} from 'react';
 import type {FilterOption} from '@tryghost/shade';
+import type {InfiniteQueryHookOptions} from '@tryghost/admin-x-framework/hooks';
+
+export interface UseFilterSearchOptions<T> {
+    useQuery: (options?: InfiniteQueryHookOptions<T>) => {
+        data: T | undefined;
+        isLoading: boolean;
+        fetchNextPage: () => void;
+        hasNextPage?: boolean;
+        isFetchingNextPage: boolean;
+    };
+    extractItems: (data: T) => Array<{ value: string; label: string }>;
+    buildSearchFilter?: (term: string) => string;
+    limit?: string;
+    debounceMs?: number;
+}
 
 export interface UseFilterSearchReturn {
     options: FilterOption<string>[];
@@ -15,22 +30,13 @@ function escapeNqlValue(term: string): string {
     return term.replace(/'/g, '\'\'');
 }
 
-interface UseFilterSearchOptions<T> {
-    queryResult: {
-        data: T | undefined;
-        isLoading: boolean;
-        fetchNextPage: () => void;
-        hasNextPage?: boolean;
-        isFetchingNextPage: boolean;
-    };
-    extractItems: (data: T) => Array<{ value: string; label: string }>;
-}
-
-/**
- * Build a debounced NQL filter param for server-side search.
- * Returns `searchParams` to merge into the query hook call.
- */
-export function useFilterSearchParams(buildSearchFilter: (term: string) => string) {
+export function useFilterSearch<T>({
+    useQuery,
+    extractItems,
+    buildSearchFilter,
+    limit = '100',
+    debounceMs = 250
+}: UseFilterSearchOptions<T>): UseFilterSearchReturn {
     const [inputValue, setInputValue] = useState('');
     const [debouncedValue, setDebouncedValue] = useState('');
     const timerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -44,35 +50,20 @@ export function useFilterSearchParams(buildSearchFilter: (term: string) => strin
 
         timerRef.current = setTimeout(() => {
             setDebouncedValue(search);
-        }, 250);
-    }, []);
+        }, debounceMs);
+    }, [debounceMs]);
 
     const searchParams = useMemo(() => {
-        const params: Record<string, string> = {};
+        const params: Record<string, string> = {limit};
 
-        if (debouncedValue.trim()) {
+        if (debouncedValue.trim() && buildSearchFilter) {
             params.filter = buildSearchFilter(escapeNqlValue(debouncedValue.trim()));
         }
 
         return params;
-    }, [debouncedValue, buildSearchFilter]);
+    }, [limit, debouncedValue, buildSearchFilter]);
 
-    return {
-        searchValue: inputValue,
-        onSearchChange,
-        searchParams
-    };
-}
-
-/**
- * Combine an infinite query result with search state into a unified
- * filter-search return value.
- */
-export function useFilterSearch<T>({
-    queryResult,
-    extractItems
-}: UseFilterSearchOptions<T>): Omit<UseFilterSearchReturn, 'searchValue' | 'onSearchChange'> {
-    const {data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage} = queryResult;
+    const {data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage} = useQuery({searchParams});
 
     const options = useMemo(() => {
         if (!data) {
@@ -90,6 +81,8 @@ export function useFilterSearch<T>({
     return {
         options,
         isLoading: options.length === 0 && isLoading,
+        searchValue: inputValue,
+        onSearchChange,
         onLoadMore,
         hasMore: hasNextPage ?? false,
         isLoadingMore: isFetchingNextPage
