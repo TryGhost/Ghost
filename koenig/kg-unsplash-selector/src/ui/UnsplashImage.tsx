@@ -1,11 +1,11 @@
 import UnsplashButton from './UnsplashButton';
 import {FC, MouseEvent} from 'react';
-import {Links, Photo, User} from '../UnsplashTypes';
+import {InsertImageFn, Photo, SelectImgFn, User} from '../UnsplashTypes';
 
 export interface UnsplashImageProps {
     payload: Photo;
     srcUrl: string;
-    links: Links;
+    links: Photo['links'];
     likes: number;
     user: User;
     alt: string;
@@ -13,15 +13,8 @@ export interface UnsplashImageProps {
     height: number;
     width: number;
     zoomed: Photo | null;
-    insertImage: (options: {
-        src: string,
-        caption: string,
-        height: number,
-        width: number,
-        alt: string,
-        links: Links
-    }) => void;
-    selectImg: (payload: Photo | null) => void;
+    insertImage: InsertImageFn;
+    selectImg: SelectImgFn;
 }
 
 const UnsplashImage: FC<UnsplashImageProps> = ({payload, srcUrl, links, likes, user, alt, urls, height, width, zoomed, insertImage, selectImg}) => {

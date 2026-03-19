@@ -116,7 +116,7 @@ export class UnsplashProvider implements IUnsplashProvider {
         return [];
     }
 
-    public async triggerDownload(photo: Photo): Promise<void> {
+    public async triggerDownload(photo: Pick<Photo, 'links'>): Promise<void> {
         if (photo.links.download_location) {
             await this.makeRequest(photo.links.download_location);
         }

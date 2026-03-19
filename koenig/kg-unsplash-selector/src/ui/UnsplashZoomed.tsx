@@ -1,10 +1,10 @@
 import UnsplashImage, {UnsplashImageProps} from './UnsplashImage';
 import {FC} from 'react';
-import {Photo} from '../UnsplashTypes';
+import {Photo, SelectImgFn} from '../UnsplashTypes';
 
 interface UnsplashZoomedProps extends Omit<UnsplashImageProps, 'zoomed'> {
   zoomed: Photo | null;
-  selectImg: (photo: Photo | null) => void;
+  selectImg: SelectImgFn;
 }
 
 const UnsplashZoomed: FC<UnsplashZoomedProps> = ({payload, insertImage, selectImg, zoomed}) => {

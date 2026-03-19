@@ -36,7 +36,7 @@ export class InMemoryUnsplashProvider implements IUnsplashProvider {
 
     public async searchPhotos(term: string): Promise<Photo[]> {
         this.SEARCH_IS_RUNNING = true;
-        const filteredPhotos = this.photos.filter(photo => (photo.description && photo.description.toLowerCase().includes(term.toLowerCase())) || 
+        const filteredPhotos = this.photos.filter(photo => (photo.description && photo.description.toLowerCase().includes(term.toLowerCase())) ||
             (photo.alt_description && photo.alt_description.toLowerCase().includes(term.toLowerCase()))
         );
         this.SEARCH_IS_RUNNING = false;
@@ -47,9 +47,8 @@ export class InMemoryUnsplashProvider implements IUnsplashProvider {
         return this.SEARCH_IS_RUNNING;
     }
 
-    triggerDownload(photo: Photo): void {
-        () => {
-            photo;
-        };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    triggerDownload(_photo: Pick<Photo, 'links'>): void {
+        // no-op for in-memory provider
     }
 }

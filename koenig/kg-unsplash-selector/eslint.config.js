@@ -1,44 +1,39 @@
-import {fixupPluginRules} from '@eslint/compat';
+import {defineConfig} from 'eslint/config';
 import eslint from '@eslint/js';
 import ghostPlugin from 'eslint-plugin-ghost';
+import tseslint from 'typescript-eslint';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import reactRefreshPlugin from 'eslint-plugin-react-refresh';
-import tailwindcssPlugin from 'eslint-plugin-tailwindcss';
-import tseslint from 'typescript-eslint';
+import tailwindPlugin from 'eslint-plugin-tailwindcss';
 
-const ghost = fixupPluginRules(ghostPlugin);
-
-export default tseslint.config(
-    {ignores: ['dist/**']},
+export default defineConfig([
+    {ignores: ['dist/**', 'types/**']},
     {
-        files: ['src/**/*.{ts,tsx}'],
+        files: ['**/*.{ts,tsx}'],
         extends: [
             eslint.configs.recommended,
-            tseslint.configs.recommended,
-            reactPlugin.configs.flat.recommended,
-            reactPlugin.configs.flat['jsx-runtime']
+            tseslint.configs.recommended
         ],
+        languageOptions: {
+            parserOptions: {
+                ecmaVersion: 'latest',
+                sourceType: 'module',
+                ecmaFeatures: {jsx: true}
+            }
+        },
         plugins: {
-            ghost,
+            ghost: ghostPlugin,
+            react: reactPlugin,
             'react-hooks': reactHooksPlugin,
             'react-refresh': reactRefreshPlugin,
-            tailwindcss: tailwindcssPlugin
+            tailwindcss: tailwindPlugin
         },
         settings: {
-            react: {
-                version: 'detect'
-            }
+            react: {version: 'detect'}
         },
         rules: {
             ...ghostPlugin.configs.ts.rules,
-
-            // disable rules not in the original config
-            '@typescript-eslint/no-unused-expressions': 'off',
-
-            // react-hooks
-            'react-hooks/rules-of-hooks': 'error',
-            'react-hooks/exhaustive-deps': 'warn',
 
             // sort multiple import lines into alphabetical groups
             'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
@@ -47,17 +42,13 @@ export default tseslint.config(
 
             'prefer-const': 'off',
             'react-refresh/only-export-components': 'off',
-
-            // suppress errors for missing 'import React' in JSX files, as we don't need it
             'react/react-in-jsx-scope': 'off',
-            // ignore prop-types for now
             'react/prop-types': 'off',
 
             '@typescript-eslint/no-explicit-any': 'warn',
             '@typescript-eslint/no-non-null-assertion': 'off',
             '@typescript-eslint/no-empty-function': 'off',
 
-            // custom react rules
             'react/jsx-sort-props': ['error', {
                 reservedFirst: true,
                 callbacksLast: true,
@@ -76,5 +67,15 @@ export default tseslint.config(
             'tailwindcss/no-custom-classname': 'off',
             'tailwindcss/no-contradicting-classname': ['error', {config: 'tailwind.config.cjs'}]
         }
+    },
+    {
+        files: ['test/**/*.ts'],
+        rules: {
+            ...ghostPlugin.configs['ts-test'].rules,
+            'ghost/mocha/no-global-tests': 'off',
+            'ghost/mocha/handle-done-callback': 'off',
+            'ghost/mocha/no-mocha-arrows': 'off',
+            'ghost/mocha/max-top-level-suites': 'off'
+        }
     }
-);
+]);

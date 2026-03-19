@@ -4,14 +4,14 @@ import UnsplashGallery from './ui/UnsplashGallery';
 import UnsplashSelector from './ui/UnsplashSelector';
 import {DefaultHeaderTypes} from './UnsplashTypes';
 import {InMemoryUnsplashProvider} from './api/InMemoryUnsplashProvider';
-import {Photo} from './UnsplashTypes';
+import {InsertImagePayload, Photo} from './UnsplashTypes';
 import {PhotoUseCases} from './api/PhotoUseCase';
 import {UnsplashProvider} from './api/UnsplashProvider';
 import {UnsplashService} from './api/UnsplashService';
 
 interface UnsplashModalProps {
     onClose: () => void;
-    onImageInsert: (image: Photo) => void;
+    onImageInsert: (image: InsertImagePayload) => void;
     unsplashProviderConfig: DefaultHeaderTypes | null;
   }
 
@@ -154,7 +154,7 @@ export const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onI
         }
     }, [galleryRef, loadMorePhotos, zoomedImg]);
 
-    const selectImg = (payload:Photo) => {
+    const selectImg = (payload:Photo | null) => {
         if (payload) {
             setZoomedImg(payload);
             setLastScrollPos(scrollPos);
@@ -168,7 +168,7 @@ export const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onI
         }
     };
 
-    async function insertImage(image:Photo) {
+    async function insertImage(image:InsertImagePayload) {
         if (image.src) {
             UnsplashLib.triggerDownload(image);
             onImageInsert(image);

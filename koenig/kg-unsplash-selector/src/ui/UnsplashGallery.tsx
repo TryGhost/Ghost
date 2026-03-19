@@ -1,7 +1,7 @@
 import React, {ReactNode, RefObject} from 'react';
 import UnsplashImage from './UnsplashImage';
 import UnsplashZoomed from './UnsplashZoomed';
-import {Photo} from '../UnsplashTypes';
+import {InsertImageFn, Photo, SelectImgFn} from '../UnsplashTypes';
 
 interface MasonryColumnProps {
     children: ReactNode;
@@ -9,8 +9,8 @@ interface MasonryColumnProps {
 
 interface UnsplashGalleryColumnsProps {
     columns?: Photo[][] | [];
-    insertImage?: any;
-    selectImg?: any;
+    insertImage: InsertImageFn;
+    selectImg: SelectImgFn;
     zoomed?: Photo | null;
 }
 
@@ -24,8 +24,8 @@ interface GalleryLayoutProps {
 interface UnsplashGalleryProps extends GalleryLayoutProps {
     error?: string | null;
     dataset?: Photo[][] | [];
-    selectImg?: any;
-    insertImage?: any;
+    selectImg: SelectImgFn;
+    insertImage: InsertImageFn;
 }
 
 const UnsplashGalleryLoading: React.FC = () => {

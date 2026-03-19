@@ -9,7 +9,7 @@ export interface IUnsplashService {
     updateSearch(term: string): Promise<void>;
     loadNextPage(): Promise<void>;
     clearPhotos(): void;
-    triggerDownload(photo: Photo): void;
+    triggerDownload(photo: Pick<Photo, 'links'>): void;
     photos: Photo[];
     searchIsRunning(): boolean;
 }
@@ -61,7 +61,7 @@ export class UnsplashService implements IUnsplashService {
         this.photos = [];
     }
 
-    triggerDownload(photo: Photo) {
+    triggerDownload(photo: Pick<Photo, 'links'>) {
         this.photoUseCases.triggerDownload(photo);
     }
 

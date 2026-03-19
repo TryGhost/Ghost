@@ -71,6 +71,18 @@ export type Photo = {
     src? : string;
   };
 
+export interface InsertImagePayload {
+    src: string;
+    caption: string;
+    height: number;
+    width: number;
+    alt: string;
+    links: Links;
+}
+
+export type InsertImageFn = (payload: InsertImagePayload) => void;
+export type SelectImgFn = (payload: Photo | null) => void;
+
 export type DefaultHeaderTypes = {
     Authorization: string;
     'Accept-Version': string;

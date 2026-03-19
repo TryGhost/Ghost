@@ -16,7 +16,7 @@ export class PhotoUseCases {
         return await this._provider.searchPhotos(term);
     }
 
-    async triggerDownload(photo: Photo): Promise<void> {
+    async triggerDownload(photo: Pick<Photo, 'links'>): Promise<void> {
         this._provider.triggerDownload(photo);
     }
 
