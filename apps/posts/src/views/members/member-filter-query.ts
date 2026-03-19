@@ -24,6 +24,14 @@ function getCompoundChildren(node: AstNode): {operator: '$and' | '$or'; children
 }
 
 function matchSubscribedNode(node: AstNode): ParsedPredicate | null {
+    if (typeof node.subscribed === 'boolean') {
+        return {
+            field: 'subscribed',
+            operator: 'is',
+            values: [node.subscribed ? 'subscribed' : 'unsubscribed']
+        };
+    }
+
     if (typeof node.email_disabled === 'number') {
         if (node.email_disabled === 1) {
             return {

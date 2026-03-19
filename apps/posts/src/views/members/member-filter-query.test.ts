@@ -51,6 +51,16 @@ describe('member-filter-query', () => {
         ]);
     });
 
+    it('best-effort parses compat subscribed booleans into subscribed filters', () => {
+        expect(stripIds(parseMemberFilter('subscribed:true', 'UTC'))).toEqual([
+            {field: 'subscribed', operator: 'is', values: ['subscribed']}
+        ]);
+
+        expect(stripIds(parseMemberFilter('subscribed:false', 'UTC'))).toEqual([
+            {field: 'subscribed', operator: 'is', values: ['unsubscribed']}
+        ]);
+    });
+
     it('parses unwrapped Ember compounds at the root', () => {
         expect(stripIds(parseMemberFilter('subscribed:true+email_disabled:0', 'UTC'))).toEqual([
             {field: 'subscribed', operator: 'is', values: ['subscribed']}
@@ -75,6 +85,12 @@ describe('member-filter-query', () => {
         expect(serializeMemberFilters(predicates, 'UTC')).toBe(
             '(newsletters.slug:weekly+email_disabled:0)+emails.post_id:\'post_123\'+status:paid'
         );
+    });
+
+    it('canonicalizes compat subscribed booleans to member filter compounds', () => {
+        const parsed = parseMemberFilter('subscribed:true', 'UTC');
+
+        expect(serializeMemberFilters(parsed, 'UTC')).toBe('(subscribed:true+email_disabled:0)');
     });
 
     it('parses and serializes member date boundaries', () => {
