@@ -1033,7 +1033,8 @@ class EmailRenderer {
         const postUrl = this.#getPostUrl(post);
         const isPublicPost = post.get('visibility') === 'public';
         const shareUrl = new URL(postUrl);
-        shareUrl.hash = '/share';
+        shareUrl.pathname = `${shareUrl.pathname.replace(/\/$/, '')}/share/`;
+        shareUrl.hash = '';
 
         // Signup URL is the post url with a hash added to it
         const signupUrl = new URL(postUrl);
