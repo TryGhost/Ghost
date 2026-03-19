@@ -5,7 +5,6 @@
     "{amount} off for first {number} months.": "முதல் {number} மாதங்களுக்கு {amount} தள்ளுபடி.",
     "{amount} off for first {period}.": "முதல் {period}க்கு {amount} தள்ளுபடி.",
     "{amount} off forever.": "என்றென்றும் {amount} தள்ளுபடி.",
-    "{amountOff} off": "",
     "{discount}% discount": "{discount}% தள்ளுபடி",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} இனி {newsletterName} செய்திமடலைப் பெறமாட்டார்.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} இனி உங்கள் கருத்துகளுக்கு யாராவது பதிலளித்தால் மின்னஞ்சல்களைப் பெறமாட்டார்.",

@@ -5,7 +5,6 @@
     "{amount} off for first {number} months.": "Знижка {amount} для перших {number} місяців.",
     "{amount} off for first {period}.": "Знижка {amount} для першого {period}.",
     "{amount} off forever.": "Знижка {amount} назавжди.",
-    "{amountOff} off": "",
     "{discount}% discount": "Знижка {discount}%",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} більше не отримуватиме розсилку {newsletterName}.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} більше не отримуватиме електронні листи, коли хтось відповідає на ваші коментарі.",

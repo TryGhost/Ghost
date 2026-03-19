@@ -5,7 +5,6 @@
     "{amount} off for first {number} months.": "Zľava {amount} pre prvé {number} mesiace.",
     "{amount} off for first {period}.": "Zľava {amount} pre prvé {period}.",
     "{amount} off forever.": "Zľava {amount} navždy",
-    "{amountOff} off": "",
     "{discount}% discount": "Zľava {discount}%",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} už nebude dostávať {newsletterName} newsletter.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} už nebude dostávať e-maily, keď niekto odpovie na vaše komentáre.",

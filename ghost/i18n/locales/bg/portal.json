@@ -5,7 +5,6 @@
     "{amount} off for first {number} months.": "{amount} отстъпка за първите {number} месеца.",
     "{amount} off for first {period}.": "{amount} отстъпка за първия {period}.",
     "{amount} off forever.": "{amount} отстъпка завинаги.",
-    "{amountOff} off": "",
     "{discount}% discount": "{discount}% отстъпка",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} повече няма да получава бюлетина {newsletterName}.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} повече няма да получава имейли, когато някой отговаря на ваш коментар.",

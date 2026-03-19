@@ -277,7 +277,7 @@ function getRetentionOfferLabel(offer, amountOff) {
         return t('{months} months free', {months});
     }
 
-    return t('{amountOff} off', {amountOff});
+    return t('{amount} off', {amount: amountOff});
 }
 
 function getRetentionOfferMessage(offer, originalPrice, currency, amountOff, subscription) {
