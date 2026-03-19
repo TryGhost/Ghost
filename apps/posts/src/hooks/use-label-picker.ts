@@ -63,10 +63,12 @@ export function useLabelPicker({
     // resolve selectedSlugs → Label, even during a search that excludes them.
     const labels = useMemo(() => {
         const slugsInQuery = new Set(queryLabels.map(l => l.slug));
-        const missingSelected = [...selectedLabelCacheRef.current.values()]
-            .filter(l => !slugsInQuery.has(l.slug));
+        const missingSelected = selectedSlugs
+            .filter(slug => !slugsInQuery.has(slug))
+            .map(slug => selectedLabelCacheRef.current.get(slug))
+            .filter((l): l is Label => !!l);
         return missingSelected.length > 0 ? [...queryLabels, ...missingSelected] : queryLabels;
-    }, [queryLabels]);
+    }, [queryLabels, selectedSlugs]);
 
     const {mutateAsync: createLabelMutation, isLoading: isCreating} = useCreateLabel();
     const {mutateAsync: editLabelMutation} = useEditLabel();
