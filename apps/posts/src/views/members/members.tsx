@@ -6,7 +6,7 @@ import MembersLayout from './components/members-layout';
 import MembersList from './components/members-list';
 import React, {useMemo} from 'react';
 import {Button, EmptyIndicator, Header, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
-import {buildMemberListSearchParams} from './member-query-params';
+import {buildMemberListSearchParams, getMemberActiveColumns} from './member-query-params';
 import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {shouldDelayMembersDateFilterHydration, useMembersFilterState} from './hooks/use-members-filter-state';
@@ -21,6 +21,11 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
 
     // Check if email analytics is enabled
     const emailAnalyticsEnabled = configData?.config?.emailAnalytics === true;
+
+    // Extract active columns from filters (max 2)
+    const activeColumns = useMemo(() => {
+        return getMemberActiveColumns(filters);
+    }, [filters]);
 
     // Check if bulk delete is permitted (not allowed if subscription filters are active)
     const canBulkDelete = useMemo(() => {
@@ -143,12 +148,14 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                     </div>
                 ) : (
                     <MembersList
+                        activeColumns={activeColumns}
                         fetchNextPage={fetchNextPage}
                         hasNextPage={hasNextPage}
                         isFetchingNextPage={isFetchingNextPage}
                         isLoading={isFetching && !isFetchingNextPage}
                         items={data.members}
                         showEmailOpenRate={emailAnalyticsEnabled}
+                        timezone={timezone}
                         totalItems={totalMembers}
                     />
                 )}
