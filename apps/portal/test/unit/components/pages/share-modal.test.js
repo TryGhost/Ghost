@@ -24,6 +24,7 @@ describe('ShareModal', () => {
         vi.clearAllMocks();
         document.title = '';
         document.head.innerHTML = '';
+        window.history.pushState({}, '', '/post/test/share/?ref=mail');
     });
 
     afterEach(() => {
@@ -190,8 +191,9 @@ describe('ShareModal', () => {
 
         const linkedInLink = getByRole('link', {name: 'LinkedIn'});
         const linkedInUrl = new URL(linkedInLink.getAttribute('href'));
+        const expectedShareUrl = `${window.location.origin}/post/test/?ref=mail`;
 
-        expect(linkedInUrl.searchParams.get('url')).toBe(window.location.href);
+        expect(linkedInUrl.searchParams.get('url')).toBe(expectedShareUrl);
 
         const twitterLink = getByRole('link', {name: 'X (Twitter)'});
         const twitterUrl = new URL(twitterLink.getAttribute('href'));
@@ -245,7 +247,7 @@ describe('ShareModal', () => {
         fireEvent.click(copyButton);
 
         await waitFor(() => {
-            expect(copyTextToClipboard).toHaveBeenCalledWith(window.location.href);
+            expect(copyTextToClipboard).toHaveBeenCalledWith(`${window.location.origin}/post/test/?ref=mail`);
             expect(getByRole('button', {name: 'Copied'})).toBeInTheDocument();
         });
 
@@ -254,5 +256,21 @@ describe('ShareModal', () => {
         await waitFor(() => {
             expect(getByRole('button', {name: 'Copy link'})).toBeInTheDocument();
         });
+    });
+
+    test('normalizes canonical share URL by removing /share suffix', () => {
+        addHeadTag({
+            tagName: 'link',
+            attrs: {
+                rel: 'canonical',
+                href: 'https://example.com/post/share/?ref=test'
+            }
+        });
+
+        const {getByRole} = setup();
+        const twitterLink = getByRole('link', {name: 'X (Twitter)'});
+        const twitterUrl = new URL(twitterLink.getAttribute('href'));
+
+        expect(twitterUrl.searchParams.get('url')).toBe('https://example.com/post/?ref=test');
     });
 });
