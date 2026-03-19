@@ -153,6 +153,19 @@ describe('member-filter-query', () => {
         ]);
     });
 
+    it('drops unsupported OR compounds during parse', () => {
+        expect(parseMemberFilter('status:paid,label:vip', 'UTC')).toEqual([]);
+    });
+
+    it('keeps supported siblings when unsupported OR compounds are present', () => {
+        expect(stripIds(parseMemberFilter(
+            '(status:paid,label:vip)+created_at:<=\'2024-02-01T23:59:59.999Z\'',
+            'UTC'
+        ))).toEqual([
+            {field: 'created_at', operator: 'is-or-less', values: ['2024-02-01']}
+        ]);
+    });
+
     it('ignores malformed NQL input', () => {
         expect(parseMemberFilter('status:(', 'UTC')).toEqual([]);
     });

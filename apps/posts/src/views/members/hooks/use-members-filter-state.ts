@@ -1,5 +1,5 @@
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
-import {hasTimezoneSensitiveMemberFilter, hasUnsupportedMemberOrFilter, parseMemberFilter, serializeMemberFilters} from '../member-filter-query';
+import {hasTimezoneSensitiveMemberFilter, parseMemberFilter, serializeMemberFilters} from '../member-filter-query';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useCallback, useMemo} from 'react';
 import {useSearchParams} from 'react-router';
@@ -20,9 +20,19 @@ interface UseMembersFilterStateReturn {
     hasFilterOrSearch: boolean;
 }
 
-function toSearchParams(filters: Filter[], search: string, timezone: string): URLSearchParams {
+function getFilterParam(filters: Filter[], timezone: string, preservedFilter?: string): string | undefined {
+    const serializedFilter = serializeMemberFilters(filters, timezone);
+
+    if (preservedFilter && serializedFilter) {
+        return `${preservedFilter}+${serializedFilter}`;
+    }
+
+    return preservedFilter ?? serializedFilter;
+}
+
+function toSearchParams(filters: Filter[], search: string, timezone: string, preservedFilter?: string): URLSearchParams {
     const params = new URLSearchParams();
-    const filter = serializeMemberFilters(filters, timezone);
+    const filter = getFilterParam(filters, timezone, preservedFilter);
 
     if (filter) {
         params.set('filter', filter);
@@ -39,7 +49,6 @@ export function useMembersFilterState(): UseMembersFilterStateReturn {
     const [searchParams, setSearchParams] = useSearchParams();
     const {data: settingsData} = useBrowseSettings({});
     const filterParam = useMemo(() => searchParams.get('filter') ?? undefined, [searchParams]);
-    const hasUnsupportedOrFilter = useMemo(() => hasUnsupportedMemberOrFilter(filterParam), [filterParam]);
     const hasTimezoneSensitiveFilter = useMemo(() => hasTimezoneSensitiveMemberFilter(filterParam), [filterParam]);
     const resolvedTimezone = useMemo(() => {
         if (!settingsData) {
@@ -49,7 +58,8 @@ export function useMembersFilterState(): UseMembersFilterStateReturn {
         return getSiteTimezone(settingsData.settings ?? []);
     }, [settingsData]);
     const timezone = resolvedTimezone ?? 'Etc/UTC';
-    const shouldPreserveRawFilter = Boolean(filterParam) && (hasUnsupportedOrFilter || (!resolvedTimezone && hasTimezoneSensitiveFilter));
+    const shouldPreserveRawFilter = Boolean(filterParam) && !resolvedTimezone && hasTimezoneSensitiveFilter;
+    const preservedFilter = shouldPreserveRawFilter ? filterParam : undefined;
 
     const filters = useMemo(() => {
         if (shouldPreserveRawFilter) {
@@ -66,29 +76,13 @@ export function useMembersFilterState(): UseMembersFilterStateReturn {
     const setFilters = useCallback((nextFilters: Filter[], options: SetFiltersOptions = {}) => {
         const replace = options.replace ?? true;
 
-        setSearchParams(toSearchParams(nextFilters, search, timezone), {replace});
-    }, [search, setSearchParams, timezone]);
+        setSearchParams(toSearchParams(nextFilters, search, timezone, preservedFilter), {replace});
+    }, [preservedFilter, search, setSearchParams, timezone]);
 
     const setSearch = useCallback((nextSearch: string, options: SetFiltersOptions = {}) => {
         const replace = options.replace ?? true;
-        const params = new URLSearchParams();
-
-        if (shouldPreserveRawFilter && filterParam) {
-            params.set('filter', filterParam);
-        } else {
-            const filter = serializeMemberFilters(filters, timezone);
-
-            if (filter) {
-                params.set('filter', filter);
-            }
-        }
-
-        if (nextSearch) {
-            params.set('search', nextSearch);
-        }
-
-        setSearchParams(params, {replace});
-    }, [filterParam, filters, setSearchParams, shouldPreserveRawFilter, timezone]);
+        setSearchParams(toSearchParams(filters, nextSearch, timezone, preservedFilter), {replace});
+    }, [filters, preservedFilter, setSearchParams, timezone]);
 
     const clearFilters = useCallback(({replace = true}: SetFiltersOptions = {}) => {
         setSearchParams(toSearchParams([], search, timezone), {replace});
