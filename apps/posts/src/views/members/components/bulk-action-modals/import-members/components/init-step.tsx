@@ -11,7 +11,7 @@ export function InitStep({fileError, onClose, onDropAccepted, onDropRejected}: I
     return (
         <>
             <div className="mt-5 space-y-5">
-                <Banner className="shadow-none">
+                <Banner variant="info">
                     Need some help? <a className="font-semibold underline" href="https://ghost.org/help/import-members/" rel="noopener noreferrer" target="_blank">Learn more</a> about importing members or <a className="font-semibold underline" href="https://static.ghost.org/v4.0.0/files/member-import-template.csv" rel="noopener noreferrer" target="_blank">download a sample CSV file</a>.
                 </Banner>
 
