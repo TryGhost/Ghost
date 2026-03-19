@@ -17,7 +17,9 @@
         "**/dist/**": true,
         "**/ghost.map": true,
         "**/node_modules": true,
-        "ghost/core/core/built/**": true
+        "ghost/core/core/built/**": true,
+        "**/config.*.json": false,
+        "**/config.*.jsonc": false
     },
     "tailwindCSS.experimental.classRegex": [
         ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]

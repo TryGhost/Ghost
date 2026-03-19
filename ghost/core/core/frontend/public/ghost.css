@@ -712,11 +712,362 @@ h2 {
     box-shadow: none;
 }
 
+.gh-flow-content.private header .site-icon {
+    margin-bottom: 20px;
+}
+
+.gh-private-dialog {
+    width: min(92vw, 440px);
+    padding: 0;
+    border: 0;
+    border-radius: 24px;
+    background: transparent;
+    color: #15171A;
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.18);
+}
+
+.gh-private-description {
+    max-width: 550px;
+    margin: -18px 0 0;
+    color: #7C8B9A;
+    font-size: 2.05rem;
+    line-height: 1.35em;
+    text-align: center;
+    text-wrap: balance;
+}
+
+.gh-private-signup-form {
+    width: min(100%, 550px);
+    margin: 40px auto 0;
+}
+
+.gh-private-signup-fields {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+}
+
+.gh-private-signup-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.gh-private-signup-btn {
+    flex-shrink: 0;
+    min-width: 140px;
+    margin: 0;
+}
+
+.gh-private-signup-form .gh-private-signup-btn {
+    width: auto;
+    margin-top: 0;
+}
+
+.gh-private-signup-btn-content {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    justify-items: center;
+    min-width: 104px;
+    min-height: 33px;
+    line-height: 1;
+}
+
+.gh-private-signup-btn-label,
+.gh-private-signup-btn-loading,
+.gh-private-signup-btn-success {
+    grid-area: 1 / 1;
+    white-space: nowrap;
+    transition: opacity 0.2s ease, visibility 0.2s step-end;
+}
+
+.gh-private-signup-btn-label {
+    font-weight: inherit;
+}
+
+.gh-private-signup-btn-loading,
+.gh-private-signup-btn-success {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+    overflow: visible;
+    transform: translate(-50%, -50%);
+}
+
+.gh-private-signup-btn-loading,
+.gh-private-signup-btn-success {
+    width: 18px;
+    height: 18px;
+}
+
+.gh-private-signup-btn-loading circle {
+    opacity: 0.4;
+    animation: gh-private-signup-dots 0.8s infinite ease-in-out;
+    transform-origin: center;
+}
+
+.gh-private-signup-btn-loading circle:nth-child(1) {
+    animation-delay: -0.3s;
+}
+
+.gh-private-signup-btn-loading circle:nth-child(2) {
+    animation-delay: -0.15s;
+}
+
+.gh-private-signup-form[data-state="loading"] .gh-private-signup-btn-label,
+.gh-private-signup-form[data-state="success"] .gh-private-signup-btn-label {
+    opacity: 0;
+}
+
+.gh-private-signup-form[data-state="loading"] .gh-private-signup-btn-loading,
+.gh-private-signup-form[data-state="success"] .gh-private-signup-btn-success {
+    visibility: visible;
+    opacity: 1;
+    transition-timing-function: step-start;
+}
+
+.gh-private-signup-feedback {
+    min-height: 2.2rem;
+    margin: 12px 0 0;
+    color: #7C8B9A;
+    font-size: 1.4rem;
+    line-height: 1.4;
+    text-align: center;
+}
+
+.gh-private-signup-feedback[data-state="error"] {
+    color: #f50b23;
+}
+
+.gh-private-signup-feedback[data-state="success"] {
+    color: #30cf43;
+}
+
+.gh-private-signup-form[data-state="loading"] .gh-private-signup-btn,
+.gh-private-signup-form[data-state="success"] .gh-private-signup-btn {
+    opacity: 0.75;
+    pointer-events: none;
+}
+
+@keyframes gh-private-signup-dots {
+    0%,
+    100% {
+        opacity: 0.4;
+        transform: scale(0.75);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.gh-private-dialog::backdrop {
+    background: rgba(21, 23, 26, 0.4);
+    backdrop-filter: blur(10px);
+}
+
+.gh-private-dialog-panel {
+    position: relative;
+    padding: 32px;
+    background: #fff;
+    border-radius: 24px;
+}
+
+.gh-private-dialog-header {
+    margin-bottom: 24px;
+}
+
+.gh-private-dialog-header h2 {
+    margin: 0;
+    color: #15171A;
+    font-size: 3rem;
+    line-height: 1.1;
+}
+
+.gh-private-dialog-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    background: transparent;
+    color: #7C8B9A;
+    cursor: pointer;
+}
+
+.gh-private-dialog-close-icon {
+    width: 18px;
+    height: 18px;
+}
+
+.gh-private-dialog-close:hover {
+    color: #15171A;
+}
+
+.gh-private-dialog-close:focus-visible,
+.gh-private-powered:focus-visible {
+    outline: 2px solid #15171A;
+    outline-offset: 4px;
+}
+
+.gh-private-signin .gh-btn {
+    width: 100%;
+    max-width: none;
+}
+
+.gh-private-signin .main-error {
+    position: static;
+    margin-top: 12px;
+    text-align: left;
+}
+
+.gh-private-trigger-wrap {
+    position: fixed;
+    bottom: calc(29px + env(safe-area-inset-bottom, 0px));
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    padding: 0 24px;
+    box-sizing: border-box;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.gh-private-powered {
+    display: inline-flex;
+    align-items: center;
+    color: #15171A;
+    font-size: inherit;
+    font-weight: 400;
+    line-height: inherit;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.gh-private-powered-logo {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin-inline-end: 6px;
+}
+
+.gh-private-powered:hover {
+    color: #15171A;
+}
+
+.gh-private-footer-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    color: #15171A;
+    font-size: 1.4rem;
+    line-height: 1.5;
+    pointer-events: auto;
+}
+
+.gh-private-footer-separator {
+    color: #B8C1CB;
+}
+
+.gh-private-footer-links a {
+    color: #15171A;
+    text-decoration: none;
+}
+
+.gh-private-footer-links a:hover {
+    text-decoration: underline;
+}
+
+.no-js .gh-private-dialog,
+.gh-private-dialog[open].gh-private-dialog-fallback {
+    position: static;
+    width: 100%;
+    max-width: 520px;
+    margin-top: 32px;
+    box-shadow: none;
+}
+
+.no-js .gh-private-dialog:not([open]) {
+    display: block;
+}
+
+.no-js .gh-private-dialog::backdrop {
+    display: none;
+}
+
+.no-js .gh-private-dialog-panel {
+    padding: 0;
+    background: transparent;
+}
+
+.no-js .gh-private-dialog-close,
+.no-js .gh-private-trigger-wrap {
+    display: none;
+}
+
+@media (max-width: 600px) {
+    .gh-private-footer-links {
+        justify-content: center;
+    }
+
+    .gh-private-footer-links .gh-private-powered {
+        flex-basis: 100%;
+        justify-content: center;
+    }
+
+    .gh-private-footer-links .gh-private-powered + .gh-private-footer-separator {
+        display: none;
+    }
+}
+
 @media (max-width: 500px) {
     .gh-flow-content {
         padding: 0;
         background: transparent;
         box-shadow: none;
+    }
+
+    .gh-private-dialog-panel {
+        padding: 28px 24px 24px;
+        border-radius: 20px;
+    }
+
+    .gh-private-description {
+        font-size: 1.8rem;
+    }
+
+    .gh-private-signup-fields {
+        flex-direction: column;
+    }
+
+    .gh-private-signup-btn {
+        width: 100%;
+    }
+
+    .gh-private-dialog-header h2 {
+        font-size: 2.4rem;
+    }
+
+    .gh-private-trigger-wrap {
+        padding: 0 24px;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .gh-private-dialog {
+        transition: transform 180ms ease, opacity 180ms ease, background-color 180ms ease;
     }
 }
 
@@ -860,6 +1211,12 @@ h2 {
     box-shadow: 0 0 0 3px rgba(48,207,67,.25);
 }
 
+#access .gh-private-signin .gh-input:focus,
+.gh-flow-content-wrap .gh-private-signup-form.gh-signin .gh-input:focus {
+    border: 1px solid var(--gh-private-accent-color, #30cf43);
+    box-shadow: 0 0 0 3px var(--gh-private-accent-color-rgba, rgba(48,207,67,.25));
+}
+
 .gh-signin .gh-btn {
     margin: 0;
 }
@@ -875,6 +1232,22 @@ h2 {
     border-radius: 8px;
     transition: all 0.4s ease;
     -webkit-font-smoothing: subpixel-antialiased;
+}
+
+.gh-private-signup-form.gh-signin .gh-private-signup-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    margin-top: 0;
+    border-color: var(--gh-private-accent-color, #15171A);
+    background: var(--gh-private-accent-color, #15171A);
+    color: var(--gh-private-accent-contrast-color, #FFFFFF);
+    fill: var(--gh-private-accent-contrast-color, #FFFFFF);
+}
+
+.gh-private-signup-form.gh-signin .gh-private-signup-btn span {
+    color: var(--gh-private-accent-contrast-color, #FFFFFF);
 }
 
 .gh-signin .gh-btn span {
