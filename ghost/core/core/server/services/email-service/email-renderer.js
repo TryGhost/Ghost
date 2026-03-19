@@ -31,7 +31,8 @@ const messages = {
         active: t('Your subscription will renew on {date}.'),
         trial: t('Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.'),
         complimentaryExpires: t('Your subscription will expire on {date}.'),
-        complimentaryInfinite: ''
+        complimentaryInfinite: '',
+        giftedExpires: t('Your gift subscription will expire on {date}.')
     }
 };
 
@@ -84,7 +85,7 @@ function cheerioLoad(html) {
  * @prop {string} uuid
  * @prop {string} email
  * @prop {string} name
- * @prop {'free'|'paid'|'comped'} status
+ * @prop {'free'|'paid'|'comped'|'gifted'} status
  * @prop {Date|null} createdAt This can be null if the member has been deleted for older email recipient rows
  * @prop {MemberLikeSubscription[]} subscriptions Required to get trial end / next renewal date / expire at date for paid member
  * @prop {MemberLikeTier[]} tiers Required to get the expiry date in case of a comped member
@@ -677,6 +678,12 @@ class EmailRenderer {
 
         const expires = member.tiers[0]?.expiry_at ?? null;
 
+        if (member.status === 'gifted') {
+            const timezone = this.#settingsCache.get('timezone');
+            const date = formatDateLong(expires, timezone, locale);
+            return t(messages.subscriptionStatus.giftedExpires, {date});
+        }
+
         if (expires) {
             const timezone = this.#settingsCache.get('timezone');
             const date = formatDateLong(expires, timezone, locale);
@@ -755,6 +762,9 @@ class EmailRenderer {
                 getValue: (member) => {
                     if (member.status === 'comped') {
                         return t('complimentary');
+                    }
+                    if (member.status === 'gifted') {
+                        return t('gifted');
                     }
                     if (this.isMemberTrialing(member)) {
                         return t('trialing');

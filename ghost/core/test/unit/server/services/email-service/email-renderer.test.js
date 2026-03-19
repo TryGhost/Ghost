@@ -237,6 +237,16 @@ describe('Email renderer', function () {
             assert.equal(replacements[0].getValue(member), 'complimentary');
         });
 
+        it('returns mapped gifted status', function () {
+            member.status = 'gifted';
+            const html = 'Hello %%{status}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2);
+            assert.equal(replacements[0].token.toString(), '/%%\\{status\\}%%/g');
+            assert.equal(replacements[0].id, 'status');
+            assert.equal(replacements[0].getValue(member), 'gifted');
+        });
+
         it('returns mapped trialing status', function () {
             member.status = 'paid';
             member.subscriptions = [
@@ -848,6 +858,27 @@ describe('Email renderer', function () {
 
             const result = emailRenderer.getMemberStatusText(member);
             assert.equal(result, 'Your subscription will expire on 13 March 2050.');
+        });
+
+        it('Returns for expiring gifted member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'gifted',
+                subscriptions: [],
+                tiers: [
+                    {
+                        name: 'Silver',
+                        expiry_at: new Date(2050, 2, 13, 12, 0)
+                    }
+                ]
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, 'Your gift subscription will expire on 13 March 2050.');
         });
 
         it('Returns for a paid member without subscriptions', function () {
