@@ -1,7 +1,5 @@
 import React, {useCallback, useMemo} from 'react';
 import {Filter, Filters, LucideIcon} from '@tryghost/shade';
-import {LabelsResponseType, useBrowseInfiniteLabels} from '@tryghost/admin-x-framework/api/labels';
-import {TiersResponseType, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {
     buildOfferOptions,
     fromOfferFilterDisplayValues,
@@ -11,8 +9,10 @@ import {
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
+import {useBrowseInfiniteLabels} from '@tryghost/admin-x-framework/api/labels';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
+import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useFilterSearch} from '../hooks/use-filter-search';
 import {useResourceSearch} from '../hooks/use-resource-search';
 
@@ -50,20 +50,20 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 
     const labelSearch = useFilterSearch({
         useQuery: useBrowseInfiniteLabels,
-        extractItems: useCallback((data: LabelsResponseType) => {
-            return data.labels.map(label => ({value: label.slug, label: label.name}));
-        }, []),
-        buildSearchFilter: useCallback((term: string) => `name:~'${term}'`, []),
+        dataKey: 'labels',
+        valueKey: 'slug',
+        labelKey: 'name',
+        buildSearchFilter: (term: string) => `name:~'${term}'`,
         limit: '100'
     });
 
     const tierSearch = useFilterSearch({
         useQuery: useBrowseTiers,
-        extractItems: useCallback((data: TiersResponseType) => {
-            return data.tiers.map(tier => ({value: tier.id, label: tier.name}));
-        }, []),
+        dataKey: 'tiers',
+        valueKey: 'id',
+        labelKey: 'name',
         baseFilter: 'type:paid',
-        buildSearchFilter: useCallback((term: string) => `name:~'${term}'`, []),
+        buildSearchFilter: (term: string) => `name:~'${term}'`,
         limit: '100'
     });
 

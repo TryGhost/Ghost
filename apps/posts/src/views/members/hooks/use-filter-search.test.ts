@@ -2,9 +2,18 @@ import {act, renderHook} from '@testing-library/react';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {useFilterSearch} from './use-filter-search';
 
-function createMockQuery(items: Array<{value: string; label: string}> = []) {
+interface MockItem {
+    id: string;
+    name: string;
+}
+
+interface MockResponse {
+    items: MockItem[];
+}
+
+function createMockQuery(items: MockItem[] = []) {
     return vi.fn().mockReturnValue({
-        data: {items},
+        data: {items} as MockResponse,
         isLoading: false,
         fetchNextPage: vi.fn(),
         hasNextPage: false,
@@ -22,15 +31,20 @@ describe('useFilterSearch', () => {
     });
 
     it('returns initial page of results when no search term', () => {
-        const items = [{value: 'a', label: 'Alpha'}, {value: 'b', label: 'Beta'}];
+        const items = [{id: 'a', name: 'Alpha'}, {id: 'b', name: 'Beta'}];
         const useQuery = createMockQuery(items);
 
-        const {result} = renderHook(() => useFilterSearch({
+        const {result} = renderHook(() => useFilterSearch<MockResponse, 'items'>({
             useQuery,
-            extractItems: (data: {items: typeof items}) => data.items
+            dataKey: 'items',
+            valueKey: 'id',
+            labelKey: 'name'
         }));
 
-        expect(result.current.options).toEqual(items);
+        expect(result.current.options).toEqual([
+            {value: 'a', label: 'Alpha'},
+            {value: 'b', label: 'Beta'}
+        ]);
         expect(result.current.searchValue).toBe('');
         expect(result.current.isLoading).toBe(false);
     });
@@ -39,9 +53,11 @@ describe('useFilterSearch', () => {
         const useQuery = createMockQuery();
         const buildSearchFilter = vi.fn((term: string) => `name:~'${term}'`);
 
-        const {result} = renderHook(() => useFilterSearch({
+        const {result} = renderHook(() => useFilterSearch<MockResponse, 'items'>({
             useQuery,
-            extractItems: (data: {items: never[]}) => data.items,
+            dataKey: 'items',
+            valueKey: 'id',
+            labelKey: 'name',
             buildSearchFilter
         }));
 
@@ -69,9 +85,11 @@ describe('useFilterSearch', () => {
         const useQuery = createMockQuery();
         const buildSearchFilter = vi.fn((term: string) => `name:~'${term}'`);
 
-        const {result} = renderHook(() => useFilterSearch({
+        const {result} = renderHook(() => useFilterSearch<MockResponse, 'items'>({
             useQuery,
-            extractItems: (data: {items: never[]}) => data.items,
+            dataKey: 'items',
+            valueKey: 'id',
+            labelKey: 'name',
             buildSearchFilter
         }));
 
@@ -89,19 +107,21 @@ describe('useFilterSearch', () => {
         expect(lastCall[0].searchParams.filter).toBeUndefined();
     });
 
-    it('exposes fetchNextPage/hasMore/isLoadingMore from the infinite query', () => {
+    it('does not call fetchNextPage when already fetching', () => {
         const fetchNextPage = vi.fn();
         const useQuery = vi.fn().mockReturnValue({
-            data: {items: []},
+            data: {items: []} as MockResponse,
             isLoading: false,
             fetchNextPage,
             hasNextPage: true,
             isFetchingNextPage: true
         });
 
-        const {result} = renderHook(() => useFilterSearch({
+        const {result} = renderHook(() => useFilterSearch<MockResponse, 'items'>({
             useQuery,
-            extractItems: (data: {items: never[]}) => data.items
+            dataKey: 'items',
+            valueKey: 'id',
+            labelKey: 'name'
         }));
 
         expect(result.current.hasMore).toBe(true);
@@ -111,23 +131,24 @@ describe('useFilterSearch', () => {
             result.current.onLoadMore();
         });
 
-        // Should not call fetchNextPage because isFetchingNextPage is true
         expect(fetchNextPage).not.toHaveBeenCalled();
     });
 
     it('calls fetchNextPage when hasNextPage is true and not already fetching', () => {
         const fetchNextPage = vi.fn();
         const useQuery = vi.fn().mockReturnValue({
-            data: {items: []},
+            data: {items: []} as MockResponse,
             isLoading: false,
             fetchNextPage,
             hasNextPage: true,
             isFetchingNextPage: false
         });
 
-        const {result} = renderHook(() => useFilterSearch({
+        const {result} = renderHook(() => useFilterSearch<MockResponse, 'items'>({
             useQuery,
-            extractItems: (data: {items: never[]}) => data.items
+            dataKey: 'items',
+            valueKey: 'id',
+            labelKey: 'name'
         }));
 
         act(() => {
@@ -141,9 +162,11 @@ describe('useFilterSearch', () => {
         const useQuery = createMockQuery();
         const buildSearchFilter = vi.fn((term: string) => `name:~'${term}'`);
 
-        const {result} = renderHook(() => useFilterSearch({
+        const {result} = renderHook(() => useFilterSearch<MockResponse, 'items'>({
             useQuery,
-            extractItems: (data: {items: never[]}) => data.items,
+            dataKey: 'items',
+            valueKey: 'id',
+            labelKey: 'name',
             buildSearchFilter
         }));
 
@@ -157,18 +180,47 @@ describe('useFilterSearch', () => {
 
     it('reports isLoading only when there are no options and query is loading', () => {
         const useQuery = vi.fn().mockReturnValue({
-            data: undefined,
+            data: undefined as MockResponse | undefined,
             isLoading: true,
             fetchNextPage: vi.fn(),
             hasNextPage: false,
             isFetchingNextPage: false
         });
 
-        const {result} = renderHook(() => useFilterSearch({
+        const {result} = renderHook(() => useFilterSearch<MockResponse, 'items'>({
             useQuery,
-            extractItems: () => []
+            dataKey: 'items',
+            valueKey: 'id',
+            labelKey: 'name'
         }));
 
         expect(result.current.isLoading).toBe(true);
+    });
+
+    it('combines baseFilter with search filter', () => {
+        const useQuery = createMockQuery();
+        const buildSearchFilter = vi.fn((term: string) => `name:~'${term}'`);
+
+        const {result} = renderHook(() => useFilterSearch<MockResponse, 'items'>({
+            useQuery,
+            dataKey: 'items',
+            valueKey: 'id',
+            labelKey: 'name',
+            baseFilter: 'type:paid',
+            buildSearchFilter
+        }));
+
+        // Base filter should always be present
+        const initialCall = useQuery.mock.calls[useQuery.mock.calls.length - 1];
+        expect(initialCall[0].searchParams.filter).toBe('type:paid');
+
+        // Search adds to the base filter
+        act(() => {
+            result.current.onSearchChange('gold');
+            vi.advanceTimersByTime(300);
+        });
+
+        const searchCall = useQuery.mock.calls[useQuery.mock.calls.length - 1];
+        expect(searchCall[0].searchParams.filter).toBe('type:paid+name:~\'gold\'');
     });
 });

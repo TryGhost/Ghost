@@ -2,7 +2,10 @@ import {useCallback, useMemo, useRef, useState} from 'react';
 import type {FilterOption} from '@tryghost/shade';
 import type {InfiniteQueryHookOptions} from '@tryghost/admin-x-framework/hooks';
 
-export interface UseFilterSearchOptions<T> {
+// Extract the item type from an array property on T
+type ArrayItem<T, K extends keyof T> = T[K] extends Array<infer Item> ? Item : never;
+
+export interface UseFilterSearchOptions<T, K extends keyof T & string> {
     useQuery: (options?: InfiniteQueryHookOptions<T>) => {
         data: T | undefined;
         isLoading: boolean;
@@ -10,7 +13,9 @@ export interface UseFilterSearchOptions<T> {
         hasNextPage?: boolean;
         isFetchingNextPage: boolean;
     };
-    extractItems: (data: T) => Array<{ value: string; label: string }>;
+    dataKey: K;
+    valueKey: keyof ArrayItem<T, K> & string;
+    labelKey: keyof ArrayItem<T, K> & string;
     baseFilter?: string;
     buildSearchFilter?: (term: string) => string;
     limit?: string;
@@ -31,14 +36,16 @@ function escapeNqlValue(term: string): string {
     return term.replace(/'/g, '\'\'');
 }
 
-export function useFilterSearch<T>({
+export function useFilterSearch<T, K extends keyof T & string>({
     useQuery,
-    extractItems,
+    dataKey,
+    valueKey,
+    labelKey,
     baseFilter,
     buildSearchFilter,
     limit = '100',
     debounceMs = 250
-}: UseFilterSearchOptions<T>): UseFilterSearchReturn {
+}: UseFilterSearchOptions<T, K>): UseFilterSearchReturn {
     const [inputValue, setInputValue] = useState('');
     const [debouncedValue, setDebouncedValue] = useState('');
     const timerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -80,8 +87,15 @@ export function useFilterSearch<T>({
         if (!data) {
             return [];
         }
-        return extractItems(data);
-    }, [data, extractItems]);
+        const items = data[dataKey];
+        if (!Array.isArray(items)) {
+            return [];
+        }
+        return items.map((item: ArrayItem<T, K>) => ({
+            value: String(item[valueKey]),
+            label: String(item[labelKey])
+        }));
+    }, [data, dataKey, valueKey, labelKey]);
 
     const onLoadMore = useCallback(() => {
         if (hasNextPage && !isFetchingNextPage) {
