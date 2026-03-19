@@ -511,6 +511,11 @@ describe('PostsExporter', function () {
             );
 
             assert.equal(
+                exporter.humanReadableEmailRecipientFilter('status:gifted'),
+                'Gifted subscribers'
+            );
+
+            assert.equal(
                 exporter.humanReadableEmailRecipientFilter('status:-paid'),
                 'Free subscribers'
             );

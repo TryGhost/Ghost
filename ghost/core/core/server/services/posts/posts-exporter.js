@@ -258,6 +258,8 @@ class PostsExporter {
                             strings.push('Paid subscribers');
                         } else if (filter.status === 'comped') {
                             strings.push('Complimentary subscribers');
+                        } else if (filter.status === 'gifted') {
+                            strings.push('Gifted subscribers');
                         }
                     } else {
                         if (filter.status.$ne === 'free') {
