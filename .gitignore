@@ -123,6 +123,7 @@ test/functional/*.png
 /ghost/core/core/frontend/public/comment-counts.min.js
 /ghost/core/core/frontend/public/member-attribution.min.js
 /ghost/core/core/frontend/public/ghost-stats.min.js
+/ghost/core/core/frontend/public/private.min.js
 # Caddyfile - for local development with ssl + caddy
 Caddyfile
 !docker/caddy/Caddyfile
