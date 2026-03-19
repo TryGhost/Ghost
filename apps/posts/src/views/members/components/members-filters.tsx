@@ -53,9 +53,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         extractItems: useCallback((data: LabelsResponseType) => {
             return data.labels.map(label => ({value: label.slug, label: label.name}));
         }, []),
-        buildSearchFilter: useCallback((term: string) => {
-            return `name:~'${term}'`;
-        }, []),
+        buildSearchFilter: useCallback((term: string) => `name:~'${term}'`, []),
         limit: '100'
     });
 
@@ -66,9 +64,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
                 .filter(tier => tier.type === 'paid' && tier.active)
                 .map(tier => ({value: tier.id, label: tier.name}));
         }, []),
-        buildSearchFilter: useCallback((term: string) => {
-            return `name:~'${term}'`;
-        }, []),
+        buildSearchFilter: useCallback((term: string) => `name:~'${term}'`, []),
         limit: '100'
     });
 
