@@ -47,14 +47,15 @@ export function useLabelPicker({
     // Cache labels that have been selected so they remain resolvable when
     // server-side search narrows the result set.
     const selectedLabelCacheRef = useRef<Map<string, Label>>(new Map());
+    const selectedSet = new Set(selectedSlugs);
     for (const label of queryLabels) {
-        if (selectedSlugs.includes(label.slug)) {
+        if (selectedSet.has(label.slug)) {
             selectedLabelCacheRef.current.set(label.slug, label);
         }
     }
     // Remove cached entries for labels that are no longer selected
     for (const slug of selectedLabelCacheRef.current.keys()) {
-        if (!selectedSlugs.includes(slug)) {
+        if (!selectedSet.has(slug)) {
             selectedLabelCacheRef.current.delete(slug);
         }
     }
