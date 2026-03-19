@@ -16,7 +16,7 @@ const forPost = (attrs, frame) => {
             _buildTransistorPlaceholder()
         );
 
-        if (attrs.html) {
+        if (attrs.html && Object.prototype.hasOwnProperty.call(attrs, 'plaintext')) {
             attrs.plaintext = htmlToPlaintext.excerpt(attrs.html);
         }
 

@@ -91,6 +91,18 @@ describe('Unit: endpoints/utils/serializers/output/utils/preview-rendering', fun
             assert.notEqual(attrs.excerpt, 'old excerpt');
         });
 
+        it('does not add plaintext or excerpt when not present', function () {
+            frame.isPreview = true;
+            const attrs = {
+                html: '<p>Some text</p><iframe src="https://example.com" data-kg-transistor-embed></iframe><script>x</script>'
+            };
+
+            previewRendering.forPost(attrs, frame);
+
+            assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'plaintext'), false);
+            assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'excerpt'), false);
+        });
+
         it('handles multiple embeds in one post', function () {
             frame.isPreview = true;
             const attrs = {
