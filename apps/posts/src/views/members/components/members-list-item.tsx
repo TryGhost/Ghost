@@ -82,7 +82,7 @@ function MembersListItemStatus({
 }) {
     const tierNames = tiers?.map(t => t.name).join(', ');
     return (
-        <div className="flex justify-end lg:justify-start">
+        <div className="flex min-w-0 justify-end lg:justify-start">
             <div className="min-w-0">
                 <div className="text-sm">{getStatusLabel(status)}</div>
                 {tierNames && (
