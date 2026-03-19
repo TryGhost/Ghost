@@ -159,9 +159,9 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
 
 const Members: React.FC = () => {
     const [searchParams] = useSearchParams();
-    const {data: settingsData} = useBrowseSettings({});
+    const {data: settingsData, isLoading: isSettingsLoading} = useBrowseSettings({});
     const filterParam = searchParams.get('filter') ?? undefined;
-    const shouldDelayHydration = shouldDelayMembersDateFilterHydration(filterParam, Boolean(settingsData));
+    const shouldDelayHydration = shouldDelayMembersDateFilterHydration(filterParam, Boolean(settingsData), isSettingsLoading);
 
     if (shouldDelayHydration) {
         return (

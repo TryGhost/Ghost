@@ -18,15 +18,19 @@ function createWrapper(initialEntry: string) {
 
 describe('shouldDelayMembersDateFilterHydration', () => {
     it('waits for timezone resolution when date filters are present', () => {
-        expect(shouldDelayMembersDateFilterHydration('created_at:<=\'2024-02-01T22:59:59.999Z\'', false)).toBe(true);
+        expect(shouldDelayMembersDateFilterHydration('created_at:<=\'2024-02-01T22:59:59.999Z\'', false, true)).toBe(true);
     });
 
     it('does not wait for unsupported non-date filters', () => {
-        expect(shouldDelayMembersDateFilterHydration('status:paid,label:vip', false)).toBe(false);
+        expect(shouldDelayMembersDateFilterHydration('status:paid,label:vip', false, true)).toBe(false);
     });
 
     it('does not wait once the site timezone is resolved', () => {
-        expect(shouldDelayMembersDateFilterHydration('created_at:<=\'2024-02-01T22:59:59.999Z\'', true)).toBe(false);
+        expect(shouldDelayMembersDateFilterHydration('created_at:<=\'2024-02-01T22:59:59.999Z\'', true, false)).toBe(false);
+    });
+
+    it('does not wait if settings loading has already stopped', () => {
+        expect(shouldDelayMembersDateFilterHydration('created_at:<=\'2024-02-01T22:59:59.999Z\'', false, false)).toBe(false);
     });
 });
 

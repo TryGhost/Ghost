@@ -8,6 +8,18 @@ import {describe, expect, it, vi} from 'vitest';
 import {memberFields} from './member-fields';
 import {renderHook} from '@testing-library/react';
 
+vi.mock('@tryghost/shade', () => ({
+    LucideIcon: new Proxy({}, {
+        get() {
+            return () => null;
+        }
+    })
+}));
+
+vi.mock('@src/components/label-picker/label-filter-renderer', () => ({
+    default: () => null
+}));
+
 describe('useMemberFilterFields', () => {
     it('hydrates grouped member fields from the local schema', () => {
         const {result} = renderHook(() => useMemberFilterFields({
@@ -78,6 +90,42 @@ describe('useMemberFilterFields', () => {
         ]);
 
         expect(newsletterGroup?.fields[1]).toMatchObject({
+            label: 'Weekly'
+        });
+    });
+
+    it('keeps hydrated newsletter filters visible when only one active newsletter remains', () => {
+        const {result} = renderHook(() => useMemberFilterFields({
+            newsletters: [{slug: 'weekly', name: 'Weekly', status: 'active'}],
+            hydratedNewsletterSlugs: ['weekly'],
+            siteTimezone: 'UTC'
+        }));
+
+        const allFields = result.current.flatMap(group => group.fields);
+        const weeklyField = allFields.find(field => field.key === 'newsletters.weekly');
+
+        expect(allFields.map(field => field.key)).toContain('newsletters.weekly');
+        expect(weeklyField).toMatchObject({
+            label: 'Weekly'
+        });
+    });
+
+    it('keeps hydrated archived newsletter filters visible', () => {
+        const {result} = renderHook(() => useMemberFilterFields({
+            newsletters: [
+                {slug: 'weekly', name: 'Weekly', status: 'archived'},
+                {slug: 'product', name: 'Product', status: 'active'},
+                {slug: 'daily', name: 'Daily', status: 'active'}
+            ],
+            hydratedNewsletterSlugs: ['weekly'],
+            siteTimezone: 'UTC'
+        }));
+
+        const newsletterGroup = result.current.find(group => group.group === 'Newsletters');
+        const weeklyField = newsletterGroup?.fields.find(field => field.key === 'newsletters.weekly');
+
+        expect(newsletterGroup?.fields.map(field => field.key)).toContain('newsletters.weekly');
+        expect(weeklyField).toMatchObject({
             label: 'Weekly'
         });
     });

@@ -68,6 +68,15 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const offersOptions = useMemo(() => {
         return buildOfferOptions(offers);
     }, [offers]);
+    const hydratedNewsletterSlugs = useMemo(() => {
+        return [...new Set(
+            filters
+                .map(filter => filter.field)
+                .filter(field => field.startsWith('newsletters.'))
+                .map(field => field.slice('newsletters.'.length))
+                .filter(Boolean)
+        )];
+    }, [filters]);
 
     const displayFilters = useMemo(() => {
         return mapOfferRedemptionFilters(filters, values => toOfferFilterDisplayValues(values, offersOptions));
@@ -81,7 +90,8 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const emailSearch = useResourceSearch('email');
 
     const filterFields = useMemberFilterFields({
-        newsletters: newsletters.filter(newsletter => newsletter.status === 'active'),
+        newsletters,
+        hydratedNewsletterSlugs,
         hasMultipleTiers,
         paidMembersEnabled,
         emailAnalyticsEnabled,

@@ -9,6 +9,7 @@ interface UseMemberFilterFieldsOptions {
     labelsOptions?: FilterOption[];
     tiersOptions?: FilterOption[];
     newsletters?: Array<{slug: string; name: string; status?: string}>;
+    hydratedNewsletterSlugs?: string[];
     hasMultipleTiers?: boolean;
     paidMembersEnabled?: boolean;
     emailAnalyticsEnabled?: boolean;
@@ -284,6 +285,7 @@ export function useMemberFilterFields({
     labelsOptions = [],
     tiersOptions = [],
     newsletters = [],
+    hydratedNewsletterSlugs = [],
     hasMultipleTiers = false,
     paidMembersEnabled = false,
     emailAnalyticsEnabled = false,
@@ -305,6 +307,16 @@ export function useMemberFilterFields({
     return useMemo(() => {
         const groups: FilterFieldGroup[] = [];
         const activeNewsletters = newsletters.filter(newsletter => newsletter.status !== 'archived');
+        const activeNewsletterSlugs = new Set(activeNewsletters.map(newsletter => newsletter.slug));
+        const visibleHydratedNewsletters = [...new Set(hydratedNewsletterSlugs)].map((slug) => {
+            const newsletter = newsletters.find(currentNewsletter => currentNewsletter.slug === slug);
+
+            return {
+                slug,
+                name: newsletter?.name ?? slug
+            };
+        });
+        const hiddenHydratedNewsletters = visibleHydratedNewsletters.filter(newsletter => !activeNewsletterSlugs.has(newsletter.slug));
         const offerOptions = buildOfferOptions(offers);
         const offerLabels = createOfferLabelMap(offers);
         const today = moment.tz(siteTimezone).format('YYYY-MM-DD');
@@ -324,6 +336,12 @@ export function useMemberFilterFields({
 
         if (activeNewsletters.length <= 1) {
             basicFields.push(createFieldConfig('subscribed'));
+
+            for (const newsletter of visibleHydratedNewsletters) {
+                basicFields.push(createFieldConfig(`newsletters.${newsletter.slug}`, {
+                    label: newsletter.name
+                }));
+            }
         }
 
         basicFields.push(
@@ -355,6 +373,12 @@ export function useMemberFilterFields({
             ];
 
             for (const newsletter of activeNewsletters) {
+                newsletterFields.push(createFieldConfig(`newsletters.${newsletter.slug}`, {
+                    label: newsletter.name
+                }));
+            }
+
+            for (const newsletter of hiddenHydratedNewsletters) {
                 newsletterFields.push(createFieldConfig(`newsletters.${newsletter.slug}`, {
                     label: newsletter.name
                 }));
@@ -460,6 +484,7 @@ export function useMemberFilterFields({
         membersTrackSources,
         newsletters,
         offers,
+        hydratedNewsletterSlugs,
         onEmailResourceSearchChange,
         onPostResourceSearchChange,
         paidMembersEnabled,

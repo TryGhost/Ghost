@@ -25,8 +25,12 @@ interface ToSearchParamsOptions {
     timezone: string;
 }
 
-export function shouldDelayMembersDateFilterHydration(filterParam: string | undefined, hasResolvedTimezone: boolean): boolean {
-    return Boolean(filterParam) && !hasResolvedTimezone && hasTimezoneSensitiveMemberFilter(filterParam);
+export function shouldDelayMembersDateFilterHydration(
+    filterParam: string | undefined,
+    hasResolvedTimezone: boolean,
+    isSettingsLoading: boolean = !hasResolvedTimezone
+): boolean {
+    return Boolean(filterParam) && isSettingsLoading && !hasResolvedTimezone && hasTimezoneSensitiveMemberFilter(filterParam);
 }
 
 function toSearchParams({baseSearchParams, filters, search, timezone}: ToSearchParamsOptions): URLSearchParams {
