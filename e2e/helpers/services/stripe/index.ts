@@ -10,6 +10,7 @@ export {
     buildPaymentMethod,
     buildCheckoutSession,
     buildCheckoutSessionCompletedEvent,
+    buildDonationCheckoutCompletedEvent,
     buildSubscriptionCreatedEvent,
     buildSubscriptionUpdatedEvent,
     buildSubscriptionDeletedEvent,

@@ -157,6 +157,7 @@ export class FakeStripeServer {
         this.app.post('/v1/prices', (req, res) => {
             const interval = this.parsePriceInterval(req.body.recurring?.interval);
             const requestedProductId = this.parseString(req.body.product);
+            const customUnitAmount = this.parseCustomUnitAmount(req.body.custom_unit_amount);
 
             if (requestedProductId && !this.products.has(requestedProductId)) {
                 debug(`Cannot create price for missing product: ${requestedProductId}`);
@@ -175,8 +176,9 @@ export class FakeStripeServer {
                 product: productId,
                 active: this.parseBoolean(req.body.active, true),
                 nickname: this.parseString(req.body.nickname) ?? null,
-                currency: this.parseString(req.body.currency) ?? 'usd',
-                unit_amount: this.parseNumber(req.body.unit_amount) ?? 0,
+                currency: this.parseString(req.body.currency)?.toLowerCase() ?? 'usd',
+                unit_amount: customUnitAmount?.enabled ? null : (this.parseNumber(req.body.unit_amount) ?? 0),
+                custom_unit_amount: customUnitAmount,
                 type: interval ? 'recurring' : 'one_time',
                 recurring: interval ? {interval} : null
             });
@@ -273,6 +275,9 @@ export class FakeStripeServer {
             const mode = this.parseCheckoutMode(req.body.mode);
             const session = buildCheckoutSession({
                 request: {
+                    custom_fields: this.parseCustomFields(req.body.custom_fields),
+                    invoice_creation: this.parseInvoiceCreation(req.body.invoice_creation),
+                    submit_type: this.parseSubmitType(req.body.submit_type),
                     subscription_data: this.parseSubscriptionData(req.body.subscription_data),
                     line_items: this.parseLineItems(req.body.line_items)
                 },
@@ -383,8 +388,28 @@ export class FakeStripeServer {
 
         return Object.fromEntries(
             Object.entries(value as Record<string, unknown>)
-                .filter((entry): entry is [string, string] => typeof entry[1] === 'string')
+                .filter((entry): entry is [string, string | number | boolean] => {
+                    return typeof entry[1] === 'string' || typeof entry[1] === 'number' || typeof entry[1] === 'boolean';
+                })
+                .map(([key, entryValue]) => [key, String(entryValue)])
         );
+    }
+
+    private parseCustomUnitAmount(value: unknown): StripePrice['custom_unit_amount'] {
+        if (!value || typeof value !== 'object' || Array.isArray(value)) {
+            return null;
+        }
+
+        const customUnitAmount = value as {enabled?: boolean | string; preset?: number | string};
+
+        if (!this.parseBoolean(customUnitAmount.enabled)) {
+            return null;
+        }
+
+        return {
+            enabled: true,
+            preset: this.parseNumber(customUnitAmount.preset) ?? null
+        };
     }
 
     private parseSubscriptionData(value: unknown): RecordedStripeCheckoutSession['request']['subscription_data'] {
@@ -434,5 +459,68 @@ export class FakeStripeServer {
                 };
             })
             .filter(item => item.price);
+    }
+
+    private parseCustomFields(value: unknown): RecordedStripeCheckoutSession['request']['custom_fields'] {
+        if (!value || typeof value !== 'object') {
+            return undefined;
+        }
+
+        const customFields = Array.isArray(value)
+            ? value
+            : Object.values(value as Record<string, {
+                key?: string;
+                label?: {custom?: string};
+                optional?: boolean | string;
+                text?: {value?: string};
+                type?: string;
+            }>);
+
+        return customFields
+            .filter((field): field is {
+                key?: string;
+                label?: {custom?: string};
+                optional?: boolean | string;
+                text?: {value?: string};
+                type?: string;
+            } => field !== null && typeof field === 'object')
+            .map((field) => {
+                const labelCustom = this.parseString(field.label?.custom);
+                const textValue = this.parseString(field.text?.value);
+
+                return {
+                    key: this.parseString(field.key) ?? '',
+                    type: field.type === 'text' ? 'text' as const : 'text' as const,
+                    optional: this.parseBoolean(field.optional),
+                    ...(labelCustom ? {label: {custom: labelCustom}} : {}),
+                    ...(textValue ? {text: {value: textValue}} : {})
+                };
+            })
+            .filter(field => field.key);
+    }
+
+    private parseInvoiceCreation(value: unknown): RecordedStripeCheckoutSession['request']['invoice_creation'] {
+        if (!value || typeof value !== 'object' || Array.isArray(value)) {
+            return undefined;
+        }
+
+        const invoiceCreation = value as {
+            enabled?: boolean | string;
+            invoice_data?: {metadata?: Record<string, unknown>};
+        };
+        const metadata = this.parseMetadata(invoiceCreation.invoice_data?.metadata);
+
+        return {
+            enabled: this.parseBoolean(invoiceCreation.enabled),
+            ...(Object.keys(metadata).length > 0 ? {invoice_data: {metadata}} : {})
+        };
+    }
+
+    private parseSubmitType(value: unknown): RecordedStripeCheckoutSession['request']['submit_type'] {
+        if (value !== 'auto' && value !== 'book' && value !== 'donate' && value !== 'pay' && value !== 'send') {
+            return undefined;
+        }
+
+        return value;
     }
 }
