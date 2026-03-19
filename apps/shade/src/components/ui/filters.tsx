@@ -1004,7 +1004,7 @@ interface SelectOptionsPopoverProps<T = unknown> {
     inline?: boolean;
 }
 
-function useScrollEndDetection(onLoadMore?: () => void, hasMore?: boolean, isLoadingMore?: boolean) {
+export function useScrollEndDetection(onLoadMore?: () => void, hasMore?: boolean, isLoadingMore?: boolean) {
     const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
         if (!onLoadMore || !hasMore || isLoadingMore) {
             return;

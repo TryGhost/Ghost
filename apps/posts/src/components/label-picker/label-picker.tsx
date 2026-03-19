@@ -10,7 +10,8 @@ import {
     LucideIcon,
     Popover,
     PopoverContent,
-    PopoverTrigger
+    PopoverTrigger,
+    useScrollEndDetection
 } from '@tryghost/shade';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
 
@@ -558,22 +559,13 @@ interface InlineListProps {
 
 const InlineList: React.FC<InlineListProps> = ({selectedLabels, onSearchChange, onLoadMore, hasMore, isLoadingMore, ...rest}) => {
     const [search, setSearch] = useState('');
+    const handleScrollEnd = useScrollEndDetection(onLoadMore, hasMore, isLoadingMore);
 
     const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearch(value);
         onSearchChange?.(value);
     };
-
-    const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-        if (!onLoadMore || !hasMore || isLoadingMore) {
-            return;
-        }
-        const target = e.currentTarget;
-        if (target.scrollTop + target.clientHeight >= target.scrollHeight - 50) {
-            onLoadMore();
-        }
-    }, [onLoadMore, hasMore, isLoadingMore]);
 
     return (
         <Command shouldFilter={false}>
@@ -591,7 +583,7 @@ const InlineList: React.FC<InlineListProps> = ({selectedLabels, onSearchChange, 
                     onChange={handleSearchInput}
                 />
             </div>
-            <CommandList className="max-h-64 overflow-y-auto" onScroll={handleScroll}>
+            <CommandList className="max-h-64 overflow-y-auto" onScroll={handleScrollEnd}>
                 <LabelListItems
                     {...rest}
                     isLoadingMore={isLoadingMore}
@@ -646,6 +638,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
 }) => {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
+    const handleScrollEnd = useScrollEndDetection(onLoadMore, hasMore, isLoadingMore);
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -712,15 +705,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                         <Command shouldFilter={false}>
                             <CommandList
                                 className="max-h-64 overflow-y-auto"
-                                onScroll={(e) => {
-                                    if (!onLoadMore || !hasMore || isLoadingMore) {
-                                        return;
-                                    }
-                                    const target = e.currentTarget;
-                                    if (target.scrollTop + target.clientHeight >= target.scrollHeight - 50) {
-                                        onLoadMore();
-                                    }
-                                }}
+                                onScroll={handleScrollEnd}
                             >
                                 <LabelListItems
                                     canCreateFromSearch={canCreateFromSearch}

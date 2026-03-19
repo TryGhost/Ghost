@@ -1,5 +1,5 @@
 import {Label, useBrowseInfiniteLabels, useCreateLabel, useDeleteLabel, useEditLabel} from '@tryghost/admin-x-framework/api/labels';
-import {useCallback, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 export interface UseLabelPickerOptions {
     selectedSlugs: string[];
@@ -38,6 +38,14 @@ export function useLabelPicker({
     const [searchValue, setSearchValue] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const timerRef = useRef<ReturnType<typeof setTimeout>>();
+
+    useEffect(() => {
+        return () => {
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+            }
+        };
+    }, []);
 
     const searchParams = useMemo(() => {
         const params: Record<string, string> = {limit: '100'};

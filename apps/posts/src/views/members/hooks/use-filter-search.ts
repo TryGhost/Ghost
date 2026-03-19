@@ -1,4 +1,4 @@
-import {useCallback, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import type {FilterOption} from '@tryghost/shade';
 import type {InfiniteQueryHookOptions} from '@tryghost/admin-x-framework/hooks';
 
@@ -49,6 +49,14 @@ export function useFilterSearch<T, K extends keyof T & string>({
     const [inputValue, setInputValue] = useState('');
     const [debouncedValue, setDebouncedValue] = useState('');
     const timerRef = useRef<ReturnType<typeof setTimeout>>();
+
+    useEffect(() => {
+        return () => {
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+            }
+        };
+    }, []);
 
     const onSearchChange = useCallback((search: string) => {
         setInputValue(search);
