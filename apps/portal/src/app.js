@@ -656,6 +656,7 @@ export default class App extends React.Component {
         const offersRegex = /^offers\/(\w+?)\/?$/;
         const giftRedemptionRegex = /^\/portal\/gift\/redeem\/([^/?#]+)\/?$/;
         const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
+        const shareRegex = /^\/share\/?$/;
         const feedbackRegex = /^\/feedback\/(\w+?)\/(\w+?)\/?$/;
 
         if (path && feedbackRegex.test(path)) {
@@ -704,8 +705,21 @@ export default class App extends React.Component {
 
             return giftLinkData;
         }
+        if (path && shareRegex.test(path)) {
+            return {
+                showPopup: true,
+                page: 'share'
+            };
+        }
+
         if (path && linkRegex.test(path)) {
             const [,pagePath] = path.match(linkRegex);
+
+            // `#/portal/share` has been replaced with `#/share`.
+            if (pagePath === 'share') {
+                return {};
+            }
+
             const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath) || {};
 
             // If user is not logged in and trying to access an account page,
@@ -1291,7 +1305,7 @@ export default class App extends React.Component {
      * portal. Especially useful for copy/pasted links from Admin screens.
      */
     transformPortalLinksToRelative() {
-        document.querySelectorAll('a[href*="#/portal"]').forEach(transformPortalAnchorToRelative);
+        document.querySelectorAll('a[href*="#/portal"], a[href*="#/share"]').forEach(transformPortalAnchorToRelative);
     }
 
     render() {

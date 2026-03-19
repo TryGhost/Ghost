@@ -19,6 +19,14 @@ describe('transformPortalAnchorToRelative', function () {
         expect(anchor.getAttribute('href')).toBe('#/portal/signup');
     });
 
+    test('ignores already-relative share links', function () {
+        const anchor = document.createElement('a');
+        anchor.setAttribute('href', '#/share');
+        transformPortalAnchorToRelative(anchor);
+
+        expect(anchor.getAttribute('href')).toBe('#/share');
+    });
+
     test('ignores external links', function () {
         const anchor = document.createElement('a');
         anchor.setAttribute('href', 'https://example.com/#/portal/signup');
@@ -33,5 +41,13 @@ describe('transformPortalAnchorToRelative', function () {
         transformPortalAnchorToRelative(anchor);
 
         expect(anchor.getAttribute('href')).toBe('#/portal/signup');
+    });
+
+    test('converts absolute share links to relative links', function () {
+        const anchor = document.createElement('a');
+        anchor.setAttribute('href', 'http://localhost:3000/#/share');
+        transformPortalAnchorToRelative(anchor);
+
+        expect(anchor.getAttribute('href')).toBe('#/share');
     });
 });
