@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-utils",
-  "version": "1.0.42",
+  "version": "1.0.43",
   "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-utils",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -33,8 +33,8 @@
     "@eslint/js": "9.39.4",
     "@types/mocha": "10.0.10",
     "@types/node": "24.12.0",
-    "@types/should": "13.0.0",
     "@types/semver": "7.7.1",
+    "@types/should": "13.0.0",
     "@types/sinon": "21.0.0",
     "c8": "11.0.0",
     "mocha": "11.7.5",
