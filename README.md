@@ -1,3 +1,7 @@
+# Zombie
+
+> **This is a fork of [Ghost](https://github.com/TryGhost/Ghost)**, the brilliant open source publishing platform. We renamed it to avoid any confusion — "Ghost" is their name, not ours, and we’re not using it with their permission. This fork adds Bluesky/AT Protocol integration (OAuth login, bidirectional comment sync, post-as-user). We’d love for the Ghost team to take this work back upstream if it’s useful to them.
+
 &nbsp;
 <p align="center">
   <a href="https://ghost.org/#gh-light-mode-only" target="_blank">
@@ -15,25 +19,36 @@
     <a href="https://ghost.org/docs/">Docs</a> •
     <a href="https://github.com/TryGhost/Ghost/blob/main/.github/CONTRIBUTING.md">Contributing</a> •
     <a href="https://twitter.com/ghost">Twitter</a>
-    <br /><br />
-    <a href="https://ghost.org/">
-        <img src="https://img.shields.io/badge/downloads-100M+-brightgreen.svg" alt="Downloads" />
-    </a>
-    <a href="https://github.com/TryGhost/Ghost/releases/">
-        <img src="https://img.shields.io/github/release/TryGhost/Ghost.svg" alt="Latest release" />
-    </a>
-    <a href="https://github.com/TryGhost/Ghost/actions">
-        <img src="https://github.com/TryGhost/Ghost/workflows/CI/badge.svg?branch=main" alt="Build status" />
-    </a>
-    <a href="https://github.com/TryGhost/Ghost/contributors/">
-        <img src="https://img.shields.io/github/contributors/TryGhost/Ghost.svg" alt="Contributors" />
-    </a>
 </p>
 
 &nbsp;
 
+## What Zombie adds
+
+- **Bluesky OAuth login** for members — sign in with your Bluesky handle via AT Protocol OAuth 2.1 (DPoP + PKCE)
+- **Progressive scope upgrade** — login with minimal permissions (`atproto`), upgrade to write access (`atproto transition:generic`) when the user wants their comments to post as themselves on Bluesky
+- **Bidirectional comment sync** — Ghost comments post to linked Bluesky threads, Bluesky replies sync back as Ghost comments (with threading)
+- **Post-as-user** — members with write scope have their comments posted from their own Bluesky account, not the blog’s
+- **Graceful scope handling** — if a user revokes access, the system detects it, falls back to the blog account, and shows the upgrade prompt again
+
+See the [blog post](https://demos.linkedtrust.us/blog/at-proto-oauth-with-progressive-scope-upgrade-a-how-to/) for a detailed walkthrough of the implementation and the gotchas we hit.
+
+### Key files
+
+- `ghost/core/core/server/services/atproto-oauth/` — OAuth client, callback, session restore, scope upgrade
+- `ghost/core/core/server/services/bluesky-sync/` — bidirectional comment sync
+- `apps/comments-ui/src/components/content/forms/main-form.tsx` — upgrade prompt + Bluesky discussion link
+
+&nbsp;
+
+---
+
+*Everything below is from the original Ghost README.*
+
+&nbsp;
+
 > [!NOTE]
-> Love open source? We're hiring! Ghost is looking staff engineers to [join the team](https://careers.ghost.org) and work with us full-time
+> Love open source? Ghost is looking for staff engineers to [join the team](https://careers.ghost.org) and work full-time
 
 <a href="https://ghost.org/"><img src="https://user-images.githubusercontent.com/353959/169805900-66be5b89-0859-4816-8da9-528ed7534704.png" alt="Fiercely independent, professional publishing. Ghost is the most popular open source, headless Node.js CMS which already works with all the tools you know and love." /></a>
 
@@ -42,7 +57,7 @@
 <a href="https://ghost.org/pricing/#gh-light-mode-only" target="_blank"><img src="https://user-images.githubusercontent.com/65487235/157849437-9b8fcc48-1920-4b26-a1e8-5806db0e6bb9.png" alt="Ghost(Pro)" width="165px" /></a>
 <a href="https://ghost.org/pricing/#gh-dark-mode-only" target="_blank"><img src="https://user-images.githubusercontent.com/65487235/157849438-79889b04-b7b6-4ba7-8de6-4c1e4b4e16a5.png" alt="Ghost(Pro)" width="165px" /></a>
 
-The easiest way to get a production instance deployed is with our official **[Ghost(Pro)](https://ghost.org/pricing/)** managed service. It takes about 2 minutes to launch a new site with worldwide CDN, backups, security and maintenance all done for you.
+The easiest way to get a production instance deployed is with the official **[Ghost(Pro)](https://ghost.org/pricing/)** managed service. It takes about 2 minutes to launch a new site with worldwide CDN, backups, security and maintenance all done for you.
 
 For most people this ends up being the best value option because of [how much time it saves](https://ghost.org/docs/hosting/) — and 100% of revenue goes to the Ghost Foundation; funding the maintenance and further development of the project itself. So you’ll be supporting open source software *and* getting a great service!
 
