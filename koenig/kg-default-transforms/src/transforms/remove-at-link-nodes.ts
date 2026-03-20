@@ -1,5 +1,8 @@
-import {$isTextNode, LexicalEditor} from 'lexical';
+/* c8 ignore start */
+import {$isTextNode} from 'lexical';
 import {AtLinkNode} from '@tryghost/kg-default-nodes';
+import type {LexicalEditor} from 'lexical';
+/* c8 ignore stop */
 
 // used when rendering to make sure we're not rendering the temporary
 // nodes used for searching internal links
@@ -22,6 +25,7 @@ export function removeAtLinkNodesTransform(node: AtLinkNode) {
     node.remove();
 }
 
+/* c8 ignore next */
 export function registerRemoveAtLinkNodesTransform(editor: LexicalEditor) {
     if (editor.hasNodes([AtLinkNode])) {
         return editor.registerNodeTransform(AtLinkNode, removeAtLinkNodesTransform);

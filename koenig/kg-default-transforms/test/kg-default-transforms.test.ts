@@ -1,5 +1,5 @@
-import {assertTransform, createEditor} from './utils';
-import {registerDefaultTransforms} from '../';
+import {assertTransform, createEditor} from './utils.js';
+import {registerDefaultTransforms} from '../src/index.js';
 
 describe('Default transforms', function () {
     it('registerDefaultTransforms() registers all transforms', function () {

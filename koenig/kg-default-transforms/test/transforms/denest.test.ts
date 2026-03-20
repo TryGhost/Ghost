@@ -1,7 +1,8 @@
-import {assertTransform, createEditor} from '../utils';
-import {$createParagraphNode, LexicalEditor, ParagraphNode, TextNode} from 'lexical';
+import {assertTransform, createEditor} from '../utils.js';
+import {$createParagraphNode, ParagraphNode, TextNode} from 'lexical';
 import {ImageNode, ExtendedHeadingNode} from '@tryghost/kg-default-nodes';
-import {registerDenestTransform} from '../../';
+import {registerDenestTransform} from '../../src/index.js';
+import type {Klass, LexicalEditor, LexicalNode} from 'lexical';
 import {$createListItemNode, $createListNode, ListItemNode, ListNode} from '@lexical/list';
 import {$createHeadingNode, HeadingNode} from '@lexical/rich-text';
 
@@ -153,7 +154,7 @@ describe('Denest transform', function () {
             }
         };
 
-        const editor = createEditor({nodes: [ListNode, ListItemNode, ImageNode as any]});
+        const editor = createEditor({nodes: [ListNode, ListItemNode, ImageNode as unknown as Klass<LexicalNode>]});
 
         assertTransform(editor, registerTransforms, before, after);
     });

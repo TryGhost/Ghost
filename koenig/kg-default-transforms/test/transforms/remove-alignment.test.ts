@@ -1,6 +1,7 @@
-import {LexicalEditor, ParagraphNode, TextNode} from 'lexical';
-import {registerRemoveAlignmentTransform} from '../../build';
-import {assertTransform, createEditor} from '../utils';
+import {ParagraphNode, TextNode} from 'lexical';
+import {registerRemoveAlignmentTransform} from '../../src/index.js';
+import {assertTransform, createEditor} from '../utils.js';
+import type {LexicalEditor} from 'lexical';
 import {HeadingNode} from '@lexical/rich-text';
 
 describe('Remove element alignment transform', function () {

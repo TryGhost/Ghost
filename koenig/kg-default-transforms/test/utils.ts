@@ -4,9 +4,9 @@ import {ListItemNode, ListNode} from '@lexical/list';
 import {LinkNode} from '@lexical/link';
 import {DEFAULT_NODES} from '@tryghost/kg-default-nodes';
 import {createHeadlessEditor} from '@lexical/headless';
-import {CreateEditorArgs, LexicalEditor} from 'lexical';
+import type {CreateEditorArgs, Klass, LexicalEditor, LexicalNode} from 'lexical';
 
-export const defaultNodes: any[] = [
+export const defaultNodes: Array<Klass<LexicalNode>> = [
     // basic HTML nodes
     HeadingNode,
     LinkNode,
@@ -32,7 +32,7 @@ export const createEditor = function (config?: CreateEditorArgs) {
     return editor;
 };
 
-export const assertTransform = function (editor: LexicalEditor, registerTransforms: Function, before: object, after: object) {
+export const assertTransform = function (editor: LexicalEditor, registerTransforms: (editor: LexicalEditor) => void, before: object, after: object) {
     const serializedBefore = JSON.stringify(before);
 
     const beforeState = editor.parseEditorState(serializedBefore);

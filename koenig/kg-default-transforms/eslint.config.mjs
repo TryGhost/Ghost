@@ -1,52 +1,33 @@
-import {fixupPluginRules} from '@eslint/compat';
 import eslint from '@eslint/js';
+import {defineConfig} from 'eslint/config';
 import ghostPlugin from 'eslint-plugin-ghost';
-import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
-const ghost = fixupPluginRules(ghostPlugin);
-
-export default tseslint.config(
+export default defineConfig([
     {ignores: ['build/**']},
     {
-        files: ['src/**/*.ts'],
+        files: ['**/*.ts'],
         extends: [
             eslint.configs.recommended,
             tseslint.configs.recommended
         ],
-        plugins: {ghost},
         languageOptions: {
-            globals: globals.node
+            parserOptions: {ecmaVersion: 2022, sourceType: 'module'}
         },
+        plugins: {ghost: ghostPlugin},
         rules: {
             ...ghostPlugin.configs.ts.rules,
-            // disable rules not in the original ghost/ts config
-            '@typescript-eslint/no-unused-expressions': 'off',
-            '@typescript-eslint/no-require-imports': 'off'
+            '@typescript-eslint/no-explicit-any': 'error'
         }
     },
     {
         files: ['test/**/*.ts'],
-        extends: [
-            eslint.configs.recommended,
-            tseslint.configs.recommended
-        ],
-        plugins: {ghost},
-        languageOptions: {
-            globals: {
-                ...globals.node,
-                ...globals.mocha,
-                should: true,
-                sinon: true
-            }
-        },
         rules: {
-            ...ghostPlugin.configs.ts.rules,
             ...ghostPlugin.configs['ts-test'].rules,
-            '@typescript-eslint/no-unused-expressions': 'off',
-            '@typescript-eslint/no-require-imports': 'off',
-            '@typescript-eslint/no-explicit-any': 'off',
-            '@typescript-eslint/no-unsafe-function-type': 'off'
+            'ghost/mocha/no-global-tests': 'off',
+            'ghost/mocha/handle-done-callback': 'off',
+            'ghost/mocha/no-mocha-arrows': 'off',
+            'ghost/mocha/max-top-level-suites': 'off'
         }
     }
-);
+]);

@@ -1,6 +1,7 @@
-import {LexicalEditor, ParagraphNode, TextNode} from 'lexical';
-import {registerRemoveAtLinkNodesTransform} from '../../build';
-import {assertTransform, createEditor} from '../utils';
+import {ParagraphNode, TextNode} from 'lexical';
+import {registerRemoveAtLinkNodesTransform} from '../../src/index.js';
+import {assertTransform, createEditor} from '../utils.js';
+import type {LexicalEditor} from 'lexical';
 import {AtLinkNode, AtLinkSearchNode, ZWNJNode} from '@tryghost/kg-default-nodes';
 
 const nodes = [AtLinkNode, AtLinkSearchNode, ZWNJNode, TextNode, ParagraphNode];

@@ -1,6 +1,7 @@
-import {LexicalEditor, ParagraphNode, TextNode} from 'lexical';
-import {registerMergeListNodesTransform} from '../../build';
-import {assertTransform, createEditor} from '../utils';
+import {ParagraphNode, TextNode} from 'lexical';
+import {registerMergeListNodesTransform} from '../../src/index.js';
+import {assertTransform, createEditor} from '../utils.js';
+import type {LexicalEditor} from 'lexical';
 
 describe('Merge adjacent lists transform', function () {
     it('handles adjacent ULs', function () {
