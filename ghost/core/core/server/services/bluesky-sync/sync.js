@@ -237,6 +237,7 @@ class BlueskySync {
                 email: syntheticEmail,
                 name: author.displayName || author.handle,
                 status: 'free',
+                email_disabled: false,
                 atproto_did: author.did,
                 bluesky_handle: author.handle,
                 bluesky_avatar_url: author.avatar || null
