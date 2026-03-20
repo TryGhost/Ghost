@@ -303,6 +303,15 @@ test.describe('Koenig Editor with email template nodes', async function () {
             await expect(page.locator('[data-kg-card="product"]')).toBeVisible();
         });
 
+        test('can insert transistor card via slash menu when feature flag is enabled', async function () {
+            await initialize({page, uri: '/#/email?content=false&labs=transistor'});
+            await focusEditor(page);
+            await page.keyboard.type('/transistor');
+            await expect(page.locator('[data-kg-card-menu-item="Transistor" i]')).toBeVisible();
+            await page.locator('[data-kg-card-menu-item="Transistor" i]').click();
+            await expect(page.locator('[data-kg-card="transistor"]')).toBeVisible();
+        });
+
         test('plus button is shown', async function () {
             await focusEditor(page);
             await expect(page.locator('[data-kg-plus-button]')).toBeVisible();

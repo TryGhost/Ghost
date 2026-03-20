@@ -20,6 +20,7 @@ import {ImageNode} from '../nodes/ImageNode';
 import {LinkNode} from '@lexical/link';
 import {ListItemNode, ListNode} from '@lexical/list';
 import {ProductNode} from '../nodes/ProductNode';
+import {TransistorNode} from '../nodes/TransistorNode';
 
 /**
  * Node set for the email editor. Slimmed down version of the default nodes exempting those that aren't meant for email.
@@ -49,7 +50,8 @@ const EMAIL_EDITOR_NODES = [
     CallToActionNode,
     EmailCtaNode,
     ProductNode,
-    EmbedNode
+    EmbedNode,
+    TransistorNode
 ];
 
 export default EMAIL_EDITOR_NODES;

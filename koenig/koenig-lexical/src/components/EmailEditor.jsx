@@ -18,6 +18,7 @@ import KoenigSelectorPlugin from '../plugins/KoenigSelectorPlugin';
 import KoenigSnippetPlugin from '../plugins/KoenigSnippetPlugin';
 import ProductPlugin from '../plugins/ProductPlugin';
 import ReplacementStringsPlugin from '../plugins/ReplacementStringsPlugin';
+import TransistorPlugin from '../plugins/TransistorPlugin';
 import {EMAIL_TRANSFORMERS} from '../plugins/MarkdownShortcutPlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
 import {SharedHistoryContext} from '../context/SharedHistoryContext';
@@ -89,6 +90,7 @@ const EmailEditor = ({
                         <ListPlugin />
                         <ProductPlugin />
                         <ReplacementStringsPlugin />
+                        <TransistorPlugin />
                         {children}
                     </KoenigComposableEditor>
                 </SharedOnChangeContext>
