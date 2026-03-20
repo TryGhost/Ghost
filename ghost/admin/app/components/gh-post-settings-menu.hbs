@@ -199,9 +199,10 @@
                                     @value={{readonly this.blueskyPostUrlScratch}}
                                     @input={{action (mut this.blueskyPostUrlScratch) value="target.value"}}
                                     @focus-out={{action "saveBlueskyPostUrl" this.blueskyPostUrlScratch}}
+                                    @enter={{action "saveBlueskyPostUrl" this.blueskyPostUrlScratch}}
                                     data-test-input="bluesky-post-url"
                                 />
-                                <p class="description">Paste the Bluesky post URL to enable comment sync</p>
+                                <p class="description">Paste a Bluesky post URL and click away to save. Comments will sync bidirectionally.</p>
                             </GhFormGroup>
                         </li>
                         <li class="nav-list-item">

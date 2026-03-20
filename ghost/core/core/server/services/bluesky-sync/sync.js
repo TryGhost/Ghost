@@ -65,11 +65,51 @@ class BlueskySync {
     }
 
     /**
+     * Resolve AT URI from a bsky.app URL (e.g. https://bsky.app/profile/handle/post/rkey)
+     */
+    async resolveBlueskyUrl(url) {
+        try {
+            const match = url.match(/bsky\.app\/profile\/([^/]+)\/post\/([^/?#]+)/);
+            if (!match) {
+                return null;
+            }
+            const [, handleOrDid, rkey] = match;
+            let did = handleOrDid;
+            if (!did.startsWith('did:')) {
+                // Resolve handle to DID
+                const resolved = await this.agent.resolveHandle({handle: did});
+                did = resolved.data.did;
+            }
+            return `at://${did}/app.bsky.feed.post/${rkey}`;
+        } catch (err) {
+            logging.error({message: `Bluesky sync: error resolving URL ${url}`, err});
+            return null;
+        }
+    }
+
+    /**
      * Find all posts that have a linked Bluesky thread and poll each one
      */
     async pollAllThreads() {
         try {
             logging.info('Bluesky sync: polling all threads');
+
+            // Resolve any posts that have a URL but no AT URI
+            const postsWithUrlOnly = await models.PostsMeta.findAll({
+                filter: 'bluesky_post_url:-null+bluesky_post_uri:null'
+            });
+            const urlOnlyItems = postsWithUrlOnly?.models || postsWithUrlOnly || [];
+            for (const meta of urlOnlyItems) {
+                const url = meta.get('bluesky_post_url');
+                if (url) {
+                    const uri = await this.resolveBlueskyUrl(url);
+                    if (uri) {
+                        await models.PostsMeta.edit({bluesky_post_uri: uri}, {id: meta.id});
+                        logging.info(`Bluesky sync: resolved URI for ${url} → ${uri}`);
+                    }
+                }
+            }
+
             const postsMeta = await models.PostsMeta.findAll({
                 filter: 'bluesky_post_uri:-null'
             });
