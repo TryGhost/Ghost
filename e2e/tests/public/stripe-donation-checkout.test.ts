@@ -83,6 +83,7 @@ test.describe('Ghost Public - Stripe Donation Checkout', () => {
         }, {
             timeoutMs: 10000
         });
+        expect(messages.length).toBeGreaterThan(0);
         const latestMessage = await emailClient.getMessageDetailed(messages[0]);
 
         expect(latestMessage.Subject).toContain('One-time payment received');

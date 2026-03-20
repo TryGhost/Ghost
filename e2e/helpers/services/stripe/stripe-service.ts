@@ -75,7 +75,11 @@ export class StripeTestService {
         email?: string;
         name?: string;
     } = {}): Promise<void> {
-        const session = this.getCheckoutSessions().at(-1);
+        const session = this.getCheckoutSessions()
+            .filter((item) => {
+                return item.response.mode === 'payment' && item.response.metadata.ghost_donation === 'true';
+            })
+            .at(-1);
 
         if (!session) {
             throw new Error('No recorded Stripe checkout session found');
@@ -236,8 +240,14 @@ export class StripeTestService {
             throw new Error(`Checkout session ${opts.sessionId} does not include a customer email`);
         }
 
+        const resolvedAmount = opts.amount ?? price.custom_unit_amount?.preset ?? price.unit_amount;
+
+        if (typeof resolvedAmount !== 'number' || !Number.isFinite(resolvedAmount) || resolvedAmount <= 0) {
+            throw new Error(`Checkout session ${opts.sessionId} does not include a valid donation amount`);
+        }
+
         const donationEvent = buildDonationCheckoutCompletedEvent({
-            amount: opts.amount ?? price.custom_unit_amount?.preset ?? price.unit_amount ?? 0,
+            amount: resolvedAmount,
             currency: price.currency,
             customerId: session.response.customer,
             customerEmail: email,

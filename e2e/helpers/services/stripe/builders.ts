@@ -229,8 +229,8 @@ export function buildDonationCheckoutCompletedEvent(opts: {
                     name: opts.name
                 },
                 metadata: {
-                    ghost_donation: 'true',
-                    ...(opts.metadata ?? {})
+                    ...(opts.metadata ?? {}),
+                    ghost_donation: 'true'
                 },
                 custom_fields: opts.donationMessage ? [{
                     key: 'donation_message',
