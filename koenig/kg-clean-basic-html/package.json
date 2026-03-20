@@ -19,7 +19,7 @@
     "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
     "prepare": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
     "pretest": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json && tsc -p tsconfig.test.json",
-    "test": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura tsx node_modules/.bin/mocha './test/**/*.test.ts'",
+    "test": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha --require tsx './test/**/*.test.ts'",
     "lint": "eslint . --cache",
     "posttest": "yarn lint"
   },
