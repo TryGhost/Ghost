@@ -7,7 +7,7 @@ import tseslint from 'typescript-eslint';
 const ghost = fixupPluginRules(ghostPlugin);
 
 export default tseslint.config(
-    {ignores: ['build/**']},
+    {ignores: ['build/**', 'cjs/**', 'es/**']},
     {
         files: ['lib/**/*.ts'],
         extends: [
