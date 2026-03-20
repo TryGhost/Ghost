@@ -1,5 +1,6 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const {MemberCommentEvent} = require('../../../shared/events');
 const DomainEvents = require('@tryghost/domain-events');
 const {byNQL} = require('../../models/base/plugins/bulk-filters');
@@ -343,7 +344,11 @@ class CommentsService {
         const model = await this.models.Comment.add(commentData, options);
 
         if (!options.context.internal) {
-            await this.sendNewCommentNotifications(model);
+            try {
+                await this.sendNewCommentNotifications(model);
+            } catch (err) {
+                logging.error({message: 'Failed to send comment notification email', err});
+            }
         }
 
         DomainEvents.dispatch(MemberCommentEvent.create({
@@ -431,7 +436,11 @@ class CommentsService {
         const model = await this.models.Comment.add(commentData, options);
 
         if (!options.context.internal) {
-            await this.sendNewCommentNotifications(model);
+            try {
+                await this.sendNewCommentNotifications(model);
+            } catch (err) {
+                logging.error({message: 'Failed to send reply notification email', err});
+            }
         }
 
         DomainEvents.dispatch(MemberCommentEvent.create({

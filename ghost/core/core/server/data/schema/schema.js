@@ -440,6 +440,8 @@ module.exports = {
         last_commented_at: {type: 'dateTime', nullable: true},
         commenting: {type: 'text', maxlength: 65535, nullable: true},
         atproto_did: {type: 'string', maxlength: 191, nullable: true, unique: true},
+        atproto_scope: {type: 'string', maxlength: 100, nullable: true},
+        atproto_session: {type: 'text', maxlength: 65535, nullable: true},
         bluesky_handle: {type: 'string', maxlength: 191, nullable: true},
         bluesky_avatar_url: {type: 'string', maxlength: 2000, nullable: true},
         created_at: {type: 'dateTime', nullable: false},

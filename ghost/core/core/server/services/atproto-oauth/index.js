@@ -55,6 +55,8 @@ module.exports = {
     getClientMetadata: client.getClientMetadata,
     authorize: client.authorize,
     handleCallback: client.handleCallback,
+    restoreSession: client.restoreSession,
+    revokeSession: client.revokeSession,
     init,
     get initialized() {
         return initialized;

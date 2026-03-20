@@ -284,6 +284,11 @@ module.exports = class CommentsController {
                 return;
             }
 
+            // Lazy-init the sync service on first use
+            if (!blueskySync.getSyncService()) {
+                await blueskySync.init();
+            }
+
             const syncService = blueskySync.getSyncService();
             if (!syncService) {
                 return;
@@ -320,6 +325,7 @@ module.exports = class CommentsController {
                 commentText: text,
                 memberName: member.get('name') || 'Anonymous',
                 memberBlueskyDid: member.get('atproto_did') || null,
+                memberScope: member.get('atproto_scope') || null,
                 parentBlueskyUri
             });
 

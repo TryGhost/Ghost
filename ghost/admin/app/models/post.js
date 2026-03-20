@@ -96,6 +96,8 @@ export default Model.extend(Comparable, ValidationEngine, {
     twitterImage: attr('string'),
     twitterTitle: attr('string'),
     twitterDescription: attr('string'),
+    blueskyPostUrl: attr('string'),
+    blueskyPostUri: attr('string'),
     emailSubject: attr('string'),
     html: attr('string'),
     visibility: attr('string'),

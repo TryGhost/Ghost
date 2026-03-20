@@ -31,7 +31,8 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
         can_comment: member.can_comment,
         commenting: member.commenting,
         bluesky_handle: member.bluesky_handle || null,
-        atproto_did: member.atproto_did || null
+        atproto_did: member.atproto_did || null,
+        atproto_scope: member.atproto_scope || null
     };
     if (member.newsletters) {
         data.newsletters = formatNewsletterResponse(member.newsletters);

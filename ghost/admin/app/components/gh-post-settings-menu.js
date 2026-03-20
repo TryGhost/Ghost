@@ -63,6 +63,9 @@ export default class GhPostSettingsMenu extends Component {
     @boundOneWay('post.slug')
         slugValue;
 
+    @boundOneWay('post.blueskyPostUrl')
+        blueskyPostUrlScratch;
+
     @boundOneWay('post.uuid')
         uuidValue;
 
@@ -321,6 +324,19 @@ export default class GhPostSettingsMenu extends Component {
         post.set('customExcerpt', excerpt);
 
         return post.validate({property: 'customExcerpt'}).then(() => this.savePostTask.perform());
+    }
+
+    @action
+    saveBlueskyPostUrl(url) {
+        let post = this.post;
+        let current = post.get('blueskyPostUrl');
+
+        if (url === current) {
+            return;
+        }
+
+        post.set('blueskyPostUrl', url);
+        return this.savePostTask.perform();
     }
 
     @action

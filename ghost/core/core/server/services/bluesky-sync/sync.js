@@ -69,18 +69,23 @@ class BlueskySync {
      */
     async pollAllThreads() {
         try {
+            logging.info('Bluesky sync: polling all threads');
             const postsMeta = await models.PostsMeta.findAll({
                 filter: 'bluesky_post_uri:-null'
             });
 
-            if (!postsMeta || !postsMeta.length) {
+            const items = postsMeta?.models || postsMeta || [];
+            logging.info(`Bluesky sync: found ${items.length} posts with Bluesky threads`);
+
+            if (!items.length) {
                 return;
             }
 
-            for (const meta of postsMeta.models || postsMeta) {
+            for (const meta of items) {
                 const postUri = meta.get('bluesky_post_uri');
                 const postId = meta.get('post_id');
                 if (postUri && postId) {
+                    logging.info(`Bluesky sync: syncing thread ${postUri} for post ${postId}`);
                     await this.syncThread(postId, postUri);
                 }
             }
@@ -113,6 +118,7 @@ class BlueskySync {
      * Recursively process Bluesky replies and create Ghost comments
      */
     async processReplies(postId, replies, parentCommentId) {
+        logging.info(`Bluesky sync: processing ${replies.length} replies (parent: ${parentCommentId || 'root'})`);
         for (const reply of replies) {
             if (!reply?.post?.uri || !reply?.post?.record?.text) {
                 continue;
@@ -123,9 +129,12 @@ class BlueskySync {
             const replyAuthor = reply.post.author;
             const replyCreatedAt = reply.post.record.createdAt;
 
+            logging.info(`Bluesky sync: checking reply by ${replyAuthor.handle}: "${replyText.substring(0, 50)}"`);
+
             // Check if we already synced this reply
             const existing = await models.Comment.findOne({bluesky_reply_uri: replyUri});
             if (existing) {
+                logging.info(`Bluesky sync: already synced ${replyUri}`);
                 // Still process nested replies in case there are new ones
                 if (reply.replies?.length) {
                     await this.processReplies(postId, reply.replies, existing.id);
@@ -151,7 +160,6 @@ class BlueskySync {
 
                 if (parentCommentId) {
                     commentData.parent_id = parentCommentId;
-                    delete commentData.post_id;
                 }
 
                 const comment = await models.Comment.add(commentData);
@@ -213,7 +221,7 @@ class BlueskySync {
      * @param {string} options.parentBlueskyUri - Bluesky URI of the parent reply (for threading)
      * @returns {Promise<string|null>} The Bluesky reply URI, or null
      */
-    async postCommentToBluesky({postId, commentText, memberName, memberBlueskyDid, parentBlueskyUri}) {
+    async postCommentToBluesky({postId, commentText, memberName, memberBlueskyDid, memberScope, parentBlueskyUri}) {
         try {
             // Get the Bluesky thread URI for this post
             const postMeta = await models.PostsMeta.findOne({post_id: postId});
@@ -249,13 +257,35 @@ class BlueskySync {
                 replyRef.parent = replyRef.root;
             }
 
-            // Format the text — attribute if not from a Bluesky user
+            // Try to post as the user if they have write scope + active session
+            let postingAgent = null;
+            let postingAsUser = false;
+
+            if (memberBlueskyDid && memberScope && memberScope.includes('transition:generic')) {
+                try {
+                    const atprotoOAuth = require('../atproto-oauth');
+                    postingAgent = await atprotoOAuth.restoreSession(memberBlueskyDid);
+                    if (postingAgent) {
+                        postingAsUser = true;
+                        logging.info(`Bluesky sync: posting as user ${memberName} (${memberBlueskyDid})`);
+                    }
+                } catch (err) {
+                    logging.warn({message: 'Bluesky sync: could not restore user session, falling back to blog account', err});
+                }
+            }
+
+            // Fall back to blog account
+            if (!postingAgent) {
+                postingAgent = this.agent;
+            }
+
+            // Format text — if posting as user, just the comment. If as blog, attribute it.
             let text;
-            if (memberBlueskyDid) {
-                // Bluesky user commenting on Ghost — post as the blog bot but clearly attributed
+            if (postingAsUser) {
+                text = commentText;
+            } else if (memberBlueskyDid) {
                 text = `${memberName}: ${commentText}`;
             } else {
-                // Email-only user
                 text = `${memberName} commented: ${commentText}`;
             }
 
@@ -264,12 +294,40 @@ class BlueskySync {
                 text = text.substring(0, 297) + '...';
             }
 
-            const response = await this.agent.post({
-                text,
-                reply: replyRef
-            });
-
-            logging.info(`Bluesky sync: posted comment to thread by ${memberName}`);
+            let response;
+            try {
+                response = await postingAgent.post({
+                    text,
+                    reply: replyRef
+                });
+                logging.info(`Bluesky sync: posted comment to thread by ${memberName} (as ${postingAsUser ? 'user' : 'blog'})`);
+            } catch (postErr) {
+                if (postingAsUser) {
+                    // User post failed — scope may have been revoked/downgraded
+                    // Update DB so the upgrade prompt shows again
+                    logging.warn({message: `Bluesky sync: posting as user failed, falling back to blog account`, err: postErr});
+                    try {
+                        const member = await models.Member.findOne({atproto_did: memberBlueskyDid});
+                        if (member) {
+                            await models.Member.edit({atproto_scope: 'atproto'}, {id: member.id});
+                            logging.info(`Bluesky sync: downgraded scope for ${memberBlueskyDid} — user will see upgrade prompt again`);
+                        }
+                    } catch (dbErr) {
+                        logging.error({message: 'Bluesky sync: failed to downgrade scope in DB', err: dbErr});
+                    }
+                    text = `${memberName}: ${commentText}`;
+                    if (text.length > 300) {
+                        text = text.substring(0, 297) + '...';
+                    }
+                    response = await this.agent.post({
+                        text,
+                        reply: replyRef
+                    });
+                    logging.info(`Bluesky sync: posted comment to thread by ${memberName} (as blog, after user post failed)`);
+                } else {
+                    throw postErr;
+                }
+            }
             return response.uri;
         } catch (err) {
             logging.error({message: 'Bluesky sync: error posting comment to Bluesky', err});

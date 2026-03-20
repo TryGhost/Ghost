@@ -127,6 +127,23 @@ export default class SigninController extends Controller.extend(ValidationEngine
         }
     }
 
+    @task({drop: true})
+    *signinWithBlueskyTask() {
+        try {
+            const handle = window.prompt('Enter your Bluesky handle (e.g. yourname.bsky.social)');
+            if (!handle || !handle.trim()) {
+                return;
+            }
+            const url = this.ghostPaths.url.api('admin', 'atproto', 'authorize');
+            const response = yield this.ajax.post(url, {data: {handle: handle.trim()}});
+            if (response && response.url) {
+                window.location.href = response.url;
+            }
+        } catch (error) {
+            this.flowErrors = 'Bluesky sign-in failed. Make sure your handle is correct.';
+        }
+    }
+
     @task
     *forgotPasswordTask() {
         let email = this.signin.identification;

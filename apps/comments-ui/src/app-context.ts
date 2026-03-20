@@ -12,7 +12,8 @@ export type Member = {
     expertise: string,
     can_comment?: boolean,
     bluesky_handle?: string,
-    atproto_did?: string
+    atproto_did?: string,
+    atproto_scope?: string
 }
 
 export type Comment = {
@@ -66,7 +67,8 @@ export type CommentsOptions = {
     commentsEnabled: string | undefined,
     title: string | null,
     showCount: boolean,
-    publication: string
+    publication: string,
+    blueskyPostUrl: string
 };
 
 export type EditableAppContext = {

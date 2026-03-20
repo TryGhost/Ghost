@@ -65,7 +65,8 @@ module.exports = async function comments(options) {
         'avatar-saturation': avatarSaturation,
         'accent-color': accentColor,
         'comments-enabled': commentsEnabled,
-        publication: settingsCache.get('title')
+        publication: settingsCache.get('title'),
+        'bluesky-post-url': this.bluesky_post_url || ''
     };
 
     const dataAttributes = getDataAttributes(data);

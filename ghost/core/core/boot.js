@@ -198,6 +198,14 @@ async function initServicesForFrontend({bootLogger}) {
     await offers.init();
     debug('End: Offers');
 
+    // LINKEDTRUST FORK: Start Bluesky comment sync polling
+    try {
+        const blueskySync = require('./server/services/bluesky-sync');
+        await blueskySync.init();
+    } catch (err) {
+        logging.warn({message: 'Bluesky sync: failed to initialize at boot', err});
+    }
+
     const frontendDataService = require('./server/services/frontend-data-service');
     let dataService = await frontendDataService.init();
 
