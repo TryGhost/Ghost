@@ -4,7 +4,7 @@ import ghostPlugin from 'eslint-plugin-ghost';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
-  { ignores: ['build/**'] },
+  { ignores: ['build/**', 'cjs/**', 'es/**'] },
   {
     files: ['**/*.ts'],
     extends: [
