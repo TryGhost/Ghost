@@ -2,7 +2,7 @@ import {HttpClient as APIRequest} from '@/data-factory';
 
 export interface Setting {
     key: string;
-    value: string | boolean | string[] | null;
+    value: string | number | boolean | string[] | null;
 }
 
 export interface SettingsResponse {
@@ -61,6 +61,14 @@ export class SettingsService {
 
     async setPortalPlans(value: PortalPlan[]) {
         return await this.updateSettings([{key: 'portal_plans', value}]);
+    }
+
+    async setDonationsSuggestedAmount(value: number) {
+        return await this.updateSettings([{key: 'donations_suggested_amount', value}]);
+    }
+
+    async setDonationsCurrency(value: string) {
+        return await this.updateSettings([{key: 'donations_currency', value}]);
     }
 
     /**
