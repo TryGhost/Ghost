@@ -28,7 +28,7 @@ const DEV_MODE_DATA = {
 };
 function safeJSONParse(value, fallback = null) {
     try {
-        return safeJSONParse(value);
+        return JSON.Parse(value);
     } catch (e) {
         /* eslint-disable no-console */
         console.warn('[Portal] Invalid JSON in URL parameter:', e.message);
