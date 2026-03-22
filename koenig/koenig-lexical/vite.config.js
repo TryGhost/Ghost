@@ -3,7 +3,7 @@ import mdx from '@mdx-js/rollup';
 import pkg from './package.json';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
-import {defineConfig, loadEnv} from 'vite';
+import {defineConfig, esmExternalRequirePlugin, loadEnv} from 'vite';
 import {resolve} from 'path';
 import {sentryVitePlugin} from '@sentry/vite-plugin';
 
@@ -17,7 +17,14 @@ export default (function viteConfig({mode}) {
     const plugins = [
         svgr(),
         react(),
-        mdx()
+        mdx(),
+        // Convert CJS require("react")/require("react-dom") calls inside
+        // bundled dependencies to ESM imports so the ESM build has no
+        // runtime require() shims that break in browsers
+        esmExternalRequirePlugin({
+            external: [/^react($|\/)/, /^react-dom($|\/)/],
+            skipDuplicateCheck: true
+        })
     ];
 
     // Keep sentryVitePlugin as the last plugin
@@ -91,16 +98,12 @@ export default (function viteConfig({mode}) {
                 }
             },
             rolldownOptions: {
-                external: [
-                    /^react($|\/)/,
-                    /^react-dom($|\/)/
-                ],
                 output: {
                     globals: {
                         'react': 'React',
                         'react/jsx-runtime': 'React',
                         'react-dom': 'ReactDOM',
-                        'react-dom/server': 'ReactDOM'
+                        'react-dom/client': 'ReactDOM'
                     },
                     assetFileNames: (assetInfo) => {
                         // Vite 6 changed CSS output naming in lib mode from

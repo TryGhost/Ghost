@@ -3,8 +3,9 @@ import React from 'react';
 import {$createImageNode} from '../nodes/ImageNode.jsx';
 import {$createNodeSelection, $getNearestNodeFromDOMNode, $getNodeByKey, $setSelection} from 'lexical';
 import {DragDropHandler} from '../utils/draggable/DragDropHandler.jsx';
+import {createRoot} from 'react-dom/client';
+import {flushSync} from 'react-dom';
 import {isCardDropAllowed} from '../utils/draggable/draggable-utils.js';
-import {renderToString} from 'react-dom/server';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -63,22 +64,27 @@ function useDragDropReorder(editor, isEditable) {
             willChange: 'transform'
         };
 
-        const GhostElement = () => {
-            return (
-                <div className="absolute flex size-16 flex-col items-center justify-center rounded bg-white shadow-sm" style={style}>
-                    <div className="flex items-center">
-                        <Icon className="size-8" />
-                    </div>
-                </div>
-            );
-        };
+        const ghost = document.createElement('div');
+        // classes kept so Tailwind picks up usage
+        ghost.className = 'absolute flex size-16 flex-col items-center justify-center rounded bg-white shadow-sm';
+        Object.assign(ghost.style, style);
 
-        const wrapper = document.createElement('div');
-        // uses "server-side" renderToString here because we need a real DOM element
-        // synchronously which client-side ReactDOM can't give us
-        wrapper.innerHTML = renderToString(<GhostElement />);
+        const iconWrapper = document.createElement('div');
+        iconWrapper.className = 'flex items-center';
+        ghost.appendChild(iconWrapper);
 
-        return wrapper.firstChild;
+        // Icon is a React component — render synchronously via flushSync
+        const iconRoot = document.createElement('div');
+        iconWrapper.appendChild(iconRoot);
+        const reactRoot = createRoot(iconRoot);
+        flushSync(() => {
+            reactRoot.render(<Icon className="size-8" />);
+        });
+
+        // Store the React root so DragDropHandler can unmount it on cleanup
+        ghost.__reactRoot = reactRoot;
+
+        return ghost;
     });
 
     const getDropIndicatorPosition = React.useRef((draggableInfo, droppableElem, position) => {

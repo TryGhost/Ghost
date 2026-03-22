@@ -3,7 +3,6 @@ import * as utils from './draggable-utils';
 import EventEmitter from 'eventemitter3';
 import {DragDropContainer} from './DragDropContainer';
 import {ScrollHandler} from './ScrollHandler';
-import {renderToString} from 'react-dom/server';
 
 export class DragDropHandler {
     EE = null;
@@ -639,6 +638,7 @@ export class DragDropHandler {
         this.sourceContainer = null;
 
         if (this.ghostInfo) {
+            this.ghostInfo.element.__reactRoot?.unmount();
             this.ghostInfo.element.remove();
             this.ghostInfo = null;
         }
@@ -658,27 +658,18 @@ export class DragDropHandler {
     _appendDropIndicator() {
         let dropIndicator = document.querySelector(`#${constants.DROP_INDICATOR_ID}`);
         if (!dropIndicator) {
-            // React component so Tailwind picks up class usage
-            const DropIndicator = () => {
-                const style = {
-                    position: 'absolute',
-                    opacity: 0,
-                    width: '4px',
-                    height: 0,
-                    zIndex: constants.DROP_INDICATOR_ZINDEX,
-                    pointerEvents: 'none'
-                };
-
-                return (
-                    <div className="rounded-full bg-green" id={constants.DROP_INDICATOR_ID} style={style}></div>
-                );
-            };
-
-            // uses "server-side" renderToString here because we need a real DOM element
-            // synchronously which client-side ReactDOM can't give us
-            const wrapper = document.createElement('div');
-            wrapper.innerHTML = renderToString(<DropIndicator />);
-            dropIndicator = wrapper.firstChild;
+            dropIndicator = document.createElement('div');
+            dropIndicator.id = constants.DROP_INDICATOR_ID;
+            // "rounded-full bg-green" kept as classes so Tailwind picks up usage
+            dropIndicator.className = 'rounded-full bg-green';
+            Object.assign(dropIndicator.style, {
+                position: 'absolute',
+                opacity: 0,
+                width: '4px',
+                height: '0',
+                zIndex: constants.DROP_INDICATOR_ZINDEX,
+                pointerEvents: 'none'
+            });
 
             this.editorContainerElement.appendChild(dropIndicator);
         }
