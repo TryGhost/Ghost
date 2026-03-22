@@ -26,7 +26,15 @@ const DEV_MODE_DATA = {
     ...Fixtures.paidMemberOnTier(),
     pageData: Fixtures.offer
 };
-
+function safeJSONParse(value, fallback = null) {
+    try {
+        return safeJSONParse(value);
+    } catch (e) {
+        /* eslint-disable no-console */
+        console.warn('[Portal] Invalid JSON in URL parameter:', e.message);
+        return fallback;
+    }
+}
 function SentryErrorBoundary({site, children}) {
     const {portal_sentry: portalSentry} = site || {};
     if (portalSentry && portalSentry.dsn) {
@@ -383,14 +391,14 @@ export default class App extends React.Component {
             const value = decodeURIComponent(pair[1]);
 
             if (key === 'button') {
-                data.site.portal_button = JSON.parse(value);
+                data.site.portal_button = safeJSONParse(value);
             } else if (key === 'name') {
-                data.site.portal_name = JSON.parse(value);
-            } else if (key === 'isFree' && JSON.parse(value)) {
+                data.site.portal_name = safeJSONParse(value);
+            } else if (key === 'isFree' && safeJSONParse(value)) {
                 allowedPlans.push('free');
-            } else if (key === 'isMonthly' && JSON.parse(value)) {
+            } else if (key === 'isMonthly' && safeJSONParse(value)) {
                 allowedPlans.push('monthly');
-            } else if (key === 'isYearly' && JSON.parse(value)) {
+            } else if (key === 'isYearly' && safeJSONParse(value)) {
                 allowedPlans.push('yearly');
             } else if (key === 'portalPrices') {
                 portalPrices = value ? value.split(',') : [];
@@ -407,7 +415,7 @@ export default class App extends React.Component {
             } else if (key === 'signupTermsHtml') {
                 data.site.portal_signup_terms_html = value || '';
             } else if (key === 'signupCheckboxRequired') {
-                data.site.portal_signup_checkbox_required = JSON.parse(value);
+                data.site.portal_signup_checkbox_required = safeJSONParse(value);
             } else if (key === 'buttonStyle' && value) {
                 data.site.portal_button_style = value;
             } else if (key === 'monthlyPrice' && !isNaN(Number(value))) {
@@ -422,13 +430,13 @@ export default class App extends React.Component {
                 data.site.plans.currency_symbol = getCurrencySymbol(currencyValue);
                 currency = currencyValue;
             } else if (key === 'disableBackground') {
-                data.site.disableBackground = JSON.parse(value);
+                data.site.disableBackground = safeJSONParse(value);
             } else if (key === 'membersSignupAccess' && value) {
                 data.site.members_signup_access = value;
             } else if (key === 'portalDefaultPlan' && value) {
                 data.site.portal_default_plan = value;
             } else if (key === 'transistorPortalSettings' && value) {
-                data.site.transistor_portal_settings = JSON.parse(value);
+                data.site.transistor_portal_settings = safeJSONParse(value);
             }
         }
         data.site.portal_plans = allowedPlans;
@@ -762,25 +770,30 @@ export default class App extends React.Component {
 
     /**Handle state update for preview url and Portal Link changes */
     updateStateForPreviewLinks() {
-        const {site: previewSite, ...restPreviewData} = this.fetchPreviewData();
-        const {site: linkSite, ...restLinkData} = this.fetchLinkData(this.state.site, this.state.member);
-
-        const updatedState = {
-            site: {
-                ...this.state.site,
-                ...(linkSite || {}),
-                ...(previewSite || {}),
-                plans: {
-                    ...(this.state.site && this.state.site.plans),
-                    ...(linkSite || {}).plans,
-                    ...(previewSite || {}).plans
-                }
-            },
-            ...restLinkData,
-            ...restPreviewData
-        };
-        this.handleSignupQuery({site: updatedState.site, pageQuery: updatedState.pageQuery});
-        this.setState(updatedState);
+        try {
+            const {site: previewSite, ...restPreviewData} = this.fetchPreviewData();
+            const {site: linkSite, ...restLinkData} = this.fetchLinkData(this.state.site, this.state.member);
+    
+            const updatedState = {
+                site: {
+                    ...this.state.site,
+                    ...(linkSite || {}),
+                    ...(previewSite || {}),
+                    plans: {
+                        ...(this.state.site && this.state.site.plans),
+                        ...(linkSite || {}).plans,
+                        ...(previewSite || {}).plans
+                    }
+                },
+                ...restLinkData,
+                ...restPreviewData
+            };
+            this.handleSignupQuery({site: updatedState.site, pageQuery: updatedState.pageQuery});
+            this.setState(updatedState);
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.warn('[Portal] Failed to update preview links:', error);
+        }
     }
 
     /** Handle Portal offer urls */
