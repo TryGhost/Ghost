@@ -18,8 +18,8 @@ import { useMemberCount } from "./hooks/use-member-count";
 import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
 import { NavCustomViews } from "./nav-custom-views";
 import { NavMemberViews } from "./nav-member-views";
+import { useMemberSidebarViews } from "./member-sidebar-views";
 import { getMembersNavActiveRoutes, isMembersNavActive } from "./nav-content.helpers";
-import { isMemberViewSearchActive, useMemberViews } from "@tryghost/posts/src/views/members/hooks/use-member-views";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
@@ -27,7 +27,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
     const [postsExpanded, setPostsExpanded] = useNavigationExpanded('posts');
     const [membersExpanded, setMembersExpanded] = useNavigationExpanded('members');
-    const memberViews = useMemberViews();
+    const memberViews = useMemberSidebarViews();
     const hasMemberViews = memberViews.length > 0;
     const location = useLocation();
     const memberCount = useMemberCount();
@@ -38,14 +38,12 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
     const isOnMembersForward = location.pathname === '/members-forward';
-    const hasActiveMemberView = isOnMembersForward && memberViews.some(view =>
-        isMemberViewSearchActive(location.search, view)
-    );
+    const hasActiveMemberView = isOnMembersForward && memberViews.some(view => view.isActive);
     const membersNavActive = isMembersNavActive({
         membersForwardEnabled,
         isOnMembersForward,
         hasActiveMemberView,
-        isLegacyMembersRouteActive: routing.isRouteActive(getMembersNavActiveRoutes(membersForwardEnabled))
+        isLegacyMembersRouteActive: routing.isRouteActive(getMembersNavActiveRoutes())
     });
 
     return (
