@@ -87,11 +87,11 @@ describe('Unit: endpoints/utils/serializers/output/utils/preview-rendering', fun
 
             previewRendering.forPost(attrs, frame);
 
-            assert.notEqual(attrs.plaintext, 'old plaintext');
-            assert.notEqual(attrs.excerpt, 'old excerpt');
+            assert.ok(attrs.plaintext.includes('Some text'));
+            assert.ok(attrs.excerpt.includes('Some text'));
         });
 
-        it('does not add plaintext or excerpt when not present', function () {
+        it('does not add plaintext when not present', function () {
             frame.isPreview = true;
             const attrs = {
                 html: '<p>Some text</p><iframe src="https://example.com" data-kg-transistor-embed></iframe><script>x</script>'
@@ -99,8 +99,21 @@ describe('Unit: endpoints/utils/serializers/output/utils/preview-rendering', fun
 
             previewRendering.forPost(attrs, frame);
 
-            assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'plaintext'), false);
-            assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'excerpt'), false);
+            assert.equal(Object.hasOwn(attrs, 'plaintext'), false);
+            assert.equal(Object.hasOwn(attrs, 'excerpt'), false);
+        });
+
+        it('does not add excerpt when not present', function () {
+            frame.isPreview = true;
+            const attrs = {
+                html: '<p>Some text</p><iframe src="https://example.com" data-kg-transistor-embed></iframe><script>x</script>',
+                plaintext: 'old plaintext'
+            };
+
+            previewRendering.forPost(attrs, frame);
+
+            assert.ok(attrs.plaintext.includes('Some text'));
+            assert.equal(Object.hasOwn(attrs, 'excerpt'), false);
         });
 
         it('handles multiple embeds in one post', function () {
@@ -117,6 +130,22 @@ describe('Unit: endpoints/utils/serializers/output/utils/preview-rendering', fun
             assert.equal(matches.length, 2);
             assert.ok(attrs.html.includes('<p>Middle</p>'));
             assert.ok(!attrs.html.includes('<iframe'));
+        });
+
+        it('handles whitespace between iframe, script, and noscript tags', function () {
+            frame.isPreview = true;
+            const attrs = {
+                html: '<iframe src="https://example.com" data-kg-transistor-embed> </iframe> <script type="text/javascript">x</script> <noscript>fallback</noscript>',
+                plaintext: 'fallback',
+                excerpt: 'fallback'
+            };
+
+            previewRendering.forPost(attrs, frame);
+
+            assert.ok(attrs.html.includes('kg-transistor-placeholder'));
+            assert.ok(!attrs.html.includes('<iframe'));
+            assert.ok(!attrs.html.includes('<script'));
+            assert.ok(!attrs.html.includes('<noscript>'));
         });
     });
 });
