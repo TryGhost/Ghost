@@ -63,7 +63,7 @@ const OfficialThemes: React.FC<{
                         <button key={theme.name} className='flex cursor-pointer flex-col gap-3 text-left' type='button' onClick={() => {
                             onSelectTheme?.(theme);
                         }}>
-                            <div className='relative w-full bg-grey-100 shadow-md transition-all duration-500 hover:scale-[1.05]' onMouseEnter={() => setupVariantLoop(theme)} onMouseLeave={() => setupVariantLoop(null)}>
+                            <div className='bg-grey-100 relative w-full shadow-md transition-all duration-500 hover:scale-[1.05]' onMouseEnter={() => setupVariantLoop(theme)} onMouseLeave={() => setupVariantLoop(null)}>
                                 {showVariants ?
                                     <>
                                         {variants.map((variant, idx) => (
@@ -92,23 +92,23 @@ const OfficialThemes: React.FC<{
                                 <Heading level={4}>{theme.name}</Heading>
                                 {showVariants ?
                                     variants.map((variant, idx) => (
-                                        <span className={clsx('absolute left-0 translate-y-px text-sm text-grey-700 opacity-0', {
+                                        <span className={clsx('text-grey-700 absolute left-0 translate-y-px text-sm opacity-0', {
                                             'opacity-100': idx === visibleVariantIdx && isVariantLooping || !isVariantLooping && idx === 0
                                         })}>{variant.category}</span>
                                     )) :
-                                    <span className='text-sm text-grey-700'>{theme.category}</span>
+                                    <span className='text-grey-700 text-sm'>{theme.category}</span>
                                 }
                             </div>
                         </button>
                     );
                 })}
             </div>
-            <div className='mx-[-8vmin] mt-[8vmin] mb-[-8vmin] bg-black px-[8vmin] py-16 text-center text-lg text-white' style={
+            <div className='mx-[-8vmin] mb-[-8vmin] mt-[8vmin] bg-black px-[8vmin] py-16 text-center text-lg text-white' style={
                 {
                     background: `#15171a url(${MarketplaceBgImage}) 100% 100% / 35vw no-repeat`
                 }
             }>
-                Find and buy third-party, premium themes from independent developers in the <a className='inline-block font-semibold text-lime' href="https://ghost.org/themes/" rel="noopener noreferrer" target="_blank">Ghost Marketplace &rarr;</a>
+                Find and buy third-party, premium themes from independent developers in the <a className='text-lime inline-block font-semibold' href="https://ghost.org/themes/" rel="noopener noreferrer" target="_blank">Ghost Marketplace &rarr;</a>
             </div>
         </ModalPage>
     );

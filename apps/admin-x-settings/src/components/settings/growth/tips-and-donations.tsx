@@ -126,7 +126,7 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className='flex items-center gap-2'>
                         <Heading level={6}>Shareable link</Heading>
                     </div>
-                    <div className='group relative mt-0 flex w-100 items-center justify-between overflow-hidden border-b border-transparent pt-1 pb-2 hover:border-grey-300 dark:hover:border-grey-600'>
+                    <div className='w-100 hover:border-grey-300 dark:hover:border-grey-600 group relative mt-0 flex items-center justify-between overflow-hidden border-b border-transparent pb-2 pt-1'>
                         <span data-testid='donate-url'>{donateUrl}</span>
                         <div className='invisible flex gap-1 bg-white pl-1 group-hover:visible dark:bg-black'>
                             <Button color='clear' data-testid='preview-shareable-link' label={'Preview'} size='sm' onClick={openPreview} />
@@ -136,7 +136,7 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 </div>
             </SettingGroupContent>
             <div className='items-center-mt-1 flex text-sm'>
-                All tips and donations are subject to Stripe&apos;s <a className='ml-1 text-green' href="https://ghost.org/help/tips-donations/" rel="noopener noreferrer" target="_blank"> tipping policy</a>.
+                All tips and donations are subject to Stripe&apos;s <a className='text-green ml-1' href="https://ghost.org/help/tips-donations/" rel="noopener noreferrer" target="_blank"> tipping policy</a>.
             </div>
         </TopLevelGroup>
     );

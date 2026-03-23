@@ -12,12 +12,12 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const StripeConnectedButton: React.FC<{className?: string; onClick: () => void;}> = ({className, onClick}) => {
     className = clsx(
-        'group flex shrink-0 items-center justify-center rounded border border-grey-300 px-3 py-1.5 text-sm font-semibold whitespace-nowrap text-grey-900 transition-all hover:border-grey-500 dark:border-grey-900 dark:text-white',
+        'border-grey-300 text-grey-900 hover:border-grey-500 dark:border-grey-900 group flex shrink-0 items-center justify-center whitespace-nowrap rounded border px-3 py-1.5 text-sm font-semibold transition-all dark:text-white',
         className
     );
     return (
         <button className={className} data-testid='stripe-connected' type='button' onClick={onClick}>
-            <span className="inline-flex size-2 rounded-full bg-green transition-all group-hover:bg-[#625BF6]"></span>
+            <span className="bg-green inline-flex size-2 rounded-full transition-all group-hover:bg-[#625BF6]"></span>
             <span className='ml-2'>Connected to Stripe</span>
         </button>
     );
@@ -78,16 +78,16 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <TopLevelGroup
             customButtons={checkStripeEnabled(settings, config) ?
-                <StripeConnectedButton className='hidden tablet:!visible tablet:!block' onClick={openConnectModal} />
+                <StripeConnectedButton className='tablet:!visible tablet:!block hidden' onClick={openConnectModal} />
                 :
-                <StripeButton className='hidden tablet:!visible tablet:!block' onClick={openConnectModal}/>}
+                <StripeButton className='tablet:!visible tablet:!block hidden' onClick={openConnectModal}/>}
             description='Set prices and paid member sign up settings'
             keywords={keywords}
             navid='tiers'
             testId='tiers'
             title='Tiers'
         >
-            <div className='w-full tablet:hidden'>
+            <div className='tablet:hidden w-full'>
                 {checkStripeEnabled(settings, config) ?
                     <StripeConnectedButton className='w-full' onClick={openConnectModal} />
                     :

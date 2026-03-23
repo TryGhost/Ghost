@@ -45,20 +45,20 @@ const EnvelopeHeader: React.FC<{senderName?: string; senderEmail?: string; subje
     }
 
     return (
-        <div className="flex-column flex min-h-[77px] justify-center border-b border-grey-200 bg-white px-6 text-sm text-grey-700">
+        <div className="flex-column border-grey-200 text-grey-700 flex min-h-[77px] justify-center border-b bg-white px-6 text-sm">
             {senderName && (
                 <div className="flex gap-2">
-                    <span className="font-semibold text-grey-900">{senderName}</span>
+                    <span className="text-grey-900 font-semibold">{senderName}</span>
                     {senderEmail && <span>&lt;{senderEmail}&gt;</span>}
                 </div>
             )}
             {senderEmail && (
                 <div>
-                    <span className="font-semibold text-grey-900">To:</span> subscriber@example.com
+                    <span className="text-grey-900 font-semibold">To:</span> subscriber@example.com
                 </div>
             )}
             {subject && (
-                <div className="mt-1 text-grey-900">{subject}</div>
+                <div className="text-grey-900 mt-1">{subject}</div>
             )}
         </div>
     );
@@ -94,7 +94,7 @@ const Footer: React.FC<{siteTitle?: string; footerLinkText?: string; emailFooter
     <div className="flex flex-col items-center pt-10">
         {emailFooter && (
             <div
-                className="whitespace-pre-line break-words px-8 py-3 text-center text-[1.3rem] leading-base"
+                className="leading-base whitespace-pre-line break-words px-8 py-3 text-center text-[1.3rem]"
                 style={{color}}
             >
                 {emailFooter}

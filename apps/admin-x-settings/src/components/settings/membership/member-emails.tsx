@@ -42,14 +42,14 @@ const EmailPreviewRow: React.FC<{
         <TableRow
             action={<div className={`flex items-center gap-7 ${isBusy && !isInitialLoading ? 'pointer-events-none' : ''}`}>
                 {isInitialLoading ? (
-                    <div className="h-4 w-7 rounded-full bg-grey-300 dark:bg-grey-800" />
+                    <div className="bg-grey-300 dark:bg-grey-800 h-4 w-7 rounded-full" />
                 ) : (
                     <Toggle
                         checked={enabled}
                         onChange={onToggle}
                     />
                 )}
-                <button className='font-semibold text-green hover:opacity-80' type='button' onClick={onEdit}>
+                <button className='text-green font-semibold hover:opacity-80' type='button' onClick={onEdit}>
                     Edit
                 </button>
             </div>}
@@ -58,17 +58,17 @@ const EmailPreviewRow: React.FC<{
         >
             <div className='w-full'>
                 <button
-                    className='flex w-full min-w-0 items-center gap-3 py-3 text-left focus-visible:ring-2 focus-visible:ring-green focus-visible:ring-offset-2 focus-visible:outline-none dark:focus-visible:ring-offset-black'
+                    className='focus-visible:ring-green flex w-full min-w-0 items-center gap-3 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-black'
                     data-testid={`${emailType}-welcome-email-preview`}
                     type='button'
                     onClick={onEdit}
                 >
-                    <div className='flex size-10 shrink-0 items-center justify-center rounded-full bg-grey-100 dark:bg-grey-925'>
+                    <div className='bg-grey-100 dark:bg-grey-925 flex size-10 shrink-0 items-center justify-center rounded-full'>
                         <Icon colorClass='text-grey-700 dark:text-grey-600' name={icon} size='md' />
                     </div>
                     <div className='min-w-0 grow'>
-                        <div className='leading-tight font-medium' data-testid={`${emailType}-welcome-email-title`}>{title}</div>
-                        <div className='mt-1 text-xs leading-[1.35] text-grey-700 dark:text-grey-600'>
+                        <div className='font-medium leading-tight' data-testid={`${emailType}-welcome-email-title`}>{title}</div>
+                        <div className='text-grey-700 dark:text-grey-600 mt-1 text-xs leading-[1.35]'>
                             {automatedEmail.subject}
                         </div>
                     </div>

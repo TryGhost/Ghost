@@ -205,23 +205,23 @@ const RetentionOfferSidebar: React.FC<{
         <div className='flex grow flex-col pt-2'>
             <Form className='grow'>
                 <section>
-                    <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5 dark:border-grey-800'>
+                    <div className='border-grey-300 dark:border-grey-800 flex flex-col gap-5 rounded-md border p-4 pb-3.5'>
                         <div className='flex flex-col gap-1.5'>
                             <div className='flex items-end justify-between'>
                                 <div className='flex flex-col gap-5'>
                                     <div className='flex flex-col gap-1.5'>
-                                        <span className='text-xs leading-none font-semibold text-grey-700'>Performance</span>
+                                        <span className='text-grey-700 text-xs font-semibold leading-none'>Performance</span>
                                         <span>{redemptions} {redemptions === 1 ? 'redemption' : 'redemptions'}</span>
                                     </div>
                                     {redemptions > 0 && lastRedeemed ?
                                         <div className='flex flex-col gap-1.5'>
-                                            <span className='text-xs leading-none font-semibold text-grey-700'>Last redemption</span>
+                                            <span className='text-grey-700 text-xs font-semibold leading-none'>Last redemption</span>
                                             <span>{formatOfferTimestamp(lastRedeemed)}</span>
                                         </div> :
                                         null
                                     }
                                 </div>
-                                {redemptions > 0 && membersFilterUrl ? <a className='font-semibold text-green' href={membersFilterUrl}>See members →</a> : null}
+                                {redemptions > 0 && membersFilterUrl ? <a className='text-green font-semibold' href={membersFilterUrl}>See members →</a> : null}
                             </div>
                         </div>
                     </div>
@@ -268,7 +268,7 @@ const RetentionOfferSidebar: React.FC<{
                             <h2 className='mb-4 text-lg'>Details</h2>
                             <div className='flex flex-col gap-6'>
                                 {cadence === 'monthly' && (
-                                    <div className='flex flex-col gap-4 rounded-md border border-grey-200 p-4 dark:border-grey-800'>
+                                    <div className='border-grey-200 dark:border-grey-800 flex flex-col gap-4 rounded-md border p-4'>
                                         <ButtonSelect
                                             checked={formState.type === 'percent'}
                                             type={typeOptions[0]}

@@ -19,7 +19,7 @@ const HeaderImageField: React.FC<HeaderImageFieldProps> = ({value, onChange}) =>
         <div className="flex flex-col gap-1.5">
             <label className="text-sm">Header image</label>
             {value ? (
-                <div className="border-gray-200 dark:border-gray-800 relative overflow-hidden rounded-md border">
+                <div className="relative overflow-hidden rounded-md border border-gray-200 dark:border-gray-800">
                     <img
                         alt="Header"
                         className="h-auto w-full"
@@ -42,7 +42,7 @@ const HeaderImageField: React.FC<HeaderImageFieldProps> = ({value, onChange}) =>
                     >
                         <span className="text-gray-400">Upload header image</span>
                     </Dropzone>
-                    <span className="text-gray-400 text-xs">1200x600 recommended. Use a transparent PNG for best results on any background.</span>
+                    <span className="text-xs text-gray-400">1200x600 recommended. Use a transparent PNG for best results on any background.</span>
                 </>
             )}
         </div>
