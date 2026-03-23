@@ -5,7 +5,6 @@
     "{amount} off for first {number} months.": "алғашқы {number} айға {amount} жеңілдік.",
     "{amount} off for first {period}.": "алғашқы {period} мерзімге {amount} жеңілдік.",
     "{amount} off forever.": "{amount} мәңгі жеңілдік.",
-    "{amountOff} off": "",
     "{discount}% discount": "{discount}% жеңілдік",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} енді {newsletterName} ақпараттық бюллетенін алмайды.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "Пікірлеріңізге жауап берген кезде {memberEmail} хаттар алмайды.",

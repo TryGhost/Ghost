@@ -389,7 +389,6 @@
     "trialing": "Will be substituted into status for 'You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.'",
     "year": "the subscription interval (monthly), following the /",
     "your inbox": "",
-    "{amountOff} off": "",
     "{amount} characters left": "shown in comments editor",
     "{amount} comments": "shown in the comments app",
     "{amount} days free": "Portal - label for a free trial that lasts a specific number of days",

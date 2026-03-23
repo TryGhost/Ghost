@@ -8,6 +8,7 @@ import {getDateString} from '../../utils/date-time';
 import {addMonths, formatNumber, formatPrice, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import {t} from '../../utils/i18n';
+import {translateCadence} from '../../utils/helpers';
 
 export const AccountPlanPageStyles = `
     .account-plan.full-size .gh-portal-main-title {
@@ -78,15 +79,6 @@ function getConfirmationPageTitle({confirmationType, pendingOffer}) {
     } else if (confirmationType === 'offerRetention') {
         return pendingOffer?.display_title || t('Before you go');
     }
-}
-
-function translateCadence(cadence) {
-    if (cadence === 'month') {
-        return t('month');
-    } else if (cadence === 'year') {
-        return t('year');
-    }
-    return cadence;
 }
 
 const Header = ({showConfirmation, confirmationType, pendingOffer}) => {
@@ -285,7 +277,7 @@ function getRetentionOfferLabel(offer, amountOff) {
         return t('{months} months free', {months});
     }
 
-    return t('{amountOff} off', {amountOff});
+    return t('{amount} off', {amount: amountOff});
 }
 
 function getRetentionOfferMessage(offer, originalPrice, currency, amountOff, subscription) {

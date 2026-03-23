@@ -5,7 +5,6 @@
     "{amount} off for first {number} months.": "{amount} تخفیف برای اولین {number} ماه.",
     "{amount} off for first {period}.": "{amount} تخقیف برای اولین {period}.",
     "{amount} off forever.": "{amount} تخفیف برای همیشه.",
-    "{amountOff} off": "",
     "{discount}% discount": "{discount}٪ تخفیف",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "آدرس {memberEmail} در آینده خبرنامه\u200cی {newsletterName} را دریافت نخواهد کرد.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "آدرس {memberEmail} دیگر زمانی که کسی به کامنت شما پاسخی بدهد، ایمیلی دریافت نخواهد کرد.",

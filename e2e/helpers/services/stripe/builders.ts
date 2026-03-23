@@ -12,13 +12,17 @@ function generateId(prefix: string): string {
 
 type StripeList<T> = Pick<Stripe.ApiList<T>, 'data' | 'object'>;
 type StripePriceInterval = NonNullable<Stripe.Price['recurring']>['interval'];
+type StripeCustomUnitAmount = {
+    enabled: boolean;
+    preset: number | null;
+};
 
 export type StripeProduct = Pick<Stripe.Product, 'active' | 'id' | 'name' | 'object'>;
 
-export type StripePrice = Omit<Pick<Stripe.Price, 'active' | 'currency' | 'id' | 'nickname' | 'object' | 'product' | 'recurring' | 'type' | 'unit_amount'>, 'product' | 'recurring' | 'unit_amount'> & {
+export type StripePrice = Omit<Pick<Stripe.Price, 'active' | 'currency' | 'id' | 'nickname' | 'object' | 'product' | 'recurring' | 'type' | 'unit_amount'>, 'product' | 'recurring'> & {
+    custom_unit_amount: StripeCustomUnitAmount | null;
     product: string;
     recurring: {interval: StripePriceInterval} | null;
-    unit_amount: NonNullable<Stripe.Price['unit_amount']>;
 };
 
 export type StripePaymentMethod = Omit<Pick<Stripe.PaymentMethod, 'billing_details' | 'card' | 'id' | 'object' | 'type'>, 'billing_details' | 'card' | 'type'> & {
@@ -65,6 +69,20 @@ export interface StripeCheckoutSessionRequest {
         trial_from_plan?: boolean;
         trial_period_days?: number;
     };
+    custom_fields?: Array<{
+        key: string;
+        label?: {custom: string};
+        optional?: boolean;
+        text?: {value: string};
+        type: 'text';
+    }>;
+    invoice_creation?: {
+        enabled: boolean;
+        invoice_data?: {
+            metadata: Record<string, string>;
+        };
+    };
+    submit_type?: 'auto' | 'book' | 'donate' | 'pay' | 'send';
 }
 
 export interface RecordedStripeCheckoutSession {
@@ -93,6 +111,7 @@ export function buildPrice(overrides: Partial<StripePrice> = {}): StripePrice {
         object: 'price',
         unit_amount: 500,
         currency: 'usd',
+        custom_unit_amount: null,
         recurring: {interval: 'month'},
         product: generateId('prod'),
         type: 'recurring',
@@ -180,6 +199,45 @@ export function buildCheckoutSessionCompletedEvent(opts: {
                     checkoutType: 'signup',
                     ...(opts.metadata ?? {})
                 }
+            }
+        }
+    };
+}
+
+export function buildDonationCheckoutCompletedEvent(opts: {
+    amount: number;
+    currency: string;
+    customerEmail: string;
+    customerId?: string | null;
+    donationMessage?: string | null;
+    metadata?: Record<string, string>;
+    name: string;
+}): StripeEvent {
+    return {
+        id: generateId('evt'),
+        object: 'event',
+        type: 'checkout.session.completed',
+        data: {
+            object: {
+                object: 'checkout.session',
+                mode: 'payment',
+                amount_total: opts.amount,
+                currency: opts.currency,
+                customer: opts.customerId ?? null,
+                customer_details: {
+                    email: opts.customerEmail,
+                    name: opts.name
+                },
+                metadata: {
+                    ...(opts.metadata ?? {}),
+                    ghost_donation: 'true'
+                },
+                custom_fields: opts.donationMessage ? [{
+                    key: 'donation_message',
+                    text: {
+                        value: opts.donationMessage
+                    }
+                }] : []
             }
         }
     };

@@ -14,7 +14,6 @@ export interface EmailDesignSettings {
     link_style: string;
     image_corners: string;
     divider_color: string | null;
-    divider_style: string;
 }
 
 export const DEFAULT_EMAIL_DESIGN: EmailDesignSettings = {
@@ -24,7 +23,7 @@ export const DEFAULT_EMAIL_DESIGN: EmailDesignSettings = {
     body_font_category: 'sans_serif',
     header_background_color: '#ffffff',
     post_title_color: null,
-    title_alignment: 'left',
+    title_alignment: 'center',
     section_title_color: null,
     button_color: null,
     button_style: 'fill',
@@ -32,6 +31,5 @@ export const DEFAULT_EMAIL_DESIGN: EmailDesignSettings = {
     link_color: null,
     link_style: 'underline',
     image_corners: 'square',
-    divider_color: null,
-    divider_style: 'solid'
+    divider_color: null
 };
