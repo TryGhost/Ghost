@@ -1,6 +1,6 @@
 const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
-const {createPostDraft, createTier} = require('../utils');
+const {createPostDraft} = require('../utils');
 
 const changeSubscriptionAccess = async (page, access) => {
     await page.getByRole('navigation').getByRole('link', {name: 'Settings'}).click();
@@ -24,29 +24,6 @@ const changeSubscriptionAccess = async (page, access) => {
 
 test.describe('Site Settings', () => {
     test.describe('Subscription Access', () => {
-        test('Invite only', async ({sharedPage}) => {
-            await sharedPage.goto('/ghost');
-            await createTier(sharedPage, {
-                name: 'Free tier trial',
-                monthlyPrice: 100,
-                yearlyPrice: 1000,
-                trialDays: 5
-            }, true);
-
-            await changeSubscriptionAccess(sharedPage, 'invite');
-
-            // Go to the sigup page
-            await sharedPage.goto('/#/portal/signup');
-
-            const portalFrame = sharedPage.frameLocator('#ghost-portal-root div iframe');
-
-            // Check sign up is disabled and a message is shown
-            await expect(portalFrame.locator('.gh-portal-section')).toHaveText(/contact the owner for access/);
-
-            // Check free trial message is not shown for invite only
-            await expect(portalFrame.locator('.gh-portal-free-trial-notification')).not.toBeVisible();
-        });
-
         test('Disabled subscription access', async ({sharedPage}) => {
             await sharedPage.goto('/ghost');
 

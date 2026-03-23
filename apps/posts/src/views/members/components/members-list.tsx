@@ -4,7 +4,7 @@ import {forwardRef, useRef} from 'react';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
 
-const SpacerRow = ({height}: {height: number}) => (
+const SpacerRow = ({height}: { height: number }) => (
     <div aria-hidden="true" className="flex">
         <div className="flex" style={{height}} />
     </div>
@@ -22,7 +22,10 @@ const PlaceholderRow = forwardRef<HTMLDivElement>(function PlaceholderRow(
             className="relative flex flex-col"
         >
             <div className="relative z-10 h-[72px] animate-pulse">
-                <div className="h-full rounded-md bg-muted" data-testid="loading-placeholder" />
+                <div
+                    className="h-full rounded-md bg-muted"
+                    data-testid="loading-placeholder"
+                />
             </div>
         </div>
     );
@@ -74,27 +77,42 @@ function MembersList({
 
     const gridColsWithOpenRate = 'lg:grid-cols-[3fr_1fr_1fr_1.5fr_1.5fr]';
     const gridColsWithoutOpenRate = 'lg:grid-cols-[3fr_1fr_1.5fr_1.5fr]';
-    const gridCols = showEmailOpenRate ? gridColsWithOpenRate : gridColsWithoutOpenRate;
+    const gridCols = showEmailOpenRate
+        ? gridColsWithOpenRate
+        : gridColsWithoutOpenRate;
 
     return (
         <div ref={parentRef} className="overflow-hidden">
             <div className="flex flex-col" data-testid="members-list">
                 {/* Table Header */}
-                <div className={`sticky top-0 z-10 hidden border-b bg-background lg:grid lg:gap-4 lg:px-4 lg:py-3 ${gridCols}`}>
-                    <div className="text-xs font-medium tracking-wide text-gray-700 uppercase">Member</div>
-                    <div className="text-xs font-medium tracking-wide text-gray-700 uppercase">Status</div>
+                <div
+                    className={`sticky top-0 z-10 hidden border-b bg-background lg:grid lg:gap-4 lg:px-4 lg:py-3 ${gridCols}`}
+                >
+                    <div className="text-xs font-medium uppercase tracking-wide text-gray-700">
+                        Member
+                    </div>
+                    <div className="text-xs font-medium uppercase tracking-wide text-gray-700">
+                        Status
+                    </div>
                     {showEmailOpenRate && (
-                        <div className="text-xs font-medium tracking-wide text-gray-700 uppercase">Open rate</div>
+                        <div className="text-xs font-medium uppercase tracking-wide text-gray-700">
+                            Open rate
+                        </div>
                     )}
-                    <div className="text-xs font-medium tracking-wide text-gray-700 uppercase">Location</div>
-                    <div className="text-xs font-medium tracking-wide text-gray-700 uppercase">Created</div>
+                    <div className="text-xs font-medium uppercase tracking-wide text-gray-700">
+                        Location
+                    </div>
+                    <div className="text-xs font-medium uppercase tracking-wide text-gray-700">
+                        Created
+                    </div>
                 </div>
 
                 {/* Table Body */}
                 <div className="flex flex-col">
                     <SpacerRow height={spaceBefore} />
                     {visibleItems.map(({key, virtualItem, item, props}) => {
-                        const shouldRenderPlaceholder = virtualItem.index > items.length - 1;
+                        const shouldRenderPlaceholder =
+                            virtualItem.index > items.length - 1;
 
                         if (shouldRenderPlaceholder) {
                             return <PlaceholderRow key={key} {...props} />;

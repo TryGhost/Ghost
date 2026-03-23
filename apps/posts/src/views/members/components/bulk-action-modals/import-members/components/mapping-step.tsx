@@ -107,8 +107,8 @@ export function MappingStep({
                                     <TableBody>
                                         {currentlyDisplayedData.length > 0 ? (
                                             currentlyDisplayedData.map(row => (
-                                                <TableRow key={row.key}>
-                                                    <TableCell className="text-sm font-medium break-all">{row.key}</TableCell>
+                                                <TableRow key={row.key} className={cn(!row.mapTo && 'bg-muted')}>
+                                                    <TableCell className="break-all text-sm font-medium">{row.key}</TableCell>
                                                     <TableCell className={cn('break-all text-sm', !row.value && 'text-muted-foreground')}>
                                                         {row.value || '\u00A0'}
                                                     </TableCell>
@@ -157,7 +157,7 @@ export function MappingStep({
                             </p>
                         )}
 
-                        <div>
+                        <div className="mt-5">
                             <label className="mb-1 block text-sm font-semibold">Label these members</label>
                             <LabelPicker
                                 canCreateFromSearch={labelPicker.canCreateFromSearch}
@@ -190,7 +190,7 @@ export function MappingStep({
                 >
                     {status === 'UPLOADING' ? (
                         <span className="flex items-center gap-2">
-                            <LoadingIndicator size="sm" />
+                            <LoadingIndicator color="light" size="sm" />
                             Uploading
                         </span>
                     ) : membersCount > 0 ? (

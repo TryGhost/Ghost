@@ -5,7 +5,6 @@
     "{amount} off for first {number} months.": "पहले {number} महीनों के लिए {amount} की छूट।",
     "{amount} off for first {period}.": "पहले {period} के लिए {amount} की छूट।",
     "{amount} off forever.": "हमेशा के लिए {amount} की छूट।",
-    "{amountOff} off": "",
     "{discount}% discount": "{discount}% छूट",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} को अब {newsletterName} न्यूज़लेटर प्राप्त नहीं होगा।",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} को अब आपके कमेंट्स पर कोई उत्तर देने पर ईमेल नहीं मिलेगा।",
