@@ -3,10 +3,10 @@ import {
     type SharedViewsParseResult,
     buildViewsForDelete,
     buildViewsForSave,
-    parseAllSharedViewsJSON,
     parseSharedViewsJSON
 } from '../member-views';
 import {getSettingValue, useBrowseSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {parseAllSharedViewsJSON} from '../shared-views';
 import {useCallback, useEffect, useMemo, useRef} from 'react';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
