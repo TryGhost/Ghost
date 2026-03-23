@@ -26,7 +26,7 @@ import { useFeatureFlag } from "@/hooks/use-feature-flag";
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
     const [postsExpanded, setPostsExpanded] = useNavigationExpanded('posts');
-    const [membersExpanded, setMembersExpanded] = useNavigationExpanded('members');
+    const [savedMembersExpanded, setMembersExpanded] = useNavigationExpanded('members');
     const memberViews = useMemberSidebarViews();
     const hasMemberViews = memberViews.length > 0;
     const location = useLocation();
@@ -39,6 +39,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const showMembers = currentUser && canManageMembers(currentUser);
     const isOnMembersForward = location.pathname === '/members-forward';
     const hasActiveMemberView = isOnMembersForward && memberViews.some(view => view.isActive);
+    const membersExpanded = savedMembersExpanded || hasActiveMemberView;
     const membersNavActive = isMembersNavActive({
         membersForwardEnabled,
         isOnMembersForward,
