@@ -20,6 +20,10 @@ class MemberWelcomeEmailRenderer {
             let hash = options?.hash;
             return t(key, hash || options || {});
         });
+        const baseStylesSource = fs.readFileSync(
+            path.join(__dirname, '../email-rendering/partials/base-styles.hbs'),
+            'utf8'
+        );
         const contentStylesSource = fs.readFileSync(
             path.join(__dirname, '../email-rendering/partials/content-styles.hbs'),
             'utf8'
@@ -28,7 +32,17 @@ class MemberWelcomeEmailRenderer {
             path.join(__dirname, '../email-rendering/partials/card-styles.hbs'),
             'utf8'
         );
-        this.Handlebars.registerPartial('cardStyles', '<style>\n' + contentStylesSource + '\n' + cardStylesSource + '\n</style>');
+        this.Handlebars.registerPartial('baseStyles', baseStylesSource);
+        this.Handlebars.registerPartial('contentStyles', contentStylesSource);
+        this.Handlebars.registerPartial('cardStyles', cardStylesSource);
+        this.Handlebars.registerPartial('styles',
+            '<style>\n{{>baseStyles}}\n{{>contentStyles}}\n{{>cardStyles}}\n</style>'
+        );
+        const emailWrapperSource = fs.readFileSync(
+            path.join(__dirname, '../email-rendering/partials/email-wrapper.hbs'),
+            'utf8'
+        );
+        this.Handlebars.registerPartial('emailWrapper', emailWrapperSource);
         const wrapperSource = fs.readFileSync(
             path.join(__dirname, './email-templates/wrapper.hbs'),
             'utf8'
@@ -132,11 +146,13 @@ class MemberWelcomeEmailRenderer {
 
         const html = this.#wrapperTemplate({
             content: contentWithAbsoluteLinks,
+            emailTitle: subjectWithReplacements,
             subject: subjectWithReplacements,
             siteTitle: siteSettings.title,
             siteUrl: siteSettings.url,
             accentColor,
             accentContrastColor,
+            backgroundColor: '#ffffff',
             dividerColor: '#e0e7eb',
             backgroundIsDark: false,
             hasRoundedImageCorners: false,
@@ -149,7 +165,10 @@ class MemberWelcomeEmailRenderer {
             buttonTextColor: accentContrastColor,
             buttonBorderRadius: '6px',
             managePreferencesUrl,
-            year
+            year,
+            classes: {
+                container: 'container'
+            }
         });
 
         const {html: inlinedHtml, plaintext: text} = finalize(html);

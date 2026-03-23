@@ -1,0 +1,236 @@
+/* -------------------------------------
+    GLOBAL RESETS
+------------------------------------- */
+
+img {
+    border: none;
+    -ms-interpolation-mode: bicubic;
+    max-width: 100%;
+    {{#if hasRoundedImageCorners}}
+    border-radius: 6px;
+    {{/if}}
+}
+
+body {
+    background-color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-size: 18px;
+    line-height: 0;
+    margin: 0;
+    padding: 0;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    color: #15212A;
+}
+
+table {
+    border-collapse: separate;
+    mso-table-lspace: 0pt;
+    mso-table-rspace: 0pt;
+    width: 100%;
+}
+
+table td {
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-size: 18px;
+    vertical-align: top;
+    color: #15212A;
+}
+
+/* -------------------------------------
+    BODY & CONTAINER
+------------------------------------- */
+.body {
+    width: 100%;
+    line-height: 1.4;
+    background-color: {{backgroundColor}} !important;
+}
+
+/* Set a max-width, and make it display as block so it will automatically stretch to that width, but will also shrink down on a phone or something */
+.body .container {
+    display: block;
+    margin: 0 auto !important;
+    /* makes it centered */
+    max-width: 600px;
+}
+
+/* This should also be a block element, so that it will fill 100% of the .container */
+.content {
+    box-sizing: border-box;
+    display: block;
+    margin: 0 auto;
+    max-width: 600px;
+}
+
+.content a {
+    overflow-wrap: anywhere;
+}
+
+/* -------------------------------------
+    HEADER, FOOTER, MAIN
+------------------------------------- */
+
+.main {
+    border-spacing: 20px 0;
+    width: 100%;
+    max-width: 600px;
+    background: #ffffff;
+    background-color: {{backgroundColor}} !important;
+}
+
+.wrapper {
+    box-sizing: border-box;
+}
+
+.content-block {
+    padding-bottom: 10px;
+    padding-top: 10px;
+}
+
+.footer {
+    {{#if backgroundIsDark}}
+        color: #ffffff;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #15212a;
+        color: rgba(0, 0, 0, 0.6);
+    {{/if}}
+    margin-top: 20px;
+    text-align: center;
+    font-size: 13px!important;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    padding-left: 30px;
+    padding-right: 30px;
+    line-height: 1.5em;
+}
+
+.footer a {
+    {{#if backgroundIsDark}}
+        color: #ffffff;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #15212a;
+        color: rgba(0, 0, 0, 0.6);
+    {{/if}}
+    text-decoration: underline;
+    font-size: 13px;
+}
+
+/* -------------------------------------
+    OTHER STYLES THAT MIGHT BE USEFUL
+------------------------------------- */
+.last {
+    margin-bottom: 0;
+}
+
+.first {
+    margin-top: 0;
+}
+
+.align-center {
+    text-align: center;
+}
+
+.align-right {
+    text-align: right;
+}
+
+.align-left {
+    text-align: left;
+}
+
+.clear {
+    clear: both;
+}
+
+.mt0 {
+    margin-top: 0;
+}
+
+.mb0 {
+    margin-bottom: 0;
+}
+
+.preheader {
+    color: transparent;
+    display: none;
+    height: 0;
+    max-height: 0;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    mso-hide: all;
+    visibility: hidden;
+    width: 0;
+}
+
+/* -------------------------------------
+    RESPONSIVE AND MOBILE FRIENDLY STYLES
+------------------------------------- */
+@media only screen and (max-width: 620px) {
+
+    table.body {
+        width: 100%;
+        min-width: 100%;
+    }
+
+    table.body .content {
+        padding: 0 !important;
+    }
+
+    table.body .container {
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    table.body .main {
+        border-spacing: 10px 0 !important;
+        border-left-width: 0 !important;
+        border-radius: 0 !important;
+        border-right-width: 0 !important;
+    }
+
+    table.body .img-responsive {
+        height: auto !important;
+        max-width: 100% !important;
+        width: auto !important;
+    }
+}
+
+/* -------------------------------------
+    PRESERVE THESE STYLES IN THE HEAD
+------------------------------------- */
+@media all {
+    .ExternalClass {
+        width: 100%;
+    }
+
+    .ExternalClass,
+    .ExternalClass p,
+    .ExternalClass span,
+    .ExternalClass font,
+    .ExternalClass td,
+    .ExternalClass div {
+        line-height: 100%;
+    }
+
+    .apple-link a {
+        color: inherit !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+        text-decoration: none !important;
+    }
+
+    #MessageViewBody a {
+        color: inherit;
+        text-decoration: none;
+        font-size: inherit;
+        font-family: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+    }
+}
