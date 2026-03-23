@@ -106,7 +106,7 @@
     "eslint-plugin-tailwindcss": "3.18.2",
     "eventemitter3": "^5.0.1",
     "fast-average-color": "^9.4.0",
-    "jsdom": "29.0.0",
+    "jsdom": "29.0.1",
     "lexical": "0.13.1",
     "pluralize": "^8.0.0",
     "postcss": "8.5.8",
