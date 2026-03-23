@@ -1,7 +1,7 @@
 import React from 'react';
 import {GhostOrb, cn} from '@tryghost/shade';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {resolveAllColors, resolveFontFamily, resolveImageCorners} from './design-utils';
+import {resolveAllColors, resolveImageCorners} from './design-utils';
 import {useGlobalData} from '../../providers/global-data-provider';
 import type {EmailDesignSettings} from './types';
 
@@ -50,8 +50,7 @@ const PublicationHeader: React.FC<{
     siteTitle?: string;
     backgroundColor?: string;
     textColor: string;
-    fontFamily: string;
-}> = ({showTitle, siteTitle, backgroundColor, textColor, fontFamily}) => {
+}> = ({showTitle, siteTitle, backgroundColor, textColor}) => {
     if (!showTitle || !siteTitle) {
         return null;
     }
@@ -63,7 +62,7 @@ const PublicationHeader: React.FC<{
         >
             <h4
                 className="mb-1 text-[1.6rem] font-bold uppercase leading-tight tracking-tight"
-                style={{color: textColor, fontFamily}}
+                style={{color: textColor}}
             >
                 {siteTitle}
             </h4>
@@ -104,7 +103,6 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
     const accentColor = siteData.accent_color;
 
     const colors = resolveAllColors(settings, accentColor);
-    const titleFont = resolveFontFamily(settings.title_font_category);
     const imageCornerClass = resolveImageCorners(settings.image_corners);
 
     return (
@@ -124,7 +122,6 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
 
                     <PublicationHeader
                         backgroundColor="transparent"
-                        fontFamily={titleFont}
                         showTitle={showPublicationTitle}
                         siteTitle={siteTitle}
                         textColor={colors.headerTextColor}

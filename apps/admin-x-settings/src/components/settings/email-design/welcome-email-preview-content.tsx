@@ -2,7 +2,7 @@ import CoverImage from '../../../assets/images/user-cover.jpg';
 import React from 'react';
 import {cn} from '@tryghost/shade';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {resolveAllColors, resolveButtonCorners, resolveFontFamily} from './design-utils';
+import {resolveAllColors, resolveButtonCorners, resolveFontFamily, resolveImageCorners} from './design-utils';
 import {useEmailDesign} from './email-design-context';
 import {useGlobalData} from '../../providers/global-data-provider';
 
@@ -32,7 +32,15 @@ const WelcomeEmailPreviewContent: React.FC = () => {
             {/* Heading */}
             <div className="px-[7rem] pt-8">
                 <h3
-                    className="mb-[13px] text-[2.6rem] font-bold leading-supertight"
+                    className={cn(
+                        'mb-[13px] text-[2.6rem] leading-supertight',
+                        settings.title_font_category === 'serif' && 'font-serif',
+                        settings.title_font_category === 'sans_serif' && 'font-sans',
+                        settings.title_font_weight === 'normal' && 'font-normal',
+                        settings.title_font_weight === 'medium' && 'font-medium',
+                        settings.title_font_weight === 'semibold' && 'font-semibold',
+                        settings.title_font_weight === 'bold' && 'font-bold'
+                    )}
                     style={{color: colors.textColor}}
                 >
                     Thanks for subscribing
@@ -67,7 +75,7 @@ const WelcomeEmailPreviewContent: React.FC = () => {
 
                 {/* Image */}
                 <div className="mb-6 h-[unset] w-full max-w-[600px] bg-cover bg-no-repeat">
-                    <img alt="" className="min-h-full min-w-full shrink-0" src={CoverImage} />
+                    <img alt="" className={cn('min-h-full min-w-full shrink-0', resolveImageCorners(settings.image_corners))} src={CoverImage} />
                 </div>
             </div>
 
