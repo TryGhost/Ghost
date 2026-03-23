@@ -154,12 +154,12 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({generalSettings, onGeneralChange, siteTitle, emailDomain}) => (
-    <Tabs defaultValue="general" variant="underline">
-        <TabsList>
+    <Tabs className="flex min-h-0 flex-1 flex-col" defaultValue="general" variant="underline">
+        <TabsList className='px-5'>
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="design">Design</TabsTrigger>
         </TabsList>
-        <TabsContent value="general">
+        <TabsContent className='min-h-0 flex-1 overflow-y-auto px-5 pb-5' value="general">
             <GeneralTab
                 emailDomain={emailDomain}
                 generalSettings={generalSettings}
@@ -167,7 +167,7 @@ const Sidebar: React.FC<SidebarProps> = ({generalSettings, onGeneralChange, site
                 onGeneralChange={onGeneralChange}
             />
         </TabsContent>
-        <TabsContent value="design">
+        <TabsContent className='min-h-0 flex-1 overflow-y-auto px-5 pb-5' value="design">
             <DesignTab />
         </TabsContent>
     </Tabs>
