@@ -1,4 +1,5 @@
 import React, {Suspense, useCallback, useMemo, useRef} from 'react';
+import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import {ErrorBoundary, type KoenigInstance, LoadingIndicator, loadKoenig, useDesignSystem} from '@tryghost/admin-x-design-system';
 import {cn} from '@tryghost/shade';
 import {focusKoenigEditorOnBottomClick, useFramework} from '@tryghost/admin-x-framework';
@@ -102,6 +103,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     const tenorConfig = config.tenor?.googleApiKey ? config.tenor : null;
     const {fetchKoenigLexical, darkMode} = useDesignSystem();
     const editorResource = useMemo(() => loadKoenig(fetchKoenigLexical), [fetchKoenigLexical]);
+    const transistorEnabled = useFeatureFlag('transistor');
 
     const cardConfig = useMemo(() => ({
         unsplash: unsplashConfig,
@@ -109,8 +111,12 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         tenor: tenorConfig,
         fetchEmbed,
         fetchAutocompleteLinks,
-        searchLinks
-    }), [unsplashConfig, pinturaConfig, tenorConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks]);
+        searchLinks,
+        feature: {
+            transistor: transistorEnabled
+        },
+        visibilitySettings: 'none'
+    }), [unsplashConfig, pinturaConfig, tenorConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks, transistorEnabled]);
 
     const registerEditorAPI = useCallback((API: KoenigInstance | null) => {
         editorAPIRef.current = API;
