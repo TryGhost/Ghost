@@ -8,6 +8,7 @@ export async function createContextWithAuthState(
     options?: {role?: FixtureRole}
 ): Promise<BrowserContext> {
     const storageStatePath = options?.role ? AUTH_STATE_BY_ROLE[options.role] : undefined;
+    const origin = storageStatePath ? CANONICAL_ADMIN_ORIGIN : backendURL;
 
     if (storageStatePath && !fs.existsSync(storageStatePath)) {
         throw new Error(`Storage state file not found: ${storageStatePath}. Run global setup first.`);
@@ -17,7 +18,7 @@ export async function createContextWithAuthState(
         baseURL: backendURL,
         storageState: storageStatePath,
         extraHTTPHeaders: {
-            Origin: CANONICAL_ADMIN_ORIGIN
+            Origin: origin
         }
     });
 }
