@@ -63,4 +63,34 @@ describe('MembersHeaderSearch', () => {
 
         expect(input.value).toBe('alex');
     });
+
+    it('does not replay the stale search value when the external search changes', () => {
+        const onSearchChange = vi.fn();
+        const {rerender} = render(
+            <MembersHeaderSearch
+                search="jamie"
+                onSearchChange={onSearchChange}
+            />
+        );
+
+        onSearchChange.mockClear();
+
+        rerender(
+            <MembersHeaderSearch
+                search=""
+                onSearchChange={onSearchChange}
+            />
+        );
+
+        const input = screen.getByPlaceholderText('Search members...') as HTMLInputElement;
+
+        expect(input.value).toBe('');
+        expect(onSearchChange).not.toHaveBeenCalled();
+
+        act(() => {
+            vi.advanceTimersByTime(250);
+        });
+
+        expect(onSearchChange).not.toHaveBeenCalled();
+    });
 });

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {InputGroup, InputGroupAddon, InputGroupInput, LucideIcon} from '@tryghost/shade';
 import {useDebounce} from 'use-debounce';
 
@@ -15,16 +15,18 @@ const MembersHeaderSearch: React.FC<MembersHeaderSearchProps> = ({
 }) => {
     const [inputValue, setInputValue] = useState(search);
     const [debouncedSearch] = useDebounce(inputValue, SEARCH_DEBOUNCE_MS);
+    const latestSearchRef = useRef(search);
 
     useEffect(() => {
+        latestSearchRef.current = search;
         setInputValue(search);
     }, [search]);
 
     useEffect(() => {
-        if (debouncedSearch !== search) {
+        if (debouncedSearch !== latestSearchRef.current) {
             onSearchChange(debouncedSearch);
         }
-    }, [debouncedSearch, onSearchChange, search]);
+    }, [debouncedSearch, onSearchChange]);
 
     return (
         <InputGroup className="min-w-0 basis-full sm:w-[19rem] sm:basis-auto">
