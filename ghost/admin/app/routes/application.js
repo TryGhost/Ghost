@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/ember';
+import * as jsxRuntime from 'react/jsx-runtime';
 import AdminXSettings from '../components/admin-x/settings';
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import React from 'react';
@@ -38,6 +39,9 @@ shortcuts[`${ctrlOrCmd}+,`] = {action: 'openSettings'};
 // make globals available for any pulled in UMD components
 // - avoids external components needing to bundle React and running into multiple version errors
 window.React = React;
+window.React.jsx = jsxRuntime.jsx;
+window.React.jsxs = jsxRuntime.jsxs;
+window.React.Fragment = jsxRuntime.Fragment;
 window.ReactDOM = ReactDOM;
 
 export default Route.extend(ShortcutsRoute, {
