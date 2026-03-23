@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {Button, Input, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade';
 import {type MemberView, useDeleteMemberView, useSaveMemberView} from '../hooks/use-member-views';
 
@@ -9,9 +9,12 @@ interface ManageViewPopoverProps {
     onDeleted?: () => void;
 }
 
-const ManageViewPopover: React.FC<ManageViewPopoverProps> = ({filter, existingViews, activeView, onDeleted}) => {
-    const [open, setOpen] = useState(false);
-    const [name, setName] = useState('');
+interface ManageViewPopoverContentProps extends ManageViewPopoverProps {
+    onClose: () => void;
+}
+
+const ManageViewPopoverContent: React.FC<ManageViewPopoverContentProps> = ({filter, existingViews, activeView, onDeleted, onClose}) => {
+    const [name, setName] = useState(() => activeView?.name ?? '');
     const [error, setError] = useState('');
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
@@ -20,12 +23,6 @@ const ManageViewPopover: React.FC<ManageViewPopoverProps> = ({filter, existingVi
     const deleteMemberView = useDeleteMemberView();
 
     const isEditing = Boolean(activeView);
-
-    useEffect(() => {
-        if (open && activeView) {
-            setName(activeView.name);
-        }
-    }, [open, activeView]);
 
     const handleSave = async () => {
         const trimmed = name.trim();
@@ -48,9 +45,7 @@ const ManageViewPopover: React.FC<ManageViewPopoverProps> = ({filter, existingVi
 
         try {
             await saveMemberView(trimmed, filter, activeView ?? undefined);
-            setName('');
-            setError('');
-            setOpen(false);
+            onClose();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to save view');
         } finally {
@@ -67,10 +62,7 @@ const ManageViewPopover: React.FC<ManageViewPopoverProps> = ({filter, existingVi
 
         try {
             await deleteMemberView(activeView);
-            setName('');
-            setError('');
-            setConfirmingDelete(false);
-            setOpen(false);
+            onClose();
             onDeleted?.();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to delete view');
@@ -87,102 +79,112 @@ const ManageViewPopover: React.FC<ManageViewPopoverProps> = ({filter, existingVi
     };
 
     return (
-        <Popover open={open} onOpenChange={(isOpen) => {
-            setOpen(isOpen);
+        <PopoverContent align="end" className="w-72">
+            <div className="flex flex-col gap-3">
+                <h3 className="text-sm font-semibold">{isEditing ? 'Edit view' : 'Save view'}</h3>
+                <div className="flex flex-col gap-1.5">
+                    <Input
+                        placeholder="View name"
+                        value={name}
+                        autoFocus
+                        onChange={(event) => {
+                            setName(event.target.value);
 
-            if (!isOpen) {
-                setName('');
-                setError('');
-                setConfirmingDelete(false);
-            }
-        }}>
-            <PopoverTrigger asChild>
-                <Button variant="outline">
-                    {isEditing ? 'Edit view' : 'Save view'}
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-72">
-                <div className="flex flex-col gap-3">
-                    <h3 className="text-sm font-semibold">{isEditing ? 'Edit view' : 'Save view'}</h3>
-                    <div className="flex flex-col gap-1.5">
-                        <Input
-                            placeholder="View name"
-                            value={name}
-                            autoFocus
-                            onChange={(event) => {
-                                setName(event.target.value);
-
-                                if (error) {
-                                    setError('');
-                                }
-                            }}
-                            onKeyDown={handleKeyDown}
-                        />
-                        {error && (
-                            <p className="text-xs text-red-500">{error}</p>
-                        )}
-                    </div>
-                    {isEditing ? (
-                        confirmingDelete ? (
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm text-muted-foreground">Delete view?</span>
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => setConfirmingDelete(false)}
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        disabled={deleting}
-                                        size="sm"
-                                        variant="destructive"
-                                        onClick={() => void handleDelete()}
-                                    >
-                                        {deleting ? 'Deleting...' : 'Delete'}
-                                    </Button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="flex items-center justify-between">
-                                <Button
-                                    className="text-red hover:bg-red/5 hover:text-red"
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => setConfirmingDelete(true)}
-                                >
-                                    Delete
-                                </Button>
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => setOpen(false)}
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        disabled={saving || !name.trim()}
-                                        size="sm"
-                                        onClick={() => void handleSave()}
-                                    >
-                                        {saving ? 'Saving...' : 'Save'}
-                                    </Button>
-                                </div>
-                            </div>
-                        )
-                    ) : (
-                        <Button
-                            className="w-full"
-                            disabled={saving || !name.trim()}
-                            onClick={() => void handleSave()}
-                        >
-                            {saving ? 'Saving...' : 'Save'}
-                        </Button>
+                            if (error) {
+                                setError('');
+                            }
+                        }}
+                        onKeyDown={handleKeyDown}
+                    />
+                    {error && (
+                        <p className="text-xs text-red-500">{error}</p>
                     )}
                 </div>
-            </PopoverContent>
+                {isEditing ? (
+                    confirmingDelete ? (
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">Delete view?</span>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setConfirmingDelete(false)}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    disabled={deleting}
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => void handleDelete()}
+                                >
+                                    {deleting ? 'Deleting...' : 'Delete'}
+                                </Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-between">
+                            <Button
+                                className="text-red hover:bg-red/5 hover:text-red"
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setConfirmingDelete(true)}
+                            >
+                                Delete
+                            </Button>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={onClose}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    disabled={saving || !name.trim()}
+                                    size="sm"
+                                    onClick={() => void handleSave()}
+                                >
+                                    {saving ? 'Saving...' : 'Save'}
+                                </Button>
+                            </div>
+                        </div>
+                    )
+                ) : (
+                    <Button
+                        className="w-full"
+                        disabled={saving || !name.trim()}
+                        onClick={() => void handleSave()}
+                    >
+                        {saving ? 'Saving...' : 'Save'}
+                    </Button>
+                )}
+            </div>
+        </PopoverContent>
+    );
+};
+
+const ManageViewPopover: React.FC<ManageViewPopoverProps> = ({filter, existingViews, activeView, onDeleted}) => {
+    const [open, setOpen] = useState(false);
+    const contentKey = activeView ? `edit:${activeView.name}:${activeView.filter.filter}` : `save:${filter}`;
+
+    return (
+        <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+                <Button variant="outline">
+                    {activeView ? 'Edit view' : 'Save view'}
+                </Button>
+            </PopoverTrigger>
+            {open && (
+                <ManageViewPopoverContent
+                    key={contentKey}
+                    activeView={activeView}
+                    existingViews={existingViews}
+                    filter={filter}
+                    onClose={() => setOpen(false)}
+                    onDeleted={onDeleted}
+                />
+            )}
         </Popover>
     );
 };
