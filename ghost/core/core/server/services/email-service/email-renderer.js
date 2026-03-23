@@ -5,7 +5,9 @@ const logging = require('@tryghost/logging');
 const fs = require('fs').promises;
 const path = require('path');
 const clsx = require('clsx');
-const {isUnsplashImage} = require('@tryghost/kg-default-cards/lib/utils');
+function isUnsplashImage(url) {
+    return /images\.unsplash\.com/.test(url);
+}
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
