@@ -39,10 +39,10 @@ const WelcomeEmailPreviewContent: React.FC = () => {
                 className={cn('px-[7rem] pb-4 leading-[27.2px]', bodyFontClasses)}
                 style={{color: colors.textColor, fontFamily: bodyFont}}
             >
-                <p className="mb-6 mt-0">
+                <p className="mt-0 mb-6">
                     Welcome to {siteTitle || 'our publication'}! We&#39;re glad you&#39;re here. This is a preview of how your welcome email will look with the current design settings.
                 </p>
-                <p className="mb-6 mt-0">
+                <p className="mt-0 mb-6">
                     You can customize the{' '}
                     <a
                         className={linkClasses}
