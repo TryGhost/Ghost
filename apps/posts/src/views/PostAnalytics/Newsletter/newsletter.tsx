@@ -19,7 +19,7 @@ interface postAnalyticsProps {}
 
 const FunnelArrow: React.FC = () => {
     return (
-        <div className='md:flex! md:visible! absolute -right-4 top-1/2 z-10 hidden size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground'>
+        <div className='absolute top-1/2 -right-4 z-10 hidden size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground md:visible! md:flex!'>
             <LucideIcon.ChevronRight className='ml-0.5' size={16} strokeWidth={1.5}/>
         </div>
     );

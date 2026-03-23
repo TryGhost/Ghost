@@ -83,7 +83,7 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
         width={1140}
     >
         <div className='-mt-6 flex h-full flex-col items-center justify-center text-center'>
-            <div className='absolute left-6 top-5'>
+            <div className='absolute top-5 left-6'>
                 <Breadcrumbs
                     activeItemClassName='hidden md:block! md:visible!'
                     containerClassName='whitespace-nowrap'
@@ -106,11 +106,11 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
                     <TextField name='offer-url' type='url' value={offerLink} disabled />
                     <Button color='green' label={isCopied ? 'Copied!' : 'Copy link'} fullWidth onClick={handleCopyClick} />
                 </div>
-                <div className='before:bg-grey-300 after:bg-grey-300 dark:before:bg-grey-800 dark:after:bg-grey-800 flex items-center gap-4 text-xs font-medium before:h-px before:grow before:content-[""] after:h-px after:grow after:content-[""]'>OR</div>
+                <div className='flex items-center gap-4 text-xs font-medium before:h-px before:grow before:bg-grey-300 before:content-[""] after:h-px after:grow after:bg-grey-300 after:content-[""] dark:before:bg-grey-800 dark:after:bg-grey-800'>OR</div>
                 <div className='flex gap-2'>
-                    <Button className='border-grey-300 dark:border-grey-800 h-8 border' icon='twitter-x' iconColorClass='w-[14px] h-[14px]' size='sm' fullWidth onClick={handleTwitter} />
-                    <Button className='border-grey-300 dark:border-grey-800 h-8 border' icon='facebook' size='sm' fullWidth onClick={handleFacebook} />
-                    <Button className='border-grey-300 dark:border-grey-800 h-8 border' icon='linkedin' size='sm' fullWidth onClick={handleLinkedIn} />
+                    <Button className='h-8 border border-grey-300 dark:border-grey-800' icon='twitter-x' iconColorClass='w-[14px] h-[14px]' size='sm' fullWidth onClick={handleTwitter} />
+                    <Button className='h-8 border border-grey-300 dark:border-grey-800' icon='facebook' size='sm' fullWidth onClick={handleFacebook} />
+                    <Button className='h-8 border border-grey-300 dark:border-grey-800' icon='linkedin' size='sm' fullWidth onClick={handleLinkedIn} />
                 </div>
             </div>
         </div>

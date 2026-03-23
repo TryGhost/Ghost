@@ -13,10 +13,10 @@ const EMPTY_KEYWORDS: string[] = [];
 
 const Page: React.FC<{children: ReactNode}> = ({children}) => {
     return <>
-        <div className='tablet:fixed tablet:top-0 fixed right-0 top-2 z-50 m-8 flex justify-end bg-transparent' id="done-button-container">
+        <div className='fixed top-2 right-0 z-50 m-8 flex justify-end bg-transparent tablet:fixed tablet:top-0' id="done-button-container">
             <ExitSettingsButton />
         </div>
-        <div className="dark:bg-grey-975 fixed left-0 top-0 flex size-full" id="admin-x-settings-content">
+        <div className="fixed top-0 left-0 flex size-full dark:bg-grey-975" id="admin-x-settings-content">
             {children}
         </div>
     </>;
@@ -67,8 +67,8 @@ const MainContent: React.FC = () => {
     if (isEditorUser(currentUser)) {
         return (
             <Page>
-                <div className='dark:bg-grey-975 flex-1 overflow-y-auto bg-white' id="admin-x-settings-scroller">
-                    <div className='tablet:mt-16 mx-auto max-w-5xl px-[5vmin] xl:mt-10'>
+                <div className='flex-1 overflow-y-auto bg-white dark:bg-grey-975' id="admin-x-settings-scroller">
+                    <div className='mx-auto max-w-5xl px-[5vmin] tablet:mt-16 xl:mt-10'>
                         <Heading className='mb-[5vmin]'>Settings</Heading>
                         <Users highlight={false} keywords={EMPTY_KEYWORDS} />
                     </div>
@@ -79,13 +79,13 @@ const MainContent: React.FC = () => {
 
     return (
         <Page>
-            {loadingModal && <div className={`tablet:h-[100vh] fixed inset-0 z-40 h-[calc(100vh-55px)] w-[100vw] ${topLevelBackdropClasses}`} />}
-            <div className="tablet:relative tablet:inset-x-auto tablet:top-auto tablet:h-full tablet:overflow-y-scroll tablet:bg-grey-50 tablet:py-0 dark:bg-grey-975 dark:tablet:bg-[#101114] fixed inset-x-0 top-0 z-[35] max-w-[calc(100%-16px)] flex-1 basis-[320px] bg-white p-8" id="admin-x-settings-sidebar-scroller">
+            {loadingModal && <div className={`fixed inset-0 z-40 h-[calc(100vh-55px)] w-[100vw] tablet:h-[100vh] ${topLevelBackdropClasses}`} />}
+            <div className="fixed inset-x-0 top-0 z-[35] max-w-[calc(100%-16px)] flex-1 basis-[320px] bg-white p-8 tablet:relative tablet:inset-x-auto tablet:top-auto tablet:h-full tablet:overflow-y-scroll tablet:bg-grey-50 tablet:py-0 dark:bg-grey-975 dark:tablet:bg-[#101114]" id="admin-x-settings-sidebar-scroller">
                 <div className="relative w-full">
                     <Sidebar />
                 </div>
             </div>
-            <div className="tablet:basis-[800px] dark:bg-grey-975 dark:tablet:bg-black relative h-full flex-1 overflow-y-scroll bg-white pt-12" id="admin-x-settings-scroller">
+            <div className="relative h-full flex-1 overflow-y-scroll bg-white pt-12 tablet:basis-[800px] dark:bg-grey-975 dark:tablet:bg-black" id="admin-x-settings-scroller">
                 <Settings />
             </div>
         </Page>

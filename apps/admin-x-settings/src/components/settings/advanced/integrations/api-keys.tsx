@@ -19,7 +19,7 @@ const APIKeyField: React.FC<APIKeyFieldProps> = ({label, text = '', hint, onRege
     };
 
     const containerClasses = clsx(
-        'group/api-keys hover:border-grey-300 dark:hover:border-grey-600 relative -mt-1 mb-1 w-full overflow-hidden border-b border-transparent py-2'
+        'group/api-keys relative -mt-1 mb-1 w-full overflow-hidden border-b border-transparent py-2 hover:border-grey-300 dark:hover:border-grey-600'
     );
 
     return <div className='mb-3 grid grid-cols-1'>
@@ -27,7 +27,7 @@ const APIKeyField: React.FC<APIKeyFieldProps> = ({label, text = '', hint, onRege
         <div className={containerClasses}>
             <span>{text}</span>
             {hint}
-            <div className='visible absolute right-0 top-1/2 flex translate-y-[-50%] gap-1 bg-white pl-1 text-sm group-hover/api-keys:visible md:invisible dark:bg-black'>
+            <div className='visible absolute top-1/2 right-0 flex translate-y-[-50%] gap-1 bg-white pl-1 text-sm group-hover/api-keys:visible md:invisible dark:bg-black'>
                 {onRegenerate && <Button color='outline' label='Regenerate' size='sm' onClick={onRegenerate} />}
                 <Button color='outline' label={copied ? 'Copied' : 'Copy'} size='sm' onClick={copyText} />
             </div>

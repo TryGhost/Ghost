@@ -26,33 +26,33 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
 
     return (
         <div>
-            <div className='bg-grey-50 dark:bg-grey-950 -mx-5 -mb-5 overflow-hidden rounded-b-xl px-5 pt-2 md:-mx-7 md:-mb-7 md:px-7 md:pt-7'>
-                <div className='text-grey-500 dark:text-grey-800 -mt-4 mb-2 text-xs uppercase'>Preview</div>
-                <div className='dark:bg-grey-975 rounded-t-sm bg-white px-5 py-3 shadow-lg'>
+            <div className='-mx-5 -mb-5 overflow-hidden rounded-b-xl bg-grey-50 px-5 pt-2 md:-mx-7 md:-mb-7 md:px-7 md:pt-7 dark:bg-grey-950'>
+                <div className='-mt-4 mb-2 text-xs text-grey-500 uppercase dark:text-grey-800'>Preview</div>
+                <div className='rounded-t-sm bg-white px-5 py-3 shadow-lg dark:bg-grey-975'>
                     <div className='mt-3 flex items-center'>
                         <div>
                             <GoogleLogo className='mr-7 h-7' />
                         </div>
                         <div className='grow'>
-                            <div className='dark:bg-grey-900 flex w-full items-center justify-end rounded-full bg-white p-3 px-4 shadow'>
+                            <div className='flex w-full items-center justify-end rounded-full bg-white p-3 px-4 shadow dark:bg-grey-900'>
                                 <Icon className='stroke-[2px] text-blue-600' name='magnifying-glass' size='sm' />
                             </div>
                         </div>
                     </div>
-                    <div className='border-grey-200 dark:border-grey-900 mt-4 flex items-center gap-2 border-t pt-4'>
-                        <div className='bg-grey-200 dark:bg-grey-700 flex size-7 items-center justify-center rounded-full' style={{
+                    <div className='mt-4 flex items-center gap-2 border-t border-grey-200 pt-4 dark:border-grey-900'>
+                        <div className='flex size-7 items-center justify-center rounded-full bg-grey-200 dark:bg-grey-700' style={{
                             backgroundImage: icon ? `url(${icon})` : 'none',
                             backgroundSize: 'contain'
                         }}>
                         </div>
                         <div className='flex flex-col text-sm'>
                             <span>{siteDomain}</span>
-                            <span className='text-grey-600 -mt-0.5 inline-block text-xs'>{siteUrl}</span>
+                            <span className='-mt-0.5 inline-block text-xs text-grey-600'>{siteUrl}</span>
                         </div>
                     </div>
                     <div className='mt-1 flex flex-col'>
-                        <span className='dark:text-blue text-lg text-[#1a0dab]'>{title}</span>
-                        <span className='text-grey-900 dark:text-grey-700 text-sm'>{description}</span>
+                        <span className='text-lg text-[#1a0dab] dark:text-blue'>{title}</span>
+                        <span className='text-sm text-grey-900 dark:text-grey-700'>{description}</span>
                     </div>
                 </div>
             </div>
@@ -189,14 +189,14 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <FacebookLogo className='size-10' />
                 </div>
                 <div>
-                    <div className="text-grey-900 dark:text-grey-300 mb-1 font-semibold leading-none">{siteTitle}</div>
-                    <div className="text-grey-700 leading-none">2h</div>
+                    <div className="mb-1 leading-none font-semibold text-grey-900 dark:text-grey-300">{siteTitle}</div>
+                    <div className="leading-none text-grey-700">2h</div>
                 </div>
             </div>
             <div>
-                <div className="bg-grey-200 dark:bg-grey-900 mb-2 h-3 w-full rounded"></div>
-                <div className="bg-grey-200 dark:bg-grey-900 mb-4 h-3 w-3/5 rounded"></div>
-                <SettingGroupContent className="border-grey-300 dark:border-grey-900 overflow-hidden rounded-md border">
+                <div className="mb-2 h-3 w-full rounded bg-grey-200 dark:bg-grey-900"></div>
+                <div className="mb-4 h-3 w-3/5 rounded bg-grey-200 dark:bg-grey-900"></div>
+                <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300 dark:border-grey-900">
                     <ImageUpload
                         fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-75 p-3 text-sm font-semibold text-grey-800 hover:text-black dark:border-grey-900'
                         height='300px'
@@ -247,12 +247,12 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
             </div>
             <div className="w-full md:mr-[52px]">
                 <div className="mb-2">
-                    <span className="text-grey-900 dark:text-grey-300 mr-1 font-semibold">{siteTitle}</span>
+                    <span className="mr-1 font-semibold text-grey-900 dark:text-grey-300">{siteTitle}</span>
                     <span className="text-grey-700">&#183; 2h</span>
                 </div>
-                <div className="bg-grey-200 dark:bg-grey-900 mb-2 h-3 w-full rounded"></div>
-                <div className="bg-grey-200 dark:bg-grey-900 mb-4 h-3 w-3/5 rounded"></div>
-                <SettingGroupContent className="border-grey-300 dark:border-grey-900 overflow-hidden rounded-md border">
+                <div className="mb-2 h-3 w-full rounded bg-grey-200 dark:bg-grey-900"></div>
+                <div className="mb-4 h-3 w-3/5 rounded bg-grey-200 dark:bg-grey-900"></div>
+                <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300 dark:border-grey-900">
                     <ImageUpload
                         fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-75 p-3 text-sm font-semibold text-grey-800 hover:text-black dark:border-grey-900'
                         height='300px'

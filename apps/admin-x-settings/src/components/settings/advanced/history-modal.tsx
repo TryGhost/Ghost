@@ -32,7 +32,7 @@ const HistoryAvatar: React.FC<{action: Action}> = ({action}) => {
                 labelColor='white'
                 size='md'
             />
-            <div className='border-grey-100 dark:border-grey-900 absolute -bottom-1 -right-1 z-30 flex items-center justify-center rounded-full border bg-white p-1 shadow-sm dark:bg-black'>
+            <div className='absolute -right-1 -bottom-1 z-30 flex items-center justify-center rounded-full border border-grey-100 bg-white p-1 shadow-sm dark:border-grey-900 dark:bg-black'>
                 <HistoryIcon action={action} />
             </div>
         </div>
@@ -125,7 +125,7 @@ const HistoryActionDescription: React.FC<{action: Action}> = ({action}) => {
 
         return <>
             {group.slice(0, 1).toUpperCase()}{group.slice(1)}
-            {group !== key && <span className='text-xs'> <code className='text-grey-800 dark:bg-grey-900 mb-1 bg-white dark:text-white'>({key})</code></span>}
+            {group !== key && <span className='text-xs'> <code className='mb-1 bg-white text-grey-800 dark:bg-grey-900 dark:text-white'>({key})</code></span>}
         </>;
     } else if (action.resource?.title || action.resource?.name || action.context?.primary_name) {
         const linkTarget = getLinkTarget(action);
@@ -258,7 +258,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                             </NoValueLabel>
                         )
                     ) : data === undefined ? (
-                        <div className="flex items-center justify-center px-5 pb-10 pt-12">
+                        <div className="flex items-center justify-center px-5 pt-12 pb-10">
                             <LoadingIndicator />
                         </div>
                     ) : (

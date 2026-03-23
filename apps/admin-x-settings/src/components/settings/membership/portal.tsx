@@ -9,15 +9,15 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const SignupOptionImage: React.FC<{color:string, title: string, price: string}> = ({title, color, price}) => {
     return (
-        <div className='bg-grey-100/70 rounded-lg px-3 pb-3 pt-1.5'>
+        <div className='rounded-lg bg-grey-100/70 px-3 pt-1.5 pb-3'>
             <div className='font-space-grotesk text-[1.5rem] font-bold' style={{
                 color: color
             }}>{title}</div>
-            <div className='font-space-grotesk -mt-1 text-[1.7rem] font-bold'>{price}</div>
+            <div className='-mt-1 font-space-grotesk text-[1.7rem] font-bold'>{price}</div>
             <div className='mt-5 flex flex-col gap-1.5'>
-                <div className='bg-grey-300/60 h-1.5 w-[100%]'></div>
-                <div className='bg-grey-300/60 h-1.5 w-[70%]'></div>
-                <div className='bg-grey-300/60 h-1.5 w-[90%]'></div>
+                <div className='h-1.5 w-[100%] bg-grey-300/60'></div>
+                <div className='h-1.5 w-[70%] bg-grey-300/60'></div>
+                <div className='h-1.5 w-[90%] bg-grey-300/60'></div>
             </div>
         </div>
     );
@@ -43,8 +43,8 @@ const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='portal'
             title="Signup portal"
         >
-            <div className="bg-grey-50 sm:visible! sm:flex! relative isolate -mx-5 -mb-5 hidden flex-col items-center justify-end overflow-hidden rounded-b-xl px-5 pt-6 text-black md:-mx-7 md:-mb-7">
-                <div className='absolute bottom-6 right-6 flex size-12 items-center justify-center rounded-full text-white shadow-lg' style={{
+            <div className="relative isolate -mx-5 -mb-5 hidden flex-col items-center justify-end overflow-hidden rounded-b-xl bg-grey-50 px-5 pt-6 text-black sm:visible! sm:flex! md:-mx-7 md:-mb-7">
+                <div className='absolute right-6 bottom-6 flex size-12 items-center justify-center rounded-full text-white shadow-lg' style={{
                     backgroundColor: color
                 }}>
                     <img className='size-6' src={UserAddIcon} />
@@ -63,10 +63,10 @@ const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                 <img className='h-auto w-5' src={FakeLogo} />
                             </div>
                         }
-                        <div className='font-space-grotesk mt-1.5 text-lg font-bold'>
+                        <div className='mt-1.5 font-space-grotesk text-lg font-bold'>
                             Sign up
                         </div>
-                        <div className='border-grey-200 text-grey-700 mt-1.5 flex h-6 w-1/2 items-center rounded border p-2 text-xs'>
+                        <div className='mt-1.5 flex h-6 w-1/2 items-center rounded border border-grey-200 p-2 text-xs text-grey-700'>
                             jamie@example.com
                         </div>
                     </div>
