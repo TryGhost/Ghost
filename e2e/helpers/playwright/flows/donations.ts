@@ -11,7 +11,7 @@ interface CompleteDonationOptions {
 
 export async function completeDonationViaFakeCheckout(page: Page, stripe: StripeTestService, opts: CompleteDonationOptions = {}): Promise<void> {
     const checkoutPage = new FakeStripeCheckoutPage(page);
-    await checkoutPage.waitUntilLoaded();
+    await checkoutPage.waitUntilDonationReady();
 
     if (opts.amount) {
         await checkoutPage.changeAmountTo(opts.amount);

@@ -24,6 +24,10 @@ export class FakeStripeCheckoutPage extends BasePage {
 
     async waitUntilLoaded(): Promise<void> {
         await this.title.waitFor({state: 'visible'});
+    }
+
+    async waitUntilDonationReady(): Promise<void> {
+        await this.waitUntilLoaded();
         await this.totalAmount.waitFor({state: 'visible'});
     }
 

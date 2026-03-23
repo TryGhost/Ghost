@@ -22,7 +22,7 @@ test.describe('Ghost Public - Portal Support', () => {
         await homePage.gotoPortalSupport();
 
         const checkoutPage = new FakeStripeCheckoutPage(page);
-        await checkoutPage.waitUntilLoaded();
+        await checkoutPage.waitUntilDonationReady();
         await expect(checkoutPage.totalAmount).toHaveText('$5.00');
 
         await completeDonationViaFakeCheckout(page, stripe!, {
@@ -56,7 +56,7 @@ test.describe('Ghost Public - Portal Support', () => {
         await homePage.gotoPortalSupport();
 
         const checkoutPage = new FakeStripeCheckoutPage(page);
-        await checkoutPage.waitUntilLoaded();
+        await checkoutPage.waitUntilDonationReady();
         await expect(checkoutPage.emailInput).toHaveValue(member.email);
 
         await completeDonationViaFakeCheckout(page, stripe!, {
@@ -77,7 +77,7 @@ test.describe('Ghost Public - Portal Support', () => {
         await homePage.gotoPortalSupport();
 
         const checkoutPage = new FakeStripeCheckoutPage(page);
-        await checkoutPage.waitUntilLoaded();
+        await checkoutPage.waitUntilDonationReady();
         await expect(checkoutPage.totalAmount).toHaveText('€98.00');
 
         await completeDonationViaFakeCheckout(page, stripe!, {
