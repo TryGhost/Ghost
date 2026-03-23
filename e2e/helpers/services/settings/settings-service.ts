@@ -64,7 +64,7 @@ export class SettingsService {
     }
 
     async setDonationsSuggestedAmount(value: number) {
-        return await this.updateSettings([{key: 'donations_suggested_amount', value}]);
+        return await this.updateSettings([{key: 'donations_suggested_amount', value: value.toString()}]);
     }
 
     async setDonationsCurrency(value: string) {
