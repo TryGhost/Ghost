@@ -90,18 +90,20 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const isScheduledPostsRouteActive = routing.isRouteActive('posts', {type: 'scheduled'});
     const isPublishedPostsRouteActive = routing.isRouteActive('posts', {type: 'published'});
     const hasActivePostChild = isDraftPostsRouteActive || isScheduledPostsRouteActive || isPublishedPostsRouteActive || postCustomViews.some(view => view.isActive);
-    const postsExpanded = savedPostsExpanded || hasActivePostChild;
+    const postsExpanded = savedPostsExpanded;
     const isOnMembersForward = location.pathname === '/members-forward';
     const hasActiveMemberView = isOnMembersForward && memberViews.some(view => view.isActive);
-    const membersExpanded = savedMembersExpanded || hasActiveMemberView;
+    const membersExpanded = savedMembersExpanded;
     const membersNavActive = isMembersNavActive({
         membersForwardEnabled,
         isOnMembersForward,
         hasActiveMemberView,
+        isMembersExpanded: membersExpanded,
         isLegacyMembersRouteActive: routing.isRouteActive(getMembersNavActiveRoutes())
     });
     const postsRoute = routing.getRouteUrl('posts');
     const isPostsRouteActive = routing.isRouteActive('posts');
+    const postsNavActive = isPostsRouteActive || (!postsExpanded && hasActivePostChild);
     const membersRoute = membersForwardEnabled ? 'members-forward' : routing.getRouteUrl('members');
 
     return (
@@ -115,7 +117,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     >
                         <NavMenuItem.CollapsibleItem ariaLabel="Toggle post views">
                             <PostsNavItemContent
-                                isActive={isPostsRouteActive}
+                                isActive={postsNavActive}
                                 to={postsRoute}
                             />
                         </NavMenuItem.CollapsibleItem>
