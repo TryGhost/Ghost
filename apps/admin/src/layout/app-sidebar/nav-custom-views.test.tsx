@@ -2,13 +2,21 @@
 
 import {describe, expect, it, vi} from 'vitest';
 import {renderHook} from '@testing-library/react';
-import {useCustomSidebarViews} from './nav-custom-views';
+import {type SharedView} from './shared-views';
+import {useCustomSidebarViews} from './use-custom-sidebar-views';
 
-const mockUseSharedViews = vi.fn();
-const mockUseEmberRouting = vi.fn();
+interface EmberRoutingMock {
+    getRouteUrl: (route: 'posts' | 'pages', filter: Record<string, string | null>) => string;
+    isRouteActive: (route: 'posts' | 'pages', filter: Record<string, string | null>) => boolean;
+}
+
+const {mockUseSharedViews, mockUseEmberRouting} = vi.hoisted(() => ({
+    mockUseSharedViews: vi.fn<(route?: string) => SharedView[]>(),
+    mockUseEmberRouting: vi.fn<() => EmberRoutingMock>()
+}));
 
 vi.mock('./shared-views', () => ({
-    useSharedViews: (...args: unknown[]) => mockUseSharedViews(...args)
+    useSharedViews: mockUseSharedViews
 }));
 
 vi.mock('./nav-saved-views', () => ({
@@ -16,7 +24,7 @@ vi.mock('./nav-saved-views', () => ({
 }));
 
 vi.mock('@/ember-bridge', () => ({
-    useEmberRouting: () => mockUseEmberRouting()
+    useEmberRouting: mockUseEmberRouting
 }));
 
 describe('useCustomSidebarViews', () => {

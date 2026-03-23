@@ -14,10 +14,11 @@ import { canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api
 import { NavMenuItem } from "./nav-menu-item";
 import { useMemberCount } from "./hooks/use-member-count";
 import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
-import { NavCustomViews, useCustomSidebarViews } from "./nav-custom-views";
+import { NavCustomViews } from "./nav-custom-views";
 import { NavMemberViews } from "./nav-member-views";
 import { useMemberSidebarViews } from "./member-sidebar-views";
 import { getMembersNavActiveRoutes, isMembersNavActive } from "./nav-content.helpers";
+import { useCustomSidebarViews } from "./use-custom-sidebar-views";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
