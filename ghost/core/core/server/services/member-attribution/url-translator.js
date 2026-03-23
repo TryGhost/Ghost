@@ -61,13 +61,10 @@ class UrlTranslator {
         if (item.type) {
             const resource = await this.getResourceById(item.id, item.type);
             if (resource) {
-                // Email-only posts (status:sent) have no public URL — the URL
-                // service returns /404/ for them. Use the /email/:uuid path instead.
-                const isEmailOnly = item.type === 'post' && resource.get('status') === 'sent';
                 return {
                     type: item.type,
                     id: item.id,
-                    url: isEmailOnly ? `/email/${resource.get('uuid')}/` : this.getUrlByResourceId(item.id, {absolute: false})
+                    url: this.getResourceUrl(item.id, item.type, resource, {absolute: false})
                 };
             }
 
@@ -129,6 +126,19 @@ class UrlTranslator {
 
     getUrlByResourceId(id, options = {absolute: true}) {
         return this.urlService.getUrlByResourceId(id, options);
+    }
+
+    /**
+     * Get the URL for a resource, handling email-only posts which have no
+     * public URL (the URL service returns /404/ for them).
+     */
+    getResourceUrl(id, type, model, {absolute = true} = {}) {
+        const isEmailOnly = type === 'post' && model.get('status') === 'sent';
+        if (isEmailOnly) {
+            const emailPath = `/email/${model.get('uuid')}/`;
+            return absolute ? this.relativeToAbsolute(emailPath) : emailPath;
+        }
+        return this.getUrlByResourceId(id, {absolute});
     }
 
     async getResourceById(id, type) {

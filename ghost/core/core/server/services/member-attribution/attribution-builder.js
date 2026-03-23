@@ -96,12 +96,7 @@ class Attribution {
             };
         }
 
-        // Email-only posts (status:sent) have no public URL — the URL service
-        // returns /404/ for them. Use the /email/:uuid path instead.
-        const isEmailOnly = this.type === 'post' && model.get('status') === 'sent';
-        const updatedUrl = isEmailOnly
-            ? this.#urlTranslator.relativeToAbsolute(`/email/${model.get('uuid')}/`)
-            : this.#urlTranslator.getUrlByResourceId(this.id, {absolute: true});
+        const updatedUrl = this.#urlTranslator.getResourceUrl(this.id, this.type, model, {absolute: true});
 
         return {
             id: model.id,
