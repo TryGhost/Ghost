@@ -4,6 +4,7 @@ import React from 'react';
 import {$getNodeByKey, CLICK_COMMAND, COMMAND_PRIORITY_LOW} from 'lexical';
 import {CardWrapper} from './ui/CardWrapper';
 import {EDIT_CARD_COMMAND, SELECT_CARD_COMMAND, SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin';
+import {VISIBILITY_SETTINGS} from '../utils/visibility';
 import {mergeRegister} from '@lexical/utils';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -137,10 +138,12 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     }, [editor, isSelected, isEditing, nodeKey, containerRef]);
 
     let isVisibilityActive = false;
-    editor.getEditorState().read(() => {
-        const cardNode = $getNodeByKey(nodeKey);
-        isVisibilityActive = cardNode?.getIsVisibilityActive?.();
-    });
+    if (cardConfig?.visibilitySettings !== VISIBILITY_SETTINGS.NONE) {
+        editor.getEditorState().read(() => {
+            const cardNode = $getNodeByKey(nodeKey);
+            isVisibilityActive = cardNode?.getIsVisibilityActive?.();
+        });
+    }
 
     return (
         <CardContext.Provider value={{
