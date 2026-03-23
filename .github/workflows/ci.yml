@@ -843,9 +843,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install npm v8 # downgrade from v10 to v8 due to https://github.com/npm/cli/issues/6738
-        run: npm install -g npm@8
-
       - name: Install Ghost-CLI
         run: npm install -g ghost-cli@latest
 
@@ -860,30 +857,6 @@ jobs:
 
       - run: mv ghost-*.tgz ghost.tgz
         working-directory: ghost/core
-
-      - name: Switch back to Node v16.14.0 (for v4)
-        uses: actions/setup-node@v4
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: '16.14.0'
-
-      - name: Install latest v4
-        run: |
-          DIR=$(mktemp -d)
-          echo "V4_DIR=$DIR" >> $GITHUB_ENV
-          ghost install v4 --local -d $DIR
-
-      - name: Switch back to ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Update from v4
-        run: |
-          ghost update -f -d $V4_DIR --archive $(pwd)/ghost/core/ghost.tgz
 
       - name: Save Ghost CLI Debug Logs
         if: failure()
