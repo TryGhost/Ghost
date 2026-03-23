@@ -32,14 +32,23 @@ export const EMAIL_EDITOR_CARD_CONFIG = {
     visibilitySettings: VISIBILITY_SETTINGS.EMAIL_ONLY
 };
 
+const ALLOWED_EMAIL_EDITOR_VISIBILITY = [
+    VISIBILITY_SETTINGS.EMAIL_ONLY,
+    VISIBILITY_SETTINGS.NONE
+];
+
 export function getEmailEditorCardConfig(cardConfig = {}) {
+    const visibilitySettings = ALLOWED_EMAIL_EDITOR_VISIBILITY.includes(cardConfig.visibilitySettings)
+        ? cardConfig.visibilitySettings
+        : EMAIL_EDITOR_CARD_CONFIG.visibilitySettings;
+
     return {
         ...cardConfig,
         image: {
             ...cardConfig.image,
             ...EMAIL_EDITOR_CARD_CONFIG.image
         },
-        visibilitySettings: EMAIL_EDITOR_CARD_CONFIG.visibilitySettings
+        visibilitySettings
     };
 }
 
