@@ -1,48 +1,18 @@
 import APIKeys from './api-keys';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
-import {Button, ConfirmationModal, Icon, Modal} from '@tryghost/admin-x-design-system';
+import {Button, Icon, Modal} from '@tryghost/admin-x-design-system';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
-import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRefreshAPIKey} from '@tryghost/admin-x-framework/api/api-keys';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
-import {useState} from 'react';
 
 const ContentApiModal = NiceModal.create(() => {
     const modal = NiceModal.useModal();
     const {updateRoute} = useRouting();
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
 
-    const {mutateAsync: refreshAPIKey} = useRefreshAPIKey();
-    const handleError = useHandleError();
-    const [regenerated, setRegenerated] = useState(false);
-
     const integration = integrations.find(({slug}) => slug === 'ghost-core-content');
     const contentApiKey = integration?.api_keys?.find(key => key.type === 'content');
-
-    const handleRegenerate = () => {
-        if (!integration || !contentApiKey) {
-            return;
-        }
-
-        setRegenerated(false);
-
-        NiceModal.show(ConfirmationModal, {
-            title: 'Regenerate Content API Key',
-            prompt: 'Any applications using the current Content API key will need to be updated with the new key.',
-            okLabel: 'Regenerate Content API Key',
-            onOk: async (confirmModal) => {
-                try {
-                    await refreshAPIKey({integrationId: integration.id, apiKeyId: contentApiKey.id});
-                    setRegenerated(true);
-                    confirmModal?.remove();
-                } catch (e) {
-                    handleError(e);
-                }
-            }
-        });
-    };
 
     return (
         <Modal
@@ -79,9 +49,7 @@ const ContentApiModal = NiceModal.create(() => {
                 <APIKeys keys={[
                     {
                         label: 'Content API key',
-                        text: contentApiKey?.secret,
-                        hint: regenerated ? <div className='text-green'>Content API Key was successfully regenerated</div> : undefined,
-                        onRegenerate: handleRegenerate
+                        text: contentApiKey?.secret
                     },
                     {label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
                 ]} />
