@@ -149,7 +149,7 @@ class EmailRenderer {
      * @param {object} dependencies.settingsCache
      * @param {{getNoReplyAddress(): string, getMembersSupportAddress(): string, getMembersValidationKey(): string, createUnsubscribeUrl(uuid: string, options: object): string}} dependencies.settingsHelpers
      * @param {object} dependencies.renderers
-     * @param {{render(object, options): string}} dependencies.renderers.lexical
+     * @param {{render(object, options): Promise<string>}} dependencies.renderers.lexical
      * @param {{render(object, options): string}} dependencies.renderers.mobiledoc
      * @param {{getCachedImageSizeFromUrl(url: string): Promise<{url: string, width: number, height: number} | null>}} dependencies.imageSize
      * @param {{urlFor(type: string, optionsOrAbsolute, absolute): string, isSiteUrl(url, context): boolean}} dependencies.urlUtils
