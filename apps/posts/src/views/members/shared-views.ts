@@ -55,7 +55,9 @@ export function parseAllSharedViewsJSON(json: string): AllSharedViewsParseResult
         const parsed: unknown = JSON.parse(json);
 
         if (!Array.isArray(parsed)) {
-            return {ok: false, error: new Error('shared_views is not an array')};
+            // eslint-disable-next-line no-console
+            console.error('Failed to parse shared_views setting:', new Error('shared_views is not an array'));
+            return {ok: true, views: []};
         }
 
         const views = parsed.flatMap((item) => {

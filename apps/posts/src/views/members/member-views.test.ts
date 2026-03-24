@@ -5,7 +5,7 @@ import {
     isMemberViewSearchActive,
     parseSharedViewsJSON
 } from './member-views';
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 
 describe('member-views', () => {
     describe('parseSharedViewsJSON', () => {
@@ -42,6 +42,15 @@ describe('member-views', () => {
             const result = parseSharedViewsJSON('{');
 
             expect(result.ok).toBe(false);
+        });
+
+        it('falls back to an empty array when shared_views is not an array', () => {
+            const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+            const result = parseSharedViewsJSON('{}');
+
+            expect(result).toEqual({ok: true, views: []});
+
+            errorSpy.mockRestore();
         });
     });
 
