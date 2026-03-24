@@ -15,7 +15,7 @@ function formatDate(isoDate) {
         return '';
     }
     const event = new Date(isoDate);
-    const options = {year: 'numeric', month: 'short', day: 'numeric'};
+    const options = {year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC'};
     return event.toLocaleDateString('en-GB', options);
 }
 
