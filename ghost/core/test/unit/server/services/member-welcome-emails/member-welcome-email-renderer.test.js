@@ -39,7 +39,7 @@ describe('MemberWelcomeEmailRenderer', function () {
             });
 
             sinon.assert.calledOnce(lexicalRenderStub);
-            sinon.assert.calledWith(lexicalRenderStub, lexicalJson, {target: 'email'});
+            sinon.assert.calledWith(lexicalRenderStub, lexicalJson, {target: 'email', design: {accentColor: '#ff0000'}});
         });
 
         it('substitutes member template variables', async function () {
@@ -71,6 +71,21 @@ describe('MemberWelcomeEmailRenderer', function () {
 
             assert(result.html.includes('Welcome to Test Site'));
             assert(result.html.includes('at https://example.com'));
+        });
+
+        it('substitutes uuid replacement token', async function () {
+            lexicalRenderStub.resolves('<p><a href="https://partner.transistor.fm/ghost/%%{uuid}%%">Listen</a></p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com', uuid: 'abc-123-def'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert(result.html.includes('abc-123-def'), 'should contain member uuid in rendered HTML');
+            assert(!result.html.includes('%%{uuid}%%'), 'should not contain raw uuid token');
         });
 
         it('inlines accentColor into link styles', async function () {

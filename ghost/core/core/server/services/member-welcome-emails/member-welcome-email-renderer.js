@@ -72,6 +72,7 @@ class MemberWelcomeEmailRenderer {
             }},
             {id: 'name', getValue: () => member.name},
             {id: 'email', getValue: () => member.email},
+            {id: 'uuid', getValue: () => member.uuid},
             {id: 'site_title', getValue: () => siteSettings.title},
             {id: 'site_url', getValue: () => siteSettings.url}
         ];
@@ -114,7 +115,7 @@ class MemberWelcomeEmailRenderer {
     async render({lexical, subject, member, siteSettings}) {
         let content;
         try {
-            content = await lexicalLib.render(lexical, {target: 'email'});
+            content = await lexicalLib.render(lexical, {target: 'email', design: {accentColor: siteSettings.accentColor}});
         } catch (err) {
             throw new errors.IncorrectUsageError({
                 message: MESSAGES.INVALID_LEXICAL_STRUCTURE,
