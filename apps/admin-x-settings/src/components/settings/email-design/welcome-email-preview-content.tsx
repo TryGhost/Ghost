@@ -1,7 +1,6 @@
 import CoverImage from '../../../assets/images/email-design-user-image.jpg';
 import React from 'react';
 import {cn} from '@tryghost/shade';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {resolveAllColors, resolveButtonCorners, resolveFontFamily, resolveImageCorners} from './design-utils';
 import {useEmailDesign} from './email-design-context';
 
@@ -25,28 +24,26 @@ const WelcomeEmailPreviewContent: React.FC = () => {
     );
 
     return (
-        <>
-            {/* Heading */}
-            <div className="px-[7rem] pt-8">
-                <h3
-                    className={cn(
-                        'mb-[13px] text-[2.6rem] leading-supertight',
-                        settings.title_font_category === 'serif' && 'font-serif',
-                        settings.title_font_category === 'sans_serif' && 'font-sans',
-                        settings.title_font_weight === 'normal' && 'font-normal',
-                        settings.title_font_weight === 'medium' && 'font-medium',
-                        settings.title_font_weight === 'semibold' && 'font-semibold',
-                        settings.title_font_weight === 'bold' && 'font-bold'
-                    )}
-                    style={{color: colors.textColor}}
-                >
-                    Thanks for subscribing
-                </h3>
+        <div className='mx-auto w-full max-w-[600px] px-10'>
+            {/* Divider */}
+            <div className="my-5 py-4">
+                <hr className="m-0 border-0 border-t" style={{borderColor: colors.dividerColor}} />
             </div>
 
-            <div className='mb-5 text-[2.6rem] font-bold tracking-tighter'>
+            <h3 
+                className={cn(
+                    'mb-5 text-[2.6rem] font-bold tracking-tighter',
+                    settings.title_font_category === 'serif' && 'font-serif',
+                    settings.title_font_category === 'sans_serif' && 'font-sans',
+                    settings.title_font_weight === 'normal' && 'font-normal',
+                    settings.title_font_weight === 'medium' && 'font-medium',
+                    settings.title_font_weight === 'semibold' && 'font-semibold',
+                    settings.title_font_weight === 'bold' && 'font-bold'
+                )}
+                style={{color: colors.textColor}}
+            >
                 Your welcome email
-            </div>
+            </h3>
 
             {/* Body content */}
             <div
@@ -54,30 +51,43 @@ const WelcomeEmailPreviewContent: React.FC = () => {
                 style={{color: colors.textColor, fontFamily: bodyFont}}
             >
                 <p className="mb-6 mt-0">
-                    This is a preview of what your welcome email will look like when new members sign up to {siteTitle || 'your publication'}.
+                    This is what your welcome email will look like when someone signs up to your site.
                 </p>
-                <p className="mb-6 mt-0">
-                    You can customize the design using the settings on the right &ndash; from{' '}
-                    <a
-                        className={linkClasses}
-                        href="#"
-                        style={{color: colors.linkColor}}
-                        onClick={e => e.preventDefault()}
-                    >
-                        colors and fonts
-                    </a>{' '}
-                    to buttons and images &ndash; to make it feel like part of your brand.
-                </p>
-                <hr className="my-[52px] border-0 border-t" style={{borderColor: colors.dividerColor}} />
-
-                <p className="mb-6 mt-0">
-                    The actual content of your welcome email can be edited separately. This preview is just here to help you get the design right.
+                <p className="mb-8 mt-0">
+                    Use the settings on the right to shape the design — from colors and typography to layout and buttons — so it feels like a natural extension of your brand.
                 </p>
 
                 {/* Image */}
-                <div className="mb-6 h-[unset] w-full max-w-[600px] bg-cover bg-no-repeat">
-                    <img alt="" className={cn('min-h-full min-w-full shrink-0', resolveImageCorners(settings.image_corners))} src={CoverImage} />
+                <div className={cn(
+                    'h-[unset] w-full max-w-[600px] bg-cover bg-no-repeat'
+                )}>
+                    <img alt="Example cover image" className={cn(
+                        'min-h-full min-w-full shrink-0',
+                        resolveImageCorners(settings.image_corners)
+                    )} src={CoverImage} />
                 </div>
+                <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem] text-grey-700">Image caption</div>
+
+                <p className="mb-6 mt-0">
+                    Welcome emails set the tone for your relationship with new members. We’ve optimized this template to look great across devices and inboxes, so your first impression lands exactly how you want it.
+                </p>
+            </div>
+
+            <div className="my-5 py-4">
+                <hr className="m-0 border-0 border-t" style={{borderColor: colors.dividerColor}} />
+            </div>
+
+            <div className='mb-5 text-[2.6rem] font-bold tracking-tighter'>
+                Need inspiration?
+            </div>
+
+            <div
+                className={cn(bodyFontClasses)}
+                style={{color: colors.textColor, fontFamily: bodyFont}}
+            >
+                <p className="mb-6 mt-0">
+                    We’ve put together a <a className={linkClasses} href="https://ghost.org/help/email-design/" rel="noopener noreferrer" style={{color: colors.linkColor || accentColor}} target="_blank">quick guide</a> that walks through all the available settings, along with a few examples of what’s possible.
+                </p>
             </div>
 
             {/* Button */}
@@ -98,7 +108,7 @@ const WelcomeEmailPreviewContent: React.FC = () => {
                     }
                     target="_blank"
                 >
-                    Get started
+                    Learn more
                 </a>
             </div>
 
