@@ -6,7 +6,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Design Tokens
 
-<p className="excerpt">Shade's design tokens are implemented through TailwindCSS configuration. This document outlines our token system and how to use it effectively.</p>
+<p className="excerpt">Shade's design tokens are implemented through CSS-first Tailwind v4 tokens (`@theme` + CSS variables). This document outlines our token system and how to use it effectively.</p>
 
 ## Color System
 
@@ -14,50 +14,44 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 Our color system includes semantic colors and a comprehensive neutral palette:
 
-```js
-colors: {
+```css
+@theme {
     // Base colors
-    transparent: 'transparent',
-    current: 'currentColor',
-    ghostaccent: 'var(--accent-color, #ff0095)',
-    white: '#FFF',
-    black: '#15171A',
+    --color-transparent: transparent;
+    --color-current: currentColor;
+    --color-ghostaccent: var(--accent-color, #ff0095);
+    --color-white: #FFF;
+    --color-black: #15171A;
 
     // Gray scale (note: we use 'gray', not 'grey')
-    gray: {
-        50: '#FAFAFB',
-        100: '#F4F5F6',
-        // ... more shades
-        900: '#394047',
-        DEFAULT: '#ABB4BE'
-    },
+    --color-gray-50: #FAFAFB;
+    --color-gray-100: #F4F5F6;
+    // ... more shades
+    --color-gray-900: #394047;
+    --color-gray: #ABB4BE;
 
     // Brand colors
-    green: {
-        100: '#E1F9E4',
-        400: '#58DA67',
-        500: '#30CF43',
-        600: '#2AB23A',
-        DEFAULT: '#30CF43'
-    },
+    --color-green-100: #E1F9E4;
+    --color-green-400: #58DA67;
+    --color-green-500: #30CF43;
+    --color-green-600: #2AB23A;
+    --color-green: #30CF43;
     // ... more colors
 }
 ```
 
-> ⚠️ Note: While both `grey` and `gray` exist in the config, use `gray` for new components following TailwindCSS conventions.
+> ⚠️ Note: While both `grey` and `gray` token aliases exist for legacy compatibility, use `gray` for new components following TailwindCSS conventions.
 
 ### Semantic Tokens
 
 Theme-aware colors using CSS variables:
 
-```js
-colors: {
-    background: 'hsl(var(--background))',
-    foreground: 'hsl(var(--foreground))',
-    primary: {
-        DEFAULT: 'hsl(var(--primary))',
-        foreground: 'hsl(var(--primary-foreground))'
-    },
+```css
+@theme {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
     // ... more semantic colors
 }
 ```
@@ -66,11 +60,11 @@ colors: {
 
 ### Font Families
 
-```js
-fontFamily: {
-    sans: 'Inter, -apple-system, ...',  // Default UI font
-    serif: 'Georgia, serif',            // Editorial content
-    mono: 'Consolas, ...',              // Code
+```css
+@theme {
+    --font-sans: Inter, -apple-system, ...;  /* Default UI font */
+    --font-serif: Georgia, serif;            /* Editorial content */
+    --font-mono: Consolas, ...;              /* Code */
     // Additional web fonts available
 }
 ```
@@ -79,24 +73,25 @@ fontFamily: {
 
 A comprehensive scale from 2xs to 9xl:
 
-```js
-fontSize: {
-    '2xs': '1.0rem',
-    base: '1.4rem',
-    xs: '1.2rem',
+```css
+@theme {
+    --text-2xs: 1.0rem;
+    --text-base: 1.4rem;
+    --text-xs: 1.2rem;
     // ... more sizes
-    '9xl': ['12.8rem', '1']
+    --text-9xl: 12.8rem;
+    --text-9xl--line-height: 1;
 }
 ```
 
 ### Line Heights
 
-```js
-lineHeight: {
-    base: '1.5em',
-    tight: '1.35em',
-    tighter: '1.25em',
-    supertight: '1.1em'
+```css
+@theme {
+    --leading-base: 1.5em;
+    --leading-tight: 1.35em;
+    --leading-tighter: 1.25em;
+    --leading-supertight: 1.1em;
 }
 ```
 
@@ -104,48 +99,47 @@ lineHeight: {
 
 Our spacing system uses a 0.4rem (4px) base unit:
 
-```js
-spacing: {
-    0: '0px',
-    1: '0.4rem',    // 4px
-    2: '0.8rem',    // 8px
-    3: '1.2rem',    // 12px
-    // ... more spacing values
+```css
+@theme {
+    --spacing: 0.4rem; /* Base unit */
+    // Utilities are derived as calc(var(--spacing) * n)
 }
 ```
 
 ## Breakpoints
 
-```js
-screens: {
-    sm: '480px',
-    md: '640px',
-    sidebar: '800px',
-    lg: '1024px',
-    sidebarlg: '1240px',
-    xl: '1320px',
-    xxl: '1440px',
-    xxxl: '1600px',
-    tablet: '860px'
+```css
+@theme {
+    --breakpoint-sm: 480px;
+    --breakpoint-md: 640px;
+    --breakpoint-sidebar: 800px;
+    --breakpoint-lg: 1024px;
+    --breakpoint-sidebarlg: 1240px;
+    --breakpoint-xl: 1320px;
+    --breakpoint-xxl: 1440px;
+    --breakpoint-xxxl: 1600px;
+    --breakpoint-tablet: 860px;
 }
 ```
 
 ## Shadows
 
-```js
-boxShadow: {
-    DEFAULT: '0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08)',
-    xs: '0 0 1px rgba(0,0,0,0.04), ...',
+```css
+@theme {
+    --shadow: 0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08);
+    --shadow-xs: 0 0 1px rgba(0,0,0,0.04), ...;
     // ... more shadow values
 }
 ```
 
 ## Border Radius
 
-```js
-borderRadius: {
-    DEFAULT: '0.4rem',
-    sm: 'calc(var(--radius) - 4px)',
+```css
+@theme {
+    --radius: 0.4rem;
+    --radius-sm: 0.4rem;
+    --radius-md: 0.6rem;
+    --radius-lg: 0.8rem;
     // ... more radius values
 }
 ```
@@ -154,10 +148,10 @@ borderRadius: {
 
 Pre-defined animations for common interactions:
 
-```js
-animation: {
-    'toaster-in': 'toasterIn 0.8s cubic-bezier(...)',
-    'fade-in': 'fadeIn 0.15s ease forwards',
+```css
+@theme {
+    --animate-toaster-in: toasterIn 0.8s cubic-bezier(...);
+    --animate-fade-in: fadeIn 0.15s ease forwards;
     // ... more animations
 }
 ```
@@ -195,18 +189,16 @@ animation: {
 
 ### Dark Mode
 
-Dark mode uses a variant approach:
-```js
-darkMode: ['variant', ['&:is(.dark *):not(.light *)']],
+Dark mode uses a CSS custom variant:
+```css
+@custom-variant dark (&:is(.dark *):not(.light *));
 ```
 
 ### CSS Reset
 
 Shade uses a scoped CSS reset:
-```js
-corePlugins: {
-    preflight: false // Custom CSS reset provided
-}
+```css
+@import "./preflight.css"; /* Custom scoped reset provided */
 ```
 
 </div>

@@ -1,0 +1,359 @@
+/*
+ * CSS-first token source for Tailwind v4 runtime generation.
+ */
+
+@custom-variant dark (&:is(.dark *):not(.light *));
+
+@theme {
+    --breakpoint-sm: 480px;
+    --breakpoint-md: 640px;
+    --breakpoint-sidebar: 800px;
+    --breakpoint-lg: 1024px;
+    --breakpoint-sidebarlg: 1240px;
+    --breakpoint-xl: 1320px;
+    --breakpoint-xxl: 1440px;
+    --breakpoint-xxxl: 1600px;
+    --breakpoint-tablet: 860px;
+    --color-transparent: transparent;
+    --color-current: currentColor;
+    --color-ghostaccent: var(--accent-color, #ff0095);
+    --color-white: #FFF;
+    --color-black: #15171A;
+    --color-grey-50: #FAFAFB;
+    --color-grey-75: #F9FAFB;
+    --color-grey-100: #F4F5F6;
+    --color-grey-150: #F1F3F4;
+    --color-grey-200: #EBEEF0;
+    --color-grey-250: #E5E9ED;
+    --color-grey-300: #DDE1E5;
+    --color-grey-400: #CED4D9;
+    --color-grey-500: #AEB7C1;
+    --color-grey-600: #95A1AD;
+    --color-grey-700: #7C8B9A;
+    --color-grey-800: #626D79;
+    --color-grey-900: #394047;
+    --color-grey-925: #2E3338;
+    --color-grey-950: #222427;
+    --color-grey-975: #191B1E;
+    --color-grey: #ABB4BE;
+    --color-gray-50: #FAFAFB;
+    --color-gray-75: #F9FAFB;
+    --color-gray-100: #F4F5F6;
+    --color-gray-150: #F1F3F4;
+    --color-gray-200: #EBEEF0;
+    --color-gray-250: #E5E9ED;
+    --color-gray-300: #DDE1E5;
+    --color-gray-400: #CED4D9;
+    --color-gray-500: #AEB7C1;
+    --color-gray-600: #95A1AD;
+    --color-gray-700: #7C8B9A;
+    --color-gray-800: #626D79;
+    --color-gray-900: #394047;
+    --color-gray-925: #2E3338;
+    --color-gray-950: #222427;
+    --color-gray-975: #191B1E;
+    --color-gray: #ABB4BE;
+    --color-green-100: #E1F9E4;
+    --color-green-400: #58DA67;
+    --color-green-500: #30CF43;
+    --color-green-600: #2AB23A;
+    --color-green: #30CF43;
+    --color-blue-100: #DBF4FF;
+    --color-blue-400: #42C6FF;
+    --color-blue-500: #14B8FF;
+    --color-blue-600: #00A4EB;
+    --color-blue-700: #3778F1;
+    --color-blue: #14B8FF;
+    --color-purple-100: #EDE0FF;
+    --color-purple-400: #A366FF;
+    --color-purple-500: #8E42FF;
+    --color-purple-600: #7B1FFF;
+    --color-purple: #8E42FF;
+    --color-pink-100: #FFDFEE;
+    --color-pink-400: #FF5CA8;
+    --color-pink-500: #FB2D8D;
+    --color-pink-600: #F70878;
+    --color-pink: #FB2D8D;
+    --color-red-100: #FFE0E0;
+    --color-red-400: #F9394C;
+    --color-red-500: #F50B23;
+    --color-red-600: #DC091E;
+    --color-red: #F50B23;
+    --color-orange-100: #FFEDD5;
+    --color-orange-400: #FB923C;
+    --color-orange-500: #F97316;
+    --color-orange-600: #EA580C;
+    --color-orange: #F97316;
+    --color-yellow-100: #FFF1D6;
+    --color-yellow-400: #FFC247;
+    --color-yellow-500: #FFB41F;
+    --color-yellow-600: #F0A000;
+    --color-yellow: #FFB41F;
+    --color-lime: #B5FF18;
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+    --color-chart-gray: var(--chart-gray);
+    --color-chart-darkgray: var(--chart-darkgray);
+    --color-chart-rose: var(--chart-rose);
+    --color-chart-orange: var(--chart-orange);
+    --color-chart-amber: var(--chart-amber);
+    --color-chart-yellow: var(--chart-yellow);
+    --color-chart-green: var(--chart-green);
+    --color-chart-teal: var(--chart-teal);
+    --color-chart-blue: var(--chart-blue);
+    --color-chart-purple: var(--chart-purple);
+    --color-sidebar: var(--sidebar-background);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --font-cardo: Cardo;
+    --font-manrope: Manrope;
+    --font-merriweather: Merriweather;
+    --font-nunito: Nunito;
+    --font-tenor-sans: Tenor Sans;
+    --font-old-standard-tt: Old Standard TT;
+    --font-prata: Prata;
+    --font-roboto: Roboto;
+    --font-rufina: Rufina;
+    --font-inter: Inter;
+    --font-sans: Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+    --font-serif: Georgia, serif;
+    --font-mono: Consolas, Liberation Mono, Menlo, Courier, monospace;
+    --font-inherit: inherit;
+    --font-space-grotesk: Space Grotesk;
+    --font-chakra-petch: Chakra Petch;
+    --font-noto-sans: Noto Sans;
+    --font-poppins: Poppins;
+    --font-fira-sans: Fira Sans;
+    --font-noto-serif: Noto Serif;
+    --font-lora: Lora;
+    --font-ibm-plex-serif: IBM Plex Serif;
+    --font-space-mono: Space Mono;
+    --font-fira-mono: Fira Mono;
+    --font-jetbrains-mono: JetBrains Mono;
+    --tracking-tightest: -.05em;
+    --tracking-tighter: -.025em;
+    --tracking-tight: -.01em;
+    --tracking-normal: 0;
+    --tracking-wide: .01em;
+    --tracking-wider: .025em;
+    --tracking-widest: .5em;
+    --shadow: 0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08);
+    --shadow-xs: 0 0 1px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03), 0 8px 10px -12px rgba(0,0,0,.1);
+    --shadow-sm: 0 0 1px rgba(0,0,0,.12), 0 1px 6px rgba(0,0,0,0.03), 0 8px 10px -8px rgba(0,0,0,.1);
+    --shadow-md: 0 0 1px rgba(0,0,0,0.12), 0 1px 6px rgba(0,0,0,0.03), 0 8px 10px -8px rgba(0,0,0,0.05), 0px 24px 37px -21px rgba(0, 0, 0, 0.05);
+    --shadow-md-heavy: 0 0 1px rgba(0,0,0,0.22), 0 1px 6px rgba(0,0,0,0.15), 0 8px 10px -8px rgba(0,0,0,0.16), 0px 24px 37px -21px rgba(0, 0, 0, 0.46);
+    --shadow-lg: 0 0 7px rgba(0, 0, 0, 0.08), 0 2.1px 2.2px -5px rgba(0, 0, 0, 0.011), 0 5.1px 5.3px -5px rgba(0, 0, 0, 0.016), 0 9.5px 10px -5px rgba(0, 0, 0, 0.02), 0 17px 17.9px -5px rgba(0, 0, 0, 0.024), 0 31.8px 33.4px -5px rgba(0, 0, 0, 0.029), 0 76px 80px -5px rgba(0, 0, 0, 0.04);
+    --shadow-xl: 0 2.8px 2.2px rgba(0, 0, 0, 0.02), 0 6.7px 5.3px rgba(0, 0, 0, 0.028), 0 12.5px 10px rgba(0, 0, 0, 0.035), 0 22.3px 17.9px rgba(0, 0, 0, 0.042), 0 41.8px 33.4px rgba(0, 0, 0, 0.05), 0 100px 80px rgba(0, 0, 0, 0.07);
+    --shadow-inner: inset 0 0 4px 0 rgb(0 0 0 / 0.08);
+    --shadow-none: 0 0 #0000;
+    --spacing: 0.4rem;
+    --container-0: 0rem;
+    --container-xs: 32rem;
+    --container-sm: 38.4rem;
+    --container-md: 44.8rem;
+    --container-lg: 51.2rem;
+    --container-xl: 57.6rem;
+    --container-2xl: 67.2rem;
+    --container-3xl: 76.8rem;
+    --container-4xl: 89.6rem;
+    --container-5xl: 102.4rem;
+    --container-6xl: 115.2rem;
+    --container-7xl: 132rem;
+    --container-8xl: 140rem;
+    --container-9xl: 156rem;
+    --container-prose: 65ch;
+    --container-page: 148rem;
+    --container-pageminsidebar: 116rem;
+    /* Preserve legacy Tailwind v3 border radius scale for v4 rounded* utilities. */
+    --radius: 0.4rem;
+    --radius-xs: 0.3rem;
+    --radius-sm: 0.4rem;
+    --radius-md: 0.6rem;
+    --radius-lg: 0.8rem;
+    --radius-xl: 1.2rem;
+    --radius-2xl: 1.6rem;
+    --radius-3xl: 2.4rem;
+    --radius-full: 9999px;
+    --text-2xs: 1.0rem;
+    --text-base: 1.4rem;
+    --text-xs: 1.2rem;
+    --text-sm: 1.3rem;
+    --text-md: 1.4rem;
+    --text-lg: 1.5rem;
+    --text-xl: 1.7rem;
+    --text-2xl: 2.2rem;
+    --text-3xl: 2.8rem;
+    --text-4xl: 3.2rem;
+    --text-5xl: 4.0rem;
+    --text-5xl--line-height: 1.15;
+    --text-6xl: 5.8rem;
+    --text-6xl--line-height: 1;
+    --text-7xl: 7.0rem;
+    --text-7xl--line-height: 1;
+    --text-8xl: 9.6rem;
+    --text-8xl--line-height: 1;
+    --text-9xl: 12.8rem;
+    --text-9xl--line-height: 1;
+    --leading-none: 1;
+    --leading-snug: 1.375;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.625;
+    --leading-loose: 2;
+    --leading-base: 1.5em;
+    --leading-tight: 1.35em;
+    --leading-tighter: 1.25em;
+    --leading-supertight: 1.1em;
+    --animate-toaster-in: toasterIn 0.8s cubic-bezier(0.445, 0.050, 0.550, 0.950);
+    --animate-toaster-out: toasterOut 0.4s 0s 1 ease forwards;
+    --animate-toaster-top-in: toasterTopIn 0.8s cubic-bezier(0.445, 0.050, 0.550, 0.950);
+    --animate-fade-in: fadeIn 0.15s ease forwards;
+    --animate-fade-out: fadeOut 0.15s ease forwards;
+    --animate-setting-highlight-fade-out: fadeOut 0.2s 1.4s ease forwards;
+    --animate-modal-backdrop-in: fadeIn 0.15s ease forwards;
+    --animate-modal-in: modalIn 0.25s ease forwards;
+    --animate-modal-in-from-right: modalInFromRight 0.25s ease forwards;
+    --animate-modal-in-reverse: modalInReverse 0.25s ease forwards;
+    --animate-spin: spin 1s linear infinite;
+    --animate-accordion-down: accordion-down 0.2s ease-out;
+    --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+@keyframes toasterIn {
+    0.00% {
+        transform: translateY(100%);
+    }
+    26.52% {
+        transform: translateY(-3.90px);
+    }
+    63.26% {
+        transform: translateY(1.2px);
+    }
+    100.00% {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes toasterTopIn {
+    0.00% {
+        transform: translateY(-82px);
+    }
+    26.52% {
+        transform: translateY(5.90px);
+    }
+    63.26% {
+        transform: translateY(-1.77px);
+    }
+    100.00% {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes toasterOut {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes modalIn {
+    0% {
+        transform: translateY(32px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes modalInFromRight {
+    0% {
+        transform: translateX(32px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0px);
+        opacity: 1;
+    }
+}
+
+@keyframes modalInReverse {
+    0% {
+        transform: translateY(-32px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes accordion-down {
+    from {
+        height: 0;
+    }
+    to {
+        height: var(--radix-accordion-content-height);
+    }
+}
+
+@keyframes accordion-up {
+    from {
+        height: var(--radix-accordion-content-height);
+    }
+    to {
+        height: 0;
+    }
+}

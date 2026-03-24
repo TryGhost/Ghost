@@ -24,8 +24,7 @@
 @import "./preflight.css";
 @import "tailwindcss/utilities.css";
 @import "tw-animate-css";
-
-@config "./tailwind.config.cjs";
+@import "./tailwind.theme.css";
 
 /* CSS variables — outside @layer so they're in the implicit layer */
 :root {
@@ -48,7 +47,7 @@
     --destructive: hsl(354 92% 50%);
     --destructive-foreground: hsl(0 0% 100%);
     --ring: hsl(215 13% 63%);
-    --radius: 9px;
+    --input-group-radius: 9px;
     --chart-1: hsl(201 100% 50%);
     --chart-2: hsl(201 88% 70%);
     --chart-3: hsl(201 85% 80%);

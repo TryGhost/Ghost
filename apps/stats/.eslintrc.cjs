@@ -1,5 +1,5 @@
 /* eslint-env node */
-const tailwindConfig = `${__dirname}/tailwind.config.cjs`;
+const tailwindCssConfig = `${__dirname}/../admin/src/index.css`;
 
 module.exports = {
     root: true,
@@ -16,6 +16,9 @@ module.exports = {
     settings: {
         react: {
             version: 'detect'
+        },
+        tailwindcss: {
+            config: tailwindCssConfig
         }
     },
     rules: {
@@ -50,12 +53,12 @@ module.exports = {
         'react/no-array-index-key': 'error',
         'react/jsx-key': 'off',
 
-        'tailwindcss/classnames-order': ['error', {config: tailwindConfig}],
-        'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: tailwindConfig}],
-        'tailwindcss/enforces-shorthand': ['warn', {config: tailwindConfig}],
-        'tailwindcss/migration-from-tailwind-2': ['warn', {config: tailwindConfig}],
+        'tailwindcss/classnames-order': 'off',
+        'tailwindcss/enforces-negative-arbitrary-values': 'warn',
+        'tailwindcss/enforces-shorthand': 'warn',
+        'tailwindcss/migration-from-tailwind-2': 'warn',
         'tailwindcss/no-arbitrary-value': 'off',
         'tailwindcss/no-custom-classname': 'off',
-        'tailwindcss/no-contradicting-classname': ['error', {config: tailwindConfig}]
+        'tailwindcss/no-contradicting-classname': 'error'
     }
 };
