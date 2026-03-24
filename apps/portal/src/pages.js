@@ -17,7 +17,7 @@ import SupportPage from './components/pages/support-page';
 import SupportSuccess from './components/pages/support-success';
 import SupportError from './components/pages/support-error';
 import RecommendationsPage from './components/pages/recommendations-page';
-import ShareModal from './components/pages/share-modal';
+import ShareModal from './components/pages/share/share-modal';
 
 /** List of all available pages in Portal, mapped to their UI component
  * Any new page added to portal needs to be mapped here

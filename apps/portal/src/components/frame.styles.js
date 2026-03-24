@@ -23,7 +23,7 @@ import EmailReceivingFAQ from './pages/email-receiving-faq.css?inline';
 import {TipsAndDonationsSuccessStyle} from './pages/support-success';
 import {TipsAndDonationsErrorStyle} from './pages/support-error';
 import {RecommendationsPageStyles} from './pages/recommendations-page';
-import {ShareModalStyles} from './pages/share-modal';
+import {ShareModalStyles} from './pages/share/share-modal.styles';
 import {TransistorPodcastsActionStyles} from './pages/AccountHomePage/components/transistor-podcasts-action';
 import NotificationStyle from './notification.styles';
 

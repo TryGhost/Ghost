@@ -1,5 +1,5 @@
 import {fireEvent, render, waitFor} from '../../../utils/test-utils';
-import ShareModal from '../../../../src/components/pages/share-modal';
+import ShareModal from '../../../../src/components/pages/share/share-modal';
 import copyTextToClipboard from '../../../../src/utils/copy-to-clipboard';
 
 vi.mock('../../../../src/utils/copy-to-clipboard', () => ({
@@ -191,7 +191,8 @@ describe('ShareModal', () => {
         const linkedInLink = getByRole('link', {name: 'LinkedIn'});
         const linkedInUrl = new URL(linkedInLink.getAttribute('href'));
 
-        expect(linkedInUrl.searchParams.get('url')).toBe(window.location.href);
+        const expectedUrl = window.location.origin + window.location.pathname + window.location.search;
+        expect(linkedInUrl.searchParams.get('url')).toBe(expectedUrl);
 
         const twitterLink = getByRole('link', {name: 'X (Twitter)'});
         const twitterUrl = new URL(twitterLink.getAttribute('href'));
@@ -245,7 +246,8 @@ describe('ShareModal', () => {
         fireEvent.click(copyButton);
 
         await waitFor(() => {
-            expect(copyTextToClipboard).toHaveBeenCalledWith(window.location.href);
+            const expectedUrl = window.location.origin + window.location.pathname + window.location.search;
+            expect(copyTextToClipboard).toHaveBeenCalledWith(expectedUrl);
             expect(getByRole('button', {name: 'Copied'})).toBeInTheDocument();
         });
 
