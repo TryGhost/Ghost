@@ -24,6 +24,7 @@ describe('Members Importer API', function () {
 
     beforeEach(function () {
         emailMockReceiver = mockManager.mockMail();
+        mockManager.mockLabsDisabled('verificationFlow');
     });
 
     afterEach(function () {
