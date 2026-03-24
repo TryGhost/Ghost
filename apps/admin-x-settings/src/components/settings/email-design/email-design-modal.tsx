@@ -56,10 +56,10 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
                 )}
                 data-testid={testId}
             >
-                <div className="flex min-h-0">
+                <div className="flex h-full min-h-0">
                     {/* Left: Preview */}
-                    <div className="bg-gray-50 hidden flex-1 flex-col dark:bg-black [@media(min-width:801px)]:flex">
-                        <div className="flex flex-1 items-center justify-center overflow-y-auto p-8">
+                    <div className="bg-gray-50 hidden min-h-0 flex-1 flex-col dark:bg-black [@media(min-width:801px)]:flex">
+                        <div className="flex min-h-0 flex-1 items-center justify-center p-8">
                             {preview}
                         </div>
                     </div>

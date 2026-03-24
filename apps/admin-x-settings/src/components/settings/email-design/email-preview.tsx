@@ -110,7 +110,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
             <EnvelopeHeader senderEmail={senderEmail} senderName={senderName} subject={subject} />
 
             <div
-                className="w-full overflow-y-auto text-sm"
+                className="min-h-0 w-full flex-1 overflow-y-auto text-sm"
                 style={{backgroundColor: colors.backgroundColor}}
             >
                 <div className="px-[7rem]" style={{backgroundColor: colors.headerBackgroundColor === 'transparent' ? undefined : colors.headerBackgroundColor}}>
