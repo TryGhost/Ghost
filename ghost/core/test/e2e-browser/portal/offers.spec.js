@@ -1,8 +1,6 @@
 const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
 const {deleteAllMembers, createTier, createOffer, completeStripeSubscription} = require('../utils');
-const offersService = require('../../../core/server/services/offers');
-const ObjectID = require('bson-objectid').default;
 
 test.describe('Portal', () => {
     test.setTimeout(90000); // override the default 60s in the config as these retries can run close to 60s
@@ -317,68 +315,6 @@ test.describe('Portal', () => {
             // 1 member, should be Testy, on Portal Tier
             await expect(await sharedPage.getByRole('link', {name: 'Testy McTesterson testy+forever@example.com'}), 'Should have 1 paid member').toBeVisible();
             await expect(await sharedPage.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
-        });
-
-        test('Archiving an offer', async ({sharedPage}) => {
-            await sharedPage.goto('/ghost');
-
-            // Create a new tier to attach offer to
-            const tierName = 'Archive Test Tier';
-            await createTier(sharedPage, {
-                name: tierName,
-                monthlyPrice: 6,
-                yearlyPrice: 60
-            });
-
-            // Create an offer. This will be archived
-            const {offerLink} = await createOffer(sharedPage, {
-                name: 'To be archived',
-                tierName: tierName,
-                offerType: 'discount',
-                amount: 10
-            });
-
-            // Archive all existing offers by creating a new offer. Using the createOffer util auto-archives all existing offers
-            await createOffer(sharedPage, {
-                name: 'Dummy Active Offer',
-                tierName: tierName,
-                offerType: 'discount',
-                amount: 10
-            });
-            // Open the offer URL and make sure portal popup doesn't load
-            await sharedPage.goto(offerLink);
-            const portalPopup = await sharedPage.locator('[data-testid="portal-popup-frame"]').isVisible();
-            await expect(portalPopup).toBeFalsy();
-        });
-
-        test('Retention offers do not trigger the offer redemption popup when visiting the offer URL', async ({sharedPage}) => {
-            await sharedPage.goto('/ghost');
-            await deleteAllMembers(sharedPage);
-
-            const suffix = new ObjectID().toHexString().slice(0, 8);
-            const offerCode = `retention-${suffix}`;
-
-            await offersService.api.createOffer({
-                name: `Retention Offer ${suffix}`,
-                code: offerCode,
-                display_title: 'Stay with us',
-                display_description: 'Retention offer',
-                type: 'percent',
-                cadence: 'month',
-                amount: 10,
-                duration: 'once',
-                duration_in_months: null,
-                status: 'active',
-                tier: null,
-                redemption_type: 'retention'
-            });
-
-            const siteUrl = new URL(sharedPage.url()).origin;
-            await sharedPage.goto(`${siteUrl}/${offerCode}`);
-            await sharedPage.waitForLoadState('load');
-
-            await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).not.toBeVisible();
-            await expect(sharedPage).not.toHaveURL(/#\/portal\/offers/);
         });
     });
 });

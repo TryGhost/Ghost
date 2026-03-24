@@ -9,6 +9,7 @@ export interface AdminOffer {
     name: string;
     code: string;
     cadence: 'month' | 'year';
+    redemption_type?: 'signup' | 'retention';
     status: 'active' | 'archived';
     display_title: string | null;
     display_description: string | null;
@@ -34,11 +35,16 @@ export interface OfferCreateInput {
     amount: number;
     duration: 'once' | 'repeating' | 'forever' | 'trial';
     type: 'fixed' | 'percent' | 'trial';
-    tierId: string;
+    tierId?: string | null;
     currency?: string | null;
     display_title?: string | null;
     display_description?: string | null;
     duration_in_months?: number | null;
+    redemption_type?: 'signup' | 'retention';
+    status?: 'active' | 'archived';
+}
+
+export interface OfferUpdateInput {
     status?: 'active' | 'archived';
 }
 
@@ -59,6 +65,7 @@ export class OffersService {
                     code: input.code,
                     cadence: input.cadence,
                     status: input.status ?? 'active',
+                    redemption_type: input.redemption_type ?? 'signup',
                     currency: input.currency ?? null,
                     type: input.type,
                     amount: input.amount,
@@ -66,15 +73,28 @@ export class OffersService {
                     duration_in_months: input.duration_in_months ?? null,
                     display_title: input.display_title ?? input.name,
                     display_description: input.display_description ?? null,
-                    tier: {
-                        id: input.tierId
-                    }
+                    tier: input.tierId ? {id: input.tierId} : null
                 }]
             }
         });
 
         if (!response.ok()) {
             throw new Error(`Failed to create offer: ${response.status()}`);
+        }
+
+        const data = await response.json() as OffersResponse;
+        return data.offers[0];
+    }
+
+    async updateOffer(offerId: string, input: OfferUpdateInput): Promise<AdminOffer> {
+        const response = await this.request.put(`${this.adminEndpoint}/offers/${offerId}`, {
+            data: {
+                offers: [input]
+            }
+        });
+
+        if (!response.ok()) {
+            throw new Error(`Failed to update offer: ${response.status()}`);
         }
 
         const data = await response.json() as OffersResponse;
