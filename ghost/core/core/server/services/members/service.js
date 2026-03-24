@@ -43,6 +43,7 @@ const membersStats = new MembersStats({
 });
 
 let membersApi;
+let verificationTrigger;
 
 const sendVerificationEmail = async ({subject, message, amountTriggered}) => {
     const escalationAddress = config.get('hostSettings:emailVerification:escalationAddress');
@@ -111,6 +112,7 @@ const initVerificationTrigger = () => {
         getImportTriggerThreshold: () => _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
         isVerified: () => config.get('hostSettings:emailVerification:verified') === true,
         isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
+        setVerificationRequired: value => settingsCache.set('email_verification_required', {value}),
         isVerificationFlowEnabled: () => labsService.isSet('verificationFlow'),
         sendVerificationEmail,
         sendVerificationWebhook: verificationWebhookService.sendVerificationWebhook.bind(verificationWebhookService),
@@ -157,7 +159,9 @@ module.exports = {
             getMembersApi: () => module.exports.api
         });
 
-        const verificationTrigger = initVerificationTrigger();
+        if (!verificationTrigger) {
+            verificationTrigger = initVerificationTrigger();
+        }
         module.exports.verificationTrigger = verificationTrigger;
 
         const membersCSVImporter = initMembersCSVImporter({stripeAPIService: stripeService.api});

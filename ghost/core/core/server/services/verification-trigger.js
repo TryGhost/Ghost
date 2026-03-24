@@ -19,6 +19,7 @@ class VerificationTrigger {
      * @param {() => number} deps.getImportTriggerThreshold Threshold for triggering Import sourced verifications
      * @param {() => boolean} deps.isVerified Check Ghost config to see if we are already verified
      * @param {() => boolean} deps.isVerificationRequired Check Ghost settings to see whether verification has been requested
+     * @param {(value: boolean) => void} deps.setVerificationRequired Directly update the settings cache for email_verification_required
      * @param {() => boolean} deps.isVerificationFlowEnabled Check whether webhook-based verification flow is enabled
      * @param {(content: {subject: string, message: string, amountTriggered: number}) => Promise<void>} deps.sendVerificationEmail Sends an email to the escalation address to confirm that customer needs to be verified
      * @param {(content: {amountTriggered: number, threshold: number, method: string}) => Promise<boolean>} deps.sendVerificationWebhook Sends a webhook to the escalation service to confirm that customer needs to be verified
@@ -31,6 +32,7 @@ class VerificationTrigger {
         getImportTriggerThreshold,
         isVerified,
         isVerificationRequired,
+        setVerificationRequired,
         isVerificationFlowEnabled,
         sendVerificationEmail,
         sendVerificationWebhook,
@@ -42,6 +44,7 @@ class VerificationTrigger {
         this._getImportTriggerThreshold = getImportTriggerThreshold;
         this._isVerified = isVerified;
         this._isVerificationRequired = isVerificationRequired;
+        this._setVerificationRequired = setVerificationRequired || (() => {});
         this._isVerificationFlowEnabled = isVerificationFlowEnabled || (() => false);
         this._sendVerificationEmail = sendVerificationEmail;
         this._sendVerificationWebhook = sendVerificationWebhook;
@@ -118,6 +121,12 @@ class VerificationTrigger {
             key: 'email_verification_required',
             value: true
         }], {context: {internal: true}});
+
+        // Explicitly update the cache regardless of whether the DB value changed.
+        // Settings.edit relies on Bookshelf's hasChanged() to fire onUpdated, which
+        // skips the model event (and therefore the cache update) when the DB already
+        // holds the same value — e.g. after a previous verification cycle.
+        this._setVerificationRequired(true);
     }
 
     _finishTrigger(throwOnTrigger) {
