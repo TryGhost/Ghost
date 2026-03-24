@@ -15,7 +15,7 @@ export const HeadingWeightField = () => {
     const currentWeight = getValidWeight(fontCategory, settings.title_font_weight);
     return (
         <div className="flex items-center justify-between">
-            <span className="text-sm">Heading weight</span>
+            <span>Heading weight</span>
             <Select value={currentWeight} onValueChange={(value: string) => onSettingsChange({title_font_weight: value})}>
                 <SelectTrigger className="w-[180px]">
                     <SelectValue />

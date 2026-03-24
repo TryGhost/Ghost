@@ -56,26 +56,24 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
                 )}
                 data-testid={testId}
             >
-                <div className="flex h-full">
+                <div className="flex h-full min-h-0">
                     {/* Left: Preview */}
-                    <div className="bg-gray-50 hidden flex-1 flex-col dark:bg-black [@media(min-width:801px)]:flex">
-                        <div className="flex flex-1 items-center justify-center overflow-y-auto p-8">
+                    <div className="bg-gray-50 hidden min-h-0 flex-1 flex-col dark:bg-black [@media(min-width:801px)]:flex">
+                        <div className="flex min-h-0 flex-1 items-center justify-center p-8">
                             {preview}
                         </div>
                     </div>
 
                     {/* Right: Sidebar */}
-                    <div className="border-gray-200 dark:border-gray-900 flex size-full flex-col border-l [@media(min-width:801px)]:w-[400px] [@media(min-width:801px)]:shrink-0">
-                        <div className="border-gray-200 dark:border-gray-900 flex items-center justify-between border-b px-6 py-5">
+                    <div className="border-gray-200 dark:border-gray-900 flex min-h-0 w-full flex-col border-l [@media(min-width:801px)]:w-[400px] [@media(min-width:801px)]:shrink-0">
+                        <div className="flex items-center justify-between px-6 py-5">
                             <DialogTitle>{title}</DialogTitle>
                             <div className="flex items-center gap-2">
                                 <Button variant="outline" onClick={handleClose}>Close</Button>
                                 <Button onClick={onSave}>{saveLabel}</Button>
                             </div>
                         </div>
-                        <div className="flex-1 overflow-y-auto px-6 py-5">
-                            {sidebar}
-                        </div>
+                        {sidebar}
                     </div>
                 </div>
             </DialogContent>

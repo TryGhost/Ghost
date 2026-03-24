@@ -53,10 +53,10 @@ interface GeneralTabProps {
 const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange, siteTitle, emailDomain}) => (
     <div className="flex flex-col gap-6 pt-6">
         <section>
-            <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Email info</h4>
+            <h4 className="mb-4 font-semibold md:text-lg">Email info</h4>
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
-                    <label className="text-sm">Sender name</label>
+                    <label className="text-sm font-medium">Sender name</label>
                     <Input
                         placeholder={siteTitle || 'Your site name'}
                         value={generalSettings.senderName}
@@ -64,7 +64,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange
                     />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                    <label className="text-sm">Reply-to email</label>
+                    <label className="text-sm font-medium">Reply-to email</label>
                     <Input
                         placeholder={`noreply@${emailDomain}`}
                         value={generalSettings.replyToEmail}
@@ -77,21 +77,22 @@ const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange
         <Separator />
 
         <section>
-            <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Content</h4>
+            <h4 className="mb-4 font-semibold md:text-lg">Content</h4>
             <div className="flex flex-col gap-4">
                 <HeaderImageField
                     value={generalSettings.headerImage}
                     onChange={url => onGeneralChange({headerImage: url})}
                 />
                 <div className="flex items-center justify-between">
-                    <span className="text-sm">Publication title</span>
+                    <span className="text-sm font-medium">Publication title</span>
                     <Switch
                         checked={generalSettings.showPublicationTitle}
+                        size='sm'
                         onCheckedChange={checked => onGeneralChange({showPublicationTitle: checked})}
                     />
                 </div>
-                <div className="flex flex-col gap-1.5">
-                    <label className="text-sm">Email footer</label>
+                <div className="mt-2 flex flex-col gap-1.5">
+                    <label className="text-sm font-medium">Email footer</label>
                     <Textarea
                         placeholder="Any extra information or legal text"
                         rows={3}
@@ -111,7 +112,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange
 const DesignTab: React.FC = () => (
     <div className="flex flex-col gap-6 pt-6">
         <section>
-            <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Global</h4>
+            <h4 className="mb-4 font-semibold md:text-lg">Global</h4>
             <div className="flex flex-col gap-4">
                 <BackgroundColorField />
                 <HeadingFontField />
@@ -123,7 +124,7 @@ const DesignTab: React.FC = () => (
         <Separator />
 
         <section>
-            <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Header</h4>
+            <h4 className="mb-4 font-semibold md:text-lg">Header</h4>
             <div className="flex flex-col gap-4">
                 <HeaderBackgroundField />
             </div>
@@ -132,7 +133,7 @@ const DesignTab: React.FC = () => (
         <Separator />
 
         <section>
-            <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Body</h4>
+            <h4 className="mb-4 font-semibold md:text-lg">Body</h4>
             <div className="flex flex-col gap-4">
                 <ButtonColorField />
                 <ButtonStyleField />
@@ -154,12 +155,12 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({generalSettings, onGeneralChange, siteTitle, emailDomain}) => (
-    <Tabs defaultValue="general" variant="underline">
-        <TabsList>
+    <Tabs className="flex min-h-0 flex-1 flex-col" defaultValue="general" variant="underline">
+        <TabsList className='px-5'>
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="design">Design</TabsTrigger>
         </TabsList>
-        <TabsContent value="general">
+        <TabsContent className='min-h-0 flex-1 overflow-y-auto px-5 pb-5' value="general">
             <GeneralTab
                 emailDomain={emailDomain}
                 generalSettings={generalSettings}
@@ -167,7 +168,7 @@ const Sidebar: React.FC<SidebarProps> = ({generalSettings, onGeneralChange, site
                 onGeneralChange={onGeneralChange}
             />
         </TabsContent>
-        <TabsContent value="design">
+        <TabsContent className='min-h-0 flex-1 overflow-y-auto px-5 pb-5' value="design">
             <DesignTab />
         </TabsContent>
     </Tabs>
