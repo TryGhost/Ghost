@@ -3,7 +3,6 @@
 
 @source "../**/*.{js,ts,jsx,tsx}";
 @source "../../../admin-x-design-system/src/**/*.{js,ts,jsx,tsx}";
-@source "../../../../node_modules/@tryghost/admin-x-design-system/es/**/*.{js,ts,jsx,tsx}";
 
 /* Only settings related overrides */
 .gh-update-banner ~ * #admin-x-settings-content {
