@@ -80,19 +80,19 @@ function MembersList({
     };
 
     return (
-        <div ref={parentRef} className="overflow-x-auto">
+        <div ref={parentRef} className="-mx-8 -mb-8 h-[calc(100%+32px)] max-w-[calc(100vw-300px)] overflow-auto">
             <Table
-                className="border-collapse lg:table-fixed"
+                className="ml-8 max-w-[calc(100vw-300px-64px)] border-collapse lg:table-fixed"
                 data-testid="members-list"
             >
                 <colgroup className="hidden lg:table-column-group">
-                    <col className="w-[30%] min-w-[360px]" />
-                    <col className="w-[110px]" />
-                    {showEmailOpenRate && <col className="w-[90px]" />}
-                    <col className="w-[150px]" />
-                    <col className="w-[120px]" />
+                    <col className="w-full min-w-[360px]" />
+                    <col className="w-[50%] min-w-[160px]" />
+                    {showEmailOpenRate && <col className="w-[50%] min-w-[110px]" />}
+                    <col className="w-[50%] min-w-[150px]" />
+                    <col className="w-[50%] min-w-[120px]" />
                     {activeColumns.map(col => (
-                        <col key={col.key} className="w-[250px]" />
+                        <col key={col.key} className="w-[50%] min-w-[250px]" />
                     ))}
                 </colgroup>
                 <TableHeader className="sticky top-0 z-10 hidden border-b bg-background lg:table-header-group">

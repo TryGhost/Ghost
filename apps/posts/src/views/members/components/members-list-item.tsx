@@ -61,7 +61,7 @@ function MembersListItemName({item, onClick}: { item: Member; onClick?: (memberI
             />
             <div className="min-w-0">
                 <a
-                    className="cursor-pointer before:absolute before:left-0 before:top-0 before:z-10 before:h-full before:w-[100vw]"
+                    className="cursor-pointer before:absolute before:left-0 before:top-0 before:z-10 before:h-full before:w-[calc(100vw-300px-64px)]"
                     href={`#/members/${item.id}`}
                     onClick={onClick ? (e) => {
                         if (
