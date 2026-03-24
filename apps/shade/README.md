@@ -16,15 +16,14 @@ export function Example() {
 }
 ```
 
-Tailwind preset:
+CSS-first styling contract:
 
-```js
-// tailwind.config.cjs
-module.exports = {
-    presets: [require('@tryghost/shade/tailwind')],
-    // your overrides...
-};
+```css
+/* app entry CSS */
+@import "@tryghost/shade/styles.css";
 ```
+
+No Tailwind preset/config import is required for Shade runtime styling.
 
 Scoping and dark mode:
 

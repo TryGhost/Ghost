@@ -2,7 +2,6 @@
 
 @import 'tailwindcss/theme.css';
 @import '@tryghost/shade/tailwind.theme.css';
-@import 'tailwindcss/utilities.css';
 
 @import url(https://fonts.bunny.net/css?family=cardo:400,700);
 @import url(https://fonts.bunny.net/css?family=manrope:300,500,700);

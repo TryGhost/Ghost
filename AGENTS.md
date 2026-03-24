@@ -184,13 +184,12 @@ Ghost Admin uses **TailwindCSS v4** via the `@tailwindcss/vite` plugin. CSS proc
 @import "./preflight.css";
 @import "tailwindcss/utilities.css";
 @import "tw-animate-css";
-
-@config "./tailwind.config.cjs";
+@import "./tailwind.theme.css";
 ```
 
 **Why unlayered:** Ember's legacy CSS (`.flex`, `.hidden`, etc.) is unlayered. If Tailwind utilities were in a `@layer`, they would lose to Ember's unlayered CSS in the cascade. Keeping both unlayered means source order determines specificity.
 
-The `@config` bridge loads `tailwind.config.cjs` for the custom theme (colors, spacing, shadows, etc.). `tw-animate-css` is the v4 replacement for `tailwindcss-animate`.
+Theme tokens/variants/animations are defined in CSS (`apps/shade/tailwind.theme.css` + runtime vars in `styles.css`), so there is no JS `@config` bridge in the Admin runtime lane. `tw-animate-css` is the v4 replacement for `tailwindcss-animate`.
 
 ### Critical Rule: Embedded Apps Must NOT Import Shade Independently
 
@@ -202,7 +201,7 @@ Public-facing apps (`comments-ui`, `signup-form`, `sodo-search`, `portal`, `anno
 
 ### Legacy Apps
 
-`admin-x-design-system` and `admin-x-settings` keep TW v3 dependencies for their own Storybook builds. Their source files are consumed via `@source` in admin's v4 pipeline for production.
+`admin-x-design-system` and `admin-x-settings` are consumed via `@source` in admin's centralized v4 pipeline for production, and both packages build with CSS-first Tailwind v4 setup.
 
 ## Code Guidelines
 
