@@ -67,6 +67,10 @@ const AutomatedEmail = ghostBookshelf.Model.extend({
                 slug
             }
         }, isEnableTransition ? 'Welcome email enabled' : 'Welcome email disabled');
+    },
+
+    emailTemplate() {
+        return this.belongsTo('EmailTemplate', 'email_template_id');
     }
 });
 
