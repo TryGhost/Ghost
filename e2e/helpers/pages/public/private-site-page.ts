@@ -5,7 +5,6 @@ export class PrivateSitePage extends BasePage {
     readonly accessCodeLink: Locator;
     readonly accessCodeDialog: Locator;
     readonly enterButton: Locator;
-    readonly siteBrand: Locator;
 
     constructor(page: Page) {
         super(page, '/');
@@ -13,7 +12,6 @@ export class PrivateSitePage extends BasePage {
         this.accessCodeLink = page.getByRole('link', {name: 'Enter access code'});
         this.accessCodeDialog = page.getByRole('dialog', {name: 'Enter access code'});
         this.enterButton = page.getByRole('button', {name: /Enter/});
-        this.siteBrand = page.locator('.gh-navigation-brand');
     }
 
     async openAccessCodeDialog(): Promise<void> {

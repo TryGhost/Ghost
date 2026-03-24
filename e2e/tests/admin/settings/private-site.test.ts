@@ -1,4 +1,4 @@
-import {PrivateSitePage} from '@/helpers/pages';
+import {HomePage, PrivateSitePage} from '@/helpers/pages';
 import {PrivateSiteSection, SettingsPage} from '@/admin-pages';
 import {expect, test, withIsolatedPage} from '@/helpers/playwright';
 import {usePerTestIsolation} from '@/helpers/playwright/isolation';
@@ -30,10 +30,10 @@ test.describe('Ghost Admin - Private Site', () => {
         await expect(privateSiteSettings.passwordInput).toHaveCount(0);
 
         await withIsolatedPage(browser, {baseURL}, async ({page: frontendPage}) => {
-            const privateSite = new PrivateSitePage(frontendPage);
+            const site = new HomePage(frontendPage);
             await expect(async () => {
-                await privateSite.goto();
-                await expect(privateSite.siteBrand).toBeVisible();
+                await site.goto();
+                await expect(site.siteBrand).toBeVisible();
             }).toPass();
         });
     });
