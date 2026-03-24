@@ -97,7 +97,7 @@ function NavMenuCollapsibleMenu({children}: NavMenuCollapsibleMenuProps) {
             className={`grid transition-all duration-200 ease-out ${expanded ? 'grid-rows-[1fr] mb-5' : 'grid-rows-[0fr] mb-0'}`}
         >
             <div className="overflow-hidden">
-                {children}
+                {expanded ? children : null}
             </div>
         </div>
     );
