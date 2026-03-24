@@ -203,7 +203,8 @@ class MemberWelcomeEmailService {
 
         const testMember = {
             name: 'Jamie Larson',
-            email: email
+            email: email,
+            uuid: '00000000-0000-4000-8000-000000000000'
         };
 
         const {html, text, subject: renderedSubject} = await this.#renderer.render({
