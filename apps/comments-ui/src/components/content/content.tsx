@@ -198,7 +198,7 @@ const Content = () => {
                 )}
             </div>
             {commentCount > 1 && (
-                <div className="z-20 mt-3 mb-7">
+                <div className="z-20 mb-7 mt-3">
                     <span className="flex items-center gap-1.5 text-sm font-medium text-neutral-900 dark:text-neutral-100">
                         {t('Sort by')}: <SortingForm/>
                     </span>
