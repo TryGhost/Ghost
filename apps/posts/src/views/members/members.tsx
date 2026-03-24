@@ -2,6 +2,7 @@ import MembersActions from './components/members-actions';
 import MembersContent from './components/members-content';
 import MembersFilters from './components/members-filters';
 import MembersHeader from './components/members-header';
+import MembersHeaderSearch from './components/members-header-search';
 import MembersLayout from './components/members-layout';
 import MembersList from './components/members-list';
 import React, {useMemo} from 'react';
@@ -16,7 +17,7 @@ import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useSearchParams} from 'react-router';
 
 const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
-    const {filters, nql, search, setFilters, hasFilterOrSearch, clearAll} = useMembersFilterState(timezone);
+    const {filters, nql, search, setFilters, setSearch, hasFilterOrSearch, clearAll} = useMembersFilterState(timezone);
     const {data: configData} = useBrowseConfig();
 
     // Check if email analytics is enabled
@@ -72,7 +73,11 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
             >
                 {/* Actions - always inline in the actions area */}
                 <Header.Actions>
-                    <Header.ActionGroup>
+                    <Header.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
+                        <MembersHeaderSearch
+                            search={search}
+                            onSearchChange={setSearch}
+                        />
                         {/* When no filters, show filter button inline with other actions */}
                         {!hasFilters && (
                             <MembersFilters
