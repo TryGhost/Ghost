@@ -2,11 +2,24 @@ import {
     type SharedView,
     findMatchingSharedViewIndexes,
     hasSharedViewNameConflict,
-    isSharedViewEqual
+    isSharedViewEqual,
+    parseAllSharedViewsJSON
 } from './shared-views';
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 
 describe('shared-views', () => {
+    describe('parseAllSharedViewsJSON', () => {
+        it('falls back to an empty array and logs when shared_views is not an array', () => {
+            const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+            const result = parseAllSharedViewsJSON('{}');
+
+            expect(result).toEqual({ok: true, views: []});
+            expect(errorSpy).toHaveBeenCalledWith('Failed to parse shared_views setting:', new Error('shared_views is not an array'));
+
+            errorSpy.mockRestore();
+        });
+    });
+
     describe('isSharedViewEqual', () => {
         it('matches views by route and filter payload', () => {
             const left: SharedView = {
