@@ -150,6 +150,33 @@ describe('useMembersFilterState', () => {
         expect(result.current.search).toBe('jamie');
     });
 
+    it('writes search params without clearing existing filters', () => {
+        const {result} = renderHook(() => {
+            const state = useMembersFilterState('UTC');
+            const [searchParams] = useSearchParams();
+
+            return {
+                ...state,
+                query: searchParams.toString()
+            };
+        }, {wrapper: createWrapper('/?filter=status:paid')});
+
+        act(() => {
+            result.current.setSearch('jamie@example.com', {replace: false});
+        });
+
+        expect(result.current.query).toBe('filter=status%3Apaid&search=jamie%40example.com');
+        expect(result.current.filters).toEqual([
+            {
+                id: 'status:1',
+                field: 'status',
+                operator: 'is',
+                values: ['paid']
+            }
+        ]);
+        expect(result.current.search).toBe('jamie@example.com');
+    });
+
     it('keeps incomplete text filters locally while preserving serializable filters in the URL', () => {
         const {result} = renderHook(() => {
             const state = useMembersFilterState('UTC');
