@@ -214,5 +214,368 @@ describe('PostsExporter streaming', function () {
             assert.equal(posts[0].opens, null);
             assert.equal(posts[0].published_at, null);
         });
+
+        it('Exports posts without an email as published only', async function () {
+            knex = createStreamingKnex({
+                newsletters: [{id: newsletterId, name: 'Daily Newsletter', feedback_enabled: true}],
+                labels: [], products: [],
+                posts: [{id: postId, title: 'Test Post', status: 'published', visibility: 'public', featured: false, created_at: new Date(), published_at: new Date(), updated_at: new Date(), newsletter_id: null, uuid: 'u1'}],
+                posts_authors: [{post_id: postId, name: 'A'}],
+                posts_tags: [],
+                emails: [],
+                members_click_events: [], members_created_events: [], members_subscription_created_events: [],
+                members_feedback: [], posts_products: [], posts_meta: []
+            });
+
+            exporter = new PostsExporter({
+                models, knex, settingsCache, settingsHelpers,
+                getPostUrl: () => 'https://example.com/post'
+            });
+
+            const posts = await collectStream(await exporter.exportStream({}));
+            assert.equal(posts[0].status, 'published only');
+        });
+
+        it('Shows newsletter names with multiple newsletters', async function () {
+            const secondNewsletterId = createModel({}).id;
+            const secondPostId = createModel({}).id;
+
+            models.Post = createModelClass({
+                findAll: [{id: postId}, {id: secondPostId}]
+            });
+
+            knex = createStreamingKnex({
+                newsletters: [
+                    {id: newsletterId, name: 'Daily Newsletter', feedback_enabled: true},
+                    {id: secondNewsletterId, name: 'Weekly Newsletter', feedback_enabled: true}
+                ],
+                labels: [], products: [],
+                posts: [
+                    {id: postId, title: 'Post 1', status: 'published', visibility: 'public', featured: false, created_at: new Date(), published_at: new Date(), updated_at: new Date(), newsletter_id: newsletterId, uuid: 'u1'},
+                    {id: secondPostId, title: 'Post 2', status: 'published', visibility: 'public', featured: false, created_at: new Date(), published_at: new Date(), updated_at: new Date(), newsletter_id: secondNewsletterId, uuid: 'u2'}
+                ],
+                posts_authors: [{post_id: postId, name: 'A'}, {post_id: secondPostId, name: 'A'}],
+                posts_tags: [],
+                emails: [
+                    {post_id: postId, email_count: 100, opened_count: 50, feedback_enabled: true, track_clicks: true, recipient_filter: 'all'},
+                    {post_id: secondPostId, email_count: 100, opened_count: 50, feedback_enabled: true, track_clicks: true, recipient_filter: 'all'}
+                ],
+                members_click_events: [], members_created_events: [], members_subscription_created_events: [],
+                members_feedback: [], posts_products: [], posts_meta: []
+            });
+
+            exporter = new PostsExporter({
+                models, knex, settingsCache, settingsHelpers,
+                getPostUrl: () => 'https://example.com/post'
+            });
+
+            const posts = await collectStream(await exporter.exportStream({}));
+            assert.equal(posts[0].newsletter_name, 'Daily Newsletter');
+            assert.equal(posts[1].newsletter_name, 'Weekly Newsletter');
+        });
+
+        it('Hides clicks when click tracking disabled', async function () {
+            settingsCache.set('email_track_clicks', false);
+            exporter = new PostsExporter({
+                models, knex, settingsCache, settingsHelpers,
+                getPostUrl: () => 'https://example.com/post'
+            });
+
+            const posts = await collectStream(await exporter.exportStream({}));
+            assert.equal(posts[0].clicks, undefined);
+            assert.notEqual(posts[0].sends, undefined);
+            assert.notEqual(posts[0].opens, undefined);
+        });
+
+        it('Hides opens when open tracking disabled', async function () {
+            settingsCache.set('email_track_opens', false);
+            exporter = new PostsExporter({
+                models, knex, settingsCache, settingsHelpers,
+                getPostUrl: () => 'https://example.com/post'
+            });
+
+            const posts = await collectStream(await exporter.exportStream({}));
+            assert.equal(posts[0].opens, undefined);
+            assert.notEqual(posts[0].sends, undefined);
+            assert.notEqual(posts[0].clicks, undefined);
+        });
+
+        it('Hides paid_conversions when paid members disabled', async function () {
+            settingsHelpers.arePaidMembersEnabled = () => false;
+            exporter = new PostsExporter({
+                models, knex, settingsCache, settingsHelpers,
+                getPostUrl: () => 'https://example.com/post'
+            });
+
+            const posts = await collectStream(await exporter.exportStream({}));
+            assert.equal(posts[0].paid_conversions, undefined);
+            assert.notEqual(posts[0].signups, undefined);
+            assert.notEqual(posts[0].sends, undefined);
+        });
+
+        it('Hides signups and paid_conversions when members_track_sources disabled', async function () {
+            settingsCache.set('members_track_sources', false);
+            exporter = new PostsExporter({
+                models, knex, settingsCache, settingsHelpers,
+                getPostUrl: () => 'https://example.com/post'
+            });
+
+            const posts = await collectStream(await exporter.exportStream({}));
+            assert.equal(posts[0].signups, undefined);
+            assert.equal(posts[0].paid_conversions, undefined);
+            assert.notEqual(posts[0].sends, undefined);
+        });
+
+        it('Defaults counts to 0 when no relation data exists', async function () {
+            knex = createStreamingKnex({
+                newsletters: [{id: newsletterId, name: 'Daily Newsletter', feedback_enabled: true}],
+                labels: [], products: [],
+                posts: [{id: postId, title: 'Test Post', status: 'published', visibility: 'public', featured: false, created_at: new Date(), published_at: new Date(), updated_at: new Date(), newsletter_id: newsletterId, uuid: 'u1'}],
+                posts_authors: [{post_id: postId, name: 'A'}],
+                posts_tags: [],
+                emails: [{post_id: postId, email_count: 100, opened_count: 50, feedback_enabled: true, track_clicks: true, recipient_filter: 'all'}],
+                members_click_events: [],
+                members_created_events: [],
+                members_subscription_created_events: [],
+                members_feedback: [],
+                posts_products: [],
+                posts_meta: []
+            });
+
+            exporter = new PostsExporter({
+                models, knex, settingsCache, settingsHelpers,
+                getPostUrl: () => 'https://example.com/post'
+            });
+
+            const posts = await collectStream(await exporter.exportStream({}));
+            assert.equal(posts[0].clicks, 0);
+            assert.equal(posts[0].signups, 0);
+            assert.equal(posts[0].paid_conversions, 0);
+            assert.equal(posts[0].feedback_more_like_this, 0);
+            assert.equal(posts[0].feedback_less_like_this, 0);
+        });
+
+        it('Joins multiple authors and tags with commas', async function () {
+            knex = createStreamingKnex({
+                newsletters: [{id: newsletterId, name: 'Daily Newsletter', feedback_enabled: true}],
+                labels: [], products: [],
+                posts: [{id: postId, title: 'Test Post', status: 'published', visibility: 'public', featured: false, created_at: new Date(), published_at: new Date(), updated_at: new Date(), newsletter_id: newsletterId, uuid: 'u1'}],
+                posts_authors: [
+                    {post_id: postId, name: 'Author A'},
+                    {post_id: postId, name: 'Author B'},
+                    {post_id: postId, name: 'Author C'}
+                ],
+                posts_tags: [
+                    {post_id: postId, name: 'Tag X'},
+                    {post_id: postId, name: 'Tag Y'}
+                ],
+                emails: [{post_id: postId, email_count: 100, opened_count: 50, feedback_enabled: true, track_clicks: true, recipient_filter: 'all'}],
+                members_click_events: [], members_created_events: [], members_subscription_created_events: [],
+                members_feedback: [], posts_products: [], posts_meta: []
+            });
+
+            exporter = new PostsExporter({
+                models, knex, settingsCache, settingsHelpers,
+                getPostUrl: () => 'https://example.com/post'
+            });
+
+            const posts = await collectStream(await exporter.exportStream({}));
+            assert.equal(posts[0].author, 'Author A, Author B, Author C');
+            assert.equal(posts[0].tags, 'Tag X, Tag Y');
+        });
+
+        it('Maps sent status to emailed only', async function () {
+            knex = createStreamingKnex({
+                newsletters: [{id: newsletterId, name: 'Daily Newsletter', feedback_enabled: true}],
+                labels: [], products: [],
+                posts: [{id: postId, title: 'Test Post', status: 'sent', visibility: 'public', featured: false, created_at: new Date(), published_at: new Date(), updated_at: new Date(), newsletter_id: newsletterId, uuid: 'u1'}],
+                posts_authors: [{post_id: postId, name: 'A'}],
+                posts_tags: [],
+                emails: [{post_id: postId, email_count: 256, opened_count: 128, feedback_enabled: true, track_clicks: true, recipient_filter: 'all'}],
+                members_click_events: [{post_id: postId, count: 64}],
+                members_created_events: [], members_subscription_created_events: [],
+                members_feedback: [], posts_products: [], posts_meta: []
+            });
+
+            exporter = new PostsExporter({
+                models, knex, settingsCache, settingsHelpers,
+                getPostUrl: () => 'https://example.com/post'
+            });
+
+            const posts = await collectStream(await exporter.exportStream({}));
+            assert.equal(posts[0].status, 'emailed only');
+            assert.equal(posts[0].sends, 256);
+            assert.equal(posts[0].opens, 128);
+            assert.equal(posts[0].clicks, 64);
+        });
+
+        it('Clears email data for scheduled posts', async function () {
+            const secondNewsletterId = createModel({}).id;
+
+            knex = createStreamingKnex({
+                newsletters: [
+                    {id: newsletterId, name: 'Daily Newsletter', feedback_enabled: true},
+                    {id: secondNewsletterId, name: 'Weekly Newsletter', feedback_enabled: true}
+                ],
+                labels: [], products: [],
+                posts: [{id: postId, title: 'Scheduled', status: 'scheduled', visibility: 'public', featured: false, created_at: new Date(), published_at: null, updated_at: new Date(), newsletter_id: newsletterId, uuid: 'u1'}],
+                posts_authors: [{post_id: postId, name: 'A'}],
+                posts_tags: [],
+                emails: [{post_id: postId, email_count: 100, opened_count: 50, feedback_enabled: true, track_clicks: true, recipient_filter: 'all'}],
+                members_click_events: [], members_created_events: [], members_subscription_created_events: [],
+                members_feedback: [], posts_products: [], posts_meta: []
+            });
+
+            exporter = new PostsExporter({
+                models, knex, settingsCache, settingsHelpers,
+                getPostUrl: () => 'https://example.com/post'
+            });
+
+            const posts = await collectStream(await exporter.exportStream({}));
+            assert.equal(posts[0].status, 'scheduled');
+            assert.equal(posts[0].published_at, null);
+            assert.equal(posts[0].sends, null);
+            assert.equal(posts[0].opens, null);
+            assert.equal(posts[0].clicks, null);
+            assert.equal(posts[0].newsletter_name, null);
+            assert.equal(posts[0].feedback_more_like_this, null);
+            assert.equal(posts[0].feedback_less_like_this, null);
+            assert.equal(posts[0].signups, null);
+            assert.equal(posts[0].paid_conversions, null);
+        });
+
+        it('Returns correct post_access for each visibility type', async function () {
+            const postIds = [postId, createModel({}).id, createModel({}).id, createModel({}).id, createModel({}).id];
+
+            models.Post = createModelClass({
+                findAll: postIds.map(id => ({id}))
+            });
+
+            knex = createStreamingKnex({
+                newsletters: [{id: newsletterId, name: 'Daily Newsletter', feedback_enabled: true}],
+                labels: [], products: [],
+                posts: [
+                    {id: postIds[0], title: 'P1', status: 'published', visibility: 'public', featured: false, created_at: new Date(), published_at: new Date(), updated_at: new Date(), newsletter_id: null, uuid: 'u1'},
+                    {id: postIds[1], title: 'P2', status: 'published', visibility: 'members', featured: false, created_at: new Date(), published_at: new Date(), updated_at: new Date(), newsletter_id: null, uuid: 'u2'},
+                    {id: postIds[2], title: 'P3', status: 'published', visibility: 'paid', featured: false, created_at: new Date(), published_at: new Date(), updated_at: new Date(), newsletter_id: null, uuid: 'u3'},
+                    {id: postIds[3], title: 'P4', status: 'published', visibility: 'tiers', featured: false, created_at: new Date(), published_at: new Date(), updated_at: new Date(), newsletter_id: null, uuid: 'u4'},
+                    {id: postIds[4], title: 'P5', status: 'published', visibility: 'unsupported', featured: false, created_at: new Date(), published_at: new Date(), updated_at: new Date(), newsletter_id: null, uuid: 'u5'}
+                ],
+                posts_authors: postIds.map(id => ({post_id: id, name: 'A'})),
+                posts_tags: [],
+                emails: [],
+                members_click_events: [], members_created_events: [], members_subscription_created_events: [],
+                members_feedback: [],
+                posts_products: [
+                    {post_id: postIds[3], product_id: 'tier1', name: 'Silver'},
+                    {post_id: postIds[3], product_id: 'tier2', name: 'Gold'}
+                ],
+                posts_meta: []
+            });
+
+            exporter = new PostsExporter({
+                models, knex, settingsCache, settingsHelpers,
+                getPostUrl: () => 'https://example.com/post'
+            });
+
+            const posts = await collectStream(await exporter.exportStream({}));
+            assert.equal(posts[0].post_access, 'Public');
+            assert.equal(posts[1].post_access, 'Members-only');
+            assert.equal(posts[2].post_access, 'Paid members-only');
+            assert.equal(posts[3].post_access, 'Specific tiers: Silver, Gold');
+            assert.equal(posts[4].post_access, 'unsupported');
+        });
+
+        it('Returns empty tiers for tier-restricted post with no tiers', async function () {
+            knex = createStreamingKnex({
+                newsletters: [{id: newsletterId, name: 'Daily Newsletter', feedback_enabled: true}],
+                labels: [], products: [],
+                posts: [{id: postId, title: 'Test', status: 'published', visibility: 'tiers', featured: false, created_at: new Date(), published_at: new Date(), updated_at: new Date(), newsletter_id: null, uuid: 'u1'}],
+                posts_authors: [{post_id: postId, name: 'A'}],
+                posts_tags: [],
+                emails: [],
+                members_click_events: [], members_created_events: [], members_subscription_created_events: [],
+                members_feedback: [], posts_products: [], posts_meta: []
+            });
+
+            exporter = new PostsExporter({
+                models, knex, settingsCache, settingsHelpers,
+                getPostUrl: () => 'https://example.com/post'
+            });
+
+            const posts = await collectStream(await exporter.exportStream({}));
+            assert.equal(posts[0].post_access, 'Specific tiers: none');
+        });
+
+        it('Produces the expected ordered field set', async function () {
+            const secondNewsletterId = createModel({}).id;
+
+            knex = createStreamingKnex({
+                newsletters: [
+                    {id: newsletterId, name: 'Daily Newsletter', feedback_enabled: true},
+                    {id: secondNewsletterId, name: 'Weekly Newsletter', feedback_enabled: true}
+                ],
+                labels: [], products: [],
+                posts: [{id: postId, title: 'Test Post', status: 'published', visibility: 'public', featured: false, created_at: new Date(), published_at: new Date(), updated_at: new Date(), newsletter_id: newsletterId, uuid: 'u1'}],
+                posts_authors: [{post_id: postId, name: 'A'}],
+                posts_tags: [],
+                emails: [{post_id: postId, email_count: 100, opened_count: 50, feedback_enabled: true, track_clicks: true, recipient_filter: 'all'}],
+                members_click_events: [], members_created_events: [], members_subscription_created_events: [],
+                members_feedback: [], posts_products: [], posts_meta: []
+            });
+
+            exporter = new PostsExporter({
+                models, knex, settingsCache, settingsHelpers,
+                getPostUrl: () => 'https://example.com/post'
+            });
+
+            const posts = await collectStream(await exporter.exportStream({}));
+            const fields = Object.keys(posts[0]);
+
+            assert.deepEqual(fields, [
+                'id',
+                'title',
+                'url',
+                'author',
+                'status',
+                'created_at',
+                'updated_at',
+                'published_at',
+                'featured',
+                'tags',
+                'post_access',
+                'email_recipients',
+                'newsletter_name',
+                'sends',
+                'opens',
+                'clicks',
+                'signups',
+                'paid_conversions',
+                'feedback_more_like_this',
+                'feedback_less_like_this'
+            ]);
+        });
+
+        it('Resolves email recipient filter labels', async function () {
+            knex = createStreamingKnex({
+                newsletters: [{id: newsletterId, name: 'Daily Newsletter', feedback_enabled: true}],
+                labels: [{id: 'l1', slug: 'vip', name: 'VIP'}],
+                products: [],
+                posts: [{id: postId, title: 'Test Post', status: 'published', visibility: 'public', featured: false, created_at: new Date(), published_at: new Date(), updated_at: new Date(), newsletter_id: newsletterId, uuid: 'u1'}],
+                posts_authors: [{post_id: postId, name: 'A'}],
+                posts_tags: [],
+                emails: [{post_id: postId, email_count: 100, opened_count: 50, feedback_enabled: true, track_clicks: true, recipient_filter: 'label:vip'}],
+                members_click_events: [], members_created_events: [], members_subscription_created_events: [],
+                members_feedback: [], posts_products: [], posts_meta: []
+            });
+
+            exporter = new PostsExporter({
+                models, knex, settingsCache, settingsHelpers,
+                getPostUrl: () => 'https://example.com/post'
+            });
+
+            const posts = await collectStream(await exporter.exportStream({}));
+            assert.equal(posts[0].email_recipients, 'VIP');
+        });
     });
 });
