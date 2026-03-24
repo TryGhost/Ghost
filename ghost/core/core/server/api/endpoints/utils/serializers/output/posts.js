@@ -60,6 +60,7 @@ module.exports = {
                 const csvTransform = createCSVTransform();
 
                 models.data.on('error', err => next(err));
+                csvTransform.on('error', err => next(err));
 
                 const datetime = (new Date()).toJSON().substring(0, 10);
                 res.setHeader('Content-Type', 'text/csv; charset=utf-8');
