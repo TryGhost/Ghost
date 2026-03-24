@@ -72,7 +72,7 @@ module.exports = function price(planOrAmount, options) {
             locale
         });
 
-        if (interval === 'true' && plan.interval) {
+        if (interval && interval !== 'false' && plan.interval) {
             result = `${result}/${plan.interval}`;
         }
 

@@ -128,13 +128,33 @@ describe('{{price}} helper', function () {
             assert.equal(rendered, '$50/year');
         });
 
-        it('will not append interval when interval is not "true"', function () {
+        it('will append interval when interval is boolean true', function () {
+            const plan = {
+                amount: 500,
+                interval: 'month',
+                currency: 'USD'
+            };
+            const rendered = price.call({}, plan, {hash: {interval: true}});
+            assert.equal(rendered, '$5/month');
+        });
+
+        it('will not append interval when interval is not set', function () {
             const plan = {
                 amount: 500,
                 interval: 'month',
                 currency: 'USD'
             };
             const rendered = price.call({}, plan, {hash: {}});
+            assert.equal(rendered, '$5');
+        });
+
+        it('will not append interval when interval is "false"', function () {
+            const plan = {
+                amount: 500,
+                interval: 'month',
+                currency: 'USD'
+            };
+            const rendered = price.call({}, plan, {hash: {interval: 'false'}});
             assert.equal(rendered, '$5');
         });
 
