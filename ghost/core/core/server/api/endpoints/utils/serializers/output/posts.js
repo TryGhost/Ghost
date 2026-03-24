@@ -54,6 +54,23 @@ module.exports = {
     },
 
     exportCSV(models, apiConfig, frame) {
+        if (models.data && typeof models.data.pipe === 'function') {
+            frame.response = function streamResponse(req, res, next) {
+                const {createCSVTransform} = require('./posts-csv-transform');
+                const csvTransform = createCSVTransform();
+
+                models.data.on('error', err => next(err));
+
+                const datetime = (new Date()).toJSON().substring(0, 10);
+                res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+                res.setHeader('Content-Disposition',
+                    `attachment; filename="post-analytics.${datetime}.csv"`);
+
+                models.data.pipe(csvTransform).pipe(res);
+            };
+            return;
+        }
+        // Fallback for non-stream data
         frame.response = papaparse.unparse(models.data);
     },
 

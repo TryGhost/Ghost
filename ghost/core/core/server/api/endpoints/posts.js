@@ -98,7 +98,8 @@ const controller = {
             cacheInvalidate: false
         },
         response: {
-            format: 'plain'
+            format: 'plain',
+            stream: true
         },
         permissions: {
             method: 'browse'
@@ -106,7 +107,7 @@ const controller = {
         validation: {},
         async query(frame) {
             return {
-                data: await postsService.export(frame)
+                data: await postsService.exportStream(frame)
             };
         }
     },
