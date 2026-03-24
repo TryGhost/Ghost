@@ -26,7 +26,7 @@ const HeaderImageField: React.FC<HeaderImageFieldProps> = ({value, onChange}) =>
                         src={value}
                     />
                     <button
-                        className="absolute top-2 right-2 rounded bg-black/50 px-2 py-1 text-xs text-white hover:bg-black/70"
+                        className="absolute right-2 top-2 rounded bg-black/50 px-2 py-1 text-xs text-white hover:bg-black/70"
                         type="button"
                         onClick={() => onChange('')}
                     >
@@ -40,7 +40,7 @@ const HeaderImageField: React.FC<HeaderImageFieldProps> = ({value, onChange}) =>
                         className="flex h-24 items-center justify-center p-0 text-sm"
                         onDropAccepted={files => files[0] && handleUpload(files[0])}
                     >
-                        <span className="text-gray-400">Upload header image</span>
+                        <span className="text-gray-700">Upload header image</span>
                     </Dropzone>
                     <span className="text-xs text-gray-400">1200x600 recommended. Use a transparent PNG for best results on any background.</span>
                 </>

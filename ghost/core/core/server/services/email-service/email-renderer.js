@@ -5,7 +5,9 @@ const logging = require('@tryghost/logging');
 const fs = require('fs').promises;
 const path = require('path');
 const clsx = require('clsx');
-const {isUnsplashImage} = require('@tryghost/kg-default-cards/lib/utils');
+function isUnsplashImage(url) {
+    return /images\.unsplash\.com/.test(url);
+}
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
@@ -855,6 +857,9 @@ class EmailRenderer {
         registerHelpers(this.#handlebars, labs, this.#t);
 
         // Partials
+        const baseStylesSource = await fs.readFile(path.join(__dirname, '../email-rendering/partials/base-styles.hbs'), 'utf8');
+        this.#handlebars.registerPartial('baseStyles', baseStylesSource);
+
         const contentStylesSource = await fs.readFile(path.join(__dirname, '../email-rendering/partials/content-styles.hbs'), 'utf8');
         this.#handlebars.registerPartial('contentStyles', contentStylesSource);
 
@@ -872,6 +877,9 @@ class EmailRenderer {
 
         const latestPostsPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `latest-posts.hbs`), 'utf8');
         this.#handlebars.registerPartial('latestPosts', latestPostsPartial);
+
+        const emailWrapperSource = await fs.readFile(path.join(__dirname, '../email-rendering/partials/email-wrapper.hbs'), 'utf8');
+        this.#handlebars.registerPartial('emailWrapper', emailWrapperSource);
 
         // Actual template
         let templateName = 'template.hbs';
@@ -1241,6 +1249,7 @@ class EmailRenderer {
         const linkStyle = newsletter.get('link_style') || 'underline';
 
         const data = {
+            emailTitle: post.get('title'),
             site: {
                 title: this.#settingsCache.get('title'),
                 url: this.#urlUtils.urlFor('home', true),

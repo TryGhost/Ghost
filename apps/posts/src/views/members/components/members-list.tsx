@@ -1,35 +1,35 @@
 import MembersListItem from './members-list-item';
 import {Member} from '@tryghost/admin-x-framework/api/members';
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
 import {forwardRef, useRef} from 'react';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
+import type {ActiveColumn} from '../member-query-params';
 
 const SpacerRow = ({height}: { height: number }) => (
-    <div aria-hidden="true" className="flex">
-        <div className="flex" style={{height}} />
-    </div>
+    <tr aria-hidden="true" style={{height}}>
+        <td colSpan={999} />
+    </tr>
 );
 
-const PlaceholderRow = forwardRef<HTMLDivElement>(function PlaceholderRow(
-    props,
-    ref
-) {
-    return (
-        <div
-            ref={ref}
-            {...props}
-            aria-hidden="true"
-            className="relative flex flex-col"
-        >
-            <div className="relative z-10 h-[72px] animate-pulse">
-                <div
-                    className="h-full rounded-md bg-muted"
-                    data-testid="loading-placeholder"
-                />
-            </div>
-        </div>
-    );
-});
+const PlaceholderRow = forwardRef<HTMLTableRowElement>(
+    function PlaceholderRow(props, ref) {
+        return (
+            <TableRow
+                ref={ref}
+                {...props}
+                aria-hidden="true"
+            >
+                <TableCell className="h-[72px] px-4 py-3" colSpan={999}>
+                    <div
+                        className="bg-muted h-full animate-pulse rounded-md"
+                        data-testid="loading-placeholder"
+                    />
+                </TableCell>
+            </TableRow>
+        );
+    }
+);
 
 interface MembersListProps {
     items: Member[];
@@ -39,6 +39,8 @@ interface MembersListProps {
     fetchNextPage: () => void;
     isLoading?: boolean;
     showEmailOpenRate?: boolean;
+    activeColumns: ActiveColumn[];
+    timezone: string;
     onRowClick?: (memberId: string) => void;
 }
 
@@ -50,6 +52,8 @@ function MembersList({
     fetchNextPage,
     isLoading,
     showEmailOpenRate = true,
+    activeColumns,
+    timezone,
     onRowClick
 }: MembersListProps) {
     const parentRef = useRef<HTMLDivElement>(null);
@@ -75,40 +79,49 @@ function MembersList({
         }
     };
 
-    const gridColsWithOpenRate = 'lg:grid-cols-[3fr_1fr_1fr_1.5fr_1.5fr]';
-    const gridColsWithoutOpenRate = 'lg:grid-cols-[3fr_1fr_1.5fr_1.5fr]';
-    const gridCols = showEmailOpenRate
-        ? gridColsWithOpenRate
-        : gridColsWithoutOpenRate;
-
     return (
-        <div ref={parentRef} className="overflow-hidden">
-            <div className="flex flex-col" data-testid="members-list">
-                {/* Table Header */}
-                <div
-                    className={`sticky top-0 z-10 hidden border-b bg-background lg:grid lg:gap-4 lg:px-4 lg:py-3 ${gridCols}`}
-                >
-                    <div className="text-xs font-medium tracking-wide text-gray-700 uppercase">
-                        Member
-                    </div>
-                    <div className="text-xs font-medium tracking-wide text-gray-700 uppercase">
-                        Status
-                    </div>
-                    {showEmailOpenRate && (
-                        <div className="text-xs font-medium tracking-wide text-gray-700 uppercase">
-                            Open rate
-                        </div>
-                    )}
-                    <div className="text-xs font-medium tracking-wide text-gray-700 uppercase">
-                        Location
-                    </div>
-                    <div className="text-xs font-medium tracking-wide text-gray-700 uppercase">
-                        Created
-                    </div>
-                </div>
-
-                {/* Table Body */}
-                <div className="flex flex-col">
+        <div ref={parentRef} className="-mx-8 -mb-8 h-[calc(100%+32px)] max-w-[calc(100vw-300px)] overflow-auto">
+            <Table
+                className="ml-8 max-w-[calc(100vw-300px-64px)] border-collapse lg:table-fixed"
+                data-testid="members-list"
+            >
+                <colgroup className="hidden lg:table-column-group">
+                    <col className="w-full min-w-[360px]" />
+                    <col className="w-[50%] min-w-[160px]" />
+                    {showEmailOpenRate && <col className="w-[50%] min-w-[110px]" />}
+                    <col className="w-[50%] min-w-[150px]" />
+                    <col className="w-[50%] min-w-[120px]" />
+                    {activeColumns.map(col => (
+                        <col key={col.key} className="w-[50%] min-w-[250px]" />
+                    ))}
+                </colgroup>
+                <TableHeader className="bg-background sticky top-0 z-10 hidden border-b lg:table-header-group">
+                    <TableRow>
+                        <TableHead className="px-4 py-3">
+                            Member
+                        </TableHead>
+                        <TableHead className="px-4 py-3">
+                            Status
+                        </TableHead>
+                        {showEmailOpenRate && (
+                            <TableHead className="px-4 py-3">
+                                Open rate
+                            </TableHead>
+                        )}
+                        <TableHead className="px-4 py-3">
+                            Location
+                        </TableHead>
+                        <TableHead className="px-4 py-3">
+                            Created
+                        </TableHead>
+                        {activeColumns.map(col => (
+                            <TableHead key={col.key} className="px-4 py-3">
+                                {col.label}
+                            </TableHead>
+                        ))}
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
                     <SpacerRow height={spaceBefore} />
                     {visibleItems.map(({key, virtualItem, item, props}) => {
                         const shouldRenderPlaceholder =
@@ -122,16 +135,17 @@ function MembersList({
                             <MembersListItem
                                 key={key}
                                 {...props}
-                                gridCols={gridCols}
+                                activeColumns={activeColumns}
                                 item={item}
                                 showEmailOpenRate={showEmailOpenRate}
+                                timezone={timezone}
                                 onClick={handleRowClick}
                             />
                         );
                     })}
                     <SpacerRow height={spaceAfter} />
-                </div>
-            </div>
+                </TableBody>
+            </Table>
         </div>
     );
 }

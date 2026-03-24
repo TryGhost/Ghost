@@ -96,7 +96,7 @@ class Attribution {
             };
         }
 
-        const updatedUrl = this.#urlTranslator.getUrlByResourceId(this.id, {absolute: true});
+        const updatedUrl = this.#urlTranslator.getResourceUrl(this.id, this.type, model, {absolute: true});
 
         return {
             id: model.id,

@@ -1,3 +1,4 @@
+import ManageViewPopover from './manage-view-popover';
 import React, {useCallback, useMemo} from 'react';
 import {Filter, Filters, LucideIcon} from '@tryghost/shade';
 import {
@@ -14,10 +15,14 @@ import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters'
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useResourceSearch} from '../hooks/use-resource-search';
+import type {MemberView} from '../hooks/use-member-views';
 
 interface MembersFiltersProps {
     filters: Filter[];
+    nql?: string;
     onFiltersChange: (filters: Filter[]) => void;
+    savedViews?: MemberView[];
+    activeView?: MemberView | null;
 }
 
 const EMPTY_OFFERS: typeof buildOfferOptions extends (offers: infer T) => unknown ? T : never = [];
@@ -40,7 +45,10 @@ function mapOfferRedemptionFilters(
 
 const MembersFilters: React.FC<MembersFiltersProps> = ({
     filters,
-    onFiltersChange
+    nql,
+    onFiltersChange,
+    savedViews = [],
+    activeView
 }) => {
     const {data: labelsData} = useBrowseLabels({searchParams: {limit: '100'}});
     const {data: tiersData} = useBrowseTiers({searchParams: {limit: '100'}});
@@ -114,16 +122,34 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     });
 
     const hasFilters = filters.length > 0;
+    const clearAndSaveButtons = hasFilters ? (
+        <div className="flex shrink-0 items-center gap-2 sm:absolute sm:right-0 sm:top-0">
+            <button
+                className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm font-normal"
+                type="button"
+                onClick={() => onFiltersChange([])}
+            >
+                <LucideIcon.X className="size-4" />
+                Clear
+            </button>
+            {nql && (
+                <ManageViewPopover
+                    activeView={activeView}
+                    existingViews={savedViews}
+                    filter={nql}
+                    onDeleted={() => onFiltersChange([])}
+                />
+            )}
+        </div>
+    ) : undefined;
 
     return (
         <Filters
             addButtonIcon={hasFilters ? <LucideIcon.FunnelPlus /> : <LucideIcon.Funnel />}
             addButtonText={hasFilters ? 'Add filter' : 'Filter'}
             allowMultiple={true}
-            className={`[&>button]:order-last ${hasFilters ? '[&>button]:border-none' : 'w-auto'}`}
-            clearButtonClassName="font-normal text-muted-foreground"
-            clearButtonIcon={<LucideIcon.X />}
-            clearButtonText="Clear"
+            className={`[&>button]:order-last ${hasFilters ? 'sm:!pr-40 [&>button]:border-none' : 'w-auto'}`}
+            clearButton={clearAndSaveButtons}
             fields={filterFields}
             filters={displayFilters}
             keyboardShortcut="f"
