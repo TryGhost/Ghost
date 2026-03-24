@@ -957,8 +957,11 @@ describe('Members API', function () {
             await agent.delete(`/members/${memberPassVerification.id}`);
             await agent.delete(`/members/${memberFailVerification.id}`);
         } finally {
+            await models.Settings.edit([{
+                key: 'email_verification_required',
+                value: false
+            }], {context: {internal: true}});
             await configUtils.restore();
-            settingsCache.set('email_verification_required', {value: false});
         }
     });
 
@@ -1079,8 +1082,11 @@ describe('Members API', function () {
             await agent.delete(`/members/${memberFailVerification.id}`);
         } finally {
             nock.cleanAll();
+            await models.Settings.edit([{
+                key: 'email_verification_required',
+                value: false
+            }], {context: {internal: true}});
             await configUtils.restore();
-            settingsCache.set('email_verification_required', {value: false});
         }
     });
 
