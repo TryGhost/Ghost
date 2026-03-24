@@ -55,6 +55,7 @@ export function useUserPreferences<TData = Preferences>(
             return PreferencesSchema.parse(parsed);
         },
         enabled: !!user,
+        keepPreviousData: true,
         staleTime: Infinity,
         // Query key includes user?.accessibility to automatically react to changes from ANY source
         // (our mutation, other code calling editUser, external updates, etc.). When accessibility
