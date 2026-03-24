@@ -68,7 +68,7 @@ const WelcomeEmailPreviewContent: React.FC = () => {
                         resolveImageCorners(settings.image_corners)
                     )} src={CoverImage} />
                 </div>
-                <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem] text-grey-700">Image caption</div>
+                <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem]" style={{color: colors.secondaryTextColor}}>Image caption</div>
 
                 <p className="mb-6 mt-0">
                     Welcome emails set the tone for your relationship with new members. We’ve optimized this template to look great across devices and inboxes, so your first impression lands exactly how you want it.
