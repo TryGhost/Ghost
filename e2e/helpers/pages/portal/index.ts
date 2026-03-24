@@ -1,5 +1,7 @@
+export * from './account-home-page';
 export * from './account-page';
 export * from './account-plan-page';
+export * from './newsletter-management-page';
 export * from './portal-page';
 export * from './sign-in-page';
 export * from './sign-up-page';
