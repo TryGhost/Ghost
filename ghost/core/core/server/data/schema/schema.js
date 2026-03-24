@@ -1142,6 +1142,35 @@ module.exports = {
             ['event_type', 'status', 'created_at']
         ]
     },
+    email_templates: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        name: {type: 'string', maxlength: 191, nullable: false, unique: true},
+        slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
+        header_image: {type: 'string', maxlength: 2000, nullable: true},
+        show_publication_title: {type: 'boolean', nullable: false, defaultTo: true},
+        show_badge: {type: 'boolean', nullable: false, defaultTo: true},
+        footer_content: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
+        background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: '#ffffff'},
+        title_font_category: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'sans_serif', validations: {isIn: [['serif', 'sans_serif']]}},
+        title_font_weight: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'bold', validations: {isIn: [['normal', 'medium', 'semibold', 'bold']]}},
+        body_font_category: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'sans_serif', validations: {isIn: [['serif', 'sans_serif']]}},
+        header_background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: '#ffffff'},
+        title_alignment: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'center', validations: {isIn: [['center', 'left']]}},
+        post_title_color: {type: 'string', maxlength: 50, nullable: true},
+        section_title_color: {type: 'string', maxlength: 50, nullable: true},
+        button_color: {type: 'string', maxlength: 50, nullable: true, defaultTo: 'accent'},
+        button_style: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'fill', validations: {isIn: [['fill', 'outline']]}},
+        button_corners: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'rounded', validations: {isIn: [['square', 'rounded', 'pill']]}},
+        link_color: {type: 'string', maxlength: 50, nullable: true, defaultTo: 'accent'},
+        link_style: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'underline', validations: {isIn: [['underline', 'regular', 'bold']]}},
+        image_corners: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'square', validations: {isIn: [['square', 'rounded']]}},
+        divider_color: {type: 'string', maxlength: 50, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            ['slug']
+        ]
+    },
     automated_emails: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'inactive', validations: {isIn: [['active', 'inactive']]}},
@@ -1152,6 +1181,7 @@ module.exports = {
         sender_name: {type: 'string', maxlength: 191, nullable: true},
         sender_email: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
         sender_reply_to: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
+        email_template_id: {type: 'string', maxlength: 24, nullable: true, references: 'email_templates.id'},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [
