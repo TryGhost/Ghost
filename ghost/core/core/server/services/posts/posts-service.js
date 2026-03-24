@@ -333,10 +333,6 @@ class PostsService {
         return await this.postsExporter.export(frame.options);
     }
 
-    async exportStream(frame) {
-        return await this.postsExporter.exportStream(frame.options);
-    }
-
     async #updatePosts(data, options) {
         if (!options.transacting) {
             return await this.models.Post.transaction(async (transacting) => {

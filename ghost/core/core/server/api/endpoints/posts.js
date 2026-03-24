@@ -107,7 +107,7 @@ const controller = {
         validation: {},
         async query(frame) {
             return {
-                data: await postsService.exportStream(frame)
+                data: await postsService.export(frame)
             };
         }
     },

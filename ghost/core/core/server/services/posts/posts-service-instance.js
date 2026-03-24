@@ -26,13 +26,6 @@ const getPostServiceInstance = () => {
         },
         knex,
         getPostUrl(post) {
-            // Support both Bookshelf models (export) and plain objects (exportStream)
-            if (typeof post.toJSON === 'function') {
-                const jsonModel = post.toJSON();
-                url.forPost(post.id, jsonModel, {options: {}});
-                return jsonModel.url;
-            }
-            // Plain row from Knex streaming
             const attrs = {...post};
             url.forPost(post.id, attrs, {options: {}});
             return attrs.url;

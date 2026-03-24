@@ -108,14 +108,14 @@ describe('PostsExporter streaming', function () {
         });
     });
 
-    describe('exportStream', function () {
+    describe('export', function () {
         it('Returns a Readable stream', async function () {
-            const stream = await exporter.exportStream({});
+            const stream = await exporter.export({});
             assert.ok(stream instanceof Readable || typeof stream.pipe === 'function');
         });
 
         it('Streams post data with correct fields', async function () {
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
 
             assert.equal(posts.length, 1);
             assert.equal(posts[0].title, 'Test Post');
@@ -139,12 +139,12 @@ describe('PostsExporter streaming', function () {
                 getPostUrl: () => 'https://example.com/post'
             });
 
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             assert.deepEqual(posts, []);
         });
 
         it('Hides newsletter column with single newsletter', async function () {
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts[0].newsletter_name, undefined);
         });
 
@@ -155,7 +155,7 @@ describe('PostsExporter streaming', function () {
                 getPostUrl: () => 'https://example.com/post'
             });
 
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts[0].email_recipients, undefined);
             assert.equal(posts[0].sends, undefined);
             assert.equal(posts[0].opens, undefined);
@@ -185,7 +185,7 @@ describe('PostsExporter streaming', function () {
                 getPostUrl: () => 'https://example.com/post'
             });
 
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts[0].feedback_more_like_this, undefined);
             assert.equal(posts[0].feedback_less_like_this, undefined);
             assert.notEqual(posts[0].sends, undefined);
@@ -208,7 +208,7 @@ describe('PostsExporter streaming', function () {
                 getPostUrl: () => 'https://example.com/post'
             });
 
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts[0].status, 'draft');
             assert.equal(posts[0].sends, null);
             assert.equal(posts[0].opens, null);
