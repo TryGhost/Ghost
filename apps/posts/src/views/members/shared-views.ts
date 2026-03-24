@@ -1,5 +1,6 @@
 import {z} from 'zod';
 
+// TODO: Consolidate shared view parsing once the admin and posts apps are merged.
 export const sharedViewSchema = z.object({
     name: z.string(),
     route: z.string(),

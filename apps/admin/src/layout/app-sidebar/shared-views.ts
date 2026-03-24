@@ -1,18 +1,8 @@
 import {useMemo} from 'react';
-import {z} from 'zod';
+import {parseAllSharedViewsJSON} from '@tryghost/posts/src/views/members/shared-views';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 
-export const sharedViewSchema = z.object({
-    name: z.string(),
-    route: z.string(),
-    color: z.string().optional(),
-    icon: z.string().optional(),
-    filter: z.record(z.string(), z.string().nullable())
-});
-
-const sharedViewsArraySchema = z.array(sharedViewSchema);
-
-export type SharedView = z.infer<typeof sharedViewSchema>;
+export type {SharedView} from '@tryghost/posts/src/views/members/shared-views';
 
 export function getColorHex(color: string): string {
     const colorMap: Record<string, string> = {
@@ -34,25 +24,19 @@ export function useSharedViews(route?: string) {
     const {data: settingsData} = useBrowseSettings();
 
     return useMemo(() => {
+        // TODO: Consolidate shared view parsing once the admin and posts apps are merged.
         const sharedViewsJson = getSettingValue<string>(settingsData?.settings, 'shared_views') ?? '[]';
+        const parsed = parseAllSharedViewsJSON(sharedViewsJson);
 
-        try {
-            const parsed: unknown = JSON.parse(sharedViewsJson);
-            const result = sharedViewsArraySchema.safeParse(parsed);
-
-            if (!result.success) {
-                console.error('Failed to validate shared_views setting:', result.error);
-                return [];
-            }
-
-            if (!route) {
-                return result.data;
-            }
-
-            return result.data.filter(view => view.route === route);
-        } catch (error) {
-            console.error('Failed to parse shared_views setting:', error);
+        if (!parsed.ok) {
+            console.error('Failed to parse shared_views setting:', parsed.error);
             return [];
         }
+
+        if (!route) {
+            return parsed.views;
+        }
+
+        return parsed.views.filter(view => view.route === route);
     }, [settingsData, route]);
 }
