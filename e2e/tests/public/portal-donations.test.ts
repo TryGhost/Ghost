@@ -1,8 +1,8 @@
 import {
     FakeStripeCheckoutPage,
     HomePage,
-    PortalNotificationPage,
     SignUpPage,
+    SupportNotificationPage,
     SupportSuccessPage
 } from '@/helpers/pages';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
@@ -14,10 +14,10 @@ import {
 } from '@/helpers/playwright';
 import {createMemberFactory} from '@/data-factory';
 
-test.describe('Ghost Public - Portal Support', () => {
+test.describe('Ghost Public - Portal Donations', () => {
     test.use({stripeEnabled: true});
 
-    test('anonymous donation completes in portal - shows support success page', async ({page, stripe}) => {
+    test('anonymous donation completes in portal - shows donation success page', async ({page, stripe}) => {
         const homePage = new HomePage(page);
         await homePage.gotoPortalSupport();
 
@@ -41,7 +41,7 @@ test.describe('Ghost Public - Portal Support', () => {
         await expect(signUpPage.emailInput).toBeVisible();
     });
 
-    test('free member donation completes in portal - shows support notification', async ({page, stripe}) => {
+    test('free member donation completes in portal - shows donation notification', async ({page, stripe}) => {
         const memberFactory = createMemberFactory(page.request);
         const member = await memberFactory.create({
             email: `test.member.donations.${Date.now()}@example.com`,
@@ -64,11 +64,11 @@ test.describe('Ghost Public - Portal Support', () => {
             name: member.name ?? 'Test Member Donations'
         });
 
-        const notificationPage = new PortalNotificationPage(page);
+        const notificationPage = new SupportNotificationPage(page);
         await expect(notificationPage.successMessage).toBeVisible();
     });
 
-    test('fixed donation amount and currency open support checkout - shows fixed euro amount', async ({page, stripe}) => {
+    test('fixed donation amount and currency open donation checkout - shows fixed euro amount', async ({page, stripe}) => {
         const settingsService = new SettingsService(page.request);
         await settingsService.setDonationsSuggestedAmount(9800);
         await settingsService.setDonationsCurrency('EUR');

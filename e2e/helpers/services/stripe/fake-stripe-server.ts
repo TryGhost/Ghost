@@ -13,6 +13,7 @@ import {
     buildPrice,
     buildProduct
 } from './builders';
+import {renderFakeCheckoutPage, renderFakeDonationCheckoutPage} from './fake-checkout-page-renderer';
 
 const debug = baseDebug('e2e:fake-stripe');
 
@@ -307,24 +308,24 @@ export class FakeStripeServer {
             }
 
             if (session.response.mode === 'payment') {
-                res.status(200).send(this.renderFakeDonationCheckoutPage(session));
+                const price = this.getCheckoutPrice(session);
+                const customer = this.getCheckoutCustomer(session);
+
+                res.status(200).send(renderFakeDonationCheckoutPage({
+                    amount: price?.custom_unit_amount?.preset ?? price?.unit_amount ?? 0,
+                    billingName: customer?.name ?? 'Testy McTesterson',
+                    currency: price?.currency ?? 'usd',
+                    email: session.response.customer_email ?? customer?.email ?? '',
+                    mode: session.response.mode,
+                    sessionId: session.response.id
+                }));
                 return;
             }
 
-            res.status(200).send(`<!DOCTYPE html>
-                <html lang="en">
-                    <head>
-                        <meta charset="utf-8" />
-                        <title>Fake Stripe Checkout</title>
-                    </head>
-                    <body>
-                        <main>
-                            <h1>Fake Stripe Checkout</h1>
-                            <p>Session: ${this.escapeHtml(session.response.id)}</p>
-                            <p>Mode: ${this.escapeHtml(session.response.mode)}</p>
-                        </main>
-                    </body>
-                </html>`);
+            res.status(200).send(renderFakeCheckoutPage({
+                mode: session.response.mode,
+                sessionId: session.response.id
+            }));
         });
 
         this.app.post('/v1/billing_portal/configurations/:id?', (req, res) => {
@@ -343,22 +344,6 @@ export class FakeStripeServer {
         return typeof value === 'string' ? value : undefined;
     }
 
-    private escapeHtml(value: string): string {
-        return value
-            .replaceAll('&', '&amp;')
-            .replaceAll('<', '&lt;')
-            .replaceAll('>', '&gt;')
-            .replaceAll('"', '&quot;')
-            .replaceAll('\'', '&#39;');
-    }
-
-    private formatCurrency(amount: number, currency: string): string {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: currency.toUpperCase()
-        }).format(amount / 100);
-    }
-
     private getCheckoutPrice(session: RecordedStripeCheckoutSession): StripePrice | null {
         const priceId = session.request.line_items?.[0]?.price ?? session.request.subscription_data?.items[0]?.plan;
 
@@ -375,181 +360,6 @@ export class FakeStripeServer {
         }
 
         return this.customers.get(session.response.customer) ?? null;
-    }
-
-    private renderFakeDonationCheckoutPage(session: RecordedStripeCheckoutSession): string {
-        const price = this.getCheckoutPrice(session);
-        const customer = this.getCheckoutCustomer(session);
-        const amount = price?.custom_unit_amount?.preset ?? price?.unit_amount ?? 0;
-        const currency = price?.currency ?? 'usd';
-        const formattedAmount = this.formatCurrency(amount, currency);
-        const amountInputValue = (amount / 100).toFixed(2);
-        const email = session.response.customer_email ?? customer?.email ?? '';
-
-        return `<!DOCTYPE html>
-            <html lang="en">
-                <head>
-                    <meta charset="utf-8" />
-                    <title>Fake Stripe Checkout</title>
-                    <style>
-                        body {
-                            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-                            background: #f6f8fc;
-                            color: #15171a;
-                            margin: 0;
-                            padding: 32px 16px;
-                        }
-
-                        main {
-                            background: #fff;
-                            border-radius: 16px;
-                            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-                            margin: 0 auto;
-                            max-width: 480px;
-                            padding: 32px;
-                        }
-
-                        h1 {
-                            margin-top: 0;
-                        }
-
-                        .stack {
-                            display: grid;
-                            gap: 16px;
-                        }
-
-                        .row {
-                            display: grid;
-                            gap: 8px;
-                        }
-
-                        label {
-                            display: grid;
-                            font-size: 14px;
-                            font-weight: 600;
-                            gap: 6px;
-                        }
-
-                        input, select, button {
-                            border: 1px solid #d8dbe6;
-                            border-radius: 8px;
-                            font: inherit;
-                            padding: 12px;
-                        }
-
-                        button {
-                            background: #15171a;
-                            color: #fff;
-                            cursor: pointer;
-                        }
-
-                        button.secondary {
-                            background: #fff;
-                            color: #15171a;
-                        }
-
-                        #customUnitAmount {
-                            display: none;
-                        }
-
-                        [data-testid="product-summary-total-amount"] {
-                            font-size: 24px;
-                            font-weight: 700;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <main>
-                        <div class="stack">
-                            <div>
-                                <h1>Fake Stripe Checkout</h1>
-                                <p>Session: ${this.escapeHtml(session.response.id)}</p>
-                                <p>Mode: ${this.escapeHtml(session.response.mode)}</p>
-                            </div>
-
-                            <div class="row">
-                                <span data-testid="product-summary-total-amount">${this.escapeHtml(formattedAmount)}</span>
-                                <button class="secondary" data-testid="change-amount-button" id="changeAmountButton" type="button">Change amount</button>
-                                <label>
-                                    Custom amount
-                                    <input id="customUnitAmount" inputmode="decimal" value="${this.escapeHtml(amountInputValue)}" />
-                                </label>
-                            </div>
-
-                            <label>
-                                Email
-                                <input id="email" type="email" value="${this.escapeHtml(email)}" />
-                            </label>
-
-                            <button data-testid="card-tab-button" type="button">Card</button>
-
-                            <label>
-                                Card number
-                                <input id="cardNumber" value="4242 4242 4242 4242" />
-                            </label>
-
-                            <label>
-                                Expiry
-                                <input id="cardExpiry" value="12 / 30" />
-                            </label>
-
-                            <label>
-                                CVC
-                                <input id="cardCvc" value="424" />
-                            </label>
-
-                            <label>
-                                Billing name
-                                <input id="billingName" value="${this.escapeHtml(customer?.name ?? 'Testy McTesterson')}" />
-                            </label>
-
-                            <label>
-                                Country or region
-                                <select aria-label="Country or region">
-                                    <option value="US">United States</option>
-                                </select>
-                            </label>
-
-                            <label>
-                                Postal code
-                                <input id="billingPostalCode" value="42424" />
-                            </label>
-
-                            <button data-testid="hosted-payment-submit-button" type="button">Pay</button>
-                        </div>
-                    </main>
-
-                    <script>
-                        const amountInput = document.getElementById('customUnitAmount');
-                        const amountToggle = document.getElementById('changeAmountButton');
-                        const totalAmount = document.querySelector('[data-testid="product-summary-total-amount"]');
-                        const formatter = new Intl.NumberFormat('en-US', {
-                            style: 'currency',
-                            currency: ${JSON.stringify(currency.toUpperCase())}
-                        });
-
-                        const renderAmount = () => {
-                            const parsed = Number.parseFloat(amountInput.value || '0');
-
-                            if (!Number.isFinite(parsed)) {
-                                totalAmount.textContent = formatter.format(0);
-                                return;
-                            }
-
-                            totalAmount.textContent = formatter.format(parsed);
-                        };
-
-                        amountToggle.addEventListener('click', () => {
-                            amountInput.style.display = 'block';
-                            amountInput.focus();
-                            amountInput.select();
-                        });
-
-                        amountInput.addEventListener('input', renderAmount);
-                        renderAmount();
-                    </script>
-                </body>
-            </html>`;
     }
 
     private parseNumber(value: unknown): number | undefined {

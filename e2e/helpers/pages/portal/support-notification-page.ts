@@ -1,7 +1,7 @@
 import {BasePage} from '@/helpers/pages';
 import {FrameLocator, Locator, Page} from '@playwright/test';
 
-export class PortalNotificationPage extends BasePage {
+export class SupportNotificationPage extends BasePage {
     readonly notificationFrame: FrameLocator;
     readonly successMessage: Locator;
 
