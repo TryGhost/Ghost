@@ -230,7 +230,7 @@ class PostsExporter {
         }
 
         // Batching transform — groups rows into arrays of batchSize
-        const batchSize = 1000;
+        const batchSize = 50;
         let currentBatch = [];
 
         const batchingTransform = new Transform({
