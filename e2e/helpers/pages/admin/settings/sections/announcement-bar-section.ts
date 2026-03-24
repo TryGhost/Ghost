@@ -9,6 +9,8 @@ export class AnnouncementBarSection extends BasePage {
     readonly editor: Locator;
     readonly contentEditable: Locator;
     readonly announcementHeading: Locator;
+    readonly previewFrame: FrameLocator;
+    readonly announcementBarRoot: Locator;
 
     constructor(page: Page) {
         super(page, '/ghost/#/settings');
@@ -20,15 +22,13 @@ export class AnnouncementBarSection extends BasePage {
         this.editor = this.modal.locator('.koenig-react-editor');
         this.contentEditable = this.modal.locator('[contenteditable="true"]');
         this.announcementHeading = this.modal.getByText('Announcement').first();
-    }
-
-    get previewFrame(): FrameLocator {
-        return this.page.frameLocator('[data-testid="announcement-bar-preview-iframe"] > iframe[data-visible=true]');
+        this.previewFrame = page.frameLocator('[data-testid="announcement-bar-preview-iframe"] > iframe[data-visible=true]');
+        this.announcementBarRoot = this.previewFrame.locator('#announcement-bar-root');
     }
 
     async openModal(): Promise<void> {
         await this.customizeButton.click();
-        await this.previewFrame.locator('body *:visible').first().waitFor();
+        await this.modal.waitFor({state: 'visible'});
     }
 
     async typeAnnouncementText(text: string): Promise<void> {

@@ -9,7 +9,7 @@ test.describe('Ghost Admin - Announcement Bar', () => {
         const announcementBar = new AnnouncementBarSection(page);
         await announcementBar.openModal();
 
-        await expect(announcementBar.previewFrame.locator('#announcement-bar-root')).toHaveCount(0);
+        await expect(announcementBar.announcementBarRoot).toHaveCount(0);
     });
 
     test('bar visibility toggles with free members checkbox', async ({page}) => {
@@ -22,11 +22,11 @@ test.describe('Ghost Admin - Announcement Bar', () => {
         await announcementBar.freeMembersCheckbox.check();
         await announcementBar.typeAnnouncementText('Announcement text');
 
-        await expect(announcementBar.previewFrame.getByText('Announcement text')).toBeVisible();
+        await expect(announcementBar.announcementBarRoot).toContainText('Announcement text');
 
         await announcementBar.freeMembersCheckbox.uncheck();
         await announcementBar.editor.click();
 
-        await expect(announcementBar.previewFrame.getByText('Announcement text')).toBeHidden();
+        await expect(announcementBar.announcementBarRoot).toHaveCount(0);
     });
 });
