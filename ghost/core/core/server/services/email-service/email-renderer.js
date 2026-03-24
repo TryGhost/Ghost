@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable no-shadow */
 
 const logging = require('@tryghost/logging');
@@ -8,7 +7,7 @@ const clsx = require('clsx');
 function isUnsplashImage(url) {
     return /images\.unsplash\.com/.test(url);
 }
-const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
+const {textColorForBackgroundColor} = require('@tryghost/color-utils');
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const EmailAddressParser = require('../email-address/email-address-parser');
@@ -591,10 +590,8 @@ class EmailRenderer {
 
     /**
      * createManageAccountUrl
-     *
-     * @param {string} [uuid] member uuid
      */
-    createManageAccountUrl(uuid) {
+    createManageAccountUrl() {
         const siteUrl = this.#urlUtils.urlFor('home', true);
         const url = new URL(siteUrl);
         url.hash = '#/portal/account';
@@ -705,8 +702,8 @@ class EmailRenderer {
             },
             {
                 id: 'manage_account_url',
-                getValue: (member) => {
-                    return this.createManageAccountUrl(member.uuid);
+                getValue: () => {
+                    return this.createManageAccountUrl();
                 }
             },
             {
