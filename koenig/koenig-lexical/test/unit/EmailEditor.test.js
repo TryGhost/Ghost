@@ -48,4 +48,14 @@ describe('getEmailEditorCardConfig', function () {
         expect(result.stripeEnabled).toBe(true);
         expect(result.foo).toBe('bar');
     });
+
+    it('sets editorType to email', function () {
+        const result = getEmailEditorCardConfig();
+        expect(result.editorType).toBe('email');
+    });
+
+    it('always sets editorType to email even if cardConfig has a different editorType', function () {
+        const result = getEmailEditorCardConfig({editorType: 'full'});
+        expect(result.editorType).toBe('email');
+    });
 });

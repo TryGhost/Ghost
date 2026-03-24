@@ -18,8 +18,7 @@ const visibleEmailMenuItems = [
     'HTML',
     'Product',
     'Divider',
-    'YouTube',
-    'Other...'
+    'YouTube'
 ];
 
 const unavailableEmailMenuItems = [
@@ -40,8 +39,7 @@ const smokeTestInsertions = [
     {shortcut: 'callout', menuItem: 'Callout', selector: '[data-kg-card="callout"]'},
     {shortcut: 'html', menuItem: 'HTML', selector: '[data-kg-card="html"]'},
     {shortcut: 'divider', menuItem: 'Divider', selector: '[data-kg-card="horizontalrule"]'},
-    {shortcut: 'email-cta', menuItem: 'Email call to action', selector: '[data-kg-card="email-cta"]'},
-    {shortcut: 'embed', menuItem: 'Other...', selector: '[data-kg-card="embed"]'}
+    {shortcut: 'email-cta', menuItem: 'Email call to action', selector: '[data-kg-card="email-cta"]'}
 ];
 
 async function insertCardFromMenu(page, {shortcut, menuItem, selector}) {
@@ -257,16 +255,16 @@ test.describe('Koenig Editor with email template nodes', async function () {
             }
         });
 
-        test('only shows YouTube and Other embed options', async function () {
+        test('only shows YouTube embed option', async function () {
             await focusEditor(page);
             await page.keyboard.type('/');
             await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
 
-            // Should show YouTube and Other
+            // Should show YouTube
             await expect(page.locator('[data-kg-card-menu-item="YouTube"]')).toBeVisible();
-            await expect(page.locator('[data-kg-card-menu-item="Other..."]')).toBeVisible();
 
             // Should NOT show other embed types
+            await expect(page.locator('[data-kg-card-menu-item="Other..."]')).toHaveCount(0);
             await expect(page.locator('[data-kg-card-menu-item="Vimeo"]')).toHaveCount(0);
             await expect(page.locator('[data-kg-card-menu-item="SoundCloud"]')).toHaveCount(0);
             await expect(page.locator('[data-kg-card-menu-item="Spotify"]')).toHaveCount(0);

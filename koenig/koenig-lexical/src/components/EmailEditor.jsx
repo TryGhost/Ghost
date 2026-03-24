@@ -26,6 +26,7 @@ import {SharedOnChangeContext} from '../context/SharedOnChangeContext';
 import {VISIBILITY_SETTINGS} from '../utils/visibility';
 
 export const EMAIL_EDITOR_CARD_CONFIG = {
+    editorType: 'email',
     image: {
         allowedWidths: ['regular']
     },
@@ -44,6 +45,7 @@ export function getEmailEditorCardConfig(cardConfig = {}) {
 
     return {
         ...cardConfig,
+        editorType: EMAIL_EDITOR_CARD_CONFIG.editorType,
         image: {
             ...cardConfig.image,
             ...EMAIL_EDITOR_CARD_CONFIG.image
