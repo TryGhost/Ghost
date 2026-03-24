@@ -1,4 +1,4 @@
-import CoverImage from '../../../assets/images/user-cover.jpg';
+import CoverImage from '../../../assets/images/email-design-user-image.jpg';
 import React from 'react';
 import {cn} from '@tryghost/shade';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -89,13 +89,14 @@ const WelcomeEmailPreviewContent: React.FC = () => {
                         isOutline ? 'bg-transparent' : 'border-transparent',
                         settings.link_style === 'bold' ? 'font-bold' : 'font-semibold'
                     )}
-                    href="#"
+                    href="https://ghost.org/help/email-design/"
+                    rel="noopener noreferrer"
                     style={
                         isOutline
                             ? {borderColor: colors.buttonColor, color: colors.buttonColor}
                             : {backgroundColor: colors.buttonColor, color: colors.buttonTextColor}
                     }
-                    onClick={e => e.preventDefault()}
+                    target="_blank"
                 >
                     Get started
                 </a>
