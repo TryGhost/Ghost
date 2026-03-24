@@ -1,5 +1,5 @@
 const membersService = require('../../../../../../services/members');
-const {updateTextAttrs} = require('./text-attrs');
+const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
 const {PERMIT_ACCESS} = membersService.contentGating;
 
@@ -69,6 +69,17 @@ const stripGatedBlocks = function (html, member) {
     });
 };
 
+function _updateTextAttrs(attrs) {
+    if (attrs.html) {
+        attrs.plaintext = htmlToPlaintext.excerpt(attrs.html);
+    }
+
+    if (!attrs.custom_excerpt && attrs.excerpt) {
+        const plaintext = attrs.plaintext || htmlToPlaintext.excerpt(attrs.html);
+        attrs.excerpt = plaintext.substring(0, 500);
+    }
+}
+
 // @TODO: reconsider the location of this - it's part of members and adds a property to the API
 const forPost = (attrs, frame) => {
     // CASE: Access always defaults to true, unless members is enabled and the member does not have access
@@ -83,7 +94,7 @@ const forPost = (attrs, frame) => {
 
         if (paywallIndex !== -1) {
             attrs.html = attrs.html.slice(0, paywallIndex);
-            updateTextAttrs(attrs);
+            _updateTextAttrs(attrs);
         } else {
             ['plaintext', 'html', 'excerpt'].forEach((field) => {
                 if (attrs[field] !== undefined) {
@@ -96,7 +107,7 @@ const forPost = (attrs, frame) => {
     const hasGatedBlocks = HAS_GATED_BLOCKS_REGEX.test(attrs.html);
     if (hasGatedBlocks) {
         attrs.html = module.exports.stripGatedBlocks(attrs.html, frame.original.context.member);
-        updateTextAttrs(attrs);
+        _updateTextAttrs(attrs);
     }
 
     // Replace member UUID placeholder for Transistor embeds (URL-encoded {uuid})
