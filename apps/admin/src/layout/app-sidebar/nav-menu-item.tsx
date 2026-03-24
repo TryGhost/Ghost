@@ -42,11 +42,11 @@ interface NavMenuCollapsibleProps {
 }
 
 function NavMenuCollapsible({children, expanded, id, onExpandedChange}: NavMenuCollapsibleProps) {
-    const value = React.useMemo(() => ({
+    const value = {
         expanded,
         id,
         onExpandedChange
-    }), [expanded, id, onExpandedChange]);
+    };
 
     return (
         <NavMenuCollapsibleContext.Provider value={value}>
@@ -71,7 +71,7 @@ function NavMenuCollapsibleItem({ariaLabel, children}: NavMenuCollapsibleItemPro
                 aria-label={ariaLabel}
                 variant="ghost"
                 size="icon"
-                className="h-[34px]! absolute sidebar:opacity-0 group-hover/menu-item:opacity-100 focus-visible:opacity-100 transition-all left-3 top-0 p-0 h-9 w-auto text-sidebar-accent-foreground hover:text-gray-black hover:bg-transparent"
+                className="h-[34px]! absolute sidebar:opacity-0 group-hover/menu-item:opacity-100 focus-visible:opacity-100 transition-all left-3 top-0 p-0 w-auto text-sidebar-accent-foreground hover:text-gray-black hover:bg-transparent"
                 onClick={() => void onExpandedChange(!expanded)}
             >
                 <LucideIcon.ChevronRight

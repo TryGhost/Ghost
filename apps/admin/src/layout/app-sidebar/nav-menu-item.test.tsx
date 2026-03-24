@@ -8,33 +8,6 @@ vi.mock('./use-is-active-link', () => ({
     useIsActiveLink: () => false
 }));
 
-vi.mock('@tryghost/admin-x-framework', () => ({
-    useMatch: () => null
-}));
-
-vi.mock('@tryghost/shade', async () => {
-    const React = await import('react');
-
-    return {
-        SidebarMenuButton: ({children, asChild, ...props}: React.ComponentProps<'button'> & {asChild?: boolean}) => {
-            if (asChild && React.isValidElement(children)) {
-                return React.cloneElement(children, props);
-            }
-
-            return <button {...props}>{children}</button>;
-        },
-        SidebarMenuItem: ({children, ...props}: React.ComponentProps<'div'>) => <div {...props}>{children}</div>,
-        Button: ({children, ...props}: React.ComponentProps<'button'>) => <button {...props}>{children}</button>,
-        LucideIcon: {
-            ChevronRight: (props: React.ComponentProps<'svg'>) => <svg {...props} />
-        },
-        useSidebar: () => ({
-            isMobile: false,
-            setOpenMobile: vi.fn()
-        })
-    };
-});
-
 describe('NavMenuItem.Collapsible', () => {
     it('wires the toggle button and collapsible menu through shared state', () => {
         const onExpandedChange = vi.fn();
@@ -57,7 +30,7 @@ describe('NavMenuItem.Collapsible', () => {
         const toggle = screen.getByRole('button', {name: 'Toggle test section'});
         expect(toggle.getAttribute('aria-controls')).toBe('test-submenu');
         expect(toggle.getAttribute('aria-expanded')).toBe('true');
-        expect(screen.getByText('Nested item').parentElement?.parentElement?.getAttribute('id')).toBe('test-submenu');
+        expect(screen.getByText('Nested item').closest('#test-submenu')).not.toBeNull();
 
         fireEvent.click(toggle);
 
