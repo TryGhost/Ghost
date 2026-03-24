@@ -26,7 +26,7 @@ const EnvelopeHeader: React.FC<{senderName?: string; senderEmail?: string; subje
     }
 
     return (
-        <div className="flex min-h-[77px] flex-col justify-center border-b border-grey-200 bg-white p-6 text-sm text-grey-700">
+        <div className="flex flex-col justify-center gap-1 border-b border-grey-200 bg-white p-6 text-sm text-grey-700">
             {senderName && (
                 <div className="flex gap-2">
                     <span className="font-semibold text-grey-900">{senderName}</span>
@@ -106,7 +106,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
     const imageCornerClass = resolveImageCorners(settings.image_corners);
 
     return (
-        <div className="mx-auto flex max-h-full w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-sm">
+        <div className="mx-auto flex max-h-full min-h-0 w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-sm">
             <EnvelopeHeader senderEmail={senderEmail} senderName={senderName} subject={subject} />
 
             <div
