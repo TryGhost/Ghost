@@ -9476,10 +9476,10 @@
   dependencies:
     semver "^7.7.3"
 
-"@tryghost/koenig-lexical@1.7.25":
-  version "1.7.25"
-  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.7.25.tgz#a0edb41f1ed441d2089ae1f2fd52f836497eb040"
-  integrity sha512-DNIgBFdZ9A/nvP5gE3A1c1hDwwStpryCSh+3mwiYy5eeRNbPBy935K9QExG8eGUF6v/QWCTZbD+WvinkxCCiNQ==
+"@tryghost/koenig-lexical@1.7.27":
+  version "1.7.27"
+  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.7.27.tgz#527ae6127834dbca5a05d2f10f973d1257c66276"
+  integrity sha512-vBXA48sREwdCJXPOhqrAiCnURCoQeA4duYqlFx9T8veBoCfrz11WvjVyfjfDXrJ++YaoeBXyC9y24rzTvtPRfg==
 
 "@tryghost/limit-service@1.4.1":
   version "1.4.1"

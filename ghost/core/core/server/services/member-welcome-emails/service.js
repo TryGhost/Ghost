@@ -149,7 +149,8 @@ class MemberWelcomeEmailService {
             subject: memberWelcomeEmail.subject,
             member: {
                 name: member.name,
-                email: member.email
+                email: member.email,
+                uuid: member.uuid
             },
             siteSettings: this.#getSiteSettings()
         });
