@@ -12,7 +12,7 @@ export const BodyFontField = () => {
     const {settings, onSettingsChange} = useEmailDesign();
     return (
         <div className="flex items-center justify-between">
-            <span className="text-sm">Body font</span>
+            <span>Body font</span>
             <Select value={settings.body_font_category || 'sans_serif'} onValueChange={(value: string) => onSettingsChange({body_font_category: value})}>
                 <SelectTrigger className="w-[180px]">
                     <SelectValue />
