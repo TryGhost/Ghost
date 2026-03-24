@@ -51,6 +51,15 @@
             ]
         },
         {
+            "name": "EmailTemplate",
+            "entries": [
+                {
+                    "name":             "Default",
+                    "slug":             "default"
+                }
+            ]
+        },
+        {
             "name": "Tag",
             "entries": [
                 {
@@ -540,6 +549,21 @@
                     "name": "Delete automated emails",
                     "action_type": "destroy",
                     "object_type": "automated_email"
+                },
+                {
+                    "name": "Browse email templates",
+                    "action_type": "browse",
+                    "object_type": "email_template"
+                },
+                {
+                    "name": "Read email templates",
+                    "action_type": "read",
+                    "object_type": "email_template"
+                },
+                {
+                    "name": "Edit email templates",
+                    "action_type": "edit",
+                    "object_type": "email_template"
                 },
                 {
                     "name": "Read member signin urls",
@@ -1045,6 +1069,7 @@
                     "product": "all",
                     "label": "all",
                     "automated_email": "all",
+                    "email_template": "all",
                     "email_preview": "all",
                     "email": "all",
                     "member_signin_url": "read",
@@ -1095,6 +1120,7 @@
                     "member_signin_url": "read",
                     "label": "all",
                     "automated_email": "all",
+                    "email_template": "all",
                     "email_preview": "all",
                     "email": "all",
                     "snippet": "all",
