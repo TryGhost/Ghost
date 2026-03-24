@@ -331,30 +331,9 @@ class EmailRenderer {
             postUrl
         };
 
-        const accentColor = this.#getAccentColor();
-        const accentContrastColor = this.#getAccentContrastColor();
-
         renderOptions.design = {
-            accentColor,
-            accentContrastColor,
-            backgroundColor: newsletter?.get('background_color'),
-            backgroundIsDark: this.#checkIfBackgroundIsDark(newsletter),
-            headerBackgroundColor: this.#getHeaderBackgroundColor(newsletter, accentColor),
             buttonCorners: newsletter?.get('button_corners'),
-            buttonStyle: newsletter?.get('button_style'),
-            titleFontWeight: newsletter?.get('title_font_weight'),
-            linkStyle: newsletter?.get('link_style'),
-            imageCorners: newsletter?.get('image_corners'),
-            postTitleColor: this.#getPostTitleColor(newsletter, accentColor),
-            sectionTitleColor: newsletter?.get('section_title_color'),
-            linkColor: newsletter?.get('link_color'),
-            // TODO:
-            // if the other options above have default or calculated values we
-            // should follow the same pattern as the options below to avoid
-            //duplicating magic values or logic in renderers
-            dividerColor: this.#getDividerColor(newsletter),
-            buttonColor: this.#getButtonColor(newsletter, accentColor),
-            buttonTextColor: this.#getButtonTextColor(newsletter, accentColor)
+            buttonStyle: newsletter?.get('button_style')
         };
 
         let html;

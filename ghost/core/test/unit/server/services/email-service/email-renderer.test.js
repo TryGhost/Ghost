@@ -2212,22 +2212,8 @@ describe('Email renderer', function () {
         it('passes expected data through to lexical renderer', async function () {
             await testLexicalRenderDesignOptions({
                 expectedObject: {
-                    accentColor: '#ffffff',
-                    accentContrastColor: '#000000',
-                    backgroundColor: '#000000',
-                    backgroundIsDark: true,
-                    headerBackgroundColor: '#000044',
                     buttonCorners: 'square',
-                    buttonStyle: 'outline',
-                    titleFontWeight: 'semibold',
-                    linkStyle: 'normal',
-                    imageCorners: 'rounded',
-                    postTitleColor: '#000022',
-                    sectionTitleColor: '#000011',
-                    linkColor: '#000033',
-                    dividerColor: '#e0e7eb',
-                    buttonColor: '#ffffff',
-                    buttonTextColor: '#000000'
+                    buttonStyle: 'outline'
                 }
             });
         });
