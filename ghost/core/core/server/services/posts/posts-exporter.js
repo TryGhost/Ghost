@@ -1,5 +1,6 @@
 const nql = require('@tryghost/nql');
 const logging = require('@tryghost/logging');
+const {Readable} = require('stream');
 
 class PostsExporter {
     #models;
@@ -139,6 +140,32 @@ class PostsExporter {
         }
 
         return mapped;
+    }
+
+    /**
+     * Streaming version of export — returns a Readable stream of post objects
+     * instead of buffering the entire result in memory.
+     *
+     * @param {object} options
+     * @param {string} [options.filter]
+     * @param {string} [options.order]
+     * @param {string|number} [options.limit]
+     * @returns {Promise<Readable>}
+     */
+    async exportStream(options) {
+        const mapped = await this.export(options);
+
+        return new Readable({
+            objectMode: true,
+            read() {
+                const item = mapped.shift();
+                if (item) {
+                    this.push(item);
+                } else {
+                    this.push(null);
+                }
+            }
+        });
     }
 
     mapPostStatus(status, hasEmail) {
