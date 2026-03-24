@@ -13,6 +13,7 @@ import {
     buildPrice,
     buildProduct
 } from './builders';
+import {renderFakeCheckoutPage, renderFakeDonationCheckoutPage} from './fake-checkout-page-renderer';
 
 const debug = baseDebug('e2e:fake-stripe');
 
@@ -412,20 +413,25 @@ export class FakeStripeServer {
                 return;
             }
 
-            res.status(200).send(`<!DOCTYPE html>
-                <html lang="en">
-                    <head>
-                        <meta charset="utf-8" />
-                        <title>Fake Stripe Checkout</title>
-                    </head>
-                    <body>
-                        <main>
-                            <h1>Fake Stripe Checkout</h1>
-                            <p>Session: ${session.response.id}</p>
-                            <p>Mode: ${session.response.mode}</p>
-                        </main>
-                    </body>
-                </html>`);
+            if (session.response.mode === 'payment') {
+                const price = this.getCheckoutPrice(session);
+                const customer = this.getCheckoutCustomer(session);
+
+                res.status(200).send(renderFakeDonationCheckoutPage({
+                    amount: price?.custom_unit_amount?.preset ?? price?.unit_amount ?? 0,
+                    billingName: customer?.name ?? 'Testy McTesterson',
+                    currency: price?.currency ?? 'usd',
+                    email: session.response.customer_email ?? customer?.email ?? '',
+                    mode: session.response.mode,
+                    sessionId: session.response.id
+                }));
+                return;
+            }
+
+            res.status(200).send(renderFakeCheckoutPage({
+                mode: session.response.mode,
+                sessionId: session.response.id
+            }));
         });
 
         this.app.post('/v1/billing_portal/configurations/:id?', (req, res) => {
@@ -442,6 +448,24 @@ export class FakeStripeServer {
 
     private parseString(value: unknown): string | undefined {
         return typeof value === 'string' ? value : undefined;
+    }
+
+    private getCheckoutPrice(session: RecordedStripeCheckoutSession): StripePrice | null {
+        const priceId = session.request.line_items?.[0]?.price ?? session.request.subscription_data?.items[0]?.plan;
+
+        if (!priceId) {
+            return null;
+        }
+
+        return this.prices.get(priceId) ?? null;
+    }
+
+    private getCheckoutCustomer(session: RecordedStripeCheckoutSession): StripeCustomer | null {
+        if (!session.response.customer) {
+            return null;
+        }
+
+        return this.customers.get(session.response.customer) ?? null;
     }
 
     private parseNumber(value: unknown): number | undefined {
