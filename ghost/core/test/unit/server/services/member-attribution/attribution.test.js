@@ -71,6 +71,9 @@ describe('AttributionBuilder', function () {
             getUrlByResourceId() {
                 return 'https://absolute/dir/path';
             },
+            getResourceUrl() {
+                return 'https://absolute/dir/path';
+            },
             relativeToAbsolute(path) {
                 return 'https://absolute/dir' + path;
             },
