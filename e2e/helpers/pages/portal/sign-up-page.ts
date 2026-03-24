@@ -34,18 +34,25 @@ export class SignUpPage extends PortalPage {
         await this.signupButton.click();
     }
 
-    async fillAndSubmitPaidSignup(email: string, name?: string): Promise<void> {
+    async fillAndSubmitPaidSignup(email: string, name?: string, tierName?: string): Promise<void> {
         if (name) {
             await this.nameInput.fill(name);
         }
         await this.emailInput.fill(email);
-        await this.selectPaidTier();
+        await this.selectPaidTier(tierName);
         await this.continueIfVisible();
     }
 
-    async selectPaidTier(): Promise<void> {
-        await this.paidTierCard.waitFor({state: 'visible'});
-        await this.paidTierSelectButton.click();
+    async selectPaidTier(tierName?: string): Promise<void> {
+        const paidTierCard = tierName
+            ? this.portalFrame.locator('[data-test-tier="paid"]').filter({hasText: tierName}).first()
+            : this.paidTierCard;
+        const paidTierSelectButton = tierName
+            ? paidTierCard.locator('[data-test-button="select-tier"]')
+            : this.paidTierSelectButton;
+
+        await paidTierCard.waitFor({state: 'visible'});
+        await paidTierSelectButton.click();
     }
 
     async continueIfVisible(): Promise<void> {
