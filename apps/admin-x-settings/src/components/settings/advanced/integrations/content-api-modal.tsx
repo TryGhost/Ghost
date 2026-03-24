@@ -4,10 +4,10 @@ import NiceModal from '@ebay/nice-modal-react';
 import {Button, ConfirmationModal, Icon, Modal} from '@tryghost/admin-x-design-system';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
-import {useState} from 'react';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRefreshAPIKey} from '@tryghost/admin-x-framework/api/api-keys';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useState} from 'react';
 
 const ContentApiModal = NiceModal.create(() => {
     const modal = NiceModal.useModal();
@@ -52,14 +52,8 @@ const ContentApiModal = NiceModal.create(() => {
             cancelLabel=''
             footer={
                 <div className='mx-8 flex w-full items-center justify-between'>
-                    <a
-                        className='mt-1 self-baseline text-sm font-bold'
-                        href='https://ghost.org/docs/content-api/'
-                        rel='noopener noreferrer'
-                        target='_blank'>
-                        Open docs ↗
-                    </a>
-                    <Button color='outline' label='Close' onClick={() => {
+                    <Button color='outline' href='https://ghost.org/docs/content-api/' label={<span className='flex items-center gap-1'>Open docs <Icon name='arrow-top-right' size='xs' /></span>} tag='a' target='_blank' />
+                    <Button color='black' label='Close' onClick={() => {
                         updateRoute('integrations');
                         modal.remove();
                     }} />
