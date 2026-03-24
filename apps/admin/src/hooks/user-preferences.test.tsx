@@ -274,6 +274,89 @@ describe("useUserPreferences", () => {
                 menu: { visible: true },
             });
         });
+
+        queryTest("keeps previous data during unrelated accessibility updates", async ({ server, wrapper }) => {
+            server.use(
+                http.get(USERS_API_URL, () => {
+                    return HttpResponse.json({
+                        users: [
+                            {
+                                ...mockUser,
+                                accessibility: JSON.stringify({
+                                    navigation: DEFAULT_NAVIGATION_PREFERENCES,
+                                    whatsNew: {
+                                        lastSeenDate: "2025-01-01T00:00:00.000Z",
+                                    },
+                                }),
+                            },
+                        ],
+                    });
+                }),
+                http.put<{ id: string }, UpdateUserRequestBody, UsersResponseType>(USER_UPDATE_API_URL, async ({ request }) => {
+                    const body = await request.json();
+
+                    await new Promise(resolve => setTimeout(resolve, 25));
+
+                    return HttpResponse.json({
+                        users: [
+                            {
+                                ...mockUser,
+                                accessibility: body.users[0]?.accessibility ?? "",
+                            },
+                        ],
+                    });
+                })
+            );
+
+            const snapshots: Array<ReturnType<typeof useUserPreferences>["data"]> = [];
+
+            const { result } = renderHook(() => {
+                const query = useUserPreferences();
+                const mutation = useEditUserPreferences();
+
+                snapshots.push(query.data);
+
+                return {query, mutation};
+            }, { wrapper });
+
+            await waitFor(() => {
+                expect(result.current.query.data).toEqual({
+                    navigation: DEFAULT_NAVIGATION_PREFERENCES,
+                    whatsNew: {
+                        lastSeenDate: new Date("2025-01-01T00:00:00.000Z"),
+                    },
+                });
+            });
+
+            snapshots.length = 0;
+
+            await act(async () => {
+                await result.current.mutation.mutateAsync({
+                    navigation: {
+                        expanded: {
+                            posts: false,
+                        },
+                    },
+                });
+            });
+
+            await waitFor(() => {
+                expect(result.current.query.data).toEqual({
+                    navigation: {
+                        ...DEFAULT_NAVIGATION_PREFERENCES,
+                        expanded: {
+                            ...DEFAULT_NAVIGATION_PREFERENCES.expanded,
+                            posts: false,
+                        },
+                    },
+                    whatsNew: {
+                        lastSeenDate: new Date("2025-01-01T00:00:00.000Z"),
+                    },
+                });
+            });
+
+            expect(snapshots).not.toContain(undefined);
+        });
     });
 });
 
