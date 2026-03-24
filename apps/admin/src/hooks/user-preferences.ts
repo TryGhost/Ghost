@@ -11,13 +11,14 @@ const WhatsNewPreferencesSchema = z.looseObject({
 });
 
 export const DEFAULT_NAVIGATION_PREFERENCES = {
-    expanded: { posts: true },
+    expanded: { posts: true, members: true },
     menu: { visible: true },
 } as const;
 
 export const NavigationPreferencesSchema = z.looseObject({
     expanded: z.object({
         posts: z.boolean(),
+        members: z.boolean().default(true),
     }),
     menu: z.object({
         visible: z.boolean(),

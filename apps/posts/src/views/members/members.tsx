@@ -11,6 +11,7 @@ import {buildMemberListSearchParams} from './member-query-params';
 import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {shouldDelayMembersDateFilterHydration, useMembersFilterState} from './hooks/use-members-filter-state';
+import {useActiveMemberView, useMemberViews} from './hooks/use-member-views';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
@@ -19,6 +20,8 @@ import {useSearchParams} from 'react-router';
 const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
     const {filters, nql, search, setFilters, setSearch, hasFilterOrSearch, clearAll} = useMembersFilterState(timezone);
     const {data: configData} = useBrowseConfig();
+    const savedViews = useMemberViews();
+    const activeView = useActiveMemberView(savedViews, nql);
 
     // Check if email analytics is enabled
     const emailAnalyticsEnabled = configData?.config?.emailAnalytics === true;
@@ -81,7 +84,10 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                         {/* When no filters, show filter button inline with other actions */}
                         {!hasFilters && (
                             <MembersFilters
+                                activeView={activeView}
                                 filters={filters}
+                                nql={nql}
+                                savedViews={savedViews}
                                 onFiltersChange={setFilters}
                             />
                         )}
@@ -102,7 +108,10 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                 {hasFilters && (
                     <div className={filtersClassName}>
                         <MembersFilters
+                            activeView={activeView}
                             filters={filters}
+                            nql={nql}
+                            savedViews={savedViews}
                             onFiltersChange={setFilters}
                         />
                     </div>
