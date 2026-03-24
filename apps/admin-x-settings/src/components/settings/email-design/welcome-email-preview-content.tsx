@@ -19,6 +19,16 @@ const WelcomeEmailPreviewContent: React.FC = () => {
         settings.link_style === 'bold' && 'font-bold'
     );
 
+    const titleFontClasses = cn(
+        'mb-5 text-[2.6rem] tracking-tighter',
+        settings.title_font_category === 'serif' && 'font-serif',
+        settings.title_font_category === 'sans_serif' && 'font-sans',
+        settings.title_font_weight === 'normal' && 'font-normal',
+        settings.title_font_weight === 'medium' && 'font-medium',
+        settings.title_font_weight === 'semibold' && 'font-semibold',
+        settings.title_font_weight === 'bold' && 'font-bold'
+    );
+
     const bodyFontClasses = cn(
         settings.body_font_category === 'serif' ? 'font-serif text-[1.8rem]' : 'text-[1.7rem]'
     );
@@ -30,16 +40,8 @@ const WelcomeEmailPreviewContent: React.FC = () => {
                 <hr className="m-0 border-0 border-t" style={{borderColor: colors.dividerColor}} />
             </div>
 
-            <h3 
-                className={cn(
-                    'mb-5 text-[2.6rem] font-bold tracking-tighter',
-                    settings.title_font_category === 'serif' && 'font-serif',
-                    settings.title_font_category === 'sans_serif' && 'font-sans',
-                    settings.title_font_weight === 'normal' && 'font-normal',
-                    settings.title_font_weight === 'medium' && 'font-medium',
-                    settings.title_font_weight === 'semibold' && 'font-semibold',
-                    settings.title_font_weight === 'bold' && 'font-bold'
-                )}
+            <h3
+                className={titleFontClasses}
                 style={{color: colors.textColor}}
             >
                 Your welcome email
@@ -77,9 +79,12 @@ const WelcomeEmailPreviewContent: React.FC = () => {
                 <hr className="m-0 border-0 border-t" style={{borderColor: colors.dividerColor}} />
             </div>
 
-            <div className='mb-5 text-[2.6rem] font-bold tracking-tighter'>
+            <h3
+                className={titleFontClasses}
+                style={{color: colors.textColor}}
+            >
                 Need inspiration?
-            </div>
+            </h3>
 
             <div
                 className={cn(bodyFontClasses)}
