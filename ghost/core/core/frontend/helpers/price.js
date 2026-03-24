@@ -5,11 +5,14 @@
 // Usage: `{{price plan numberFormat="long"}}`
 // Usage: `{{price plan currencyFormat="code"}}`
 // Usage: `{{price plan currencyFormat="name"}}`
+// Usage: `{{price plan interval="true"}}`
 // Usage: `{{price 500 currency="USD"}}`
 // Usage: `{{price currency="USD"}}`
 //
 // Returns amount equal to the dominant denomination of the currency.
 // For example, if 2100 is passed, it will return 21.
+// When interval="true" is passed with a plan object that has an .interval property,
+// the interval is appended to the output (e.g. "$5/month").
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
@@ -59,15 +62,21 @@ module.exports = function price(planOrAmount, options) {
     options = options || {};
     options.hash = options.hash || {};
 
-    const {currency, numberFormat = 'short', currencyFormat = 'symbol', locale = _.get(options, 'data.site.locale', 'en')} = options.hash;
+    const {currency, numberFormat = 'short', currencyFormat = 'symbol', interval, locale = _.get(options, 'data.site.locale', 'en')} = options.hash;
     if (plan) {
-        return formatter({
+        let result = formatter({
             amount: plan.amount && (plan.amount / 100),
             currency: currency || plan.currency,
             currencyFormat,
             numberFormat,
             locale
         });
+
+        if (interval === 'true' && plan.interval) {
+            result = `${result}/${plan.interval}`;
+        }
+
+        return result;
     }
 
     if (currency) {

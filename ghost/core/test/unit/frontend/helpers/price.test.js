@@ -106,4 +106,65 @@ describe('{{price}} helper', function () {
         const rendered = price.call({}, 500, {hash: {currency: 'USD', currencyFormat: 'name'}});
         assert.equal(rendered, '5 US dollars');
     });
+
+    describe('interval option', function () {
+        it('will append interval when interval="true" and plan has interval', function () {
+            const plan = {
+                amount: 500,
+                interval: 'month',
+                currency: 'USD'
+            };
+            const rendered = price.call({}, plan, {hash: {interval: 'true'}});
+            assert.equal(rendered, '$5/month');
+        });
+
+        it('will append yearly interval', function () {
+            const plan = {
+                amount: 5000,
+                interval: 'year',
+                currency: 'USD'
+            };
+            const rendered = price.call({}, plan, {hash: {interval: 'true'}});
+            assert.equal(rendered, '$50/year');
+        });
+
+        it('will not append interval when interval is not "true"', function () {
+            const plan = {
+                amount: 500,
+                interval: 'month',
+                currency: 'USD'
+            };
+            const rendered = price.call({}, plan, {hash: {}});
+            assert.equal(rendered, '$5');
+        });
+
+        it('will not append interval when plan has no interval property', function () {
+            const plan = {
+                amount: 500,
+                currency: 'USD'
+            };
+            const rendered = price.call({}, plan, {hash: {interval: 'true'}});
+            assert.equal(rendered, '$5');
+        });
+
+        it('will work with next_payment object', function () {
+            const nextPayment = {
+                amount: 800,
+                interval: 'month',
+                currency: 'USD'
+            };
+            const rendered = price.call({}, nextPayment, {hash: {interval: 'true'}});
+            assert.equal(rendered, '$8/month');
+        });
+
+        it('will work with long number format and interval', function () {
+            const plan = {
+                amount: 500,
+                interval: 'month',
+                currency: 'USD'
+            };
+            const rendered = price.call({}, plan, {hash: {interval: 'true', numberFormat: 'long'}});
+            assert.equal(rendered, '$5.00/month');
+        });
+    });
 });
