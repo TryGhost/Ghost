@@ -1,3 +1,4 @@
+export {PrivateSiteSection} from './private-site-section';
 export {PublicationSection} from './publications-section';
 export {LabsSection} from './labs-section';
 export {IntegrationsSection} from './integrations-section';
