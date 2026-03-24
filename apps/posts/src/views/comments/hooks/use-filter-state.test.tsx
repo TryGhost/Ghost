@@ -41,6 +41,30 @@ describe('useFilterState', () => {
         expect(result.current.search).toBe('filter=count.reports%3A%3E0');
     });
 
+    it('reads legacy deep-link params when no canonical filter param is present', () => {
+        const {result} = renderHook(() => {
+            const state = useFilterState();
+            const [searchParams] = useSearchParams();
+
+            return {
+                ...state,
+                search: searchParams.toString()
+            };
+        }, {wrapper: createWrapper('/?id=is:comment_123')});
+
+        expect(result.current.filters).toEqual([
+            {
+                id: 'id:1',
+                field: 'id',
+                operator: 'is',
+                values: ['comment_123']
+            }
+        ]);
+        expect(result.current.nql).toBe('id:comment_123');
+        expect(result.current.isSingleIdFilter).toBe(true);
+        expect(result.current.search).toBe('id=is%3Acomment_123');
+    });
+
     it('writes canonical Ember filter params and clears them', () => {
         const {result} = renderHook(() => {
             const state = useFilterState();
