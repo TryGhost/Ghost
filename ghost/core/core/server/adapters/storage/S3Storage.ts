@@ -310,14 +310,14 @@ export default class S3Storage extends StorageBase {
         return relativePath.slice(this.storagePath.length + 1);
     }
 
-    async exists(fileName: string, targetDir: string): Promise<boolean> {
+    async exists(fileName: string, targetDir?: string): Promise<boolean> {
         if (!fileName?.trim()) {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.emptyFileName, {method: 'exists'})
             });
         }
 
-        const relativePath = path.posix.join(targetDir, fileName);
+        const relativePath = targetDir ? path.posix.join(targetDir, fileName) : fileName;
         const key = this.buildKey(relativePath);
 
         try {
@@ -348,14 +348,14 @@ export default class S3Storage extends StorageBase {
         };
     }
 
-    async delete(fileName: string, targetDir: string): Promise<void> {
+    async delete(fileName: string, targetDir?: string): Promise<void> {
         if (!fileName?.trim()) {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.emptyFileName, {method: 'delete'})
             });
         }
 
-        const relativePath = path.posix.join(targetDir, fileName);
+        const relativePath = targetDir ? path.posix.join(targetDir, fileName) : fileName;
         const key = this.buildKey(relativePath);
 
         try {
