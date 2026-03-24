@@ -26,7 +26,7 @@ const HeaderImageField: React.FC<HeaderImageFieldProps> = ({value, onChange}) =>
                         src={value}
                     />
                     <button
-                        className="absolute right-2 top-2 rounded bg-black/50 px-2 py-1 text-xs text-white hover:bg-black/70"
+                        className="absolute top-2 right-2 rounded bg-black/50 px-2 py-1 text-xs text-white hover:bg-black/70"
                         type="button"
                         onClick={() => onChange('')}
                     >

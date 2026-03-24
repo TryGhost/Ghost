@@ -61,7 +61,7 @@ function MembersListItemName({item, onClick}: { item: Member; onClick?: (memberI
             />
             <div className="min-w-0">
                 <a
-                    className="cursor-pointer before:absolute before:left-0 before:top-0 before:z-10 before:h-full before:w-[calc(100vw-300px-64px)]"
+                    className="cursor-pointer before:absolute before:top-0 before:left-0 before:z-10 before:h-full before:w-[calc(100vw-300px-64px)]"
                     href={`#/members/${item.id}`}
                     onClick={onClick ? (e) => {
                         if (
@@ -83,7 +83,7 @@ function MembersListItemName({item, onClick}: { item: Member; onClick?: (memberI
                 </a>
                 {item.name && item.email && (
                     <div
-                        className="text-muted-foreground truncate text-sm"
+                        className="truncate text-sm text-muted-foreground"
                         data-testid="member-email"
                     >
                         {item.email}
@@ -107,7 +107,7 @@ function MembersListItemStatus({
             <div className="min-w-0">
                 <div className="truncate text-sm">{getStatusLabel(status)}</div>
                 {tierNames && (
-                    <div className="text-muted-foreground truncate text-xs">
+                    <div className="truncate text-xs text-muted-foreground">
                         {tierNames}
                     </div>
                 )}
@@ -153,7 +153,7 @@ function MembersListItemCreated({createdAt}: { createdAt: string }) {
             <div className="text-sm">
                 {moment.utc(createdAt).format('D MMM YYYY')}
             </div>
-            <div className="text-muted-foreground text-xs">
+            <div className="text-xs text-muted-foreground">
                 {moment.utc(createdAt).fromNow()}
             </div>
         </div>
@@ -173,7 +173,7 @@ function MembersListItemDynamicColumn({
 
     if (!value) {
         return (
-            <span className="text-muted-foreground text-sm">-</span>
+            <span className="text-sm text-muted-foreground">-</span>
         );
     }
 
@@ -181,7 +181,7 @@ function MembersListItemDynamicColumn({
         <div className="min-w-0">
             <div className="truncate text-sm">{value.text}</div>
             {value.subtext && (
-                <div className="text-muted-foreground truncate text-xs">
+                <div className="truncate text-xs text-muted-foreground">
                     {value.subtext}
                 </div>
             )}

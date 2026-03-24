@@ -22,7 +22,7 @@ const PlaceholderRow = forwardRef<HTMLTableRowElement>(
             >
                 <TableCell className="h-[72px] px-4 py-3" colSpan={999}>
                     <div
-                        className="bg-muted h-full animate-pulse rounded-md"
+                        className="h-full animate-pulse rounded-md bg-muted"
                         data-testid="loading-placeholder"
                     />
                 </TableCell>
@@ -95,7 +95,7 @@ function MembersList({
                         <col key={col.key} className="w-[50%] min-w-[250px]" />
                     ))}
                 </colgroup>
-                <TableHeader className="bg-background sticky top-0 z-10 hidden border-b lg:table-header-group">
+                <TableHeader className="sticky top-0 z-10 hidden border-b bg-background lg:table-header-group">
                     <TableRow>
                         <TableHead className="px-4 py-3">
                             Member

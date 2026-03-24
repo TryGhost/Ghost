@@ -52,10 +52,10 @@ const WelcomeEmailPreviewContent: React.FC = () => {
                 className={cn('px-[7rem] pb-4 leading-[27.2px]', bodyFontClasses)}
                 style={{color: colors.textColor, fontFamily: bodyFont}}
             >
-                <p className="mb-6 mt-0">
+                <p className="mt-0 mb-6">
                     This is a preview of what your welcome email will look like when new members sign up to {siteTitle || 'your publication'}.
                 </p>
-                <p className="mb-6 mt-0">
+                <p className="mt-0 mb-6">
                     You can customize the design using the settings on the right &ndash; from{' '}
                     <a
                         className={linkClasses}
@@ -69,7 +69,7 @@ const WelcomeEmailPreviewContent: React.FC = () => {
                 </p>
                 <hr className="my-[52px] border-0 border-t" style={{borderColor: colors.dividerColor}} />
 
-                <p className="mb-6 mt-0">
+                <p className="mt-0 mb-6">
                     The actual content of your welcome email can be edited separately. This preview is just here to help you get the design right.
                 </p>
 
