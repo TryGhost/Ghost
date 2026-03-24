@@ -274,6 +274,176 @@ describe('PostsExporter', function () {
             assert.equal(posts[0].feedback_more_like_this, 0);
             assert.equal(posts[0].feedback_less_like_this, 0);
         });
+
+        it('Joins multiple authors and tags with commas', async function () {
+            post.authors = [
+                createModel({name: 'Author A'}),
+                createModel({name: 'Author B'}),
+                createModel({name: 'Author C'})
+            ];
+            post.tags = [
+                createModel({name: 'Tag X'}),
+                createModel({name: 'Tag Y'})
+            ];
+            const posts = await exporter.export({});
+            assert.equal(posts[0].author, 'Author A, Author B, Author C');
+            assert.equal(posts[0].tags, 'Tag X, Tag Y');
+        });
+
+        it('Maps sent status to emailed only with email analytics', async function () {
+            post.status = 'sent';
+            const posts = await exporter.export({});
+            assert.equal(posts[0].status, 'emailed only');
+            assert.equal(posts[0].sends, 256);
+            assert.equal(posts[0].opens, 128);
+            assert.equal(posts[0].clicks, 64);
+        });
+
+        it('Clears email data for scheduled posts', async function () {
+            const secondNewsletter = {
+                id: createModel({}).id,
+                name: 'Weekly Newsletter',
+                feedback_enabled: true
+            };
+            models.Newsletter.options.findAll.push(secondNewsletter);
+            post.status = 'scheduled';
+            const posts = await exporter.export({});
+
+            assert.equal(posts[0].status, 'scheduled');
+            assert.equal(posts[0].published_at, null);
+            assert.equal(posts[0].sends, null);
+            assert.equal(posts[0].opens, null);
+            assert.equal(posts[0].clicks, null);
+            assert.equal(posts[0].newsletter_name, null);
+            assert.equal(posts[0].feedback_more_like_this, null);
+            assert.equal(posts[0].feedback_less_like_this, null);
+            assert.equal(posts[0].signups, null);
+            assert.equal(posts[0].paid_conversions, null);
+        });
+
+        it('Exports mixed-status posts with consistent columns', async function () {
+            const draftPost = {
+                ...post,
+                status: 'draft',
+                title: 'Draft Post'
+            };
+            models.Post = createModelClass({
+                findAll: [post, draftPost]
+            });
+
+            exporter = new PostsExporter({
+                models,
+                settingsCache,
+                settingsHelpers,
+                getPostUrl: () => 'https://example.com/post'
+            });
+
+            const posts = await exporter.export({});
+            assert.equal(posts.length, 2);
+
+            const publishedKeys = Object.keys(posts[0]);
+            const draftKeys = Object.keys(posts[1]);
+            assert.deepEqual(publishedKeys, draftKeys);
+
+            assert.equal(posts[0].sends, 256);
+            assert.equal(posts[1].sends, null);
+        });
+
+        it('Hides signups and paid_conversions when members_track_sources disabled', async function () {
+            settingsCache.set('members_track_sources', false);
+            const posts = await exporter.export({});
+
+            assert.equal(posts[0].signups, undefined);
+            assert.equal(posts[0].paid_conversions, undefined);
+
+            assert.notEqual(posts[0].sends, undefined);
+            assert.notEqual(posts[0].opens, undefined);
+            assert.notEqual(posts[0].clicks, undefined);
+        });
+
+        it('Returns empty array when no posts match', async function () {
+            models.Post = createModelClass({
+                findAll: []
+            });
+
+            exporter = new PostsExporter({
+                models,
+                settingsCache,
+                settingsHelpers,
+                getPostUrl: () => 'https://example.com/post'
+            });
+
+            const posts = await exporter.export({});
+            assert.deepEqual(posts, []);
+        });
+
+        it('Produces the expected ordered field set', async function () {
+            const secondNewsletter = {
+                id: createModel({}).id,
+                name: 'Weekly Newsletter',
+                feedback_enabled: true
+            };
+            models.Newsletter.options.findAll.push(secondNewsletter);
+
+            const posts = await exporter.export({});
+            const fields = Object.keys(posts[0]);
+
+            assert.deepEqual(fields, [
+                'id',
+                'title',
+                'url',
+                'author',
+                'status',
+                'created_at',
+                'updated_at',
+                'published_at',
+                'featured',
+                'tags',
+                'post_access',
+                'email_recipients',
+                'newsletter_name',
+                'sends',
+                'opens',
+                'clicks',
+                'signups',
+                'paid_conversions',
+                'feedback_more_like_this',
+                'feedback_less_like_this'
+            ]);
+        });
+
+        it('Includes tiers in post_access for tier-restricted posts', async function () {
+            const posts = await exporter.export({});
+            assert.equal(posts[0].post_access, 'Specific tiers: Silver, Gold');
+        });
+
+        it('Resolves email recipient filter labels in export context', async function () {
+            const vipLabel = {
+                slug: 'vip',
+                name: 'VIP'
+            };
+            models.Label = createModelClass({
+                findAll: [vipLabel]
+            });
+
+            post.email = createModel({
+                feedback_enabled: true,
+                track_clicks: true,
+                email_count: 100,
+                opened_count: 50,
+                recipient_filter: 'label:vip'
+            });
+
+            exporter = new PostsExporter({
+                models,
+                settingsCache,
+                settingsHelpers,
+                getPostUrl: () => 'https://example.com/post'
+            });
+
+            const posts = await exporter.export({});
+            assert.equal(posts[0].email_recipients, 'VIP');
+        });
     });
 
     describe('mapPostStatus', function () {
