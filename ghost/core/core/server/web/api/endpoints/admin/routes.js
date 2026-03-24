@@ -193,6 +193,11 @@ module.exports = function apiRoutes() {
     router.del('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.destroy));
     router.post('/automated_emails/:id/test', shared.middleware.brute.previewEmailLimiter, mw.authAdminApi, http(api.automatedEmails.sendTestEmail));
 
+    // ## Email Templates
+    router.get('/email_templates', mw.authAdminApi, http(api.emailTemplates.browse));
+    router.get('/email_templates/:id', mw.authAdminApi, http(api.emailTemplates.read));
+    router.put('/email_templates/:id', mw.authAdminApi, http(api.emailTemplates.edit));
+
     // ## Roles
     router.get('/roles/', mw.authAdminApi, http(api.roles.browse));
 
