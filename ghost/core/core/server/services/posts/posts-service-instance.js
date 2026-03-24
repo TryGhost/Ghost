@@ -1,6 +1,7 @@
 const PostsService = require('./posts-service');
 const PostsExporter = require('./posts-exporter');
 const url = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
+const {knex} = require('../../data/db');
 
 /**
  * @returns {InstanceType<PostsService>} instance of the PostsService
@@ -23,10 +24,18 @@ const getPostServiceInstance = () => {
             Label: models.Label,
             Product: models.Product
         },
+        knex,
         getPostUrl(post) {
-            const jsonModel = post.toJSON();
-            url.forPost(post.id, jsonModel, {options: {}});
-            return jsonModel.url;
+            // Support both Bookshelf models (export) and plain objects (exportStream)
+            if (typeof post.toJSON === 'function') {
+                const jsonModel = post.toJSON();
+                url.forPost(post.id, jsonModel, {options: {}});
+                return jsonModel.url;
+            }
+            // Plain row from Knex streaming
+            const attrs = {...post};
+            url.forPost(post.id, attrs, {options: {}});
+            return attrs.url;
         },
         settingsCache,
         settingsHelpers
