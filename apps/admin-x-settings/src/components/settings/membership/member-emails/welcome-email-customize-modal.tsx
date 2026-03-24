@@ -31,7 +31,8 @@ import {
     Textarea
 } from '@tryghost/shade';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {useCallback, useState} from 'react';
+import {useBrowseEmailTemplates, useEditEmailTemplate} from '@tryghost/admin-x-framework/api/email-templates';
+import {useCallback, useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
 
 interface GeneralSettings {
@@ -178,6 +179,10 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
     const {siteData, settings: globalSettings, config} = useGlobalData();
     const [siteTitle, defaultEmailAddress, supportEmailAddress] = getSettingValues<string>(globalSettings, ['title', 'default_email_address', 'support_email_address']);
 
+    const {data: emailTemplatesData} = useBrowseEmailTemplates();
+    const {mutateAsync: editEmailTemplate} = useEditEmailTemplate();
+    const template = emailTemplatesData?.email_templates?.[0];
+
     const [designSettings, setDesignSettings] = useState<EmailDesignSettings>({...DEFAULT_EMAIL_DESIGN});
     const [generalSettings, setGeneralSettings] = useState<GeneralSettings>({
         senderName: siteTitle || '',
@@ -188,6 +193,35 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
         emailFooter: ''
     });
 
+    useEffect(() => {
+        if (template) {
+            setDesignSettings({
+                background_color: template.background_color,
+                title_font_category: template.title_font_category,
+                title_font_weight: template.title_font_weight,
+                body_font_category: template.body_font_category,
+                header_background_color: template.header_background_color,
+                post_title_color: template.post_title_color,
+                title_alignment: template.title_alignment,
+                section_title_color: template.section_title_color,
+                button_color: template.button_color,
+                button_style: template.button_style,
+                button_corners: template.button_corners,
+                link_color: template.link_color,
+                link_style: template.link_style,
+                image_corners: template.image_corners,
+                divider_color: template.divider_color
+            });
+            setGeneralSettings(prev => ({
+                ...prev,
+                headerImage: template.header_image || '',
+                showPublicationTitle: template.show_publication_title,
+                showBadge: template.show_badge,
+                emailFooter: template.footer_content || ''
+            }));
+        }
+    }, [template]);
+
     const handleDesignChange = useCallback((updates: Partial<EmailDesignSettings>) => {
         setDesignSettings(prev => ({...prev, ...updates}));
     }, []);
@@ -196,10 +230,19 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
         setGeneralSettings(prev => ({...prev, ...updates}));
     }, []);
 
-    const handleSave = useCallback(() => {
-        // TODO: persist to backend when design columns are added
+    const handleSave = useCallback(async () => {
+        if (template) {
+            await editEmailTemplate({
+                ...template,
+                ...designSettings,
+                header_image: generalSettings.headerImage || null,
+                show_publication_title: generalSettings.showPublicationTitle,
+                show_badge: generalSettings.showBadge,
+                footer_content: generalSettings.emailFooter || null
+            });
+        }
         modal.remove();
-    }, [modal]);
+    }, [modal, template, editEmailTemplate, designSettings, generalSettings]);
 
     const handleClose = useCallback(() => {
         modal.remove();

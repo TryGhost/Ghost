@@ -11,6 +11,7 @@ export type AutomatedEmail = {
     sender_name: string | null;
     sender_email: string | null;
     sender_reply_to: string | null;
+    email_template_id: string | null;
     created_at: string;
     updated_at: string | null;
 }
