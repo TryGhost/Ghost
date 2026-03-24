@@ -2,6 +2,8 @@ import {Locator, Page} from '@playwright/test';
 import {PortalPage} from './portal-page';
 
 export class SignUpPage extends PortalPage {
+    readonly monthlySwitchButton: Locator;
+    readonly yearlySwitchButton: Locator;
     readonly emailInput: Locator;
     readonly nameInput: Locator;
     readonly signupButton: Locator;
@@ -15,6 +17,8 @@ export class SignUpPage extends PortalPage {
     constructor(page: Page) {
         super(page);
 
+        this.monthlySwitchButton = this.portalFrame.locator('[data-test-button="switch-monthly"]');
+        this.yearlySwitchButton = this.portalFrame.locator('[data-test-button="switch-yearly"]');
         this.nameInput = this.portalFrame.getByRole('textbox', {name: 'Name'});
         this.emailInput = this.portalFrame.getByRole('textbox', {name: 'Email'});
         this.signupButton = this.portalFrame.getByRole('button', {name: 'Sign up'});
@@ -53,6 +57,15 @@ export class SignUpPage extends PortalPage {
 
         await paidTierCard.waitFor({state: 'visible'});
         await paidTierSelectButton.click();
+    }
+
+    async switchCadence(cadence: 'monthly' | 'yearly'): Promise<void> {
+        if (cadence === 'monthly') {
+            await this.monthlySwitchButton.click();
+            return;
+        }
+
+        await this.yearlySwitchButton.click();
     }
 
     async continueIfVisible(): Promise<void> {

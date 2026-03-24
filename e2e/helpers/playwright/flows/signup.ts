@@ -21,7 +21,12 @@ export async function signupViaPortal(page: Page): Promise<{emailAddress: string
     return {emailAddress, name};
 }
 
-export async function completePaidSignupViaPortal(page: Page, stripe: StripeTestService, opts?: {emailAddress?: string; name?: string}): Promise<{emailAddress: string; name: string}> {
+export async function completePaidSignupViaPortal(page: Page, stripe: StripeTestService, opts?: {
+    cadence?: 'monthly' | 'yearly';
+    emailAddress?: string;
+    name?: string;
+    tierName?: string;
+}): Promise<{emailAddress: string; name: string}> {
     const homePage = new HomePage(page);
     await homePage.goto();
     await homePage.openPortal();
@@ -31,7 +36,12 @@ export async function completePaidSignupViaPortal(page: Page, stripe: StripeTest
     const name = opts?.name ?? faker.person.fullName();
 
     await signUpPage.waitForPortalToOpen();
-    await signUpPage.fillAndSubmitPaidSignup(emailAddress, name);
+
+    if (opts?.cadence) {
+        await signUpPage.switchCadence(opts.cadence);
+    }
+
+    await signUpPage.fillAndSubmitPaidSignup(emailAddress, name, opts?.tierName);
 
     const fakeCheckoutPage = new FakeStripeCheckoutPage(page);
     await fakeCheckoutPage.waitUntilLoaded();

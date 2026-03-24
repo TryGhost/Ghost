@@ -1,4 +1,5 @@
 export * from './account-page';
+export * from './account-plan-page';
 export * from './portal-page';
 export * from './sign-in-page';
 export * from './sign-up-page';
