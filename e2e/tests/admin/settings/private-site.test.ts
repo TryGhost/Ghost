@@ -33,7 +33,7 @@ test.describe('Ghost Admin - Private Site', () => {
             const site = new HomePage(frontendPage);
             await expect(async () => {
                 await site.goto();
-                await expect(site.siteBrand).toBeVisible();
+                await expect(site.title).toBeVisible();
             }).toPass();
         });
     });

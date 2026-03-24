@@ -3,7 +3,6 @@ import {PublicPage} from './public-page';
 
 export class HomePage extends PublicPage {
     readonly title: Locator;
-    readonly siteBrand: Locator;
     readonly mainSubscribeButton: Locator;
     readonly accountButton: Locator;
 
@@ -13,7 +12,6 @@ export class HomePage extends PublicPage {
         this.pageUrl = '/';
         this.mainSubscribeButton = page.getByRole('button', {name: 'Subscribe'}).first();
         this.title = page.getByRole('heading', {level: 1});
-        this.siteBrand = page.locator('.gh-navigation-brand');
         this.accountButton = page.getByRole('link', {name: 'Account'});
     }
 
