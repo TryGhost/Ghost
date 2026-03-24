@@ -53,7 +53,7 @@ interface GeneralTabProps {
 const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange, siteTitle, emailDomain}) => (
     <div className="flex flex-col gap-6 pt-6">
         <section>
-            <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Email info</h4>
+            <h4 className="mb-4 font-semibold md:text-lg">Email info</h4>
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
                     <label className="text-sm">Sender name</label>
@@ -77,7 +77,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange
         <Separator />
 
         <section>
-            <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Content</h4>
+            <h4 className="mb-4 font-semibold md:text-lg">Content</h4>
             <div className="flex flex-col gap-4">
                 <HeaderImageField
                     value={generalSettings.headerImage}
@@ -112,7 +112,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange
 const DesignTab: React.FC = () => (
     <div className="flex flex-col gap-6 pt-6">
         <section>
-            <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Global</h4>
+            <h4 className="mb-4 font-semibold md:text-lg">Global</h4>
             <div className="flex flex-col gap-4">
                 <BackgroundColorField />
                 <HeadingFontField />
@@ -124,7 +124,7 @@ const DesignTab: React.FC = () => (
         <Separator />
 
         <section>
-            <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Header</h4>
+            <h4 className="mb-4 font-semibold md:text-lg">Header</h4>
             <div className="flex flex-col gap-4">
                 <HeaderBackgroundField />
             </div>
@@ -133,7 +133,7 @@ const DesignTab: React.FC = () => (
         <Separator />
 
         <section>
-            <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Body</h4>
+            <h4 className="mb-4 font-semibold md:text-lg">Body</h4>
             <div className="flex flex-col gap-4">
                 <ButtonColorField />
                 <ButtonStyleField />
