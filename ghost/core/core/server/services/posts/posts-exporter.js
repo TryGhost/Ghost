@@ -233,8 +233,7 @@ class PostsExporter {
                         postTiersMap.get(row.post_id).push(row.name);
                     }
 
-                    // postMetaRows available for future use (e.g. email_only flag)
-                    void postMetaRows;
+                    const postMetaMap = new Map(postMetaRows.map(m => [m.post_id, m]));
 
                     // Map each post to the flat export object
                     for (const row of batch) {
@@ -249,7 +248,12 @@ class PostsExporter {
                         const feedbackEnabled = email && email.feedback_enabled && hasNewslettersWithFeedback;
                         const showEmailClickAnalytics = trackClicks && email && email.track_clicks;
 
-                        // Compute URL with fallback for non-published posts
+                        // Attach posts_meta so getPostUrl can distinguish email-only posts
+                        const meta = postMetaMap.get(row.id);
+                        if (meta) {
+                            row.posts_meta = {email_only: meta.email_only};
+                        }
+
                         let postUrl = self.#getPostUrl(row);
 
                         // Compute post_access from plain row data
