@@ -66,6 +66,10 @@ module.exports = {
                 res.setHeader('Content-Disposition',
                     `attachment; filename="post-analytics.${datetime}.csv"`);
 
+                // Disable compression so chunks flush to the client immediately
+                // instead of being buffered by the gzip/brotli stream
+                res.setHeader('Cache-Control', 'no-transform');
+
                 models.data.pipe(csvTransform).pipe(res);
             };
             return;
