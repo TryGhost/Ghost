@@ -40,7 +40,7 @@ const HeaderImageField: React.FC<HeaderImageFieldProps> = ({value, onChange}) =>
                         className="flex h-24 items-center justify-center p-0 text-sm"
                         onDropAccepted={files => files[0] && handleUpload(files[0])}
                     >
-                        <span className="text-gray-400">Upload header image</span>
+                        <span className="text-gray-700">Upload header image</span>
                     </Dropzone>
                     <span className="text-gray-400 text-xs">1200x600 recommended. Use a transparent PNG for best results on any background.</span>
                 </>
