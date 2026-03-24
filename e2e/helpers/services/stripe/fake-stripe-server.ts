@@ -73,6 +73,10 @@ export class FakeStripeServer {
         return Array.from(this.customers.values());
     }
 
+    getSubscriptions(): StripeSubscription[] {
+        return Array.from(this.subscriptions.values());
+    }
+
     getCheckoutSessions(): RecordedStripeCheckoutSession[] {
         return Array.from(this.checkoutSessions.values());
     }
@@ -258,6 +262,108 @@ export class FakeStripeServer {
             res.status(200).json(response);
         });
 
+        this.app.post('/v1/subscriptions/:id', (req, res) => {
+            const subscriptionId = req.params.id;
+            const subscription = this.subscriptions.get(subscriptionId);
+
+            if (!subscription) {
+                debug(`Subscription not found for update: ${subscriptionId}`);
+                res.status(404).json({error: {type: 'invalid_request_error', message: 'No such subscription'}});
+                return;
+            }
+
+            const itemUpdates = this.parseSubscriptionItemsUpdate(req.body.items);
+            const metadata = this.applyMetadataUpdate(subscription.metadata, req.body.metadata);
+            const cancelAtPeriodEnd = this.parseOptionalBoolean(req.body.cancel_at_period_end);
+            const defaultPaymentMethod = this.parseString(req.body.default_payment_method);
+            const updatedSubscription: StripeSubscription = {
+                ...subscription,
+                metadata
+            };
+
+            if (cancelAtPeriodEnd !== undefined) {
+                updatedSubscription.cancel_at_period_end = cancelAtPeriodEnd;
+            }
+
+            if (defaultPaymentMethod !== undefined) {
+                if (defaultPaymentMethod !== '' && !this.paymentMethods.has(defaultPaymentMethod)) {
+                    debug(`Cannot update subscription ${subscriptionId} with missing payment method: ${defaultPaymentMethod}`);
+                    res.status(400).json({error: {type: 'invalid_request_error', message: 'No such payment method'}});
+                    return;
+                }
+
+                updatedSubscription.default_payment_method = defaultPaymentMethod || null;
+            }
+
+            if (req.body.trial_end === 'now') {
+                updatedSubscription.trial_end = Math.floor(Date.now() / 1000);
+                if (updatedSubscription.status === 'trialing') {
+                    updatedSubscription.status = 'active';
+                }
+            }
+
+            if (itemUpdates.length > 0) {
+                const updatedItems = updatedSubscription.items.data.map((item) => {
+                    const itemUpdate = itemUpdates.find(update => update.id === item.id);
+
+                    if (!itemUpdate) {
+                        return item;
+                    }
+
+                    const price = this.prices.get(itemUpdate.price);
+                    if (!price) {
+                        return item;
+                    }
+
+                    return {
+                        ...item,
+                        price
+                    };
+                });
+
+                const missingPriceId = itemUpdates.find((update) => {
+                    return !this.prices.has(update.price);
+                })?.price;
+
+                if (missingPriceId) {
+                    debug(`Cannot update subscription ${subscriptionId} with missing price: ${missingPriceId}`);
+                    res.status(400).json({error: {type: 'invalid_request_error', message: 'No such price'}});
+                    return;
+                }
+
+                updatedSubscription.items = {
+                    ...updatedSubscription.items,
+                    data: updatedItems
+                };
+            }
+
+            this.upsertSubscription(updatedSubscription);
+            debug(`Updated subscription: ${subscriptionId}`);
+            res.status(200).json(updatedSubscription);
+        });
+
+        this.app.delete('/v1/subscriptions/:id', (req, res) => {
+            const subscriptionId = req.params.id;
+            const subscription = this.subscriptions.get(subscriptionId);
+
+            if (!subscription) {
+                debug(`Subscription not found for delete: ${subscriptionId}`);
+                res.status(404).json({error: {type: 'invalid_request_error', message: 'No such subscription'}});
+                return;
+            }
+
+            const canceledSubscription: StripeSubscription = {
+                ...subscription,
+                status: 'canceled',
+                canceled_at: Math.floor(Date.now() / 1000),
+                cancel_at_period_end: false
+            };
+
+            this.upsertSubscription(canceledSubscription);
+            debug(`Deleted subscription: ${subscriptionId}`);
+            res.status(200).json(canceledSubscription);
+        });
+
         this.app.get('/v1/payment_methods/:id', (req, res) => {
             const paymentMethodId = req.params.id;
             const paymentMethod = this.paymentMethods.get(paymentMethodId);
@@ -393,6 +499,14 @@ export class FakeStripeServer {
         return fallback;
     }
 
+    private parseOptionalBoolean(value: unknown): boolean | undefined {
+        if (value === undefined) {
+            return undefined;
+        }
+
+        return this.parseBoolean(value);
+    }
+
     private parsePriceInterval(value: unknown): StripePrice['recurring'] extends {interval: infer T} | null ? T | undefined : never {
         if (value !== 'day' && value !== 'week' && value !== 'month' && value !== 'year') {
             return undefined;
@@ -417,6 +531,27 @@ export class FakeStripeServer {
                 })
                 .map(([key, entryValue]) => [key, String(entryValue)])
         );
+    }
+
+    private applyMetadataUpdate(currentMetadata: Record<string, string>, value: unknown): Record<string, string> {
+        if (!value || typeof value !== 'object' || Array.isArray(value)) {
+            return currentMetadata;
+        }
+
+        const metadata = {...currentMetadata};
+
+        for (const [key, entryValue] of Object.entries(value as Record<string, unknown>)) {
+            if (entryValue === null) {
+                delete metadata[key];
+                continue;
+            }
+
+            if (typeof entryValue === 'string' || typeof entryValue === 'number' || typeof entryValue === 'boolean') {
+                metadata[key] = String(entryValue);
+            }
+        }
+
+        return metadata;
     }
 
     private parseCustomUnitAmount(value: unknown): StripePrice['custom_unit_amount'] {
@@ -483,6 +618,26 @@ export class FakeStripeServer {
                 };
             })
             .filter(item => item.price);
+    }
+
+    private parseSubscriptionItemsUpdate(value: unknown): Array<{id: string; price: string}> {
+        if (!value || typeof value !== 'object') {
+            return [];
+        }
+
+        const items = Array.isArray(value)
+            ? value
+            : Object.values(value as Record<string, {id?: string; price?: string}>);
+
+        return items
+            .filter((item): item is {id?: string; price?: string} => item !== null && typeof item === 'object')
+            .map((item) => {
+                return {
+                    id: this.parseString(item.id) ?? '',
+                    price: this.parseString(item.price) ?? ''
+                };
+            })
+            .filter(item => item.id && item.price);
     }
 
     private parseCustomFields(value: unknown): RecordedStripeCheckoutSession['request']['custom_fields'] {
