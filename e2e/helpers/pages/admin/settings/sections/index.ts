@@ -1,3 +1,4 @@
+export {AnnouncementBarSection} from './announcement-bar-section';
 export {PublicationSection} from './publications-section';
 export {LabsSection} from './labs-section';
 export {IntegrationsSection} from './integrations-section';
