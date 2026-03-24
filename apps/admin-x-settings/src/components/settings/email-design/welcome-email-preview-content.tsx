@@ -91,7 +91,7 @@ const WelcomeEmailPreviewContent: React.FC = () => {
                 style={{color: colors.textColor, fontFamily: bodyFont}}
             >
                 <p className="mb-6 mt-0">
-                    We’ve put together a <a className={linkClasses} href="https://ghost.org/help/email-design/" rel="noopener noreferrer" style={{color: colors.linkColor || accentColor}} target="_blank">quick guide</a> that walks through all the available settings, along with a few examples of what’s possible.
+                    We’ve put together a <a className={linkClasses} href="https://ghost.org/help/email-design/" rel="noopener noreferrer" style={{color: colors.linkColor}} target="_blank">quick guide</a> that walks through all the available settings, along with a few examples of what’s possible.
                 </p>
             </div>
 
