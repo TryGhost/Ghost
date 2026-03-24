@@ -10,6 +10,12 @@ const messages = {
     emailVerificationEmailMessageAPI: `Email verification needed for site: {siteUrl} has added: {amountTriggered} members through the API in the last 30 days.`
 };
 
+const verificationMessageBySource = {
+    api: messages.emailVerificationEmailMessageAPI,
+    admin: messages.emailVerificationEmailMessageAdmin,
+    import: messages.emailVerificationEmailMessageImport
+};
+
 class VerificationTrigger {
     /**
      *
@@ -144,13 +150,7 @@ class VerificationTrigger {
 
     async _startLegacyEmailVerificationProcess({amount, triggerSource, throwOnTrigger}) {
         // GA removal point: delete this method once webhook delivery fully replaces email escalation.
-        let verificationMessage = messages.emailVerificationEmailMessageImport;
-
-        if (triggerSource === 'api') {
-            verificationMessage = messages.emailVerificationEmailMessageAPI;
-        } else if (triggerSource === 'admin') {
-            verificationMessage = messages.emailVerificationEmailMessageAdmin;
-        }
+        const verificationMessage = verificationMessageBySource[triggerSource] || messages.emailVerificationEmailMessageImport;
 
         await this._markVerificationRequired();
 
@@ -165,14 +165,14 @@ class VerificationTrigger {
 
     async getImportThreshold() {
         const volumeThreshold = this._importTriggerThreshold;
-        if (isFinite(volumeThreshold)) {
-            const membersTotal = (await this._eventRepository.getSignupEvents({}, {
-                source: 'member'
-            })).meta.pagination.total;
-            return Math.max(membersTotal, volumeThreshold);
-        } else {
+        if (!isFinite(volumeThreshold)) {
             return volumeThreshold;
         }
+
+        const membersTotal = (await this._eventRepository.getSignupEvents({}, {
+            source: 'member'
+        })).meta.pagination.total;
+        return Math.max(membersTotal, volumeThreshold);
     }
 
     /**
@@ -250,46 +250,40 @@ class VerificationTrigger {
         throwOnTrigger,
         source
     }) {
-        if (!this._isVerified()) {
-            // Only trigger flag change and escalation notification the first time
-            if (!this._isVerificationRequired()) {
-                const triggerSource = method ?? source ?? 'import';
+        if (this._isVerified()) {
+            return {needsVerification: false};
+        }
 
-                if (this._shouldUseWebhookFlow()) {
-                    try {
-                        const webhookWasSent = await this._sendVerificationWebhook({
-                            amountTriggered: amount,
-                            threshold: threshold ?? amount,
-                            method: triggerSource
-                        });
+        // Only trigger flag change and escalation notification the first time
+        if (this._isVerificationRequired()) {
+            return {needsVerification: false};
+        }
 
-                        if (webhookWasSent) {
-                            await this._markVerificationRequired();
-                            return this._finishTrigger(throwOnTrigger);
-                        }
-                    } catch (error) {
-                        // `sendVerificationWebhook` already logs delivery failures.
-                    }
+        const triggerSource = method ?? source ?? 'import';
 
-                    // Temporary fallback while the webhook flow is behind a flag.
-                    return await this._startLegacyEmailVerificationProcess({
-                        amount,
-                        triggerSource,
-                        throwOnTrigger
-                    });
-                }
-
-                return await this._startLegacyEmailVerificationProcess({
-                    amount,
-                    triggerSource,
-                    throwOnTrigger
+        if (this._shouldUseWebhookFlow()) {
+            try {
+                const webhookWasSent = await this._sendVerificationWebhook({
+                    amountTriggered: amount,
+                    threshold: threshold ?? amount,
+                    method: triggerSource
                 });
+
+                if (webhookWasSent) {
+                    await this._markVerificationRequired();
+                    return this._finishTrigger(throwOnTrigger);
+                }
+            } catch (error) {
+                // `sendVerificationWebhook` already logs delivery failures.
             }
         }
 
-        return {
-            needsVerification: false
-        };
+        // Default email flow — used unless the webhook flow is enabled and succeeds.
+        return await this._startLegacyEmailVerificationProcess({
+            amount,
+            triggerSource,
+            throwOnTrigger
+        });
     }
 }
 
