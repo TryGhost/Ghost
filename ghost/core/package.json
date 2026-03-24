@@ -25,6 +25,7 @@
     "dev": "nodemon index.js",
     "build:assets": "yarn build:assets:css && yarn build:assets:js",
     "build:assets:js": "node bin/minify-assets.js",
+    "generate-golden-email": "node bin/generate-golden-email.js",
     "migrate:create": "node bin/create-migration.js",
     "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "build:tsc": "tsc",
