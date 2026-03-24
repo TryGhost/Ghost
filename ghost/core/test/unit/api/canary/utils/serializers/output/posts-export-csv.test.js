@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {Readable, PassThrough, Transform} = require('stream');
+const {Readable, PassThrough} = require('stream');
 const papaparse = require('papaparse');
 
 /**
@@ -74,6 +74,49 @@ describe('Unit: posts CSV streaming transform', function () {
             assert.equal(parsed.data.length, 1);
             assert.equal(parsed.data[0].title, 'Only Post');
             assert.equal(parsed.data[0].sends, '100');
+            done();
+        });
+
+        stream.pipe(csvTransform).pipe(collector);
+    });
+
+    it('Stream pipeline produces same CSV as papaparse.unparse for equivalent data', function (done) {
+        const data = [
+            {id: '1', title: 'First Post', status: 'published'},
+            {id: '2', title: 'Second Post', status: 'draft'},
+            {id: '3', title: 'Third, "Quoted" Post', status: 'sent'}
+        ];
+
+        const expected = papaparse.unparse(data, {
+            escapeFormulae: true,
+            newline: '\r\n'
+        });
+
+        // Clone data for the stream since we'll consume it
+        const streamData = data.map(d => ({...d}));
+        let i = 0;
+        const stream = new Readable({
+            objectMode: true,
+            read() {
+                if (i < streamData.length) {
+                    this.push(streamData[i]);
+                    i += 1;
+                } else {
+                    this.push(null);
+                }
+            }
+        });
+
+        const csvTransform = createPostsCSVTransform();
+
+        let csvOutput = '';
+        const collector = new PassThrough();
+        collector.on('data', (chunk) => {
+            csvOutput += chunk.toString();
+        });
+
+        collector.on('end', () => {
+            assert.equal(csvOutput.trim(), expected.trim());
             done();
         });
 
