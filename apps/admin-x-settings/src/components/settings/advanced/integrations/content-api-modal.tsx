@@ -22,7 +22,7 @@ const ContentApiModal = NiceModal.create(() => {
             cancelLabel=''
             footer={
                 <div className='mx-8 flex w-full items-center justify-between'>
-                    <Button color='outline' href='https://ghost.org/docs/content-api/' label={<span className='flex items-center gap-1'>Open docs <Icon name='arrow-top-right' size='xs' /></span>} tag='a' target='_blank' />
+                    <Button color='outline' href='https://ghost.org/docs/content-api/' label={<span className='flex items-center gap-1'>Open docs <Icon name='arrow-top-right' size='xs' /></span>} rel='noopener noreferrer' tag='a' target='_blank' />
                     <Button color='black' label='Close' onClick={() => {
                         updateRoute('integrations');
                         modal.remove();
