@@ -206,16 +206,41 @@ const createStreamingKnex = (tables = {}) => {
             orderByRaw() {
                 return builder;
             },
-            count() {
+            count(expr) {
+                if (expr && typeof expr === 'string' && expr.includes(' as ')) {
+                    const alias = expr.split(' as ').pop().trim();
+                    if (selectedColumns) {
+                        selectedColumns.push(alias);
+                    }
+                }
                 return builder;
             },
-            countDistinct() {
+            countDistinct(expr) {
+                if (expr && typeof expr === 'string' && expr.includes(' as ')) {
+                    const alias = expr.split(' as ').pop().trim();
+                    if (selectedColumns) {
+                        selectedColumns.push(alias);
+                    }
+                }
                 return builder;
             },
-            sum() {
+            sum(expr) {
+                if (expr && typeof expr === 'string' && expr.includes(' as ')) {
+                    const alias = expr.split(' as ').pop().trim();
+                    if (selectedColumns) {
+                        selectedColumns.push(alias);
+                    }
+                }
                 return builder;
             },
-            whereRaw() {
+            whereRaw(expr) {
+                // Parse simple 'table.col = val' or 'col = val' patterns
+                if (typeof expr === 'string') {
+                    const match = expr.match(/(?:\w+\.)?(\w+)\s*=\s*(\d+)/);
+                    if (match) {
+                        conditions[match[1]] = Number(match[2]);
+                    }
+                }
                 return builder;
             },
             limit(n) {
@@ -260,8 +285,22 @@ const createStreamingKnex = (tables = {}) => {
                     filteredRows = filteredRows.map((r) => {
                         const selected = {};
                         for (const col of selectedColumns) {
-                            if (col in r) {
-                                selected[col] = r[col];
+                            // Handle 'table.col as alias' or 'table.col' or 'col as alias' or 'col'
+                            let source = col;
+                            let alias;
+                            if (col.includes(' as ')) {
+                                const parts = col.split(' as ');
+                                source = parts[0].trim();
+                                alias = parts[1].trim();
+                            }
+                            // Strip table prefix from source
+                            const bareSource = source.includes('.') ? source.split('.').pop() : source;
+                            // If no explicit alias, use the bare column name
+                            if (!alias) {
+                                alias = bareSource;
+                            }
+                            if (bareSource in r) {
+                                selected[alias] = r[bareSource];
                             }
                         }
                         return selected;

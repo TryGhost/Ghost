@@ -68,8 +68,8 @@ describe('PostsExporter streaming', function () {
             members_created_events: [{attribution_id: postId, attribution_type: 'post', count: 32}],
             members_subscription_created_events: [{attribution_id: postId, attribution_type: 'post', count: 16}],
             members_feedback: [
-                {post_id: postId, score: 1, count: 8},
-                {post_id: postId, score: 0, count: 4}
+                {post_id: postId, score: 0, count: 4},
+                {post_id: postId, score: 1, count: 8}
             ],
             posts_products: [],
             posts_meta: [{post_id: postId, email_only: false}]
