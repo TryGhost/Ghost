@@ -16,6 +16,7 @@ describe('Member Welcome Emails Integration', function () {
     before(async function () {
         await testUtils.setup('default')();
         membersService = require('../../../core/server/services/members');
+        membersService.init();
     });
 
     beforeEach(async function () {
