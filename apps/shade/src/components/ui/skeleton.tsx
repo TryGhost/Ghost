@@ -29,7 +29,7 @@ function Skeleton({
                 const randomWidth = minWidth + (randomStep * 5);
                 widths.push(`${randomWidth}%`);
             }
-            uniqueKeys.push(`skeleton-${Math.random().toString(36).substring(2, 15)}`);
+            uniqueKeys.push(`skeleton-${i}`);
         }
 
         return {
