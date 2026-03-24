@@ -32,13 +32,16 @@ export type StripePaymentMethod = Omit<Pick<Stripe.PaymentMethod, 'billing_detai
 };
 
 type StripeSubscriptionItem = Omit<Pick<Stripe.SubscriptionItem, 'price'>, 'price'> & {
+    id: string;
+    object: 'subscription_item';
     price: StripePrice;
 };
 
-export type StripeSubscription = Omit<Pick<Stripe.Subscription, 'cancel_at_period_end' | 'canceled_at' | 'current_period_end' | 'customer' | 'default_payment_method' | 'id' | 'items' | 'object' | 'start_date' | 'status'>, 'customer' | 'default_payment_method' | 'items'> & {
+export type StripeSubscription = Omit<Pick<Stripe.Subscription, 'cancel_at_period_end' | 'canceled_at' | 'current_period_end' | 'customer' | 'default_payment_method' | 'id' | 'items' | 'metadata' | 'object' | 'start_date' | 'status' | 'trial_end' | 'trial_start'>, 'customer' | 'default_payment_method' | 'items' | 'metadata'> & {
     customer: string;
     default_payment_method: string | null;
     items: StripeList<StripeSubscriptionItem>;
+    metadata: Stripe.Metadata;
 };
 
 export type StripeCustomer = Omit<Pick<Stripe.Customer, 'email' | 'id' | 'name' | 'object'>, 'email' | 'name'> & {
@@ -155,6 +158,7 @@ export function buildCustomer(opts: {id?: string; email: string; name: string}):
 export function buildSubscription(opts: {
     id?: string;
     customerId: string;
+    itemId?: string;
     paymentMethod?: StripePaymentMethod | null;
     price?: StripePrice;
     priceId?: string;
@@ -174,10 +178,17 @@ export function buildSubscription(opts: {
         canceled_at: null,
         current_period_end: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 31),
         start_date: Math.floor(Date.now() / 1000),
+        trial_start: null,
+        trial_end: null,
+        metadata: {},
         default_payment_method: opts.paymentMethod?.id ?? null,
         items: {
             object: 'list',
-            data: [{price}]
+            data: [{
+                id: opts.itemId ?? generateId('si'),
+                object: 'subscription_item',
+                price
+            }]
         },
         customer: opts.customerId
     };

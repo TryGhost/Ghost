@@ -52,6 +52,10 @@ export class StripeTestService {
         return this.server.getCustomers();
     }
 
+    getSubscriptions(): StripeSubscription[] {
+        return this.server.getSubscriptions();
+    }
+
     getCheckoutSessions(): RecordedStripeCheckoutSession[] {
         return this.server.getCheckoutSessions();
     }
