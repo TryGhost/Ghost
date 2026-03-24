@@ -17,7 +17,7 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({title, value, onChan
 
     return (
         <div className="flex items-center justify-between">
-            <span className="text-sm">{title}</span>
+            <span>{title}</span>
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                     <button

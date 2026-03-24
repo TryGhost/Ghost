@@ -17,7 +17,7 @@ const HeaderImageField: React.FC<HeaderImageFieldProps> = ({value, onChange}) =>
 
     return (
         <div className="flex flex-col gap-1.5">
-            <label className="text-sm">Header image</label>
+            <label className="text-sm font-medium">Header image</label>
             {value ? (
                 <div className="border-gray-200 dark:border-gray-800 relative overflow-hidden rounded-md border">
                     <img

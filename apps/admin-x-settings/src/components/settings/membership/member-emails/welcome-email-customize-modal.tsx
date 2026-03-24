@@ -56,7 +56,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange
             <h4 className="mb-4 font-semibold md:text-lg">Email info</h4>
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
-                    <label className="text-sm">Sender name</label>
+                    <label className="text-sm font-medium">Sender name</label>
                     <Input
                         placeholder={siteTitle || 'Your site name'}
                         value={generalSettings.senderName}
@@ -64,7 +64,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange
                     />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                    <label className="text-sm">Reply-to email</label>
+                    <label className="text-sm font-medium">Reply-to email</label>
                     <Input
                         placeholder={`noreply@${emailDomain}`}
                         value={generalSettings.replyToEmail}
@@ -84,15 +84,15 @@ const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange
                     onChange={url => onGeneralChange({headerImage: url})}
                 />
                 <div className="flex items-center justify-between">
-                    <span className="text-sm">Publication title</span>
+                    <span className="text-sm font-medium">Publication title</span>
                     <Switch
                         checked={generalSettings.showPublicationTitle}
                         size='sm'
                         onCheckedChange={checked => onGeneralChange({showPublicationTitle: checked})}
                     />
                 </div>
-                <div className="flex flex-col gap-1.5">
-                    <label className="text-sm">Email footer</label>
+                <div className="mt-2 flex flex-col gap-1.5">
+                    <label className="text-sm font-medium">Email footer</label>
                     <Textarea
                         placeholder="Any extra information or legal text"
                         rows={3}
