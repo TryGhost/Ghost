@@ -4,12 +4,9 @@ import {cn} from '@tryghost/shade';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {resolveAllColors, resolveButtonCorners, resolveFontFamily, resolveImageCorners} from './design-utils';
 import {useEmailDesign} from './email-design-context';
-import {useGlobalData} from '../../providers/global-data-provider';
 
 const WelcomeEmailPreviewContent: React.FC = () => {
     const {settings, accentColor} = useEmailDesign();
-    const {settings: globalSettings} = useGlobalData();
-    const [siteTitle] = getSettingValues<string>(globalSettings, ['title']);
 
     const colors = resolveAllColors(settings, accentColor);
     const bodyFont = resolveFontFamily(settings.body_font_category);
@@ -24,7 +21,7 @@ const WelcomeEmailPreviewContent: React.FC = () => {
     );
 
     const bodyFontClasses = cn(
-        settings.body_font_category === 'serif' ? 'font-serif text-[1.8rem]' : 'text-[1.7rem] tracking-tight'
+        settings.body_font_category === 'serif' ? 'font-serif text-[1.8rem]' : 'text-[1.7rem]'
     );
 
     return (
@@ -47,9 +44,13 @@ const WelcomeEmailPreviewContent: React.FC = () => {
                 </h3>
             </div>
 
+            <div className='mb-5 text-[2.6rem] font-bold tracking-tighter'>
+                Your welcome email
+            </div>
+
             {/* Body content */}
             <div
-                className={cn('px-[7rem] pb-4 leading-[27.2px]', bodyFontClasses)}
+                className={cn(bodyFontClasses)}
                 style={{color: colors.textColor, fontFamily: bodyFont}}
             >
                 <p className="mb-6 mt-0">
@@ -80,10 +81,10 @@ const WelcomeEmailPreviewContent: React.FC = () => {
             </div>
 
             {/* Button */}
-            <div className="px-[7rem] pb-6">
+            <div className="pb-6">
                 <a
                     className={cn(
-                        'inline-block border px-[18px] py-2 font-sans text-[15px] no-underline',
+                        'inline-block border px-[18px] py-2.5 font-sans text-[15px] no-underline',
                         buttonCornerClass,
                         isOutline ? 'bg-transparent' : 'border-transparent',
                         settings.link_style === 'bold' ? 'font-bold' : 'font-semibold'
@@ -101,10 +102,10 @@ const WelcomeEmailPreviewContent: React.FC = () => {
             </div>
 
             {/* Divider */}
-            <div className="px-[7rem] py-4">
+            <div className="py-4">
                 <hr className="m-0 border-0 border-t" style={{borderColor: colors.dividerColor}} />
             </div>
-        </>
+        </div>
     );
 };
 

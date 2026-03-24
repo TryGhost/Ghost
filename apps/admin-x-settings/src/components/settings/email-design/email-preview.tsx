@@ -39,7 +39,7 @@ const EnvelopeHeader: React.FC<{senderName?: string; senderEmail?: string; subje
                 </div>
             )}
             {subject && (
-                <div className="mt-1 text-grey-900">{subject}</div>
+                <div className="text-base font-medium text-grey-900">{subject}</div>
             )}
         </div>
     );
