@@ -142,4 +142,8 @@ export class PublicPage extends BasePage {
     async gotoPortalSignup(options?: pageGotoOptions): Promise<null | Response> {
         return await this.goto('/#/portal/signup', options);
     }
+
+    async gotoPortalSupport(options?: pageGotoOptions): Promise<null | Response> {
+        return await this.goto('/#/portal/support', options);
+    }
 }
