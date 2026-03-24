@@ -166,9 +166,126 @@ const sleep = (ms) => {
     });
 };
 
+/**
+ * Create a mock Knex instance for streaming export tests.
+ * Returns plain objects (not Bookshelf models) to match real Knex behavior.
+ *
+ * @param {Object} tables - Map of table names to arrays of row objects
+ * @returns {Function} Mock knex function
+ */
+const createStreamingKnex = (tables = {}) => {
+    const knex = function (tableName) {
+        let rows = tables[tableName] || [];
+        let selectedColumns = null;
+        let conditions = {};
+
+        const builder = {
+            select(...cols) {
+                selectedColumns = cols.flat();
+                return builder;
+            },
+            join() {
+                return builder;
+            },
+            where(colOrObj, val) {
+                if (typeof colOrObj === 'string') {
+                    conditions[colOrObj] = val;
+                }
+                return builder;
+            },
+            whereIn(col, vals) {
+                rows = rows.filter(r => vals.includes(r[col] || r.post_id || r.attribution_id));
+                return builder;
+            },
+            groupBy() {
+                return builder;
+            },
+            orderBy() {
+                return builder;
+            },
+            orderByRaw() {
+                return builder;
+            },
+            count() {
+                return builder;
+            },
+            countDistinct() {
+                return builder;
+            },
+            sum() {
+                return builder;
+            },
+            whereRaw() {
+                return builder;
+            },
+            limit(n) {
+                rows = rows.slice(0, n);
+                return builder;
+            },
+            stream() {
+                const {Readable} = require('stream');
+                let filteredRows = [...rows];
+
+                if (conditions.attribution_type) {
+                    filteredRows = filteredRows.filter(r => r.attribution_type === conditions.attribution_type);
+                }
+                if (conditions.score !== undefined) {
+                    filteredRows = filteredRows.filter(r => r.score === conditions.score);
+                }
+
+                let i = 0;
+                return new Readable({
+                    objectMode: true,
+                    read() {
+                        if (i < filteredRows.length) {
+                            this.push(filteredRows[i]);
+                            i += 1;
+                        } else {
+                            this.push(null);
+                        }
+                    }
+                });
+            },
+            then(resolve) {
+                let filteredRows = [...rows];
+
+                if (conditions.attribution_type) {
+                    filteredRows = filteredRows.filter(r => r.attribution_type === conditions.attribution_type);
+                }
+                if (conditions.score !== undefined) {
+                    filteredRows = filteredRows.filter(r => r.score === conditions.score);
+                }
+
+                if (selectedColumns) {
+                    filteredRows = filteredRows.map((r) => {
+                        const selected = {};
+                        for (const col of selectedColumns) {
+                            if (col in r) {
+                                selected[col] = r[col];
+                            }
+                        }
+                        return selected;
+                    });
+                }
+
+                resolve(filteredRows);
+            }
+        };
+
+        return builder;
+    };
+
+    knex.raw = function () {
+        return knex;
+    };
+
+    return knex;
+};
+
 module.exports = {
     createModel,
     createModelClass,
     createDb,
+    createStreamingKnex,
     sleep
 };
