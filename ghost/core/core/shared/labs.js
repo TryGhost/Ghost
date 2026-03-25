@@ -25,7 +25,6 @@ const GA_FEATURES = [
     'explore',
     'commentModeration',
     'featurebaseFeedback',
-    'welcomeEmailEditor',
     'transistor'
 ];
 

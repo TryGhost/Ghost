@@ -34,21 +34,10 @@ const newslettersRequest = {
     browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: responseFixtures.newsletters}
 };
 
-const configWithWelcomeEmailEditorEnabled = {
+const configWithTenorEnabled = {
     ...responseFixtures.config,
     config: {
         ...responseFixtures.config.config,
-        labs: {
-            ...responseFixtures.config.config.labs,
-            welcomeEmailEditor: true
-        }
-    }
-};
-
-const configWithWelcomeEmailEditorAndTenorEnabled = {
-    ...configWithWelcomeEmailEditorEnabled,
-    config: {
-        ...configWithWelcomeEmailEditorEnabled.config,
         tenor: {
             googleApiKey: 'test-tenor-key',
             contentFilter: 'off'
@@ -249,7 +238,7 @@ test.describe('Member emails settings', async () => {
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailEditorEnabled},
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
                 fetchOembed: {
                     method: 'GET',
@@ -288,7 +277,7 @@ test.describe('Member emails settings', async () => {
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailEditorEnabled},
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
                 fetchOembed: {
                     method: 'GET',
@@ -337,7 +326,7 @@ test.describe('Member emails settings', async () => {
             await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailEditorEnabled},
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
             }});
 
@@ -365,7 +354,7 @@ test.describe('Member emails settings', async () => {
             await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailEditorEnabled},
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
             }});
 
@@ -406,7 +395,7 @@ test.describe('Member emails settings', async () => {
             await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailEditorEnabled},
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
             }});
 
@@ -449,7 +438,7 @@ test.describe('Member emails settings', async () => {
             await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailEditorAndTenorEnabled},
+                browseConfig: {method: 'GET', path: '/config/', response: configWithTenorEnabled},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
             }});
 
