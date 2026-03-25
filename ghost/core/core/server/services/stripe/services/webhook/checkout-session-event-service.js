@@ -126,6 +126,64 @@ module.exports = class CheckoutSessionEventService {
     }
 
     /**
+     * Creates a renewal credit for any remaining redeemed gift value after a paid checkout completes.
+     *
+     * @param {object} options
+     * @param {import('stripe').Stripe.Checkout.Session} options.session
+     * @param {string} options.customerId
+     * @param {string} options.memberId
+     */
+    async applyGiftRenewalCredit({session, customerId, memberId}) {
+        if (!this.deps.giftService || !customerId || !memberId) {
+            return;
+        }
+
+        const gift = await this.deps.giftService.getActiveRedeemedUncreditedGiftForMember(memberId);
+
+        if (!gift) {
+            return;
+        }
+
+        const proration = this.deps.giftService.getProrationForGift(gift);
+
+        if (!proration.currency) {
+            return;
+        }
+
+        if (proration.remainingAmount <= 0) {
+            await this.deps.giftService.markCreditApplied({
+                gift,
+                amount: 0,
+                stripeCustomerBalanceTransactionId: null,
+                endedAt: new Date()
+            });
+            return;
+        }
+
+        const giftId = gift.id || gift.get?.('id');
+
+        const balanceTransaction = await this.api.createCustomerBalanceTransaction(customerId, {
+            amount: -Math.abs(proration.remainingAmount),
+            currency: proration.currency,
+            description: 'Remaining gift subscription credit',
+            metadata: {
+                gift_id: giftId,
+                member_id: memberId,
+                checkout_session_id: session.id
+            }
+        }, {
+            idempotencyKey: `gift-credit-${giftId}-${session.id}`
+        });
+
+        await this.deps.giftService.markCreditApplied({
+            gift,
+            amount: proration.remainingAmount,
+            stripeCustomerBalanceTransactionId: balanceTransaction.id,
+            endedAt: new Date()
+        });
+    }
+
+    /**
      * Handles a `checkout.session.completed` event for a setup intent
      *
      * This is used when a customer adds or changes their payment method outside
@@ -291,6 +349,11 @@ module.exports = class CheckoutSessionEventService {
             const updatedMember = await memberRepository.get({id: member.id});
             if (updatedMember && updatedMember.get('status') === 'paid') {
                 await memberRepository.removeComplimentarySubscription({id: member.id});
+                await this.applyGiftRenewalCredit({
+                    session,
+                    customerId: customer.id,
+                    memberId: member.id
+                });
             }
         }
 

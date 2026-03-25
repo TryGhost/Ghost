@@ -468,6 +468,54 @@ describe('Logged-in complimentary member', () => {
             });
         });
 
+        test('shows the renewal credit note for gifted members and still starts checkout', async () => {
+            const giftedMember = {
+                ...FixtureMember.complimentaryWithSubscription,
+                subscriptions: FixtureMember.complimentaryWithSubscription.subscriptions.map(subscription => ({
+                    ...subscription,
+                    gift: {
+                        id: 'gift_123',
+                        duration_months: 3,
+                        expires_at: '2026-05-01T00:00:00.000Z',
+                        redeemed_at: '2026-03-01T00:00:00.000Z',
+                        remaining_days: 21
+                    }
+                }))
+            };
+
+            const {
+                ghostApi, popupIframeDocument
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: giftedMember
+            });
+
+            const changePlanButton = within(popupIframeDocument).queryByRole('button', {name: 'Change'});
+            expect(changePlanButton).toBeInTheDocument();
+
+            fireEvent.click(changePlanButton);
+            const monthlyPlanContainer = await within(popupIframeDocument).findByText('Monthly');
+            expect(within(popupIframeDocument).queryByText('You have 21 days left on your gift subscription. The remainder of your gift will be credited as balance on your new subscription.')).toBeInTheDocument();
+
+            const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+            fireEvent.click(monthlyPlanContainer);
+            await new Promise((r) => {
+                setTimeout(r, 10);
+            });
+            const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+
+            fireEvent.click(submitButton);
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                metadata: {
+                    checkoutType: 'upgrade'
+                },
+                offerId: undefined,
+                plan: singleTierProduct.monthlyPrice.id,
+                tierId: singleTierProduct.id,
+                cadence: 'month'
+            });
+        });
+
         test('with default settings on yearly plan', async () => {
             const {
                 ghostApi, popupFrame, triggerButtonFrame,
@@ -758,4 +806,3 @@ describe('Logged-in complimentary member', () => {
         });
     });
 });
-

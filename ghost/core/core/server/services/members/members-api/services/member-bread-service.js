@@ -162,10 +162,16 @@ module.exports = class MemberBREADService {
                 return subscription;
             }
 
+            const proration = typeof this.giftService.getProrationForGift === 'function'
+                ? this.giftService.getProrationForGift(gift)
+                : null;
+
             subscription.gift = {
                 id: gift.id,
                 duration_months: gift.get('duration_months'),
-                expires_at: gift.get('access_expires_at')
+                expires_at: gift.get('access_expires_at'),
+                redeemed_at: gift.get('redeemed_at'),
+                remaining_days: proration?.remainingDays
             };
             subscription.plan.nickname = 'Gift subscription';
             subscription.price.nickname = 'Gift subscription';

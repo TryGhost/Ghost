@@ -67,6 +67,79 @@ describe('Account Plan Page', () => {
         expect(mockDoActionFn).toHaveBeenCalledWith('checkoutPlan', {plan: siteData.products[0].yearlyPrice.id});
     });
 
+    test('shows a renewal credit note for gifted complimentary members', () => {
+        const products = getProductsData({numOfProducts: 1});
+        const site = getSiteData({products, portalProducts: products.map(product => product.id)});
+        const subscription = getSubscriptionData({
+            amount: 0,
+            tier: {
+                id: products[0].id,
+                expiry_at: '2026-05-01T00:00:00.000Z'
+            },
+            priceId: products[0].monthlyPrice.id
+        });
+
+        subscription.price.product.product_id = products[0].id;
+        subscription.gift = {
+            id: 'gift_123',
+            duration_months: 3,
+            expires_at: '2026-05-01T00:00:00.000Z',
+            redeemed_at: '2026-03-01T00:00:00.000Z',
+            remaining_days: 21
+        };
+
+        const member = getMemberData({
+            paid: true,
+            subscriptions: [subscription]
+        });
+
+        const {queryByText} = customSetup({site, member});
+
+        expect(queryByText('You have 21 days left on your gift subscription. The remainder of your gift will be credited as balance on your new subscription.')).toBeInTheDocument();
+    });
+
+    test('does not show a renewal credit note for non-gift complimentary members', () => {
+        const products = getProductsData({numOfProducts: 1});
+        const site = getSiteData({products, portalProducts: products.map(product => product.id)});
+        const subscription = getSubscriptionData({
+            amount: 0,
+            tier: {
+                id: products[0].id,
+                expiry_at: '2026-05-01T00:00:00.000Z'
+            },
+            priceId: products[0].monthlyPrice.id
+        });
+
+        subscription.price.product.product_id = products[0].id;
+
+        const member = getMemberData({
+            paid: true,
+            subscriptions: [subscription]
+        });
+
+        const {queryByText} = customSetup({site, member});
+
+        expect(queryByText(/The remainder of your gift will be credited as balance on your new subscription\./i)).not.toBeInTheDocument();
+    });
+
+    test('does not show a renewal credit note for paid members changing plan', () => {
+        const products = getProductsData({numOfProducts: 1});
+        const site = getSiteData({products, portalProducts: products.map(product => product.id)});
+        const member = getMemberData({
+            paid: true,
+            subscriptions: [
+                getSubscriptionData({
+                    amount: products[0].monthlyPrice.amount,
+                    priceId: products[0].monthlyPrice.id
+                })
+            ]
+        });
+
+        const {queryByText} = customSetup({site, member});
+
+        expect(queryByText(/The remainder of your gift will be credited as balance on your new subscription\./i)).not.toBeInTheDocument();
+    });
+
     test('can cancel subscription for member on hidden tier', async () => {
         const overrides = generateAccountPlanFixture();
         const {queryByRole, queryByText} = customSetup(overrides);

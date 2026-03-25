@@ -450,7 +450,10 @@ describe('MemberBreadService', function () {
             memberRepositoryStub.isActiveSubscriptionStatus = sinon.stub().returns(true);
 
             const giftService = {
-                getActiveRedeemedGiftsForMember: sinon.stub().resolves([gift])
+                getActiveRedeemedGiftsForMember: sinon.stub().resolves([gift]),
+                getProrationForGift: sinon.stub().returns({
+                    remainingDays: 52
+                })
             };
 
             const memberBreadService = getService({giftService});
@@ -460,7 +463,9 @@ describe('MemberBreadService', function () {
             assert.deepEqual(member.subscriptions[0].gift, {
                 id: 'gift_123',
                 duration_months: 3,
-                expires_at: product.expiry_at
+                expires_at: product.expiry_at,
+                redeemed_at: undefined,
+                remaining_days: 52
             });
         });
 

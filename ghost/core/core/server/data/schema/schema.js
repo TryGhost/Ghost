@@ -778,6 +778,9 @@ module.exports = {
         redeemed_at: {type: 'dateTime', nullable: true},
         access_expires_at: {type: 'dateTime', nullable: true},
         ended_at: {type: 'dateTime', nullable: true},
+        credited_at: {type: 'dateTime', nullable: true},
+        credited_amount: {type: 'integer', nullable: true},
+        stripe_credit_balance_transaction_id: {type: 'string', maxlength: 255, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [

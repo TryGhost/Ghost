@@ -24,6 +24,15 @@ export const AccountPlanPageStyles = `
         margin-bottom: 0;
     }
 
+    .gh-portal-gift-upgrade-note {
+        max-width: 520px;
+        margin: 0 auto 20px;
+        color: var(--grey4);
+        font-size: 1.5rem;
+        line-height: 1.5;
+        text-align: center;
+    }
+
     .gh-portal-expire-container {
         margin: 32px 0 0;
     }
@@ -407,6 +416,10 @@ const RetentionOfferSection = ({subscription, offer, onAcceptOffer, onDeclineOff
 const UpgradePlanSection = ({
     plans, selectedPlan, onPlanSelect, onPlanCheckout
 }) => {
+    const {member} = useContext(AppContext);
+    const subscription = getMemberSubscription({member});
+    const remainingGiftDays = subscription?.gift?.remaining_days;
+
     // const {action, brandColor} = useContext(AppContext);
     // const isRunning = ['checkoutPlan:running'].includes(action);
     let singlePlanClass = '';
@@ -415,6 +428,11 @@ const UpgradePlanSection = ({
     }
     return (
         <section>
+            {remainingGiftDays > 0 && (
+                <p className='gh-portal-gift-upgrade-note'>
+                    {t('You have {days} days left on your gift subscription. The remainder of your gift will be credited as balance on your new subscription.', {days: remainingGiftDays})}
+                </p>
+            )}
             <div className={`gh-portal-section gh-portal-accountplans-main ${singlePlanClass}`}>
                 <PlansOrProductSection
                     showLabel={false}

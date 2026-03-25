@@ -7,6 +7,15 @@ const normalizeEmail = require('../utils/normalize-email');
 const ACTIVE_SUBSCRIPTION_STATUSES = ['active', 'trialing', 'unpaid', 'past_due'];
 const ALLOWED_GIFT_DURATIONS = [1, 3, 6, 12];
 const ALLOWED_GIFT_DELIVERY_METHODS = ['link', 'email'];
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+
+const getGiftValue = (gift, key) => {
+    if (typeof gift?.get === 'function') {
+        return gift.get(key);
+    }
+
+    return gift?.[key];
+};
 
 const messages = {
     invalidDuration: 'Invalid gift duration.',
@@ -179,6 +188,20 @@ module.exports = class GiftService {
     }
 
     async getActiveRedeemedGiftsForMember(memberId, options = {}) {
+        return await this._fetchActiveRedeemedGiftsForMember(memberId, {}, options);
+    }
+
+    async getActiveRedeemedGiftForMember(memberId, options = {}) {
+        const gifts = await this.getActiveRedeemedGiftsForMember(memberId, options);
+        return gifts[0] || null;
+    }
+
+    async getActiveRedeemedUncreditedGiftForMember(memberId, options = {}) {
+        const gifts = await this._fetchActiveRedeemedGiftsForMember(memberId, {uncreditedOnly: true}, options);
+        return gifts[0] || null;
+    }
+
+    async _fetchActiveRedeemedGiftsForMember(memberId, {uncreditedOnly = false} = {}, options = {}) {
         const collection = await this.MemberGift
             .where({
                 redeemed_by_member_id: memberId,
@@ -186,6 +209,9 @@ module.exports = class GiftService {
             })
             .query((qb) => {
                 qb.whereNull('ended_at');
+                if (uncreditedOnly) {
+                    qb.whereNull('credited_at');
+                }
                 qb.andWhere('access_expires_at', '>', new Date());
                 qb.orderBy('redeemed_at', 'DESC');
             })
@@ -194,9 +220,45 @@ module.exports = class GiftService {
         return collection.models;
     }
 
-    async getActiveRedeemedGiftForMember(memberId, options = {}) {
-        const gifts = await this.getActiveRedeemedGiftsForMember(memberId, options);
-        return gifts[0] || null;
+    getProrationForGift(gift, {now = new Date()} = {}) {
+        const durationMonths = this.validateDuration(getGiftValue(gift, 'duration_months'));
+        const redeemedAt = getGiftValue(gift, 'redeemed_at');
+        const totalDays = durationMonths * 31;
+        const amount = Math.max(Number(getGiftValue(gift, 'amount')) || 0, 0);
+
+        let elapsedDays = 0;
+        if (redeemedAt) {
+            elapsedDays = Math.floor((moment.utc(now).valueOf() - moment.utc(redeemedAt).valueOf()) / DAY_IN_MS);
+        }
+
+        if (!Number.isFinite(elapsedDays) || elapsedDays < 0) {
+            elapsedDays = 0;
+        }
+
+        const remainingDays = Math.min(Math.max(totalDays - elapsedDays, 0), totalDays);
+        const remainingAmount = totalDays > 0 ? Math.floor((amount * remainingDays) / totalDays) : 0;
+
+        return {
+            redeemedAt,
+            totalDays,
+            elapsedDays,
+            remainingDays,
+            amount,
+            remainingAmount,
+            currency: (getGiftValue(gift, 'currency') || '').toLowerCase()
+        };
+    }
+
+    async markCreditApplied({gift, amount, stripeCustomerBalanceTransactionId, endedAt = new Date()}, options = {}) {
+        return await this.MemberGift.edit({
+            credited_at: new Date(),
+            credited_amount: amount,
+            stripe_credit_balance_transaction_id: stripeCustomerBalanceTransactionId,
+            ended_at: endedAt
+        }, {
+            ...options,
+            id: gift.id || getGiftValue(gift, 'id')
+        });
     }
 
     _hasActivePaidSubscription(member) {

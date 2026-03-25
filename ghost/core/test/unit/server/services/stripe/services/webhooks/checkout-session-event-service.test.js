@@ -13,7 +13,8 @@ describe('CheckoutSessionEventService', function () {
             getCustomer: sinon.stub(),
             getSetupIntent: sinon.stub(),
             attachPaymentMethodToCustomer: sinon.stub(),
-            updateSubscriptionDefaultPaymentMethod: sinon.stub()
+            updateSubscriptionDefaultPaymentMethod: sinon.stub(),
+            createCustomerBalanceTransaction: sinon.stub()
         };
 
         memberRepository = {
@@ -39,7 +40,10 @@ describe('CheckoutSessionEventService', function () {
         sendGiftSubscriptionEmail = sinon.stub();
         isPaidWelcomeEmailActive = sinon.stub().resolves(false);
         giftService = {
-            markPurchasedFromCheckoutSession: sinon.stub()
+            markPurchasedFromCheckoutSession: sinon.stub(),
+            getActiveRedeemedUncreditedGiftForMember: sinon.stub(),
+            getProrationForGift: sinon.stub(),
+            markCreditApplied: sinon.stub()
         };
     });
 
@@ -335,6 +339,116 @@ describe('CheckoutSessionEventService', function () {
 
             sinon.assert.calledOnce(giftService.markPurchasedFromCheckoutSession);
             sinon.assert.notCalled(sendGiftSubscriptionEmail);
+        });
+    });
+
+    describe('applyGiftRenewalCredit', function () {
+        it('creates a customer balance credit and marks the gift as credited', async function () {
+            const service = createService();
+            const gift = {id: 'gift_123'};
+
+            giftService.getActiveRedeemedUncreditedGiftForMember.resolves(gift);
+            giftService.getProrationForGift.returns({
+                remainingAmount: 2100,
+                currency: 'usd'
+            });
+            api.createCustomerBalanceTransaction.resolves({
+                id: 'cbtxn_123'
+            });
+
+            await service.applyGiftRenewalCredit({
+                session: {id: 'cs_test_123'},
+                customerId: 'cust_123',
+                memberId: 'member_123'
+            });
+
+            sinon.assert.calledOnce(api.createCustomerBalanceTransaction);
+            sinon.assert.calledWith(api.createCustomerBalanceTransaction, 'cust_123', sinon.match({
+                amount: -2100,
+                currency: 'usd',
+                description: 'Remaining gift subscription credit',
+                metadata: {
+                    gift_id: 'gift_123',
+                    member_id: 'member_123',
+                    checkout_session_id: 'cs_test_123'
+                }
+            }), sinon.match({
+                idempotencyKey: 'gift-credit-gift_123-cs_test_123'
+            }));
+            sinon.assert.calledOnce(giftService.markCreditApplied);
+            sinon.assert.calledWith(giftService.markCreditApplied, sinon.match({
+                gift,
+                amount: 2100,
+                stripeCustomerBalanceTransactionId: 'cbtxn_123'
+            }));
+        });
+
+        it('does not create a credit when there is no active uncredited gift', async function () {
+            const service = createService();
+
+            giftService.getActiveRedeemedUncreditedGiftForMember.resolves(null);
+
+            await service.applyGiftRenewalCredit({
+                session: {id: 'cs_test_123'},
+                customerId: 'cust_123',
+                memberId: 'member_123'
+            });
+
+            sinon.assert.notCalled(api.createCustomerBalanceTransaction);
+            sinon.assert.notCalled(giftService.markCreditApplied);
+        });
+
+        it('marks the gift ended without creating a balance credit when there is no remaining gift value', async function () {
+            const service = createService();
+            const gift = {id: 'gift_123'};
+
+            giftService.getActiveRedeemedUncreditedGiftForMember.resolves(gift);
+            giftService.getProrationForGift.returns({
+                remainingAmount: 0,
+                currency: 'usd'
+            });
+
+            await service.applyGiftRenewalCredit({
+                session: {id: 'cs_test_123'},
+                customerId: 'cust_123',
+                memberId: 'member_123'
+            });
+
+            sinon.assert.notCalled(api.createCustomerBalanceTransaction);
+            sinon.assert.calledOnce(giftService.markCreditApplied);
+            sinon.assert.calledWith(giftService.markCreditApplied, sinon.match({
+                gift,
+                amount: 0,
+                stripeCustomerBalanceTransactionId: null
+            }));
+        });
+
+        it('does not create a second credit when the webhook is replayed', async function () {
+            const service = createService();
+            const gift = {id: 'gift_123'};
+
+            giftService.getActiveRedeemedUncreditedGiftForMember
+                .onFirstCall().resolves(gift)
+                .onSecondCall().resolves(null);
+            giftService.getProrationForGift.returns({
+                remainingAmount: 2100,
+                currency: 'usd'
+            });
+            api.createCustomerBalanceTransaction.resolves({
+                id: 'cbtxn_123'
+            });
+
+            const params = {
+                session: {id: 'cs_test_123'},
+                customerId: 'cust_123',
+                memberId: 'member_123'
+            };
+
+            await service.applyGiftRenewalCredit(params);
+            await service.applyGiftRenewalCredit(params);
+
+            sinon.assert.calledOnce(api.createCustomerBalanceTransaction);
+            sinon.assert.calledOnce(giftService.markCreditApplied);
         });
     });
 
@@ -775,6 +889,33 @@ describe('CheckoutSessionEventService', function () {
             sinon.assert.calledOnce(memberRepository.update);
             const memberData = memberRepository.update.getCall(0).args[0];
             assert.equal(memberData.newsletters, undefined);
+        });
+
+        it('applies a renewal credit after a gifted member upgrade becomes paid', async function () {
+            api.getCustomer.resolves(customer);
+            memberRepository.get
+                .onFirstCall().resolves(member)
+                .onSecondCall().resolves({
+                    get: sinon.stub().withArgs('status').returns('paid')
+                });
+
+            session.id = 'cs_test_123';
+
+            const s = createService();
+            const applyGiftRenewalCredit = sinon.stub(service, 'applyGiftRenewalCredit');
+
+            await s.handleSubscriptionEvent(session);
+
+            sinon.assert.calledOnce(memberRepository.removeComplimentarySubscription);
+            sinon.assert.calledWith(memberRepository.removeComplimentarySubscription, {
+                id: 'member_123'
+            });
+            sinon.assert.calledOnce(applyGiftRenewalCredit);
+            sinon.assert.calledWith(applyGiftRenewalCredit, {
+                session,
+                customerId: 'cust_123',
+                memberId: 'member_123'
+            });
         });
 
         describe('signup email logic', function () {

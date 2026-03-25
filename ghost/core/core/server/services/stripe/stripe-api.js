@@ -417,6 +417,37 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Create a customer balance transaction.
+     *
+     * Note: Stripe treats negative amounts as credits on the customer's balance.
+     *
+     * @param {string} id
+     * @param {object} data
+     * @param {number} data.amount
+     * @param {string} data.currency
+     * @param {string} [data.description]
+     * @param {Object.<string, any>} [data.metadata]
+     * @param {object} [options]
+     * @param {string} [options.idempotencyKey]
+     *
+     * @returns {Promise<import('stripe').Stripe.CustomerBalanceTransaction>}
+     */
+    async createCustomerBalanceTransaction(id, data, options = {}) {
+        debug(`createCustomerBalanceTransaction(${id}, ${JSON.stringify(data)})`);
+        try {
+            await this._rateLimitBucket.throttle();
+            const balanceTransaction = await this._stripe.customers.createBalanceTransaction(id, data, {
+                idempotencyKey: options.idempotencyKey
+            });
+            debug(`createCustomerBalanceTransaction(${id}) -> Success`);
+            return balanceTransaction;
+        } catch (err) {
+            debug(`createCustomerBalanceTransaction(${id}) -> ${err.type}`);
+            throw err;
+        }
+    }
+
+    /**
      * Create a new Stripe Webhook Endpoint.
      *
      * @param {string} url
