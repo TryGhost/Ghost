@@ -198,7 +198,7 @@ export class StripeTestService {
 
         const customer = this.resolveCheckoutCustomer(session, opts.name);
         const paymentMethod = buildPaymentMethod({name: opts.name ?? customer.name});
-        const discount = this.resolveCheckoutDiscount(session, price);
+        const discount = this.resolveCheckoutDiscount(session);
         const trialDays = session.request.subscription_data?.trial_period_days;
         const subscription = buildSubscription({
             customerId: customer.id,
@@ -323,7 +323,7 @@ export class StripeTestService {
         }
     }
 
-    private resolveCheckoutDiscount(session: RecordedStripeCheckoutSession, price: StripePrice): StripeDiscount | null {
+    private resolveCheckoutDiscount(session: RecordedStripeCheckoutSession): StripeDiscount | null {
         const couponId = session.request.discounts?.[0]?.coupon;
 
         if (!couponId) {
