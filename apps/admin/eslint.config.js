@@ -2,6 +2,7 @@ import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
+import tailwindcss from 'eslint-plugin-tailwindcss'
 import tseslint from 'typescript-eslint'
 import { globalIgnores } from 'eslint/config'
 import noRelativeImportPaths from 'eslint-plugin-no-relative-import-paths'
@@ -40,6 +41,7 @@ const localPlugin = {
     'no-hardcoded-ghost-paths': noHardcodedGhostPaths,
   },
 };
+const tailwindCssConfig = `${import.meta.dirname}/src/index.css`;
 
 export default tseslint.config([
   globalIgnores(['dist']),
@@ -55,6 +57,7 @@ export default tseslint.config([
       'no-relative-import-paths': noRelativeImportPaths,
       ghost: ghostPlugin,
       local: localPlugin,
+      tailwindcss,
     },
     languageOptions: {
       parserOptions: {
@@ -64,8 +67,15 @@ export default tseslint.config([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    settings: {
+      tailwindcss: {
+        config: tailwindCssConfig,
+      },
+    },
     rules: {
       'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
+      'tailwindcss/classnames-order': 'error',
+      'tailwindcss/no-contradicting-classname': 'error',
     },
   },
   // Apply no-relative-import-paths rule for src files (auto-fix supported)

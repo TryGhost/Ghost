@@ -71,7 +71,7 @@ function NavMenuCollapsibleItem({ariaLabel, children}: NavMenuCollapsibleItemPro
                 aria-label={ariaLabel}
                 variant="ghost"
                 size="icon"
-                className="h-[34px]! absolute sidebar:opacity-0 group-hover/menu-item:opacity-100 focus-visible:opacity-100 transition-all left-3 top-0 p-0 w-auto text-sidebar-accent-foreground hover:text-gray-black hover:bg-transparent"
+                className="hover:text-gray-black absolute top-0 left-3 h-[34px]! w-auto p-0 text-sidebar-accent-foreground transition-all group-hover/menu-item:opacity-100 hover:bg-transparent focus-visible:opacity-100 sidebar:opacity-0"
                 onClick={() => void onExpandedChange(!expanded)}
             >
                 <LucideIcon.ChevronRight
@@ -94,7 +94,7 @@ function NavMenuCollapsibleMenu({children}: NavMenuCollapsibleMenuProps) {
     return (
         <div
             id={id}
-            className={`grid transition-all duration-200 ease-out ${expanded ? 'grid-rows-[1fr] mb-5' : 'grid-rows-[0fr] mb-0'}`}
+            className={`grid transition-all duration-200 ease-out ${expanded ? 'mb-5 grid-rows-[1fr]' : 'mb-0 grid-rows-[0fr]'}`}
         >
             <div className="overflow-hidden">
                 {expanded ? children : null}
