@@ -41,6 +41,7 @@ export interface EmailClient {
     getMessageDetailed(message: EmailMessage): Promise<EmailMessageDetailed>;
     searchByContent(content: string, options?: EmailSearchOptions): Promise<EmailMessage[]>;
     searchByRecipient(recipient: string, options?: EmailSearchOptions): Promise<EmailMessage[]>;
+    getLatestMessageByRecipient(recipient: string, options?: EmailSearchOptions): Promise<EmailMessageDetailed>;
     search(queryOptions: Partial<EmailSearchQuery>, options?: EmailSearchOptions): Promise<EmailMessage[]>;
 }
 
@@ -71,6 +72,16 @@ export class MailPit implements EmailClient{
 
     async searchByRecipient(recipient: string, options?: EmailSearchOptions): Promise<EmailMessage[]> {
         return this.search({to: recipient}, options);
+    }
+
+    async getLatestMessageByRecipient(recipient: string, options?: EmailSearchOptions): Promise<EmailMessageDetailed> {
+        const messages = await this.searchByRecipient(recipient, options);
+
+        if (messages.length === 0) {
+            throw new Error(`No email messages found for recipient ${recipient}`);
+        }
+
+        return await this.getMessageDetailed(messages[0]);
     }
 
     async searchByContent(content: string, options?: EmailSearchOptions): Promise<EmailMessage[]> {

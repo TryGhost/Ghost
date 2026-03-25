@@ -12,6 +12,7 @@ export interface SettingsResponse {
 export type CommentsEnabled = 'all' | 'paid' | 'off';
 export type MembersSignupAccess = 'all' | 'invite' | 'paid' | 'none';
 export type PortalPlan = 'free' | 'monthly' | 'yearly';
+export type EditorDefaultEmailRecipients = 'disabled' | 'visibility' | 'filter';
 
 export class SettingsService {
     private readonly request: APIRequest;
@@ -69,6 +70,17 @@ export class SettingsService {
 
     async setDonationsCurrency(value: string) {
         return await this.updateSettings([{key: 'donations_currency', value}]);
+    }
+
+    async setTimezone(value: string) {
+        return await this.updateSettings([{key: 'timezone', value}]);
+    }
+
+    async setEditorDefaultEmailRecipients(value: EditorDefaultEmailRecipients, filter: string | null) {
+        return await this.updateSettings([
+            {key: 'editor_default_email_recipients', value},
+            {key: 'editor_default_email_recipients_filter', value: filter}
+        ]);
     }
 
     /**

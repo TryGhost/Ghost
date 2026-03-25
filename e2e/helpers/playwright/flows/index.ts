@@ -1,5 +1,6 @@
 export * from './donations';
 export * from './offers';
+export * from './posts';
 export * from './sign-in';
 export * from './signup';
 export * from './tiers';
