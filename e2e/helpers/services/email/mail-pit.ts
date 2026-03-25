@@ -81,7 +81,35 @@ export class MailPit implements EmailClient{
             throw new Error(`No email messages found for recipient ${recipient}`);
         }
 
-        return await this.getMessageDetailed(messages[0]);
+        const latestMessage = [...messages].sort((a, b) => {
+            const timestampA = Date.parse(a.Created);
+            const timestampB = Date.parse(b.Created);
+
+            const hasTimestampA = Number.isFinite(timestampA);
+            const hasTimestampB = Number.isFinite(timestampB);
+
+            if (hasTimestampA && hasTimestampB && timestampA !== timestampB) {
+                return timestampB - timestampA;
+            }
+
+            if (hasTimestampA && !hasTimestampB) {
+                return -1;
+            }
+
+            if (!hasTimestampA && hasTimestampB) {
+                return 1;
+            }
+
+            // Fallback comparator for missing/invalid/equal timestamps.
+            const createdComparison = b.Created.localeCompare(a.Created);
+            if (createdComparison !== 0) {
+                return createdComparison;
+            }
+
+            return b.ID.localeCompare(a.ID);
+        })[0];
+
+        return await this.getMessageDetailed(latestMessage);
     }
 
     async searchByContent(content: string, options?: EmailSearchOptions): Promise<EmailMessage[]> {

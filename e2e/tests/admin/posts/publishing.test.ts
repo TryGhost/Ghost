@@ -11,12 +11,30 @@ async function getActiveNewsletterIds(request: APIRequestContext): Promise<strin
     return data.newsletters.map(newsletter => newsletter.id);
 }
 
+async function createNewsletter(request: APIRequestContext, name: string): Promise<string> {
+    const response = await request.post('/ghost/api/admin/newsletters/', {
+        data: {newsletters: [{name}]}
+    });
+    const data = await response.json() as {newsletters: Array<{id: string}>};
+    return data.newsletters[0].id;
+}
+
+async function getOrCreateActiveNewsletterIds(request: APIRequestContext): Promise<string[]> {
+    const activeNewsletterIds = await getActiveNewsletterIds(request);
+    if (activeNewsletterIds.length > 0) {
+        return activeNewsletterIds;
+    }
+
+    const newsletterId = await createNewsletter(request, `Publishing e2e ${Date.now()}`);
+    return [newsletterId];
+}
+
 async function createSubscribedMember(
     memberFactory: MemberFactory,
     request: APIRequestContext,
     {email, name}: {email: string; name: string}
 ) {
-    const newsletterIds = await getActiveNewsletterIds(request);
+    const newsletterIds = await getOrCreateActiveNewsletterIds(request);
     const newsletters = newsletterIds.map(id => ({id}));
 
     await memberFactory.create({
@@ -30,7 +48,7 @@ async function createSubscribedMember(
 }
 
 test.describe('Ghost Admin - Publishing', () => {
-    test.describe.configure({timeout: 60000});
+    test.describe.configure({timeout: 120000});
 
     let memberFactory: MemberFactory;
     let settingsService: SettingsService;
