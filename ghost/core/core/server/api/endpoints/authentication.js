@@ -117,8 +117,14 @@ const controller = {
         async query() {
             const isSetup = await auth.setup.checkIsSetup();
 
+            if (isSetup) {
+                return {
+                    status: true
+                };
+            }
+
             return {
-                status: isSetup,
+                status: false,
                 title: config.title,
                 name: config.user_name,
                 email: config.user_email
