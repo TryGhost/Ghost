@@ -420,7 +420,7 @@ export default class KoenigLexicalEditor extends Component {
             fetchLabels,
             renderLabels: !this.session.user.isContributor,
             feature: {
-                transistor: this.feature.transistor
+                transistor: this.settings.transistor
             },
             deprecated: { // todo fix typo
                 headerV1: true // if false, shows header v1 in the menu

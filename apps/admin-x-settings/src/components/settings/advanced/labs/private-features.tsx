@@ -48,10 +48,6 @@ const features: Feature[] = [{
     description: 'Display a Feedback menu item in the admin sidebar. Requires the new admin experience.',
     flag: 'featurebaseFeedback'
 }, {
-    title: 'Transistor',
-    description: 'Enable Transistor podcast integration',
-    flag: 'transistor'
-}, {
     title: 'Verification flow',
     description: 'Enable new Email verification webhook-based flow',
     flag: 'verificationFlow'
