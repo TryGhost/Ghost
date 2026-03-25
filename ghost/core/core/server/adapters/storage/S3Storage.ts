@@ -307,7 +307,16 @@ export default class S3Storage extends StorageBase {
             });
         }
 
-        return relativePath.slice(this.storagePath.length + 1);
+        const result = relativePath.slice(this.storagePath.length + 1);
+
+        const normalized = path.posix.normalize(result);
+        if (normalized.startsWith('..')) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.invalidUrlParameter, {url})
+            });
+        }
+
+        return normalized;
     }
 
     async exists(fileName: string, targetDir?: string): Promise<boolean> {
@@ -387,6 +396,12 @@ export default class S3Storage extends StorageBase {
         }
 
         const pathWithStorage = path.posix.join(this.storagePath, relativePath);
+
+        if (!pathWithStorage.startsWith(this.storagePath + '/') && pathWithStorage !== this.storagePath) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.invalidUrlParameter, {url: relativePath})
+            });
+        }
 
         if (!this.tenantPrefix) {
             return pathWithStorage;

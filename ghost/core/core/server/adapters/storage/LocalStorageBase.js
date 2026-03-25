@@ -131,7 +131,14 @@ class LocalStorageBase extends StorageBase {
             });
         }
 
-        return relativePath.replace(/^\//, '');
+        const normalized = path.posix.normalize(relativePath.replace(/^\//, ''));
+        if (normalized.startsWith('..')) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.invalidUrlParameter, {url})
+            });
+        }
+
+        return normalized;
     }
 
     exists(fileName, targetDir) {
