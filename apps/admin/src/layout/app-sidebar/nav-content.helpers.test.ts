@@ -18,15 +18,27 @@ describe('isMembersNavActive', () => {
             membersForwardEnabled: false,
             isOnMembersForward: false,
             hasActiveMemberView: false,
+            isMembersExpanded: false,
             isLegacyMembersRouteActive: true
         })).toBe(true);
     });
 
-    it('marks the base Members link inactive when a saved member view is active', () => {
+    it('marks the base Members link active when a saved member view is active but collapsed', () => {
         expect(isMembersNavActive({
             membersForwardEnabled: true,
             isOnMembersForward: true,
             hasActiveMemberView: true,
+            isMembersExpanded: false,
+            isLegacyMembersRouteActive: false
+        })).toBe(true);
+    });
+
+    it('marks the base Members link inactive when a saved member view is active and expanded', () => {
+        expect(isMembersNavActive({
+            membersForwardEnabled: true,
+            isOnMembersForward: true,
+            hasActiveMemberView: true,
+            isMembersExpanded: true,
             isLegacyMembersRouteActive: false
         })).toBe(false);
     });
@@ -36,6 +48,7 @@ describe('isMembersNavActive', () => {
             membersForwardEnabled: true,
             isOnMembersForward: true,
             hasActiveMemberView: false,
+            isMembersExpanded: false,
             isLegacyMembersRouteActive: false
         })).toBe(true);
     });

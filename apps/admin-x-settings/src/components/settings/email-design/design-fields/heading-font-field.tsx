@@ -16,7 +16,7 @@ export const HeadingFontField = () => {
     };
     return (
         <div className="flex items-center justify-between">
-            <span className="text-sm">Heading font</span>
+            <span>Heading font</span>
             <Select value={settings.title_font_category || 'sans_serif'} onValueChange={handleChange}>
                 <SelectTrigger className="w-[180px]">
                     <SelectValue />

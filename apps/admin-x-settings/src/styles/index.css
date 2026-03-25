@@ -1,4 +1,8 @@
-@import '@tryghost/admin-x-design-system/styles.css';
+@import '@tryghost/admin-x-design-system/styles.base.css';
+@import 'tailwindcss/utilities.css';
+
+@source "../**/*.{js,ts,jsx,tsx}";
+@source "../../../admin-x-design-system/src/**/*.{js,ts,jsx,tsx}";
 
 /* Only settings related overrides */
 .gh-update-banner ~ * #admin-x-settings-content {

@@ -22,7 +22,8 @@ import { Meta } from '@storybook/addon-docs/blocks';
 │   ├── lib/utils.ts      # Utilities
 │   └── docs/             # Documentation
 ├── .storybook/          # Storybook configuration
-└── tailwind.config.cjs  # Design tokens
+├── styles.css           # Tailwind imports + runtime variables
+└── tailwind.theme.css   # CSS-first token definitions (@theme)
 ```
 
 ## Component Types
@@ -138,7 +139,7 @@ Key configuration in `components.json`:
 - Document all variants and props
 
 ### Styling
-- Use design tokens via Tailwind classes
+- Use design tokens via Tailwind classes sourced from CSS-first `@theme` tokens
 - Always merge className prop using cn utility
 - Maintain dark mode support
 - Follow responsive design patterns
