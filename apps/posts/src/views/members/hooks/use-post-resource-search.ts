@@ -15,7 +15,7 @@ const buildPublishedSearchParams = (term: string) => ({
 
 const titleFilter = <T extends {title: string}>(items: T[], term: string) => items.filter(i => i.title.toLowerCase().includes(term.toLowerCase()));
 
-export function usePostResourceSearch() {
+export function usePostResourceSearch(activeValues?: string[]) {
     const postSearch = useFilterSearch({
         useQuery: useBrowsePostsInfinite,
         dataKey: 'posts',
@@ -23,7 +23,8 @@ export function usePostResourceSearch() {
         localSearchFilter: titleFilter,
         limit: '25',
         toOption: p => ({value: p.id, label: p.title}),
-        useGetById: getPost
+        useGetById: getPost,
+        activeValues
     });
 
     const pageSearch = useFilterSearch({
@@ -33,7 +34,8 @@ export function usePostResourceSearch() {
         localSearchFilter: titleFilter,
         limit: '25',
         toOption: p => ({value: p.id, label: p.title, detail: 'Page'}),
-        useGetById: getPage
+        useGetById: getPage,
+        activeValues
     });
 
     const {onSearchChange: postOnSearch} = postSearch;

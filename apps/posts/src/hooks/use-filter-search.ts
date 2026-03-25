@@ -47,9 +47,9 @@ export interface UseFilterSearchReturn<T, K extends keyof T & string> {
 /**
  * Extract active filter values for a given field from a filters array.
  */
-export function getActiveFilterValues(filters: Filter[], field: string): string[] {
+export function getActiveFilterValues(filters: Filter[], ...fields: string[]): string[] {
     return filters
-        .filter(f => f.field === field)
+        .filter(f => fields.includes(f.field))
         .flatMap(f => f.values.map(String));
 }
 

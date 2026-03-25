@@ -216,7 +216,7 @@ const useFilterContext = () => useContext(FilterContext);
 // Reusable input variant component for consistent styling
 const filterInputVariants = cva(
     [
-        'text-foreground outline-hidden relative flex shrink-0 items-center transition',
+        'relative flex shrink-0 items-center text-foreground outline-hidden transition',
         'has-[[data-slot=filters-input]:focus-visible]:ring-ring/30',
         'has-[[data-slot=filters-input]:focus-visible]:border-ring',
         'has-[[data-slot=filters-input]:focus-visible]:outline-hidden',
@@ -232,8 +232,8 @@ const filterInputVariants = cva(
     {
         variants: {
             variant: {
-                solid: 'bg-secondary border-0',
-                outline: 'border-border bg-background border'
+                solid: 'border-0 bg-secondary',
+                outline: 'border border-border bg-background'
             },
             size: {
                 lg: 'h-10 px-2.5 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
@@ -256,14 +256,14 @@ const filterInputVariants = cva(
 // Reusable remove button variant component
 const filterRemoveButtonVariants = cva(
     [
-        'text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center justify-center transition',
-        'focus-visible:ring-ring focus-visible:outline-hidden focus-visible:ring-1'
+        'inline-flex shrink-0 items-center justify-center text-muted-foreground transition hover:text-foreground',
+        'focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden'
     ],
     {
         variants: {
             variant: {
                 solid: 'bg-secondary',
-                outline: 'border-border hover:bg-secondary border border-s-0'
+                outline: 'border border-s-0 border-border hover:bg-secondary'
             },
             size: {
                 lg: 'size-10 [&_svg:not([class*=size-])]:size-4',
@@ -290,15 +290,15 @@ const filterRemoveButtonVariants = cva(
 
 const filterAddButtonVariants = cva(
     [
-        'text-foreground inline-flex shrink-0 items-center justify-center transition',
+        'inline-flex shrink-0 items-center justify-center text-foreground transition',
         '[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]',
-        'focus-visible:ring-ring focus-visible:outline-hidden focus-visible:ring-1'
+        'focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden'
     ],
     {
         variants: {
             variant: {
-                solid: 'border-input hover:bg-secondary/60 border',
-                outline: 'border-border hover:bg-accent border'
+                solid: 'border border-input hover:bg-secondary/60',
+                outline: 'border border-border hover:bg-accent'
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
@@ -324,14 +324,14 @@ const filterAddButtonVariants = cva(
 
 const filterOperatorVariants = cva(
     [
-        'text-muted-foreground hover:text-foreground focus-visible:z-1 data-[state=open]:text-foreground relative flex shrink-0 items-center whitespace-nowrap transition',
-        'focus-visible:ring-ring focus-visible:outline-hidden focus-visible:ring-1'
+        'relative flex shrink-0 items-center whitespace-nowrap text-muted-foreground transition hover:text-foreground focus-visible:z-1 data-[state=open]:text-foreground',
+        'focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden'
     ],
     {
         variants: {
             variant: {
                 solid: 'bg-secondary',
-                outline: 'border-border bg-background hover:bg-secondary data-[state=open]:bg-secondary border border-e-0 [&+[data-slot=filters-remove]]:border-s'
+                outline: 'border border-e-0 border-border bg-background hover:bg-secondary data-[state=open]:bg-secondary [&+[data-slot=filters-remove]]:border-s'
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm',
@@ -353,14 +353,14 @@ const filterOperatorVariants = cva(
 
 const filterFieldLabelVariants = cva(
     [
-        'text-foreground flex shrink-0 items-center gap-1.5 px-1.5 py-1',
+        'flex shrink-0 items-center gap-1.5 px-1.5 py-1 text-foreground',
         '[&_svg:not([class*=size-])]:size-4'
     ],
     {
         variants: {
             variant: {
                 solid: 'bg-secondary',
-                outline: 'border-border border border-e-0'
+                outline: 'border border-e-0 border-border'
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
@@ -381,14 +381,14 @@ const filterFieldLabelVariants = cva(
 
 const filterFieldValueVariants = cva(
     [
-        'text-foreground focus-visible:z-1 relative flex min-w-0 shrink items-center gap-1 transition',
-        'focus-visible:ring-ring focus-visible:outline-hidden focus-visible:ring-1'
+        'relative flex min-w-0 shrink items-center gap-1 text-foreground transition focus-visible:z-1',
+        'focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden'
     ],
     {
         variants: {
             variant: {
                 solid: 'bg-secondary',
-                outline: 'border-border bg-background hover:bg-secondary border has-[[data-slot=switch]]:hover:bg-transparent'
+                outline: 'border border-border bg-background hover:bg-secondary has-[[data-slot=switch]]:hover:bg-transparent'
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
@@ -408,7 +408,7 @@ const filterFieldValueVariants = cva(
     }
 );
 
-const filterFieldAddonVariants = cva('text-foreground flex shrink-0 items-center justify-center', {
+const filterFieldAddonVariants = cva('flex shrink-0 items-center justify-center text-foreground', {
     variants: {
         variant: {
             solid: '',
@@ -426,11 +426,11 @@ const filterFieldAddonVariants = cva('text-foreground flex shrink-0 items-center
     }
 });
 
-const filterFieldBetweenVariants = cva('text-muted-foreground flex shrink-0 items-center', {
+const filterFieldBetweenVariants = cva('flex shrink-0 items-center text-muted-foreground', {
     variants: {
         variant: {
             solid: 'bg-secondary',
-            outline: 'border-border bg-background border border-x-0'
+            outline: 'border border-x-0 border-border bg-background'
         },
         size: {
             lg: 'h-10 px-4 text-sm',
@@ -601,7 +601,7 @@ function FilterInput<T = unknown>({
                 <input
                     aria-describedby={!isValid && validationMessage ? `${field?.key || 'input'}-error` : undefined}
                     aria-invalid={!isValid}
-                    className="outline-hidden w-full"
+                    className="w-full outline-hidden"
                     data-slot="filters-input"
                     onBlur={handleBlur}
                     onChange={handleChange}
@@ -611,8 +611,8 @@ function FilterInput<T = unknown>({
                 {!isValid && validationMessage && (
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center">
-                                <AlertCircle className="text-destructive size-3.5" />
+                            <div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center">
+                                <AlertCircle className="size-3.5 text-destructive" />
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -956,7 +956,7 @@ function FilterOperatorDropdown<T = unknown>({field, operator, values, onChange}
     // If hideOperatorSelect is true, just render the operator as plain text
     if (field.hideOperatorSelect) {
         return (
-            <div className="text-muted-foreground flex items-center self-stretch whitespace-nowrap border border-r-[0px] px-3 text-sm">
+            <div className="flex items-center self-stretch border border-r-[0px] px-3 text-sm whitespace-nowrap text-muted-foreground">
                 {operatorLabel}
             </div>
         );
@@ -975,7 +975,7 @@ function FilterOperatorDropdown<T = unknown>({field, operator, values, onChange}
                         onClick={() => onChange(op.value)}
                     >
                         <span>{op.label}</span>
-                        <Check className={`text-primary ms-auto ${op.value === operator ? 'opacity-100' : 'opacity-0'}`} />
+                        <Check className={`ms-auto text-primary ${op.value === operator ? 'opacity-100' : 'opacity-0'}`} />
                     </DropdownMenuItem>
                 ))}
             </DropdownMenuContent>
@@ -1021,7 +1021,7 @@ function SelectOptionsPopover<T = unknown>({
     }, [field.searchValue]);
 
     const isMultiSelect = field.type === 'multiselect' || values.length > 1;
-    const effectiveValues = (field.value !== undefined ? (field.value as T[]) : values) || [];
+    const effectiveValues = useMemo(() => (field.value !== undefined ? (field.value as T[]) : values) || [], [field.value, values]);
 
     // Focus the search input when the popover opens
     useEffect(() => {
@@ -1040,8 +1040,7 @@ function SelectOptionsPopover<T = unknown>({
     // Memoize to get stable reference for useEffect dependency
     const optionsFromField = useMemo(
         () => field.options?.filter(opt => effectiveValues.includes(opt.value)) || [],
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [field.options, JSON.stringify(effectiveValues)]
+        [field.options, effectiveValues]
     );
 
     // Sync cached options when field options or selected values change
@@ -1108,7 +1107,7 @@ function SelectOptionsPopover<T = unknown>({
                     )}
                     <CommandList className="outline-hidden">
                         {field.isLoading ? (
-                            <div className="text-muted-foreground flex items-center justify-center py-6 text-sm">
+                            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 size-4 animate-spin" />
                                 {context.i18n.loading}
                             </div>
@@ -1142,10 +1141,10 @@ function SelectOptionsPopover<T = unknown>({
                                     >
                                         {option.icon && option.icon}
                                         <div className="flex flex-col overflow-hidden">
-                                            <span className="text-accent-foreground truncate" title={option.label}>{option.label}</span>
-                                            {option.detail && <span className="text-muted-foreground truncate text-sm" title={option.detail}>{option.detail}</span>}
+                                            <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                            {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
                                         </div>
-                                        <Check className="text-primary ms-auto" />
+                                        <Check className="ms-auto text-primary" />
                                     </CommandItem>
                                 ))}
                             </CommandGroup>
@@ -1189,10 +1188,10 @@ function SelectOptionsPopover<T = unknown>({
                                         >
                                             {option.icon && option.icon}
                                             <div className="flex flex-col overflow-hidden">
-                                                <span className="text-accent-foreground truncate" title={option.label}>{option.label}</span>
-                                                {option.detail && <span className="text-muted-foreground truncate text-sm" title={option.detail}>{option.detail}</span>}
+                                                <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                                {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
                                             </div>
-                                            <Check className="text-primary ms-auto opacity-0" />
+                                            <Check className="ms-auto text-primary opacity-0" />
                                         </CommandItem>
                                     ))}
                                 </CommandGroup>
@@ -1238,7 +1237,7 @@ function SelectOptionsPopover<T = unknown>({
                                 </div>
                             )}
                             {selectedOptions.length === 1
-                                ? <span className="text-accent-foreground min-w-0 truncate" title={selectedOptions[0].detail ? `${selectedOptions[0].label} - ${selectedOptions[0].detail}` : selectedOptions[0].label}>{selectedOptions[0].label}</span>
+                                ? <span className="min-w-0 truncate text-accent-foreground" title={selectedOptions[0].detail ? `${selectedOptions[0].label} - ${selectedOptions[0].detail}` : selectedOptions[0].label}>{selectedOptions[0].label}</span>
                                 : selectedOptions.length > 1
                                     ? `${selectedOptions.length} ${context.i18n.selectedCount}`
                                     : context.i18n.select}
@@ -1264,7 +1263,7 @@ function SelectOptionsPopover<T = unknown>({
                     )}
                     <CommandList className="outline-hidden">
                         {field.isLoading ? (
-                            <div className="text-muted-foreground flex items-center justify-center py-6 text-sm">
+                            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 size-4 animate-spin" />
                                 {context.i18n.loading}
                             </div>
@@ -1293,10 +1292,10 @@ function SelectOptionsPopover<T = unknown>({
                                     >
                                         {option.icon && option.icon}
                                         <div className="flex flex-col overflow-hidden">
-                                            <span className="text-accent-foreground truncate" title={option.label}>{option.label}</span>
-                                            {option.detail && <span className="text-muted-foreground truncate text-sm" title={option.detail}>{option.detail}</span>}
+                                            <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                            {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
                                         </div>
-                                        <Check className="text-primary ms-auto" />
+                                        <Check className="ms-auto text-primary" />
                                     </CommandItem>
                                 ))}
                             </CommandGroup>
@@ -1332,10 +1331,10 @@ function SelectOptionsPopover<T = unknown>({
                                         >
                                             {option.icon && option.icon}
                                             <div className="flex flex-col overflow-hidden">
-                                                <span className="text-accent-foreground truncate" title={option.label}>{option.label}</span>
-                                                {option.detail && <span className="text-muted-foreground truncate text-sm" title={option.detail}>{option.detail}</span>}
+                                                <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                                {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
                                             </div>
-                                            <Check className="text-primary ms-auto opacity-0" />
+                                            <Check className="ms-auto text-primary opacity-0" />
                                         </CommandItem>
                                     ))}
                                 </CommandGroup>
@@ -1416,7 +1415,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                 <div className="flex items-center gap-2">
                     <Switch checked={isChecked} size="sm" onCheckedChange={checked => onChange([checked as T])} />
                     {field.onLabel && field.offLabel && (
-                        <span className="text-muted-foreground text-xs">{isChecked ? onLabel : offLabel}</span>
+                        <span className="text-xs text-muted-foreground">{isChecked ? onLabel : offLabel}</span>
                     )}
                 </div>
             </div>
@@ -1711,7 +1710,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                                 </div>
                             )}
                             {selectedOptions.length === 1
-                                ? <span className="text-accent-foreground min-w-0 truncate" title={selectedOptions[0].detail ? `${selectedOptions[0].label} - ${selectedOptions[0].detail}` : selectedOptions[0].label}>{selectedOptions[0].label}</span>
+                                ? <span className="min-w-0 truncate text-accent-foreground" title={selectedOptions[0].detail ? `${selectedOptions[0].label} - ${selectedOptions[0].detail}` : selectedOptions[0].label}>{selectedOptions[0].label}</span>
                                 : selectedOptions.length > 1
                                     ? `${selectedOptions.length} ${context.i18n.selectedCount}`
                                     : context.i18n.select}
@@ -1731,7 +1730,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                     )}
                     <CommandList className="outline-hidden">
                         {field.isLoading ? (
-                            <div className="text-muted-foreground flex items-center justify-center py-6 text-sm">
+                            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 size-4 animate-spin" />
                                 {context.i18n.loading}
                             </div>
@@ -1758,8 +1757,8 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                                         }}
                                     >
                                         {option.icon && option.icon}
-                                        <span className="text-accent-foreground truncate">{option.label}</span>
-                                        <Check className="text-primary ms-auto" />
+                                        <span className="truncate text-accent-foreground">{option.label}</span>
+                                        <Check className="ms-auto text-primary" />
                                     </CommandItem>
                                 ))}
                             </CommandGroup>
@@ -1789,8 +1788,8 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                                             }}
                                         >
                                             {option.icon && option.icon}
-                                            <span className="text-accent-foreground truncate">{option.label}</span>
-                                            <Check className="text-primary ms-auto opacity-0" />
+                                            <span className="truncate text-accent-foreground">{option.label}</span>
+                                            <Check className="ms-auto text-primary opacity-0" />
                                         </CommandItem>
                                     ))}
                                 </CommandGroup>

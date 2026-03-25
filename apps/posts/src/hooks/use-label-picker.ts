@@ -127,7 +127,7 @@ export function useLabelPicker({
         if (!trimmed || isDuplicateName(trimmed, id)) {
             return;
         }
-        const oldLabel = labels.find(l => l.id === id);
+        const oldLabel = labelSearch.allItems.find(l => l.id === id);
         const result = await editLabelMutation({id, name: trimmed});
         const updatedLabel = result?.labels?.[0];
         // If the slug changed and the old slug was selected, swap it
@@ -137,10 +137,10 @@ export function useLabelPicker({
                 onSelectionChange(current.map(s => (s === oldLabel.slug ? updatedLabel.slug : s)));
             }
         }
-    }, [editLabelMutation, isDuplicateName, labels, onSelectionChange]);
+    }, [editLabelMutation, isDuplicateName, labelSearch.allItems, onSelectionChange]);
 
     const deleteLabel = useCallback(async (id: string) => {
-        const label = labels.find(l => l.id === id);
+        const label = labelSearch.allItems.find(l => l.id === id);
         await deleteLabelMutation(id);
         if (label) {
             const current = selectedSlugsRef.current;
@@ -148,7 +148,7 @@ export function useLabelPicker({
                 onSelectionChange(current.filter(s => s !== label.slug));
             }
         }
-    }, [deleteLabelMutation, labels, onSelectionChange]);
+    }, [deleteLabelMutation, labelSearch.allItems, onSelectionChange]);
 
     return {
         labels,

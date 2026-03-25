@@ -65,6 +65,8 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 }) => {
     const activeLabelValues = getActiveFilterValues(filters, 'label');
     const activeTierValues = getActiveFilterValues(filters, 'tier_id');
+    const activePostValues = getActiveFilterValues(filters, 'signup', 'conversion');
+    const activeEmailValues = getActiveFilterValues(filters, 'emails.post_id', 'opened_emails.post_id', 'clicked_links.post_id');
 
     const labelSearch = useFilterSearch({
         useQuery: useBrowseLabelsInfinite,
@@ -103,7 +105,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const offersOptions = useMemo(() => buildOfferOptions(allOffers), [allOffers]);
 
     // posts combines posts+pages so it's extracted
-    const postSearch = usePostResourceSearch();
+    const postSearch = usePostResourceSearch(activePostValues);
 
     const EMAIL_BASE_FILTER = '(status:published,status:sent)+newsletter_id:-null';
     const emailSearch = useFilterSearch({
@@ -119,7 +121,8 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         localSearchFilter: (posts, term) => posts.filter(p => p.title.toLowerCase().includes(term.toLowerCase())),
         limit: '25',
         toOption: p => ({value: p.id, label: p.title}),
-        useGetById: getPost
+        useGetById: getPost,
+        activeValues: activeEmailValues
     });
 
     const {data: settingsData} = useBrowseSettings({});
@@ -133,8 +136,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const siteTimezone = getSiteTimezone(settings);
 
     // Use unfiltered items for field visibility (must not change during search)
-    const allPaidTiers = tierSearch.allItems.filter(tier => tier.active);
-    const hasMultipleTiers = allPaidTiers.length > 1;
+    const hasMultipleTiers = tierSearch.allItems.length > 1;
     const newsletters = newsletterSearch.allItems;
     const offers = allOffers;
 
@@ -181,9 +183,9 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 
     const hasFilters = filters.length > 0;
     const clearAndSaveButtons = hasFilters ? (
-        <div className="flex shrink-0 items-center gap-2 sm:absolute sm:right-0 sm:top-0">
+        <div className="flex shrink-0 items-center gap-2 sm:absolute sm:top-0 sm:right-0">
             <button
-                className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm font-normal"
+                className="flex items-center gap-1 text-sm font-normal text-muted-foreground hover:text-foreground"
                 type="button"
                 onClick={() => onFiltersChange([])}
             >

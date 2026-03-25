@@ -40,9 +40,7 @@ export function AddLabelModal({
     }, [onOpenChange]);
 
     const handleConfirm = () => {
-        const labelIds = picker.labels
-            .filter(l => selectedSlugs.includes(l.slug))
-            .map(l => l.id);
+        const labelIds = picker.selectedLabels.map(l => l.id);
         if (labelIds.length > 0) {
             onConfirm(labelIds);
         }
