@@ -26,7 +26,7 @@ describe('useMemberFilterFields', () => {
             labelsOptions: [{value: 'vip', label: 'VIP'}],
             newsletters: [{slug: 'weekly', name: 'Weekly', status: 'active'}],
             paidMembersEnabled: true,
-            emailAnalyticsEnabled: true,
+            emailFiltersEnabled: true,
             postResourceOptions: [{value: 'post_1', label: 'Welcome'}],
             onPostResourceSearchChange: vi.fn(),
             postResourceSearchValue: 'wel',
@@ -39,7 +39,6 @@ describe('useMemberFilterFields', () => {
             membersTrackSources: true,
             emailTrackOpens: true,
             emailTrackClicks: true,
-            audienceFeedbackEnabled: true,
             siteTimezone: 'UTC'
         }));
 
@@ -66,6 +65,42 @@ describe('useMemberFilterFields', () => {
         });
 
         expect(emailPostField).toMatchObject({
+            options: [{value: 'email_1', label: 'Launch'}],
+            searchValue: 'lau',
+            isLoading: false
+        });
+    });
+
+    it('shows the Email group when email sending is enabled', () => {
+        const {result} = renderHook(() => useMemberFilterFields({
+            emailFiltersEnabled: true,
+            siteTimezone: 'UTC'
+        }));
+
+        const emailGroup = result.current.find(group => group.group === 'Email');
+
+        expect(emailGroup?.fields.map(field => field.key)).toEqual([
+            'email_count',
+            'email_opened_count',
+            'emails.post_id',
+            'newsletter_feedback'
+        ]);
+    });
+
+    it('keeps the feedback filter visible without a separate feature flag', () => {
+        const {result} = renderHook(() => useMemberFilterFields({
+            emailFiltersEnabled: true,
+            emailResourceOptions: [{value: 'email_1', label: 'Launch'}],
+            onEmailResourceSearchChange: vi.fn(),
+            emailResourceSearchValue: 'lau',
+            emailResourceLoading: false,
+            siteTimezone: 'UTC'
+        }));
+
+        const emailFields = result.current.find(group => group.group === 'Email')?.fields ?? [];
+        const feedbackField = emailFields.find(field => field.key === 'newsletter_feedback');
+
+        expect(feedbackField).toMatchObject({
             options: [{value: 'email_1', label: 'Launch'}],
             searchValue: 'lau',
             isLoading: false

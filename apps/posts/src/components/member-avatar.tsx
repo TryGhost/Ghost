@@ -20,7 +20,7 @@ export function MemberAvatar({avatarImage, memberId, isHidden, className}: Membe
                 </div>
             )}
             <div>
-                <LucideIcon.User className='size-3! md:size-4! text-muted-foreground' size={12} />
+                <LucideIcon.User className='size-3! text-muted-foreground md:size-4!' size={12} />
             </div>
         </div>
     );

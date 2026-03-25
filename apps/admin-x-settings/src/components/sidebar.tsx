@@ -128,14 +128,14 @@ const Sidebar: React.FC = () => {
     };
 
     const navClasses = clsx(
-        'tablet:visible! tablet:block! hidden pt-10'
+        'hidden pt-10 tablet:visible! tablet:block!'
     );
 
     return (
         <div className='ml-auto flex w-full flex-col pt-0 tablet:max-w-[240px]' data-testid="sidebar">
             <div className='sticky top-0 flex content-stretch items-end tablet:h-20 tablet:bg-grey-50 xl:h-20 dark:bg-grey-975 dark:tablet:bg-[#101114]'>
                 <div className='relative w-full'>
-                    <Icon className='absolute left-3 top-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
+                    <Icon className='absolute top-3 left-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
                     <TextField
                         autoComplete="off"
                         autoCorrect="off"
@@ -150,10 +150,10 @@ const Sidebar: React.FC = () => {
                         unstyled
                         onChange={updateSearch}
                     />
-                    {filter ? <Button className='absolute right-14 top-3 p-1 tablet:right-3' icon='close' iconColorClass='text-grey-700 w-[10px]! h-[10px]!' size='sm' unstyled onClick={() => {
+                    {filter ? <Button className='absolute top-3 right-14 p-1 tablet:right-3' icon='close' iconColorClass='text-grey-700 w-[10px]! h-[10px]!' size='sm' unstyled onClick={() => {
                         setFilter('');
                         searchInputRef.current?.focus();
-                    }} /> : <div className='tablet:visible! tablet:block! absolute -right-1/2 top-[9px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] tablet:right-3 dark:border-grey-800 dark:bg-grey-900 dark:text-grey-500 dark:shadow-[0px_1px_#626D79]'>/</div>}
+                    }} /> : <div className='absolute top-[9px] -right-1/2 hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold tracking-wider text-grey-600 uppercase shadow-[0px_1px_#CED4D9] tablet:visible! tablet:right-3 tablet:block! dark:border-grey-800 dark:bg-grey-900 dark:text-grey-500 dark:shadow-[0px_1px_#626D79]'>/</div>}
                 </div>
             </div>
             <nav className={navClasses} id='admin-x-settings-sidebar'>
@@ -214,7 +214,7 @@ const Sidebar: React.FC = () => {
                 </SettingNavSection>
 
                 {!filter &&
-                <a className='w-100 mb-10 mt-1 flex h-[38px] cursor-pointer items-center rounded-lg px-3 py-2 text-left text-[14px] font-medium text-grey-800 transition-all hover:bg-grey-200 focus:bg-grey-100 dark:text-grey-600 dark:hover:bg-grey-950 dark:focus:bg-grey-925' onClick={() => {
+                <a className='mt-1 mb-10 flex h-[38px] w-100 cursor-pointer items-center rounded-lg px-3 py-2 text-left text-[14px] font-medium text-grey-800 transition-all hover:bg-grey-200 focus:bg-grey-100 dark:text-grey-600 dark:hover:bg-grey-950 dark:focus:bg-grey-925' onClick={() => {
                     updateRoute('about');
                 }}>
                     <img alt='Ghost Logo' className='mr-[7px] size-[18px]' src={GhostLogo} />

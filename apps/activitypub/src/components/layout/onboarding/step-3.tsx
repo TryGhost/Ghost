@@ -40,7 +40,7 @@ const TabButton: React.FC<{
 }> = ({children, selected, onClick, onMouseEnter, onMouseLeave}) => {
     return (
         <Button
-            className={`h-auto rounded-full px-3 py-0.5 font-mono text-sm font-medium uppercase tracking-wide ${!selected && 'bg-transparent text-gray-700 dark:text-gray-600'}`}
+            className={`h-auto rounded-full px-3 py-0.5 font-mono text-sm font-medium tracking-wide uppercase ${!selected && 'bg-transparent text-gray-700 dark:text-gray-600'}`}
             onClick={onClick}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
@@ -52,7 +52,7 @@ const TabButton: React.FC<{
 
 const Sidebar: React.FC<{selectedTab?: number}> = ({selectedTab}) => {
     return (
-        <div className='flex h-full flex-col gap-px border-l border-gray-200 pl-4 pt-4 dark:border-gray-900'>
+        <div className='flex h-full flex-col gap-px border-l border-gray-200 pt-4 pl-4 dark:border-gray-900'>
             <MenuItem selected={selectedTab === 1}>
                 <LucideIcon.Inbox size={16} strokeWidth={1.5} /> Inbox
             </MenuItem>
@@ -69,7 +69,7 @@ const Sidebar: React.FC<{selectedTab?: number}> = ({selectedTab}) => {
                 <LucideIcon.User size={16} strokeWidth={1.5} /> Profile
             </MenuItem>
             <div className='mt-8'>
-                <div className='inline-flex h-8 items-center gap-1.5 rounded-full bg-purple-500 pl-2 pr-3 text-sm font-medium text-white'>
+                <div className='inline-flex h-8 items-center gap-1.5 rounded-full bg-purple-500 pr-3 pl-2 text-sm font-medium text-white'>
                     <LucideIcon.FilePen size={16} strokeWidth={1.5} /> New note
                 </div>
             </div>
@@ -225,13 +225,13 @@ const ShortFormContent: React.FC = () => {
                     {feedList.map(item => (
                         <>
                             <div className='flex w-full items-start gap-3 px-3'>
-                                <div className='size-9 max-h-9 min-h-9 min-w-9 max-w-9 rounded-full bg-cover bg-center bg-no-repeat'
+                                <div className='size-9 max-h-9 min-h-9 max-w-9 min-w-9 rounded-full bg-cover bg-center bg-no-repeat'
                                     style={{
                                         backgroundImage: `url(${item.avatar})`
                                     }}></div>
                                 <div className='flex flex-col gap-3 text-sm'>
                                     <div className='mt-0.5 flex flex-col gap-0.5'>
-                                        <div className='font-semibold leading-tighter'>{item.publisher}</div>
+                                        <div className='leading-tighter font-semibold'>{item.publisher}</div>
                                         <div className='leading-tighter text-gray-700 dark:text-gray-600'>{item.handle}</div>
                                     </div>
                                     <div>
@@ -268,12 +268,12 @@ const Reader: React.FC = () => {
         <>
             <div className='relative flex w-full items-center justify-center border-b border-gray-200 py-5 dark:border-gray-900'>
                 <div className='flex w-full max-w-[520px] items-center gap-3 text-sm'>
-                    <div className='size-9 max-h-9 min-h-9 min-w-9 max-w-9 rounded-full bg-cover bg-center bg-no-repeat'
+                    <div className='size-9 max-h-9 min-h-9 max-w-9 min-w-9 rounded-full bg-cover bg-center bg-no-repeat'
                         style={{
                             backgroundImage: `url(${fourOFourAvatar})`
                         }}></div>
                     <div className='mt-0.5 flex flex-col gap-0.5'>
-                        <div className='font-semibold leading-tighter'>404 Media</div>
+                        <div className='leading-tighter font-semibold'>404 Media</div>
                         <div className='leading-tighter text-gray-700 dark:text-gray-600'>@index@404media.co — Yesterday</div>
                     </div>
                 </div>

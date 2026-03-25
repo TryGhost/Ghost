@@ -134,7 +134,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
 
     if (isLoading) {
         return (
-            <EmptyCard className='hover:cursor-pointer! flex h-[calc(10vw+116px)] max-h-[416px] min-h-20 items-center justify-center'>
+            <EmptyCard className='flex h-[calc(10vw+116px)] max-h-[416px] min-h-20 items-center justify-center hover:cursor-pointer!'>
                 <BarChartLoadingIndicator />
             </EmptyCard>
         );

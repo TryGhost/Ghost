@@ -3,12 +3,14 @@ import express from 'express';
 import http from 'http';
 import {
     type RecordedStripeCheckoutSession,
+    type StripeCoupon,
     type StripeCustomer,
     type StripePaymentMethod,
     type StripePrice,
     type StripeProduct,
     type StripeSubscription,
     buildCheckoutSession,
+    buildCoupon,
     buildCustomer,
     buildPrice,
     buildProduct
@@ -23,6 +25,7 @@ export class FakeStripeServer {
     private _port: number;
     private readonly products: Map<string, StripeProduct> = new Map();
     private readonly prices: Map<string, StripePrice> = new Map();
+    private readonly coupons: Map<string, StripeCoupon> = new Map();
     private readonly customers: Map<string, StripeCustomer> = new Map();
     private readonly subscriptions: Map<string, StripeSubscription> = new Map();
     private readonly paymentMethods: Map<string, StripePaymentMethod> = new Map();
@@ -43,6 +46,10 @@ export class FakeStripeServer {
 
     upsertPrice(price: StripePrice): void {
         this.prices.set(price.id, price);
+    }
+
+    upsertCoupon(coupon: StripeCoupon): void {
+        this.coupons.set(coupon.id, coupon);
     }
 
     upsertCustomer(customer: StripeCustomer): void {
@@ -67,6 +74,10 @@ export class FakeStripeServer {
 
     getPrices(): StripePrice[] {
         return Array.from(this.prices.values());
+    }
+
+    getCoupons(): StripeCoupon[] {
+        return Array.from(this.coupons.values());
     }
 
     getCustomers(): StripeCustomer[] {
@@ -235,6 +246,87 @@ export class FakeStripeServer {
             res.status(200).json(customer);
         });
 
+        this.app.post('/v1/coupons', (req, res) => {
+            const badRequest = (message: string, param?: string): void => {
+                res.status(400).json({
+                    error: {
+                        type: 'invalid_request_error',
+                        message,
+                        ...(param ? {param} : {})
+                    }
+                });
+            };
+
+            const duration = this.parseCouponDuration(req.body.duration);
+            const amountOffRaw = req.body.amount_off;
+            const percentOffRaw = req.body.percent_off;
+            const hasAmountOff = amountOffRaw !== undefined && amountOffRaw !== null && amountOffRaw !== '';
+            const hasPercentOff = percentOffRaw !== undefined && percentOffRaw !== null && percentOffRaw !== '';
+
+            if (!duration) {
+                return badRequest(
+                    'Invalid coupon duration. Must be one of "forever", "once", or "repeating".',
+                    'duration'
+                );
+            }
+
+            if (!hasAmountOff && !hasPercentOff) {
+                return badRequest(
+                    'You must provide exactly one of percent_off or amount_off.',
+                    'percent_off'
+                );
+            }
+
+            if (hasAmountOff && hasPercentOff) {
+                return badRequest(
+                    'You cannot provide both percent_off and amount_off.',
+                    'percent_off'
+                );
+            }
+
+            const amountOff = hasAmountOff ? this.parseNumber(amountOffRaw) : undefined;
+            const percentOff = hasPercentOff ? this.parseNumber(percentOffRaw) : undefined;
+
+            if (hasAmountOff && typeof amountOff !== 'number') {
+                return badRequest('Invalid amount_off. Expected a numeric value.', 'amount_off');
+            }
+
+            if (hasPercentOff && typeof percentOff !== 'number') {
+                return badRequest('Invalid percent_off. Expected a numeric value.', 'percent_off');
+            }
+
+            const currency = this.parseString(req.body.currency)?.toLowerCase() ?? null;
+            if (hasAmountOff && !currency) {
+                return badRequest('currency is required when amount_off is provided.', 'currency');
+            }
+
+            let durationInMonths: number | null = null;
+            if (duration === 'repeating') {
+                const parsedDurationInMonths = this.parseNumber(req.body.duration_in_months);
+                if (typeof parsedDurationInMonths !== 'number' || !Number.isInteger(parsedDurationInMonths) || parsedDurationInMonths <= 0) {
+                    return badRequest(
+                        'duration_in_months must be a positive integer when duration is repeating.',
+                        'duration_in_months'
+                    );
+                }
+
+                durationInMonths = parsedDurationInMonths;
+            }
+
+            const coupon = buildCoupon({
+                name: this.parseString(req.body.name) ?? null,
+                duration,
+                duration_in_months: durationInMonths,
+                amount_off: typeof amountOff === 'number' ? amountOff : null,
+                currency,
+                percent_off: typeof percentOff === 'number' ? percentOff : null
+            });
+
+            this.upsertCoupon(coupon);
+            debug(`Created coupon: ${coupon.id}`);
+            res.status(200).json(coupon);
+        });
+
         this.app.get('/v1/subscriptions/:id', (req, res) => {
             const subscriptionId = req.params.id;
             const subscription = this.subscriptions.get(subscriptionId);
@@ -380,8 +472,20 @@ export class FakeStripeServer {
 
         this.app.post('/v1/checkout/sessions', (req, res) => {
             const mode = this.parseCheckoutMode(req.body.mode);
+            const discounts = this.parseDiscounts(req.body.discounts) ?? [];
+            const missingCouponId = discounts.find((discount) => {
+                return !this.coupons.has(discount.coupon);
+            })?.coupon;
+
+            if (missingCouponId) {
+                debug(`Cannot create checkout session with missing coupon: ${missingCouponId}`);
+                res.status(400).json({error: {type: 'invalid_request_error', message: 'No such coupon'}});
+                return;
+            }
+
             const session = buildCheckoutSession({
                 request: {
+                    discounts,
                     custom_fields: this.parseCustomFields(req.body.custom_fields),
                     invoice_creation: this.parseInvoiceCreation(req.body.invoice_creation),
                     submit_type: this.parseSubmitType(req.body.submit_type),
@@ -600,6 +704,25 @@ export class FakeStripeServer {
         };
     }
 
+    private parseDiscounts(value: unknown): RecordedStripeCheckoutSession['request']['discounts'] {
+        if (!value || typeof value !== 'object') {
+            return undefined;
+        }
+
+        const discounts = Array.isArray(value)
+            ? value
+            : Object.values(value as Record<string, {coupon?: string}>);
+
+        return discounts
+            .filter((item): item is {coupon?: string} => item !== null && typeof item === 'object')
+            .map((item) => {
+                return {
+                    coupon: this.parseString(item.coupon) ?? ''
+                };
+            })
+            .filter(item => item.coupon);
+    }
+
     private parseLineItems(value: unknown): RecordedStripeCheckoutSession['request']['line_items'] {
         if (!value || typeof value !== 'object') {
             return undefined;
@@ -697,6 +820,14 @@ export class FakeStripeServer {
 
     private parseSubmitType(value: unknown): RecordedStripeCheckoutSession['request']['submit_type'] {
         if (value !== 'auto' && value !== 'book' && value !== 'donate' && value !== 'pay' && value !== 'send') {
+            return undefined;
+        }
+
+        return value;
+    }
+
+    private parseCouponDuration(value: unknown): StripeCoupon['duration'] | undefined {
+        if (value !== 'forever' && value !== 'once' && value !== 'repeating') {
             return undefined;
         }
 

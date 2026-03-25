@@ -14,6 +14,27 @@ export interface MemberSubscription {
         currency: string;
         interval: string;
     };
+    offer?: {
+        id: string;
+        amount: number;
+        duration: 'once' | 'repeating' | 'forever' | 'trial';
+        duration_in_months: number | null;
+        type: 'fixed' | 'percent' | 'trial';
+    } | null;
+    offer_redemptions?: Array<{id: string}>;
+    next_payment?: {
+        original_amount: number;
+        amount: number;
+        interval: string;
+        currency: string;
+        discount: {
+            offer_id: string;
+            duration: 'once' | 'repeating' | 'forever';
+            duration_in_months: number | null;
+            type: 'fixed' | 'percent';
+            amount: number;
+        } | null;
+    } | null;
 }
 
 export interface MemberWithSubscriptions extends Member {
