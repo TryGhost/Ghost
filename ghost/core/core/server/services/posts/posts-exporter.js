@@ -106,7 +106,15 @@ class PostsExporter {
             .whereIn('id', ids);
 
         if (order) {
-            postsQuery.orderByRaw(order);
+            // Parse and validate order clauses to avoid raw SQL injection
+            const allowedColumns = new Set(['id', 'title', 'status', 'visibility', 'featured', 'created_at', 'published_at', 'updated_at']);
+            const clauses = order.split(',').map(c => c.trim()).filter(Boolean);
+            for (const clause of clauses) {
+                const [col, dir] = clause.split(/\s+/);
+                if (allowedColumns.has(col)) {
+                    postsQuery.orderBy(col, dir?.toLowerCase() === 'asc' ? 'asc' : 'desc');
+                }
+            }
         }
 
         if (limit && limit !== 'all') {
