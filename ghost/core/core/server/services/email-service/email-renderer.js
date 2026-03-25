@@ -16,7 +16,7 @@ const crypto = require('crypto');
 
 const DEFAULT_LOCALE = 'en-gb';
 const DEFAULT_ACCENT_COLOR = '#15212A';
-const VALID_HEX_REGEX = /#([0-9a-f]{3}){1,2}$/i;
+const VALID_HEX_REGEX = /^#([0-9a-f]{3}){1,2}$/i;
 const CONTENT_IMAGES_PATH_WITHOUT_SIZE_REGEX = /\/content\/images\/(?!size\/)/;
 
 // Wrapper function so that i18next-parser can find these strings
