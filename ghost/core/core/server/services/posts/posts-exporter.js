@@ -303,7 +303,7 @@ class PostsExporter {
                             created_at: row.created_at,
                             updated_at: row.updated_at,
                             published_at: published ? row.published_at : null,
-                            featured: row.featured,
+                            featured: !!row.featured,
                             tags: (tagsMap.get(row.id) || []).join(', '),
                             post_access: postAccess,
                             email_recipients: emailRecipients,
