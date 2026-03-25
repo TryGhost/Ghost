@@ -1,19 +1,26 @@
 import baseDebug from '@tryghost/debug';
-import {AnalyticsOverviewPage} from '@/helpers/pages';
 import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
 import {FakeStripeServer, StripeTestService, WebhookClient} from '@/helpers/services/stripe';
 import {GhostInstance, getEnvironmentManager} from '@/helpers/environment';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
-import {faker} from '@faker-js/faker';
-import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/sign-in';
-import {setupUser} from '@/helpers/utils';
+import {User} from '@/data-factory';
+import {createContextWithAuthState} from '@/helpers/playwright/context-with-auth-state';
+import type {FixtureRole} from '@/helpers/utils/fixture-cache';
 
 const debug = baseDebug('e2e:ghost-fixture');
 const STRIPE_SECRET_KEY = 'sk_test_e2eTestKey';
 const STRIPE_PUBLISHABLE_KEY = 'pk_test_e2eTestKey';
+const OWNER: User = {
+    name: 'Test Owner',
+    email: 'owner@ghost.org',
+    password: 'test@123@test',
+    blogTitle: 'Test Blog'
+};
 
 type ResolvedIsolation = 'per-file' | 'per-test';
 type LabsFlags = Record<string, boolean>;
+
+export type Role = FixtureRole;
 
 /**
  * The subset of fixture options that defines whether a per-file environment can
@@ -35,11 +42,6 @@ interface PerFileInstanceCache {
     instance: GhostInstance;
 }
 
-interface PerFileAuthenticatedSessionCache {
-    ghostAccountOwner: User;
-    storageState: Awaited<ReturnType<BrowserContext['storageState']>>;
-}
-
 interface TestEnvironmentContext {
     holder: GhostInstance;
     resolvedIsolation: ResolvedIsolation;
@@ -57,14 +59,6 @@ interface WorkerFixtures {
 }
 
 let cachedPerFileInstance: PerFileInstanceCache | null = null;
-let cachedPerFileGhostAccountOwner: User | null = null;
-let cachedPerFileAuthenticatedSession: PerFileAuthenticatedSessionCache | null = null;
-
-export interface User {
-    name: string;
-    email: string;
-    password: string;
-}
 
 export interface GhostConfig {
     hostSettings__billing__enabled?: string;
@@ -83,6 +77,8 @@ export interface GhostInstanceFixture {
     labs?: LabsFlags;
     // Participates in per-file environment identity.
     config?: GhostConfig;
+    // Selects which pre-generated authenticated storage state to load.
+    role?: Role;
     // Forces per-test isolation because Ghost boots against a per-test fake Stripe server.
     stripeEnabled?: boolean;
     stripeServer?: FakeStripeServer;
@@ -91,7 +87,6 @@ export interface GhostInstanceFixture {
     pageWithAuthenticatedUser: {
         page: Page;
         context: BrowserContext;
-        ghostAccountOwner: User
     };
 }
 
@@ -123,49 +118,15 @@ function getResolvedIsolation(testInfo: TestInfo, isolation?: 'per-test'): Resol
     return 'per-file';
 }
 
-async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghostAccountOwner: User) {
-    debug('Setting up authenticated page for Ghost instance:', baseURL);
+async function setupNewAuthenticatedPage(browser: Browser, backendURL: string, role: Role = 'owner') {
+    debug('Setting up authenticated page for Ghost instance:', backendURL, 'with role:', role);
 
-    // Create browser context with correct baseURL and extra HTTP headers
-    const context = await browser.newContext({
-        baseURL: baseURL,
-        extraHTTPHeaders: {
-            Origin: baseURL
-        }
+    const context = await createContextWithAuthState(browser, backendURL, {
+        role
     });
     const page = await context.newPage();
 
-    await loginToGetAuthenticatedSession(page, ghostAccountOwner.email, ghostAccountOwner.password);
-    debug('Authentication completed for Ghost instance');
-
-    return {page, context, ghostAccountOwner};
-}
-
-async function setupAuthenticatedPageFromStorageState(browser: Browser, baseURL: string, authenticatedSession: PerFileAuthenticatedSessionCache) {
-    debug('Reusing authenticated storage state for Ghost instance:', baseURL);
-
-    const context = await browser.newContext({
-        baseURL: baseURL,
-        extraHTTPHeaders: {
-            Origin: baseURL
-        },
-        storageState: authenticatedSession.storageState
-    });
-    const page = await context.newPage();
-    await page.goto('/ghost/#/');
-
-    const analyticsPage = new AnalyticsOverviewPage(page);
-    const billingIframe = page.getByTitle('Billing');
-    await Promise.race([
-        analyticsPage.header.waitFor({state: 'visible'}),
-        billingIframe.waitFor({state: 'visible'})
-    ]);
-
-    return {
-        page,
-        context,
-        ghostAccountOwner: authenticatedSession.ghostAccountOwner
-    };
+    return {page, context};
 }
 
 /**
@@ -190,8 +151,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         const environmentManager = await getEnvironmentManager();
         await environmentManager.perTestTeardown(cachedPerFileInstance.instance);
         cachedPerFileInstance = null;
-        cachedPerFileGhostAccountOwner = null;
-        cachedPerFileAuthenticatedSession = null;
     }, {
         scope: 'worker',
         auto: true
@@ -230,8 +189,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
             });
             const previousPerFileInstance = cachedPerFileInstance?.instance;
             cachedPerFileInstance = null;
-            cachedPerFileGhostAccountOwner = null;
-            cachedPerFileAuthenticatedSession = null;
 
             if (previousPerFileInstance) {
                 await environmentManager.perTestTeardown(previousPerFileInstance);
@@ -268,8 +225,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
                 environmentSignature,
                 instance: nextPerFileInstance
             };
-            cachedPerFileGhostAccountOwner = null;
-            cachedPerFileAuthenticatedSession = null;
 
             if (previousPerFileInstance) {
                 await environmentManager.perTestTeardown(previousPerFileInstance);
@@ -298,8 +253,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
                 environmentSignature,
                 instance: nextInstance
             };
-            cachedPerFileGhostAccountOwner = null;
-            cachedPerFileAuthenticatedSession = null;
 
             Object.assign(holder, nextInstance);
         };
@@ -319,6 +272,7 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
     config: [undefined, {option: true}],
     isolation: [undefined, {option: true}],
     labs: [undefined, {option: true}],
+    role: ['owner', {option: true}],
     stripeEnabled: [false, {option: true}],
 
     stripeServer: async ({stripeEnabled}, use) => {
@@ -336,7 +290,7 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         await server.stop();
         debug('Fake Stripe server stopped');
     },
-    
+
     ghostInstance: async ({_testEnvironmentContext}, use, testInfo: TestInfo) => {
         debug('Using Ghost instance for test:', {
             testTitle: testInfo.title,
@@ -388,54 +342,19 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         await use(ghostInstance.baseUrl);
     },
 
-    // Create user credentials only (no authentication)
-    ghostAccountOwner: async ({ghostInstance, _testEnvironmentContext}, use) => {
-        if (!ghostInstance.baseUrl) {
-            throw new Error('baseURL is not defined');
-        }
-
+    ghostAccountOwner: async ({_testEnvironmentContext}, use) => {
         _testEnvironmentContext.markResetEnvironmentBlocker('ghostAccountOwner');
-
-        if (_testEnvironmentContext.resolvedIsolation === 'per-file' && cachedPerFileGhostAccountOwner) {
-            await use(cachedPerFileGhostAccountOwner);
-            return;
-        }
-
-        // Create user in this Ghost instance
-        const ghostAccountOwner: User = {
-            name: 'Test User',
-            email: `test${faker.string.uuid()}@ghost.org`,
-            password: 'test@123@test'
-        };
-        await setupUser(ghostInstance.baseUrl, ghostAccountOwner);
-
-        if (_testEnvironmentContext.resolvedIsolation === 'per-file') {
-            cachedPerFileGhostAccountOwner = ghostAccountOwner;
-        }
-
-        await use(ghostAccountOwner);
+        await use({...OWNER});
     },
 
-    // Intermediate fixture that sets up the page and returns all setup data
-    pageWithAuthenticatedUser: async ({browser, ghostInstance, ghostAccountOwner, _testEnvironmentContext}, use) => {
-        if (!ghostInstance.baseUrl) {
+    pageWithAuthenticatedUser: async ({browser, baseURL, role, _testEnvironmentContext}, use) => {
+        if (!baseURL) {
             throw new Error('baseURL is not defined');
         }
 
         _testEnvironmentContext.markResetEnvironmentBlocker('pageWithAuthenticatedUser');
 
-        const pageWithAuthenticatedUser =
-            _testEnvironmentContext.resolvedIsolation === 'per-file' && cachedPerFileAuthenticatedSession
-                ? await setupAuthenticatedPageFromStorageState(browser, ghostInstance.baseUrl, cachedPerFileAuthenticatedSession)
-                : await setupNewAuthenticatedPage(browser, ghostInstance.baseUrl, ghostAccountOwner);
-
-        if (_testEnvironmentContext.resolvedIsolation === 'per-file' && !cachedPerFileAuthenticatedSession) {
-            cachedPerFileAuthenticatedSession = {
-                ghostAccountOwner: pageWithAuthenticatedUser.ghostAccountOwner,
-                storageState: await pageWithAuthenticatedUser.context.storageState()
-            };
-        }
-
+        const pageWithAuthenticatedUser = await setupNewAuthenticatedPage(browser, baseURL, role);
         await use(pageWithAuthenticatedUser);
         await pageWithAuthenticatedUser.context.close();
     },
