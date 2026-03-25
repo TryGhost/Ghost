@@ -17,7 +17,7 @@ import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {getTier} from '@tryghost/admin-x-framework/api/tiers';
 import {useBrowseLabelsInfinite} from '@tryghost/admin-x-framework/api/labels';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
-import {useBrowseOffersById, useBrowseOffersInfinite} from '@tryghost/admin-x-framework/api/offers';
+import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useBrowsePostsInfinite} from '@tryghost/admin-x-framework/api/posts';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {usePostResourceSearch} from '../hooks/use-post-resource-search';
@@ -32,9 +32,10 @@ interface MembersFiltersProps {
     activeView?: MemberView | null;
 }
 
-function toSearchProps(search: {onSearchChange: (s: string) => void; isLoading: boolean}): FilterSearchProps {
+function toSearchProps(search: {onSearchChange: (s: string) => void; searchValue: string; isLoading: boolean}): FilterSearchProps {
     return {
         onSearchChange: search.onSearchChange,
+        searchValue: search.searchValue,
         isLoading: search.isLoading
     };
 }
@@ -96,36 +97,10 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         useGetById: getNewsletter
     });
 
-    // Offers is an anomaly where the API doesn't support pagination so first page includes all offers
-    const offerSearch = useFilterSearch({
-        useQuery: useBrowseOffersInfinite,
-        dataKey: 'offers',
-        serverSearchParams: () => ({}),
-        localSearchFilter: (offers, term) => offers.filter(o => o.name.toLowerCase().includes(term.toLowerCase())),
-        toOption: o => ({value: o.id, label: o.name}),
-        useGetById: useBrowseOffersById
-    });
-
-    // Offers need raw items for buildOfferOptions (retention offer grouping)
-    const offerItems = offerSearch.items;
-    const allOfferItems = offerSearch.allItems;
-    const offersOptions = useMemo(() => {
-        const seen = new Set<string>();
-        const merged: typeof offerItems = [];
-        for (const offer of offerItems) {
-            if (!seen.has(offer.id)) {
-                seen.add(offer.id);
-                merged.push(offer);
-            }
-        }
-        for (const offer of allOfferItems) {
-            if (!seen.has(offer.id)) {
-                seen.add(offer.id);
-                merged.push(offer);
-            }
-        }
-        return buildOfferOptions(merged);
-    }, [offerItems, allOfferItems]);
+    // Offers API doesn't support pagination — all offers are returned in a single page
+    const {data: offersData} = useBrowseOffers({});
+    const allOffers = useMemo(() => offersData?.offers ?? [], [offersData?.offers]);
+    const offersOptions = useMemo(() => buildOfferOptions(allOffers), [allOffers]);
 
     // posts combines posts+pages so it's extracted
     const postSearch = usePostResourceSearch();
@@ -161,7 +136,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const allPaidTiers = tierSearch.allItems.filter(tier => tier.active);
     const hasMultipleTiers = allPaidTiers.length > 1;
     const newsletters = newsletterSearch.allItems;
-    const offers = offerSearch.allItems;
+    const offers = allOffers;
 
     const hydratedNewsletterSlugs = useMemo(() => {
         return [...new Set(
@@ -194,7 +169,6 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         tierSearchProps: toSearchProps(tierSearch),
         hasOffers: offers.length > 0,
         offers,
-        offerSearchProps: toSearchProps(offerSearch),
         postSearchOptions: postSearch.options,
         postSearchProps: toSearchProps(postSearch),
         emailSearchOptions: emailSearch.options,
@@ -207,9 +181,9 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 
     const hasFilters = filters.length > 0;
     const clearAndSaveButtons = hasFilters ? (
-        <div className="flex shrink-0 items-center gap-2 sm:absolute sm:top-0 sm:right-0">
+        <div className="flex shrink-0 items-center gap-2 sm:absolute sm:right-0 sm:top-0">
             <button
-                className="flex items-center gap-1 text-sm font-normal text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm font-normal"
                 type="button"
                 onClick={() => onFiltersChange([])}
             >

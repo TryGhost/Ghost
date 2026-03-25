@@ -1,6 +1,6 @@
+import {type UseFilterSearchOptions, useFilterSearch} from '@src/hooks/use-filter-search';
 import {act, renderHook} from '@testing-library/react';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-import {useFilterSearch} from '@src/hooks/use-filter-search';
 
 // --- Test types ---
 
@@ -45,8 +45,7 @@ function createMockQuery(initialData: TestResponse | undefined = undefined) {
 const defaultLocalFilter = (items: TestItem[], term: string) => items.filter(i => i.name.toLowerCase().includes(term.toLowerCase()));
 
 const defaultToOption = (item: TestItem) => ({value: item.id, label: item.name});
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const defaultUseGetById = (id: string, opts: {enabled: boolean; defaultErrorHandler: boolean}) => ({data: undefined as TestResponse | undefined});
+const defaultUseGetById: UseFilterSearchOptions<TestResponse, 'items'>['useGetById'] = () => ({data: undefined});
 
 // --- Tests ---
 

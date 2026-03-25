@@ -1,5 +1,5 @@
-import {InfiniteData, useQueryClient} from '@tanstack/react-query';
-import {Meta, createInfiniteQuery, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
+import {useQueryClient} from '@tanstack/react-query';
+import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 import {updateQueryCache, insertToQueryCache} from '../utils/api/update-queries';
 
 export type Offer = {
@@ -58,23 +58,6 @@ export const useBrowseOffers = createQuery<OffersResponseType>({
     path: '/offers/',
     // offers endpoint doesn't support limit or pagination so we exclude the default ?limit=20
     defaultSearchParams: {}
-});
-
-export const useBrowseOffersInfinite = createInfiniteQuery<OffersResponseType & {isEnd: boolean}>({
-    dataType,
-    path: '/offers/',
-    defaultSearchParams: {},
-    returnData: (originalData) => {
-        const {pages} = originalData as InfiniteData<OffersResponseType>;
-        const offers = pages.flatMap(page => page.offers || []);
-        const meta = pages[pages.length - 1].meta;
-
-        return {
-            offers,
-            meta,
-            isEnd: true // offers API doesn't support pagination
-        };
-    }
 });
 
 export const useBrowseOffersById = createQueryWithId<OffersResponseType>({

@@ -1,6 +1,6 @@
 import {Label, getLabelBySlug, useBrowseLabelsInfinite, useCreateLabel, useDeleteLabel, useEditLabel} from '@tryghost/admin-x-framework/api/labels';
 import {escapeNqlString} from '@src/views/filters/filter-normalization';
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {useFilterSearch} from '@src/hooks/use-filter-search';
 
 export interface UseLabelPickerOptions {
@@ -45,7 +45,10 @@ export function useLabelPicker({
     const labels = labelSearch.items;
     const isLoading = labelSearch.isLoading;
 
-    // --- Selected labels cache (mirrors shade's cachedSelectedOptions pattern) ---
+    // --- Selected labels cache ---
+    // Derives selected Label objects from useFilterSearch's data sources
+    // (allItems for base snapshot, resolvedItems for async-fetched values)
+    // so we don't run a parallel fetch chain.
     const [cachedSelectedLabels, setCachedSelectedLabels] = useState<Label[]>([]);
 
     useEffect(() => {
@@ -56,9 +59,10 @@ export function useLabelPicker({
 
         setCachedSelectedLabels((prev) => {
             const result = selectedSlugs.map((slug) => {
-                // Prefer fresh label from current items or base snapshot
-                const fresh = labelSearch.items.find(l => l.slug === slug)
-                    || labelSearch.allItems.find(l => l.slug === slug);
+                // Check all available label sources from useFilterSearch
+                const fresh = labelSearch.allItems.find(l => l.slug === slug)
+                    || labelSearch.items.find(l => l.slug === slug)
+                    || labelSearch.resolvedItems.find(l => l.slug === slug);
                 if (fresh) {
                     return fresh;
                 }
@@ -72,36 +76,7 @@ export function useLabelPicker({
             }
             return result;
         });
-    }, [selectedSlugs, labelSearch.items, labelSearch.allItems]);
-
-    // Find first selected slug not yet in cache — resolve async
-    const missingSlug = useMemo(() => {
-        if (selectedSlugs.length === 0) {
-            return '';
-        }
-        const knownSlugs = new Set(cachedSelectedLabels.map(l => l.slug));
-        return selectedSlugs.find(s => !knownSlugs.has(s)) || '';
-    }, [selectedSlugs, cachedSelectedLabels]);
-
-    const resolvedLabelResult = getLabelBySlug(missingSlug || '', {
-        enabled: !!missingSlug,
-        defaultErrorHandler: false
-    });
-
-    useEffect(() => {
-        if (!resolvedLabelResult.data || !missingSlug) {
-            return;
-        }
-        const label = resolvedLabelResult.data.labels?.[0];
-        if (label) {
-            setCachedSelectedLabels((prev) => {
-                if (prev.some(l => l.slug === label.slug)) {
-                    return prev;
-                }
-                return [...prev, label];
-            });
-        }
-    }, [resolvedLabelResult.data, missingSlug]);
+    }, [selectedSlugs, labelSearch.items, labelSearch.allItems, labelSearch.resolvedItems]);
 
     const {mutateAsync: createLabelMutation, isLoading: isCreating} = useCreateLabel();
     const {mutateAsync: editLabelMutation} = useEditLabel();
@@ -123,8 +98,11 @@ export function useLabelPicker({
 
     const isDuplicateName = useCallback((name: string, excludeId?: string) => {
         const normalized = name.trim().toLowerCase();
-        return labels.some(l => l.name.toLowerCase() === normalized && l.id !== excludeId);
-    }, [labels]);
+        // Check allItems (unfiltered base snapshot) so duplicates aren't missed when
+        // search narrows the visible list. This only covers locally-loaded labels —
+        // the server enforces uniqueness for labels beyond the first page.
+        return labelSearch.allItems.some(l => l.name.toLowerCase() === normalized && l.id !== excludeId);
+    }, [labelSearch.allItems]);
 
     const canCreateFromSearch = useCallback((inputValue: string) => {
         const trimmed = inputValue.trim();

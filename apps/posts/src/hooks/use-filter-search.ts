@@ -32,6 +32,8 @@ export interface UseFilterSearchReturn<T, K extends keyof T & string> {
     data: T | undefined;
     items: ArrayItem<T, K>[];
     allItems: ArrayItem<T, K>[];
+    /** Items resolved via useGetById for active values not in the current page */
+    resolvedItems: ArrayItem<T, K>[];
     options: FilterOption<string>[];
     isLoading: boolean;
     isFetching: boolean;
@@ -270,6 +272,7 @@ export function useFilterSearch<T, K extends keyof T & string>({
         data: filteredData,
         items,
         allItems,
+        resolvedItems: resolvedForOptionsRef.current,
         options,
         isLoading: isLoading || (useLocalSearch === null && isFetching),
         isFetching,

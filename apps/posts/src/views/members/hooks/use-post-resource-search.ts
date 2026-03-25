@@ -36,20 +36,24 @@ export function usePostResourceSearch() {
         useGetById: getPage
     });
 
+    const {onSearchChange: postOnSearch} = postSearch;
+    const {onSearchChange: pageOnSearch} = pageSearch;
     const onSearchChange = useCallback((search: string) => {
-        postSearch.onSearchChange(search);
-        pageSearch.onSearchChange(search);
-    }, [postSearch.onSearchChange, pageSearch.onSearchChange]);
+        postOnSearch(search);
+        pageOnSearch(search);
+    }, [postOnSearch, pageOnSearch]);
 
     const options = useMemo((): FilterOption<string>[] => [
         ...postSearch.options,
         ...pageSearch.options
     ], [postSearch.options, pageSearch.options]);
 
+    const {onLoadMore: postOnLoadMore} = postSearch;
+    const {onLoadMore: pageOnLoadMore} = pageSearch;
     const onLoadMore = useCallback(() => {
-        postSearch.onLoadMore();
-        pageSearch.onLoadMore();
-    }, [postSearch.onLoadMore, pageSearch.onLoadMore]);
+        postOnLoadMore();
+        pageOnLoadMore();
+    }, [postOnLoadMore, pageOnLoadMore]);
 
     return {
         options,

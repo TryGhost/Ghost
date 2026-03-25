@@ -31,11 +31,13 @@ describe('useMemberFilterFields', () => {
             postSearchOptions: [{value: 'post_1', label: 'Welcome'}],
             postSearchProps: {
                 onSearchChange: vi.fn(),
+                searchValue: '',
                 isLoading: false
             },
             emailSearchOptions: [{value: 'email_1', label: 'Launch'}],
             emailSearchProps: {
                 onSearchChange: vi.fn(),
+                searchValue: '',
                 isLoading: false
             },
             hasOffers: true,
@@ -95,6 +97,7 @@ describe('useMemberFilterFields', () => {
             emailSearchOptions: [{value: 'email_1', label: 'Launch'}],
             emailSearchProps: {
                 onSearchChange: vi.fn(),
+                searchValue: '',
                 isLoading: false
             },
             siteTimezone: 'UTC'

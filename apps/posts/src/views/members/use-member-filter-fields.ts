@@ -6,7 +6,7 @@ import {memberFields} from './member-fields';
 import type {Offer} from '@tryghost/admin-x-framework/api/offers';
 
 export type FilterSearchProps = Pick<FilterFieldConfig,
-    'onSearchChange' | 'isLoading'
+    'onSearchChange' | 'searchValue' | 'isLoading'
 >;
 
 interface UseMemberFilterFieldsOptions {
@@ -26,7 +26,6 @@ interface UseMemberFilterFieldsOptions {
     emailSearchProps?: FilterSearchProps;
     hasOffers?: boolean;
     offers?: Offer[];
-    offerSearchProps?: FilterSearchProps;
     membersTrackSources?: boolean;
     emailTrackOpens?: boolean;
     emailTrackClicks?: boolean;
@@ -34,7 +33,7 @@ interface UseMemberFilterFieldsOptions {
 }
 
 type OfferOption = FilterOption<string>;
-type SearchableFieldOverrides = Pick<FilterFieldConfig, 'options' | 'onSearchChange' | 'isLoading'>;
+type SearchableFieldOverrides = Pick<FilterFieldConfig, 'options' | 'onSearchChange' | 'searchValue' | 'isLoading'>;
 
 interface OperatorOption {
     value: string;
@@ -151,6 +150,7 @@ function createSearchableFieldOverrides(
     return {
         options,
         onSearchChange: searchProps?.onSearchChange,
+        searchValue: searchProps?.searchValue,
         // cmdk's shouldFilter is disabled when onSearchChange is set —
         // useFilterSearch handles all filtering (local + server) and returns
         // only the options that should be visible.
@@ -309,7 +309,6 @@ export function useMemberFilterFields({
     emailSearchProps,
     hasOffers = false,
     offers = [],
-    offerSearchProps,
     membersTrackSources = false,
     emailTrackOpens = false,
     emailTrackClicks = false,
@@ -422,7 +421,7 @@ export function useMemberFilterFields({
 
             if (hasOffers) {
                 subscriptionFields.push(createFieldConfig('offer_redemptions', {
-                    ...createSearchableFieldOverrides(offerOptions, offerSearchProps),
+                    options: offerOptions,
                     customValueRenderer: values => renderOfferFilterValues(values as string[], offerOptions, offerLabels)
                 }));
             }
@@ -482,7 +481,6 @@ export function useMemberFilterFields({
         membersTrackSources,
         newsletters,
         offers,
-        offerSearchProps,
         hydratedNewsletterSlugs,
         paidMembersEnabled,
         postSearchOptions,
