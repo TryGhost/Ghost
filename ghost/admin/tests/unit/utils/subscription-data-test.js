@@ -505,8 +505,9 @@ describe('Unit: Util: subscription-data', function () {
             },
             {
                 name: 'retention + percent + once',
-                offer: {redemption_type: 'retention', type: 'percent', amount: 50, duration: 'once'},
-                expected: {label: 'Retention offer', detail: '50% off'}
+                offer: {id: 'offer_once_1', redemption_type: 'retention', type: 'percent', amount: 50, duration: 'once'},
+                sub: {next_payment: {discount: {offer_id: 'offer_once_1', end: '2026-02-17T00:00:00.000Z'}}},
+                expected: {label: 'Retention offer', detail: '50% off until Feb 2026'}
             },
             {
                 name: 'retention + percent + repeating (no discount end)',

@@ -465,6 +465,10 @@ describe('MemberBreadService', function () {
                     id: 'sub_123',
                     subscription_id: 'sub_123',
                     status: 'active',
+                    discount_start: null,
+                    discount_end: null,
+                    start_date: new Date('2025-01-01T00:00:00.000Z'),
+                    current_period_end: new Date('2025-06-15T00:00:00.000Z'),
                     plan: {
                         amount: 500,
                         interval: 'month',
@@ -514,6 +518,7 @@ describe('MemberBreadService', function () {
             const offerId = 'offer_abc123';
             const discountStart = new Date('2020-01-01T00:00:00.000Z');
             const discountEnd = new Date('2099-12-31T00:00:00.000Z');
+            const lastDiscountedBillingDate = new Date('2099-12-15T00:00:00.000Z');
 
             const subscriptionsJSON = [
                 {
@@ -532,6 +537,7 @@ describe('MemberBreadService', function () {
                     },
                     discount_start: discountStart,
                     discount_end: discountEnd,
+                    start_date: new Date('2020-01-01T00:00:00.000Z'),
                     current_period_end: new Date('2099-06-15T00:00:00.000Z')
                 }
             ];
@@ -591,6 +597,8 @@ describe('MemberBreadService', function () {
             assert.equal(nextPayment.discount.amount, 20);
             assert.equal(nextPayment.discount.duration, 'repeating');
             assert.equal(nextPayment.discount.duration_in_months, 12);
+            assert.equal(nextPayment.discount.start, discountStart.toISOString());
+            assert.equal(nextPayment.discount.end, lastDiscountedBillingDate.toISOString());
         });
 
         it('attaches offer_redemptions to subscriptions', async function () {
@@ -602,6 +610,10 @@ describe('MemberBreadService', function () {
                     id: 'sub_123',
                     subscription_id: 'sub_123',
                     status: 'active',
+                    discount_start: null,
+                    discount_end: null,
+                    start_date: new Date('2025-01-01T00:00:00.000Z'),
+                    current_period_end: new Date('2025-06-15T00:00:00.000Z'),
                     plan: {
                         amount: 500,
                         interval: 'month',
@@ -640,7 +652,8 @@ describe('MemberBreadService', function () {
                 name: 'Signup Offer',
                 type: 'percent',
                 amount: 10,
-                duration: 'once'
+                duration: 'once',
+                redemption_type: 'signup'
             };
             const offerDTO2 = {
                 id: offerId2,
@@ -648,7 +661,8 @@ describe('MemberBreadService', function () {
                 type: 'percent',
                 amount: 20,
                 duration: 'repeating',
-                duration_in_months: 3
+                duration_in_months: 3,
+                redemption_type: 'retention'
             };
 
             const offersAPIStub = {
