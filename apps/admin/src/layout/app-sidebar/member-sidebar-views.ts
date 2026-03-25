@@ -15,7 +15,7 @@ function isMemberSidebarView(view: SharedView): view is MemberSidebarView {
 }
 
 function getMemberViewUrl(filter: string) {
-    return `members-forward?${new URLSearchParams({filter}).toString()}`;
+    return `members?${new URLSearchParams({filter}).toString()}`;
 }
 
 function isMemberViewActive(currentSearch: string, filter: string) {
@@ -25,7 +25,7 @@ function isMemberViewActive(currentSearch: string, filter: string) {
 export function useMemberSidebarViews() {
     const location = useLocation();
     const sharedViews = useSharedViews('members');
-    const isOnMembersForward = location.pathname === '/members-forward';
+    const isOnMembers = location.pathname === '/members';
 
     return useMemo<NavSavedView[]>(() => {
         return sharedViews
@@ -34,7 +34,7 @@ export function useMemberSidebarViews() {
                 key: `${view.name}:${view.filter.filter}`,
                 name: view.name,
                 to: getMemberViewUrl(view.filter.filter),
-                isActive: isOnMembersForward && isMemberViewActive(location.search, view.filter.filter)
+                isActive: isOnMembers && isMemberViewActive(location.search, view.filter.filter)
             }));
-    }, [isOnMembersForward, location.search, sharedViews]);
+    }, [isOnMembers, location.search, sharedViews]);
 }

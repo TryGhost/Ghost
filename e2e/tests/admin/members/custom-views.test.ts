@@ -30,8 +30,6 @@ async function saveCurrentView(page: Page, name: string) {
 }
 
 test.describe('Ghost Admin - Member Saved Views', () => {
-    test.use({labs: {membersForward: true}});
-
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {
@@ -48,7 +46,7 @@ test.describe('Ghost Admin - Member Saved Views', () => {
         });
 
         const sidebar = new SidebarPage(page);
-        await page.goto('/ghost/#/members-forward');
+        await page.goto('/ghost/#/members');
 
         await addFilter(page, 'Name', 'active-nav');
         await saveCurrentView(page, 'View A');

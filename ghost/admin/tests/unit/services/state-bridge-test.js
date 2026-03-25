@@ -523,8 +523,10 @@ describe('Unit: Service: state-bridge', function () {
             });
 
             membersController = EmberObject.create({
-                queryParams: [{filterParam: 'filter'}],
-                filterParam: null
+                queryParams: ['filter', 'search', {postAnalytics: 'post'}],
+                filter: null,
+                search: '',
+                postAnalytics: null
             });
 
             // Stub the owner's lookup method to return our mock controllers
@@ -621,11 +623,10 @@ describe('Unit: Service: state-bridge', function () {
 
         it('handles mapped query params correctly', function () {
             sinon.stub(service.router, 'currentRouteName').get(() => 'dashboard');
-            membersController.set('filterParam', 'status:free');
+            membersController.set('postAnalytics', 'post_123');
 
-            // The controller has {filterParam: 'filter'}, so the URL should use 'filter' not 'filterParam'
             const url = service.getRouteUrl('members');
-            expect(url).to.equal('members?filter=status%3Afree');
+            expect(url).to.equal('members?post=post_123');
         });
 
         it('returns base route when controller does not exist', function () {

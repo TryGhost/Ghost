@@ -56,10 +56,6 @@ const features: Feature[] = [{
     description: 'Enable new Email verification webhook-based flow',
     flag: 'verificationFlow'
 }, {
-    title: 'Members Forward',
-    description: 'Use the new React-based members list instead of the Ember implementation',
-    flag: 'membersForward'
-}, {
     title: 'Welcome Emails Design Customization',
     description: 'Enable design customization options for welcome emails',
     flag: 'welcomeEmailsDesignCustomization'

@@ -7,7 +7,7 @@ import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Members Import', () => {
     test('imports members from CSV via the UI', async ({page}) => {
-        const membersPage = new MembersPage(page, {route: 'members-forward'});
+        const membersPage = new MembersPage(page);
         const importModal = new MembersImportModal(page);
 
         const timestamp = Date.now();

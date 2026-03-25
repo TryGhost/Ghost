@@ -83,7 +83,6 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const memberCount = useMemberCount();
     const routing = useEmberRouting();
     const commentModerationEnabled = useFeatureFlag('commentModeration');
-    const membersForwardEnabled = useFeatureFlag('membersForward');
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
@@ -92,20 +91,19 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const isPublishedPostsRouteActive = routing.isRouteActive('posts', {type: 'published'});
     const hasActivePostChild = isDraftPostsRouteActive || isScheduledPostsRouteActive || isPublishedPostsRouteActive || postCustomViews.some(view => view.isActive);
     const postsExpanded = savedPostsExpanded;
-    const isOnMembersForward = location.pathname === '/members-forward';
-    const hasActiveMemberView = isOnMembersForward && memberViews.some(view => view.isActive);
+    const isOnMembers = location.pathname === '/members';
+    const hasActiveMemberView = isOnMembers && memberViews.some(view => view.isActive);
     const membersExpanded = savedMembersExpanded;
     const membersNavActive = isMembersNavActive({
-        membersForwardEnabled,
-        isOnMembersForward,
+        isOnMembers,
         hasActiveMemberView,
         isMembersExpanded: membersExpanded,
-        isLegacyMembersRouteActive: routing.isRouteActive(getMembersNavActiveRoutes())
+        isMembersSectionRouteActive: routing.isRouteActive(getMembersNavActiveRoutes())
     });
     const postsRoute = routing.getRouteUrl('posts');
     const isPostsRouteActive = routing.isRouteActive('posts');
     const postsNavActive = isPostsRouteActive || (!postsExpanded && hasActivePostChild);
-    const membersRoute = membersForwardEnabled ? 'members-forward' : routing.getRouteUrl('members');
+    const membersRoute = routing.getRouteUrl('members');
 
     return (
         <SidebarGroup {...props}>
@@ -182,7 +180,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
 
                     {showMembers && (
                         <>
-                            {membersForwardEnabled && hasMemberViews ? (
+                            {hasMemberViews ? (
                                 <NavMenuItem.Collapsible
                                     expanded={membersExpanded}
                                     id="members-submenu"

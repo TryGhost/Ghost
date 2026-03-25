@@ -1,5 +1,6 @@
 import {Response} from 'miragejs';
 import {authenticateSession} from 'ember-simple-auth/test-support';
+import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../../helpers/mock-analytics-apps';
 import {click, currentURL, find, findAll} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {fileUpload} from '../../helpers/file-upload';
@@ -10,6 +11,14 @@ import {visit} from '../../helpers/visit';
 describe('Acceptance: Members import', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
+
+    beforeEach(function () {
+        mockAnalyticsApps();
+    });
+
+    afterEach(function () {
+        cleanupMockAnalyticsApps();
+    });
 
     describe('Owner tests', function () {
         beforeEach(async function () {
@@ -22,9 +31,7 @@ describe('Acceptance: Members import', function () {
         });
 
         it('can open and close import modal', async function () {
-            await visit('/members');
-            await click('[data-test-button="members-actions"]');
-            await click('[data-test-link="import-csv"]');
+            await visit('/members/import');
 
             expect(find('[data-test-modal="import-members"]'), 'members import modal').to.exist;
             expect(currentURL()).to.equal('/members/import');
@@ -122,9 +129,7 @@ testemail@example.com,Test Email,This is a test template for importing your memb
         });
 
         it('can open and close import modal', async function () {
-            await visit('/members');
-            await click('[data-test-button="members-actions"]');
-            await click('[data-test-link="import-csv"]');
+            await visit('/members/import');
 
             expect(find('[data-test-modal="import-members"]'), 'members import modal').to.exist;
             expect(currentURL()).to.equal('/members/import');

@@ -70,7 +70,7 @@ export const routes: RouteObject[] = [
                 lazy: lazyComponent(() => import('@views/comments/comments'))
             },
             {
-                path: 'members-forward',
+                path: 'members',
                 lazy: lazyComponent(() => import('@views/members/members'))
             },
 

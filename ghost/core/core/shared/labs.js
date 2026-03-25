@@ -49,7 +49,6 @@ const PRIVATE_FEATURES = [
     'indexnow',
     'transistor',
     'verificationFlow',
-    'membersForward',
     'welcomeEmailsDesignCustomization',
     'pictureImageFormats',
     'smarterCounts'

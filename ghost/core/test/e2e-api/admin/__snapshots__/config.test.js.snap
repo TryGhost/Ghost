@@ -21,7 +21,6 @@ Object {
       "indexnow": true,
       "lexicalIndicators": true,
       "members": true,
-      "membersForward": true,
       "pictureImageFormats": true,
       "smarterCounts": true,
       "stripeAutomaticTax": true,
