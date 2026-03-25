@@ -11,7 +11,7 @@ function updateLocalTemplateOptions(req, res, next) {
     // adjust @site.url for http/https based on the incoming request
     const siteData = {
         url: urlUtils.urlFor('home', {trailingSlash: false}, true),
-        admin_url: urlUtils.getAdminUrl() || urlUtils.urlFor('admin', true)
+        admin_url: urlUtils.urlFor('admin', true)
     };
 
     // @TODO: it would be nicer if this was proper middleware somehow...
