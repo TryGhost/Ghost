@@ -1,4 +1,4 @@
-import MainLayout from '@src/components/layout/main-layout';
+import MainLayout from '@components/layout/main-layout';
 import React from 'react';
 
 const MembersLayout: React.FC<{children: React.ReactNode}> = ({children}) => {
