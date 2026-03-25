@@ -173,6 +173,26 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
         sender_name: null,
         sender_email: null,
         sender_reply_to: null,
+        // Design settings
+        background_color: '#ffffff',
+        header_background_color: '#ffffff',
+        title_font_category: 'sans_serif',
+        title_font_weight: 'bold',
+        body_font_category: 'sans_serif',
+        title_alignment: 'center',
+        section_title_color: null,
+        button_color: null,
+        button_style: 'fill',
+        button_corners: 'rounded',
+        link_color: null,
+        link_style: 'underline',
+        image_corners: 'square',
+        divider_color: null,
+        // General settings
+        header_image: null,
+        show_header_title: true,
+        show_badge: true,
+        footer_content: null,
         created_at: '',
         updated_at: null
     });
