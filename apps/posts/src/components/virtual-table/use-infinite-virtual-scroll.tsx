@@ -45,7 +45,6 @@ export function useInfiniteVirtualScroll<T>({
         key: virtualItem.key,
         item: items[virtualItem.index],
         props: {
-            ref: virtualizer.measureElement,
             'data-index': virtualItem.index
         }
     }));
