@@ -7,11 +7,13 @@ export function isMembersNavActive({
     membersForwardEnabled,
     isOnMembersForward,
     hasActiveMemberView,
+    isMembersExpanded,
     isLegacyMembersRouteActive
 }: {
     membersForwardEnabled: boolean;
     isOnMembersForward: boolean;
     hasActiveMemberView: boolean;
+    isMembersExpanded: boolean;
     isLegacyMembersRouteActive: boolean;
 }): boolean {
     if (!membersForwardEnabled) {
@@ -19,7 +21,11 @@ export function isMembersNavActive({
     }
 
     if (isOnMembersForward) {
-        return !hasActiveMemberView;
+        if (!hasActiveMemberView) {
+            return true;
+        }
+
+        return !isMembersExpanded;
     }
 
     return isLegacyMembersRouteActive;
