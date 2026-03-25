@@ -1,5 +1,7 @@
-import {Label, useBrowseLabels, useCreateLabel, useDeleteLabel, useEditLabel} from '@tryghost/admin-x-framework/api/labels';
-import {useCallback, useMemo, useRef} from 'react';
+import {Label, getLabelBySlug, useBrowseLabelsInfinite, useCreateLabel, useDeleteLabel, useEditLabel} from '@tryghost/admin-x-framework/api/labels';
+import {escapeNqlString} from '@src/views/filters/filter-normalization';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useFilterSearch} from '@src/hooks/use-filter-search';
 
 export interface UseLabelPickerOptions {
     selectedSlugs: string[];
@@ -8,9 +10,15 @@ export interface UseLabelPickerOptions {
 
 export interface UseLabelPickerResult {
     labels: Label[];
-    selectedSlugs: string[];
+    selectedLabels: Label[];
 
     isLoading: boolean;
+    isFetching: boolean;
+    searchValue: string;
+    onSearchChange: (search: string) => void;
+    onLoadMore: () => void;
+    hasMore: boolean;
+    isLoadingMore: boolean;
     toggleLabel: (slug: string) => void;
     createLabel: (name: string) => Promise<Label | undefined>;
     editLabel: (id: string, name: string) => Promise<void>;
@@ -24,8 +32,76 @@ export function useLabelPicker({
     selectedSlugs,
     onSelectionChange
 }: UseLabelPickerOptions): UseLabelPickerResult {
-    const {data: labelsData, isLoading} = useBrowseLabels({searchParams: {limit: '100'}});
-    const labels = useMemo(() => labelsData?.labels || [], [labelsData]);
+    const labelSearch = useFilterSearch({
+        useQuery: useBrowseLabelsInfinite,
+        dataKey: 'labels',
+        serverSearchParams: (term): Record<string, string> => (term ? {filter: `name:~${escapeNqlString(term)}`} : {}),
+        localSearchFilter: (labels, term) => labels.filter(l => l.name.toLowerCase().includes(term.toLowerCase())),
+        toOption: l => ({value: l.slug, label: l.name}),
+        useGetById: getLabelBySlug,
+        activeValues: selectedSlugs
+    });
+
+    const labels = labelSearch.items;
+    const isLoading = labelSearch.isLoading;
+
+    // --- Selected labels cache (mirrors shade's cachedSelectedOptions pattern) ---
+    const [cachedSelectedLabels, setCachedSelectedLabels] = useState<Label[]>([]);
+
+    useEffect(() => {
+        if (selectedSlugs.length === 0) {
+            setCachedSelectedLabels([]);
+            return;
+        }
+
+        setCachedSelectedLabels((prev) => {
+            const result = selectedSlugs.map((slug) => {
+                // Prefer fresh label from current items or base snapshot
+                const fresh = labelSearch.items.find(l => l.slug === slug)
+                    || labelSearch.allItems.find(l => l.slug === slug);
+                if (fresh) {
+                    return fresh;
+                }
+                // Fall back to previously cached
+                return prev.find(l => l.slug === slug) || null;
+            }).filter((l): l is Label => !!l);
+
+            // Avoid unnecessary state updates
+            if (result.length === prev.length && result.every((l, i) => l.slug === prev[i]?.slug && l.name === prev[i]?.name)) {
+                return prev;
+            }
+            return result;
+        });
+    }, [selectedSlugs, labelSearch.items, labelSearch.allItems]);
+
+    // Find first selected slug not yet in cache — resolve async
+    const missingSlug = useMemo(() => {
+        if (selectedSlugs.length === 0) {
+            return '';
+        }
+        const knownSlugs = new Set(cachedSelectedLabels.map(l => l.slug));
+        return selectedSlugs.find(s => !knownSlugs.has(s)) || '';
+    }, [selectedSlugs, cachedSelectedLabels]);
+
+    const resolvedLabelResult = getLabelBySlug(missingSlug || '', {
+        enabled: !!missingSlug,
+        defaultErrorHandler: false
+    });
+
+    useEffect(() => {
+        if (!resolvedLabelResult.data || !missingSlug) {
+            return;
+        }
+        const label = resolvedLabelResult.data.labels?.[0];
+        if (label) {
+            setCachedSelectedLabels((prev) => {
+                if (prev.some(l => l.slug === label.slug)) {
+                    return prev;
+                }
+                return [...prev, label];
+            });
+        }
+    }, [resolvedLabelResult.data, missingSlug]);
 
     const {mutateAsync: createLabelMutation, isLoading: isCreating} = useCreateLabel();
     const {mutateAsync: editLabelMutation} = useEditLabel();
@@ -98,8 +174,14 @@ export function useLabelPicker({
 
     return {
         labels,
-        selectedSlugs,
+        selectedLabels: cachedSelectedLabels,
         isLoading,
+        isFetching: labelSearch.isFetching,
+        searchValue: labelSearch.searchValue,
+        onSearchChange: labelSearch.onSearchChange,
+        onLoadMore: labelSearch.onLoadMore,
+        hasMore: labelSearch.hasMore,
+        isLoadingMore: labelSearch.isLoadingMore,
         toggleLabel,
         createLabel,
         editLabel,

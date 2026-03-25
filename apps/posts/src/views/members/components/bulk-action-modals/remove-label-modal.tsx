@@ -92,9 +92,11 @@ export function RemoveLabelModal({
                     isDuplicateName={picker.isDuplicateName}
                     isLoading={picker.isLoading || isMembersLoading}
                     labels={availableLabels}
-                    selectedSlugs={picker.selectedSlugs}
+                    searchValue={picker.searchValue}
+                    selectedLabels={picker.selectedLabels}
                     onDelete={picker.deleteLabel}
                     onEdit={picker.editLabel}
+                    onSearchChange={picker.onSearchChange}
                     onToggle={picker.toggleLabel}
                 />
 

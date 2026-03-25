@@ -11,7 +11,7 @@ vi.mock('@tryghost/admin-x-framework/helpers', () => ({
 vi.mock('@src/hooks/use-label-picker', () => ({
     useLabelPicker: () => ({
         labels: [],
-        selectedSlugs: [],
+        selectedLabels: [],
         isLoading: false,
         toggleLabel: vi.fn(),
         createLabel: vi.fn(),

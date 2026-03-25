@@ -23,18 +23,22 @@ vi.mock('@src/components/label-picker/label-filter-renderer', () => ({
 describe('useMemberFilterFields', () => {
     it('hydrates grouped member fields from the local schema', () => {
         const {result} = renderHook(() => useMemberFilterFields({
+            hasLabels: true,
             labelsOptions: [{value: 'vip', label: 'VIP'}],
             newsletters: [{slug: 'weekly', name: 'Weekly', status: 'active'}],
             paidMembersEnabled: true,
             emailFiltersEnabled: true,
-            postResourceOptions: [{value: 'post_1', label: 'Welcome'}],
-            onPostResourceSearchChange: vi.fn(),
-            postResourceSearchValue: 'wel',
-            postResourceLoading: false,
-            emailResourceOptions: [{value: 'email_1', label: 'Launch'}],
-            onEmailResourceSearchChange: vi.fn(),
-            emailResourceSearchValue: 'lau',
-            emailResourceLoading: false,
+            postSearchOptions: [{value: 'post_1', label: 'Welcome'}],
+            postSearchProps: {
+                onSearchChange: vi.fn(),
+                isLoading: false
+            },
+            emailSearchOptions: [{value: 'email_1', label: 'Launch'}],
+            emailSearchProps: {
+                onSearchChange: vi.fn(),
+                isLoading: false
+            },
+            hasOffers: true,
             offers: [{id: 'offer_1', name: 'Offer', redemption_type: 'signup', cadence: 'month'} as never],
             membersTrackSources: true,
             emailTrackOpens: true,
@@ -60,13 +64,11 @@ describe('useMemberFilterFields', () => {
 
         expect(signupField).toMatchObject({
             options: [{value: 'post_1', label: 'Welcome'}],
-            searchValue: 'wel',
             isLoading: false
         });
 
         expect(emailPostField).toMatchObject({
             options: [{value: 'email_1', label: 'Launch'}],
-            searchValue: 'lau',
             isLoading: false
         });
     });
@@ -90,10 +92,11 @@ describe('useMemberFilterFields', () => {
     it('keeps the feedback filter visible without a separate feature flag', () => {
         const {result} = renderHook(() => useMemberFilterFields({
             emailFiltersEnabled: true,
-            emailResourceOptions: [{value: 'email_1', label: 'Launch'}],
-            onEmailResourceSearchChange: vi.fn(),
-            emailResourceSearchValue: 'lau',
-            emailResourceLoading: false,
+            emailSearchOptions: [{value: 'email_1', label: 'Launch'}],
+            emailSearchProps: {
+                onSearchChange: vi.fn(),
+                isLoading: false
+            },
             siteTimezone: 'UTC'
         }));
 
@@ -101,9 +104,7 @@ describe('useMemberFilterFields', () => {
         const feedbackField = emailFields.find(field => field.key === 'newsletter_feedback');
 
         expect(feedbackField).toMatchObject({
-            options: [{value: 'email_1', label: 'Launch'}],
-            searchValue: 'lau',
-            isLoading: false
+            options: [{value: 'email_1', label: 'Launch'}]
         });
     });
 
@@ -165,9 +166,33 @@ describe('useMemberFilterFields', () => {
         });
     });
 
+    it('keeps label field visible when search filters all labels', () => {
+        const {result} = renderHook(() => useMemberFilterFields({
+            hasLabels: true,
+            labelsOptions: [],
+            siteTimezone: 'UTC'
+        }));
+
+        const basicFields = result.current.find(group => group.group === 'Basic')?.fields ?? [];
+        expect(basicFields.find(field => field.key === 'label')).toBeDefined();
+    });
+
+    it('keeps offer field visible when search filters all offers', () => {
+        const {result} = renderHook(() => useMemberFilterFields({
+            paidMembersEnabled: true,
+            hasOffers: true,
+            offers: [],
+            siteTimezone: 'UTC'
+        }));
+
+        const subscriptionFields = result.current.find(group => group.group === 'Subscription')?.fields ?? [];
+        expect(subscriptionFields.find(field => field.key === 'offer_redemptions')).toBeDefined();
+    });
+
     it('hydrates grouped retention offers on the offer field', () => {
         const {result} = renderHook(() => useMemberFilterFields({
             paidMembersEnabled: true,
+            hasOffers: true,
             offers: [
                 {id: 'offer_regular', name: 'Regular Offer', redemption_type: 'signup', cadence: 'month'},
                 {id: 'offer_month_1', name: 'Retention A', redemption_type: 'retention', cadence: 'month'},
@@ -191,6 +216,7 @@ describe('useMemberFilterFields', () => {
     it('renders direct retention offer ids with the fetched offer label', () => {
         const {result} = renderHook(() => useMemberFilterFields({
             paidMembersEnabled: true,
+            hasOffers: true,
             offers: [
                 {id: 'offer_month_1', name: 'Retention A', redemption_type: 'retention', cadence: 'month'}
             ] as never,

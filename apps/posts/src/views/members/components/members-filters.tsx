@@ -7,13 +7,21 @@ import {
     toOfferFilterDisplayValues,
     useMemberFilterFields
 } from '../use-member-filter-fields';
+import {escapeNqlString} from '../../filters/filter-normalization';
+import {getActiveFilterValues, useFilterSearch} from '@src/hooks/use-filter-search';
+import {getLabelBySlug} from '@tryghost/admin-x-framework/api/labels';
+import {getNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
+import {getPost} from '@tryghost/admin-x-framework/api/posts';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
-import {useBrowseLabels} from '@tryghost/admin-x-framework/api/labels';
+import {getTier} from '@tryghost/admin-x-framework/api/tiers';
+import {useBrowseLabelsInfinite} from '@tryghost/admin-x-framework/api/labels';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
-import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
+import {useBrowseOffersById, useBrowseOffersInfinite} from '@tryghost/admin-x-framework/api/offers';
+import {useBrowsePostsInfinite} from '@tryghost/admin-x-framework/api/posts';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {useResourceSearch} from '../hooks/use-resource-search';
+import {usePostResourceSearch} from '../hooks/use-post-resource-search';
+import type {FilterSearchProps} from '../use-member-filter-fields';
 import type {MemberView} from '../hooks/use-member-views';
 
 interface MembersFiltersProps {
@@ -24,7 +32,12 @@ interface MembersFiltersProps {
     activeView?: MemberView | null;
 }
 
-const EMPTY_OFFERS: typeof buildOfferOptions extends (offers: infer T) => unknown ? T : never = [];
+function toSearchProps(search: {onSearchChange: (s: string) => void; isLoading: boolean}): FilterSearchProps {
+    return {
+        onSearchChange: search.onSearchChange,
+        isLoading: search.isLoading
+    };
+}
 
 function mapOfferRedemptionFilters(
     filters: Filter[],
@@ -49,10 +62,91 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     savedViews = [],
     activeView
 }) => {
-    const {data: labelsData} = useBrowseLabels({searchParams: {limit: '100'}});
-    const {data: tiersData} = useBrowseTiers({searchParams: {limit: '100'}});
-    const {data: offersData} = useBrowseOffers({});
-    const {data: newslettersData} = useBrowseNewsletters({searchParams: {limit: '100'}});
+    const activeLabelValues = getActiveFilterValues(filters, 'label');
+    const activeTierValues = getActiveFilterValues(filters, 'tier_id');
+
+    const labelSearch = useFilterSearch({
+        useQuery: useBrowseLabelsInfinite,
+        dataKey: 'labels',
+        serverSearchParams: (term): Record<string, string> => (term ? {filter: `name:~${escapeNqlString(term)}`} : {}),
+        localSearchFilter: (labels, term) => labels.filter(l => l.name.toLowerCase().includes(term.toLowerCase())),
+        toOption: l => ({value: l.slug, label: l.name}),
+        useGetById: getLabelBySlug,
+        activeValues: activeLabelValues
+    });
+
+    const tierSearch = useFilterSearch({
+        useQuery: useBrowseTiers,
+        dataKey: 'tiers',
+        serverSearchParams: term => ({
+            filter: term ? `type:paid+name:~${escapeNqlString(term)}` : 'type:paid'
+        }),
+        localSearchFilter: (tiers, term) => tiers.filter(t => t.name.toLowerCase().includes(term.toLowerCase())),
+        toOption: t => ({value: t.id, label: t.name}),
+        useGetById: getTier,
+        activeValues: activeTierValues
+    });
+
+    const newsletterSearch = useFilterSearch({
+        useQuery: useBrowseNewsletters,
+        dataKey: 'newsletters',
+        serverSearchParams: () => ({}),
+        localSearchFilter: (newsletters, term) => newsletters.filter(n => n.name.toLowerCase().includes(term.toLowerCase())),
+        toOption: n => ({value: n.id, label: n.name}),
+        useGetById: getNewsletter
+    });
+
+    // Offers is an anomaly where the API doesn't support pagination so first page includes all offers
+    const offerSearch = useFilterSearch({
+        useQuery: useBrowseOffersInfinite,
+        dataKey: 'offers',
+        serverSearchParams: () => ({}),
+        localSearchFilter: (offers, term) => offers.filter(o => o.name.toLowerCase().includes(term.toLowerCase())),
+        toOption: o => ({value: o.id, label: o.name}),
+        useGetById: useBrowseOffersById
+    });
+
+    // Offers need raw items for buildOfferOptions (retention offer grouping)
+    const offerItems = offerSearch.items;
+    const allOfferItems = offerSearch.allItems;
+    const offersOptions = useMemo(() => {
+        const seen = new Set<string>();
+        const merged: typeof offerItems = [];
+        for (const offer of offerItems) {
+            if (!seen.has(offer.id)) {
+                seen.add(offer.id);
+                merged.push(offer);
+            }
+        }
+        for (const offer of allOfferItems) {
+            if (!seen.has(offer.id)) {
+                seen.add(offer.id);
+                merged.push(offer);
+            }
+        }
+        return buildOfferOptions(merged);
+    }, [offerItems, allOfferItems]);
+
+    // posts combines posts+pages so it's extracted
+    const postSearch = usePostResourceSearch();
+
+    const EMAIL_BASE_FILTER = '(status:published,status:sent)+newsletter_id:-null';
+    const emailSearch = useFilterSearch({
+        useQuery: useBrowsePostsInfinite,
+        dataKey: 'posts',
+        serverSearchParams: term => ({
+            filter: term
+                ? `${EMAIL_BASE_FILTER}+title:~${escapeNqlString(term)}`
+                : EMAIL_BASE_FILTER,
+            fields: 'id,title',
+            order: 'published_at DESC'
+        }),
+        localSearchFilter: (posts, term) => posts.filter(p => p.title.toLowerCase().includes(term.toLowerCase())),
+        limit: '25',
+        toOption: p => ({value: p.id, label: p.title}),
+        useGetById: getPost
+    });
+
     const {data: settingsData} = useBrowseSettings({});
 
     const settings = settingsData?.settings || [];
@@ -63,16 +157,12 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const emailTrackClicks = getSettingValue<boolean>(settings, 'email_track_clicks') === true;
     const siteTimezone = getSiteTimezone(settings);
 
-    const labels = labelsData?.labels || [];
-    const tiers = tiersData?.tiers || [];
-    const newsletters = newslettersData?.newsletters || [];
-    const offers = useMemo(() => offersData?.offers ?? EMPTY_OFFERS, [offersData?.offers]);
-    const activePaidTiers = tiers.filter(tier => tier.type === 'paid' && tier.active);
-    const hasMultipleTiers = activePaidTiers.length > 1;
+    // Use unfiltered items for field visibility (must not change during search)
+    const allPaidTiers = tierSearch.allItems.filter(tier => tier.active);
+    const hasMultipleTiers = allPaidTiers.length > 1;
+    const newsletters = newsletterSearch.allItems;
+    const offers = offerSearch.allItems;
 
-    const offersOptions = useMemo(() => {
-        return buildOfferOptions(offers);
-    }, [offers]);
     const hydratedNewsletterSlugs = useMemo(() => {
         return [...new Set(
             filters
@@ -91,26 +181,24 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         onFiltersChange(mapOfferRedemptionFilters(newFilters, values => fromOfferFilterDisplayValues(values, offersOptions)));
     }, [onFiltersChange, offersOptions]);
 
-    const postSearch = useResourceSearch('post');
-    const emailSearch = useResourceSearch('email');
-
     const filterFields = useMemberFilterFields({
         newsletters,
         hydratedNewsletterSlugs,
         hasMultipleTiers,
         paidMembersEnabled,
         emailFiltersEnabled,
-        labelsOptions: labels.map(label => ({value: label.slug, label: label.name})),
-        tiersOptions: activePaidTiers.map(tier => ({value: tier.id, label: tier.name})),
+        hasLabels: labelSearch.allItems.length > 0,
+        labelsOptions: labelSearch.options,
+        labelSearchProps: toSearchProps(labelSearch),
+        tiersOptions: tierSearch.options,
+        tierSearchProps: toSearchProps(tierSearch),
+        hasOffers: offers.length > 0,
         offers,
-        postResourceOptions: postSearch.options,
-        onPostResourceSearchChange: postSearch.onSearchChange,
-        postResourceSearchValue: postSearch.searchValue,
-        postResourceLoading: postSearch.isLoading,
-        emailResourceOptions: emailSearch.options,
-        onEmailResourceSearchChange: emailSearch.onSearchChange,
-        emailResourceSearchValue: emailSearch.searchValue,
-        emailResourceLoading: emailSearch.isLoading,
+        offerSearchProps: toSearchProps(offerSearch),
+        postSearchOptions: postSearch.options,
+        postSearchProps: toSearchProps(postSearch),
+        emailSearchOptions: emailSearch.options,
+        emailSearchProps: toSearchProps(emailSearch),
         membersTrackSources,
         emailTrackOpens,
         emailTrackClicks,

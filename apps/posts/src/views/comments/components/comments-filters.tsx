@@ -6,50 +6,52 @@ import {
     LucideIcon,
     cn
 } from '@tryghost/shade';
+import {escapeNqlString} from '../../filters/filter-normalization';
+import {getActiveFilterValues, useFilterSearch} from '@src/hooks/use-filter-search';
 import {getMember} from '@tryghost/admin-x-framework/api/members';
 import {getPost} from '@tryghost/admin-x-framework/api/posts';
-import {useFilterOptions} from '../hooks/use-filter-options';
-import {useSearchMembers} from '../hooks/use-search-members';
-import {useSearchPosts} from '../hooks/use-search-posts';
+import {useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
+import {useBrowsePostsInfinite} from '@tryghost/admin-x-framework/api/posts';
 
 interface CommentsFiltersProps {
     filters: Filter[];
     onFiltersChange: (filters: Filter[]) => void;
-    knownPosts: Array<{ id: string; title: string }>;
-    knownMembers: Array<{ id: string; name?: string; email?: string }>;
 }
 
 const CommentsFilters: React.FC<CommentsFiltersProps> = ({
-    knownPosts,
-    knownMembers,
     filters,
     onFiltersChange
 }) => {
-    const posts = useFilterOptions({
-        knownItems: knownPosts,
-        useSearch: useSearchPosts,
-        useGetById: getPost,
-        searchFieldName: 'posts',
-        filters,
-        filterFieldName: 'post',
-        toOption: post => ({
-            value: post.id,
-            label: post.title || '(Untitled)'
-        })
+    const activeAuthorValues = getActiveFilterValues(filters, 'author');
+    const activePostValues = getActiveFilterValues(filters, 'post');
+
+    const memberSearch = useFilterSearch({
+        useQuery: useBrowseMembersInfinite,
+        dataKey: 'members',
+        serverSearchParams: (term): Record<string, string> => (term ? {search: term} : {}),
+        localSearchFilter: (members, term) => members.filter(m => (m.name || '').toLowerCase().includes(term.toLowerCase()) ||
+                (m.email || '').toLowerCase().includes(term.toLowerCase())
+        ),
+        toOption: m => ({
+            value: m.id,
+            label: m.name || 'Unknown name',
+            detail: m.email ?? '(Unknown email)'
+        }),
+        useGetById: getMember,
+        activeValues: activeAuthorValues
     });
 
-    const members = useFilterOptions({
-        knownItems: knownMembers,
-        useSearch: useSearchMembers,
-        useGetById: getMember,
-        searchFieldName: 'members',
-        filters,
-        filterFieldName: 'author',
-        toOption: member => ({
-            value: member.id,
-            label: member.name || 'Unknown name',
-            detail: member.email ?? '(Unknown email)'
-        })
+    const postSearch = useFilterSearch({
+        useQuery: useBrowsePostsInfinite,
+        dataKey: 'posts',
+        serverSearchParams: (term): Record<string, string> => (term ? {filter: `title:~${escapeNqlString(term)}`} : {}),
+        localSearchFilter: (posts, term) => posts.filter(p => (p.title || '').toLowerCase().includes(term.toLowerCase())),
+        toOption: p => ({
+            value: p.id,
+            label: p.title || '(Untitled)'
+        }),
+        useGetById: getPost,
+        activeValues: activePostValues
     });
 
     const filterFields: FilterFieldConfig[] = useMemo(
@@ -59,10 +61,10 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                 label: 'Author',
                 type: 'select',
                 icon: <LucideIcon.User className="size-4" />,
-                options: members.options,
-                isLoading: members.options.length === 0 && members.isLoading,
-                onSearchChange: members.onSearchChange,
-                searchValue: members.searchValue,
+                options: memberSearch.options,
+                isLoading: memberSearch.options.length === 0 && memberSearch.isLoading,
+                onSearchChange: memberSearch.onSearchChange,
+                searchValue: memberSearch.searchValue,
                 searchable: true,
                 className: 'w-80',
                 popoverContentClassName: 'w-80',
@@ -76,10 +78,10 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                 label: 'Post',
                 type: 'select',
                 icon: <LucideIcon.FileText className="size-4" />,
-                options: posts.options,
-                isLoading: posts.options.length === 0 && posts.isLoading,
-                onSearchChange: posts.onSearchChange,
-                searchValue: posts.searchValue,
+                options: postSearch.options,
+                isLoading: postSearch.options.length === 0 && postSearch.isLoading,
+                onSearchChange: postSearch.onSearchChange,
+                searchValue: postSearch.searchValue,
                 searchable: true,
                 className: 'w-full max-w-80',
                 popoverContentClassName: 'w-full max-w-[calc(100vw-32px)] max-w-80',
@@ -145,7 +147,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                 ]
             }
         ],
-        [posts, members]
+        [memberSearch, postSearch]
     );
 
     const hasFilters = filters.length > 0;

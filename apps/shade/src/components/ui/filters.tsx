@@ -1095,7 +1095,7 @@ function SelectOptionsPopover<T = unknown>({
     if (inline) {
         return (
             <div className="w-full">
-                <Command>
+                <Command shouldFilter={!field.onSearchChange}>
                     {field.searchable !== false && (
                         <CommandInput
                             className="h-8.5 text-sm"
@@ -1247,7 +1247,7 @@ function SelectOptionsPopover<T = unknown>({
                     field.className || 'w-[200px]'
                 )}
             >
-                <Command>
+                <Command shouldFilter={!field.onSearchChange}>
                     {field.searchable !== false && (
                         <CommandInput
                             className="h-[34px] text-sm"
@@ -1710,7 +1710,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                 </div>
             </PopoverTrigger>
             <PopoverContent className={cn('w-36 p-0 data-[state=closed]:animation-none! data-[state=closed]:duration-0!', field.popoverContentClassName)}>
-                <Command>
+                <Command shouldFilter={!field.onSearchChange}>
                     {field.searchable !== false && (
                         <CommandInput
                             className="h-[34px] text-sm"

@@ -165,10 +165,12 @@ export function MappingStep({
                                 isDuplicateName={labelPicker.isDuplicateName}
                                 isLoading={labelPicker.isLoading}
                                 labels={labelPicker.labels}
-                                selectedSlugs={labelPicker.selectedSlugs}
+                                searchValue={labelPicker.searchValue}
+                                selectedLabels={labelPicker.selectedLabels}
                                 onCreate={labelPicker.createLabel}
                                 onDelete={labelPicker.deleteLabel}
                                 onEdit={labelPicker.editLabel}
+                                onSearchChange={labelPicker.onSearchChange}
                                 onToggle={labelPicker.toggleLabel}
                             />
                         </div>
