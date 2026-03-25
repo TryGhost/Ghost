@@ -2175,9 +2175,7 @@ describe('Email renderer', function () {
             });
         });
 
-        const testLexicalRenderDesignOptions = async function ({expectedObject, labs}) {
-            labsEnabled = labs || false;
-
+        const testLexicalRenderDesignOptions = async function ({expectedObject}) {
             const post = createModel(basePost);
             const newsletter = createModel({
                 ...baseNewsletter,
