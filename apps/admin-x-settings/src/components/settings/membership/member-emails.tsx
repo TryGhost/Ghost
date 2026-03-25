@@ -173,6 +173,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
         sender_name: null,
         sender_email: null,
         sender_reply_to: null,
+        email_template_id: null,
         created_at: '',
         updated_at: null
     });
