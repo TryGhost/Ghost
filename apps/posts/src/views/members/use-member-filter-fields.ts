@@ -12,7 +12,7 @@ interface UseMemberFilterFieldsOptions {
     hydratedNewsletterSlugs?: string[];
     hasMultipleTiers?: boolean;
     paidMembersEnabled?: boolean;
-    emailAnalyticsEnabled?: boolean;
+    emailFiltersEnabled?: boolean;
     postResourceOptions?: FilterOption[];
     onPostResourceSearchChange?: (search: string) => void;
     postResourceSearchValue?: string;
@@ -25,7 +25,6 @@ interface UseMemberFilterFieldsOptions {
     membersTrackSources?: boolean;
     emailTrackOpens?: boolean;
     emailTrackClicks?: boolean;
-    audienceFeedbackEnabled?: boolean;
     siteTimezone?: string;
 }
 
@@ -295,7 +294,7 @@ export function useMemberFilterFields({
     hydratedNewsletterSlugs = [],
     hasMultipleTiers = false,
     paidMembersEnabled = false,
-    emailAnalyticsEnabled = false,
+    emailFiltersEnabled = false,
     postResourceOptions = [],
     onPostResourceSearchChange,
     postResourceSearchValue,
@@ -308,7 +307,6 @@ export function useMemberFilterFields({
     membersTrackSources = false,
     emailTrackOpens = false,
     emailTrackClicks = false,
-    audienceFeedbackEnabled = false,
     siteTimezone = 'UTC'
 }: UseMemberFilterFieldsOptions): FilterFieldGroup[] {
     return useMemo(() => {
@@ -430,7 +428,7 @@ export function useMemberFilterFields({
             groups.push({group: 'Subscription', fields: subscriptionFields});
         }
 
-        if (emailAnalyticsEnabled) {
+        if (emailFiltersEnabled) {
             const emailFields: FilterFieldConfig[] = [
                 createFieldConfig('email_count', {}, NUMBER_OPERATOR_LABELS),
                 createFieldConfig('email_opened_count', {}, NUMBER_OPERATOR_LABELS)
@@ -465,22 +463,19 @@ export function useMemberFilterFields({
                 )));
             }
 
-            if (audienceFeedbackEnabled) {
-                emailFields.push(createFieldConfig('newsletter_feedback', createSearchableFieldOverrides(
-                    emailResourceOptions,
-                    onEmailResourceSearchChange,
-                    emailResourceSearchValue,
-                    emailResourceLoading
-                )));
-            }
+            emailFields.push(createFieldConfig('newsletter_feedback', createSearchableFieldOverrides(
+                emailResourceOptions,
+                onEmailResourceSearchChange,
+                emailResourceSearchValue,
+                emailResourceLoading
+            )));
 
             groups.push({group: 'Email', fields: emailFields});
         }
 
         return groups;
     }, [
-        audienceFeedbackEnabled,
-        emailAnalyticsEnabled,
+        emailFiltersEnabled,
         emailResourceLoading,
         emailResourceOptions,
         emailResourceSearchValue,
