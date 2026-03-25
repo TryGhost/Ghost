@@ -1547,7 +1547,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       always()
-      && github.repository_owner == 'TryGhost'
+      && github.repository == 'TryGhost/Ghost'
       && needs.job_setup.result == 'success'
       && needs.job_docker_build_production.result == 'success'
       && needs.job_docker_build_production.outputs.use-artifact != 'true'
