@@ -13,8 +13,24 @@ type SignupOfferInput = Pick<OfferCreateInput, 'amount' | 'duration' | 'duration
     tierNamePrefix: string;
 };
 
-// TODO: Move this setup into an OfferFactory-backed helper that owns tier creation,
-// portal settings, and Stripe sync instead of keeping it local to the test file.
+type OfferLandingExpectation = {
+    title: string;
+    discountLabel: string | RegExp;
+    message: string | RegExp;
+    updatedPrice?: string | RegExp;
+};
+
+type RedeemedOfferResult = Awaited<ReturnType<typeof redeemOfferViaPortal>>;
+
+type DiscountOfferExpectation = {
+    duration: 'once' | 'repeating' | 'forever';
+    durationInMonths?: number | null;
+    priceLabel: string;
+    timingLabel: string;
+};
+
+// TODO: Move this setup into an OfferFactory-backed helper that owns portal-button
+// setup plus paid-tier creation instead of keeping it local to the test file.
 async function createSignupOffer(request: HttpClient, stripe: StripeTestService, input: SignupOfferInput): Promise<AdminOffer> {
     const offersService = new OffersService(request);
     const settingsService = new SettingsService(request);
@@ -28,8 +44,9 @@ async function createSignupOffer(request: HttpClient, stripe: StripeTestService,
         currency: 'usd',
         monthly_price: 600,
         yearly_price: 6000
+    }, {
+        stripe
     });
-    await waitForTierStripeSync(stripe, tierName);
 
     return await offersService.createOffer({
         name: 'Black Friday Special',
@@ -43,21 +60,48 @@ async function createSignupOffer(request: HttpClient, stripe: StripeTestService,
     });
 }
 
-async function waitForTierStripeSync(stripe: StripeTestService, tierName: string): Promise<void> {
-    await expect.poll(() => {
-        const product = stripe.getProducts().find(item => item.name === tierName);
-        if (!product) {
-            return 0;
-        }
+async function expectOfferLandingPage(offerPage: PortalOfferPage, expected: OfferLandingExpectation): Promise<void> {
+    await offerPage.waitForOfferPage();
+    await expect(offerPage.offerTitle).toHaveText(expected.title);
+    await expect(offerPage.discountLabel).toContainText(expected.discountLabel);
+    await expect(offerPage.offerMessage).toContainText(expected.message);
 
-        return stripe.getPrices().filter(item => item.product === product.id).length;
-    }, {timeout: 10000}).toBe(2);
+    if (expected.updatedPrice) {
+        await expect(offerPage.updatedPrice).toContainText(expected.updatedPrice);
+    }
+}
+
+function expectOfferMetadata(result: RedeemedOfferResult, offer: AdminOffer): void {
+    expect(result.subscription.offer?.id).toBe(offer.id);
+    expect(result.subscription.offer_redemptions?.some(item => item.id === offer.id)).toBe(true);
+}
+
+async function expectTrialOfferRedemption(result: RedeemedOfferResult, offer: AdminOffer): Promise<void> {
+    await expect(result.accountPage.freeTrialLabel).toBeVisible();
+    expectOfferMetadata(result, offer);
+    expect(result.subscription.status).toBe('trialing');
+}
+
+async function expectDiscountOfferRedemption(
+    result: RedeemedOfferResult,
+    offer: AdminOffer,
+    expected: DiscountOfferExpectation
+): Promise<void> {
+    await expect(result.accountPage.offerLabel).toContainText(expected.priceLabel);
+    await expect(result.accountPage.offerLabel).toContainText(expected.timingLabel);
+
+    expectOfferMetadata(result, offer);
+    expect(result.subscription.offer?.duration).toBe(expected.duration);
+
+    if (expected.durationInMonths !== undefined) {
+        expect(result.subscription.offer?.duration_in_months).toBe(expected.durationInMonths);
+    }
 }
 
 test.describe('Ghost Public - Portal Offers', () => {
     test.use({stripeEnabled: true});
 
-    test('archived offer link opens site - does not open portal offer flow', async ({page}) => {
+    test('archived offer link opens site - does not open portal offer flow', async ({page, stripe}) => {
         const publicPage = new PublicPage(page);
         const offersService = new OffersService(page.request);
         const tier = await createPaidPortalTier(page.request, {
@@ -65,6 +109,8 @@ test.describe('Ghost Public - Portal Offers', () => {
             currency: 'usd',
             monthly_price: 600,
             yearly_price: 6000
+        }, {
+            stripe: stripe!
         });
         const offer = await offersService.createOffer({
             name: 'Archived Offer',
@@ -119,16 +165,14 @@ test.describe('Ghost Public - Portal Offers', () => {
         await publicPage.gotoOfferCode(offer.code);
 
         const offerPage = new PortalOfferPage(page);
-        await offerPage.waitForOfferPage(offer.name);
-        await expect(offerPage.headingWithText(offer.name)).toBeVisible();
-        await expect(offerPage.text('14 days free')).toBeVisible();
-        await expect(offerPage.text('Try free for 14 days')).toBeVisible();
+        await expectOfferLandingPage(offerPage, {
+            title: offer.display_title ?? offer.name,
+            discountLabel: '14 days free',
+            message: 'Try free for 14 days'
+        });
 
-        const {accountPage, subscription} = await redeemOfferViaPortal(page, stripe!, {name: MEMBER_NAME});
-        await expect(accountPage.freeTrialLabel).toBeVisible();
-        expect(subscription.offer?.id).toBe(offer.id);
-        expect(subscription.offer_redemptions?.some(item => item.id === offer.id)).toBe(true);
-        expect(subscription.status).toBe('trialing');
+        const redemption = await redeemOfferViaPortal(page, stripe!, {name: MEMBER_NAME});
+        await expectTrialOfferRedemption(redemption, offer);
     });
 
     test('one-time discount offer opens in portal - redemption shows discounted plan label', async ({page, stripe}) => {
@@ -144,18 +188,19 @@ test.describe('Ghost Public - Portal Offers', () => {
         await publicPage.gotoOfferCode(offer.code);
 
         const offerPage = new PortalOfferPage(page);
-        await offerPage.waitForOfferPage(offer.name);
-        await expect(offerPage.headingWithText(offer.name)).toBeVisible();
-        await expect(offerPage.text(/^10% off$/)).toBeVisible();
-        await expect(offerPage.text(/\$5\.40/)).toBeVisible();
-        await expect(offerPage.text('10% off for first month')).toBeVisible();
+        await expectOfferLandingPage(offerPage, {
+            title: offer.display_title ?? offer.name,
+            discountLabel: '10% off',
+            message: '10% off for first month',
+            updatedPrice: /\$5\.40/
+        });
 
-        const {accountPage, subscription} = await redeemOfferViaPortal(page, stripe!, {name: MEMBER_NAME});
-        await expect(accountPage.offerLabel).toContainText('$5.40/month');
-        await expect(accountPage.offerLabel).toContainText('Ends');
-        expect(subscription.offer?.id).toBe(offer.id);
-        expect(subscription.offer_redemptions?.some(item => item.id === offer.id)).toBe(true);
-        expect(subscription.offer?.duration).toBe('once');
+        const redemption = await redeemOfferViaPortal(page, stripe!, {name: MEMBER_NAME});
+        await expectDiscountOfferRedemption(redemption, offer, {
+            duration: 'once',
+            priceLabel: '$5.40/month',
+            timingLabel: 'Ends'
+        });
     });
 
     test('repeating discount offer opens in portal - redemption shows discounted plan label', async ({page, stripe}) => {
@@ -172,19 +217,20 @@ test.describe('Ghost Public - Portal Offers', () => {
         await publicPage.gotoOfferCode(offer.code);
 
         const offerPage = new PortalOfferPage(page);
-        await offerPage.waitForOfferPage(offer.name);
-        await expect(offerPage.headingWithText(offer.name)).toBeVisible();
-        await expect(offerPage.text(/^10% off$/)).toBeVisible();
-        await expect(offerPage.text(/\$5\.40/)).toBeVisible();
-        await expect(offerPage.text('10% off for first 3 months')).toBeVisible();
+        await expectOfferLandingPage(offerPage, {
+            title: offer.display_title ?? offer.name,
+            discountLabel: '10% off',
+            message: '10% off for first 3 months',
+            updatedPrice: /\$5\.40/
+        });
 
-        const {accountPage, subscription} = await redeemOfferViaPortal(page, stripe!, {name: MEMBER_NAME});
-        await expect(accountPage.offerLabel).toContainText('$5.40/month');
-        await expect(accountPage.offerLabel).toContainText('Ends');
-        expect(subscription.offer?.id).toBe(offer.id);
-        expect(subscription.offer_redemptions?.some(item => item.id === offer.id)).toBe(true);
-        expect(subscription.offer?.duration).toBe('repeating');
-        expect(subscription.offer?.duration_in_months).toBe(3);
+        const redemption = await redeemOfferViaPortal(page, stripe!, {name: MEMBER_NAME});
+        await expectDiscountOfferRedemption(redemption, offer, {
+            duration: 'repeating',
+            durationInMonths: 3,
+            priceLabel: '$5.40/month',
+            timingLabel: 'Ends'
+        });
     });
 
     test('forever discount offer opens in portal - redemption shows discounted plan label', async ({page, stripe}) => {
@@ -200,17 +246,18 @@ test.describe('Ghost Public - Portal Offers', () => {
         await publicPage.gotoOfferCode(offer.code);
 
         const offerPage = new PortalOfferPage(page);
-        await offerPage.waitForOfferPage(offer.name);
-        await expect(offerPage.headingWithText(offer.name)).toBeVisible();
-        await expect(offerPage.text(/^10% off$/)).toBeVisible();
-        await expect(offerPage.text(/\$5\.40/)).toBeVisible();
-        await expect(offerPage.text('10% off forever')).toBeVisible();
+        await expectOfferLandingPage(offerPage, {
+            title: offer.display_title ?? offer.name,
+            discountLabel: '10% off',
+            message: '10% off forever',
+            updatedPrice: /\$5\.40/
+        });
 
-        const {accountPage, subscription} = await redeemOfferViaPortal(page, stripe!, {name: MEMBER_NAME});
-        await expect(accountPage.offerLabel).toContainText('$5.40/month');
-        await expect(accountPage.offerLabel).toContainText('Forever');
-        expect(subscription.offer?.id).toBe(offer.id);
-        expect(subscription.offer_redemptions?.some(item => item.id === offer.id)).toBe(true);
-        expect(subscription.offer?.duration).toBe('forever');
+        const redemption = await redeemOfferViaPortal(page, stripe!, {name: MEMBER_NAME});
+        await expectDiscountOfferRedemption(redemption, offer, {
+            duration: 'forever',
+            priceLabel: '$5.40/month',
+            timingLabel: 'Forever'
+        });
     });
 });
