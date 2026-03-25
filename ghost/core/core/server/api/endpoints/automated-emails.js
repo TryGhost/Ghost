@@ -92,6 +92,36 @@ const controller = {
         }
     },
 
+    bulkEdit: {
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            const emails = frame.data.automated_emails;
+            const results = [];
+
+            for (const email of emails) {
+                const model = await models.AutomatedEmail.edit(email, {
+                    ...frame.options,
+                    id: email.id
+                });
+
+                if (!model) {
+                    throw new errors.NotFoundError({
+                        message: tpl(messages.automatedEmailNotFound)
+                    });
+                }
+
+                results.push(model);
+            }
+
+            return {data: results};
+        }
+    },
+
     destroy: {
         statusCode: 204,
         headers: {

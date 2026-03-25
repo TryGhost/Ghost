@@ -250,6 +250,31 @@ describe('Automated Emails API', function () {
                 });
         });
 
+        it('Can edit design settings on an automated email', async function () {
+            const automatedEmail = await createAutomatedEmail();
+
+            await agent
+                .put(`automated_emails/${automatedEmail.id}`)
+                .body({automated_emails: [{
+                    name: 'Welcome Email (Free)',
+                    background_color: '#f0f0f0',
+                    button_style: 'outline',
+                    button_corners: 'pill',
+                    title_font_category: 'serif',
+                    header_image: 'https://example.com/header.png',
+                    show_badge: false,
+                    footer_content: 'Custom footer'
+                }]})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    automated_emails: [matchAutomatedEmail]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
         it('Validates status on edit', async function () {
             const automatedEmail = await createAutomatedEmail();
 
@@ -408,6 +433,48 @@ describe('Automated Emails API', function () {
                     }
                 }, sinon.match.any);
             });
+        });
+    });
+
+    describe('Bulk Edit', function () {
+        it('Can bulk edit multiple automated emails', async function () {
+            const email1 = await createAutomatedEmail({
+                name: 'Welcome Email (Free)',
+                slug: 'member-welcome-email-free'
+            });
+            const email2 = await createAutomatedEmail({
+                name: 'Welcome Email (Paid)',
+                slug: 'member-welcome-email-paid'
+            });
+
+            await agent
+                .put('automated_emails')
+                .body({automated_emails: [
+                    {id: email1.id, background_color: '#000000', button_style: 'outline'},
+                    {id: email2.id, background_color: '#000000', button_style: 'outline'}
+                ]})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    automated_emails: [matchAutomatedEmail, matchAutomatedEmail]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Returns 404 when bulk editing with non-existent id', async function () {
+            await agent
+                .put('automated_emails')
+                .body({automated_emails: [
+                    {id: '000000000000000000000000', background_color: '#000000'}
+                ]})
+                .expectStatus(404)
+                .matchBodySnapshot({errors: [{id: anyErrorId}]})
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
         });
     });
 

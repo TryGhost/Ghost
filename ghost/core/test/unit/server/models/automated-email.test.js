@@ -20,8 +20,22 @@ describe('Unit: models/automated-email', function () {
             const defaults = model.defaults();
 
             assert.ok(defaults);
-            assert.equal(Object.keys(defaults).length, 1);
+            assert.equal(Object.keys(defaults).length, 15);
             assert.equal(defaults.status, 'inactive');
+            assert.equal(defaults.background_color, 'light');
+            assert.equal(defaults.header_background_color, 'transparent');
+            assert.equal(defaults.title_font_category, 'sans_serif');
+            assert.equal(defaults.title_font_weight, 'bold');
+            assert.equal(defaults.body_font_category, 'sans_serif');
+            assert.equal(defaults.title_alignment, 'center');
+            assert.equal(defaults.button_color, 'accent');
+            assert.equal(defaults.button_style, 'fill');
+            assert.equal(defaults.button_corners, 'rounded');
+            assert.equal(defaults.link_color, 'accent');
+            assert.equal(defaults.link_style, 'underline');
+            assert.equal(defaults.image_corners, 'square');
+            assert.equal(defaults.show_header_title, true);
+            assert.equal(defaults.show_badge, true);
         });
     });
 

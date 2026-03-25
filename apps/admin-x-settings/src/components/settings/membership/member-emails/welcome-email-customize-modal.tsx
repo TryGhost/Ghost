@@ -31,7 +31,8 @@ import {
     Textarea
 } from '@tryghost/shade';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {useCallback, useState} from 'react';
+import {useBrowseAutomatedEmails, useBulkEditAutomatedEmails} from '@tryghost/admin-x-framework/api/automated-emails';
+import {useCallback, useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
 
 interface GeneralSettings {
@@ -178,6 +179,12 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
     const {siteData, settings: globalSettings, config} = useGlobalData();
     const [siteTitle, defaultEmailAddress, supportEmailAddress] = getSettingValues<string>(globalSettings, ['title', 'default_email_address', 'support_email_address']);
 
+    const {data: automatedEmailsData} = useBrowseAutomatedEmails();
+    const automatedEmails = automatedEmailsData?.automated_emails || [];
+    const firstEmail = automatedEmails[0];
+
+    const {mutateAsync: bulkEdit} = useBulkEditAutomatedEmails();
+
     const [designSettings, setDesignSettings] = useState<EmailDesignSettings>({...DEFAULT_EMAIL_DESIGN});
     const [generalSettings, setGeneralSettings] = useState<GeneralSettings>({
         senderName: siteTitle || '',
@@ -187,6 +194,39 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
         showBadge: true,
         emailFooter: ''
     });
+    const [initialized, setInitialized] = useState(false);
+
+    // Initialize settings from API data once loaded
+    useEffect(() => {
+        if (firstEmail && !initialized) {
+            setDesignSettings({
+                background_color: firstEmail.background_color ?? DEFAULT_EMAIL_DESIGN.background_color,
+                title_font_category: firstEmail.title_font_category ?? DEFAULT_EMAIL_DESIGN.title_font_category,
+                title_font_weight: firstEmail.title_font_weight ?? DEFAULT_EMAIL_DESIGN.title_font_weight,
+                body_font_category: firstEmail.body_font_category ?? DEFAULT_EMAIL_DESIGN.body_font_category,
+                header_background_color: firstEmail.header_background_color ?? DEFAULT_EMAIL_DESIGN.header_background_color,
+                post_title_color: DEFAULT_EMAIL_DESIGN.post_title_color,
+                title_alignment: firstEmail.title_alignment ?? DEFAULT_EMAIL_DESIGN.title_alignment,
+                section_title_color: firstEmail.section_title_color ?? DEFAULT_EMAIL_DESIGN.section_title_color,
+                button_color: firstEmail.button_color ?? DEFAULT_EMAIL_DESIGN.button_color,
+                button_style: firstEmail.button_style ?? DEFAULT_EMAIL_DESIGN.button_style,
+                button_corners: firstEmail.button_corners ?? DEFAULT_EMAIL_DESIGN.button_corners,
+                link_color: firstEmail.link_color ?? DEFAULT_EMAIL_DESIGN.link_color,
+                link_style: firstEmail.link_style ?? DEFAULT_EMAIL_DESIGN.link_style,
+                image_corners: firstEmail.image_corners ?? DEFAULT_EMAIL_DESIGN.image_corners,
+                divider_color: firstEmail.divider_color ?? DEFAULT_EMAIL_DESIGN.divider_color
+            });
+            setGeneralSettings({
+                senderName: firstEmail.sender_name || siteTitle || '',
+                replyToEmail: firstEmail.sender_reply_to || supportEmailAddress || defaultEmailAddress || '',
+                headerImage: firstEmail.header_image || '',
+                showPublicationTitle: firstEmail.show_header_title ?? true,
+                showBadge: firstEmail.show_badge ?? true,
+                emailFooter: firstEmail.footer_content || ''
+            });
+            setInitialized(true);
+        }
+    }, [firstEmail, initialized, siteTitle, supportEmailAddress, defaultEmailAddress]);
 
     const handleDesignChange = useCallback((updates: Partial<EmailDesignSettings>) => {
         setDesignSettings(prev => ({...prev, ...updates}));
@@ -196,10 +236,38 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
         setGeneralSettings(prev => ({...prev, ...updates}));
     }, []);
 
-    const handleSave = useCallback(() => {
-        // TODO: persist to backend when design columns are added
+    const handleSave = useCallback(async () => {
+        const designPayload = {
+            background_color: designSettings.background_color,
+            header_background_color: designSettings.header_background_color,
+            title_font_category: designSettings.title_font_category,
+            title_font_weight: designSettings.title_font_weight,
+            body_font_category: designSettings.body_font_category,
+            title_alignment: designSettings.title_alignment,
+            section_title_color: designSettings.section_title_color,
+            button_color: designSettings.button_color,
+            button_style: designSettings.button_style,
+            button_corners: designSettings.button_corners,
+            link_color: designSettings.link_color,
+            link_style: designSettings.link_style,
+            image_corners: designSettings.image_corners,
+            divider_color: designSettings.divider_color,
+            header_image: generalSettings.headerImage || null,
+            show_header_title: generalSettings.showPublicationTitle,
+            show_badge: generalSettings.showBadge,
+            footer_content: generalSettings.emailFooter || null
+        };
+
+        const emailUpdates = automatedEmails.map(email => ({
+            id: email.id,
+            ...designPayload
+        }));
+
+        if (emailUpdates.length > 0) {
+            await bulkEdit(emailUpdates);
+        }
         modal.remove();
-    }, [modal]);
+    }, [modal, designSettings, generalSettings, automatedEmails, bulkEdit]);
 
     const handleClose = useCallback(() => {
         modal.remove();

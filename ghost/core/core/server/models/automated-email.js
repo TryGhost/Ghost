@@ -11,7 +11,21 @@ const AutomatedEmail = ghostBookshelf.Model.extend({
 
     defaults() {
         return {
-            status: 'inactive'
+            status: 'inactive',
+            background_color: 'light',
+            header_background_color: 'transparent',
+            title_font_category: 'sans_serif',
+            title_font_weight: 'bold',
+            body_font_category: 'sans_serif',
+            title_alignment: 'center',
+            button_color: 'accent',
+            button_style: 'fill',
+            button_corners: 'rounded',
+            link_color: 'accent',
+            link_style: 'underline',
+            image_corners: 'square',
+            show_header_title: true,
+            show_badge: true
         };
     },
 
@@ -21,6 +35,10 @@ const AutomatedEmail = ghostBookshelf.Model.extend({
         // transform URLs from __GHOST_URL__ to absolute
         if (attrs.lexical) {
             attrs.lexical = urlUtils.transformReadyToAbsolute(attrs.lexical);
+        }
+
+        if (attrs.header_image) {
+            attrs.header_image = urlUtils.transformReadyToAbsolute(attrs.header_image);
         }
 
         return attrs;
@@ -34,6 +52,10 @@ const AutomatedEmail = ghostBookshelf.Model.extend({
                 nodes: lexicalLib.nodes,
                 transformMap: lexicalLib.urlTransformMap
             });
+        }
+
+        if (attrs.header_image) {
+            attrs.header_image = urlUtils.toTransformReady(attrs.header_image);
         }
 
         return attrs;
