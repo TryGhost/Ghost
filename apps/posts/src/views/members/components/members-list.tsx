@@ -1,10 +1,12 @@
 import MembersListItem from './members-list-item';
+import {Button} from '@tryghost/shade';
 import {Member} from '@tryghost/admin-x-framework/api/members';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
 import {forwardRef, useRef} from 'react';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
 import type {ActiveColumn} from '../member-query-params';
+import {useVirtualListWindow} from '@components/virtual-table/virtual-list-window';
 
 const SpacerRow = ({height}: { height: number }) => (
     <tr aria-hidden="true" style={{height}}>
@@ -57,12 +59,13 @@ function MembersList({
     onRowClick
 }: MembersListProps) {
     const parentRef = useRef<HTMLDivElement>(null);
+    const {visibleItemCount, canFetchMore, fetchMore} = useVirtualListWindow(totalItems);
 
     useScrollRestoration({parentRef, isLoading});
 
     const {visibleItems, spaceBefore, spaceAfter} = useInfiniteVirtualScroll({
         items,
-        totalItems,
+        totalItems: visibleItemCount,
         hasNextPage,
         isFetchingNextPage,
         fetchNextPage,
@@ -146,6 +149,18 @@ function MembersList({
                     <SpacerRow height={spaceAfter} />
                 </TableBody>
             </Table>
+
+            {canFetchMore && (
+                <div className="flex justify-center px-4 py-6">
+                    <Button
+                        disabled={isFetchingNextPage}
+                        variant="outline"
+                        onClick={fetchMore}
+                    >
+                        {isFetchingNextPage ? 'Loading more...' : 'Fetch more'}
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }

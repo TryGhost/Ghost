@@ -83,6 +83,7 @@ const Comments: React.FC = () => {
                             isFetchingNextPage={isFetchingNextPage}
                             isLoading={isFetching && !isFetchingNextPage}
                             items={data?.comments ?? []}
+                            resetKey={nql ?? ''}
                             totalItems={data?.meta?.pagination?.total ?? 0}
                             onAddFilter={handleAddFilter}
                         />

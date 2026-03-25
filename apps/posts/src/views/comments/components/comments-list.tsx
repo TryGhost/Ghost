@@ -10,6 +10,7 @@ import {Link, useSearchParams} from '@tryghost/admin-x-framework';
 import {forwardRef, useEffect, useRef, useState} from 'react';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
+import {useVirtualListWindow} from '@components/virtual-table/virtual-list-window';
 
 const SpacerRow = ({height}: { height: number }) => (
     <div aria-hidden="true" className="flex">
@@ -42,6 +43,7 @@ function CommentsList({
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
+    resetKey,
     onAddFilter,
     isLoading
 }: {
@@ -50,10 +52,12 @@ function CommentsList({
     hasNextPage?: boolean;
     isFetchingNextPage?: boolean;
     fetchNextPage: () => void;
+    resetKey: string;
     onAddFilter: (field: string, value: string, operator?: string) => void;
     isLoading?: boolean;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
+    const {visibleItemCount, canFetchMore, fetchMore} = useVirtualListWindow(totalItems, {resetKey});
     const [searchParams, setSearchParams] = useSearchParams();
     const [threadSidebarOpen, setThreadSidebarOpen] = useState(false);
     const [selectedThreadCommentId, setSelectedThreadCommentId] = useState<string | null>(null);
@@ -98,7 +102,7 @@ function CommentsList({
 
     const {visibleItems, spaceBefore, spaceAfter} = useInfiniteVirtualScroll({
         items,
-        totalItems,
+        totalItems: visibleItemCount,
         hasNextPage,
         isFetchingNextPage,
         fetchNextPage,
@@ -210,6 +214,18 @@ function CommentsList({
                     <SpacerRow height={spaceAfter} />
                 </div>
             </div>
+
+            {canFetchMore && (
+                <div className="flex justify-center px-4 py-6">
+                    <Button
+                        disabled={isFetchingNextPage}
+                        variant="outline"
+                        onClick={fetchMore}
+                    >
+                        {isFetchingNextPage ? 'Loading more...' : 'Fetch more'}
+                    </Button>
+                </div>
+            )}
 
             <CommentThreadSidebar
                 commentId={selectedThreadCommentId}
