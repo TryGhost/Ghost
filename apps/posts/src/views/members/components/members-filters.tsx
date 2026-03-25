@@ -119,7 +119,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 
     const hasFilters = filters.length > 0;
     const clearAndSaveButtons = hasFilters ? (
-        <div className="flex shrink-0 items-center gap-2 sm:absolute sm:right-0 sm:top-0">
+        <div className="flex shrink-0 items-center gap-2 sm:absolute sm:top-0 sm:right-0">
             <button
                 className="flex items-center gap-1 text-sm font-normal text-muted-foreground hover:text-foreground"
                 type="button"

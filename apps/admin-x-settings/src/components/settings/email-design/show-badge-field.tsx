@@ -13,7 +13,7 @@ const ShowBadgeField: React.FC<ShowBadgeFieldProps> = ({value, onChange}) => (
             <Heart className="mt-0.5 size-4 shrink-0 text-red-500" />
             <div className="flex flex-col gap-0.5">
                 <span>Promote independent publishing</span>
-                <span className="text-muted-foreground text-xs leading-tight">Show you&apos;re a part of the indie publishing movement with a small badge in the footer</span>
+                <span className="text-xs leading-tight text-muted-foreground">Show you&apos;re a part of the indie publishing movement with a small badge in the footer</span>
             </div>
         </div>
         <Switch

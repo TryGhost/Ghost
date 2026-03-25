@@ -52,10 +52,10 @@ const WelcomeEmailPreviewContent: React.FC = () => {
                 className={cn(bodyFontClasses)}
                 style={{color: colors.textColor, fontFamily: bodyFont}}
             >
-                <p className="mb-6 mt-0">
+                <p className="mt-0 mb-6">
                     This is what your welcome email will look like when someone signs up to your site.
                 </p>
-                <p className="mb-8 mt-0">
+                <p className="mt-0 mb-8">
                     Use the settings on the right to shape the design — from colors and typography to layout and buttons — so it feels like a natural extension of your brand.
                 </p>
 
@@ -70,7 +70,7 @@ const WelcomeEmailPreviewContent: React.FC = () => {
                 </div>
                 <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem]" style={{color: colors.secondaryTextColor}}>Image caption</div>
 
-                <p className="mb-6 mt-0">
+                <p className="mt-0 mb-6">
                     Welcome emails set the tone for your relationship with new members. We’ve optimized this template to look great across devices and inboxes, so your first impression lands exactly how you want it.
                 </p>
             </div>
@@ -90,7 +90,7 @@ const WelcomeEmailPreviewContent: React.FC = () => {
                 className={cn(bodyFontClasses)}
                 style={{color: colors.textColor, fontFamily: bodyFont}}
             >
-                <p className="mb-6 mt-0">
+                <p className="mt-0 mb-6">
                     We’ve put together a <a className={linkClasses} href="https://ghost.org/help/email-design/" rel="noopener noreferrer" style={{color: colors.linkColor}} target="_blank">quick guide</a> that walks through all the available settings, along with a few examples of what’s possible.
                 </p>
             </div>

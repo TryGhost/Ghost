@@ -43,7 +43,7 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({size = 'md', buttons, link, li
                 const buttonProps = {...props};
 
                 if (!link && !clearBg) {
-                    buttonProps.className = clsx(props.className, 'px-0! w-8 rounded-lg border');
+                    buttonProps.className = clsx(props.className, 'w-8 rounded-lg border px-0!');
 
                     if (key === activeKey) {
                         buttonProps.color = 'white';

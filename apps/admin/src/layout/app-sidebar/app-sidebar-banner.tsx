@@ -15,7 +15,7 @@ function AppSidebarBanner({banner}: AppSidebarBannerProps) {
     }
 
     return (
-        <div className="fixed left-3 bottom-[92px] max-w-[276px] z-50">
+        <div className="fixed bottom-[92px] left-3 z-50 max-w-[276px]">
             {resolvedBanner}
         </div>
     );
