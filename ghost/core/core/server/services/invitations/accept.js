@@ -16,35 +16,40 @@ const messages = {
 async function accept(invitation) {
     const data = invitation.invitation[0];
     const inviteToken = security.url.decodeBase64(data.token);
-    const options = {context: {internal: true}};
 
-    let invite = await models.Invite.findOne({token: inviteToken, status: 'sent'}, options);
+    return models.Base.transaction(async (transacting) => {
+        const options = {context: {internal: true}, transacting, forUpdate: true};
 
-    if (!invite) {
-        throw new errors.NotFoundError({message: tpl(messages.inviteNotFound)});
-    }
+        let invite = await models.Invite.findOne({token: inviteToken, status: 'sent'}, options);
 
-    if (invite.get('expires') < Date.now()) {
-        throw new errors.NotFoundError({message: tpl(messages.inviteExpired)});
-    }
+        if (!invite) {
+            throw new errors.NotFoundError({message: tpl(messages.inviteNotFound)});
+        }
 
-    let user = await models.User.findOne({email: data.email});
-    if (user) {
-        throw new errors.ValidationError({
-            message: tpl(messages.inviteEmailAlreadyExist.message),
-            context: tpl(messages.inviteEmailAlreadyExist.context),
-            help: tpl(messages.inviteEmailAlreadyExist.help)
-        });
-    }
+        if (invite.get('expires') < Date.now()) {
+            throw new errors.NotFoundError({message: tpl(messages.inviteExpired)});
+        }
 
-    await models.User.add({
-        email: data.email,
-        name: data.name,
-        password: data.password,
-        roles: [invite.toJSON().role_id]
-    }, options);
+        let user = await models.User.findOne({email: data.email}, options);
+        if (user) {
+            throw new errors.ValidationError({
+                message: tpl(messages.inviteEmailAlreadyExist.message),
+                context: tpl(messages.inviteEmailAlreadyExist.context),
+                help: tpl(messages.inviteEmailAlreadyExist.help)
+            });
+        }
 
-    return invite.destroy(options);
+        const roleId = invite.get('role_id');
+
+        await invite.destroy(options);
+
+        await models.User.add({
+            email: data.email,
+            name: data.name,
+            password: data.password,
+            roles: [roleId]
+        }, options);
+    });
 }
 
 module.exports = accept;
