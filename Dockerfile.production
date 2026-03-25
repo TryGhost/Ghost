@@ -7,7 +7,7 @@
 #
 # Build context: extracted `npm pack` output from ghost/core
 
-ARG NODE_VERSION=22.18.0
+ARG NODE_VERSION=24.14.1
 
 # ---- Core: server + production deps ----
 FROM node:$NODE_VERSION-bookworm-slim AS core

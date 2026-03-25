@@ -62,7 +62,7 @@
     "prepack": "node monobundle.js"
   },
   "engines": {
-    "node": "^22.13.1",
+    "node": "^24.14.1",
     "cli": "^1.27.0"
   },
   "dependencies": {

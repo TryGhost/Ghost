@@ -26,7 +26,7 @@
     "lint": "yarn lint:js && yarn lint:hbs"
   },
   "engines": {
-    "node": "^22.13.1"
+    "node": "^24.14.1"
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.28.4",
