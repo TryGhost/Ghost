@@ -57,6 +57,26 @@ export class OffersService {
         this.adminEndpoint = '/ghost/api/admin';
     }
 
+    private extractFirstOfferOrThrow(action: string, status: number, data: unknown): AdminOffer {
+        const offers = (data as OffersResponse | undefined)?.offers;
+
+        if (!Array.isArray(offers) || offers.length === 0) {
+            let responseBody = '[unserializable]';
+
+            try {
+                responseBody = JSON.stringify(data);
+            } catch {
+                // Ignore serialization errors and keep fallback marker.
+            }
+
+            throw new Error(
+                `Failed to ${action}: expected response.offers to be a non-empty array (status ${status}). Response: ${responseBody}`
+            );
+        }
+
+        return offers[0];
+    }
+
     async createOffer(input: OfferCreateInput): Promise<AdminOffer> {
         const response = await this.request.post(`${this.adminEndpoint}/offers`, {
             data: {
@@ -82,8 +102,8 @@ export class OffersService {
             throw new Error(`Failed to create offer: ${response.status()}`);
         }
 
-        const data = await response.json() as OffersResponse;
-        return data.offers[0];
+        const data = await response.json() as unknown;
+        return this.extractFirstOfferOrThrow('create offer', response.status(), data);
     }
 
     async updateOffer(offerId: string, input: OfferUpdateInput): Promise<AdminOffer> {
@@ -97,7 +117,7 @@ export class OffersService {
             throw new Error(`Failed to update offer: ${response.status()}`);
         }
 
-        const data = await response.json() as OffersResponse;
-        return data.offers[0];
+        const data = await response.json() as unknown;
+        return this.extractFirstOfferOrThrow('update offer', response.status(), data);
     }
 }
