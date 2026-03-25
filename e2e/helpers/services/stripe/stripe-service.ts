@@ -4,6 +4,7 @@ import {WebhookClient} from './webhook-client';
 import {
     buildCheckoutSessionCompletedEvent,
     buildCustomer,
+    buildDiscount,
     buildDonationCheckoutCompletedEvent,
     buildInvoicePaymentSucceededEvent,
     buildPaymentMethod,
@@ -15,7 +16,9 @@ import {
 } from './builders';
 import type {
     RecordedStripeCheckoutSession,
+    StripeCoupon,
     StripeCustomer,
+    StripeDiscount,
     StripePaymentMethod,
     StripePrice,
     StripeProduct,
@@ -46,6 +49,10 @@ export class StripeTestService {
 
     getPrices(): StripePrice[] {
         return this.server.getPrices();
+    }
+
+    getCoupons(): StripeCoupon[] {
+        return this.server.getCoupons();
     }
 
     getCustomers(): StripeCustomer[] {
@@ -191,10 +198,14 @@ export class StripeTestService {
 
         const customer = this.resolveCheckoutCustomer(session, opts.name);
         const paymentMethod = buildPaymentMethod({name: opts.name ?? customer.name});
+        const discount = this.resolveCheckoutDiscount(session);
+        const trialDays = session.request.subscription_data?.trial_period_days;
         const subscription = buildSubscription({
             customerId: customer.id,
+            discount,
             price,
-            paymentMethod
+            paymentMethod,
+            trialDays
         });
 
         customer.subscriptions.data.push(subscription);
@@ -310,5 +321,23 @@ export class StripeTestService {
             const body = await subscriptionResponse.text();
             throw new Error(`customer.subscription.created webhook failed (${subscriptionResponse.status}): ${body}`);
         }
+    }
+
+    private resolveCheckoutDiscount(session: RecordedStripeCheckoutSession): StripeDiscount | null {
+        const couponId = session.request.discounts?.[0]?.coupon;
+
+        if (!couponId) {
+            return null;
+        }
+
+        const coupon = this.getCoupons().find(item => item.id === couponId);
+
+        if (!coupon) {
+            throw new Error(`No recorded Stripe coupon found for ${couponId}`);
+        }
+
+        return buildDiscount({
+            coupon
+        });
     }
 }

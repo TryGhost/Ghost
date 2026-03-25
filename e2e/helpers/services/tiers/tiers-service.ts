@@ -1,5 +1,9 @@
 import {HttpClient as APIRequest, Tier} from '@/data-factory';
 
+// TODO: Convert this helper into a TierFactory-backed setup API instead of keeping
+// thin admin CRUD wrappers under helpers/services. Tiers are Ghost test data, so
+// they fit the data-factory model better than the service layer.
+
 export interface AdminTier extends Tier {
     description?: string | null;
     visibility?: 'public' | 'none';
