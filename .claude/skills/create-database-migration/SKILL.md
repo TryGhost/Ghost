@@ -1,6 +1,6 @@
 ---
 name: Create database migration
-description: Create a database migration to add a table, add columns to an existing table, add a setting, or otherwise change the schema of Ghost's MySQL database.
+description: Create a database migration to add a table, add columns to an existing table, add a setting, or otherwise change the schema of Ghost's MySQL database. Use this skill whenever the task involves modifying Ghost's database schema — including adding, removing, or renaming columns or tables, adding new settings, creating indexes, updating data, or any change that requires a migration file in ghost/core. Also use when the user references schema.js, knex-migrator, the migrations directory, or asks to "add a field" or "add a column" to any Ghost model/table. Even if the user frames it as a feature or Linear issue, if the implementation requires a schema change, this skill applies.
 ---
 
 # Create Database Migration
