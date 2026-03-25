@@ -10,6 +10,8 @@ export class PortalAccountPage extends PortalPage {
     readonly resumeSubscriptionButton: Locator;
     readonly canceledBadge: Locator;
     readonly emailNewsletterHeading: Locator;
+    readonly freeTrialLabel: Locator;
+    readonly offerLabel: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -22,6 +24,8 @@ export class PortalAccountPage extends PortalPage {
         this.resumeSubscriptionButton = this.portalFrame.getByRole('button', {name: 'Resume subscription'});
         this.canceledBadge = this.portalFrame.getByText('Canceled', {exact: true});
         this.emailNewsletterHeading = this.portalFrame.getByRole('heading', {name: 'Email newsletter'});
+        this.freeTrialLabel = this.portalFrame.getByText(/Free Trial – Ends/i);
+        this.offerLabel = this.portalFrame.getByTestId('offer-label');
     }
 
     cardLast4(last4: string): Locator {
