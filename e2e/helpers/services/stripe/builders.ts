@@ -161,16 +161,12 @@ export function buildCoupon(overrides: Partial<StripeCoupon> = {}): StripeCoupon
 
 export function buildDiscount(opts: {
     coupon: StripeCoupon;
-    recurringInterval?: StripePriceInterval | null;
     start?: number;
 }): StripeDiscount {
     const start = opts.start ?? Math.floor(Date.now() / 1000);
     let end: number | null = null;
 
-    if (opts.coupon.duration === 'once') {
-        const months = opts.recurringInterval === 'year' ? 12 : 1;
-        end = addMonthsToTimestamp(start, months);
-    } else if (opts.coupon.duration === 'repeating' && typeof opts.coupon.duration_in_months === 'number' && opts.coupon.duration_in_months > 0) {
+    if (opts.coupon.duration === 'repeating' && typeof opts.coupon.duration_in_months === 'number' && opts.coupon.duration_in_months > 0) {
         end = addMonthsToTimestamp(start, opts.coupon.duration_in_months);
     }
 
@@ -232,17 +228,22 @@ export function buildSubscription(opts: {
     });
     const startDate = Math.floor(Date.now() / 1000);
     const trialDays = typeof opts.trialDays === 'number' && opts.trialDays > 0 ? opts.trialDays : null;
+    const status = opts.status ?? (trialDays ? 'trialing' : 'active');
+    const trialEnd = trialDays ? startDate + (60 * 60 * 24 * trialDays) : null;
+    const currentPeriodEnd = trialDays && status === 'trialing' && trialEnd
+        ? trialEnd
+        : startDate + (60 * 60 * 24 * 31);
 
     return {
         id: opts.id ?? generateId('sub'),
         object: 'subscription',
-        status: opts.status ?? (trialDays ? 'trialing' : 'active'),
+        status,
         cancel_at_period_end: false,
         canceled_at: null,
-        current_period_end: startDate + (60 * 60 * 24 * 31),
+        current_period_end: currentPeriodEnd,
         start_date: startDate,
         trial_start: trialDays ? startDate : null,
-        trial_end: trialDays ? startDate + (60 * 60 * 24 * trialDays) : null,
+        trial_end: trialEnd,
         discount: opts.discount ?? null,
         metadata: {},
         default_payment_method: opts.paymentMethod?.id ?? null,

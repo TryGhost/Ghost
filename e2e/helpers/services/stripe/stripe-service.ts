@@ -337,8 +337,7 @@ export class StripeTestService {
         }
 
         return buildDiscount({
-            coupon,
-            recurringInterval: price.recurring?.interval ?? null
+            coupon
         });
     }
 }

@@ -247,16 +247,78 @@ export class FakeStripeServer {
         });
 
         this.app.post('/v1/coupons', (req, res) => {
+            const badRequest = (message: string, param?: string): void => {
+                res.status(400).json({
+                    error: {
+                        type: 'invalid_request_error',
+                        message,
+                        ...(param ? {param} : {})
+                    }
+                });
+            };
+
             const duration = this.parseCouponDuration(req.body.duration);
-            const amountOff = this.parseNumber(req.body.amount_off);
-            const percentOff = this.parseNumber(req.body.percent_off);
+            const amountOffRaw = req.body.amount_off;
+            const percentOffRaw = req.body.percent_off;
+            const hasAmountOff = amountOffRaw !== undefined && amountOffRaw !== null && amountOffRaw !== '';
+            const hasPercentOff = percentOffRaw !== undefined && percentOffRaw !== null && percentOffRaw !== '';
+
+            if (!duration) {
+                return badRequest(
+                    "Invalid coupon duration. Must be one of 'forever', 'once', or 'repeating'.",
+                    'duration'
+                );
+            }
+
+            if (!hasAmountOff && !hasPercentOff) {
+                return badRequest(
+                    'You must provide exactly one of percent_off or amount_off.',
+                    'percent_off'
+                );
+            }
+
+            if (hasAmountOff && hasPercentOff) {
+                return badRequest(
+                    'You cannot provide both percent_off and amount_off.',
+                    'percent_off'
+                );
+            }
+
+            const amountOff = hasAmountOff ? this.parseNumber(amountOffRaw) : undefined;
+            const percentOff = hasPercentOff ? this.parseNumber(percentOffRaw) : undefined;
+
+            if (hasAmountOff && typeof amountOff !== 'number') {
+                return badRequest('Invalid amount_off. Expected a numeric value.', 'amount_off');
+            }
+
+            if (hasPercentOff && typeof percentOff !== 'number') {
+                return badRequest('Invalid percent_off. Expected a numeric value.', 'percent_off');
+            }
+
+            const currency = this.parseString(req.body.currency)?.toLowerCase() ?? null;
+            if (hasAmountOff && !currency) {
+                return badRequest('currency is required when amount_off is provided.', 'currency');
+            }
+
+            let durationInMonths: number | null = null;
+            if (duration === 'repeating') {
+                const parsedDurationInMonths = this.parseNumber(req.body.duration_in_months);
+                if (typeof parsedDurationInMonths !== 'number' || !Number.isInteger(parsedDurationInMonths) || parsedDurationInMonths <= 0) {
+                    return badRequest(
+                        'duration_in_months must be a positive integer when duration is repeating.',
+                        'duration_in_months'
+                    );
+                }
+
+                durationInMonths = parsedDurationInMonths;
+            }
 
             const coupon = buildCoupon({
                 name: this.parseString(req.body.name) ?? null,
                 duration,
-                duration_in_months: duration === 'repeating' ? (this.parseNumber(req.body.duration_in_months) ?? null) : null,
+                duration_in_months: durationInMonths,
                 amount_off: typeof amountOff === 'number' ? amountOff : null,
-                currency: this.parseString(req.body.currency)?.toLowerCase() ?? null,
+                currency,
                 percent_off: typeof percentOff === 'number' ? percentOff : null
             });
 
@@ -764,9 +826,9 @@ export class FakeStripeServer {
         return value;
     }
 
-    private parseCouponDuration(value: unknown): StripeCoupon['duration'] {
+    private parseCouponDuration(value: unknown): StripeCoupon['duration'] | undefined {
         if (value !== 'forever' && value !== 'once' && value !== 'repeating') {
-            return 'once';
+            return undefined;
         }
 
         return value;
