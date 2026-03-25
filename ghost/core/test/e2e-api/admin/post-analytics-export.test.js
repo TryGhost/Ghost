@@ -81,10 +81,13 @@ describe('Post Analytics Export', function () {
         }
 
         // 3. Create a members-only post
+        // Use explicit published_at dates far in the future to ensure deterministic
+        // ordering relative to fixture posts (which use now + index seconds)
         await models.Post.add({
             title: 'Members Only Post',
             status: 'published',
             visibility: 'members',
+            published_at: new Date('2099-01-03T00:00:00.000Z'),
             lexical: JSON.stringify({root: {children: [{children: [{detail: 0, format: 0, mode: 'normal', style: '', text: 'Members only content', type: 'text', version: 1}], direction: 'ltr', format: '', indent: 0, type: 'paragraph', version: 1}], direction: 'ltr', format: '', indent: 0, type: 'root', version: 1}})
         }, {context: {internal: true}});
 
@@ -95,6 +98,7 @@ describe('Post Analytics Export', function () {
             title: 'Premium Tier Post',
             status: 'published',
             visibility: 'tiers',
+            published_at: new Date('2099-01-02T00:00:00.000Z'),
             lexical: JSON.stringify({root: {children: [{children: [{detail: 0, format: 0, mode: 'normal', style: '', text: 'Premium content', type: 'text', version: 1}], direction: 'ltr', format: '', indent: 0, type: 'paragraph', version: 1}], direction: 'ltr', format: '', indent: 0, type: 'root', version: 1}})
         }, {context: {internal: true}});
         if (paidTier) {
@@ -110,6 +114,7 @@ describe('Post Analytics Export', function () {
             title: 'Email Only Post',
             status: 'sent',
             visibility: 'public',
+            published_at: new Date('2099-01-01T00:00:00.000Z'),
             lexical: JSON.stringify({root: {children: [{children: [{detail: 0, format: 0, mode: 'normal', style: '', text: 'Email only content', type: 'text', version: 1}], direction: 'ltr', format: '', indent: 0, type: 'paragraph', version: 1}], direction: 'ltr', format: '', indent: 0, type: 'root', version: 1}})
         }, {context: {internal: true}});
 
