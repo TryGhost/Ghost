@@ -12,6 +12,7 @@ import {
 import {Tag} from '@tryghost/admin-x-framework/api/tags';
 import {forwardRef, useRef} from 'react';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
+import {useVirtualListWindow} from '@components/virtual-table/virtual-list-window';
 
 const SpacerRow = ({height}: { height: number }) => (
     <tr aria-hidden="true" className="flex lg:table-row">
@@ -52,9 +53,10 @@ function TagsList({
     fetchNextPage: () => void;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
+    const {visibleItemCount, canFetchMore, fetchMore} = useVirtualListWindow(totalItems);
     const {visibleItems, spaceBefore, spaceAfter} = useInfiniteVirtualScroll({
         items,
-        totalItems,
+        totalItems: visibleItemCount,
         hasNextPage,
         isFetchingNextPage,
         fetchNextPage,
@@ -145,6 +147,18 @@ function TagsList({
                     <SpacerRow height={spaceAfter} />
                 </TableBody>
             </Table>
+
+            {canFetchMore && (
+                <div className="flex justify-center px-4 py-6">
+                    <Button
+                        disabled={isFetchingNextPage}
+                        variant="outline"
+                        onClick={fetchMore}
+                    >
+                        {isFetchingNextPage ? 'Loading more...' : 'Fetch more'}
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }
