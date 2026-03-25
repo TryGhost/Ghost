@@ -6,6 +6,10 @@ export class PortalOfferPage extends PortalPage {
     readonly emailInput: Locator;
     readonly submitButton: Locator;
     readonly continueButton: Locator;
+    readonly offerTitle: Locator;
+    readonly discountLabel: Locator;
+    readonly offerMessage: Locator;
+    readonly updatedPrice: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -14,14 +18,10 @@ export class PortalOfferPage extends PortalPage {
         this.emailInput = this.portalFrame.getByRole('textbox', {name: 'Email'});
         this.submitButton = this.portalFrame.getByRole('button', {name: /Continue|Start .* free trial|Retry/});
         this.continueButton = this.portalFrame.getByRole('button', {name: 'Continue'});
-    }
-
-    headingWithText(text: string): Locator {
-        return this.portalFrame.getByRole('heading', {name: text});
-    }
-
-    text(text: string | RegExp): Locator {
-        return this.portalFrame.getByText(text);
+        this.offerTitle = this.portalFrame.getByTestId('offer-title');
+        this.discountLabel = this.portalFrame.getByTestId('offer-discount-label');
+        this.offerMessage = this.portalFrame.getByTestId('offer-message');
+        this.updatedPrice = this.portalFrame.getByTestId('offer-updated-price');
     }
 
     async fillAndSubmit(email: string, name?: string): Promise<void> {
@@ -39,12 +39,9 @@ export class PortalOfferPage extends PortalPage {
         }
     }
 
-    async waitForOfferPage(title?: string): Promise<void> {
+    async waitForOfferPage(): Promise<void> {
         await this.waitForPortalToOpen();
         await this.emailInput.waitFor({state: 'visible'});
-
-        if (title) {
-            await this.headingWithText(title).waitFor({state: 'visible'});
-        }
+        await this.offerTitle.waitFor({state: 'visible'});
     }
 }
