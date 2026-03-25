@@ -7,16 +7,14 @@ const clsx = require('clsx');
 function isUnsplashImage(url) {
     return /images\.unsplash\.com/.test(url);
 }
-const {textColorForBackgroundColor} = require('@tryghost/color-utils');
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const EmailAddressParser = require('../email-address/email-address-parser');
+const {getEmailDesign} = require('../email-rendering/email-design');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
 
 const DEFAULT_LOCALE = 'en-gb';
-const DEFAULT_ACCENT_COLOR = '#15212A';
-const VALID_HEX_REGEX = /^#([0-9a-f]{3}){1,2}$/i;
 const CONTENT_IMAGES_PATH_WITHOUT_SIZE_REGEX = /\/content\/images\/(?!size\/)/;
 
 // Wrapper function so that i18next-parser can find these strings
@@ -325,43 +323,16 @@ class EmailRenderer {
     async renderPostBaseHtml(post, newsletter) {
         const postUrl = this.#getPostUrl(post);
 
-        const renderOptions = {
-            target: 'email',
-            postUrl
-        };
-
-        const accentColor = this.#getAccentColor();
-        const accentContrastColor = this.#getAccentContrastColor();
-
-        renderOptions.design = {
-            accentColor,
-            accentContrastColor,
-            backgroundColor: newsletter?.get('background_color'),
-            backgroundIsDark: this.#checkIfBackgroundIsDark(newsletter),
-            headerBackgroundColor: this.#getHeaderBackgroundColor(newsletter, accentColor),
-            buttonCorners: newsletter?.get('button_corners'),
-            buttonStyle: newsletter?.get('button_style'),
-            titleFontWeight: newsletter?.get('title_font_weight'),
-            linkStyle: newsletter?.get('link_style'),
-            imageCorners: newsletter?.get('image_corners'),
-            postTitleColor: this.#getPostTitleColor(newsletter, accentColor),
-            sectionTitleColor: newsletter?.get('section_title_color'),
-            linkColor: newsletter?.get('link_color'),
-            // TODO:
-            // if the other options above have default or calculated values we
-            // should follow the same pattern as the options below to avoid
-            //duplicating magic values or logic in renderers
-            dividerColor: this.#getDividerColor(newsletter),
-            buttonColor: this.#getButtonColor(newsletter, accentColor),
-            buttonTextColor: this.#getButtonTextColor(newsletter, accentColor)
-        };
-
         let html;
         if (post.get('lexical')) {
             // only lexical's renderer is async
             html = await this.#renderers.lexical.render(
                 post.get('lexical'),
-                renderOptions
+                {
+                    target: 'email',
+                    postUrl,
+                    design: this.#getEmailDesign(newsletter)
+                }
             );
         } else {
             html = this.#renderers.mobiledoc.render(
@@ -887,6 +858,28 @@ class EmailRenderer {
     }
 
     /**
+     * @param {Newsletter} newsletter
+     * @returns {ReturnType<typeof getEmailDesign>}
+     */
+    #getEmailDesign(newsletter) {
+        return getEmailDesign({
+            accentColor: this.#settingsCache?.get('accent_color'),
+            backgroundColor: newsletter?.get('background_color'),
+            buttonColor: newsletter?.get('button_color'),
+            buttonCorners: newsletter?.get('button_corners'),
+            buttonStyle: newsletter?.get('button_style'),
+            dividerColor: newsletter?.get('divider_color'),
+            headerBackgroundColor: newsletter?.get('header_background_color'),
+            imageCorners: newsletter?.get('image_corners'),
+            linkColor: newsletter?.get('link_color'),
+            linkStyle: newsletter?.get('link_style'),
+            postTitleColor: newsletter?.get('post_title_color'),
+            sectionTitleColor: newsletter?.get('section_title_color'),
+            titleFontWeight: newsletter?.get('title_font_weight')
+        });
+    }
+
+    /**
      * Get email preheader text from post model
      * @param {object} postModel
      * @returns
@@ -945,215 +938,11 @@ class EmailRenderer {
         }
     }
 
-    #getAccentColor() {
-        let accentColor = this.#settingsCache?.get('accent_color') || DEFAULT_ACCENT_COLOR;
-
-        if (!VALID_HEX_REGEX.test(accentColor)) {
-            accentColor = DEFAULT_ACCENT_COLOR;
-        }
-
-        return accentColor;
-    }
-
-    #getAccentContrastColor() {
-        const accentColor = this.#getAccentColor();
-        return textColorForBackgroundColor(accentColor).hex();
-    }
-
-    #getBackgroundColor(newsletter) {
-        /** @type {'light' | string | null} */
-        const value = newsletter?.get('background_color');
-
-        if (VALID_HEX_REGEX.test(value)) {
-            return value;
-        }
-
-        // value === null, value is not valid hex
-        return '#ffffff';
-    }
-
-    #getPostTitleColor(newsletter, accentColor) {
-        /** @type {'accent' | string | null} */
-        const value = newsletter?.get('post_title_color');
-
-        if (VALID_HEX_REGEX.test(value)) {
-            return value;
-        }
-
-        if (value === 'accent') {
-            return accentColor;
-        }
-
-        // value === null, value is not valid hex
-        const backgroundColor = this.#getHeaderBackgroundColor(newsletter, accentColor) || this.#getBackgroundColor(newsletter);
-        return textColorForBackgroundColor(backgroundColor).hex();
-    }
-
-    #getSectionTitleColor(newsletter, accentColor) {
-        /** @type {'accent' | string | null} */
-        const value = newsletter.get('section_title_color');
-
-        if (VALID_HEX_REGEX.test(value)) {
-            return value;
-        }
-
-        if (value === 'accent') {
-            return accentColor;
-        }
-
-        return null;
-    }
-
-    #getTitleWeight(newsletter) {
-        const weights = {
-            normal: '400',
-            medium: '500',
-            semibold: '600',
-            bold: '700'
-        };
-
-        /** @type {'normal' | 'medium' | 'semibold' | 'bold' | string | null} */
-        const settingValue = newsletter.get('title_font_weight');
-
-        return weights[settingValue] || weights.bold;
-    }
-
-    #getTitleStrongWeight(titleWeight) {
-        const numericWeight = parseInt(titleWeight, 10);
-
-        if (isNaN(numericWeight)) {
-            return '800';
-        }
-
-        // when titleWeight has been set to less than bold,
-        // reduce boldness of strong to match our other strong text
-        if (numericWeight < 700) {
-            return '700';
-        } else {
-            return '800';
-        }
-    }
-
-    #getImageCorners(newsletter) {
-        const value = newsletter.get('image_corners');
-        if (value === 'rounded') {
-            return true;
-        }
-        return false;
-    }
-
-    #getDividerColor(newsletter) {
-        const value = newsletter?.get('divider_color');
-
-        if (value === 'accent') {
-            return this.#getAccentColor();
-        } else if (VALID_HEX_REGEX.test(value)) {
-            return value;
-        } else {
-            // value === 'light'/missing/invalid
-            return '#e0e7eb';
-        }
-    }
-
-    #getLinkColor(newsletter, accentColor) {
-        const value = newsletter.get('link_color');
-
-        if (value === 'accent') {
-            return accentColor;
-        }
-
-        if (value === null) {
-            return textColorForBackgroundColor(this.#getBackgroundColor(newsletter)).hex();
-        }
-
-        if (VALID_HEX_REGEX.test(value)) {
-            return value;
-        }
-
-        return accentColor; // default to accent color
-    }
-
-    #getButtonColor(newsletter, accentColor) {
-        /** @type {'accent' | string | null} */
-        const buttonColor = newsletter?.get('button_color');
-
-        if (buttonColor === 'accent') {
-            return accentColor;
-        }
-
-        if (buttonColor === null) {
-            const backgroundColor = this.#getBackgroundColor(newsletter);
-            return textColorForBackgroundColor(backgroundColor).hex();
-        }
-
-        if (VALID_HEX_REGEX.test(buttonColor)) {
-            return buttonColor;
-        }
-
-        return accentColor; // default to accent color
-    }
-
-    // white/black for dark/light button colors
-    // outline buttons use button color as text color but that's handled in styles
-    #getButtonTextColor(newsletter, accentColor) {
-        const buttonColor = this.#getButtonColor(newsletter, accentColor);
-        return textColorForBackgroundColor(buttonColor).hex();
-    }
-
-    #checkIfBackgroundIsDark(newsletter) {
-        const backgroundColor = this.#getBackgroundColor(newsletter);
-        return textColorForBackgroundColor(backgroundColor).hex().toLowerCase() === '#ffffff';
-    }
-
-    #getHeaderBackgroundColor(newsletter, accentColor) {
-        const value = newsletter?.get('header_background_color');
-
-        if (value === 'transparent') {
-            return null;
-        }
-
-        if (value === 'accent') {
-            return accentColor;
-        }
-
-        if (VALID_HEX_REGEX.test(value)) {
-            return value;
-        }
-
-        return null;
-    }
-
     /**
      * @private
      */
     async getTemplateData({post, newsletter, html, addPaywall, segment}) {
-        const accentColor = this.#getAccentColor();
-        const accentContrastColor = this.#getAccentContrastColor();
-
-        // TODO: remove passthrough of accent color to getters
-        const backgroundColor = this.#getBackgroundColor(newsletter);
-        const backgroundIsDark = this.#checkIfBackgroundIsDark(newsletter);
-        const postTitleColor = this.#getPostTitleColor(newsletter, accentColor);
-        const titleWeight = this.#getTitleWeight(newsletter);
-        const titleStrongWeight = this.#getTitleStrongWeight(titleWeight);
-        const textColor = textColorForBackgroundColor(backgroundColor).hex(); // this is used by the header background color so keeping it separate from the content text color
-        const linkColor = this.#getLinkColor(newsletter, accentColor);
-        const hasRoundedImageCorners = this.#getImageCorners(newsletter);
-        const sectionTitleColor = this.#getSectionTitleColor(newsletter, accentColor);
-        const dividerColor = this.#getDividerColor(newsletter);
-        const buttonColor = this.#getButtonColor(newsletter, accentColor);
-        const buttonTextColor = this.#getButtonTextColor(newsletter, accentColor);
-        const headerBackgroundColor = this.#getHeaderBackgroundColor(newsletter, accentColor);
-        const headerBackgroundIsDark = textColorForBackgroundColor(headerBackgroundColor || backgroundColor).hex().toLowerCase() === '#ffffff';
-
-        let buttonBorderRadius = '6px';
-        if (newsletter.get('button_corners') === 'square') {
-            buttonBorderRadius = '0';
-        } else if (newsletter.get('button_corners') === 'pill') {
-            buttonBorderRadius = '9999px';
-        }
-
-        const hasOutlineButtons = newsletter.get('button_style') === 'outline';
+        const emailDesign = this.#getEmailDesign(newsletter);
 
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
         const {href: postFeatureImage, width: postFeatureImageWidth, height: postFeatureImageHeight} = await this.limitImageWidth(post.get('feature_image'));
@@ -1243,8 +1032,6 @@ class EmailRenderer {
         const titleAlignment = newsletter.get('title_alignment');
         const showFeatureImage = newsletter.get('show_feature_image') && !!postFeatureImage;
 
-        const linkStyle = newsletter.get('link_style') || 'underline';
-
         const data = {
             emailTitle: post.get('title'),
             site: {
@@ -1294,35 +1081,17 @@ class EmailRenderer {
             latestPostsHasImages,
 
             //CSS
-            accentColor, // default to #15212A
-            accentContrastColor,
+            ...emailDesign,
             showBadge: newsletter.get('show_badge'),
-            backgroundColor,
-            backgroundIsDark,
-            postTitleColor,
-            titleWeight,
-            titleStrongWeight,
-            textColor,
-            linkColor,
-            hasRoundedImageCorners,
-            buttonBorderRadius,
-            sectionTitleColor,
             headerImage,
             headerImageWidth,
             showHeaderIcon: newsletter.get('show_header_icon') && this.#settingsCache.get('icon'),
-            dividerColor,
-            buttonColor,
-            buttonTextColor,
-            headerBackgroundColor,
-            headerBackgroundIsDark,
 
             // TODO: consider moving these to newsletter property
             showHeaderTitle: newsletter.get('show_header_title'),
             showHeaderName: newsletter.get('show_header_name'),
             showFeatureImage: showFeatureImage,
             footerContent: newsletter.get('footer_content'),
-            linkStyle,
-            hasOutlineButtons,
 
             // useful data
             ctaBgColors: [
