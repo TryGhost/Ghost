@@ -469,6 +469,22 @@ describe('S3Storage', function () {
         }, /requires a non-empty relativePath/);
     });
 
+    it('buildKey throws when relative path resolves outside storagePath', function () {
+        const {storage} = createStorage();
+
+        assert.throws(() => {
+            (storage as any).buildKey('2024/06/../../../../../../etc/passwd');
+        }, /not a valid URL/);
+    });
+
+    it('urlToPath throws when relative segments resolve outside storagePath', function () {
+        const {storage} = createStorage();
+
+        assert.throws(() => {
+            storage.urlToPath('https://cdn.example.com/configurable/prefix/content/files/2024/06/../../../../../../etc/passwd');
+        }, /not a valid URL/);
+    });
+
     it('read() throws as it is not supported', async function () {
         const {storage} = createStorage();
 
