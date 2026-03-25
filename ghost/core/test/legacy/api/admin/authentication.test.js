@@ -137,6 +137,38 @@ describe('Authentication API', function () {
                 });
         });
 
+        it('only returns status when setup is complete', async function () {
+            const {body} = await agent
+                .get('authentication/setup')
+                .expectStatus(200);
+
+            const [setup] = body.setup;
+            assert.equal(setup.status, true, 'Setup should be complete');
+            assert.equal(setup.email, undefined, 'Email should not be returned after setup is complete');
+            assert.equal(setup.name, undefined, 'Name should not be returned after setup is complete');
+            assert.equal(setup.title, undefined, 'Title should not be returned after setup is complete');
+        });
+
+        it('only returns status when setup is complete even with config values set', async function () {
+            const configUtils = require('../../../utils/config-utils');
+
+            configUtils.set('user_email', 'owner@example.com');
+            configUtils.set('user_name', 'Owner Name');
+
+            try {
+                const {body} = await agent
+                    .get('authentication/setup')
+                    .expectStatus(200);
+
+                const [setup] = body.setup;
+                assert.equal(setup.status, true, 'Setup should be complete');
+                assert.equal(setup.email, undefined, 'Email should not be returned after setup is complete');
+                assert.equal(setup.name, undefined, 'Name should not be returned after setup is complete');
+            } finally {
+                await configUtils.restore();
+            }
+        });
+
         it('complete setup again', function () {
             return agent
                 .post('authentication/setup')
