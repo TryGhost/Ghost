@@ -23,7 +23,7 @@ function WhatsNewDialog({ open, onOpenChange }: WhatsNewDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
-                className="max-w-2xl max-h-[85vh] flex flex-col"
+                className="flex max-h-[85vh] max-w-2xl flex-col"
                 data-test-modal="whats-new"
                 role="dialog"
                 aria-modal="true"
@@ -36,18 +36,18 @@ function WhatsNewDialog({ open, onOpenChange }: WhatsNewDialogProps) {
                 </DialogHeader>
 
                 {!changelog ? (
-                    <div className="flex-1 flex items-center justify-center py-12">
+                    <div className="flex flex-1 items-center justify-center py-12">
                         <LoadingIndicator size="lg" />
                     </div>
                 ) : (
                     <>
-                        <section className="flex-1 overflow-y-auto space-y-2 -mx-6 px-6" data-test-entries>
+                        <section className="-mx-6 flex-1 space-y-2 overflow-y-auto px-6" data-test-entries>
                             {changelog.entries.map((entry) => (
                                 <ChangelogEntry key={entry.slug} entry={entry} />
                             ))}
                         </section>
 
-                        <DialogFooter className="flex-row justify-between sm:justify-between gap-3">
+                        <DialogFooter className="flex-row justify-between gap-3 sm:justify-between">
                             <Button asChild variant="outline">
                                 <a href={`${changelog.changelogUrl}#/portal/signup`} rel="noopener noreferrer" target="_blank">
                                     Turn on notifications

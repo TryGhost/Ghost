@@ -193,7 +193,7 @@ const CustomizerView: React.FC<CustomizerViewProps> = ({
                         variant="secondary"
                         onClick={() => onFontStyleChange('sans')}
                     >
-                        <span className='text-[2rem] font-bold leading-none'>Aa</span>
+                        <span className='text-[2rem] leading-none font-bold'>Aa</span>
                         <span className='text-[1.1rem]'>System</span>
                     </Button>
                     <Button
@@ -201,7 +201,7 @@ const CustomizerView: React.FC<CustomizerViewProps> = ({
                         variant="secondary"
                         onClick={() => onFontStyleChange('serif')}
                     >
-                        <span className='pt-1 font-serif text-[2rem] font-bold leading-none'>Aa</span>
+                        <span className='pt-1 font-serif text-[2rem] leading-none font-bold'>Aa</span>
                         <span className='font-serif text-[1.2rem]'>Serif</span>
                     </Button>
                 </div>

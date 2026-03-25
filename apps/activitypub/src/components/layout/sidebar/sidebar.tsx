@@ -48,7 +48,7 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
             isMobileSidebarOpen ? 'max-lg:translate-x-0' : 'max-lg:translate-x-full'
         }`}>
             <div className='flex grow flex-col justify-between'>
-                <div className='isolate flex w-full flex-col items-start gap-6 pl-6 pt-6'>
+                <div className='isolate flex w-full flex-col items-start gap-6 pt-6 pl-6'>
                     <div className='flex h-[52px] w-full items-center'>
                         <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
                             <DialogTrigger className='mt-0.5 w-full'>
@@ -117,7 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
                             return (
                                 <div key={flag} className="flex items-center justify-between gap-1 pl-3 opacity-50">
                                     <span className="font-mono text-xs">{flag}</span>
-                                    <span className='text-green-800 inline-flex items-center rounded bg-green-100 px-1 py-0.5 text-xs font-medium'>
+                                    <span className='inline-flex items-center rounded bg-green-100 px-1 py-0.5 text-xs font-medium text-green-800'>
                                             ON
                                     </span>
                                 </div>

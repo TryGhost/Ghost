@@ -226,7 +226,7 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range, on
                                                 return (
                                                     <DataListRow
                                                         key={row.location || 'unknown'}
-                                                        className={isClickable ? 'hover:bg-accent/50 cursor-pointer transition-colors' : ''}
+                                                        className={isClickable ? 'cursor-pointer transition-colors hover:bg-accent/50' : ''}
                                                         data-testid={`location-row-${row.location || 'unknown'}`}
                                                         onClick={isClickable ? () => handleRowClick(row.location) : undefined}
                                                     >

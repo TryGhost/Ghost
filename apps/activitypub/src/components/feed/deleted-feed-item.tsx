@@ -12,7 +12,7 @@ const DeletedFeedItem: React.FC<DeletedFeedItemProps> = ({last}) => {
                 <LucideIcon.Trash size={18} strokeWidth={1.25} />
                 This post has been deleted
             </div>
-            {!last && <div className="absolute bottom-0 left-[18px] top-[70px] z-0 mb-[-13px] w-[2px] rounded-sm bg-gray-200"></div>}
+            {!last && <div className="absolute top-[70px] bottom-0 left-[18px] z-0 mb-[-13px] w-[2px] rounded-sm bg-gray-200"></div>}
         </div>
     );
 };

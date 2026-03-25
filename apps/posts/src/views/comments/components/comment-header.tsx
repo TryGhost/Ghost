@@ -80,7 +80,7 @@ export function CommentHeader({
                         </Tooltip>
                     </TooltipProvider>
                 )}
-                <LucideIcon.Dot className='text-muted-foreground/50 shrink-0' size={16} />
+                <LucideIcon.Dot className='shrink-0 text-muted-foreground/50' size={16} />
                 <div className='shrink-0 whitespace-nowrap'>
                     {createdAt && (
                         <TooltipProvider>

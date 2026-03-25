@@ -816,7 +816,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                             </div>
                                             <div className='relative z-10 mt-0.5 flex min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => handleProfileClick(actor, navigate, e)}>
                                                 <div className='flex w-full'>
-                                                    <span className='min-w-0 truncate whitespace-nowrap font-semibold text-black hover:underline dark:text-white'>{isLoadingContent ? <Skeleton className='w-20' /> : actor.name}</span>
+                                                    <span className='min-w-0 truncate font-semibold whitespace-nowrap text-black hover:underline dark:text-white'>{isLoadingContent ? <Skeleton className='w-20' /> : actor.name}</span>
                                                 </div>
                                                 <div className='flex w-full'>
                                                     {!isLoadingContent && <span className='truncate text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>}
@@ -855,7 +855,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                 onOpenChange={setIsTOCOpen}
                             />
                             {!isLoadingContent && <div className='grow overflow-y-auto'>
-                                <div className={`mx-auto px-6 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
+                                <div className={`mx-auto px-6 pt-5 pb-10`} style={{maxWidth: currentMaxWidth}}>
                                     <div className='flex flex-col items-center pb-8' id='object-content'>
                                         <ArticleBody
                                             authors={authors}
@@ -1023,7 +1023,7 @@ export const Reader: React.FC<ReaderProps> = ({
                             </div>}
                         </div>
                     </div>
-                    {!isLoadingContent && <div className='visible! lg:flex! pointer-events-none sticky bottom-0 hidden items-end justify-between px-10 pb-[42px]'>
+                    {!isLoadingContent && <div className='pointer-events-none visible! sticky bottom-0 hidden items-end justify-between px-10 pb-[42px] lg:flex!'>
                         <div className='pointer-events-auto text-gray-600'>
                             {getReadingTime(object.content ?? '')}
                         </div>

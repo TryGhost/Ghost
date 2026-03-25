@@ -240,7 +240,7 @@ const GrowthKPIs: React.FC<{
 
     return (
         <Tabs defaultValue={validatedInitialTab} variant='kpis'>
-            <TabsList className={`-mx-6 ${appSettings?.paidMembersEnabled ? 'lg:visible! lg:grid! hidden grid-cols-4' : 'grid grid-cols-4'}`}>
+            <TabsList className={`-mx-6 ${appSettings?.paidMembersEnabled ? 'hidden grid-cols-4 lg:visible! lg:grid!' : 'grid grid-cols-4'}`}>
                 <KpiTabTrigger className={!appSettings?.paidMembersEnabled ? 'cursor-auto after:hidden' : ''} value="total-members" onClick={() => {
                     if (appSettings?.paidMembersEnabled) {
                         handleTabChange('total-members');

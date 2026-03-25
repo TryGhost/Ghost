@@ -43,7 +43,7 @@ const TopicFilter: React.FC<TopicFilterProps> = ({currentTopic, onTopicChange, e
         <div className="relative w-full">
             <div
                 ref={scrollContainerRef}
-                className="flex w-full min-w-0 max-w-full snap-x snap-mandatory gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                className="flex w-full max-w-full min-w-0 snap-x snap-mandatory gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                 onScroll={handleScroll}
             >
                 {filteredTopics.map(({slug, name}) => (
@@ -59,7 +59,7 @@ const TopicFilter: React.FC<TopicFilterProps> = ({currentTopic, onTopicChange, e
                 ))}
             </div>
             {showGradient && (
-                <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-white to-transparent dark:from-black" />
+                <div className="pointer-events-none absolute top-0 right-0 h-full w-12 bg-gradient-to-l from-white to-transparent dark:from-black" />
             )}
         </div>
     );

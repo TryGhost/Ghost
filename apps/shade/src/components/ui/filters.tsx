@@ -216,7 +216,7 @@ const useFilterContext = () => useContext(FilterContext);
 // Reusable input variant component for consistent styling
 const filterInputVariants = cva(
     [
-        'outline-hidden relative flex shrink-0 items-center text-foreground transition',
+        'relative flex shrink-0 items-center text-foreground outline-hidden transition',
         'has-[[data-slot=filters-input]:focus-visible]:ring-ring/30',
         'has-[[data-slot=filters-input]:focus-visible]:border-ring',
         'has-[[data-slot=filters-input]:focus-visible]:outline-hidden',
@@ -257,7 +257,7 @@ const filterInputVariants = cva(
 const filterRemoveButtonVariants = cva(
     [
         'inline-flex shrink-0 items-center justify-center text-muted-foreground transition hover:text-foreground',
-        'focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring'
+        'focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden'
     ],
     {
         variants: {
@@ -292,12 +292,12 @@ const filterAddButtonVariants = cva(
     [
         'inline-flex shrink-0 items-center justify-center text-foreground transition',
         '[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]',
-        'focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring'
+        'focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden'
     ],
     {
         variants: {
             variant: {
-                solid: 'hover:bg-secondary/60 border border-input',
+                solid: 'border border-input hover:bg-secondary/60',
                 outline: 'border border-border hover:bg-accent'
             },
             size: {
@@ -324,8 +324,8 @@ const filterAddButtonVariants = cva(
 
 const filterOperatorVariants = cva(
     [
-        'focus-visible:z-1 relative flex shrink-0 items-center whitespace-nowrap text-muted-foreground transition hover:text-foreground data-[state=open]:text-foreground',
-        'focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring'
+        'relative flex shrink-0 items-center whitespace-nowrap text-muted-foreground transition hover:text-foreground focus-visible:z-1 data-[state=open]:text-foreground',
+        'focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden'
     ],
     {
         variants: {
@@ -381,8 +381,8 @@ const filterFieldLabelVariants = cva(
 
 const filterFieldValueVariants = cva(
     [
-        'focus-visible:z-1 relative flex min-w-0 shrink items-center gap-1 text-foreground transition',
-        'focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring'
+        'relative flex min-w-0 shrink items-center gap-1 text-foreground transition focus-visible:z-1',
+        'focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden'
     ],
     {
         variants: {
@@ -601,7 +601,7 @@ function FilterInput<T = unknown>({
                 <input
                     aria-describedby={!isValid && validationMessage ? `${field?.key || 'input'}-error` : undefined}
                     aria-invalid={!isValid}
-                    className="outline-hidden w-full"
+                    className="w-full outline-hidden"
                     data-slot="filters-input"
                     onBlur={handleBlur}
                     onChange={handleChange}
@@ -611,7 +611,7 @@ function FilterInput<T = unknown>({
                 {!isValid && validationMessage && (
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center">
+                            <div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center">
                                 <AlertCircle className="size-3.5 text-destructive" />
                             </div>
                         </TooltipTrigger>
@@ -956,7 +956,7 @@ function FilterOperatorDropdown<T = unknown>({field, operator, values, onChange}
     // If hideOperatorSelect is true, just render the operator as plain text
     if (field.hideOperatorSelect) {
         return (
-            <div className="flex items-center self-stretch whitespace-nowrap border border-r-[0px] px-3 text-sm text-muted-foreground">
+            <div className="flex items-center self-stretch border border-r-[0px] px-3 text-sm whitespace-nowrap text-muted-foreground">
                 {operatorLabel}
             </div>
         );

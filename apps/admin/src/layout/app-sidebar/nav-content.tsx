@@ -29,16 +29,16 @@ function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
                 to={to}
                 isActive={isActive}
             >
-                <LucideIcon.PenLine className="opacity-0 sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 pointer-events-none transition-all" />
+                <LucideIcon.PenLine className="pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0" />
                 <NavMenuItem.Label>Posts</NavMenuItem.Label>
             </NavMenuItem.Link>
             <a href="#/editor/post"
                 aria-label="Create new post"
-                className="flex items-center justify-center absolute hover:bg-sidebar-accent transition-all rounded-full right-0 top-0 p-0 size-8 text-gray-700 hover:text-sidebar-accent-foreground"
+                className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 text-gray-700 transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             >
                 <LucideIcon.Plus
                     size={20}
-                    className="stroke-[1.5px]! mt-px"
+                    className="mt-px stroke-[1.5px]!"
                 />
             </a>
         </>
@@ -62,7 +62,7 @@ function MembersNavItemContent({
                 to={to}
                 isActive={isActive}
             >
-                <LucideIcon.Users className={collapsible ? "opacity-0 sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 pointer-events-none transition-all" : ""} />
+                <LucideIcon.Users className={collapsible ? "pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0" : ""} />
                 <NavMenuItem.Label>Members</NavMenuItem.Label>
             </NavMenuItem.Link>
             {count != null && (

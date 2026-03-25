@@ -117,7 +117,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
         <>
             <header className='z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-black'>
                 <div
-                    className='relative flex min-h-[102px] w-full items-start justify-between gap-5 px-8 pb-0 pt-8'
+                    className='relative flex min-h-[102px] w-full items-start justify-between gap-5 px-8 pt-8 pb-0'
                     data-header='header'
                 >
                     <div className='flex w-full flex-col gap-5'>
@@ -288,7 +288,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                            className="hover:bg-red-700 bg-red-600 text-white"
+                            className="bg-red-600 text-white hover:bg-red-700"
                             onClick={performDelete}
                         >
                             Delete

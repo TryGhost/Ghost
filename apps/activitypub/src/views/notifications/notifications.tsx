@@ -325,7 +325,7 @@ const Notifications: React.FC = () => {
                                                             }}
                                                             size='notification'
                                                         />
-                                                        <NotificationIcon className='absolute -bottom-1 -right-1 z-10 border-2 border-white dark:border-black' notificationType={group.type} size='sm' />
+                                                        <NotificationIcon className='absolute -right-1 -bottom-1 z-10 border-2 border-white dark:border-black' notificationType={group.type} size='sm' />
                                                     </div>
                                                 )
                                             }
@@ -342,7 +342,7 @@ const Notifications: React.FC = () => {
                                                                     name: actor.name,
                                                                     handle: actor.handle
                                                                 }}
-                                                                className='bg-[#F3F3F3]! group-hover:bg-[#EDEEF0]! -ml-2 outline outline-2 outline-white group-hover:outline-gray-75 dark:outline-black group-hover:dark:outline-gray-950'
+                                                                className='-ml-2 bg-[#F3F3F3]! outline outline-2 outline-white group-hover:bg-[#EDEEF0]! group-hover:outline-gray-75 dark:outline-black group-hover:dark:outline-gray-950'
                                                                 size='notification'
                                                             />
                                                         ))}
@@ -368,7 +368,7 @@ const Notifications: React.FC = () => {
                                                                 {group.actors.map((actor: ActorProperties) => (
                                                                     <div
                                                                         key={actor.id}
-                                                                        className='group/item flex items-center justify-between gap-4 break-anywhere'
+                                                                        className='group/item break-anywhere flex items-center justify-between gap-4'
                                                                         onClick={(e) => {
                                                                             e?.stopPropagation();
                                                                             handleProfileClick(actor.handle, navigate);
@@ -433,7 +433,7 @@ const Notifications: React.FC = () => {
                                                     (group.type === 'repost' && !group.post?.name && group.post?.content)
                                                 ) && (
                                                     (group.type !== 'reply' && group.type !== 'mention' ?
-                                                        <div className='ap-note-content mt-0.5 line-clamp-1 text-pretty text-sm text-gray-700 dark:text-gray-600'>
+                                                        <div className='ap-note-content mt-0.5 line-clamp-1 text-sm text-pretty text-gray-700 dark:text-gray-600'>
                                                             {group.post?.type === 'article' && group.post?.title && <>{group.post.title} &mdash; </>}
                                                             <span dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '')}} />
                                                         </div> :

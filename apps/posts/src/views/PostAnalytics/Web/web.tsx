@@ -213,7 +213,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
                     <DateRangeSelect />
                 </NavbarActions>
                 }
-                <NavbarActions className={`${hasFilters ? 'mt-0! lg:mt-[25px]! [grid-area:subactions]' : '[grid-area:actions]'}`}>
+                <NavbarActions className={`${hasFilters ? 'mt-0! [grid-area:subactions] lg:mt-[25px]!' : '[grid-area:actions]'}`}>
                     <StatsFilter
                         filters={analyticsFilters}
                         onChange={setAnalyticsFilters}

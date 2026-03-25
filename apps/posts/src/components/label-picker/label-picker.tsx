@@ -108,7 +108,7 @@ const EditRow: React.FC<EditRowProps> = ({label, onSave, onCancel, onDelete, isD
         <div className="flex flex-col gap-2 py-1.5" data-edit-row>
             <input
                 ref={inputRef}
-                className="outline-hidden h-7 w-full rounded border border-border bg-background px-2 text-sm focus:ring-1 focus:ring-ring disabled:opacity-50"
+                className="h-7 w-full rounded border border-border bg-background px-2 text-sm outline-hidden focus:ring-1 focus:ring-ring disabled:opacity-50"
                 disabled={isBusy}
                 type="text"
                 value={name}
@@ -524,7 +524,7 @@ const InlineList: React.FC<InlineListProps> = ({selectedLabels, ...rest}) => {
             <div className="flex items-center border-b px-3">
                 <LucideIcon.Search className="mr-2 size-4 shrink-0 opacity-50" />
                 <input
-                    className="outline-hidden flex h-9 w-full bg-transparent py-3 text-sm placeholder:text-muted-foreground"
+                    className="flex h-9 w-full bg-transparent py-3 text-sm outline-hidden placeholder:text-muted-foreground"
                     placeholder="Search labels..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
@@ -614,7 +614,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                 <SelectedPills labels={selectedLabels} onToggle={onToggle} />
                 <input
                     ref={inputRef}
-                    className="outline-hidden min-w-[80px] flex-1 bg-transparent text-sm placeholder:text-muted-foreground"
+                    className="min-w-[80px] flex-1 bg-transparent text-sm outline-hidden placeholder:text-muted-foreground"
                     placeholder={selectedLabels.length === 0 ? 'Search labels...' : ''}
                     value={search}
                     onChange={(e) => {
@@ -628,7 +628,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                 />
             </div>
             {open && (
-                <div className="absolute left-0 top-full z-50 mt-1 w-full rounded-md border bg-white shadow-md dark:bg-gray-950">
+                <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-md border bg-white shadow-md dark:bg-gray-950">
                     {isLoading ? (
                         <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                             Loading labels...

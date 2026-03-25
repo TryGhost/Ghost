@@ -38,7 +38,7 @@ module.exports = {
         // Enforce kebab-case (lowercase with hyphens) for all filenames
         'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
 
-        'tailwindcss/classnames-order': 'off',
+        'tailwindcss/classnames-order': 'error',
         'tailwindcss/enforces-negative-arbitrary-values': 'warn',
         'tailwindcss/enforces-shorthand': 'warn',
         'tailwindcss/migration-from-tailwind-2': 'warn',

@@ -27,7 +27,7 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
     return (
         <div>
             <div className='-mx-5 -mb-5 overflow-hidden rounded-b-xl bg-grey-50 px-5 pt-2 md:-mx-7 md:-mb-7 md:px-7 md:pt-7 dark:bg-grey-950'>
-                <div className='-mt-4 mb-2 text-xs uppercase text-grey-500 dark:text-grey-800'>Preview</div>
+                <div className='-mt-4 mb-2 text-xs text-grey-500 uppercase dark:text-grey-800'>Preview</div>
                 <div className='rounded-t-sm bg-white px-5 py-3 shadow-lg dark:bg-grey-975'>
                     <div className='mt-3 flex items-center'>
                         <div>
@@ -189,7 +189,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <FacebookLogo className='size-10' />
                 </div>
                 <div>
-                    <div className="mb-1 font-semibold leading-none text-grey-900 dark:text-grey-300">{siteTitle}</div>
+                    <div className="mb-1 leading-none font-semibold text-grey-900 dark:text-grey-300">{siteTitle}</div>
                     <div className="leading-none text-grey-700">2h</div>
                 </div>
             </div>

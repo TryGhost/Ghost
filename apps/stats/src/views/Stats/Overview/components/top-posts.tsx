@@ -28,7 +28,7 @@ const PostListTooltip:React.FC<PostlistTooptipProps> = ({
             <div className={
                 cn('pointer-events-none absolute bottom-[calc(100%+2px)] left-1/2 z-50 min-w-[160px] -translate-x-1/2 rounded-md bg-background p-3 text-sm opacity-0 shadow-md transition-all group-hover/tooltip:bottom-[calc(100%+12px)] group-hover/tooltip:opacity-100', className)
             }>
-                <div className='mb-1.5 whitespace-nowrap border-b pb-1.5 pr-10 font-medium text-muted-foreground'>{title}</div>
+                <div className='mb-1.5 border-b pr-10 pb-1.5 font-medium whitespace-nowrap text-muted-foreground'>{title}</div>
                 <div className="flex flex-col gap-1.5">
                     {metrics?.map(metric => (
                         <div key={metric.label} className="flex items-center justify-between gap-5">
@@ -78,7 +78,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
     return (
         <Card className='group/card w-full lg:col-span-2' data-testid='top-posts-card'>
             <CardHeader>
-                <CardTitle className='flex items-baseline justify-between font-medium  leading-snug text-muted-foreground'>
+                <CardTitle className='flex items-baseline justify-between leading-snug  font-medium text-muted-foreground'>
                     Top posts {getPeriodText(range)}
                 </CardTitle>
                 <CardDescription className='hidden'>Most viewed posts in this period</CardDescription>
@@ -91,7 +91,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                         {
                             topPostsData?.stats?.map((post: TopPostViewsStats) => {
                                 return (
-                                    <div key={post.post_id} className='border-border/50 first:border-border! dark:before:bg-accent/50 group relative flex w-full items-start justify-between gap-5 border-t py-4 before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:hidden before:rounded-md before:bg-accent before:opacity-80 before:content-[""] hover:cursor-pointer hover:border-transparent hover:before:block md:items-center [&+div]:hover:border-transparent'>
+                                    <div key={post.post_id} className='group relative flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:hidden before:rounded-md before:bg-accent before:opacity-80 before:content-[""] first:border-border! hover:cursor-pointer hover:border-transparent hover:before:block md:items-center dark:before:bg-accent/50 [&+div]:hover:border-transparent'>
                                         <div className='z-10 flex min-w-[160px] grow items-start gap-4 md:items-center lg:min-w-[320px]' onClick={() => {
                                             navigate(getPostDestination({
                                                 postId: post.post_id,
@@ -103,14 +103,14 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                             }), {crossApp: true});
                                         }}>
                                             {post.feature_image ?
-                                                <div className='sm:visible! sm:block! hidden aspect-[16/10] w-[80px] shrink-0 rounded-sm bg-cover bg-center lg:w-[100px]' style={{
+                                                <div className='hidden aspect-[16/10] w-[80px] shrink-0 rounded-sm bg-cover bg-center sm:visible! sm:block! lg:w-[100px]' style={{
                                                     backgroundImage: `url(${post.feature_image})`
                                                 }}></div>
                                                 :
-                                                <FeatureImagePlaceholder className='group-hover:bg-muted-foreground/10 sm:visible! sm:flex! hidden aspect-[16/10] w-[80px] shrink-0 lg:w-[100px]' />
+                                                <FeatureImagePlaceholder className='hidden aspect-[16/10] w-[80px] shrink-0 group-hover:bg-muted-foreground/10 sm:visible! sm:flex! lg:w-[100px]' />
                                             }
                                             <div className='flex flex-col'>
-                                                <span className='line-clamp-2 text-lg font-semibold leading-[1.35em]'>{post.title}</span>
+                                                <span className='line-clamp-2 text-lg leading-[1.35em] font-semibold'>{post.title}</span>
                                                 <span className='text-sm text-muted-foreground'>
                                                     By {post.authors} &ndash; {formatDisplayDate(post.published_at, siteTimezone)}
                                                 </span>
@@ -147,7 +147,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                     navigate(`/posts/analytics/${post.post_id}/newsletter`, {crossApp: true});
                                                 }}>
                                                     <PostListTooltip
-                                                        className={`${!membersTrackSources ? 'left-auto right-0 translate-x-0' : ''}`}
+                                                        className={`${!membersTrackSources ? 'right-0 left-auto translate-x-0' : ''}`}
                                                         metrics={[
                                                             // Always show sent
                                                             {
@@ -208,7 +208,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                     navigate(`/posts/analytics/${post.post_id}/growth`, {crossApp: true});
                                                 }}>
                                                     <PostListTooltip
-                                                        className='left-auto right-0 translate-x-0'
+                                                        className='right-0 left-auto translate-x-0'
                                                         metrics={[
                                                             {
                                                                 icon: <LucideIcon.User className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,

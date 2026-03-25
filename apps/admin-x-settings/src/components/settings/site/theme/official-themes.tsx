@@ -103,7 +103,7 @@ const OfficialThemes: React.FC<{
                     );
                 })}
             </div>
-            <div className='mx-[-8vmin] mb-[-8vmin] mt-[8vmin] bg-black px-[8vmin] py-16 text-center text-lg text-white' style={
+            <div className='mx-[-8vmin] mt-[8vmin] mb-[-8vmin] bg-black px-[8vmin] py-16 text-center text-lg text-white' style={
                 {
                     background: `#15171a url(${MarketplaceBgImage}) 100% 100% / 35vw no-repeat`
                 }
