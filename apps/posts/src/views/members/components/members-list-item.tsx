@@ -215,25 +215,25 @@ function MembersListItem({
             {...props}
             data-testid="members-list-item"
         >
-            <TableCell className="px-4 py-3">
+            <TableCell className="px-4 py-3 lg:w-[42%] lg:min-w-[360px]">
                 <MembersListItemName item={item} onClick={onClick} />
             </TableCell>
-            <TableCell className="px-4 py-3">
+            <TableCell className="px-4 py-3 lg:w-[16%] lg:min-w-[160px]">
                 <MembersListItemStatus status={item.status} tiers={item.tiers} />
             </TableCell>
             {showEmailOpenRate && (
-                <TableCell className="hidden px-4 py-3 lg:table-cell">
+                <TableCell className="hidden px-4 py-3 lg:table-cell lg:w-[12%] lg:min-w-[110px]">
                     <MembersListItemOpenRate emailOpenRate={item.email_open_rate} />
                 </TableCell>
             )}
-            <TableCell className="hidden px-4 py-3 lg:table-cell">
+            <TableCell className="hidden px-4 py-3 lg:table-cell lg:w-[16%] lg:min-w-[150px]">
                 <MembersListItemLocation geolocation={item.geolocation} />
             </TableCell>
-            <TableCell className="hidden px-4 py-3 lg:table-cell">
+            <TableCell className="hidden px-4 py-3 lg:table-cell lg:w-[14%] lg:min-w-[120px]">
                 <MembersListItemCreated createdAt={item.created_at} />
             </TableCell>
             {activeColumns.map(col => (
-                <TableCell key={col.key} className="hidden px-4 py-3 lg:table-cell">
+                <TableCell key={col.key} className="hidden px-4 py-3 lg:table-cell lg:w-[250px] lg:min-w-[250px]">
                     <MembersListItemDynamicColumn
                         column={col}
                         member={item}

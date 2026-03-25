@@ -5,8 +5,8 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tr
 import {forwardRef, useRef} from 'react';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
-import type {ActiveColumn} from '../member-query-params';
 import {useVirtualListWindow} from '@components/virtual-table/virtual-list-window';
+import type {ActiveColumn} from '../member-query-params';
 
 const SpacerRow = ({height}: { height: number }) => (
     <tr aria-hidden="true" style={{height}}>
@@ -83,42 +83,32 @@ function MembersList({
     };
 
     return (
-        <div ref={parentRef} className="h-[calc(100%+32px)] w-full overflow-auto lg:-mx-8 lg:-mb-8 lg:w-auto lg:max-w-[calc(100vw-300px)]">
+        <div ref={parentRef} className="overflow-hidden">
             <Table
-                className="w-full border-collapse lg:ml-8 lg:w-auto lg:max-w-[calc(100vw-300px-64px)] lg:table-fixed"
+                className="w-full border-collapse lg:table-fixed"
                 data-testid="members-list"
             >
-                <colgroup className="hidden lg:table-column-group">
-                    <col className="w-full min-w-[360px]" />
-                    <col className="w-[50%] min-w-[160px]" />
-                    {showEmailOpenRate && <col className="w-[50%] min-w-[110px]" />}
-                    <col className="w-[50%] min-w-[150px]" />
-                    <col className="w-[50%] min-w-[120px]" />
-                    {activeColumns.map(col => (
-                        <col key={col.key} className="w-[50%] min-w-[250px]" />
-                    ))}
-                </colgroup>
                 <TableHeader className="sticky top-0 z-10 hidden border-b bg-background lg:table-header-group">
                     <TableRow>
-                        <TableHead className="px-4 py-3">
+                        <TableHead className="px-4 py-3 lg:w-[42%] lg:min-w-[360px]">
                             Member
                         </TableHead>
-                        <TableHead className="px-4 py-3">
+                        <TableHead className="px-4 py-3 lg:w-[16%] lg:min-w-[160px]">
                             Status
                         </TableHead>
                         {showEmailOpenRate && (
-                            <TableHead className="px-4 py-3">
+                            <TableHead className="px-4 py-3 lg:w-[12%] lg:min-w-[110px]">
                                 Open rate
                             </TableHead>
                         )}
-                        <TableHead className="px-4 py-3">
+                        <TableHead className="px-4 py-3 lg:w-[16%] lg:min-w-[150px]">
                             Location
                         </TableHead>
-                        <TableHead className="px-4 py-3">
+                        <TableHead className="px-4 py-3 lg:w-[14%] lg:min-w-[120px]">
                             Created
                         </TableHead>
                         {activeColumns.map(col => (
-                            <TableHead key={col.key} className="px-4 py-3">
+                            <TableHead key={col.key} className="px-4 py-3 lg:w-[250px] lg:min-w-[250px]">
                                 {col.label}
                             </TableHead>
                         ))}
