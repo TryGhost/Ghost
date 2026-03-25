@@ -203,7 +203,10 @@ export default tseslint.config([
     {
         files: ['tests/**/*.ts', 'helpers/playwright/**/*.ts', 'helpers/pages/**/*.ts'],
         rules: {
-            ...playwrightPlugin.configs.recommended.rules
+            ...playwrightPlugin.configs.recommended.rules,
+            'playwright/expect-expect': ['warn', {
+                assertFunctionPatterns: ['^expect[A-Z].*']
+            }]
         }
     },
 
