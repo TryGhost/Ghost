@@ -9474,10 +9474,10 @@
   dependencies:
     semver "^7.7.3"
 
-"@tryghost/koenig-lexical@1.7.27":
-  version "1.7.27"
-  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.7.27.tgz#527ae6127834dbca5a05d2f10f973d1257c66276"
-  integrity sha512-vBXA48sREwdCJXPOhqrAiCnURCoQeA4duYqlFx9T8veBoCfrz11WvjVyfjfDXrJ++YaoeBXyC9y24rzTvtPRfg==
+"@tryghost/koenig-lexical@1.7.28":
+  version "1.7.28"
+  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.7.28.tgz#8170b20079c724169f4d7056886ccaeee812aabc"
+  integrity sha512-81irvOeur1YsQxg6dpU/Ch0s8j8io3b0Dg0wo8F27aJJp/acfaJnVPN4jCndkylNjfYNQ3T1hqY9IFufi0McNA==
 
 "@tryghost/limit-service@1.4.1":
   version "1.4.1"
@@ -19432,6 +19432,14 @@ eslint-plugin-storybook@9.1.10:
   integrity sha512-HAVQ9HTMydcFj5KjnzsETOwPe19eIViwRBhc47lvU04YEFTgEg2rlXN1xozxHUlQ+XkkoKYkIUYoqo7KgGhkIA==
   dependencies:
     "@typescript-eslint/utils" "^8.8.1"
+
+eslint-plugin-tailwindcss@3.18.2:
+  version "3.18.2"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-tailwindcss/-/eslint-plugin-tailwindcss-3.18.2.tgz#c67ff432cfad470dae54998b3bc6811af81f9087"
+  integrity sha512-QbkMLDC/OkkjFQ1iz/5jkMdHfiMu/uwujUHLAJK5iwNHD8RTxVTlsUezE0toTZ6VhybNBsk+gYGPDq2agfeRNA==
+  dependencies:
+    fast-glob "^3.2.5"
+    postcss "^8.4.4"
 
 eslint-plugin-tailwindcss@4.0.0-beta.0:
   version "4.0.0-beta.0"
