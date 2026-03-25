@@ -259,6 +259,7 @@ describe('Members API - Member Offers', function () {
             const stripePrice = subscription.related('stripePrice');
             const stripeProduct = stripePrice.related('stripeProduct');
             const product = stripeProduct.related('product');
+            const originalCurrentPeriodEnd = subscription.get('current_period_end');
 
             const tierId = product.id;
             const cadence = stripePrice.get('interval');
@@ -299,10 +300,12 @@ describe('Members API - Member Offers', function () {
             const now = new Date();
             const discountStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
             const discountEnd = new Date(now.getTime() + 23 * 24 * 60 * 60 * 1000); // 23 days from now
+            const currentPeriodEnd = new Date(discountEnd);
             await subscription.save({
                 offer_id: signupOffer.id,
                 discount_start: discountStart,
-                discount_end: discountEnd
+                discount_end: discountEnd,
+                current_period_end: currentPeriodEnd
             }, {patch: true});
 
             try {
@@ -317,7 +320,12 @@ describe('Members API - Member Offers', function () {
                 assert.deepEqual(body, {offers: []});
             } finally {
                 // Clean up
-                await subscription.save({offer_id: null, discount_start: null, discount_end: null}, {patch: true});
+                await subscription.save({
+                    offer_id: null,
+                    discount_start: null,
+                    discount_end: null,
+                    current_period_end: originalCurrentPeriodEnd
+                }, {patch: true});
                 await models.Offer.destroy({id: offer.id});
                 await models.Offer.destroy({id: signupOffer.id});
             }
@@ -573,6 +581,7 @@ describe('Members API - Member Offers', function () {
             const stripePrice = subscription.related('stripePrice');
             const stripeProduct = stripePrice.related('stripeProduct');
             const product = stripeProduct.related('product');
+            const originalCurrentPeriodEnd = subscription.get('current_period_end');
 
             const stripeSubscriptionId = subscription.get('subscription_id');
             const tierId = product.id;
@@ -614,10 +623,12 @@ describe('Members API - Member Offers', function () {
             const now = new Date();
             const discountStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
             const discountEnd = new Date(now.getTime() + 23 * 24 * 60 * 60 * 1000);
+            const currentPeriodEnd = new Date(discountEnd);
             await subscription.save({
                 offer_id: existingOffer.id,
                 discount_start: discountStart,
-                discount_end: discountEnd
+                discount_end: discountEnd,
+                current_period_end: currentPeriodEnd
             }, {patch: true});
 
             try {
@@ -628,7 +639,12 @@ describe('Members API - Member Offers', function () {
                     .body({identity: token, offer_id: retentionOffer.id})
                     .expectStatus(400);
             } finally {
-                await subscription.save({offer_id: null, discount_start: null, discount_end: null}, {patch: true});
+                await subscription.save({
+                    offer_id: null,
+                    discount_start: null,
+                    discount_end: null,
+                    current_period_end: originalCurrentPeriodEnd
+                }, {patch: true});
                 await models.Offer.destroy({id: retentionOffer.id});
                 await models.Offer.destroy({id: existingOffer.id});
             }

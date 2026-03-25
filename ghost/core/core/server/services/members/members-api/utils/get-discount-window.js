@@ -1,3 +1,21 @@
+/**
+ * @typedef {import('../../../offers/application/offer-mapper').OfferDTO} OfferDTO
+ */
+
+/**
+ * @typedef {object} SubscriptionMinimal
+ * @prop {Date|null} discount_start
+ * @prop {Date|null} discount_end
+ * @prop {Date} start_date
+ * @prop {Date} current_period_end
+ */
+
+/**
+ * @typedef {object} DiscountWindow
+ * @prop {Date} start
+ * @prop {Date|null} end
+ */
+
 function getLastDayOfMonth(year, month) {
     return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
 }
@@ -46,16 +64,15 @@ function getLastDiscountedPayment(nextBillingDate, discountEnd) {
  * 1. Stripe coupon discounts (post-6.16) - uses discount_start / discount_end
  * 2. Legacy fallback - computes from offer duration and start_date
  *
- * @param {object} subscription - plain object with: discount_start, discount_end, start_date, current_period_end, plan.interval, plan_interval
- * @param {object|null} offer - offer data with: duration, duration_in_months.
- *   Pass null to skip offer-dependent checks.
- * @returns {{start: *, end: *}|null}
+ * @param {SubscriptionMinimal} subscription
+ * @param {OfferDTO} offer
+ * @returns {DiscountWindow|null}
  */
 
 module.exports = function getDiscountWindow(subscription, offer) {
     // Stripe coupon discount (post-6.16 data)
     if (subscription.discount_start) {
-        if (subscription.discount_end && offer?.duration === 'repeating') {
+        if (offer.duration === 'repeating') {
             const discountEnd = new Date(subscription.discount_end);
             const currentPeriodEnd = new Date(subscription.current_period_end);
 
@@ -75,14 +92,22 @@ module.exports = function getDiscountWindow(subscription, offer) {
             };
         }
 
+        if (offer.duration === 'once') {
+            return {
+                start: subscription.discount_start,
+                end: subscription.current_period_end
+            };
+        }
+
         return {
             start: subscription.discount_start,
             end: subscription.discount_end || null
         };
     }
 
-    // Legacy fallback: compute window from offer duration
-    if (!offer) {
+    // Legacy fallback for subscriptions without discount start / end dates
+    // This applies to signup offers only, as retention offers have been added after the introduction of discount start / end dates
+    if (offer.redemption_type !== 'signup') {
         return null;
     }
 
