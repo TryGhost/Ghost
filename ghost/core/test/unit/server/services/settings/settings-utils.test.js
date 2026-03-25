@@ -2,6 +2,40 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
 describe('Unit: services/settings/settings-utils', function () {
+    describe('isSecretSetting', function () {
+        const {isSecretSetting} = require('../../../../../core/server/services/settings/settings-utils');
+
+        it('identifies settings containing "secret" as secret', function () {
+            assert.equal(isSecretSetting({key: 'admin_secret'}), true);
+            assert.equal(isSecretSetting({key: 'stripe_secret_key'}), true);
+        });
+
+        it('identifies settings containing "api_key" as secret', function () {
+            assert.equal(isSecretSetting({key: 'ghost_admin_api_key'}), true);
+            assert.equal(isSecretSetting({key: 'content_api_key'}), true);
+        });
+
+        it('does not flag non-secret settings', function () {
+            assert.equal(isSecretSetting({key: 'title'}), false);
+            assert.equal(isSecretSetting({key: 'description'}), false);
+            assert.equal(isSecretSetting({key: 'navigation'}), false);
+        });
+    });
+
+    describe('hideValueIfSecret', function () {
+        const {hideValueIfSecret, obfuscatedSetting} = require('../../../../../core/server/services/settings/settings-utils');
+
+        it('obfuscates the value of secret settings', function () {
+            const result = hideValueIfSecret({key: 'admin_api_key', value: 'real-key-value'});
+            assert.equal(result.value, obfuscatedSetting);
+        });
+
+        it('does not obfuscate non-secret settings', function () {
+            const result = hideValueIfSecret({key: 'title', value: 'My Blog'});
+            assert.equal(result.value, 'My Blog');
+        });
+    });
+
     describe('getOrGenerateSiteUuid', function () {
         const config = require('../../../../../core/shared/config');
         const logging = require('@tryghost/logging');
