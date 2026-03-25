@@ -265,7 +265,7 @@ export class FakeStripeServer {
 
             if (!duration) {
                 return badRequest(
-                    "Invalid coupon duration. Must be one of 'forever', 'once', or 'repeating'.",
+                    'Invalid coupon duration. Must be one of "forever", "once", or "repeating".',
                     'duration'
                 );
             }
