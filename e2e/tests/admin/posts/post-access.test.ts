@@ -1,4 +1,5 @@
 import {MemberDetailsPage, PostEditorPage, PostsPage, SettingsPage, SidebarPage} from '@/admin-pages';
+import {Page} from '@playwright/test';
 import {PostPage} from '@/helpers/pages';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {createMemberFactory, createTierFactory} from '@/data-factory';
@@ -7,63 +8,47 @@ import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
 usePerTestIsolation();
 
+type Visibility = 'public' | 'members' | 'paid' | 'tiers';
+
+async function publishPostWithVisibility(page: Page, options: {title: string; body: string; visibility: Visibility}) {
+    const postsPage = new PostsPage(page);
+    await postsPage.goto();
+    await postsPage.newPostButton.click();
+
+    const editor = new PostEditorPage(page);
+    await editor.createDraft({title: options.title, body: options.body});
+    await expect(editor.postStatus).toContainText('Draft - Saved');
+
+    await editor.openSettingsMenu();
+    await editor.settingsMenu.setVisibility(options.visibility);
+
+    await editor.publishFlow.open();
+    await editor.publishFlow.confirm();
+    const frontendPage = await editor.publishFlow.openPublishedPostBookmark();
+    return {editor, frontendPage, postPage: new PostPage(frontendPage)};
+}
+
 test.describe('Ghost Admin - Post Access', () => {
     test('members-only post shows content gate for non-members', async ({page}) => {
-        const postsPage = new PostsPage(page);
-        await postsPage.goto();
-        await postsPage.newPostButton.click();
-
-        const editor = new PostEditorPage(page);
-        await editor.createDraft({title: 'Members only post', body: 'This is my post body.'});
-        await expect(editor.postStatus).toContainText('Draft - Saved');
-
-        await editor.openSettingsMenu();
-        await editor.settingsMenu.setVisibility('members');
-
-        await editor.publishFlow.open();
-        await editor.publishFlow.confirm();
-        const frontendPage = await editor.publishFlow.openPublishedPostBookmark();
-        const postPage = new PostPage(frontendPage);
+        const {postPage} = await publishPostWithVisibility(page, {
+            title: 'Members only post', body: 'This is my post body.', visibility: 'members'
+        });
 
         await expect(postPage.contentGateHeading).toHaveText('This post is for subscribers only');
     });
 
     test('paid-only post shows content gate for non-paying visitors', async ({page}) => {
-        const postsPage = new PostsPage(page);
-        await postsPage.goto();
-        await postsPage.newPostButton.click();
-
-        const editor = new PostEditorPage(page);
-        await editor.createDraft({title: 'Paid only post', body: 'This is my post body.'});
-        await expect(editor.postStatus).toContainText('Draft - Saved');
-
-        await editor.openSettingsMenu();
-        await editor.settingsMenu.setVisibility('paid');
-
-        await editor.publishFlow.open();
-        await editor.publishFlow.confirm();
-        const frontendPage = await editor.publishFlow.openPublishedPostBookmark();
-        const postPage = new PostPage(frontendPage);
+        const {postPage} = await publishPostWithVisibility(page, {
+            title: 'Paid only post', body: 'This is my post body.', visibility: 'paid'
+        });
 
         await expect(postPage.contentGateHeading).toHaveText('This post is for paying subscribers only');
     });
 
     test('public post is visible to everyone', async ({page}) => {
-        const postsPage = new PostsPage(page);
-        await postsPage.goto();
-        await postsPage.newPostButton.click();
-
-        const editor = new PostEditorPage(page);
-        await editor.createDraft({title: 'Public post test', body: 'This is my post body.'});
-        await expect(editor.postStatus).toContainText('Draft - Saved');
-
-        await editor.openSettingsMenu();
-        await editor.settingsMenu.setVisibility('public');
-
-        await editor.publishFlow.open();
-        await editor.publishFlow.confirm();
-        const frontendPage = await editor.publishFlow.openPublishedPostBookmark();
-        const postPage = new PostPage(frontendPage);
+        const {postPage} = await publishPostWithVisibility(page, {
+            title: 'Public post test', body: 'This is my post body.', visibility: 'public'
+        });
 
         await expect(postPage.postBody).toHaveText('This is my post body.');
     });
