@@ -1,5 +1,4 @@
-import {TiersService} from '@/helpers/services/tiers/tiers-service';
-import {createMemberFactory} from '@/data-factory';
+import {createMemberFactory, createTierFactory} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
 
 interface CheckoutSessionResponse {
@@ -15,15 +14,15 @@ test.describe('Ghost Public - Stripe Checkout Initiation', () => {
     test.use({stripeEnabled: true});
 
     test('paid tier syncs to fake stripe - checkout returns a fake session url', async ({page, stripe}) => {
-        const tiersService = new TiersService(page.request);
         const memberFactory = createMemberFactory(page.request);
+        const tierFactory = createTierFactory(page.request);
         const tierName = `Stripe Tier ${Date.now()}`;
         const member = await memberFactory.create({
             status: 'free',
             email: `stripe-checkout-${Date.now()}@example.com`
         });
 
-        const tier = await tiersService.createTier({
+        const tier = await tierFactory.create({
             name: tierName,
             currency: 'usd',
             monthly_price: 500,

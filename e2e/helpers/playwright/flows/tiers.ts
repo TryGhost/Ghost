@@ -1,7 +1,5 @@
+import {type AdminTier, type HttpClient, type TierCreateInput, createTierFactory} from '@/data-factory';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
-import {TiersService} from '@/helpers/services/tiers/tiers-service';
-import type {AdminTier, TierCreateInput} from '@/helpers/services/tiers/tiers-service';
-import type {HttpClient} from '@/data-factory';
 import type {StripeTestService} from '@/helpers/services/stripe';
 
 export async function createPaidPortalTier(
@@ -9,10 +7,10 @@ export async function createPaidPortalTier(
     input: Omit<TierCreateInput, 'visibility'> & Partial<Pick<TierCreateInput, 'visibility'>>,
     opts?: {stripe?: StripeTestService}
 ): Promise<AdminTier> {
-    const tiersService = new TiersService(request);
+    const tierFactory = createTierFactory(request);
     const settingsService = new SettingsService(request);
 
-    const tier = await tiersService.createTier({
+    const tier = await tierFactory.create({
         ...input,
         visibility: input.visibility ?? 'public'
     });

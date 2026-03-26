@@ -5,6 +5,7 @@ import {HttpClient} from './persistence/adapters/http-client';
 import {MemberFactory} from './factories/member-factory';
 import {PostFactory} from './factories/post-factory';
 import {TagFactory} from './factories/tag-factory';
+import {TierFactory} from './factories/tier-factory';
 
 /**
  * Create a new PostFactory with API persistence
@@ -39,6 +40,14 @@ export function createMemberFactory(httpClient: HttpClient): MemberFactory {
     return new MemberFactory(adapter);
 }
 
+export function createTierFactory(httpClient: HttpClient): TierFactory {
+    const adapter = new GhostAdminApiAdapter(
+        httpClient,
+        'tiers'
+    );
+    return new TierFactory(adapter, httpClient);
+}
+
 export function createAutomatedEmailFactory(httpClient: HttpClient): AutomatedEmailFactory {
     const adapter = new GhostAdminApiAdapter(
         httpClient,
@@ -59,6 +68,7 @@ export interface Factories {
     postFactory: PostFactory;
     tagFactory: TagFactory;
     memberFactory: MemberFactory;
+    tierFactory: TierFactory;
     automatedEmailFactory: AutomatedEmailFactory;
     commentFactory: CommentFactory;
 }
@@ -74,8 +84,8 @@ export function createFactories(httpClient: HttpClient): Factories {
         postFactory: createPostFactory(httpClient),
         tagFactory: createTagFactory(httpClient),
         memberFactory: createMemberFactory(httpClient),
+        tierFactory: createTierFactory(httpClient),
         automatedEmailFactory: createAutomatedEmailFactory(httpClient),
         commentFactory: createCommentFactory(httpClient)
     };
 }
-
