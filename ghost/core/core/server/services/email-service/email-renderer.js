@@ -13,6 +13,7 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const EmailAddressParser = require('../email-address/email-address-parser');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
+/** @import {TemplateDelegate} from 'handlebars' */
 
 const DEFAULT_LOCALE = 'en-gb';
 const DEFAULT_ACCENT_COLOR = '#15212A';
@@ -131,8 +132,6 @@ class EmailRenderer {
     #getPostUrl;
     #storageUtils;
 
-    #handlebars;
-    #renderTemplate;
     #linkReplacer;
     #linkTracking;
     #memberAttributionService;
@@ -142,6 +141,9 @@ class EmailRenderer {
     #labs;
     #models;
     #t;
+
+    /** @type {undefined | Promise<TemplateDelegate>} */
+    #compiledHandlebarsRendererPromise;
 
     /**
      * @param {object} dependencies
@@ -846,44 +848,61 @@ class EmailRenderer {
         return this.#labs;
     }
 
-    async renderTemplate(data) {
+    /** @returns {Promise<TemplateDelegate>} */
+    async #compileHandlebarsRenderer() {
         const labs = this.getLabs();
-        this.#handlebars = require('handlebars').create();
+        const handlebars = require('handlebars').create();
 
-        // Register helpers
-        registerHelpers(this.#handlebars, labs, this.#t);
+        registerHelpers(handlebars, labs, this.#t);
 
-        // Partials
-        const baseStylesSource = await fs.readFile(path.join(__dirname, '../email-rendering/partials/base-styles.hbs'), 'utf8');
-        this.#handlebars.registerPartial('baseStyles', baseStylesSource);
+        const emailPartials = path.join(__dirname, '..', 'email-rendering', 'partials');
+        const emailTemplates = path.join(__dirname, 'email-templates');
 
-        const contentStylesSource = await fs.readFile(path.join(__dirname, '../email-rendering/partials/content-styles.hbs'), 'utf8');
-        this.#handlebars.registerPartial('contentStyles', contentStylesSource);
+        const [
+            baseStylesSource,
+            cardStylesSource,
+            contentStylesSource,
+            emailWrapperSource,
+            feedbackButtonPartial,
+            htmlTemplateSource,
+            latestPostsPartial,
+            paywallPartial,
+            stylesPartialSource
+        ] = await Promise.all([
+            fs.readFile(path.join(emailPartials, 'base-styles.hbs'), 'utf8'),
+            fs.readFile(path.join(emailPartials, 'card-styles.hbs'), 'utf8'),
+            fs.readFile(path.join(emailPartials, 'content-styles.hbs'), 'utf8'),
+            fs.readFile(path.join(emailPartials, 'email-wrapper.hbs'), 'utf8'),
+            fs.readFile(path.join(emailTemplates, 'partials', 'feedback-button.hbs'), 'utf8'),
+            fs.readFile(path.join(emailTemplates, 'template.hbs'), 'utf8'),
+            fs.readFile(path.join(emailTemplates, 'partials', 'latest-posts.hbs'), 'utf8'),
+            fs.readFile(path.join(emailTemplates, 'partials', 'paywall.hbs'), 'utf8'),
+            fs.readFile(path.join(emailTemplates, 'partials', 'styles.hbs'), 'utf8')
+        ]);
 
-        const cardStylesSource = await fs.readFile(path.join(__dirname, '../email-rendering/partials/card-styles.hbs'), 'utf8');
-        this.#handlebars.registerPartial('cardStyles', cardStylesSource);
+        handlebars.registerPartial('baseStyles', baseStylesSource);
+        handlebars.registerPartial('cardStyles', cardStylesSource);
+        handlebars.registerPartial('contentStyles', contentStylesSource);
+        handlebars.registerPartial('emailWrapper', emailWrapperSource);
+        handlebars.registerPartial('feedbackButton', feedbackButtonPartial);
+        handlebars.registerPartial('latestPosts', latestPostsPartial);
+        handlebars.registerPartial('paywall', paywallPartial);
+        handlebars.registerPartial('styles', stylesPartialSource);
 
-        const cssPartialSource = await fs.readFile(path.join(__dirname, './email-templates/partials/', `styles.hbs`), 'utf8');
-        this.#handlebars.registerPartial('styles', cssPartialSource);
+        return handlebars.compile(htmlTemplateSource);
+    }
 
-        const paywallPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `paywall.hbs`), 'utf8');
-        this.#handlebars.registerPartial('paywall', paywallPartial);
+    /** @returns {Promise<TemplateDelegate>} */
+    #getCompiledHandlebarsRenderer() {
+        if (!this.#compiledHandlebarsRendererPromise) {
+            this.#compiledHandlebarsRendererPromise = this.#compileHandlebarsRenderer();
+        }
+        return this.#compiledHandlebarsRendererPromise;
+    }
 
-        const feedbackButtonPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `feedback-button.hbs`), 'utf8');
-        this.#handlebars.registerPartial('feedbackButton', feedbackButtonPartial);
-
-        const latestPostsPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `latest-posts.hbs`), 'utf8');
-        this.#handlebars.registerPartial('latestPosts', latestPostsPartial);
-
-        const emailWrapperSource = await fs.readFile(path.join(__dirname, '../email-rendering/partials/email-wrapper.hbs'), 'utf8');
-        this.#handlebars.registerPartial('emailWrapper', emailWrapperSource);
-
-        // Actual template
-        let templateName = 'template.hbs';
-        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', templateName), 'utf8');
-        this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
-
-        return this.#renderTemplate(data);
+    async renderTemplate(data) {
+        const renderTemplate = await this.#getCompiledHandlebarsRenderer();
+        return renderTemplate(data);
     }
 
     /**
