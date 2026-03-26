@@ -87,7 +87,7 @@ test.describe('Ghost Admin - Publishing', () => {
             await verifyPostAccessible(page, '/publish-post-only/', 'Publish post only');
         });
 
-        test('publish and email - post is published and sent', async ({page}) => {
+        test('publish and email - post is available on web', async ({page}) => {
             await createMemberForEmail(page, 'test+recipient1@example.com');
             const editor = await createNewPostDraft(page, {title: 'Publish and email post', body: 'This is my post body.'});
 
@@ -182,7 +182,7 @@ test.describe('Ghost Admin - Publishing', () => {
             await verifyScheduledPostPublishes(page, '/scheduled-post-test/', editorUrl, editor);
         });
 
-        test('scheduled publish and email - post appears and is sent after schedule fires', async ({page}) => {
+        test('scheduled publish and email - post appears on web after schedule fires', async ({page}) => {
             await createMemberForEmail(page, 'test+recipient3@example.com');
             const editor = await createNewPostDraft(page, {title: 'Scheduled publish email test', body: 'This is my scheduled post body.'});
             const editorUrl = page.url();
@@ -191,7 +191,7 @@ test.describe('Ghost Admin - Publishing', () => {
             await verifyScheduledPostPublishes(page, '/scheduled-publish-email-test/', editorUrl, editor);
         });
 
-        test('scheduled email only - post is sent but not published', async ({page}) => {
+        test('scheduled email only - post is not available on web after schedule fires', async ({page}) => {
             await createMemberForEmail(page, 'test+recipient4@example.com');
             const editor = await createNewPostDraft(page, {title: 'Scheduled email only test', body: 'This is my scheduled post body.'});
             const editorUrl = page.url();
