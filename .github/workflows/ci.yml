@@ -1561,15 +1561,11 @@ jobs:
           elif [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
 
-            DEPLOY_LABEL="${{ contains(github.event.pull_request.labels.*.name, 'deploy-to-staging') }}"
-            IS_ORG_MEMBER="${{ needs.job_setup.outputs.member_is_in_org }}"
-            IS_RENOVATE="${{ github.event.pull_request.user.login == 'renovate[bot]' }}"
-
-            if [ "$DEPLOY_LABEL" = "true" ] && ([ "$IS_ORG_MEMBER" = "true" ] || [ "$IS_RENOVATE" = "true" ]); then
-              echo "deploy=true" >> $GITHUB_OUTPUT
-            else
-              echo "deploy=" >> $GITHUB_OUTPUT
-            fi
+            # DISABLED: deploy-to-staging label detection is disabled.
+            # The label workflow has fundamental problems — admin deploys are global
+            # (not per-site) and main merges overwrite the deployment immediately.
+            # See deploy-to-staging.yml for details.
+            echo "deploy=" >> $GITHUB_OUTPUT
           else
             echo "skip=true" >> $GITHUB_OUTPUT
             exit 0
