@@ -63,7 +63,7 @@ export class TierFactory extends Factory<Partial<AdminTier>, AdminTier> {
         return {...defaults, ...options};
     }
 
-    async getTiers(): Promise<AdminTier[]> {
+    async getFirstPaidTier(): Promise<AdminTier> {
         if (!this.request) {
             throw new Error('Cannot fetch tiers without an HTTP client. Use createTierFactory() for persisted test data access.');
         }
@@ -73,25 +73,11 @@ export class TierFactory extends Factory<Partial<AdminTier>, AdminTier> {
             throw new Error(`Failed to fetch tiers: ${response.status()}`);
         }
 
-        const data = await response.json() as {tiers: AdminTier[]};
-        return data.tiers;
-    }
-
-    async getPaidTiers(): Promise<AdminTier[]> {
-        const tiers = await this.getTiers();
-        return tiers.filter(tier => tier.type === 'paid' && tier.active);
-    }
-
-    async getFreeTier(): Promise<AdminTier | undefined> {
-        const tiers = await this.getTiers();
-        return tiers.find(tier => tier.type === 'free' && tier.active);
-    }
-
-    async getFirstPaidTier(): Promise<AdminTier> {
-        const paidTiers = await this.getPaidTiers();
-        if (paidTiers.length === 0) {
+        const {tiers} = await response.json() as {tiers: AdminTier[]};
+        const paidTier = tiers.find(tier => tier.type === 'paid' && tier.active);
+        if (!paidTier) {
             throw new Error('No paid tiers found');
         }
-        return paidTiers[0];
+        return paidTier;
     }
 }
