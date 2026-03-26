@@ -20,7 +20,7 @@ import RecommendationsPage from './components/pages/recommendations-page';
 import GiftPage from './components/pages/gift-page';
 import GiftRedemptionPage from './components/pages/gift-redemption-page';
 import GiftSuccessPage from './components/pages/gift-success-page';
-import ShareModal from './components/pages/share-modal';
+import ShareModal from './components/pages/share/share-modal';
 
 /** List of all available pages in Portal, mapped to their UI component
  * Any new page added to portal needs to be mapped here
