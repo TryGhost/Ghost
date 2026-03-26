@@ -57,7 +57,9 @@ function MembersListItemName({item, onClick}: { item: Member; onClick?: (memberI
             <MemberAvatar
                 avatarImage={item.avatar_image}
                 className="size-10 min-w-10 md:size-10 md:min-w-10"
+                memberEmail={item.email}
                 memberId={item.id}
+                memberName={item.name}
             />
             <div className="min-w-0">
                 <a
