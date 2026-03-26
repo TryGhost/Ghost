@@ -149,9 +149,10 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
             fields={filterFields}
             filters={displayFilters}
             keyboardShortcut="f"
-            popoverAlign={hasFilters ? 'start' : 'end'}
+            popoverAlign={'start'}
+            popoverContentClassName='w-[280px] translate-x-[-32px] [&_[data-slot=command-list]]:max-h-[450px]'
             showClearButton={hasFilters}
-            showSearchInput={false}
+            showSearchInput={true}
             onChange={handleFiltersChange}
         />
     );
