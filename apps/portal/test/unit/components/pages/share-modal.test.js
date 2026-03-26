@@ -1,9 +1,9 @@
 import {fireEvent, render, waitFor} from '../../../utils/test-utils';
 import ShareModal from '../../../../src/components/pages/share/share-modal';
-import copyTextToClipboard from '../../../../src/utils/copy-to-clipboard';
+import {copyTextToClipboard} from '../../../../src/utils/copy-text-to-clipboard';
 
-vi.mock('../../../../src/utils/copy-to-clipboard', () => ({
-    default: vi.fn()
+vi.mock('../../../../src/utils/copy-text-to-clipboard', () => ({
+    copyTextToClipboard: vi.fn()
 }));
 
 const addHeadTag = ({tagName, attrs = {}}) => {
