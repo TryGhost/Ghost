@@ -2,11 +2,13 @@ import {Locator, Page} from '@playwright/test';
 import {PostEditorPage} from './post-editor-page';
 
 export class PageEditorPage extends PostEditorPage {
+    override readonly titleInput: Locator;
     readonly newPageButton: Locator;
 
     constructor(page: Page) {
         super(page);
         this.pageUrl = '/ghost/#/editor/page/';
+        this.titleInput = page.getByRole('textbox', {name: 'Page title'});
         this.newPageButton = page.locator('[data-test-new-page-button]');
     }
 

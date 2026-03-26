@@ -209,7 +209,7 @@ export class PostEditorPage extends AdminPage {
         this.titleInput = page.getByRole('textbox', {name: 'Post title'});
         this.editor = page.locator('[data-kg="editor"]').first();
         this.secondaryEditor = page.locator('[data-secondary-instance="true"]');
-        this.postStatus = page.locator('[data-test-editor-post-status]');
+        this.postStatus = page.locator('[data-test-editor-post-status]').first();
         this.previewButton = page.getByRole('button', {name: 'Preview'});
         this.previewModal = new PostPreviewModal(page);
         this.settingsToggleButton = page.getByTestId('settings-menu-toggle');
@@ -230,6 +230,9 @@ export class PostEditorPage extends AdminPage {
         if (options.body) {
             await this.titleInput.press('Enter');
             await this.editor.waitFor({state: 'visible'});
+            // Wait for the title save to complete before typing body content,
+            // otherwise the POST response overwrites local editor state
+            await this.postStatus.filter({hasText: 'Saved'}).waitFor({state: 'visible'});
             await this.page.keyboard.type(options.body);
         }
     }

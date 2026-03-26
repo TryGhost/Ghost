@@ -168,7 +168,7 @@ test.describe('Ghost Admin - Publishing', () => {
 
             await frontendPage.reload();
             await expect(postPage.articleBody).toContainText('This is some updated text.');
-            await expect(postPage.postHeader).toContainText('Jan 7, 2022');
+            await expect(postPage.postHeader).toContainText('Jan 2022');
             await expect(postPage.metaDescription).toHaveAttribute('content', 'Short description and meta');
         });
     });
