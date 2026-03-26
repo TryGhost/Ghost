@@ -204,15 +204,18 @@ export function useScrollRestoration({parentRef, enabled = true, isLoading = fal
             latestScrollPositionRef.current = scrollContainer.scrollTop;
             queuePersistScrollPosition();
         };
+        const handlePageHide = () => {
+            flushScrollPosition();
+        };
 
         latestScrollPositionRef.current = scrollContainer.scrollTop;
         scrollContainer.addEventListener('scroll', handleScroll);
-        window.addEventListener('pagehide', flushScrollPosition);
+        window.addEventListener('pagehide', handlePageHide);
 
         return () => {
             flushScrollPosition({persistToHistory: false});
             scrollContainer.removeEventListener('scroll', handleScroll);
-            window.removeEventListener('pagehide', flushScrollPosition);
+            window.removeEventListener('pagehide', handlePageHide);
         };
     }, [enabled, key, scrollContainer]);
 
