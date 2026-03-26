@@ -1,5 +1,5 @@
 import {parseEmailAddress as upstreamParseEmailAddress} from 'parse-email-address';
-import {domainToASCII} from 'node:url';
+import {domainToASCII} from 'url';
 
 export const parseEmailAddress = (
     emailAddress: string
