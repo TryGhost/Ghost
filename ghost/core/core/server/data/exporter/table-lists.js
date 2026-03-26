@@ -6,7 +6,7 @@ const BACKUP_TABLES = [
     'automated_emails',
     'brute',
     'donation_payment_events',
-    'email_templates',
+    'email_design_settings',
     'emails',
     'integrations',
     'invites',
