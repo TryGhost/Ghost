@@ -55,7 +55,7 @@
             "name": "EmailDesignSetting",
             "entries": [
                 {
-                    "slug":             "default-automated-email"
+                    "slug": "default-automated-email"
                 }
             ]
         },
