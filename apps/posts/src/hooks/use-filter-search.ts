@@ -23,7 +23,7 @@ export interface UseFilterSearchOptions<T, K extends keyof T & string> {
     /** Map an item to a FilterOption */
     toOption: (item: ArrayItem<T, K>) => FilterOption<string>;
     /** Getter hook for resolving values not in the current page */
-    useGetById: (id: string, opts: { enabled: boolean; defaultErrorHandler: boolean }) => { data: Pick<T, K> | undefined };
+    useGetById: (id: string, opts: { enabled: boolean; defaultErrorHandler: boolean }) => { data: Pick<T, K> | undefined; isError: boolean };
     /** Current filter values that need to be displayable. Defaults to []. */
     activeValues?: string[];
 }
@@ -160,6 +160,8 @@ export function useFilterSearch<T, K extends keyof T & string>({
     // Async-resolved items used only for populating dropdown options.
     // Append-only; items are never removed.
     const resolvedForOptionsRef = useRef<ArrayItem<T, K>[]>([]);
+    // Track IDs that failed resolution (e.g. wrong resource type) to avoid retrying
+    const failedResolutionsRef = useRef(new Set<string>());
 
     // Find the first active value missing from base + resolved (needs async fetch)
     const resolvedValues = resolvedForOptionsRef.current;
@@ -174,7 +176,7 @@ export function useFilterSearch<T, K extends keyof T & string>({
         for (const item of resolvedValues) {
             knownValues.add(toOption(item).value);
         }
-        return activeValues.find(v => !knownValues.has(v)) || '';
+        return activeValues.find(v => !knownValues.has(v) && !failedResolutionsRef.current.has(v)) || '';
     }, [activeValues, resolvedValues, toOption]);
 
     // Resolve via useGetById — always called (hooks must be unconditional)
@@ -194,6 +196,11 @@ export function useFilterSearch<T, K extends keyof T & string>({
         }
         return null;
     }, [resolvedResult.data, missingValue, dataKey]);
+
+    // Track failed resolutions so we skip them on future renders
+    if (missingValue && resolvedResult.isError) {
+        failedResolutionsRef.current.add(missingValue);
+    }
 
     // Append async-resolved item to the ref
     if (resolvedRawItem) {

@@ -45,7 +45,7 @@ function createMockQuery(initialData: TestResponse | undefined = undefined) {
 const defaultLocalFilter = (items: TestItem[], term: string) => items.filter(i => i.name.toLowerCase().includes(term.toLowerCase()));
 
 const defaultToOption = (item: TestItem) => ({value: item.id, label: item.name});
-const defaultUseGetById: UseFilterSearchOptions<TestResponse, 'items'>['useGetById'] = () => ({data: undefined});
+const defaultUseGetById: UseFilterSearchOptions<TestResponse, 'items'>['useGetById'] = () => ({data: undefined, isError: false});
 
 // --- Tests ---
 
