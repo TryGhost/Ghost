@@ -22,9 +22,18 @@ export class PortalSection extends BasePage {
         this.freeTierToggleLabel = this.portalModal.locator('label').filter({hasText: 'Free'}).first();
     }
 
+    tierCheckbox(tierName: string): Locator {
+        return this.portalModal.getByLabel(tierName).first();
+    }
+
     async openCustomizeModal(): Promise<void> {
         await this.customizeButton.click();
         await this.portalModal.waitFor({state: 'visible'});
+        await this.portalModal.getByRole('checkbox').first().waitFor();
+    }
+
+    async closeCustomizeModal(): Promise<void> {
+        await this.portalModal.getByRole('button', {name: 'Close'}).click();
     }
 
     async openLinksTab(): Promise<void> {
