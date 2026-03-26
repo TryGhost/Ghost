@@ -39,7 +39,31 @@ describe('MemberWelcomeEmailRenderer', function () {
             });
 
             sinon.assert.calledOnce(lexicalRenderStub);
-            sinon.assert.calledWith(lexicalRenderStub, lexicalJson, {target: 'email', design: {accentColor: '#ff0000'}});
+            sinon.assert.calledWith(lexicalRenderStub, lexicalJson, {target: 'email', design: {
+                accentColor: '#ff0000',
+                accentContrastColor: '#FFFFFF',
+                backgroundColor: '#ffffff',
+                backgroundIsDark: false,
+                buttonBorderRadius: '6px',
+                buttonColor: '#ff0000',
+                buttonCorners: null,
+                buttonStyle: null,
+                buttonTextColor: '#FFFFFF',
+                dividerColor: '#e0e7eb',
+                hasOutlineButtons: false,
+                hasRoundedImageCorners: false,
+                headerBackgroundColor: null,
+                headerBackgroundIsDark: false,
+                imageCorners: null,
+                linkColor: '#ff0000',
+                linkStyle: 'underline',
+                postTitleColor: '#000000',
+                sectionTitleColor: null,
+                textColor: '#000000',
+                titleFontWeight: 'bold',
+                titleStrongWeight: '800',
+                titleWeight: '700'
+            }});
         });
 
         it('substitutes member template variables', async function () {
