@@ -92,6 +92,7 @@ export class TiersSection extends BasePage {
         const portalSection = this.page.getByTestId('portal');
         await portalSection.getByRole('button', {name: 'Customize'}).click();
         const portalModal = this.page.getByTestId('portal-modal');
+        await portalModal.waitFor({state: 'visible'});
 
         const tierCheckbox = portalModal.getByLabel(tierName).first();
         if (!await tierCheckbox.isChecked()) {

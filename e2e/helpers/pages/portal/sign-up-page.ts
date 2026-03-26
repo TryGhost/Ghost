@@ -47,9 +47,21 @@ export class SignUpPage extends PortalPage {
         await this.continueIfVisible();
     }
 
+    paidTierCardByName(tierName: string): Locator {
+        return this.portalFrame.locator('[data-test-tier="paid"]').filter({hasText: tierName}).first();
+    }
+
+    tierAmount(tierCard: Locator): Locator {
+        return tierCard.getByTestId('product-amount');
+    }
+
+    tierDescription(tierCard: Locator): Locator {
+        return tierCard.getByTestId('product-description');
+    }
+
     async selectPaidTier(tierName?: string): Promise<void> {
         const paidTierCard = tierName
-            ? this.portalFrame.locator('[data-test-tier="paid"]').filter({hasText: tierName}).first()
+            ? this.paidTierCardByName(tierName)
             : this.paidTierCard;
         const paidTierSelectButton = tierName
             ? paidTierCard.locator('[data-test-button="select-tier"]')
