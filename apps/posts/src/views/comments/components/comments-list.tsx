@@ -125,7 +125,7 @@ function CommentsList({
                             <div
                                 key={key}
                                 {...props}
-                                className="hover:bg-muted/50 grid w-full grid-cols-1 items-start justify-between gap-4 border-b p-3 md:p-5 lg:grid-cols-[minmax(0,1fr)_144px]"
+                                className="grid w-full grid-cols-1 items-start justify-between gap-4 border-b p-3 hover:bg-muted/50 md:p-5 lg:grid-cols-[minmax(0,1fr)_144px]"
                                 data-testid="comment-list-row"
                                 onClick={() => {
                                     // Close sidebar when clicking on a comment in the main list

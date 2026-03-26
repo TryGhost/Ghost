@@ -25,7 +25,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
     });
 
     return (
-        <section className='gh-portal-list-toggle-wrapper' data-testid="toggle-wrapper">
+        <section className='gh-portal-list-toggle-wrapper' data-testid="newsletter-toggle">
             <div className='gh-portal-list-detail'>
                 <h3>{newsletter.name}</h3>
                 <p>{newsletter?.description}</p>
@@ -66,7 +66,7 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
     };
 
     return (
-        <section className='gh-portal-list-toggle-wrapper' data-testid="toggle-wrapper">
+        <section className='gh-portal-list-toggle-wrapper' data-testid="comment-toggle">
             <div className='gh-portal-list-detail'>
                 <h3>{t('Comments')}</h3>
                 <p>{t('Get notified when someone replies to your comment')}</p>

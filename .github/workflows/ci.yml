@@ -843,9 +843,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install npm v8 # downgrade from v10 to v8 due to https://github.com/npm/cli/issues/6738
-        run: npm install -g npm@8
-
       - name: Install Ghost-CLI
         run: npm install -g ghost-cli@latest
 
@@ -860,30 +857,6 @@ jobs:
 
       - run: mv ghost-*.tgz ghost.tgz
         working-directory: ghost/core
-
-      - name: Switch back to Node v16.14.0 (for v4)
-        uses: actions/setup-node@v4
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: '16.14.0'
-
-      - name: Install latest v4
-        run: |
-          DIR=$(mktemp -d)
-          echo "V4_DIR=$DIR" >> $GITHUB_ENV
-          ghost install v4 --local -d $DIR
-
-      - name: Switch back to ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Update from v4
-        run: |
-          ghost update -f -d $V4_DIR --archive $(pwd)/ghost/core/ghost.tgz
 
       - name: Save Ghost CLI Debug Logs
         if: failure()
@@ -1146,8 +1119,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        shardIndex: [1, 2, 3, 4]
-        shardTotal: [4]
+        shardIndex: [1, 2, 3, 4, 5, 6, 7, 8]
+        shardTotal: [8]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -1574,7 +1547,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       always()
-      && github.repository_owner == 'TryGhost'
+      && github.repository == 'TryGhost/Ghost'
       && needs.job_setup.result == 'success'
       && needs.job_docker_build_production.result == 'success'
       && needs.job_docker_build_production.outputs.use-artifact != 'true'
@@ -1588,15 +1561,11 @@ jobs:
           elif [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
 
-            DEPLOY_LABEL="${{ contains(github.event.pull_request.labels.*.name, 'deploy-to-staging') }}"
-            IS_ORG_MEMBER="${{ needs.job_setup.outputs.member_is_in_org }}"
-            IS_RENOVATE="${{ github.event.pull_request.user.login == 'renovate[bot]' }}"
-
-            if [ "$DEPLOY_LABEL" = "true" ] && ([ "$IS_ORG_MEMBER" = "true" ] || [ "$IS_RENOVATE" = "true" ]); then
-              echo "deploy=true" >> $GITHUB_OUTPUT
-            else
-              echo "deploy=" >> $GITHUB_OUTPUT
-            fi
+            # DISABLED: deploy-to-staging label detection is disabled.
+            # The label workflow has fundamental problems — admin deploys are global
+            # (not per-site) and main merges overwrite the deployment immediately.
+            # See deploy-to-staging.yml for details.
+            echo "deploy=" >> $GITHUB_OUTPUT
           else
             echo "skip=true" >> $GITHUB_OUTPUT
             exit 0

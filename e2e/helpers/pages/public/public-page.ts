@@ -60,6 +60,7 @@ class PortalSection extends BasePage {
 export class PublicPage extends BasePage {
     public readonly portalRoot: Locator;
     public readonly portalIframe: Locator;
+    public readonly portalPopupFrame: Locator;
     public readonly portalScript: Locator;
     private readonly subscribeLink: Locator;
     private readonly signInLink: Locator;
@@ -72,6 +73,7 @@ export class PublicPage extends BasePage {
         this.portal = new PortalSection(page);
         this.portalRoot = this.portal.portalRoot;
         this.portalIframe = page.locator('#ghost-portal-root div iframe');
+        this.portalPopupFrame = page.locator('[data-testid="portal-popup-frame"]');
         this.portalScript = page.locator('script[data-ghost][data-key][data-api]');
         this.subscribeLink = page.locator('a[href="#/portal/signup"]').first();
         this.signInLink = page.locator('a[href="#/portal/signin"]').first();
@@ -141,5 +143,13 @@ export class PublicPage extends BasePage {
 
     async gotoPortalSignup(options?: pageGotoOptions): Promise<null | Response> {
         return await this.goto('/#/portal/signup', options);
+    }
+
+    async gotoPortalSupport(options?: pageGotoOptions): Promise<null | Response> {
+        return await this.goto('/#/portal/support', options);
+    }
+
+    async gotoOfferCode(code: string, options?: pageGotoOptions): Promise<null | Response> {
+        return await this.goto(`/${code}`, options);
     }
 }

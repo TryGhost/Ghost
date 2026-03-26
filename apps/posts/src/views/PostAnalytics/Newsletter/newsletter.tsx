@@ -5,6 +5,7 @@ import PostAnalyticsHeader from '../components/post-analytics-header';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, Input, LucideIcon, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
 import {NewsletterRadialChart, NewsletterRadialChartData} from './components/newsletter-radial-chart';
 import {Post, useGlobalData} from '@src/providers/post-analytics-context';
+import {buildMembersUrl} from '../../members/member-route';
 import {getLinkById} from '@src/utils/link-helpers';
 import {hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/providers/posts-app-context';
@@ -18,7 +19,7 @@ interface postAnalyticsProps {}
 
 const FunnelArrow: React.FC = () => {
     return (
-        <div className='md:visible! md:flex! absolute -right-4 top-1/2 z-10 hidden size-8 -translate-y-1/2 items-center justify-center rounded-full border   bg-background text-muted-foreground'>
+        <div className='absolute top-1/2 -right-4 z-10 hidden size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground md:visible! md:flex!'>
             <LucideIcon.ChevronRight className='ml-0.5' size={16} strokeWidth={1.5}/>
         </div>
     );
@@ -36,7 +37,7 @@ const BlockTooltip:React.FC<BlockTooltipProps> = ({
     avgValue
 }) => {
     return (
-        <div className='absolute left-1/2 top-6 z-50 flex w-[200px] -translate-x-1/2 flex-col items-stretch gap-1.5 rounded-md bg-background px-4 py-2 text-sm opacity-0 shadow-md transition-all group-hover/block:top-3 group-hover/block:opacity-100'>
+        <div className='absolute top-6 left-1/2 z-50 flex w-[200px] -translate-x-1/2 flex-col items-stretch gap-1.5 rounded-md bg-background px-4 py-2 text-sm opacity-0 shadow-md transition-all group-hover/block:top-3 group-hover/block:opacity-100'>
             <div className='flex items-center justify-between gap-4'>
                 <div className='flex items-center gap-2 text-muted-foreground'>
                     <div className='size-2 rounded-full bg-chart-blue opacity-50'
@@ -76,6 +77,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     // Use shared post data from context
     const {post, isPostLoading, postId} = useGlobalData();
+    const navigateToMembers = (filter: string) => navigate(buildMembersUrl({filter}), {crossApp: true});
     const typedPost = post as Post;
     // Use the utility function from admin-x-framework
     const showNewsletterSection = hasBeenEmailed(typedPost);
@@ -283,20 +285,12 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                 <div className={`grid ${chartHeaderClass} items-stretch border-b`}>
                                     <KpiCard className='group relative isolate grow p-3 md:px-6 md:py-5'>
                                         <KpiCardMoreButton onClick={() => {
-                                            const params = new URLSearchParams({
-                                                filterParam: `emails.post_id:${postId}`,
-                                                postAnalytics: postId
-                                            });
-                                            navigate(`/members?${params.toString()}`, {crossApp: true});
+                                            navigateToMembers(`emails.post_id:${postId}`);
                                         }}>
                                             View members &rarr;
                                         </KpiCardMoreButton>
                                         <KpiCardLabel onClick={() => {
-                                            const params = new URLSearchParams({
-                                                filterParam: `emails.post_id:${postId}`,
-                                                postAnalytics: postId
-                                            });
-                                            navigate(`/members?${params.toString()}`, {crossApp: true});
+                                            navigateToMembers(`emails.post_id:${postId}`);
                                         }}>
                                             <div className='ml-0.5 size-[9px] rounded-full bg-chart-purple opacity-50'></div>
                                     Sent
@@ -309,20 +303,12 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     {emailTrackOpensEnabled &&
                                         <KpiCard className='p-3 md:px-6 md:py-5'>
                                             <KpiCardMoreButton onClick={() => {
-                                                const params = new URLSearchParams({
-                                                    filterParam: `opened_emails.post_id:${postId}`,
-                                                    postAnalytics: postId
-                                                });
-                                                navigate(`/members?${params.toString()}`, {crossApp: true});
+                                                navigateToMembers(`opened_emails.post_id:${postId}`);
                                             }}>
                                                 View members &rarr;
                                             </KpiCardMoreButton>
                                             <KpiCardLabel onClick={() => {
-                                                const params = new URLSearchParams({
-                                                    filterParam: `opened_emails.post_id:${postId}`,
-                                                    postAnalytics: postId
-                                                });
-                                                navigate(`/members?${params.toString()}`, {crossApp: true});
+                                                navigateToMembers(`opened_emails.post_id:${postId}`);
                                             }}>
                                                 <div className='ml-0.5 size-[9px] rounded-full bg-chart-blue opacity-50'></div>
                                                 Opened
@@ -336,20 +322,12 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     {emailTrackClicksEnabled &&
                                         <KpiCard className='group relative isolate grow p-3 md:px-6 md:py-5'>
                                             <KpiCardMoreButton onClick={() => {
-                                                const params = new URLSearchParams({
-                                                    filterParam: `clicked_links.post_id:${postId}`,
-                                                    postAnalytics: postId
-                                                });
-                                                navigate(`/members?${params.toString()}`, {crossApp: true});
+                                                navigateToMembers(`clicked_links.post_id:${postId}`);
                                             }}>
                                                 View members &rarr;
                                             </KpiCardMoreButton>
                                             <KpiCardLabel onClick={() => {
-                                                const params = new URLSearchParams({
-                                                    filterParam: `clicked_links.post_id:${postId}`,
-                                                    postAnalytics: postId
-                                                });
-                                                navigate(`/members?${params.toString()}`, {crossApp: true});
+                                                navigateToMembers(`clicked_links.post_id:${postId}`);
                                             }}>
                                                 <div className='ml-0.5 size-[9px] rounded-full bg-chart-teal opacity-50'></div>
                                                 Clicked
@@ -377,7 +355,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     </div>
 
                                     {emailTrackOpensEnabled &&
-                                        <div className={`group/block hover:bg-muted/25 relative border-r-0 px-6 transition-all ${emailTrackClicksEnabled && 'md:border-r'}`}>
+                                        <div className={`group/block relative border-r-0 px-6 transition-all hover:bg-muted/25 ${emailTrackClicksEnabled && 'md:border-r'}`}>
                                             <BlockTooltip
                                                 avgValue={formatPercentage(averageStats.openedRate)}
                                                 dataColor='var(--chart-blue)'
@@ -399,7 +377,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     }
 
                                     {emailTrackClicksEnabled &&
-                                        <div className='group/block hover:bg-muted/25 relative px-6 transition-all'>
+                                        <div className='group/block relative px-6 transition-all hover:bg-muted/25'>
                                             <BlockTooltip
                                                 avgValue={formatPercentage(averageStats.clickedRate)}
                                                 dataColor='var(--chart-teal)'

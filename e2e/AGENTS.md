@@ -24,7 +24,9 @@ PRESERVE_ENV=true yarn test                     # Debug failed tests (keeps cont
 
 ## Dev Environment Mode (Recommended)
 
-When `yarn dev` is running, e2e tests automatically use a more efficient execution mode:
+When `GHOST_E2E_MODE` is unset, the e2e shell entrypoints auto-select `dev` only if the local admin dev server is reachable. Otherwise they fall back to `build`.
+
+When `yarn dev` is running, e2e tests use dev mode:
 
 ```bash
 # Terminal 1: Start dev environment
@@ -109,15 +111,21 @@ const post = await postFactory.create({userId: user.id});
 ## Best Practices
 
 ### DO ✅
-- Each test gets fresh Ghost instance (automatic isolation)
+- Use `usePerTestIsolation()` from `@/helpers/playwright/isolation` if a file needs per-test isolation
+- Treat `config` and `labs` as environment-identity inputs: changing them should be an intentional part of test setup
+- Use `resetEnvironment()` only in `beforeEach` hooks when you need a forced recycle inside per-file mode
+- Keep `stripeEnabled` tests in per-test mode; the fixture forces this automatically
 - Use factories for all test data
 - Use Playwright's auto-waiting
 - Run tests multiple times to ensure stability
 - Use `test.only()` for debugging single tests
 
 ### DON'T ❌
+- Use `test.describe.parallel(...)` or `test.describe.serial(...)` in e2e tests
+- Use nested `test.describe.configure({mode: ...})` (mode toggles are root-level only)
+- Call `resetEnvironment()` after resolving `baseURL`, `page`, `pageWithAuthenticatedUser`, or `ghostAccountOwner`
 - Hard-coded waits (`waitForTimeout`)
-- networkidle in waits** (`networkidle`) 
+- networkidle in waits (`networkidle`)
 - Test dependencies (Test B needs Test A)
 - Direct database manipulation
 - Multiple scenarios in one test

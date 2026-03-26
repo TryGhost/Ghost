@@ -2,7 +2,7 @@ import {HttpClient as APIRequest} from '@/data-factory';
 
 export interface Setting {
     key: string;
-    value: string | boolean | null;
+    value: string | number | boolean | string[] | null;
 }
 
 export interface SettingsResponse {
@@ -11,6 +11,7 @@ export interface SettingsResponse {
 
 export type CommentsEnabled = 'all' | 'paid' | 'off';
 export type MembersSignupAccess = 'all' | 'invite' | 'paid' | 'none';
+export type PortalPlan = 'free' | 'monthly' | 'yearly';
 
 export class SettingsService {
     private readonly request: APIRequest;
@@ -56,6 +57,18 @@ export class SettingsService {
 
     async setMembersSignupAccess(value: MembersSignupAccess) {
         return await this.updateSettings([{key: 'members_signup_access', value}]);
+    }
+
+    async setPortalPlans(value: PortalPlan[]) {
+        return await this.updateSettings([{key: 'portal_plans', value}]);
+    }
+
+    async setDonationsSuggestedAmount(value: number) {
+        return await this.updateSettings([{key: 'donations_suggested_amount', value: value.toString()}]);
+    }
+
+    async setDonationsCurrency(value: string) {
+        return await this.updateSettings([{key: 'donations_currency', value}]);
     }
 
     /**

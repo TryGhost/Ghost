@@ -2,55 +2,54 @@ import MembersActions from './components/members-actions';
 import MembersContent from './components/members-content';
 import MembersFilters from './components/members-filters';
 import MembersHeader from './components/members-header';
+import MembersHeaderSearch from './components/members-header-search';
 import MembersLayout from './components/members-layout';
 import MembersList from './components/members-list';
 import React, {useMemo} from 'react';
 import {Button, EmptyIndicator, Header, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
+import {buildMemberListSearchParams, getMemberActiveColumns} from './member-query-params';
+import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
+import {getSiteTimezone} from '@src/utils/get-site-timezone';
+import {shouldDelayMembersDateFilterHydration, useMembersFilterState} from './hooks/use-members-filter-state';
+import {useActiveMemberView, useMemberViews} from './hooks/use-member-views';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
-import {useMembersFilterState} from './hooks/use-members-filter-state';
+import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
+import {useSearchParams} from 'react-router';
 
-// Filters that restrict bulk delete
-const BULK_DELETE_RESTRICTED_FILTERS = [
-    'subscriptions.plan_interval',
-    'subscriptions.status',
-    'subscriptions.start_date',
-    'subscriptions.current_period_end',
-    'conversion',
-    'offer_redemptions'
-];
-
-const Members: React.FC = () => {
-    const {filters, nql, setFilters, isFiltered, clearFilters} = useMembersFilterState();
+const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
+    const {filters, nql, search, setFilters, setSearch, hasFilterOrSearch, clearAll} = useMembersFilterState(timezone);
     const {data: configData} = useBrowseConfig();
+    const savedViews = useMemberViews();
+    const activeView = useActiveMemberView(savedViews, nql);
 
     // Check if email analytics is enabled
     const emailAnalyticsEnabled = configData?.config?.emailAnalytics === true;
 
-    // Check if bulk delete is permitted (not allowed if subscription filters are active)
-    const canBulkDelete = useMemo(() => {
-        return !filters.some(f => BULK_DELETE_RESTRICTED_FILTERS.includes(f.field));
+    // Extract active columns from filters (max 2)
+    const activeColumns = useMemo(() => {
+        return getMemberActiveColumns(filters);
     }, [filters]);
 
+    // Check if bulk delete is permitted (not allowed if subscription filters are active)
+    const canBulkDelete = useMemo(() => {
+        return canBulkDeleteMembers(filters, nql);
+    }, [filters, nql]);
+
     // Build search params for the API query, merging with defaults so we don't lose include/limit/order
-    const searchParams = useMemo((): Record<string, string> | undefined => {
-        if (!nql) {
-            return undefined;
-        }
-        return {
-            include: 'labels,tiers',
-            limit: '50',
-            order: 'created_at desc',
-            filter: nql
-        };
-    }, [nql]);
+    const searchParams = useMemo(() => {
+        return buildMemberListSearchParams({
+            filters,
+            nql,
+            search
+        });
+    }, [filters, nql, search]);
 
     const {
         data,
         isError,
         isFetching,
         isFetchingNextPage,
-        isRefetching,
         refetch,
         fetchNextPage,
         hasNextPage
@@ -59,8 +58,10 @@ const Members: React.FC = () => {
         keepPreviousData: true
     });
 
-    // If we are fetching members, but not fetching the next page and not refetching, we should show the loading indicator
-    const shouldShowLoading = isFetching && !isFetchingNextPage && !isRefetching;
+    const shouldShowLoading = shouldShowMembersLoading({
+        isFetching,
+        isFetchingNextPage
+    });
 
     const totalMembers = data?.meta?.pagination?.total ?? 0;
     const hasFilters = filters.length > 0;
@@ -80,19 +81,27 @@ const Members: React.FC = () => {
             >
                 {/* Actions - always inline in the actions area */}
                 <Header.Actions>
-                    <Header.ActionGroup>
+                    <Header.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
+                        <MembersHeaderSearch
+                            search={search}
+                            onSearchChange={setSearch}
+                        />
                         {/* When no filters, show filter button inline with other actions */}
                         {!hasFilters && (
                             <MembersFilters
+                                activeView={activeView}
                                 filters={filters}
+                                nql={nql}
+                                savedViews={savedViews}
                                 onFiltersChange={setFilters}
                             />
                         )}
                         <MembersActions
                             canBulkDelete={canBulkDelete}
-                            isFiltered={isFiltered}
+                            hasFilterOrSearch={hasFilterOrSearch}
                             memberCount={totalMembers}
                             nql={nql}
+                            search={search}
                             onImportComplete={() => {
                                 void refetch();
                             }}
@@ -104,7 +113,10 @@ const Members: React.FC = () => {
                 {hasFilters && (
                     <div className={filtersClassName}>
                         <MembersFilters
+                            activeView={activeView}
                             filters={filters}
+                            nql={nql}
+                            savedViews={savedViews}
                             onFiltersChange={setFilters}
                         />
                     </div>
@@ -129,15 +141,15 @@ const Members: React.FC = () => {
                     </div>
                 ) : !data?.members.length ? (
                     <div className="flex h-full flex-col items-center justify-center">
-                        {isFiltered ? (
+                        {hasFilterOrSearch ? (
                             <>
-                                <EmptyIndicator title="No members match the current filter">
+                                <EmptyIndicator title="No matching members found.">
                                     <LucideIcon.Users />
                                 </EmptyIndicator>
                                 <Button
                                     className="mt-4"
                                     variant="outline"
-                                    onClick={() => clearFilters({replace: false})}
+                                    onClick={() => clearAll({replace: false})}
                                 >
                                     Show all members
                                 </Button>
@@ -150,18 +162,47 @@ const Members: React.FC = () => {
                     </div>
                 ) : (
                     <MembersList
+                        activeColumns={activeColumns}
                         fetchNextPage={fetchNextPage}
                         hasNextPage={hasNextPage}
                         isFetchingNextPage={isFetchingNextPage}
                         isLoading={isFetching && !isFetchingNextPage}
                         items={data.members}
                         showEmailOpenRate={emailAnalyticsEnabled}
+                        timezone={timezone}
                         totalItems={totalMembers}
                     />
                 )}
             </MembersContent>
         </MembersLayout>
     );
+};
+
+const Members: React.FC = () => {
+    const [searchParams] = useSearchParams();
+    const {data: settingsData, isLoading: isSettingsLoading} = useBrowseSettings({});
+    const filterParam = searchParams.get('filter') ?? undefined;
+    const shouldDelayHydration = shouldDelayMembersDateFilterHydration(filterParam, Boolean(settingsData), isSettingsLoading);
+
+    if (shouldDelayHydration) {
+        return (
+            <MembersLayout>
+                <MembersHeader
+                    isLoading={true}
+                    totalMembers={0}
+                />
+                <MembersContent>
+                    <div className="flex h-full items-center justify-center">
+                        <LoadingIndicator size="lg" />
+                    </div>
+                </MembersContent>
+            </MembersLayout>
+        );
+    }
+
+    const timezone = getSiteTimezone(settingsData?.settings ?? []);
+
+    return <MembersPage timezone={timezone} />;
 };
 
 export default Members;

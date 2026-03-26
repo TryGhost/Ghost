@@ -31,7 +31,6 @@ Object {
       "transistor": true,
       "urlCache": true,
       "verificationFlow": true,
-      "welcomeEmailEditor": true,
       "welcomeEmailsDesignCustomization": true,
     },
     "mail": "",

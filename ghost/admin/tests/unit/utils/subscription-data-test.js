@@ -462,8 +462,8 @@ describe('Unit: Util: subscription-data', function () {
             const data = getSubscriptionData(sub);
 
             expect(data.hasActiveDiscount).to.be.true;
-            expect(data.discountedPrice).to.deep.equal({currencySymbol: '$', nonDecimalAmount: 25});
-            expect(data.originalPrice).to.deep.equal({currencySymbol: '$', nonDecimalAmount: 50});
+            expect(data.discountedPrice).to.deep.equal({currencySymbol: '$', nonDecimalAmount: 25, amount: 2500});
+            expect(data.originalPrice).to.deep.equal({currencySymbol: '$', nonDecimalAmount: 50, amount: 5000});
         });
 
         it('does not set hasActiveDiscount when no discount', function () {
@@ -505,8 +505,9 @@ describe('Unit: Util: subscription-data', function () {
             },
             {
                 name: 'retention + percent + once',
-                offer: {redemption_type: 'retention', type: 'percent', amount: 50, duration: 'once'},
-                expected: {label: 'Retention offer', detail: '50% off'}
+                offer: {id: 'offer_once_1', redemption_type: 'retention', type: 'percent', amount: 50, duration: 'once'},
+                sub: {next_payment: {discount: {offer_id: 'offer_once_1', end: '2026-02-17T00:00:00.000Z'}}},
+                expected: {label: 'Retention offer', detail: '50% off until Feb 2026'}
             },
             {
                 name: 'retention + percent + repeating (no discount end)',
@@ -596,8 +597,8 @@ describe('Unit: Util: subscription-data', function () {
                 }
             });
             expect(result).to.deep.equal({
-                discountedPrice: {currencySymbol: '$', nonDecimalAmount: 25},
-                originalPrice: {currencySymbol: '$', nonDecimalAmount: 50}
+                discountedPrice: {currencySymbol: '$', nonDecimalAmount: 25, amount: 2500},
+                originalPrice: {currencySymbol: '$', nonDecimalAmount: 50, amount: 5000}
             });
         });
 
@@ -612,8 +613,8 @@ describe('Unit: Util: subscription-data', function () {
                 }
             });
             expect(result).to.deep.equal({
-                discountedPrice: {currencySymbol: '€', nonDecimalAmount: 70},
-                originalPrice: {currencySymbol: '€', nonDecimalAmount: 100}
+                discountedPrice: {currencySymbol: '€', nonDecimalAmount: 70, amount: 7000},
+                originalPrice: {currencySymbol: '€', nonDecimalAmount: 100, amount: 10000}
             });
         });
     });

@@ -1,12 +1,13 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable no-shadow */
 
 const logging = require('@tryghost/logging');
 const fs = require('fs').promises;
 const path = require('path');
 const clsx = require('clsx');
-const {isUnsplashImage} = require('@tryghost/kg-default-cards/lib/utils');
-const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
+function isUnsplashImage(url) {
+    return /images\.unsplash\.com/.test(url);
+}
+const {textColorForBackgroundColor} = require('@tryghost/color-utils');
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const EmailAddressParser = require('../email-address/email-address-parser');
@@ -16,7 +17,7 @@ const crypto = require('crypto');
 
 const DEFAULT_LOCALE = 'en-gb';
 const DEFAULT_ACCENT_COLOR = '#15212A';
-const VALID_HEX_REGEX = /#([0-9a-f]{3}){1,2}$/i;
+const VALID_HEX_REGEX = /^#([0-9a-f]{3}){1,2}$/i;
 const CONTENT_IMAGES_PATH_WITHOUT_SIZE_REGEX = /\/content\/images\/(?!size\/)/;
 
 // Wrapper function so that i18next-parser can find these strings
@@ -149,7 +150,7 @@ class EmailRenderer {
      * @param {object} dependencies.settingsCache
      * @param {{getNoReplyAddress(): string, getMembersSupportAddress(): string, getMembersValidationKey(): string, createUnsubscribeUrl(uuid: string, options: object): string}} dependencies.settingsHelpers
      * @param {object} dependencies.renderers
-     * @param {{render(object, options): string}} dependencies.renderers.lexical
+     * @param {{render(object, options): Promise<string>}} dependencies.renderers.lexical
      * @param {{render(object, options): string}} dependencies.renderers.mobiledoc
      * @param {{getCachedImageSizeFromUrl(url: string): Promise<{url: string, width: number, height: number} | null>}} dependencies.imageSize
      * @param {{urlFor(type: string, optionsOrAbsolute, absolute): string, isSiteUrl(url, context): boolean}} dependencies.urlUtils
@@ -591,10 +592,8 @@ class EmailRenderer {
 
     /**
      * createManageAccountUrl
-     *
-     * @param {string} [uuid] member uuid
      */
-    createManageAccountUrl(uuid) {
+    createManageAccountUrl() {
         const siteUrl = this.#urlUtils.urlFor('home', true);
         const url = new URL(siteUrl);
         url.hash = '#/portal/account';
@@ -705,8 +704,8 @@ class EmailRenderer {
             },
             {
                 id: 'manage_account_url',
-                getValue: (member) => {
-                    return this.createManageAccountUrl(member.uuid);
+                getValue: () => {
+                    return this.createManageAccountUrl();
                 }
             },
             {
@@ -860,16 +859,20 @@ class EmailRenderer {
         const emailTemplates = path.join(__dirname, 'email-templates');
 
         const [
+            baseStylesSource,
             cardStylesSource,
             contentStylesSource,
+            emailWrapperSource,
             feedbackButtonPartial,
             htmlTemplateSource,
             latestPostsPartial,
             paywallPartial,
             stylesPartialSource
         ] = await Promise.all([
+            fs.readFile(path.join(emailPartials, 'base-styles.hbs'), 'utf8'),
             fs.readFile(path.join(emailPartials, 'card-styles.hbs'), 'utf8'),
             fs.readFile(path.join(emailPartials, 'content-styles.hbs'), 'utf8'),
+            fs.readFile(path.join(emailPartials, 'email-wrapper.hbs'), 'utf8'),
             fs.readFile(path.join(emailTemplates, 'partials', 'feedback-button.hbs'), 'utf8'),
             fs.readFile(path.join(emailTemplates, 'template.hbs'), 'utf8'),
             fs.readFile(path.join(emailTemplates, 'partials', 'latest-posts.hbs'), 'utf8'),
@@ -877,8 +880,10 @@ class EmailRenderer {
             fs.readFile(path.join(emailTemplates, 'partials', 'styles.hbs'), 'utf8')
         ]);
 
+        handlebars.registerPartial('baseStyles', baseStylesSource);
         handlebars.registerPartial('cardStyles', cardStylesSource);
         handlebars.registerPartial('contentStyles', contentStylesSource);
+        handlebars.registerPartial('emailWrapper', emailWrapperSource);
         handlebars.registerPartial('feedbackButton', feedbackButtonPartial);
         handlebars.registerPartial('latestPosts', latestPostsPartial);
         handlebars.registerPartial('paywall', paywallPartial);
@@ -1260,6 +1265,7 @@ class EmailRenderer {
         const linkStyle = newsletter.get('link_style') || 'underline';
 
         const data = {
+            emailTitle: post.get('title'),
             site: {
                 title: this.#settingsCache.get('title'),
                 url: this.#urlUtils.urlFor('home', true),

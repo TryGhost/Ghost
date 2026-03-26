@@ -179,11 +179,13 @@ export function getDiscountPrice(sub) {
     return {
         discountedPrice: {
             currencySymbol: getSymbol(sub.next_payment.currency),
-            nonDecimalAmount: getNonDecimal(sub.next_payment.amount)
+            nonDecimalAmount: getNonDecimal(sub.next_payment.amount),
+            amount: sub.next_payment.amount
         },
         originalPrice: {
             currencySymbol: getSymbol(sub.next_payment.currency),
-            nonDecimalAmount: getNonDecimal(sub.next_payment.original_amount)
+            nonDecimalAmount: getNonDecimal(sub.next_payment.original_amount),
+            amount: sub.next_payment.original_amount
         }
     };
 }

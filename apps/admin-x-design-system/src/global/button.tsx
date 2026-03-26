@@ -58,7 +58,7 @@ const Button: React.FC<ButtonProps> = React.forwardRef(({
 
     if (!unstyled) {
         className = clsx(
-            'inline-flex items-center justify-center whitespace-nowrap rounded text-sm transition',
+            'inline-flex items-center justify-center rounded text-sm whitespace-nowrap transition',
             ((link && color !== 'clear' && color !== 'black') || (!link && color !== 'clear')) ? 'font-bold' : 'font-semibold',
             !link ? `${size === 'sm' ? 'h-7' : 'h-[34px]'}` : '',
             !link ? `${size === 'sm' || label && icon ? 'px-3' : 'px-4'}` : '',

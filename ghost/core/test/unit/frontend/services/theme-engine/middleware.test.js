@@ -9,6 +9,7 @@ const settingsCache = require('../../../../../core/shared/settings-cache');
 const customThemeSettingsCache = require('../../../../../core/shared/custom-theme-settings-cache');
 const config = require('../../../../../core/shared/config');
 const labs = require('../../../../../core/shared/labs');
+const urlUtils = require('../../../../../core/shared/url-utils');
 
 const sandbox = sinon.createSandbox();
 
@@ -202,6 +203,51 @@ describe('Themes middleware', function () {
 
                     assertExists(data.site.signup_url);
                     assert.equal(data.site.signup_url, `https://feedly.com/i/subscription/feed/${encodeURIComponent(config.get('url') + '/rss/')}`);
+
+                    done();
+                } catch (error) {
+                    done(error);
+                }
+            });
+        });
+    });
+
+    describe('updateLocalTemplateOptions', function () {
+        it('includes admin_url ending with /ghost/ in site data', function (done) {
+            executeMiddleware(middleware, req, res, function next(err) {
+                try {
+                    assert.equal(err, undefined);
+
+                    sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
+                    const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
+                    const data = templateOptions.data;
+
+                    assert(data.site.admin_url, 'admin_url should be set in site data');
+                    assert.equal(typeof data.site.admin_url, 'string');
+                    assert.ok(data.site.admin_url.endsWith('/ghost/'),
+                        `admin_url should end with /ghost/ but got: ${data.site.admin_url}`);
+
+                    done();
+                } catch (error) {
+                    done(error);
+                }
+            });
+        });
+
+        it('includes admin_url ending with /ghost/ when admin is on a separate domain', function (done) {
+            sandbox.stub(urlUtils, 'getAdminUrl').returns('https://admin.example.com/');
+
+            executeMiddleware(middleware, req, res, function next(err) {
+                try {
+                    assert.equal(err, undefined);
+
+                    sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
+                    const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
+                    const data = templateOptions.data;
+
+                    assert.ok(data.site.admin_url.endsWith('/ghost/'),
+                        `admin_url should end with /ghost/ but got: ${data.site.admin_url}`);
+                    assert.equal(data.site.admin_url, 'https://admin.example.com/ghost/');
 
                     done();
                 } catch (error) {
