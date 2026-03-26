@@ -1,6 +1,7 @@
 export * from './login-page';
 export * from './admin-page';
 export * from './password-reset-page';
+export * from './invite-signup-page';
 export * from './members';
 export * from './login-verify-page';
 export * from './settings';
