@@ -80,9 +80,9 @@ function MembersList({
     };
 
     return (
-        <div ref={parentRef} className="-mx-8 -mb-8 h-[calc(100%+32px)] max-w-[calc(100vw-300px)] overflow-auto">
+        <div ref={parentRef} className="h-[calc(100%+32px)] w-full overflow-auto lg:-mx-8 lg:-mb-8 lg:w-auto lg:max-w-[calc(100vw-300px)]">
             <Table
-                className="ml-8 max-w-[calc(100vw-300px-64px)] border-collapse lg:table-fixed"
+                className="w-full border-collapse lg:ml-8 lg:w-auto lg:max-w-[calc(100vw-300px-64px)] lg:table-fixed"
                 data-testid="members-list"
             >
                 <colgroup className="hidden lg:table-column-group">
