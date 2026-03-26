@@ -2,13 +2,11 @@ import {useState} from 'react';
 
 const getHostWindow = () => {
     try {
-        if (window.parent && window.parent !== window) {
-            // Accessing parent.location can throw when cross-origin.
-            void window.parent.location.href;
+        if (window.parent && window.parent !== window && window.parent.location.href) {
             return window.parent;
         }
-    } catch (_) {
-        // Ignore and use the iframe context.
+    } catch {
+        // Cross-origin frame detected; fall back to iframe context
     }
 
     return window;
@@ -31,7 +29,8 @@ const createEmailShareLink = ({shareTitle, shareUrl}) => {
         params.push(`body=${encodeURIComponent(body)}`);
     }
 
-    return `mailto:${params.length ? `?${params.join('&')}` : ''}`;
+    const query = params.length ? `?${params.join('&')}` : '';
+    return `mailto:${query}`;
 };
 
 const createLinkedinShareLink = ({shareTitle, shareUrl}) => {
@@ -63,7 +62,7 @@ const gatherShareData = () => {
     if (!shareSiteName) {
         try {
             shareSiteName = new URL(shareUrl).hostname.replace(/^www\./, '');
-        } catch (_) {
+        } catch {
             shareSiteName = '';
         }
     }
