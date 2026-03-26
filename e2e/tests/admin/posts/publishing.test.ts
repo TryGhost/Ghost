@@ -241,12 +241,10 @@ test.describe('Ghost Admin - Publishing', () => {
         });
 
         test('delete a post with unsaved changes', async ({page}) => {
-            const postsPage = new PostsPage(page);
-            await postsPage.goto();
-            await postsPage.newPostButton.click();
+            const editor = await createNewPostDraft(page, {title: 'Delete a post test', body: 'This is the content'});
 
-            const editor = new PostEditorPage(page);
-            await editor.createDraft({title: 'Delete a post test', body: 'This is the content'});
+            await editor.editor.click();
+            await page.keyboard.type(' with unsaved edits');
 
             await editor.openSettingsMenu();
             await editor.settingsMenu.deletePost();
