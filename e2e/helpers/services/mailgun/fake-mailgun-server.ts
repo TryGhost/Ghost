@@ -117,7 +117,7 @@ export class FakeMailgunServer extends FakeServer {
                 }
             }
 
-            const messageId = `<${Date.now()}.${Math.random().toString(36).slice(2)}@${domain}>`;
+            const messageId = `<${Date.now()}.${crypto.randomUUID()}@${domain}>`;
 
             const message: SentMessage = {
                 id: messageId,
@@ -220,7 +220,7 @@ export class FakeMailgunServer extends FakeServer {
     }
 
     private parseEmailAddress(address: string): MailPitAddress {
-        const match = address.match(/^(.+?)\s*<(.+?)>$/);
+        const match = address.match(/^([^<]+)<([^>]+)>$/);
         if (match) {
             return {Name: match[1].trim(), Email: match[2].trim()};
         }
