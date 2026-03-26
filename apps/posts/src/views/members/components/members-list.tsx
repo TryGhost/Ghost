@@ -83,32 +83,42 @@ function MembersList({
     };
 
     return (
-        <div ref={parentRef} className="overflow-hidden">
+        <div ref={parentRef} className="h-[calc(100%+32px)] w-full overflow-auto lg:-mx-8 lg:-mb-8 lg:w-auto lg:max-w-[calc(100vw-300px)]">
             <Table
-                className="w-full border-collapse lg:table-fixed"
+                className="w-full border-collapse lg:ml-8 lg:w-auto lg:max-w-[calc(100vw-300px-64px)] lg:table-fixed"
                 data-testid="members-list"
             >
+                <colgroup className="hidden lg:table-column-group">
+                    <col className="w-full min-w-[360px]" />
+                    <col className="w-[50%] min-w-[160px]" />
+                    {showEmailOpenRate && <col className="w-[50%] min-w-[110px]" />}
+                    <col className="w-[50%] min-w-[150px]" />
+                    <col className="w-[50%] min-w-[120px]" />
+                    {activeColumns.map(col => (
+                        <col key={col.key} className="w-[50%] min-w-[250px]" />
+                    ))}
+                </colgroup>
                 <TableHeader className="sticky top-0 z-10 hidden border-b bg-background lg:table-header-group">
                     <TableRow>
-                        <TableHead className="px-4 py-3 lg:w-[42%] lg:min-w-[360px]">
+                        <TableHead className="px-4 py-3">
                             Member
                         </TableHead>
-                        <TableHead className="px-4 py-3 lg:w-[16%] lg:min-w-[160px]">
+                        <TableHead className="px-4 py-3">
                             Status
                         </TableHead>
                         {showEmailOpenRate && (
-                            <TableHead className="px-4 py-3 lg:w-[12%] lg:min-w-[110px]">
+                            <TableHead className="px-4 py-3">
                                 Open rate
                             </TableHead>
                         )}
-                        <TableHead className="px-4 py-3 lg:w-[16%] lg:min-w-[150px]">
+                        <TableHead className="px-4 py-3">
                             Location
                         </TableHead>
-                        <TableHead className="px-4 py-3 lg:w-[14%] lg:min-w-[120px]">
+                        <TableHead className="px-4 py-3">
                             Created
                         </TableHead>
                         {activeColumns.map(col => (
-                            <TableHead key={col.key} className="px-4 py-3 lg:w-[250px] lg:min-w-[250px]">
+                            <TableHead key={col.key} className="px-4 py-3">
                                 {col.label}
                             </TableHead>
                         ))}

@@ -146,14 +146,53 @@ export class MembersPage extends AdminPage {
         });
     }
 
+    async getScrollParentScrollTop(): Promise<number> {
+        return await this.membersList.evaluate((element) => {
+            const getScrollParent = (node: Node | null): HTMLElement | null => {
+                const isElement = node instanceof HTMLElement;
+                const overflowY = isElement && window.getComputedStyle(node).overflowY;
+                const isScrollable = overflowY !== 'visible' && overflowY !== 'hidden';
+
+                if (!node) {
+                    return null;
+                } else if (isScrollable &&
+                    (node as HTMLElement).scrollHeight >= (node as HTMLElement).clientHeight) {
+                    return node as HTMLElement;
+                }
+
+                return getScrollParent(node.parentNode) || document.body;
+            };
+
+            return getScrollParent(element)?.scrollTop || 0;
+        });
+    }
+
+    async scrollScrollParentBy(deltaY: number): Promise<void> {
+        await this.membersList.evaluate((element, pixels) => {
+            const getScrollParent = (node: Node | null): HTMLElement | null => {
+                const isElement = node instanceof HTMLElement;
+                const overflowY = isElement && window.getComputedStyle(node).overflowY;
+                const isScrollable = overflowY !== 'visible' && overflowY !== 'hidden';
+
+                if (!node) {
+                    return null;
+                } else if (isScrollable &&
+                    (node as HTMLElement).scrollHeight >= (node as HTMLElement).clientHeight) {
+                    return node as HTMLElement;
+                }
+
+                return getScrollParent(node.parentNode) || document.body;
+            };
+
+            getScrollParent(element)?.scrollBy(0, pixels);
+        }, deltaY);
+    }
+
     async scrollUntilMaxRenderedIndexAtLeast(targetIndex: number): Promise<number> {
         let maxRenderedIndex = await this.getMaxRenderedIndex();
-        const mainRegion = this.page.getByRole('main').first();
 
         for (let i = 0; i < 30 && maxRenderedIndex <= targetIndex; i += 1) {
-            await mainRegion.evaluate((element) => {
-                (element as HTMLElement).scrollBy(0, 4000);
-            });
+            await this.scrollScrollParentBy(4000);
             await this.page.waitForFunction((previousMaxIndex) => {
                 const rows = Array.from(document.querySelectorAll('[data-testid="members-list-item"]'));
 
