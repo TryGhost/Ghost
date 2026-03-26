@@ -26,6 +26,12 @@ async function createMemberForEmail(page: Page, email: string) {
     await memberFactory.create({email, name: 'Publishing member'});
 }
 
+async function publishWithType(editor: PostEditorPage, type: 'publish' | 'publish+send' | 'send') {
+    await editor.publishFlow.open();
+    await editor.publishFlow.selectPublishType(type);
+    await editor.publishFlow.confirm();
+}
+
 async function scheduleAsap(editor: PostEditorPage, publishType?: 'publish+send' | 'send') {
     await editor.publishFlow.open();
     if (publishType) {
@@ -44,9 +50,28 @@ async function verifyPostNotAccessible(page: Page, slug: string) {
     return postPage;
 }
 
+async function verifyPostAccessible(page: Page, slug: string, title: string) {
+    const postPage = new PostPage(page);
+    const response = await postPage.goto(slug);
+    expect(response?.status()).toBe(200);
+    await expect(postPage.postTitle).toHaveText(title);
+}
+
 async function waitForScheduledPost(page: Page) {
     // Ghost auto-corrects past dates to ~5 seconds from now, so we wait for the scheduler to fire
     await page.waitForTimeout(6000);
+}
+
+async function verifyScheduledPostPublishes(page: Page, slug: string, editorUrl: string, editor: PostEditorPage) {
+    await verifyPostNotAccessible(page, slug);
+    await waitForScheduledPost(page);
+
+    const postPage = new PostPage(page);
+    const response = await postPage.goto(slug);
+    expect(response?.status()).toBe(200);
+
+    await page.goto(editorUrl);
+    await expect(editor.postStatus).toContainText('Published');
 }
 
 test.describe('Ghost Admin - Publishing', () => {
@@ -54,40 +79,28 @@ test.describe('Ghost Admin - Publishing', () => {
         test('publish only - post is available on web', async ({page}) => {
             const editor = await createNewPostDraft(page, {title: 'Publish post only', body: 'This is my post body.'});
 
-            await editor.publishFlow.open();
-            await editor.publishFlow.selectPublishType('publish');
-            await editor.publishFlow.confirm();
+            await publishWithType(editor, 'publish');
             await editor.publishFlow.close();
 
             await expect(editor.postStatus).toContainText('Published');
 
-            const postPage = new PostPage(page);
-            const response = await postPage.goto('/publish-post-only/');
-            expect(response?.status()).toBe(200);
-            await expect(postPage.postTitle).toHaveText('Publish post only');
+            await verifyPostAccessible(page, '/publish-post-only/', 'Publish post only');
         });
 
         test('publish and email - post is published and sent', async ({page}) => {
             await createMemberForEmail(page, 'test+recipient1@example.com');
             const editor = await createNewPostDraft(page, {title: 'Publish and email post', body: 'This is my post body.'});
 
-            await editor.publishFlow.open();
-            await editor.publishFlow.selectPublishType('publish+send');
-            await editor.publishFlow.confirm();
+            await publishWithType(editor, 'publish+send');
 
-            const postPage = new PostPage(page);
-            const response = await postPage.goto('/publish-and-email-post/');
-            expect(response?.status()).toBe(200);
-            await expect(postPage.postTitle).toHaveText('Publish and email post');
+            await verifyPostAccessible(page, '/publish-and-email-post/', 'Publish and email post');
         });
 
         test('email only - post is not available on web', async ({page}) => {
             await createMemberForEmail(page, 'test+recipient2@example.com');
             const editor = await createNewPostDraft(page, {title: 'Email only post', body: 'This is my post body.'});
 
-            await editor.publishFlow.open();
-            await editor.publishFlow.selectPublishType('send');
-            await editor.publishFlow.confirm();
+            await publishWithType(editor, 'send');
 
             await verifyPostNotAccessible(page, '/email-only-post/');
         });
@@ -106,10 +119,7 @@ test.describe('Ghost Admin - Publishing', () => {
 
             await expect(pageEditor.postStatus).toContainText('Published');
 
-            const postPage = new PostPage(page);
-            const response = await postPage.goto('/published-page-test/');
-            expect(response?.status()).toBe(200);
-            await expect(postPage.postTitle).toHaveText('Published page test');
+            await verifyPostAccessible(page, '/published-page-test/', 'Published page test');
         });
 
         test('scheduled - page is published after schedule fires', async ({page}) => {
@@ -127,10 +137,7 @@ test.describe('Ghost Admin - Publishing', () => {
 
             await waitForScheduledPost(page);
 
-            const postPage = new PostPage(page);
-            const response = await postPage.goto('/scheduled-page-test/');
-            expect(response?.status()).toBe(200);
-            await expect(postPage.postTitle).toHaveText('Scheduled page test');
+            await verifyPostAccessible(page, '/scheduled-page-test/', 'Scheduled page test');
         });
     });
 
@@ -172,15 +179,7 @@ test.describe('Ghost Admin - Publishing', () => {
             const editorUrl = page.url();
 
             await scheduleAsap(editor);
-
-            const postPage = await verifyPostNotAccessible(page, '/scheduled-post-test/');
-            await waitForScheduledPost(page);
-
-            const response = await postPage.goto('/scheduled-post-test/');
-            expect(response?.status()).toBe(200);
-
-            await page.goto(editorUrl);
-            await expect(editor.postStatus).toContainText('Published');
+            await verifyScheduledPostPublishes(page, '/scheduled-post-test/', editorUrl, editor);
         });
 
         test('scheduled publish and email - post appears and is sent after schedule fires', async ({page}) => {
@@ -189,15 +188,7 @@ test.describe('Ghost Admin - Publishing', () => {
             const editorUrl = page.url();
 
             await scheduleAsap(editor, 'publish+send');
-
-            const postPage = await verifyPostNotAccessible(page, '/scheduled-publish-email-test/');
-            await waitForScheduledPost(page);
-
-            const response = await postPage.goto('/scheduled-publish-email-test/');
-            expect(response?.status()).toBe(200);
-
-            await page.goto(editorUrl);
-            await expect(editor.postStatus).toContainText('Published');
+            await verifyScheduledPostPublishes(page, '/scheduled-publish-email-test/', editorUrl, editor);
         });
 
         test('scheduled email only - post is sent but not published', async ({page}) => {
