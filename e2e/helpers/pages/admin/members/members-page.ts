@@ -106,6 +106,8 @@ class SettingsSection extends BasePage {
 
 export class MembersPage extends AdminPage {
     readonly newMemberButton: Locator;
+    readonly fetchMoreButton: Locator;
+    readonly membersList: Locator;
     readonly memberListItems: Locator;
     readonly emptyStateHeading: Locator;
 
@@ -123,6 +125,8 @@ export class MembersPage extends AdminPage {
         this.newMemberButton = page.getByRole('link', {name: 'New member'});
         this.exportMembersButton = page.getByTestId('export-members');
 
+        this.fetchMoreButton = page.getByRole('button', {name: 'Fetch more'});
+        this.membersList = page.getByTestId('members-list');
         this.memberListItems = page.getByTestId('members-list-item');
         this.emptyStateHeading = page.getByRole('heading', {name: 'Start building your audience'});
 
@@ -132,6 +136,32 @@ export class MembersPage extends AdminPage {
 
     async clickMemberByEmail(email: string): Promise<void> {
         await this.memberListItems.filter({hasText: email}).click();
+    }
+
+    async getMaxRenderedIndex(): Promise<number> {
+        return await this.memberListItems.evaluateAll((rows) => {
+            return rows.reduce((maxIndex, row) => {
+                return Math.max(maxIndex, Number(row.getAttribute('data-index') || '-1'));
+            }, -1);
+        });
+    }
+
+    async scrollUntilMaxRenderedIndexAtLeast(targetIndex: number): Promise<number> {
+        let maxRenderedIndex = await this.getMaxRenderedIndex();
+
+        for (let i = 0; i < 30 && maxRenderedIndex <= targetIndex; i += 1) {
+            await this.page.evaluate(() => {
+                document.querySelector('main')?.scrollBy(0, 4000);
+            });
+            await this.page.waitForFunction((previousMaxIndex) => {
+                const rows = Array.from(document.querySelectorAll('[data-testid="members-list-item"]'));
+
+                return rows.some(row => Number(row.getAttribute('data-index') || '-1') > previousMaxIndex);
+            }, maxRenderedIndex);
+            maxRenderedIndex = await this.getMaxRenderedIndex();
+        }
+
+        return maxRenderedIndex;
     }
 
     getMemberByName(name: string): Locator {

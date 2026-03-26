@@ -22,6 +22,43 @@ function createWrapper(initialEntry: string) {
 }
 
 describe('virtual-list-window', () => {
+    it('restores the unlocked window from the current history entry on remount', () => {
+        window.history.replaceState({
+            ghostVirtualListWindow: {
+                '/members-forward::?filter=members': 2000
+            }
+        }, '');
+
+        const wrapper = createWrapper('/members-forward?filter=members');
+        const {result, unmount} = renderHook(() => useVirtualListWindow(5000), {wrapper});
+
+        expect(result.current.visibleItemCount).toBe(2000);
+
+        unmount();
+
+        const remounted = renderHook(() => useVirtualListWindow(5000), {wrapper});
+
+        expect(remounted.result.current.visibleItemCount).toBe(2000);
+    });
+
+    it('writes the unlocked window to the current history entry when fetch more is used', () => {
+        window.history.replaceState({}, '');
+
+        const {result} = renderHook(() => useVirtualListWindow(5000), {
+            wrapper: createWrapper('/members-forward?filter=members')
+        });
+
+        act(() => {
+            result.current.fetchMore();
+        });
+
+        expect(window.history.state).toMatchObject({
+            ghostVirtualListWindow: {
+                '/members-forward::?filter=members': 2000
+            }
+        });
+    });
+
     it('caps the visible window at 1,000 rows by default', () => {
         expect(getVirtualListWindowState({
             totalItems: 1500,
