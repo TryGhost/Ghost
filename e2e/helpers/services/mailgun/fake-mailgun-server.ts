@@ -1,9 +1,6 @@
-import baseDebug from '@tryghost/debug';
 import busboy from 'busboy';
 import express from 'express';
-import http from 'http';
-
-const debug = baseDebug('e2e:fake-mailgun');
+import {FakeServer} from '@/helpers/services/fake-server';
 
 export interface SentMessage {
     id: string;
@@ -35,21 +32,13 @@ interface MailPitSendRequest {
     Headers?: Record<string, string>;
 }
 
-export class FakeMailgunServer {
-    private server: http.Server | null = null;
-    private readonly app = express();
-    private _port: number;
+export class FakeMailgunServer extends FakeServer {
     private readonly _messages: SentMessage[] = [];
     private readonly mailpitUrl: string;
 
     constructor(options: {port?: number; mailpitUrl?: string} = {}) {
-        this._port = options.port ?? 0;
+        super({port: options.port, debugNamespace: 'e2e:fake-mailgun'});
         this.mailpitUrl = options.mailpitUrl ?? 'http://localhost:8025';
-        this.setupRoutes();
-    }
-
-    get port(): number {
-        return this._port;
     }
 
     get messages(): SentMessage[] {
@@ -60,48 +49,13 @@ export class FakeMailgunServer {
         this._messages.length = 0;
     }
 
-    async start(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            this.server = this.app.listen(this._port, () => {
-                const address = this.server?.address();
-
-                if (!address || typeof address === 'string') {
-                    reject(new Error('Fake Mailgun server did not expose a TCP port'));
-                    return;
-                }
-
-                this._port = address.port;
-                resolve();
-            });
-            this.server.on('error', reject);
-        });
-    }
-
-    async stop(): Promise<void> {
-        return new Promise((resolve) => {
-            if (!this.server) {
-                resolve();
-                return;
-            }
-            this.server.close(() => {
-                this.server = null;
-                resolve();
-            });
-        });
-    }
-
-    private setupRoutes(): void {
-        this.app.use((req, _res, next) => {
-            debug(`${req.method} ${req.originalUrl}`);
-            next();
-        });
-
+    protected setupRoutes(): void {
         this.app.post('/v3/:domain/messages', (req, res) => {
             this.handleSendMessage(req, res);
         });
 
         this.app.delete('/v3/:domain/suppressions/:type/:email', (req, res) => {
-            debug(`Suppression removal: ${req.params.type}/${req.params.email}`);
+            this.debug(`Suppression removal: ${req.params.type}/${req.params.email}`);
             res.status(200).json({message: 'Suppression removed'});
         });
 
@@ -110,7 +64,7 @@ export class FakeMailgunServer {
         });
 
         this.app.use((req, res) => {
-            debug(`Unhandled route: ${req.method} ${req.originalUrl}`);
+            this.debug(`Unhandled route: ${req.method} ${req.originalUrl}`);
             res.status(200).json({message: 'OK'});
         });
     }
@@ -145,7 +99,7 @@ export class FakeMailgunServer {
                     recipientVariables = JSON.parse(rvField);
                 }
             } catch {
-                debug('Failed to parse recipient-variables');
+                this.debug('Failed to parse recipient-variables');
             }
 
             const headers: Record<string, string> = {};
@@ -181,10 +135,10 @@ export class FakeMailgunServer {
             };
 
             this._messages.push(message);
-            debug(`Stored message ${messageId} to ${toArray.length} recipient(s) in domain ${domain}`);
+            this.debug(`Stored message ${messageId} to ${toArray.length} recipient(s) in domain ${domain}`);
 
             this.forwardToMailPit(message).catch((err) => {
-                debug('Failed to forward to MailPit:', err);
+                this.debug('Failed to forward to MailPit:', err);
             });
 
             res.status(200).json({
@@ -194,7 +148,7 @@ export class FakeMailgunServer {
         });
 
         bb.on('error', (err: Error) => {
-            debug('Busboy parse error:', err);
+            this.debug('Busboy parse error:', err);
             res.status(400).json({message: 'Failed to parse request'});
         });
 
@@ -245,12 +199,12 @@ export class FakeMailgunServer {
 
                 if (!response.ok) {
                     const responseBody = await response.text();
-                    debug(`MailPit forward failed for ${recipientEmail}: ${response.status} ${responseBody}`);
+                    this.debug(`MailPit forward failed for ${recipientEmail}: ${response.status} ${responseBody}`);
                 } else {
-                    debug(`Forwarded email to MailPit for ${recipientEmail}`);
+                    this.debug(`Forwarded email to MailPit for ${recipientEmail}`);
                 }
             } catch (err) {
-                debug(`MailPit forward error for ${recipientEmail}:`, err);
+                this.debug(`MailPit forward error for ${recipientEmail}:`, err);
             }
         }
     }
