@@ -1299,6 +1299,9 @@ importers:
       mysql2:
         specifier: 3.18.1
         version: 3.18.1(@types/node@24.3.0)
+      stripe:
+        specifier: 8.222.0
+        version: 8.222.0
       ts-node:
         specifier: 10.9.2
         version: 10.9.2(@swc/core@1.13.5)(@types/node@24.3.0)(typescript@5.8.3)
@@ -45929,7 +45932,7 @@ snapshots:
 
   stripe@8.222.0:
     dependencies:
-      '@types/node': 24.3.0
+      '@types/node': 22.18.10
       qs: 6.15.0
 
   strnum@2.1.1: {}
