@@ -131,8 +131,9 @@ export class MemberDetailsPage extends AdminPage {
     async impersonate(): Promise<string> {
         await this.settingsSection.memberActionsButton.click();
         await this.settingsSection.impersonateButton.click();
-        await this.copyLinkButton.click();
-        return await this.page.evaluate(() => navigator.clipboard.readText());
+        await this.magicLinkInput.waitFor({state: 'visible'});
+        const url = await this.magicLinkInput.inputValue();
+        return url;
     }
 
     getActivityEventByText(text: string | RegExp): Locator {
