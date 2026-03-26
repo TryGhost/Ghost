@@ -1,40 +1,32 @@
-import baseDebug from '@tryghost/debug';
 import express from 'express';
-import http from 'http';
+import {FakeServer} from '@/helpers/services/fake-server';
 import {
     type RecordedStripeCheckoutSession,
+    type StripeCoupon,
     type StripeCustomer,
     type StripePaymentMethod,
     type StripePrice,
     type StripeProduct,
     type StripeSubscription,
     buildCheckoutSession,
+    buildCoupon,
     buildCustomer,
     buildPrice,
     buildProduct
 } from './builders';
 import {renderFakeCheckoutPage, renderFakeDonationCheckoutPage} from './fake-checkout-page-renderer';
 
-const debug = baseDebug('e2e:fake-stripe');
-
-export class FakeStripeServer {
-    private server: http.Server | null = null;
-    private readonly app = express();
-    private _port: number;
+export class FakeStripeServer extends FakeServer {
     private readonly products: Map<string, StripeProduct> = new Map();
     private readonly prices: Map<string, StripePrice> = new Map();
+    private readonly coupons: Map<string, StripeCoupon> = new Map();
     private readonly customers: Map<string, StripeCustomer> = new Map();
     private readonly subscriptions: Map<string, StripeSubscription> = new Map();
     private readonly paymentMethods: Map<string, StripePaymentMethod> = new Map();
     private readonly checkoutSessions: Map<string, RecordedStripeCheckoutSession> = new Map();
 
     constructor(port = 0) {
-        this._port = port;
-        this.setupRoutes();
-    }
-
-    get port(): number {
-        return this._port;
+        super({port, debugNamespace: 'e2e:fake-stripe'});
     }
 
     upsertProduct(product: StripeProduct): void {
@@ -43,6 +35,10 @@ export class FakeStripeServer {
 
     upsertPrice(price: StripePrice): void {
         this.prices.set(price.id, price);
+    }
+
+    upsertCoupon(coupon: StripeCoupon): void {
+        this.coupons.set(coupon.id, coupon);
     }
 
     upsertCustomer(customer: StripeCustomer): void {
@@ -69,6 +65,10 @@ export class FakeStripeServer {
         return Array.from(this.prices.values());
     }
 
+    getCoupons(): StripeCoupon[] {
+        return Array.from(this.coupons.values());
+    }
+
     getCustomers(): StripeCustomer[] {
         return Array.from(this.customers.values());
     }
@@ -81,56 +81,21 @@ export class FakeStripeServer {
         return Array.from(this.checkoutSessions.values());
     }
 
-    async start(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            this.server = this.app.listen(this._port, () => {
-                const address = this.server?.address();
-
-                if (!address || typeof address === 'string') {
-                    reject(new Error('Fake Stripe server did not expose a TCP port'));
-                    return;
-                }
-
-                this._port = address.port;
-                resolve();
-            });
-            this.server.on('error', reject);
-        });
-    }
-
-    async stop(): Promise<void> {
-        return new Promise((resolve) => {
-            if (!this.server) {
-                resolve();
-                return;
-            }
-            this.server.close(() => {
-                this.server = null;
-                resolve();
-            });
-        });
-    }
-
-    private setupRoutes(): void {
+    protected setupRoutes(): void {
         this.app.use(express.json());
         this.app.use(express.urlencoded({extended: true}));
-
-        this.app.use((req, _res, next) => {
-            debug(`${req.method} ${req.originalUrl}`);
-            next();
-        });
 
         this.app.get('/v1/products/:id', (req, res) => {
             const productId = req.params.id;
             const product = this.products.get(productId);
 
             if (!product) {
-                debug(`Product not found: ${productId}`);
+                this.debug(`Product not found: ${productId}`);
                 res.status(404).json({error: {type: 'invalid_request_error', message: 'No such product'}});
                 return;
             }
 
-            debug(`Returning product: ${productId}`);
+            this.debug(`Returning product: ${productId}`);
             res.status(200).json(product);
         });
 
@@ -141,7 +106,7 @@ export class FakeStripeServer {
             });
 
             this.upsertProduct(product);
-            debug(`Created product: ${product.id} (${product.name})`);
+            this.debug(`Created product: ${product.id} (${product.name})`);
             res.status(200).json(product);
         });
 
@@ -150,12 +115,12 @@ export class FakeStripeServer {
             const price = this.prices.get(priceId);
 
             if (!price) {
-                debug(`Price not found: ${priceId}`);
+                this.debug(`Price not found: ${priceId}`);
                 res.status(404).json({error: {type: 'invalid_request_error', message: 'No such price'}});
                 return;
             }
 
-            debug(`Returning price: ${priceId}`);
+            this.debug(`Returning price: ${priceId}`);
             res.status(200).json(price);
         });
 
@@ -165,7 +130,7 @@ export class FakeStripeServer {
             const customUnitAmount = this.parseCustomUnitAmount(req.body.custom_unit_amount);
 
             if (requestedProductId && !this.products.has(requestedProductId)) {
-                debug(`Cannot create price for missing product: ${requestedProductId}`);
+                this.debug(`Cannot create price for missing product: ${requestedProductId}`);
                 res.status(400).json({error: {type: 'invalid_request_error', message: 'No such product'}});
                 return;
             }
@@ -189,7 +154,7 @@ export class FakeStripeServer {
             });
 
             this.upsertPrice(price);
-            debug(`Created price: ${price.id} (${price.nickname ?? 'unnamed'})`);
+            this.debug(`Created price: ${price.id} (${price.nickname ?? 'unnamed'})`);
             res.status(200).json(price);
         });
 
@@ -198,7 +163,7 @@ export class FakeStripeServer {
             const customer = this.customers.get(customerId);
 
             if (!customer) {
-                debug(`Customer not found: ${customerId}`);
+                this.debug(`Customer not found: ${customerId}`);
                 res.status(404).json({error: {type: 'invalid_request_error', message: 'No such customer'}});
                 return;
             }
@@ -220,7 +185,7 @@ export class FakeStripeServer {
                 }
             };
 
-            debug(`Returning customer: ${customerId} with ${customerSubscriptions.length} subscription(s)`);
+            this.debug(`Returning customer: ${customerId} with ${customerSubscriptions.length} subscription(s)`);
             res.status(200).json(response);
         });
 
@@ -231,8 +196,89 @@ export class FakeStripeServer {
             });
 
             this.upsertCustomer(customer);
-            debug(`Created customer: ${customer.id} (${customer.email})`);
+            this.debug(`Created customer: ${customer.id} (${customer.email})`);
             res.status(200).json(customer);
+        });
+
+        this.app.post('/v1/coupons', (req, res) => {
+            const badRequest = (message: string, param?: string): void => {
+                res.status(400).json({
+                    error: {
+                        type: 'invalid_request_error',
+                        message,
+                        ...(param ? {param} : {})
+                    }
+                });
+            };
+
+            const duration = this.parseCouponDuration(req.body.duration);
+            const amountOffRaw = req.body.amount_off;
+            const percentOffRaw = req.body.percent_off;
+            const hasAmountOff = amountOffRaw !== undefined && amountOffRaw !== null && amountOffRaw !== '';
+            const hasPercentOff = percentOffRaw !== undefined && percentOffRaw !== null && percentOffRaw !== '';
+
+            if (!duration) {
+                return badRequest(
+                    'Invalid coupon duration. Must be one of "forever", "once", or "repeating".',
+                    'duration'
+                );
+            }
+
+            if (!hasAmountOff && !hasPercentOff) {
+                return badRequest(
+                    'You must provide exactly one of percent_off or amount_off.',
+                    'percent_off'
+                );
+            }
+
+            if (hasAmountOff && hasPercentOff) {
+                return badRequest(
+                    'You cannot provide both percent_off and amount_off.',
+                    'percent_off'
+                );
+            }
+
+            const amountOff = hasAmountOff ? this.parseNumber(amountOffRaw) : undefined;
+            const percentOff = hasPercentOff ? this.parseNumber(percentOffRaw) : undefined;
+
+            if (hasAmountOff && typeof amountOff !== 'number') {
+                return badRequest('Invalid amount_off. Expected a numeric value.', 'amount_off');
+            }
+
+            if (hasPercentOff && typeof percentOff !== 'number') {
+                return badRequest('Invalid percent_off. Expected a numeric value.', 'percent_off');
+            }
+
+            const currency = this.parseString(req.body.currency)?.toLowerCase() ?? null;
+            if (hasAmountOff && !currency) {
+                return badRequest('currency is required when amount_off is provided.', 'currency');
+            }
+
+            let durationInMonths: number | null = null;
+            if (duration === 'repeating') {
+                const parsedDurationInMonths = this.parseNumber(req.body.duration_in_months);
+                if (typeof parsedDurationInMonths !== 'number' || !Number.isInteger(parsedDurationInMonths) || parsedDurationInMonths <= 0) {
+                    return badRequest(
+                        'duration_in_months must be a positive integer when duration is repeating.',
+                        'duration_in_months'
+                    );
+                }
+
+                durationInMonths = parsedDurationInMonths;
+            }
+
+            const coupon = buildCoupon({
+                name: this.parseString(req.body.name) ?? null,
+                duration,
+                duration_in_months: durationInMonths,
+                amount_off: typeof amountOff === 'number' ? amountOff : null,
+                currency,
+                percent_off: typeof percentOff === 'number' ? percentOff : null
+            });
+
+            this.upsertCoupon(coupon);
+            this.debug(`Created coupon: ${coupon.id}`);
+            res.status(200).json(coupon);
         });
 
         this.app.get('/v1/subscriptions/:id', (req, res) => {
@@ -240,7 +286,7 @@ export class FakeStripeServer {
             const subscription = this.subscriptions.get(subscriptionId);
 
             if (!subscription) {
-                debug(`Subscription not found: ${subscriptionId}`);
+                this.debug(`Subscription not found: ${subscriptionId}`);
                 res.status(404).json({error: {type: 'invalid_request_error', message: 'No such subscription'}});
                 return;
             }
@@ -258,7 +304,7 @@ export class FakeStripeServer {
                 }
             }
 
-            debug(`Returning subscription: ${subscriptionId} (expand: ${expand.join(', ') || 'none'})`);
+            this.debug(`Returning subscription: ${subscriptionId} (expand: ${expand.join(', ') || 'none'})`);
             res.status(200).json(response);
         });
 
@@ -267,7 +313,7 @@ export class FakeStripeServer {
             const subscription = this.subscriptions.get(subscriptionId);
 
             if (!subscription) {
-                debug(`Subscription not found for update: ${subscriptionId}`);
+                this.debug(`Subscription not found for update: ${subscriptionId}`);
                 res.status(404).json({error: {type: 'invalid_request_error', message: 'No such subscription'}});
                 return;
             }
@@ -287,7 +333,7 @@ export class FakeStripeServer {
 
             if (defaultPaymentMethod !== undefined) {
                 if (defaultPaymentMethod !== '' && !this.paymentMethods.has(defaultPaymentMethod)) {
-                    debug(`Cannot update subscription ${subscriptionId} with missing payment method: ${defaultPaymentMethod}`);
+                    this.debug(`Cannot update subscription ${subscriptionId} with missing payment method: ${defaultPaymentMethod}`);
                     res.status(400).json({error: {type: 'invalid_request_error', message: 'No such payment method'}});
                     return;
                 }
@@ -326,7 +372,7 @@ export class FakeStripeServer {
                 })?.price;
 
                 if (missingPriceId) {
-                    debug(`Cannot update subscription ${subscriptionId} with missing price: ${missingPriceId}`);
+                    this.debug(`Cannot update subscription ${subscriptionId} with missing price: ${missingPriceId}`);
                     res.status(400).json({error: {type: 'invalid_request_error', message: 'No such price'}});
                     return;
                 }
@@ -338,7 +384,7 @@ export class FakeStripeServer {
             }
 
             this.upsertSubscription(updatedSubscription);
-            debug(`Updated subscription: ${subscriptionId}`);
+            this.debug(`Updated subscription: ${subscriptionId}`);
             res.status(200).json(updatedSubscription);
         });
 
@@ -347,7 +393,7 @@ export class FakeStripeServer {
             const subscription = this.subscriptions.get(subscriptionId);
 
             if (!subscription) {
-                debug(`Subscription not found for delete: ${subscriptionId}`);
+                this.debug(`Subscription not found for delete: ${subscriptionId}`);
                 res.status(404).json({error: {type: 'invalid_request_error', message: 'No such subscription'}});
                 return;
             }
@@ -360,7 +406,7 @@ export class FakeStripeServer {
             };
 
             this.upsertSubscription(canceledSubscription);
-            debug(`Deleted subscription: ${subscriptionId}`);
+            this.debug(`Deleted subscription: ${subscriptionId}`);
             res.status(200).json(canceledSubscription);
         });
 
@@ -369,19 +415,31 @@ export class FakeStripeServer {
             const paymentMethod = this.paymentMethods.get(paymentMethodId);
 
             if (!paymentMethod) {
-                debug(`Payment method not found: ${paymentMethodId}`);
+                this.debug(`Payment method not found: ${paymentMethodId}`);
                 res.status(404).json({error: {type: 'invalid_request_error', message: 'No such payment method'}});
                 return;
             }
 
-            debug(`Returning payment method: ${paymentMethodId}`);
+            this.debug(`Returning payment method: ${paymentMethodId}`);
             res.status(200).json(paymentMethod);
         });
 
         this.app.post('/v1/checkout/sessions', (req, res) => {
             const mode = this.parseCheckoutMode(req.body.mode);
+            const discounts = this.parseDiscounts(req.body.discounts) ?? [];
+            const missingCouponId = discounts.find((discount) => {
+                return !this.coupons.has(discount.coupon);
+            })?.coupon;
+
+            if (missingCouponId) {
+                this.debug(`Cannot create checkout session with missing coupon: ${missingCouponId}`);
+                res.status(400).json({error: {type: 'invalid_request_error', message: 'No such coupon'}});
+                return;
+            }
+
             const session = buildCheckoutSession({
                 request: {
+                    discounts,
                     custom_fields: this.parseCustomFields(req.body.custom_fields),
                     invoice_creation: this.parseInvoiceCreation(req.body.invoice_creation),
                     submit_type: this.parseSubmitType(req.body.submit_type),
@@ -398,9 +456,9 @@ export class FakeStripeServer {
                 }
             });
 
-            session.response.url = `http://localhost:${this._port}/checkout/sessions/${session.response.id}`;
+            session.response.url = `http://localhost:${this.port}/checkout/sessions/${session.response.id}`;
             this.upsertCheckoutSession(session);
-            debug(`Created checkout session: ${session.response.id} (${session.response.mode})`);
+            this.debug(`Created checkout session: ${session.response.id} (${session.response.mode})`);
             res.status(200).json(session.response);
         });
 
@@ -436,12 +494,12 @@ export class FakeStripeServer {
 
         this.app.post('/v1/billing_portal/configurations/:id?', (req, res) => {
             const id = req.params.id || 'bpc_fake';
-            debug(`Returning billing portal configuration: ${id}`);
+            this.debug(`Returning billing portal configuration: ${id}`);
             res.status(200).json({id, object: 'billing_portal.configuration'});
         });
 
         this.app.use((req, res) => {
-            debug(`Unhandled route: ${req.method} ${req.originalUrl} — returning fallback`);
+            this.debug(`Unhandled route: ${req.method} ${req.originalUrl} — returning fallback`);
             res.status(200).json({id: 'fake', object: 'unknown'});
         });
     }
@@ -600,6 +658,25 @@ export class FakeStripeServer {
         };
     }
 
+    private parseDiscounts(value: unknown): RecordedStripeCheckoutSession['request']['discounts'] {
+        if (!value || typeof value !== 'object') {
+            return undefined;
+        }
+
+        const discounts = Array.isArray(value)
+            ? value
+            : Object.values(value as Record<string, {coupon?: string}>);
+
+        return discounts
+            .filter((item): item is {coupon?: string} => item !== null && typeof item === 'object')
+            .map((item) => {
+                return {
+                    coupon: this.parseString(item.coupon) ?? ''
+                };
+            })
+            .filter(item => item.coupon);
+    }
+
     private parseLineItems(value: unknown): RecordedStripeCheckoutSession['request']['line_items'] {
         if (!value || typeof value !== 'object') {
             return undefined;
@@ -697,6 +774,14 @@ export class FakeStripeServer {
 
     private parseSubmitType(value: unknown): RecordedStripeCheckoutSession['request']['submit_type'] {
         if (value !== 'auto' && value !== 'book' && value !== 'donate' && value !== 'pay' && value !== 'send') {
+            return undefined;
+        }
+
+        return value;
+    }
+
+    private parseCouponDuration(value: unknown): StripeCoupon['duration'] | undefined {
+        if (value !== 'forever' && value !== 'once' && value !== 'repeating') {
             return undefined;
         }
 

@@ -62,7 +62,7 @@ const Toast: React.FC<ToastProps> = ({
                     <div className='mt-px'><Icon className='grow' colorClass={iconColorClass} name={props.icon} size='sm' /></div> : props.icon)}
                 {children}
             </div>
-            <button className='absolute right-5 top-5 -mr-1.5 -mt-1.5 cursor-pointer rounded-full p-2 text-grey-700 hover:text-black dark:hover:text-white' type='button' onClick={() => {
+            <button className='absolute top-5 right-5 -mt-1.5 -mr-1.5 cursor-pointer rounded-full p-2 text-grey-700 hover:text-black dark:hover:text-white' type='button' onClick={() => {
                 toast.dismiss(t.id);
             }}>
                 <div>
@@ -102,7 +102,7 @@ export const showToast = ({
             options: options
         }} t={t}>
             <div>
-                {title && <span className='mt-px block text-md font-semibold leading-tighter tracking-[0.1px]'>{title}</span>}
+                {title && <span className='mt-px block text-md leading-tighter font-semibold tracking-[0.1px]'>{title}</span>}
                 {message &&
                     <div className={`text-grey-900 dark:text-grey-300 ${title ? 'mt-1' : ''}`}>{message}</div>
                 }

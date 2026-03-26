@@ -9,7 +9,6 @@ import {
 } from '../use-member-filter-fields';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
-import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseLabels} from '@tryghost/admin-x-framework/api/labels';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
@@ -55,15 +54,13 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const {data: offersData} = useBrowseOffers({});
     const {data: newslettersData} = useBrowseNewsletters({searchParams: {limit: '100'}});
     const {data: settingsData} = useBrowseSettings({});
-    const {data: configData} = useBrowseConfig({});
 
     const settings = settingsData?.settings || [];
     const paidMembersEnabled = getSettingValue<boolean>(settings, 'paid_members_enabled') === true;
-    const emailAnalyticsEnabled = configData?.config?.emailAnalytics === true;
+    const emailFiltersEnabled = getSettingValue<string>(settings, 'editor_default_email_recipients') !== 'disabled';
     const membersTrackSources = getSettingValue<boolean>(settings, 'members_track_sources') === true;
     const emailTrackOpens = getSettingValue<boolean>(settings, 'email_track_opens') === true;
     const emailTrackClicks = getSettingValue<boolean>(settings, 'email_track_clicks') === true;
-    const audienceFeedbackEnabled = configData?.config?.labs?.audienceFeedback === true;
     const siteTimezone = getSiteTimezone(settings);
 
     const labels = labelsData?.labels || [];
@@ -102,7 +99,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         hydratedNewsletterSlugs,
         hasMultipleTiers,
         paidMembersEnabled,
-        emailAnalyticsEnabled,
+        emailFiltersEnabled,
         labelsOptions: labels.map(label => ({value: label.slug, label: label.name})),
         tiersOptions: activePaidTiers.map(tier => ({value: tier.id, label: tier.name})),
         offers,
@@ -117,13 +114,12 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         membersTrackSources,
         emailTrackOpens,
         emailTrackClicks,
-        audienceFeedbackEnabled,
         siteTimezone
     });
 
     const hasFilters = filters.length > 0;
     const clearAndSaveButtons = hasFilters ? (
-        <div className="flex shrink-0 items-center gap-2 sm:absolute sm:right-0 sm:top-0">
+        <div className="flex shrink-0 items-center gap-2 sm:absolute sm:top-0 sm:right-0">
             <button
                 className="flex items-center gap-1 text-sm font-normal text-muted-foreground hover:text-foreground"
                 type="button"
@@ -153,9 +149,10 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
             fields={filterFields}
             filters={displayFilters}
             keyboardShortcut="f"
-            popoverAlign={hasFilters ? 'start' : 'end'}
+            popoverAlign={'start'}
+            popoverContentClassName='w-[280px] translate-x-[-32px] [&_[data-slot=command-list]]:max-h-[450px]'
             showClearButton={hasFilters}
-            showSearchInput={false}
+            showSearchInput={true}
             onChange={handleFiltersChange}
         />
     );

@@ -11,11 +11,11 @@ export function UserMenuHeader({ name, email, children }: UserMenuHeaderProps) {
         <div className="p-3">
             <div className="flex items-center gap-3">
                 {children}
-                <div className="flex flex-col flex-1 min-w-0">
-                    <span className="text-base font-semibold text-foreground truncate">
+                <div className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate text-base font-semibold text-foreground">
                         {name}
                     </span>
-                    <span className="text-xs text-foreground-muted -mt-px truncate">
+                    <span className="text-foreground-muted -mt-px truncate text-xs">
                         {email}
                     </span>
                 </div>

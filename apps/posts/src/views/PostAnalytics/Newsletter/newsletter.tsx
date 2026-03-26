@@ -19,7 +19,7 @@ interface postAnalyticsProps {}
 
 const FunnelArrow: React.FC = () => {
     return (
-        <div className='md:flex! md:visible! absolute -right-4 top-1/2 z-10 hidden size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground'>
+        <div className='absolute top-1/2 -right-4 z-10 hidden size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground md:visible! md:flex!'>
             <LucideIcon.ChevronRight className='ml-0.5' size={16} strokeWidth={1.5}/>
         </div>
     );
@@ -37,7 +37,7 @@ const BlockTooltip:React.FC<BlockTooltipProps> = ({
     avgValue
 }) => {
     return (
-        <div className='absolute left-1/2 top-6 z-50 flex w-[200px] -translate-x-1/2 flex-col items-stretch gap-1.5 rounded-md bg-background px-4 py-2 text-sm opacity-0 shadow-md transition-all group-hover/block:top-3 group-hover/block:opacity-100'>
+        <div className='absolute top-6 left-1/2 z-50 flex w-[200px] -translate-x-1/2 flex-col items-stretch gap-1.5 rounded-md bg-background px-4 py-2 text-sm opacity-0 shadow-md transition-all group-hover/block:top-3 group-hover/block:opacity-100'>
             <div className='flex items-center justify-between gap-4'>
                 <div className='flex items-center gap-2 text-muted-foreground'>
                     <div className='size-2 rounded-full bg-chart-blue opacity-50'
@@ -355,7 +355,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     </div>
 
                                     {emailTrackOpensEnabled &&
-                                        <div className={`group/block hover:bg-muted/25 relative border-r-0 px-6 transition-all ${emailTrackClicksEnabled && 'md:border-r'}`}>
+                                        <div className={`group/block relative border-r-0 px-6 transition-all hover:bg-muted/25 ${emailTrackClicksEnabled && 'md:border-r'}`}>
                                             <BlockTooltip
                                                 avgValue={formatPercentage(averageStats.openedRate)}
                                                 dataColor='var(--chart-blue)'
@@ -377,7 +377,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     }
 
                                     {emailTrackClicksEnabled &&
-                                        <div className='group/block hover:bg-muted/25 relative px-6 transition-all'>
+                                        <div className='group/block relative px-6 transition-all hover:bg-muted/25'>
                                             <BlockTooltip
                                                 avgValue={formatPercentage(averageStats.clickedRate)}
                                                 dataColor='var(--chart-teal)'

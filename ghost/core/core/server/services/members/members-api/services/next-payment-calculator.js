@@ -7,10 +7,10 @@ const getDiscountWindow = require('../utils/get-discount-window');
 /**
  * @typedef {object} SubscriptionDiscount
  * @prop {string} offer_id
- * @prop {string} start
- * @prop {string|null} end
+ * @prop {string} start - ISO string for active discounts
+ * @prop {string|null} end - ISO string for active once/repeating discounts, null for forever discounts
  * @prop {'once'|'repeating'|'forever'} duration
- * @prop {number|null} duration_in_months
+ * @prop {number|null} duration_in_months - Duration in months for repeating discounts, null for other types of discounts
  * @prop {'percent'|'fixed'} type
  * @prop {number} amount
  */
@@ -103,14 +103,6 @@ class NextPaymentCalculator {
      * @returns {ActiveDiscount|null}
      */
     _getActiveDiscount(subscription, offer) {
-        // Skip if there's no Stripe discount data and the offer isn't eligible for legacy backport:
-        // - signup offers are backported for legacy data without discount_start
-        // - retention offers are excluded because they were introduced after discount_start
-        //   was available, so missing discount_start means there's no active discount
-        if (!subscription.discount_start && offer.redemption_type !== 'signup') {
-            return null;
-        }
-
         return getDiscountWindow(subscription, offer);
     }
 

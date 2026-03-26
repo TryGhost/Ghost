@@ -132,7 +132,7 @@ const Page: React.FC<PageProps> = ({
         </div>);
 
     mainContainerClassName = clsx(
-        'flex h-[100vh] w-full flex-col overflow-y-auto overflow-x-hidden',
+        'flex h-[100vh] w-full flex-col overflow-x-hidden overflow-y-auto',
         !fullBleedPage && 'mx-auto max-w-7xl',
         mainContainerClassName
     );
