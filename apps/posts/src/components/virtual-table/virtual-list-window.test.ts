@@ -1,7 +1,7 @@
 import React from 'react';
 import {MemoryRouter, useSearchParams} from 'react-router';
 import {act, renderHook} from '@testing-library/react';
-import {describe, expect, it} from 'vitest';
+import {beforeEach, describe, expect, it} from 'vitest';
 import type {ReactNode} from 'react';
 
 import {
@@ -22,6 +22,10 @@ function createWrapper(initialEntry: string) {
 }
 
 describe('virtual-list-window', () => {
+    beforeEach(() => {
+        window.history.replaceState({}, '');
+    });
+
     it('restores the unlocked window from the current history entry on remount', () => {
         window.history.replaceState({
             ghostVirtualListWindow: {
@@ -81,6 +85,23 @@ describe('virtual-list-window', () => {
 
     it('unlocks the next 1,000 rows each time fetch more is requested', () => {
         expect(getNextUnlockedItemCount(VIRTUAL_LIST_WINDOW_SIZE)).toBe(2000);
+    });
+
+    it('normalizes non-positive window sizes to keep fetch more moving forward', () => {
+        expect(getNextUnlockedItemCount(1000, 0)).toBe(1001);
+        expect(getNextUnlockedItemCount(1000, -10)).toBe(1001);
+
+        const {result} = renderHook(() => useVirtualListWindow(5000, {windowSize: 0}), {
+            wrapper: createWrapper('/?filter=members')
+        });
+
+        expect(result.current.visibleItemCount).toBe(1);
+
+        act(() => {
+            result.current.fetchMore();
+        });
+
+        expect(result.current.visibleItemCount).toBe(2);
     });
 
     it('resets the unlocked window when the query changes by default', () => {

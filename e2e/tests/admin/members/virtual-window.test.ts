@@ -72,6 +72,7 @@ test.describe('Ghost Admin - Members Virtual Window', () => {
 
         const membersPage = new MembersPage(page, {route: 'members-forward'});
         const memberDetailsPage = new MemberDetailsPage(page);
+        const mainRegion = page.getByRole('main').first();
 
         await membersPage.goto();
         await expect(membersPage.fetchMoreButton).toBeVisible();
@@ -91,7 +92,7 @@ test.describe('Ghost Admin - Members Virtual Window', () => {
         const targetRowLocator = membersPage.memberListItems.nth(Math.max(0, renderedCount - 5));
         const targetRow = {
             index: Number(await targetRowLocator.getAttribute('data-index')),
-            scrollTop: await page.evaluate(() => document.querySelector('main')?.scrollTop || 0)
+            scrollTop: await mainRegion.evaluate(element => (element as HTMLElement).scrollTop)
         };
 
         expect(targetRow.index).toBeGreaterThan(1000);
@@ -103,15 +104,10 @@ test.describe('Ghost Admin - Members Virtual Window', () => {
         await page.goBack();
         await expect(page).toHaveURL(/\/ghost\/#\/members-forward$/);
 
-        await page.waitForFunction(({scrollTop}) => {
-            const main = document.querySelector('main');
-
-            if (!main) {
-                return false;
-            }
-
-            return Math.abs(main.scrollTop - scrollTop) < 500;
-        }, {scrollTop: targetRow.scrollTop});
+        await expect.poll(async () => {
+            const scrollTop = await mainRegion.evaluate(element => (element as HTMLElement).scrollTop);
+            return Math.abs(scrollTop - targetRow.scrollTop);
+        }).toBeLessThan(500);
 
         expect(await membersPage.getMaxRenderedIndex()).toBeGreaterThan(1000);
     });

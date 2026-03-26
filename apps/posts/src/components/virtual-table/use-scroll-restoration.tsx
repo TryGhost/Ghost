@@ -113,6 +113,7 @@ export function useScrollRestoration({parentRef, enabled = true, isLoading = fal
     const lastPersistedAtRef = useRef(0);
     const lastPersistedPositionRef = useRef(0);
     const pendingPersistTimeoutRef = useRef<number | null>(null);
+    const restoreTimeoutIdsRef = useRef<Set<number>>(new Set());
     const key = location.pathname + location.search;
 
     // Find the scroll container once the parent element is mounted
@@ -131,7 +132,9 @@ export function useScrollRestoration({parentRef, enabled = true, isLoading = fal
             return;
         }
 
-        const entryScopedScrollPositionKey = getEntryScopedScrollPositionKey(getCurrentHistoryState(), key);
+        const sourceHistoryState = getCurrentHistoryState();
+        const sourceHistoryEntryKey = getHistoryEntryKey(sourceHistoryState);
+        const entryScopedScrollPositionKey = getEntryScopedScrollPositionKey(sourceHistoryState, key);
 
         const clearPendingPersist = () => {
             if (pendingPersistTimeoutRef.current === null) {
@@ -146,13 +149,33 @@ export function useScrollRestoration({parentRef, enabled = true, isLoading = fal
             if (entryScopedScrollPositionKey) {
                 scrollPositions.set(entryScopedScrollPositionKey, position);
             }
-            setStoredScrollPosition(getCurrentHistoryState(), key, position);
+
+            const currentHistoryState = getCurrentHistoryState();
+            const currentHistoryEntryKey = getHistoryEntryKey(currentHistoryState);
+
+            if (currentHistoryEntryKey === sourceHistoryEntryKey) {
+                setStoredScrollPosition(currentHistoryState, key, position);
+            }
+
             lastPersistedAtRef.current = Date.now();
             lastPersistedPositionRef.current = position;
         };
 
-        const flushScrollPosition = () => {
+        const flushScrollPosition = ({persistToHistory = true}: {persistToHistory?: boolean} = {}) => {
             clearPendingPersist();
+
+            if (!persistToHistory) {
+                const position = latestScrollPositionRef.current;
+
+                if (entryScopedScrollPositionKey) {
+                    scrollPositions.set(entryScopedScrollPositionKey, position);
+                }
+
+                lastPersistedAtRef.current = Date.now();
+                lastPersistedPositionRef.current = position;
+                return;
+            }
+
             persistScrollPosition(latestScrollPositionRef.current);
         };
 
@@ -187,7 +210,7 @@ export function useScrollRestoration({parentRef, enabled = true, isLoading = fal
         window.addEventListener('pagehide', flushScrollPosition);
 
         return () => {
-            flushScrollPosition();
+            flushScrollPosition({persistToHistory: false});
             scrollContainer.removeEventListener('scroll', handleScroll);
             window.removeEventListener('pagehide', flushScrollPosition);
         };
@@ -198,8 +221,8 @@ export function useScrollRestoration({parentRef, enabled = true, isLoading = fal
         const historyState = getCurrentHistoryState();
         const entryScopedScrollPositionKey = getEntryScopedScrollPositionKey(historyState, key);
         const savedPosition =
-            getStoredScrollPosition(historyState, key) ??
-            (entryScopedScrollPositionKey ? scrollPositions.get(entryScopedScrollPositionKey) : undefined);
+            (entryScopedScrollPositionKey ? scrollPositions.get(entryScopedScrollPositionKey) : undefined) ??
+            getStoredScrollPosition(historyState, key);
 
         if (!enabled || !scrollContainer || isLoading) {
             return;
@@ -213,6 +236,23 @@ export function useScrollRestoration({parentRef, enabled = true, isLoading = fal
             // For virtual scrolling, we may need multiple attempts as the virtualizer measures items
             let attempts = 0;
             const maxAttempts = 20;
+
+            const clearRestoreTimeouts = () => {
+                for (const timeoutId of restoreTimeoutIdsRef.current) {
+                    window.clearTimeout(timeoutId);
+                }
+
+                restoreTimeoutIdsRef.current.clear();
+            };
+
+            const scheduleRestore = (callback: () => void, delay: number) => {
+                const timeoutId = window.setTimeout(() => {
+                    restoreTimeoutIdsRef.current.delete(timeoutId);
+                    callback();
+                }, delay);
+
+                restoreTimeoutIdsRef.current.add(timeoutId);
+            };
             
             const attemptRestore = () => {
                 attempts += 1;
@@ -229,7 +269,7 @@ export function useScrollRestoration({parentRef, enabled = true, isLoading = fal
                 // Check if we can actually scroll to the saved position
                 if (savedPosition > maxScroll && attempts < maxAttempts) {
                     // Content hasn't fully rendered yet, try again
-                    setTimeout(attemptRestore, 100);
+                    scheduleRestore(attemptRestore, 100);
                     return;
                 }
 
@@ -240,8 +280,8 @@ export function useScrollRestoration({parentRef, enabled = true, isLoading = fal
                 }
             };
 
-            const timeoutId = setTimeout(attemptRestore, 150);
-            return () => clearTimeout(timeoutId);
+            scheduleRestore(attemptRestore, 150);
+            return () => clearRestoreTimeouts();
         }
 
         previousPathRef.current = key;

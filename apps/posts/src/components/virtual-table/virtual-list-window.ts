@@ -4,6 +4,10 @@ import {useLocation} from '@tryghost/admin-x-framework';
 export const VIRTUAL_LIST_WINDOW_SIZE = 1000;
 export const VIRTUAL_LIST_WINDOW_HISTORY_STATE_KEY = 'ghostVirtualListWindow';
 
+export function getSafeVirtualListWindowSize(windowSize: number = VIRTUAL_LIST_WINDOW_SIZE) {
+    return Math.max(1, Math.floor(windowSize));
+}
+
 export function getVirtualListWindowState({
     totalItems,
     unlockedItemCount
@@ -23,7 +27,7 @@ export function getNextUnlockedItemCount(
     unlockedItemCount: number,
     windowSize: number = VIRTUAL_LIST_WINDOW_SIZE
 ) {
-    return unlockedItemCount + windowSize;
+    return unlockedItemCount + getSafeVirtualListWindowSize(windowSize);
 }
 
 export function getVirtualListWindowHistoryKey(pathname: string, resetKey: string) {
@@ -90,15 +94,16 @@ export function useVirtualListWindow(
     } = {}
 ) {
     const {pathname, search} = useLocation();
+    const safeWindowSize = getSafeVirtualListWindowSize(windowSize);
     const effectiveResetKey = resetKey ?? search;
     const historyKey = getVirtualListWindowHistoryKey(pathname, effectiveResetKey);
     const [unlockedItemCount, setUnlockedItemCount] = useState(() => {
-        return getStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, windowSize);
+        return getStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, safeWindowSize);
     });
 
     useEffect(() => {
-        setUnlockedItemCount(getStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, windowSize));
-    }, [historyKey, windowSize]);
+        setUnlockedItemCount(getStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, safeWindowSize));
+    }, [historyKey, safeWindowSize]);
 
     useEffect(() => {
         setStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, unlockedItemCount);
@@ -112,6 +117,6 @@ export function useVirtualListWindow(
     return {
         visibleItemCount,
         canFetchMore,
-        fetchMore: () => setUnlockedItemCount(current => getNextUnlockedItemCount(current, windowSize))
+        fetchMore: () => setUnlockedItemCount(current => getNextUnlockedItemCount(current, safeWindowSize))
     };
 }

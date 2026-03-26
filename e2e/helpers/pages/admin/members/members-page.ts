@@ -106,8 +106,8 @@ class SettingsSection extends BasePage {
 
 export class MembersPage extends AdminPage {
     readonly newMemberButton: Locator;
-    readonly fetchMoreButton: Locator;
-    readonly membersList: Locator;
+    public readonly fetchMoreButton: Locator;
+    public readonly membersList: Locator;
     readonly memberListItems: Locator;
     readonly emptyStateHeading: Locator;
 
@@ -148,10 +148,11 @@ export class MembersPage extends AdminPage {
 
     async scrollUntilMaxRenderedIndexAtLeast(targetIndex: number): Promise<number> {
         let maxRenderedIndex = await this.getMaxRenderedIndex();
+        const mainRegion = this.page.getByRole('main').first();
 
         for (let i = 0; i < 30 && maxRenderedIndex <= targetIndex; i += 1) {
-            await this.page.evaluate(() => {
-                document.querySelector('main')?.scrollBy(0, 4000);
+            await mainRegion.evaluate((element) => {
+                (element as HTMLElement).scrollBy(0, 4000);
             });
             await this.page.waitForFunction((previousMaxIndex) => {
                 const rows = Array.from(document.querySelectorAll('[data-testid="members-list-item"]'));
