@@ -44,6 +44,10 @@ export class PostsPage extends AdminPage {
         return this.postsListItem.filter({has: this.page.getByRole('heading', {name: title, exact: true, level: 3})});
     }
 
+    getPostById(text: string | RegExp): Locator {
+        return this.page.locator('[data-test-post-id]').filter({hasText: text});
+    }
+
     async refreshData() {
         await this.page.reload();
     }

@@ -124,6 +124,17 @@ export class MemberDetailsPage extends AdminPage {
         await this.savedButton.waitFor({state: 'visible'});
     }
 
+    async gotoMember(memberId: string): Promise<void> {
+        await this.page.goto(`/ghost/#/members/${memberId}`);
+    }
+
+    async impersonate(): Promise<string> {
+        await this.settingsSection.memberActionsButton.click();
+        await this.settingsSection.impersonateButton.click();
+        await this.copyLinkButton.click();
+        return await this.page.evaluate(() => navigator.clipboard.readText());
+    }
+
     getActivityEventByText(text: string | RegExp): Locator {
         return this.activityHeading.locator('..').getByText(text);
     }

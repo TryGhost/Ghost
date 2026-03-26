@@ -18,6 +18,15 @@ export class SettingsPage extends BasePage {
     readonly labsSidebarLink: Locator;
     readonly staffSidebarLink: Locator;
 
+    readonly timezoneSection: Locator;
+    readonly timezoneSelect: Locator;
+    readonly timezoneSaveButton: Locator;
+    readonly exitSettingsButton: Locator;
+
+    readonly defaultRecipientsSection: Locator;
+    readonly defaultRecipientsSelect: Locator;
+    readonly defaultRecipientsSaveButton: Locator;
+
     constructor(page: Page) {
         super(page, '/ghost/#/settings');
 
@@ -34,6 +43,19 @@ export class SettingsPage extends BasePage {
         this.integrationsSection = new IntegrationsSection(page);
         this.staffSection = new StaffSection(page);
         this.tiersSection = new TiersSection(page);
+
+        this.timezoneSection = page.getByTestId('timezone');
+        this.timezoneSelect = page.getByTestId('timezone-select');
+        this.timezoneSaveButton = this.timezoneSection.getByRole('button', {name: 'Save'});
+        this.exitSettingsButton = page.getByTestId('exit-settings');
+
+        this.defaultRecipientsSection = page.getByTestId('default-recipients');
+        this.defaultRecipientsSelect = page.getByTestId('default-recipients-select');
+        this.defaultRecipientsSaveButton = this.defaultRecipientsSection.getByRole('button', {name: 'Save'});
+    }
+
+    getSelectOption(text: string | RegExp): Locator {
+        return this.page.locator('[data-testid="select-option"]').filter({hasText: text});
     }
 
     async searchByInput(text: string) {
