@@ -1,15 +1,8 @@
-import {type AdminOffer, type HttpClient, type OfferCreateInput, createOfferFactory} from '@/data-factory';
+import {type AdminOffer, createOfferFactory} from '@/data-factory';
 import {PortalOfferPage, PublicPage} from '@/helpers/pages';
-import {SettingsService} from '@/helpers/services/settings/settings-service';
-import {createPaidPortalTier, expect, redeemOfferViaPortal, test} from '@/helpers/playwright';
-import type {StripeTestService} from '@/helpers/services/stripe';
+import {createPaidPortalTier, createPortalSignupOffer, expect, redeemOfferViaPortal, test} from '@/helpers/playwright';
 
 const MEMBER_NAME = 'Testy McTesterson';
-
-type SignupOfferInput = Pick<OfferCreateInput, 'amount' | 'duration' | 'duration_in_months' | 'type'> & {
-    codePrefix: string;
-    tierNamePrefix: string;
-};
 
 type OfferLandingExpectation = {
     title: string;
@@ -26,37 +19,6 @@ type DiscountOfferExpectation = {
     priceLabel: string;
     timingLabel: string;
 };
-
-// TODO: Move this setup into a dedicated signup-offer helper that owns portal-button
-// setup plus paid-tier creation instead of keeping it local to the test file.
-async function createSignupOffer(request: HttpClient, stripe: StripeTestService, input: SignupOfferInput): Promise<AdminOffer> {
-    const offerFactory = createOfferFactory(request);
-    const settingsService = new SettingsService(request);
-    const suffix = Date.now();
-    const tierName = `${input.tierNamePrefix} ${suffix}`;
-
-    await settingsService.updateSettings([{key: 'portal_button', value: true}]);
-
-    const tier = await createPaidPortalTier(request, {
-        name: tierName,
-        currency: 'usd',
-        monthly_price: 600,
-        yearly_price: 6000
-    }, {
-        stripe
-    });
-
-    return await offerFactory.create({
-        name: 'Black Friday Special',
-        code: `${input.codePrefix}-${suffix}`,
-        cadence: 'month',
-        amount: input.amount,
-        duration: input.duration,
-        duration_in_months: input.duration_in_months ?? null,
-        tierId: tier.id,
-        type: input.type
-    });
-}
 
 async function expectOfferLandingPage(offerPage: PortalOfferPage, expected: OfferLandingExpectation): Promise<void> {
     await offerPage.waitForOfferPage();
@@ -151,7 +113,7 @@ test.describe('Ghost Public - Portal Offers', () => {
     });
 
     test('free trial offer opens in portal - redemption shows free trial state', async ({page, stripe}) => {
-        const offer = await createSignupOffer(page.request, stripe!, {
+        const offer = await createPortalSignupOffer(page.request, stripe!, {
             amount: 14,
             codePrefix: 'trial-offer',
             duration: 'trial',
@@ -174,7 +136,7 @@ test.describe('Ghost Public - Portal Offers', () => {
     });
 
     test('one-time discount offer opens in portal - redemption shows discounted plan label', async ({page, stripe}) => {
-        const offer = await createSignupOffer(page.request, stripe!, {
+        const offer = await createPortalSignupOffer(page.request, stripe!, {
             amount: 10,
             codePrefix: 'once-offer',
             duration: 'once',
@@ -202,7 +164,7 @@ test.describe('Ghost Public - Portal Offers', () => {
     });
 
     test('repeating discount offer opens in portal - redemption shows discounted plan label', async ({page, stripe}) => {
-        const offer = await createSignupOffer(page.request, stripe!, {
+        const offer = await createPortalSignupOffer(page.request, stripe!, {
             amount: 10,
             codePrefix: 'repeating-offer',
             duration: 'repeating',
@@ -232,7 +194,7 @@ test.describe('Ghost Public - Portal Offers', () => {
     });
 
     test('forever discount offer opens in portal - redemption shows discounted plan label', async ({page, stripe}) => {
-        const offer = await createSignupOffer(page.request, stripe!, {
+        const offer = await createPortalSignupOffer(page.request, stripe!, {
             amount: 10,
             codePrefix: 'forever-offer',
             duration: 'forever',

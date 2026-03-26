@@ -1,6 +1,5 @@
-import {Factory} from '@/data-factory';
+import {Factory, generateId, generateSlug} from '@/data-factory';
 import {faker} from '@faker-js/faker';
-import {generateId, generateSlug} from '@/data-factory';
 import type {HttpClient, PersistenceAdapter} from '@/data-factory';
 
 export interface AdminOffer {
