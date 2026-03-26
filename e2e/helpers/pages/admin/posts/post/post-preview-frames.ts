@@ -1,7 +1,9 @@
 import {FrameLocator, Locator, Page} from '@playwright/test';
 
 class PreviewFrame {
-    constructor(protected readonly page: Page) {
+    protected readonly page: Page;
+
+    constructor(page: Page) {
         this.page = page;
     }
 
