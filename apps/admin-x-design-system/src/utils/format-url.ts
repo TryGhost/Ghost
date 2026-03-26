@@ -1,4 +1,4 @@
-import isEmail from 'validator/es/lib/isEmail.js';
+import isEmail from 'validator/es/lib/isEmail';
 
 export const formatUrl = (value: string, baseUrl?: string, nullable?: boolean) => {
     if (nullable && !value) {

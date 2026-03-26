@@ -1,7 +1,8 @@
 import {clsx, type ClassValue} from 'clsx';
 import isEmail from 'validator/es/lib/isEmail';
 import {twMerge} from 'tailwind-merge';
-import moment, {Moment} from 'moment-timezone';
+import moment from 'moment-timezone';
+import type {Moment} from 'moment';
 
 /* Generic helper functions
 /* -------------------------------------------------------------------------- */

@@ -1,5 +1,6 @@
 import {Extension} from '@codemirror/state';
-import CodeMirror, {ReactCodeMirrorProps, ReactCodeMirrorRef, BasicSetupOptions} from '@uiw/react-codemirror';
+import type {BasicSetupOptions} from '@uiw/codemirror-extensions-basic-setup';
+import CodeMirror, {ReactCodeMirrorProps, ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import clsx from 'clsx';
 import React, {FocusEventHandler, forwardRef, useEffect, useId, useRef, useState} from 'react';
 import {useFocusContext} from '../../providers/design-system-provider';
@@ -67,7 +68,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
 
     useEffect(() => {
         Promise.all(extensions).then(setResolvedExtensions);
-        setBasicSetup(setup => ({setup, searchKeymap: false}));
+        setBasicSetup(setup => ({...setup, searchKeymap: false}));
     }, [extensions]);
 
     useEffect(() => {

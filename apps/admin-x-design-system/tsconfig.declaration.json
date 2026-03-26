@@ -7,7 +7,6 @@
     "declarationMap": true,
     "declarationDir": "./types",
     "emitDeclarationOnly": true,
-    "preserveSymlinks": true,
     "tsBuildInfoFile": "./types/tsconfig.tsbuildinfo",
     "rootDir": "./src"
   },
