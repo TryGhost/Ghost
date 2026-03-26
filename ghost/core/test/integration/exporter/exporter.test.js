@@ -37,6 +37,7 @@ describe('Exporter', function () {
                 'custom_theme_settings',
                 'donation_payment_events',
                 'email_batches',
+                'email_design_settings',
                 'email_recipient_failures',
                 'email_recipients',
                 'email_spam_complaint_events',
