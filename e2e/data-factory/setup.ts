@@ -3,6 +3,7 @@ import {CommentFactory} from './factories/comment-factory';
 import {GhostAdminApiAdapter} from './persistence/adapters/ghost-api';
 import {HttpClient} from './persistence/adapters/http-client';
 import {MemberFactory} from './factories/member-factory';
+import {OfferFactory} from './factories/offer-factory';
 import {PostFactory} from './factories/post-factory';
 import {TagFactory} from './factories/tag-factory';
 import {TierFactory} from './factories/tier-factory';
@@ -48,6 +49,14 @@ export function createTierFactory(httpClient: HttpClient): TierFactory {
     return new TierFactory(adapter, httpClient);
 }
 
+export function createOfferFactory(httpClient: HttpClient): OfferFactory {
+    const adapter = new GhostAdminApiAdapter(
+        httpClient,
+        'offers'
+    );
+    return new OfferFactory(adapter, httpClient);
+}
+
 export function createAutomatedEmailFactory(httpClient: HttpClient): AutomatedEmailFactory {
     const adapter = new GhostAdminApiAdapter(
         httpClient,
@@ -69,6 +78,7 @@ export interface Factories {
     tagFactory: TagFactory;
     memberFactory: MemberFactory;
     tierFactory: TierFactory;
+    offerFactory: OfferFactory;
     automatedEmailFactory: AutomatedEmailFactory;
     commentFactory: CommentFactory;
 }
@@ -85,6 +95,7 @@ export function createFactories(httpClient: HttpClient): Factories {
         tagFactory: createTagFactory(httpClient),
         memberFactory: createMemberFactory(httpClient),
         tierFactory: createTierFactory(httpClient),
+        offerFactory: createOfferFactory(httpClient),
         automatedEmailFactory: createAutomatedEmailFactory(httpClient),
         commentFactory: createCommentFactory(httpClient)
     };
