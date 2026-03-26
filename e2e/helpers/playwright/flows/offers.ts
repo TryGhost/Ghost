@@ -1,10 +1,51 @@
+import {type AdminOffer, type HttpClient, type OfferCreateInput, createOfferFactory} from '@/data-factory';
 import {FakeStripeCheckoutPage, HomePage, PortalAccountPage} from '@/helpers/pages';
 import {MembersService} from '@/helpers/services/members/members-service';
 import {PortalOfferPage} from '@/portal-pages';
+import {SettingsService} from '@/helpers/services/settings/settings-service';
+import {createPaidPortalTier} from './tiers';
 import {faker} from '@faker-js/faker';
 import type {MemberSubscription} from '@/helpers/services/members/members-service';
 import type {Page} from '@playwright/test';
 import type {StripeTestService} from '@/helpers/services/stripe';
+
+export type PortalSignupOfferInput = Pick<OfferCreateInput, 'amount' | 'duration' | 'duration_in_months' | 'type'> & {
+    codePrefix: string;
+    tierNamePrefix: string;
+};
+
+export async function createPortalSignupOffer(
+    request: HttpClient,
+    stripe: StripeTestService,
+    input: PortalSignupOfferInput
+): Promise<AdminOffer> {
+    const offerFactory = createOfferFactory(request);
+    const settingsService = new SettingsService(request);
+    const suffix = Date.now();
+    const tierName = `${input.tierNamePrefix} ${suffix}`;
+
+    await settingsService.updateSettings([{key: 'portal_button', value: true}]);
+
+    const tier = await createPaidPortalTier(request, {
+        name: tierName,
+        currency: 'usd',
+        monthly_price: 600,
+        yearly_price: 6000
+    }, {
+        stripe
+    });
+
+    return await offerFactory.create({
+        name: 'Black Friday Special',
+        code: `${input.codePrefix}-${suffix}`,
+        cadence: 'month',
+        amount: input.amount,
+        duration: input.duration,
+        duration_in_months: input.duration_in_months ?? null,
+        tierId: tier.id,
+        type: input.type
+    });
+}
 
 export async function completeOfferSignupViaPortal(page: Page, stripe: StripeTestService, opts?: {emailAddress?: string; name?: string}): Promise<{emailAddress: string; name: string}> {
     const offerPage = new PortalOfferPage(page);
