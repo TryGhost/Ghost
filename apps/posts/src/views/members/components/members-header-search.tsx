@@ -29,7 +29,7 @@ const MembersHeaderSearch: React.FC<MembersHeaderSearchProps> = ({
     }, [debouncedSearch, onSearchChange]);
 
     return (
-        <InputGroup className="min-w-0 basis-full sm:w-[19rem] sm:basis-auto">
+        <InputGroup className="min-w-0 basis-full sm:w-[240px] sm:basis-auto">
             <InputGroupAddon>
                 <LucideIcon.Search className="size-4" strokeWidth={1.75} />
             </InputGroupAddon>
