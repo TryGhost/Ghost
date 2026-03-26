@@ -191,6 +191,7 @@ class UpdateFlow extends BasePage {
 export class PostEditorPage extends AdminPage {
     readonly titleInput: Locator;
     readonly editor: Locator;
+    readonly secondaryEditor: Locator;
     readonly postStatus: Locator;
     readonly previewButton: Locator;
     readonly previewModal: PostPreviewModal;
@@ -207,6 +208,7 @@ export class PostEditorPage extends AdminPage {
 
         this.titleInput = page.getByRole('textbox', {name: 'Post title'});
         this.editor = page.locator('[data-kg="editor"]').first();
+        this.secondaryEditor = page.locator('[data-secondary-instance="true"]');
         this.postStatus = page.locator('[data-test-editor-post-status]');
         this.previewButton = page.getByRole('button', {name: 'Preview'});
         this.previewModal = new PostPreviewModal(page);
