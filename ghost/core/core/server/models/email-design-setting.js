@@ -3,9 +3,6 @@ const ghostBookshelf = require('./base');
 const EmailDesignSetting = ghostBookshelf.Model.extend({
     tableName: 'email_design_settings',
 
-    /**
-     * @returns {object} Default values for email design settings columns
-     */
     defaults() {
         return {
             background_color: 'light',
