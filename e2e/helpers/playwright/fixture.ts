@@ -1,6 +1,8 @@
 import baseDebug from '@tryghost/debug';
 import {AnalyticsOverviewPage} from '@/helpers/pages';
 import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
+import {EmailClient, MailPit} from '@/helpers/services/email/mail-pit';
+import {FakeMailgunServer, MailgunTestService} from '@/helpers/services/mailgun';
 import {FakeStripeServer, StripeTestService, WebhookClient} from '@/helpers/services/stripe';
 import {GhostInstance, getEnvironmentManager} from '@/helpers/environment';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
@@ -87,6 +89,10 @@ export interface GhostInstanceFixture {
     stripeEnabled?: boolean;
     stripeServer?: FakeStripeServer;
     stripe?: StripeTestService;
+    mailgunEnabled?: boolean;
+    mailgunServer?: FakeMailgunServer;
+    mailgun?: MailgunTestService;
+    emailClient: EmailClient;
     ghostAccountOwner: User;
     pageWithAuthenticatedUser: {
         page: Page;
@@ -197,7 +203,7 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         auto: true
     }],
 
-    _testEnvironmentContext: async ({config, isolation, labs, stripeEnabled, stripeServer}, use, testInfo: TestInfo) => {
+    _testEnvironmentContext: async ({config, isolation, labs, stripeEnabled, stripeServer, mailgunEnabled, mailgunServer}, use, testInfo: TestInfo) => {
         const environmentManager = await getEnvironmentManager();
         const requestedIsolation = getResolvedIsolation(testInfo, isolation);
         // Stripe-enabled tests boot Ghost against a per-test fake Stripe server,
@@ -209,7 +215,12 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
             STRIPE_API_PORT: String(stripeServer.port),
             STRIPE_API_PROTOCOL: 'http'
         } : {};
-        const mergedConfig = {...(config || {}), ...stripeConfig};
+        const mailgunConfig = mailgunEnabled && mailgunServer ? {
+            bulkEmail__mailgun__apiKey: 'fake-mailgun-api-key',
+            bulkEmail__mailgun__domain: 'fake.mailgun.test',
+            bulkEmail__mailgun__baseUrl: `http://host.docker.internal:${mailgunServer.port}/v3`
+        } : {};
+        const mergedConfig = {...(config || {}), ...stripeConfig, ...mailgunConfig};
         const stripe = stripeServer ? {
             secretKey: STRIPE_SECRET_KEY,
             publishableKey: STRIPE_PUBLISHABLE_KEY
@@ -320,6 +331,7 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
     isolation: [undefined, {option: true}],
     labs: [undefined, {option: true}],
     stripeEnabled: [false, {option: true}],
+    mailgunEnabled: [false, {option: true}],
 
     stripeServer: async ({stripeEnabled}, use) => {
         if (!stripeEnabled) {
@@ -337,6 +349,36 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         debug('Fake Stripe server stopped');
     },
     
+    mailgunServer: async ({mailgunEnabled}, use) => {
+        if (!mailgunEnabled) {
+            await use(undefined);
+            return;
+        }
+
+        const server = new FakeMailgunServer();
+        await server.start();
+        debug('Fake Mailgun server started on port', server.port);
+
+        await use(server);
+
+        await server.stop();
+        debug('Fake Mailgun server stopped');
+    },
+
+    mailgun: async ({mailgunEnabled, mailgunServer}, use) => {
+        if (!mailgunEnabled || !mailgunServer) {
+            await use(undefined);
+            return;
+        }
+
+        const service = new MailgunTestService(mailgunServer);
+        await use(service);
+    },
+
+    emailClient: async ({}, use) => {
+        await use(new MailPit());
+    },
+
     ghostInstance: async ({_testEnvironmentContext}, use, testInfo: TestInfo) => {
         debug('Using Ghost instance for test:', {
             testTitle: testInfo.title,

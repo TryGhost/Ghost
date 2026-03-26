@@ -22,6 +22,8 @@ class PublishFlow extends BasePage {
     readonly publishTypeSetting: Locator;
     readonly publishTypeButton: Locator;
     readonly emailRecipientsSetting: Locator;
+    readonly continueButton: Locator;
+    readonly confirmButton: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -30,10 +32,23 @@ class PublishFlow extends BasePage {
         this.publishTypeSetting = page.locator('[data-test-setting="publish-type"]');
         this.publishTypeButton = this.publishTypeSetting.locator('> button');
         this.emailRecipientsSetting = page.locator('[data-test-setting="email-recipients"]');
+        this.continueButton = page.locator('[data-test-modal="publish-flow"] [data-test-button="continue"]');
+        this.confirmButton = page.locator('[data-test-modal="publish-flow"] [data-test-button="confirm-publish"]');
     }
 
     async open(): Promise<void> {
         await this.publishButton.click();
+    }
+
+    async selectPublishType(type: 'publish' | 'publish+send' | 'send'): Promise<void> {
+        await this.publishTypeButton.click();
+        await this.page.locator(`[data-test-publish-type="${type}"] + label`).click();
+    }
+
+    async confirm(): Promise<void> {
+        await this.continueButton.click();
+        await this.confirmButton.click({force: true});
+        await this.confirmButton.waitFor({state: 'hidden'});
     }
 }
 
