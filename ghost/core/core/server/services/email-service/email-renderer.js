@@ -4,6 +4,10 @@ const logging = require('@tryghost/logging');
 const fs = require('fs').promises;
 const path = require('path');
 const clsx = require('clsx');
+/**
+ * @param {string} url
+ * @returns {boolean}
+ */
 function isUnsplashImage(url) {
     return /images\.unsplash\.com/.test(url);
 }
@@ -18,7 +22,13 @@ const crypto = require('crypto');
 const DEFAULT_LOCALE = 'en-gb';
 const CONTENT_IMAGES_PATH_WITHOUT_SIZE_REGEX = /\/content\/images\/(?!size\/)/;
 
-// Wrapper function so that i18next-parser can find these strings
+/**
+ * Wrapper function so that i18next-parser can find these strings.
+ *
+ * @template T
+ * @param {T} x
+ * @returns {T}
+ */
 const t = (x) => {
     return x;
 };
@@ -35,6 +45,10 @@ const messages = {
     }
 };
 
+/**
+ * @param {string} unsafe
+ * @returns {string}
+ */
 function escapeHtml(unsafe) {
     return unsafe
         .replace(/&/g, '&amp;')
@@ -44,6 +58,10 @@ function escapeHtml(unsafe) {
         .replace(/'/g, '&#039;');
 }
 
+/**
+ * @param {string} locale
+ * @returns {boolean}
+ */
 function isValidLocale(locale) {
     try {
         // Attempt to create a DateTimeFormat with the locale
@@ -54,6 +72,12 @@ function isValidLocale(locale) {
     }
 }
 
+/**
+ * @param {Readonly<Date>} date
+ * @param {string} timezone
+ * @param {string} [locale]
+ * @returns {string}
+ */
 function formatDateLong(date, timezone, locale = DEFAULT_LOCALE) {
     return DateTime.fromJSDate(date).setZone(timezone).setLocale(locale).toLocaleString({
         year: 'numeric',
@@ -62,11 +86,20 @@ function formatDateLong(date, timezone, locale = DEFAULT_LOCALE) {
     });
 }
 
+/**
+ * @param {string} string
+ * @returns {string}
+ */
 function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// This aids with lazyloading the cheerio dependency
+/**
+ * Wrap `cheerio.load` with lazy loading.
+ *
+ * @param {Parameters<typeof cheerio.load>[0]} html
+ * @return {ReturnType<typeof cheerio.load>}
+ */
 function cheerioLoad(html) {
     const cheerio = require('cheerio');
     return cheerio.load(html);
@@ -547,8 +580,6 @@ class EmailRenderer {
     }
 
     /**
-     * createUnsubscribeUrl
-     *
      * Takes a member and newsletter uuid. Returns the url that should be used to unsubscribe
      * In case of no member uuid, generates the preview unsubscribe url - `?preview=1`
      *
@@ -556,13 +587,14 @@ class EmailRenderer {
      * @param {Object} [options]
      * @param {string} [options.newsletterUuid] newsletter uuid
      * @param {boolean} [options.comments] Unsubscribe from comment emails
+     * @returns {string}
      */
     createUnsubscribeUrl(uuid, options = {}) {
         return this.#settingsHelpers.createUnsubscribeUrl(uuid, options);
     }
 
     /**
-     * createManageAccountUrl
+     * @returns {string}
      */
     createManageAccountUrl() {
         const siteUrl = this.#urlUtils.urlFor('home', true);
@@ -574,6 +606,9 @@ class EmailRenderer {
 
     /**
      * Returns whether a paid member is trialing a subscription
+     *
+     * @param {Readonly<MemberLike>} member
+     * @returns {boolean}
      */
     isMemberTrialing(member) {
         // Do we have an active subscription?
@@ -596,7 +631,7 @@ class EmailRenderer {
     }
 
     /**
-     * @param {MemberLike} member
+     * @param {Readonly<MemberLike>} member
      * @returns {string}
      */
     getMemberStatusText(member) {
@@ -871,6 +906,10 @@ class EmailRenderer {
         return this.#compiledHandlebarsRendererPromise;
     }
 
+    /**
+     * @param {unknown} data
+     * @returns {Promise<string>}
+     */
     async renderTemplate(data) {
         const renderTemplate = await this.#getCompiledHandlebarsRenderer();
         return renderTemplate(data);
@@ -900,8 +939,10 @@ class EmailRenderer {
 
     /**
      * Get email preheader text from post model
-     * @param {object} postModel
-     * @returns
+     * @param {Post} postModel
+     * @param {Segment} segment
+     * @param {string} html
+     * @returns {string}
      */
     #getEmailPreheader(postModel, segment, html) {
         let plaintext = postModel.get('plaintext');
@@ -932,11 +973,10 @@ class EmailRenderer {
     }
 
     /**
-     *
      * @param {*} text
      * @param {number} maxLength
      * @param {number} maxLengthMobile should be smaller than maxLength
-     * @returns
+     * @returns {string}
      */
     truncateHtml(text, maxLength, maxLengthMobile) {
         if (!maxLengthMobile || maxLength <= maxLengthMobile) {
@@ -959,6 +999,12 @@ class EmailRenderer {
 
     /**
      * @private
+     * @param {object} options
+     * @param {Post} options.post
+     * @param {Newsletter} options.newsletter
+     * @param {string} options.html
+     * @param {boolean} options.addPaywall
+     * @param {string} options.segment
      */
     async getTemplateData({post, newsletter, html, addPaywall, segment}) {
         const emailDesign = this.#getEmailDesign(newsletter);
@@ -1171,14 +1217,18 @@ class EmailRenderer {
     }
 
     /**
+     * Sets and limits the dimensions of an image.
+     *
      * @private
-     * Sets and limits the width of an image + returns the width
-     * @returns {Promise<{href: string, width: number, height: number | null}>}
+     * @param {undefined | null | string} href
+     * @param {number} [visibleWidth]
+     * @param {null | number} [visibleHeight]
+     * @returns {Promise<{href: null | string, width: number, height: number | null}>}
      */
     async limitImageWidth(href, visibleWidth = 600, visibleHeight = null) {
         if (!href) {
             return {
-                href,
+                href: null,
                 width: 0,
                 height: null
             };
