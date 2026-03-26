@@ -1145,6 +1145,7 @@ module.exports = {
     },
     email_templates: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
         background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'light'},
         header_background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'transparent'},
         header_image: {type: 'string', maxlength: 2000, nullable: true},
