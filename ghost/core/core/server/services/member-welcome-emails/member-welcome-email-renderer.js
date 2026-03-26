@@ -3,10 +3,10 @@ const path = require('path');
 const lexicalLib = require('../../lib/lexical');
 const {finalize} = require('../email-rendering/finalize');
 const errors = require('@tryghost/errors');
-const {textColorForBackgroundColor} = require('@tryghost/color-utils');
 const {MESSAGES} = require('./constants');
 const {wrapReplacementStrings} = require('../koenig/render-utils/replacement-strings');
 const linkReplacer = require('../lib/link-replacer');
+const {getEmailDesign} = require('../email-rendering/email-design');
 
 const REPLACEMENT_REGEX = /%%\{(\w+?)(?:,? *"(.*?)")?\}%%/g;
 const UNMATCHED_TOKEN_REGEX = /%%\{.*?\}%%/g;
@@ -113,9 +113,25 @@ class MemberWelcomeEmailRenderer {
      * @returns {Promise<{html: string, text: string, subject: string}>}
      */
     async render({lexical, subject, member, siteSettings}) {
+        const design = getEmailDesign({
+            accentColor: siteSettings.accentColor,
+            backgroundColor: '#ffffff',
+            buttonColor: 'accent',
+            buttonCorners: null,
+            buttonStyle: null,
+            dividerColor: null,
+            headerBackgroundColor: null,
+            imageCorners: null,
+            linkColor: 'accent',
+            linkStyle: null,
+            postTitleColor: null,
+            sectionTitleColor: null,
+            titleFontWeight: 'bold'
+        });
+
         let content;
         try {
-            content = await lexicalLib.render(lexical, {target: 'email', design: {accentColor: siteSettings.accentColor}});
+            content = await lexicalLib.render(lexical, {target: 'email', design});
         } catch (err) {
             throw new errors.IncorrectUsageError({
                 message: MESSAGES.INVALID_LEXICAL_STRUCTURE,
@@ -142,8 +158,6 @@ class MemberWelcomeEmailRenderer {
 
         const managePreferencesUrl = new URL('#/portal/account/newsletters', siteSettings.url).href;
         const year = new Date().getFullYear();
-        const accentColor = siteSettings.accentColor || '#15212A';
-        const accentContrastColor = textColorForBackgroundColor(accentColor).hex();
 
         const html = this.#wrapperTemplate({
             content: contentWithAbsoluteLinks,
@@ -151,22 +165,9 @@ class MemberWelcomeEmailRenderer {
             subject: subjectWithReplacements,
             siteTitle: siteSettings.title,
             siteUrl: siteSettings.url,
-            accentColor,
-            accentContrastColor,
-            backgroundColor: '#ffffff',
-            dividerColor: '#e0e7eb',
-            backgroundIsDark: false,
-            hasRoundedImageCorners: false,
-            sectionTitleColor: null,
-            titleWeight: '700',
-            titleStrongWeight: '800',
-            linkColor: accentColor,
-            hasOutlineButtons: false,
-            buttonColor: accentColor,
-            buttonTextColor: accentContrastColor,
-            buttonBorderRadius: '6px',
             managePreferencesUrl,
             year,
+            ...design,
             classes: {
                 container: 'container'
             }
