@@ -1,5 +1,14 @@
 name: Deploy to Staging
 
+# DISABLED: The deploy-to-staging label workflow is currently broken and disabled.
+# Problems:
+#   1. Admin is global — deploying a PR's admin overwrites admin-forward/ for ALL staging
+#      sites, not just demo.ghost.is. Per-site admin versioning is needed first.
+#   2. Main merges overwrite — any merge to main triggers a full staging rollout that
+#      overwrites both the server version on demo.ghost.is and admin-forward/ globally.
+# The deployment lasts only until the next merge to main, making it unreliable.
+# See: https://www.notion.so/ghost/Proposal-Per-site-admin-versioning-31951439c03081daa133eb0215642202
+
 on:
   pull_request_target:
     types: [labeled]
@@ -10,7 +19,8 @@ jobs:
     # Runs when the "deploy-to-staging" label is added — requires collaborator write access.
     # Fork PRs are rejected because they don't have GHCR images (CI uses artifact transfer).
     if: >-
-      github.event.label.name == 'deploy-to-staging'
+      false
+      && github.event.label.name == 'deploy-to-staging'
       && github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name
     runs-on: ubuntu-latest
     permissions:
