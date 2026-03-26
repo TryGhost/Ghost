@@ -40,6 +40,7 @@ describe('Exporter', function () {
                 'email_recipient_failures',
                 'email_recipients',
                 'email_spam_complaint_events',
+                'email_templates',
                 'emails',
                 'integrations',
                 'invites',
