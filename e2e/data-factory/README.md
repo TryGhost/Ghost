@@ -25,7 +25,7 @@ This is part of the Ghost e2e test suite. All dependencies are managed by the ma
 
 1. **Start Ghost development server** (provides database):
    ```bash
-   yarn dev
+   pnpm dev
    ```
 
 2. **Configure database connection** (optional - uses Ghost's database by default):
@@ -36,7 +36,7 @@ This is part of the Ghost e2e test suite. All dependencies are managed by the ma
 
 3. **Build the e2e package** (includes data-factory):
    ```bash
-   cd e2e && yarn build
+   cd e2e && pnpm build
    ```
 
 ## Usage

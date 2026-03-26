@@ -8,6 +8,12 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Enable pnpm
+      shell: bash
+      run: |
+        corepack enable
+        corepack prepare pnpm@10.33.0 --activate
+
     - name: Check dependency cache
       id: dep-cache
       uses: actions/cache/restore@v4

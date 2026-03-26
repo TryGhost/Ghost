@@ -19,7 +19,7 @@ fi
 # Dev-mode E2E Ghost containers mount the local workspace package, which needs a
 # built entrypoint before Ghost can require it during boot.
 if [[ "$GHOST_E2E_MODE" == "dev" ]]; then
-  yarn workspace @tryghost/parse-email-address build >/dev/null
+  pnpm --filter @tryghost/parse-email-address build >/dev/null
 fi
 
 if [[ "${CI:-}" != "true" ]]; then

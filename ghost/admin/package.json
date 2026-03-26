@@ -18,12 +18,12 @@
   "scripts": {
     "dev": "ember serve",
     "build": "ember build --environment=production --silent",
-    "build:dev": "yarn build --environment=development",
+    "build:dev": "ember build --environment=development --silent",
     "test:unit": "true",
     "test": "ember exam --split 2 --parallel",
     "lint:js": "eslint . --cache",
     "lint:hbs": "ember-template-lint .",
-    "lint": "yarn lint:js && yarn lint:hbs"
+    "lint": "eslint . --cache && ember-template-lint ."
   },
   "engines": {
     "node": "^22.13.1"
@@ -111,7 +111,7 @@
     "ember-modifier": "4.2.0",
     "ember-moment": "10.0.1",
     "ember-one-way-select": "4.0.1",
-    "ember-power-datepicker": "cibernox/ember-power-datepicker",
+    "ember-power-datepicker": "https://codeload.github.com/cibernox/ember-power-datepicker/tar.gz/da580474a2c449b715444934ddb626b7c07f46a7",
     "ember-power-select": "6.0.1",
     "ember-resolver": "8.1.0",
     "ember-simple-auth": "5.0.0",
@@ -160,12 +160,6 @@
       "lib/ember-power-calendar-moment",
       "lib/ember-power-calendar-utils"
     ]
-  },
-  "resolutions": {
-    "ember-basic-dropdown": "6.0.2",
-    "ember-in-viewport": "4.1.0",
-    "moment": "2.24.0",
-    "moment-timezone": "0.5.45"
   },
   "ember": {
     "edition": "octane"

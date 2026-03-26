@@ -4,11 +4,11 @@ This file provides guidance to AI Agents when working with code in this reposito
 
 ## Package Manager
 
-**Always use `yarn` (v1) for all commands.** This repository uses yarn workspaces, not npm.
+**Always use `pnpm` for all commands.** This repository uses pnpm workspaces, not npm.
 
 ## Monorepo Structure
 
-Ghost is a Yarn v1 + Nx monorepo with three workspace groups:
+Ghost is a pnpm + Nx monorepo with three workspace groups:
 
 ### ghost/* - Core Ghost packages
 - **ghost/core** - Main Ghost application (Node.js/Express backend)
@@ -42,62 +42,62 @@ Two categories of apps:
 
 ### Development
 ```bash
-yarn                           # Install dependencies
-yarn setup                     # First-time setup (installs deps + submodules)
-yarn dev                       # Start development (Docker backend + host frontend dev servers)
+pnpm install                   # Install dependencies
+pnpm setup                     # First-time setup (installs deps + submodules)
+pnpm dev                       # Start development (Docker backend + host frontend dev servers)
 ```
 
 ### Building
 ```bash
-yarn build                     # Build all packages (Nx handles dependencies)
-yarn build:clean               # Clean build artifacts and rebuild
+pnpm build                    # Build all packages (Nx handles dependencies)
+pnpm build:clean              # Clean build artifacts and rebuild
 ```
 
 ### Testing
 ```bash
 # Unit tests (from root)
-yarn test:unit                 # Run all unit tests in all packages
+pnpm test:unit                # Run all unit tests in all packages
 
 # Ghost core tests (from ghost/core/)
 cd ghost/core
-yarn test:unit                 # Unit tests only
-yarn test:integration          # Integration tests
-yarn test:e2e                  # E2E API tests (not browser)
-yarn test:browser              # Playwright browser tests for core
-yarn test:all                  # All test types
+pnpm test:unit                # Unit tests only
+pnpm test:integration         # Integration tests
+pnpm test:e2e                 # E2E API tests (not browser)
+pnpm test:browser             # Playwright browser tests for core
+pnpm test:all                 # All test types
 
 # E2E browser tests (from root)
-yarn test:e2e                  # Run e2e/ Playwright tests
+pnpm test:e2e                 # Run e2e/ Playwright tests
 
 # Running a single test
 cd ghost/core
-yarn test:single test/unit/path/to/test.test.js
+pnpm test:single test/unit/path/to/test.test.js
 ```
 
 ### Linting
 ```bash
-yarn lint                      # Lint all packages
-cd ghost/core && yarn lint     # Lint Ghost core (server, shared, frontend, tests)
-cd ghost/admin && yarn lint    # Lint Ember admin
+pnpm lint                     # Lint all packages
+cd ghost/core && pnpm lint    # Lint Ghost core (server, shared, frontend, tests)
+cd ghost/admin && pnpm lint   # Lint Ember admin
 ```
 
 ### Database
 ```bash
-yarn knex-migrator migrate     # Run database migrations
-yarn reset:data                # Reset database with test data (1000 members, 100 posts) (requires yarn dev running)
-yarn reset:data:empty          # Reset database with no data (requires yarn dev running)
+pnpm knex-migrator migrate    # Run database migrations
+pnpm reset:data               # Reset database with test data (1000 members, 100 posts) (requires pnpm dev running)
+pnpm reset:data:empty         # Reset database with no data (requires pnpm dev running)
 ```
 
 ### Docker
 ```bash
-yarn docker:build              # Build Docker images
-yarn docker:clean              # Stop containers, remove volumes and local images
-yarn docker:down               # Stop containers
+pnpm docker:build             # Build Docker images
+pnpm docker:clean             # Stop containers, remove volumes and local images
+pnpm docker:down              # Stop containers
 ```
 
-### How yarn dev works
+### How pnpm dev works
 
-The `yarn dev` command uses a **hybrid Docker + host development** setup:
+The `pnpm dev` command uses a **hybrid Docker + host development** setup:
 
 **What runs in Docker:**
 - Ghost Core backend (with hot-reload via mounted source)
@@ -111,12 +111,12 @@ The `yarn dev` command uses a **hybrid Docker + host development** setup:
 **Setup:**
 ```bash
 # Start everything (Docker + frontend dev servers)
-yarn dev
+pnpm dev
 
 # With optional services (uses Docker Compose file composition)
-yarn dev:analytics             # Include Tinybird analytics
-yarn dev:storage               # Include MinIO S3-compatible object storage
-yarn dev:all                   # Include all optional services
+pnpm dev:analytics            # Include Tinybird analytics
+pnpm dev:storage              # Include MinIO S3-compatible object storage
+pnpm dev:all                  # Include all optional services
 ```
 
 **Accessing Services:**
@@ -251,7 +251,7 @@ Users requested ability to switch themes for better accessibility
 - **Legacy:** `admin-x-design-system` (being phased out, avoid for new work)
 
 ### Analytics (Tinybird)
-- **Local development:** `yarn dev:analytics` (starts Tinybird + MySQL)
+- **Local development:** `pnpm dev:analytics` (starts Tinybird + MySQL)
 - **Config:** Add Tinybird config to `ghost/core/config.development.json`
 - **Scripts:** `ghost/core/core/server/data/tinybird/scripts/`
 - **Datafiles:** `ghost/core/core/server/data/tinybird/`
@@ -260,11 +260,11 @@ Users requested ability to switch themes for better accessibility
 
 ### Build Issues
 ```bash
-yarn fix                       # Clean cache + node_modules + reinstall
-yarn build:clean               # Clean build artifacts
-yarn nx reset                  # Reset Nx cache
+pnpm fix                      # Clean cache + node_modules + reinstall
+pnpm build:clean              # Clean build artifacts
+pnpm nx reset                 # Reset Nx cache
 ```
 
 ### Test Issues
 - **E2E failures:** Check `e2e/CLAUDE.md` for debugging tips
-- **Docker issues:** `yarn docker:clean && yarn docker:build`
+- **Docker issues:** `pnpm docker:clean && pnpm docker:build`

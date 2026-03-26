@@ -12,13 +12,13 @@ const GHOST_URL = process.env.GHOST_URL || 'http://localhost:2368';
 const GOLDEN_POST_PATH = path.join(__dirname, '..', 'test', 'utils', 'fixtures', 'email-service', 'golden-post.json');
 
 function usage() {
-    console.error('Usage: GHOST_GOLDEN_POST_AUTH=id:secret yarn generate-golden-email <segment> <output-path>');
+    console.error('Usage: GHOST_GOLDEN_POST_AUTH=id:secret pnpm generate-golden-email <segment> <output-path>');
     console.error('');
     console.error('  segment:     Member segment filter, e.g. "status:free" or "status:-free"');
     console.error('  output-path: Path to write the rendered email HTML');
     console.error('');
     console.error('GHOST_GOLDEN_POST_AUTH should be an Admin API key in id:secret format.');
-    console.error('Requires a running Ghost dev instance (yarn dev).');
+    console.error('Requires a running Ghost dev instance (pnpm dev).');
     process.exit(1);
 }
 

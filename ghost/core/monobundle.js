@@ -97,6 +97,14 @@ function getWorkspaces(from) {
         process.exit(1);
     }
 
+    if (pkgInfo.pkg.monobundle?.overrides) {
+        pkgInfo.pkg.pnpm = pkgInfo.pkg.pnpm || {};
+        pkgInfo.pkg.pnpm.overrides = {
+            ...pkgInfo.pkg.monobundle.overrides,
+            ...(pkgInfo.pkg.pnpm.overrides || {})
+        };
+    }
+
     const bundlePath = './components';
     if (!fs.existsSync(bundlePath)){
         fs.mkdirSync(bundlePath);
@@ -141,8 +149,10 @@ function getWorkspaces(from) {
             pkgInfo.pkg.optionalDependencies[workspacePkgInfo.pkg.name] = packedFilename;
         }
 
-        console.log(`[${workspacePkgInfo.pkg.name}] resolution override => ${packedFilename}\n`);
-        pkgInfo.pkg.resolutions[workspacePkgInfo.pkg.name] = packedFilename;
+        console.log(`[${workspacePkgInfo.pkg.name}] override => ${packedFilename}\n`);
+        pkgInfo.pkg.pnpm = pkgInfo.pkg.pnpm || {};
+        pkgInfo.pkg.pnpm.overrides = pkgInfo.pkg.pnpm.overrides || {};
+        pkgInfo.pkg.pnpm.overrides[workspacePkgInfo.pkg.name] = packedFilename;
 
         packagesToPack.push(w);
     }
@@ -165,7 +175,7 @@ function getWorkspaces(from) {
     const filesToCopy = [
         'README.md',
         'LICENSE',
-        'yarn.lock'
+        'pnpm-lock.yaml'
     ];
 
     for (const file of filesToCopy) {

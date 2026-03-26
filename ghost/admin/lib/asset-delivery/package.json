@@ -2,5 +2,8 @@
   "name": "asset-delivery",
   "keywords": [
     "ember-addon"
-  ]
+  ],
+  "dependencies": {
+    "lodash": "4.17.21"
+  }
 }

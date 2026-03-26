@@ -3,7 +3,7 @@ import {defineConfig} from '@playwright/test';
 /**
  * Visual regression test config for TailwindCSS migration.
  *
- * Runs against a live `yarn dev` Ghost instance (localhost:2368).
+ * Runs against a live `pnpm dev` Ghost instance (localhost:2368).
  * Start Ghost first, then:
  *
  *   # Capture/update golden baselines

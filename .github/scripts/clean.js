@@ -1,7 +1,7 @@
 // NOTE: this file can't use any NPM dependencies because it needs to run even if dependencies aren't installed yet or are corrupted
 const {execSync} = require('child_process');
 
-cleanYarnCache();
+cleanPnpmArtifacts();
 resetNxCache();
 deleteNodeModules();
 deleteBuildArtifacts();
@@ -44,12 +44,12 @@ function resetNxCache() {
     }
 }
 
-function cleanYarnCache() {
-    console.log('Cleaning yarn cache...');
+function cleanPnpmArtifacts() {
+    console.log('Cleaning pnpm artifacts...');
     try {
-        execSync('rm -rf .yarncache/* .yarncachecopy/*');
+        execSync('rm -rf .pnpm-store .pnpmhash .yarncache/* .yarncachecopy/* .yarnhash');
     } catch (error) {
-        console.error('Failed to clean yarn cache:', error);
+        console.error('Failed to clean pnpm artifacts:', error);
         process.exit(1);
     }
 }

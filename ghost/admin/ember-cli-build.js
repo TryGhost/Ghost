@@ -246,18 +246,18 @@ module.exports = function (defaults) {
     });
 
     // Stop: Normalize
-    app.import('node_modules/normalize.css/normalize.css');
+    app.import(require.resolve('normalize.css/normalize.css'));
 
     // 'dem Styles
     // import codemirror styles rather than lazy-loading so that
     // our overrides work correctly
-    app.import('node_modules/codemirror/lib/codemirror.css');
-    app.import('node_modules/codemirror/theme/xq-light.css');
+    app.import(require.resolve('codemirror/lib/codemirror.css'));
+    app.import(require.resolve('codemirror/theme/xq-light.css'));
 
     // 'dem Scripts
-    app.import('node_modules/google-caja-bower/html-css-sanitizer-bundle.js');
-    app.import('node_modules/keymaster/keymaster.js');
-    app.import('node_modules/reframe.js/dist/noframe.js');
+    app.import(require.resolve('google-caja-bower/html-css-sanitizer-bundle.js'));
+    app.import(require.resolve('keymaster/keymaster.js'));
+    app.import(require.resolve('reframe.js/dist/noframe.js'));
 
     // pull things we rely on via lazy-loading into the test-support.js file so
     // that tests don't break when running via http://localhost:4200/tests

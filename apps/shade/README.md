@@ -46,19 +46,19 @@ This is a monorepo package.
 
 Follow the instructions for the top-level repo.
 1. `git clone` this repo & `cd` into it as usual
-2. Run `yarn` to install top-level dependencies.
+2. Run `pnpm install` to install top-level dependencies.
 
 Local docs with Storybook:
 
-- `yarn storybook` — run Storybook and view docs under `src/docs/`
-- `yarn build-storybook` — build a static export
+- `pnpm storybook` — run Storybook and view docs under `src/docs/`
+- `pnpm build-storybook` — build a static export
 
 ## Test
 
-- `yarn test` — type-checks and runs Vitest with coverage
-- `yarn test:unit` — type-checks and runs Vitest
-- `yarn test:types` — TypeScript only
-- `yarn lint` — ESLint for `src/` and `test/`
+- `pnpm test` — type-checks and runs Vitest with coverage
+- `pnpm test:unit` — type-checks and runs Vitest
+- `pnpm test:types` — TypeScript only
+- `pnpm lint` — ESLint for `src/` and `test/`
 
 ## Notes
 

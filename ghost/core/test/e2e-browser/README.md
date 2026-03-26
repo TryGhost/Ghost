@@ -12,7 +12,7 @@ npx playwright install
 
 #### Running tests
 
-Tests should be run from the root of the repository, using `yarn test:browser` rather than from the `ghost/core` directory.
+Tests should be run from the root of the repository, using `pnpm test:browser` rather than from the `ghost/core` directory.
 
 Running from the root ensures that all of Ghost's apps are built from the local source code and made available to the test runner.
 

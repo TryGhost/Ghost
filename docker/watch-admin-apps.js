@@ -41,7 +41,7 @@ function buildAllProjects(triggerApp) {
         log(triggerApp, 'Running nx run-many to rebuild all projects...');
         const allProjects = Object.values(apps).map(app => app.nxName).join(',');
 
-        const child = spawn('yarn', ['nx', 'run-many', '-t', 'build', `--projects=${allProjects}`], {
+        const child = spawn('pnpm', ['nx', 'run-many', '-t', 'build', `--projects=${allProjects}`], {
             cwd: '/home/ghost',
             stdio: 'pipe',
             env: {
@@ -138,7 +138,7 @@ async function main() {
         // Phase 1: Build everything with nx handling dependency order and parallelization
         const allProjects = Object.values(apps).map(app => app.nxName).join(',');
 
-        const child = spawn('yarn', ['nx', 'run-many', '-t', 'build', `--projects=${allProjects}`], {
+        const child = spawn('pnpm', ['nx', 'run-many', '-t', 'build', `--projects=${allProjects}`], {
             cwd: '/home/ghost',
             stdio: 'pipe',
             env: {

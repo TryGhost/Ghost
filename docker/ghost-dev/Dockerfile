@@ -18,15 +18,16 @@ RUN apt-get update && \
 WORKDIR /home/ghost
 
 # Copy package files for dependency installation
-COPY package.json yarn.lock ./
-COPY ghost/core/package.json ghost/core/package.json
-COPY ghost/i18n/package.json ghost/i18n/package.json
-COPY ghost/parse-email-address/package.json ghost/parse-email-address/package.json
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps apps
+COPY e2e e2e
+COPY ghost ghost
 
 # Install dependencies
 # Note: Dependencies are installed at build time, but source code is mounted at runtime
 COPY .github/scripts/install-deps.sh .github/scripts/install-deps.sh
-RUN --mount=type=cache,target=/usr/local/share/.cache/yarn,id=yarn-cache \
+RUN corepack enable
+RUN --mount=type=cache,target=/home/ghost/.pnpm-store,id=pnpm-store \
     bash .github/scripts/install-deps.sh
 
 # Copy entrypoint script that optionally loads Tinybird config
@@ -47,4 +48,4 @@ ENV portal__url=/ghost/assets/portal/portal.min.js \
 WORKDIR /home/ghost/ghost/core
 
 ENTRYPOINT ["/home/ghost/entrypoint.sh"]
-CMD ["yarn", "dev"]
+CMD ["pnpm", "dev"]

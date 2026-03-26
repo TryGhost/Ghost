@@ -35,8 +35,8 @@ run_bg() {
 run_bg "runtime-preflight" bash "$REPO_ROOT/e2e/scripts/prepare-ci-e2e-build-mode.sh"
 
 # Build the assets + E2E image layer while IO-heavy prep is running.
-yarn workspace @tryghost/e2e build:apps
-yarn workspace @tryghost/e2e build:docker
+pnpm --filter @tryghost/e2e build:apps
+pnpm --filter @tryghost/e2e build:docker
 
 for i in "${!pids[@]}"; do
     if ! wait "${pids[$i]}"; then

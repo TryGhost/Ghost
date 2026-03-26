@@ -1,5 +1,5 @@
 import Modal from './modal';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NiceModal, {type NiceModalHocProps, useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import {ButtonColor} from '../button';
 
@@ -64,4 +64,6 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
     );
 };
 
-export default NiceModal.create(ConfirmationModalContent);
+const ConfirmationModal: React.FC<ConfirmationModalProps & NiceModalHocProps> = NiceModal.create(ConfirmationModalContent);
+
+export default ConfirmationModal;

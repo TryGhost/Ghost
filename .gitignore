@@ -6,6 +6,7 @@ logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
 # Runtime data
 pids
@@ -44,6 +45,7 @@ typings/
 
 # Optional npm cache directory
 .npm
+.pnpm-store
 
 # Nx
 .nxcache
@@ -185,6 +187,7 @@ temp*.sql
 .yarncache
 .yarncachecopy
 .yarnhash
+.pnpmhash
 
 # yalc — for linking local packages in a docker compatible way
 yalc.lock

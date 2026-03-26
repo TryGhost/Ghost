@@ -9,6 +9,7 @@ env:
   FORCE_COLOR: 1
   HEAD_COMMIT: ${{ github.sha }}
   CACHED_DEPENDENCY_PATHS: |
+    ${{ github.workspace }}/.pnpm-store
     ${{ github.workspace }}/node_modules
     ${{ github.workspace }}/apps/*/node_modules
     ${{ github.workspace }}/ghost/*/node_modules
@@ -39,7 +40,7 @@ jobs:
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
-          DEPENDENCY_CACHE_KEY: dep-cache-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
+          DEPENDENCY_CACHE_KEY: dep-cache-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
 
       - name: Verify tag matches package.json
         run: |
@@ -51,10 +52,10 @@ jobs:
           fi
 
       - name: Build server and admin assets
-        run: yarn build:production
+        run: pnpm build:production
 
       - name: Pack standalone distribution
-        run: yarn workspace ghost pack:standalone
+        run: pnpm --filter ghost pack:standalone
 
       - name: Prepare Docker build context
         run: mv ghost/core/package/ /tmp/ghost-production/

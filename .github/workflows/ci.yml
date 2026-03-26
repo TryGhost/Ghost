@@ -14,6 +14,7 @@ env:
   FORCE_COLOR: 1
   HEAD_COMMIT: ${{ github.sha }}
   CACHED_DEPENDENCY_PATHS: |
+    ${{ github.workspace }}/.pnpm-store
     ${{ github.workspace }}/node_modules
     ${{ github.workspace }}/apps/*/node_modules
     ${{ github.workspace }}/ghost/*/node_modules
@@ -106,7 +107,7 @@ jobs:
             shared: &shared
               - '.github/**'
               - 'package.json'
-              - 'yarn.lock'
+              - 'pnpm-lock.yaml'
             core:
               - *shared
               - 'ghost/**'
@@ -148,10 +149,10 @@ jobs:
               - '!**/*.md'
 
       - name: Compute lockfile hash
-        run: echo "hash=lockfile-${{ hashFiles('yarn.lock') }}" >> "$GITHUB_ENV"
+        run: echo "hash=lockfile-${{ hashFiles('pnpm-lock.yaml') }}" >> "$GITHUB_ENV"
 
       - name: Compute dependency cache key
-        run: echo "cachekey=dep-cache-${{ hashFiles('yarn.lock') }}-${{ env.HEAD_COMMIT }}" >> "$GITHUB_ENV"
+        run: echo "cachekey=dep-cache-${{ hashFiles('pnpm-lock.yaml') }}-${{ env.HEAD_COMMIT }}" >> "$GITHUB_ENV"
 
       - name: Compute dependency cache restore key
         run: |
@@ -267,7 +268,7 @@ jobs:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - run: yarn nx affected -t lint --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+      - run: pnpm nx affected -t lint --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -298,7 +299,7 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Run i18n tests
-        run: yarn nx run @tryghost/i18n:test
+        run: pnpm nx run @tryghost/i18n:test
 
   job_admin-tests:
     runs-on: ubuntu-latest
@@ -321,13 +322,13 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - run: yarn nx run ghost-admin:test
+      - run: pnpm nx run ghost-admin:test
         env:
           BROWSER: Chrome
 
       # Merge coverage reports and upload
       - name: Merge Admin test coverage
-        run: yarn ember coverage-merge
+        run: pnpm exec ember coverage-merge
         working-directory: ghost/admin
       - uses: actions/upload-artifact@v4
         with:
@@ -358,7 +359,6 @@ jobs:
         FORCE_COLOR: 0
       with:
         node-version: ${{ env.NODE_VERSION }}
-        cache: yarn
 
     - name: Install Stripe-CLI
       run: |
@@ -375,7 +375,7 @@ jobs:
 
     - name: Run migrations
       working-directory: ghost/core
-      run: yarn knex-migrator init
+      run: pnpm knex-migrator init
       env:
         NODE_OPTIONS: "--import=tsx"
 
@@ -383,13 +383,13 @@ jobs:
       uses: ./.github/actions/setup-playwright
 
     - name: Build TS packages
-      run: yarn nx run-many -t build --exclude=ghost-admin
+      run: pnpm nx run-many -t build --exclude=ghost-admin
 
     - name: Build Admin
-      run: yarn nx run ghost-admin:build:dev
+      run: pnpm nx run ghost-admin:build:dev
 
     - name: Run Playwright tests locally
-      run: yarn test:browser
+      run: pnpm test:browser
       env:
         CI: true
         STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
@@ -446,16 +446,16 @@ jobs:
       - name: Determine affected unit-test projects
         id: affected_unit_projects
         run: |
-          PROJECTS=$(yarn -s nx show projects --affected --withTarget=test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }} --sep=, | tr -d '\n')
+          PROJECTS=$(pnpm nx show projects --affected --withTarget=test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }} --sep=, | tr -d '\n')
           echo "projects=$PROJECTS" >> "$GITHUB_OUTPUT"
 
       # Build only projects that will run unit tests
       - name: Build assets for affected unit tests
         if: steps.affected_unit_projects.outputs.projects != ''
-        run: yarn nx run-many -t build --projects="${{ steps.affected_unit_projects.outputs.projects }}"
+        run: pnpm nx run-many -t build --projects="${{ steps.affected_unit_projects.outputs.projects }}"
 
       - name: Run unit tests
-        run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+        run: pnpm nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
         env:
           FORCE_COLOR: 0
           GHOST_UNIT_TEST_VARIANT: ci
@@ -522,7 +522,7 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Build TS packages
-        run: yarn nx run-many -t build --exclude=ghost-admin
+        run: pnpm nx run-many -t build --exclude=ghost-admin
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@v2.0
@@ -542,11 +542,11 @@ jobs:
 
       - name: E2E tests
         working-directory: ghost/core
-        run: yarn test:ci:e2e
+        run: pnpm test:ci:e2e
 
       - name: Integration tests
         working-directory: ghost/core
-        run: yarn test:ci:integration
+        run: pnpm test:ci:integration
 
       - uses: actions/upload-artifact@v4
         if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
@@ -612,7 +612,7 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Build TS packages
-        run: yarn nx run-many -t build --exclude=ghost-admin
+        run: pnpm nx run-many -t build --exclude=ghost-admin
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
@@ -627,7 +627,7 @@ jobs:
 
       - name: Legacy tests
         working-directory: ghost/core
-        run: yarn test:ci:legacy
+        run: pnpm test:ci:legacy
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -659,7 +659,7 @@ jobs:
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
-      - run: yarn nx run @tryghost/admin-x-settings:test:acceptance
+      - run: pnpm nx run @tryghost/admin-x-settings:test:acceptance
 
       - name: Upload test results
         if: always()
@@ -699,7 +699,7 @@ jobs:
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
-      - run: yarn nx run @tryghost/activitypub:test:acceptance
+      - run: pnpm nx run @tryghost/activitypub:test:acceptance
 
       - name: Upload test results
         if: always()
@@ -739,7 +739,7 @@ jobs:
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
-      - run: yarn nx run @tryghost/comments-ui:test
+      - run: pnpm nx run @tryghost/comments-ui:test
 
       - name: Upload test results
         if: always()
@@ -779,7 +779,7 @@ jobs:
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
-      - run: yarn nx run @tryghost/signup-form:test:e2e
+      - run: pnpm nx run @tryghost/signup-form:test:e2e
 
       - name: Upload test results
         if: always()
@@ -853,7 +853,7 @@ jobs:
 
       - run: node .github/scripts/bump-version.js canary
 
-      - run: yarn archive
+      - run: pnpm archive
 
       - run: mv ghost-*.tgz ghost.tgz
         working-directory: ghost/core
@@ -920,10 +920,10 @@ jobs:
             export GHOST_BUILD_VERSION="${PKG_VERSION}+${SHORT_SHA}"
             echo "GHOST_BUILD_VERSION=${GHOST_BUILD_VERSION}" >> $GITHUB_ENV
           fi
-          yarn build:production
+          pnpm build:production
 
       - name: Pack standalone distribution
-        run: yarn workspace ghost pack:standalone
+        run: pnpm --filter ghost pack:standalone
 
       - name: Prepare Docker build context
         run: mv ghost/core/package/ /tmp/ghost-production/
@@ -1181,7 +1181,7 @@ jobs:
 
       - name: Stop E2E infra
         if: always()
-        run: yarn workspace @tryghost/e2e infra:down
+        run: pnpm --filter @tryghost/e2e infra:down
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
@@ -1452,7 +1452,7 @@ jobs:
 
       - name: Build the package
         if: steps.version_check.outputs.version_changed == 'true'
-        run: yarn run nx build ${{ matrix.package_name }}
+        run: pnpm nx build ${{ matrix.package_name }}
 
       - name: Configure .npmrc
         if: steps.version_check.outputs.version_changed == 'true'

@@ -6,7 +6,7 @@ This is the home of the Ember.js-based Admin app that ships with [Ghost](https:/
 
 ### Running tests in the browser
 
-Run all tests in the browser by running `yarn dev` in the Ghost monorepo and visiting http://localhost:4200/tests. The code is hotloaded on change and you can filter which tests to run.
+Run all tests in the browser by running `pnpm dev` in the Ghost monorepo and visiting http://localhost:4200/tests. The code is hotloaded on change and you can filter which tests to run.
 
 [Testing public documentation](https://ghost.notion.site/Testing-Ember-560cec6700fc4d37a58b3ba9febb4b4b)
 
@@ -20,7 +20,7 @@ Tip: You can use `this.timeout(0); await this.pauseTest();` in your tests to tem
 To build and run tests in the CLI, you can use:
 
 ```bash
-TZ=UTC yarn test
+TZ=UTC pnpm test
 ```
 _Note the `TZ=UTC` environment variable which is currently required to get tests working if your system timezone doesn't match UTC._
 
@@ -29,13 +29,13 @@ _Note the `TZ=UTC` environment variable which is currently required to get tests
 However, this is very slow when writing tests, as it requires the app to be rebuilt on every change. Instead, create a separate watching build with:
 
 ```bash
-yarn build --environment=test -w -o="dist-test"
+pnpm build --environment=test -w -o="dist-test"
 ```
 
 Then run tests with:
 
 ```bash
-TZ=UTC yarn test 1 --reporter dot --path="dist-test"
+TZ=UTC pnpm test 1 --reporter dot --path="dist-test"
 ```
 
 The `--reporter dot` shows a dot (`.`) for every successful test, and `F` for every failed test. It renders the output of the failed tests only.
@@ -44,7 +44,7 @@ The `--reporter dot` shows a dot (`.`) for every successful test, and `F` for ev
 
 To run a specific test file:
 ```bash
-TZ=UTC yarn test 1 --reporter dot --path="dist-test" -mp=tests/unit/helpers/gh-count-characters-test.js
+TZ=UTC pnpm test 1 --reporter dot --path="dist-test" -mp=tests/unit/helpers/gh-count-characters-test.js
 ```
 
 ---

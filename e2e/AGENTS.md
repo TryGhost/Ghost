@@ -6,34 +6,34 @@ E2E testing guidance for AI assistants (Claude, Codex, etc.) working with Ghost 
 
 ## Critical Rules
 1. **Always follow ADRs** in `../adr/` folder (ADR-0001: AAA pattern, ADR-0002: Page Objects)
-2. **Always use yarn**, never npm
-3. **Always run after changes**: `yarn lint` and `yarn test:types`
+2. **Always use pnpm**, never npm
+3. **Always run after changes**: `pnpm lint` and `pnpm test:types`
 4. **Never use CSS/XPath selectors** - only semantic locators or data-testid
 5. **Prefer less comments and giving things clear names**
 
 ## Essential Commands
 ```bash
-yarn test                                       # Run all tests
-yarn test tests/path/to/test.ts                 # Run specific test
-yarn lint                                       # Required after writing tests
-yarn test:types                                 # Check TypeScript errors
-yarn build                                      # Required after factory changes
-yarn test --debug                               # See browser during execution, for debugging
-PRESERVE_ENV=true yarn test                     # Debug failed tests (keeps containers)
+pnpm test                                       # Run all tests
+pnpm test tests/path/to/test.ts                 # Run specific test
+pnpm lint                                       # Required after writing tests
+pnpm test:types                                 # Check TypeScript errors
+pnpm build                                      # Required after factory changes
+pnpm test --debug                               # See browser during execution, for debugging
+PRESERVE_ENV=true pnpm test                     # Debug failed tests (keeps containers)
 ```
 
 ## Dev Environment Mode (Recommended)
 
 When `GHOST_E2E_MODE` is unset, the e2e shell entrypoints auto-select `dev` only if the local admin dev server is reachable. Otherwise they fall back to `build`.
 
-When `yarn dev` is running, e2e tests use dev mode:
+When `pnpm dev` is running, e2e tests use dev mode:
 
 ```bash
 # Terminal 1: Start dev environment
-yarn dev
+pnpm dev
 
 # Terminal 2: Run e2e tests (automatically uses dev environment)
-cd e2e && yarn test
+cd e2e && pnpm test
 ```
 
 ## Test Structure
@@ -141,9 +141,9 @@ const post = await postFactory.create({userId: user.id});
 
 ## Validation Checklist
 After writing tests, verify:
-1. Test passes: `yarn test path/to/test.ts`
-2. Linting passes: `yarn lint`
-3. Types check: `yarn test:types`
+1. Test passes: `pnpm test path/to/test.ts`
+2. Linting passes: `pnpm lint`
+3. Types check: `pnpm test:types`
 4. Follows AAA pattern with clear sections
 5. Uses page objects appropriately
 6. Uses semantic locators or data-testid only

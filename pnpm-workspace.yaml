@@ -1,0 +1,4 @@
+packages:
+  - ghost/*
+  - apps/*
+  - e2e

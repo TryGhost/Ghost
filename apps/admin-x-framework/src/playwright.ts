@@ -51,7 +51,7 @@ export function adminXPlaywrightConfig(overrides: Partial<PlaywrightTestConfig> 
 
         /* Run local dev server before starting the tests */
         webServer: {
-            command: `yarn dev:start`,
+            command: `pnpm dev:start`,
             url: `http://localhost:${E2E_PORT}`,
             reuseExistingServer: !process.env.CI,
             timeout: 10000

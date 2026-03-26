@@ -102,9 +102,9 @@ export class GhostManager {
             throw new Error(
                 `Build image not found: ${BUILD_IMAGE}\n\n` +
                 `To fix this, either:\n` +
-                `  1. Build locally: yarn workspace @tryghost/e2e build:docker (with GHOST_E2E_BASE_IMAGE set)\n` +
+                `  1. Build locally: pnpm --filter @tryghost/e2e build:docker (with GHOST_E2E_BASE_IMAGE set)\n` +
                 `  2. Pull from registry: docker pull ${BUILD_IMAGE}\n` +
-                `  3. Use a different image: GHOST_E2E_MODE=build GHOST_E2E_IMAGE=<image> yarn workspace @tryghost/e2e test`
+                `  3. Use a different image: GHOST_E2E_MODE=build GHOST_E2E_IMAGE=<image> pnpm --filter @tryghost/e2e test`
             );
         }
 
@@ -117,7 +117,7 @@ export class GhostManager {
                 `Build gateway image not found: ${BUILD_GATEWAY_IMAGE}\n\n` +
                 `To fix this, either:\n` +
                 `  1. Pull gateway image: docker pull ${BUILD_GATEWAY_IMAGE}\n` +
-                `  2. Use a different gateway image: GHOST_E2E_MODE=build GHOST_E2E_GATEWAY_IMAGE=<image> yarn workspace @tryghost/e2e test`
+                `  2. Use a different gateway image: GHOST_E2E_MODE=build GHOST_E2E_GATEWAY_IMAGE=<image> pnpm --filter @tryghost/e2e test`
             );
         }
     }

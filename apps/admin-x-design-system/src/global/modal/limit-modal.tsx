@@ -1,4 +1,4 @@
-import NiceModal from '@ebay/nice-modal-react';
+import NiceModal, {type NiceModalHocProps} from '@ebay/nice-modal-react';
 import React from 'react';
 import Modal from './modal';
 
@@ -41,4 +41,6 @@ export const LimitModalContent: React.FC<LimitModalProps> = ({
     );
 };
 
-export default NiceModal.create(LimitModalContent);
+const LimitModal: React.FC<LimitModalProps & NiceModalHocProps> = NiceModal.create(LimitModalContent);
+
+export default LimitModal;

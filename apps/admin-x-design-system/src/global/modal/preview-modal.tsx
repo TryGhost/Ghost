@@ -1,4 +1,4 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NiceModal, {type NiceModalHocProps, useModal} from '@ebay/nice-modal-react';
 import clsx from 'clsx';
 import React, {useEffect, useState} from 'react';
 import useGlobalDirtyState from '../../hooks/use-global-dirty-state';
@@ -297,4 +297,6 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     );
 };
 
-export default NiceModal.create(PreviewModalContent);
+const PreviewModal: React.FC<PreviewModalProps & NiceModalHocProps> = NiceModal.create(PreviewModalContent);
+
+export default PreviewModal;
