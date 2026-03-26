@@ -1,8 +1,22 @@
 const path = require('path');
 
-const FLAT_CONFIG_WORKSPACES = [
+const ESLINT_WORKSPACES = [
     'e2e',
-    'apps/admin'
+    'apps/admin',
+    'apps/activitypub',
+    'apps/admin-x-design-system',
+    'apps/admin-x-framework',
+    'apps/admin-x-settings',
+    'apps/comments-ui',
+    'apps/posts',
+    'apps/portal',
+    'apps/shade',
+    'apps/signup-form',
+    'apps/stats',
+    'ghost/admin',
+    'ghost/core',
+    'ghost/i18n',
+    'ghost/parse-email-address'
 ];
 
 function normalize(file) {
@@ -33,35 +47,22 @@ function buildScopedEslintCommand(workspace, files) {
     return `cd ${shellQuote(workspace)} && eslint --cache ${relativeFiles}`;
 }
 
-function buildRootEslintCommand(files) {
-    if (files.length === 0) {
-        return null;
-    }
-
-    const quotedFiles = files.map(file => shellQuote(normalize(file))).join(' ');
-    return `eslint --cache ${quotedFiles}`;
-}
-
 module.exports = {
     '*.{js,ts,tsx,jsx,cjs}': (files) => {
-        const workspaceGroups = new Map(FLAT_CONFIG_WORKSPACES.map(workspace => [workspace, []]));
-        const rootFiles = [];
+        const workspaceGroups = new Map(ESLINT_WORKSPACES.map(workspace => [workspace, []]));
 
         for (const file of files) {
-            const workspace = FLAT_CONFIG_WORKSPACES.find(candidate => isInWorkspace(file, candidate));
+            const workspace = ESLINT_WORKSPACES.find(candidate => isInWorkspace(file, candidate));
 
             if (workspace) {
                 workspaceGroups.get(workspace).push(file);
-            } else {
-                rootFiles.push(file);
             }
         }
 
         return [
-            ...FLAT_CONFIG_WORKSPACES
+            ...ESLINT_WORKSPACES
                 .map(workspace => buildScopedEslintCommand(workspace, workspaceGroups.get(workspace)))
-                .filter(Boolean),
-            buildRootEslintCommand(rootFiles)
+                .filter(Boolean)
         ].filter(Boolean);
     }
 };
