@@ -947,7 +947,7 @@ class EmailRenderer {
     /**
      * Get email preheader text from post model
      * @param {Post} postModel
-     * @param {string} segment
+     * @param {Segment} segment
      * @param {string} html
      * @returns {string}
      */
@@ -1451,15 +1451,15 @@ class EmailRenderer {
      * Sets and limits the dimensions of an image.
      *
      * @private
-     * @param {string} href
+     * @param {undefined | null | string} href
      * @param {number} [visibleWidth]
      * @param {null | number} [visibleHeight]
-     * @returns {Promise<{href: string, width: number, height: number | null}>}
+     * @returns {Promise<{href: null | string, width: number, height: number | null}>}
      */
     async limitImageWidth(href, visibleWidth = 600, visibleHeight = null) {
         if (!href) {
             return {
-                href,
+                href: null,
                 width: 0,
                 height: null
             };
