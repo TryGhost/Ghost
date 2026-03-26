@@ -8,10 +8,8 @@ import {
 } from '@tryghost/shade';
 import {escapeNqlString} from '../../filters/filter-normalization';
 import {getActiveFilterValues, useFilterSearch} from '@src/hooks/use-filter-search';
-import {getMember} from '@tryghost/admin-x-framework/api/members';
-import {getPost} from '@tryghost/admin-x-framework/api/posts';
-import {useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
-import {useBrowsePostsInfinite} from '@tryghost/admin-x-framework/api/posts';
+import {getMember, useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
+import {getPost, useBrowsePostsInfinite} from '@tryghost/admin-x-framework/api/posts';
 
 interface CommentsFiltersProps {
     filters: Filter[];

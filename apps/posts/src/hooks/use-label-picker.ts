@@ -28,6 +28,28 @@ export interface UseLabelPickerResult {
     isCreating: boolean;
 }
 
+function deriveSelectedLabels(
+    slugs: string[],
+    search: {allItems: Label[]; items: Label[]; resolvedItems: Label[]},
+    prev: Label[]
+): Label[] {
+    const result = slugs.map((slug) => {
+        // Check all available label sources from useFilterSearch
+        return search.allItems.find(l => l.slug === slug)
+            || search.items.find(l => l.slug === slug)
+            || search.resolvedItems.find(l => l.slug === slug)
+            // Fall back to previously cached
+            || prev.find(l => l.slug === slug)
+            || null;
+    }).filter((l): l is Label => !!l);
+
+    // Avoid unnecessary state updates
+    if (result.length === prev.length && result.every((l, i) => l.slug === prev[i]?.slug && l.name === prev[i]?.name)) {
+        return prev;
+    }
+    return result;
+}
+
 export function useLabelPicker({
     selectedSlugs,
     onSelectionChange
@@ -57,25 +79,7 @@ export function useLabelPicker({
             return;
         }
 
-        setCachedSelectedLabels((prev) => {
-            const result = selectedSlugs.map((slug) => {
-                // Check all available label sources from useFilterSearch
-                const fresh = labelSearch.allItems.find(l => l.slug === slug)
-                    || labelSearch.items.find(l => l.slug === slug)
-                    || labelSearch.resolvedItems.find(l => l.slug === slug);
-                if (fresh) {
-                    return fresh;
-                }
-                // Fall back to previously cached
-                return prev.find(l => l.slug === slug) || null;
-            }).filter((l): l is Label => !!l);
-
-            // Avoid unnecessary state updates
-            if (result.length === prev.length && result.every((l, i) => l.slug === prev[i]?.slug && l.name === prev[i]?.name)) {
-                return prev;
-            }
-            return result;
-        });
+        setCachedSelectedLabels(prev => deriveSelectedLabels(selectedSlugs, labelSearch, prev));
     }, [selectedSlugs, labelSearch.items, labelSearch.allItems, labelSearch.resolvedItems]);
 
     const {mutateAsync: createLabelMutation, isLoading: isCreating} = useCreateLabel();

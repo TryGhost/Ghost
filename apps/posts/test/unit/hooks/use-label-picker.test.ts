@@ -123,7 +123,7 @@ describe('useLabelPicker', () => {
                     const updated = {
                         ...existing,
                         ...body.labels[0],
-                        slug: body.labels[0].name!.toLowerCase().replace(/\s+/g, '-')
+                        slug: body.labels[0].name!.toLowerCase().replaceAll(/\s+/g, '-')
                     };
                     currentLabels = currentLabels.map(l => (l.id === params.id ? updated : l));
                     return HttpResponse.json({labels: [updated]});

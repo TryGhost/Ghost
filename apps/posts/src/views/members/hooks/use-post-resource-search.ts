@@ -1,8 +1,6 @@
 import {escapeNqlString} from '../../filters/filter-normalization';
-import {getPage} from '@tryghost/admin-x-framework/api/pages';
-import {getPost} from '@tryghost/admin-x-framework/api/posts';
-import {useBrowsePagesInfinite} from '@tryghost/admin-x-framework/api/pages';
-import {useBrowsePostsInfinite} from '@tryghost/admin-x-framework/api/posts';
+import {getPage, useBrowsePagesInfinite} from '@tryghost/admin-x-framework/api/pages';
+import {getPost, useBrowsePostsInfinite} from '@tryghost/admin-x-framework/api/posts';
 import {useCallback, useMemo} from 'react';
 import {useFilterSearch} from '@src/hooks/use-filter-search';
 import type {FilterOption} from '@tryghost/shade';

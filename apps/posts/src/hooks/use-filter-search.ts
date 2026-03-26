@@ -108,7 +108,7 @@ export function useFilterSearch<T, K extends keyof T & string>({
         }
 
         // If we got fewer items than the limit, all data fits on one page
-        setUseLocalSearch(items.length < parseInt(limit));
+        setUseLocalSearch(items.length < Number.parseInt(limit));
     }, [data, dataKey, isLoading, limit, useLocalSearch]);
 
     // Apply local filtering only in local search mode.
