@@ -14,6 +14,7 @@ module.exports = addTable('email_design_settings', {
     link_color: {type: 'string', maxlength: 50, nullable: true, defaultTo: 'accent'},
     link_style: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'underline'},
     body_font_category: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'sans_serif'},
+    // Named "title_*" to match the newsletters table; applies to headings (and post title in newsletters)
     title_font_category: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'sans_serif'},
     title_font_weight: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'bold'},
     image_corners: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'square'},
