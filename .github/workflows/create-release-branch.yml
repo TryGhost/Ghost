@@ -21,20 +21,22 @@ jobs:
     if: github.repository == 'TryGhost/Ghost'
     runs-on: ubuntu-latest
     steps:
-      - run: echo "BASE_REF=main" >> $GITHUB_ENV
+      - uses: actions/checkout@v6
         if: inputs.base-ref == 'latest'
-
-      - run: echo "BASE_REF=${{ inputs.base-ref }}" >> $GITHUB_ENV
-        if: inputs.base-ref != 'latest'
+        with:
+          ref: main
+          fetch-depth: 0
+          submodules: true
 
       - uses: actions/checkout@v6
+        if: inputs.base-ref != 'latest'
         with:
-          ref: ${{ env.BASE_REF }}
+          ref: ${{ inputs.base-ref }}
           fetch-depth: 0
           submodules: true
 
       - name: Checkout most recent tag
-        run: git checkout $(git describe --tags --abbrev=0 --match=v*)
+        run: git checkout "$(git describe --tags --abbrev=0 --match=v*)"
         if: inputs.base-ref == 'latest'
 
       - uses: asdf-vm/actions/install@v4
@@ -43,8 +45,12 @@ jobs:
             semver 3.3.0
 
       - run: |
-          echo "CURRENT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
-          echo "NEW_VERSION=$(semver bump ${{ inputs.bump-type }} $(git describe --tags --abbrev=0 --match=v*))" >> $GITHUB_ENV
+          CURRENT_TAG=$(git describe --tags --abbrev=0 --match=v*)
+          NEW_VERSION=$(semver bump "$BUMP_TYPE_INPUT" "$CURRENT_TAG")
+          printf 'CURRENT_SHA=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          printf 'NEW_VERSION=%s\n' "$NEW_VERSION" >> "$GITHUB_ENV"
+        env:
+          BUMP_TYPE_INPUT: ${{ inputs.bump-type }}
 
       - name: Create branch
         uses: actions/github-script@v7

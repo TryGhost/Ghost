@@ -21,12 +21,18 @@ runs:
       run: curl -fsSL https://tinybird.co/install.sh | sh
     - name: Check the deployment
       shell: bash
-      run: tb --cloud --host ${{ inputs.host }} --token ${{ inputs.token }} deployment create --check
+      env:
+        TB_HOST: ${{ inputs.host }}
+        TB_TOKEN: ${{ inputs.token }}
+      run: tb --cloud --host "$TB_HOST" --token "$TB_TOKEN" deployment create --check
       working-directory: ghost/core/core/server/data/tinybird
     - name: Create a ${{ inputs.workspace }} deployment
       id: deploy
       shell: bash
-      run: tb --cloud --host ${{ inputs.host }} --token ${{ inputs.token }} deployment create --wait
+      env:
+        TB_HOST: ${{ inputs.host }}
+        TB_TOKEN: ${{ inputs.token }}
+      run: tb --cloud --host "$TB_HOST" --token "$TB_TOKEN" deployment create --wait
       working-directory: ghost/core/core/server/data/tinybird
 
     - name: Send slack notification
