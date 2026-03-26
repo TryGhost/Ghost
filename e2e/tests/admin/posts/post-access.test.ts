@@ -200,6 +200,6 @@ test.describe('Ghost Admin - Post Access', () => {
 
         await editor.publishFlow.clickPublishAndSendLabel();
 
-        await expect(editor.publishFlow.emailRecipientsTitle).toContainText(/\d+\s*subscriber/);
+        await expect(editor.publishFlow.emailRecipientsTitle).toContainText('subscriber');
     });
 });

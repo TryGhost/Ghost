@@ -1,18 +1,35 @@
+import {Page} from '@playwright/test';
 import {PageEditorPage, PostEditorPage, PostsPage} from '@/admin-pages';
 import {PostPage} from '@/helpers/pages';
 import {createMemberFactory} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
 
+function yesterdayDateStr(): string {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    return yesterday.toISOString().split('T')[0];
+}
+
+async function createNewPostDraft(page: Page, options: {title: string; body: string}) {
+    const postsPage = new PostsPage(page);
+    await postsPage.goto();
+    await postsPage.newPostButton.click();
+
+    const editor = new PostEditorPage(page);
+    await editor.createDraft(options);
+    await expect(editor.postStatus).toContainText('Draft - Saved');
+    return editor;
+}
+
+async function createMemberForEmail(page: Page, email: string) {
+    const memberFactory = createMemberFactory(page.request);
+    await memberFactory.create({email, name: 'Publishing member'});
+}
+
 test.describe('Ghost Admin - Publishing', () => {
     test.describe('Publish post', () => {
         test('publish only - post is available on web', async ({page}) => {
-            const postsPage = new PostsPage(page);
-            await postsPage.goto();
-            await postsPage.newPostButton.click();
-
-            const editor = new PostEditorPage(page);
-            await editor.createDraft({title: 'Publish post only', body: 'This is my post body.'});
-            await expect(editor.postStatus).toContainText('Draft - Saved');
+            const editor = await createNewPostDraft(page, {title: 'Publish post only', body: 'This is my post body.'});
 
             await editor.publishFlow.open();
             await editor.publishFlow.selectPublishType('publish');
@@ -28,19 +45,8 @@ test.describe('Ghost Admin - Publishing', () => {
         });
 
         test('publish and email - post is published and sent', async ({page}) => {
-            const memberFactory = createMemberFactory(page.request);
-            await memberFactory.create({
-                email: 'test+recipient1@example.com',
-                name: 'Publishing member'
-            });
-
-            const postsPage = new PostsPage(page);
-            await postsPage.goto();
-            await postsPage.newPostButton.click();
-
-            const editor = new PostEditorPage(page);
-            await editor.createDraft({title: 'Publish and email post', body: 'This is my post body.'});
-            await expect(editor.postStatus).toContainText('Draft - Saved');
+            await createMemberForEmail(page, 'test+recipient1@example.com');
+            const editor = await createNewPostDraft(page, {title: 'Publish and email post', body: 'This is my post body.'});
 
             await editor.publishFlow.open();
             await editor.publishFlow.selectPublishType('publish+send');
@@ -53,19 +59,8 @@ test.describe('Ghost Admin - Publishing', () => {
         });
 
         test('email only - post is not available on web', async ({page}) => {
-            const memberFactory = createMemberFactory(page.request);
-            await memberFactory.create({
-                email: 'test+recipient2@example.com',
-                name: 'Publishing member'
-            });
-
-            const postsPage = new PostsPage(page);
-            await postsPage.goto();
-            await postsPage.newPostButton.click();
-
-            const editor = new PostEditorPage(page);
-            await editor.createDraft({title: 'Email only post', body: 'This is my post body.'});
-            await expect(editor.postStatus).toContainText('Draft - Saved');
+            await createMemberForEmail(page, 'test+recipient2@example.com');
+            const editor = await createNewPostDraft(page, {title: 'Email only post', body: 'This is my post body.'});
 
             await editor.publishFlow.open();
             await editor.publishFlow.selectPublishType('send');
@@ -102,12 +97,8 @@ test.describe('Ghost Admin - Publishing', () => {
             await pageEditor.createDraft({title: 'Scheduled page test', body: 'This is my scheduled page body.'});
             await expect(pageEditor.postStatus).toContainText('Draft - Saved');
 
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const dateStr = yesterday.toISOString().split('T')[0];
-
             await pageEditor.publishFlow.open();
-            await pageEditor.publishFlow.schedule({date: dateStr, time: '00:00'});
+            await pageEditor.publishFlow.schedule({date: yesterdayDateStr(), time: '00:00'});
             await pageEditor.publishFlow.confirm();
             await pageEditor.publishFlow.close();
 
@@ -124,13 +115,7 @@ test.describe('Ghost Admin - Publishing', () => {
 
     test.describe('Update post', () => {
         test('can update a published post', async ({page}) => {
-            const postsPage = new PostsPage(page);
-            await postsPage.goto();
-            await postsPage.newPostButton.click();
-
-            const editor = new PostEditorPage(page);
-            await editor.createDraft({title: 'Testing publish update', body: 'This is the initial published text.'});
-            await expect(editor.postStatus).toContainText('Draft - Saved');
+            const editor = await createNewPostDraft(page, {title: 'Testing publish update', body: 'This is the initial published text.'});
             const editorUrl = page.url();
 
             await editor.publishFlow.open();
@@ -162,21 +147,11 @@ test.describe('Ghost Admin - Publishing', () => {
 
     test.describe('Schedule post', () => {
         test('scheduled publish only - post appears after schedule fires', async ({page}) => {
-            const postsPage = new PostsPage(page);
-            await postsPage.goto();
-            await postsPage.newPostButton.click();
-
-            const editor = new PostEditorPage(page);
-            await editor.createDraft({title: 'Scheduled post test', body: 'This is my scheduled post body.'});
-            await expect(editor.postStatus).toContainText('Draft - Saved');
+            const editor = await createNewPostDraft(page, {title: 'Scheduled post test', body: 'This is my scheduled post body.'});
             const editorUrl = page.url();
 
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const dateStr = yesterday.toISOString().split('T')[0];
-
             await editor.publishFlow.open();
-            await editor.publishFlow.schedule({date: dateStr, time: '00:00'});
+            await editor.publishFlow.schedule({date: yesterdayDateStr(), time: '00:00'});
             await editor.publishFlow.confirm();
             await editor.publishFlow.close();
 
@@ -196,28 +171,13 @@ test.describe('Ghost Admin - Publishing', () => {
         });
 
         test('scheduled publish and email - post appears and is sent after schedule fires', async ({page}) => {
-            const memberFactory = createMemberFactory(page.request);
-            await memberFactory.create({
-                email: 'test+recipient3@example.com',
-                name: 'Publishing member'
-            });
-
-            const postsPage = new PostsPage(page);
-            await postsPage.goto();
-            await postsPage.newPostButton.click();
-
-            const editor = new PostEditorPage(page);
-            await editor.createDraft({title: 'Scheduled publish email test', body: 'This is my scheduled post body.'});
-            await expect(editor.postStatus).toContainText('Draft - Saved');
+            await createMemberForEmail(page, 'test+recipient3@example.com');
+            const editor = await createNewPostDraft(page, {title: 'Scheduled publish email test', body: 'This is my scheduled post body.'});
             const editorUrl = page.url();
-
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const dateStr = yesterday.toISOString().split('T')[0];
 
             await editor.publishFlow.open();
             await editor.publishFlow.selectPublishType('publish+send');
-            await editor.publishFlow.schedule({date: dateStr, time: '00:00'});
+            await editor.publishFlow.schedule({date: yesterdayDateStr(), time: '00:00'});
             await editor.publishFlow.confirm();
             await editor.publishFlow.close();
 
@@ -237,28 +197,13 @@ test.describe('Ghost Admin - Publishing', () => {
         });
 
         test('scheduled email only - post is sent but not published', async ({page}) => {
-            const memberFactory = createMemberFactory(page.request);
-            await memberFactory.create({
-                email: 'test+recipient4@example.com',
-                name: 'Publishing member'
-            });
-
-            const postsPage = new PostsPage(page);
-            await postsPage.goto();
-            await postsPage.newPostButton.click();
-
-            const editor = new PostEditorPage(page);
-            await editor.createDraft({title: 'Scheduled email only test', body: 'This is my scheduled post body.'});
-            await expect(editor.postStatus).toContainText('Draft - Saved');
+            await createMemberForEmail(page, 'test+recipient4@example.com');
+            const editor = await createNewPostDraft(page, {title: 'Scheduled email only test', body: 'This is my scheduled post body.'});
             const editorUrl = page.url();
-
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const dateStr = yesterday.toISOString().split('T')[0];
 
             await editor.publishFlow.open();
             await editor.publishFlow.selectPublishType('send');
-            await editor.publishFlow.schedule({date: dateStr, time: '00:00'});
+            await editor.publishFlow.schedule({date: yesterdayDateStr(), time: '00:00'});
             await editor.publishFlow.confirm();
             await editor.publishFlow.close();
 
@@ -278,13 +223,7 @@ test.describe('Ghost Admin - Publishing', () => {
         });
 
         test('scheduled post can be unscheduled', async ({page, context}) => {
-            const postsPage = new PostsPage(page);
-            await postsPage.goto();
-            await postsPage.newPostButton.click();
-
-            const editor = new PostEditorPage(page);
-            await editor.createDraft({title: 'Unschedule post test', body: 'This is my unscheduled post body.'});
-            await expect(editor.postStatus).toContainText('Draft - Saved');
+            const editor = await createNewPostDraft(page, {title: 'Unschedule post test', body: 'This is my unscheduled post body.'});
             const editorUrl = page.url();
 
             await editor.publishFlow.open();
@@ -311,13 +250,7 @@ test.describe('Ghost Admin - Publishing', () => {
 
     test.describe('Delete post', () => {
         test('delete a saved post', async ({page}) => {
-            const postsPage = new PostsPage(page);
-            await postsPage.goto();
-            await postsPage.newPostButton.click();
-
-            const editor = new PostEditorPage(page);
-            await editor.createDraft({title: 'Delete a post test', body: 'This is the content'});
-            await expect(editor.postStatus).toContainText('Draft - Saved');
+            const editor = await createNewPostDraft(page, {title: 'Delete a post test', body: 'This is the content'});
 
             await editor.openSettingsMenu();
             await editor.settingsMenu.deletePost();
