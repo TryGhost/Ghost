@@ -1,6 +1,6 @@
 const {addTable} = require('../../utils');
 
-module.exports = addTable('email_templates', {
+module.exports = addTable('email_design_settings', {
     id: {type: 'string', maxlength: 24, nullable: false, primary: true},
     slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
     background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'light'},
