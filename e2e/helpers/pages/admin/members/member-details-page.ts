@@ -132,7 +132,16 @@ export class MemberDetailsPage extends AdminPage {
         await this.settingsSection.memberActionsButton.click();
         await this.settingsSection.impersonateButton.click();
         await this.magicLinkInput.waitFor({state: 'visible'});
+        await this.page.waitForFunction(
+            (selector) => {
+                const inputs = document.querySelectorAll(selector) as NodeListOf<HTMLInputElement>;
+                const last = inputs[inputs.length - 1];
+                return last && last.value.length > 0;
+            },
+            '[data-testid="member-signin-url"]'
+        );
         const url = await this.magicLinkInput.inputValue();
+        await this.page.getByRole('button', {name: 'Close'}).click();
         return url;
     }
 

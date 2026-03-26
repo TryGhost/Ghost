@@ -24,8 +24,11 @@ async function publishPostWithVisibility(page: Page, options: {title: string; bo
 
     await editor.publishFlow.open();
     await editor.publishFlow.confirm();
-    const frontendPage = await editor.publishFlow.openPublishedPostBookmark();
-    return {editor, frontendPage, postPage: new PostPage(frontendPage)};
+
+    const slug = options.title.toLowerCase().replace(/\s+/g, '-');
+    const postPage = new PostPage(page);
+    await postPage.goto(`/${slug}/`);
+    return {editor, postPage};
 }
 
 test.describe('Ghost Admin - Post Access', () => {
@@ -53,7 +56,7 @@ test.describe('Ghost Admin - Post Access', () => {
         await expect(postPage.postBody).toHaveText('This is my post body.');
     });
 
-    test('specific tier access restricts post to selected tier members', async ({page}) => {
+    test('specific tier access restricts post to selected tier members', async ({page, browser}) => {
         const tierFactory = createTierFactory(page.request);
         const memberFactory = createMemberFactory(page.request);
 
@@ -86,26 +89,39 @@ test.describe('Ghost Admin - Post Access', () => {
 
         await editor.publishFlow.open();
         await editor.publishFlow.confirm();
-        const frontendPage = await editor.publishFlow.openPublishedPostBookmark();
-        const postPage = new PostPage(frontendPage);
-        await editor.publishFlow.close();
 
-        await expect(postPage.contentGateHeading).toContainText('on the Gold tier only');
+        // Unauthenticated visitor sees content gate
+        const anonContext = await browser.newContext();
+        const anonPage = await anonContext.newPage();
+        const anonPostPage = new PostPage(anonPage);
+        await anonPostPage.goto('/tier-restricted-post/');
+        await expect(anonPostPage.contentGateHeading).toContainText('on the Gold tier only');
+        await anonContext.close();
 
         const memberDetails = new MemberDetailsPage(page);
 
+        // Silver member still sees content gate
         await memberDetails.gotoMember(silverMember.id);
         const silverLink = await memberDetails.impersonate();
-        await frontendPage.goto(silverLink);
-        await postPage.goto('/tier-restricted-post/');
-        await expect(postPage.contentGateHeading).toContainText('on the Gold tier only');
+        const silverContext = await browser.newContext();
+        const silverPage = await silverContext.newPage();
+        await silverPage.goto(silverLink, {waitUntil: 'networkidle'});
+        const silverPostPage = new PostPage(silverPage);
+        await silverPostPage.goto('/tier-restricted-post/');
+        await expect(silverPostPage.contentGateHeading).toContainText('on the Gold tier only');
+        await silverContext.close();
 
+        // Gold member can see the post content
         await memberDetails.gotoMember(goldMember.id);
         const goldLink = await memberDetails.impersonate();
-        await frontendPage.goto(goldLink);
-        await postPage.goto('/tier-restricted-post/');
-        await expect(postPage.contentGate).toBeHidden();
-        await expect(postPage.postBody).toHaveText('Only gold members can see this');
+        const goldContext = await browser.newContext();
+        const goldPage = await goldContext.newPage();
+        await goldPage.goto(goldLink, {waitUntil: 'networkidle'});
+        const goldPostPage = new PostPage(goldPage);
+        await goldPostPage.goto('/tier-restricted-post/');
+        await expect(goldPostPage.contentGate).toBeHidden();
+        await expect(goldPostPage.postBody).toHaveText('Only gold members can see this');
+        await goldContext.close();
     });
 
     // Requires per-test isolation: changes site timezone setting

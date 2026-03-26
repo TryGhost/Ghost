@@ -142,16 +142,17 @@ test.describe('Ghost Admin - Publishing', () => {
     });
 
     test.describe('Update post', () => {
-        test('can update a published post', async ({page}) => {
+        test('can update a published post', async ({page, context}) => {
             const editor = await createNewPostDraft(page, {title: 'Testing publish update', body: 'This is the initial published text.'});
             const editorUrl = page.url();
 
             await editor.publishFlow.open();
             await editor.publishFlow.confirm();
-            const frontendPage = await editor.publishFlow.openPublishedPostBookmark();
             await editor.publishFlow.close();
 
+            const frontendPage = await context.newPage();
             const postPage = new PostPage(frontendPage);
+            await postPage.goto('/testing-publish-update/');
             await expect(postPage.articleBody).toContainText('This is the initial published text.');
 
             await page.goto(editorUrl);
