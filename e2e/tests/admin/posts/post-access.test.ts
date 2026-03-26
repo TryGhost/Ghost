@@ -105,7 +105,7 @@ test.describe('Ghost Admin - Post Access', () => {
         const silverLink = await memberDetails.impersonate();
         const silverContext = await browser.newContext();
         const silverPage = await silverContext.newPage();
-        await silverPage.goto(silverLink, {waitUntil: 'networkidle'});
+        await silverPage.goto(silverLink, {waitUntil: 'load'});
         const silverPostPage = new PostPage(silverPage);
         await silverPostPage.goto('/tier-restricted-post/');
         await expect(silverPostPage.contentGateHeading).toContainText('on the Gold tier only');
@@ -116,7 +116,7 @@ test.describe('Ghost Admin - Post Access', () => {
         const goldLink = await memberDetails.impersonate();
         const goldContext = await browser.newContext();
         const goldPage = await goldContext.newPage();
-        await goldPage.goto(goldLink, {waitUntil: 'networkidle'});
+        await goldPage.goto(goldLink, {waitUntil: 'load'});
         const goldPostPage = new PostPage(goldPage);
         await goldPostPage.goto('/tier-restricted-post/');
         await expect(goldPostPage.contentGate).toBeHidden();
