@@ -1,6 +1,6 @@
 ---
 name: Create database migration
-description: Create a database migration to add a table, add columns to an existing table, add a setting, or otherwise change the schema of Ghost's MySQL database.
+description: Create a database migration to add a table, add columns to an existing table, add a setting, or otherwise change the schema of Ghost's MySQL database. Use this skill whenever the task involves modifying Ghost's database schema — including adding, removing, or renaming columns or tables, adding new settings, creating indexes, updating data, or any change that requires a migration file in ghost/core. Also use when the user references schema.js, knex-migrator, the migrations directory, or asks to "add a field" or "add a column" to any Ghost model/table. Even if the user frames it as a feature or Linear issue, if the implementation requires a schema change, this skill applies.
 ---
 
 # Create Database Migration
@@ -13,8 +13,9 @@ description: Create a database migration to add a table, add columns to an exist
 4. Update the schema definition file in `ghost/core/core/server/data/schema/schema.js`, and make sure it aligns with the latest changes from the migration.
 5. Test the migration manually: `yarn knex-migrator migrate --v {version directory} --force`
 6. If adding or dropping a table, update `ghost/core/core/server/data/exporter/table-lists.js` as appropriate.
-7. Run the schema integrity test, and update the hash: `yarn test:single test/unit/server/data/schema/integrity.test.js`
-8. Run unit tests in Ghost core, and iterate until they pass: `cd ghost/core && yarn test:unit`
+7. If adding or dropping a table, also add or remove the table name from the expected tables list in `ghost/core/test/integration/exporter/exporter.test.js`. This test has a hardcoded alphabetically-sorted array of all database tables — it runs in CI integration tests (not unit tests) and will fail if the new table is missing.
+8. Run the schema integrity test, and update the hash: `yarn test:single test/unit/server/data/schema/integrity.test.js`
+9. Run unit tests in Ghost core, and iterate until they pass: `cd ghost/core && yarn test:unit`
 
 ## Examples
 See [examples.md](examples.md) for example migrations.
