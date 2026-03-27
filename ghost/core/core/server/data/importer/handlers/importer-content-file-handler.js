@@ -15,11 +15,6 @@ class ImporterContentFileHandler {
     contentTypes;
 
     /**
-     * Holds path to the destination content directory
-     * @property {string} */
-    #contentPath;
-
-    /**
      *
      * @param {Object} deps dependencies
      * @param {'media' | 'files' | 'images'} deps.type type of content file
@@ -27,7 +22,6 @@ class ImporterContentFileHandler {
      * @param {boolean} [deps.ignoreRootFolderFiles] whether to ignore files in the root folder
      * @param {string[]} deps.contentTypes content types to search for
      * @param {string[]} deps.directories directories to search for content files
-     * @param {string} deps.contentPath path to the destination content directory
      * @param {Object} deps.storage storage adapter instance
      * @param {object} deps.urlUtils urlUtils instance
      */
@@ -38,7 +32,6 @@ class ImporterContentFileHandler {
         this.contentTypes = deps.contentTypes;
         this.ignoreRootFolderFiles = deps.ignoreRootFolderFiles;
         this.storage = deps.storage;
-        this.#contentPath = deps.contentPath;
         this.urlUtils = deps.urlUtils;
     }
 
@@ -56,7 +49,6 @@ class ImporterContentFileHandler {
         }
 
         // normalize the directory structure
-        const filesContentPath = this.#contentPath;
         files = _.map(files, function (file) {
             const noBaseDir = file.name.replace(baseDirRegex, '');
             let noGhostDirs = noBaseDir;
@@ -67,7 +59,7 @@ class ImporterContentFileHandler {
 
             file.originalPath = noBaseDir;
             file.name = noGhostDirs;
-            file.targetDir = path.join(filesContentPath, path.dirname(noGhostDirs));
+            file.targetDir = path.dirname(noGhostDirs);
             return file;
         });
 
@@ -78,7 +70,7 @@ class ImporterContentFileHandler {
                     '/',
                     self.urlUtils.getSubdir(),
                     self.storage.staticFileURLPrefix,
-                    path.relative(filesContentPath, targetFilename)
+                    targetFilename
                 );
 
                 return contentFile;

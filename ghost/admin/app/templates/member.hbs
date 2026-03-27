@@ -78,6 +78,29 @@
                                     <span>Sign out of all devices</span>
                                 </button>
                             </li>
+                            {{#if this.feature.commentModeration}}
+                                <li>
+                                    {{#if (not-eq this.member.canComment false)}}
+                                        <button
+                                            type="button"
+                                            class="mr2"
+                                            {{on "click" this.confirmDisableCommenting}}
+                                            data-test-button="disable-commenting"
+                                        >
+                                            <span>Disable commenting</span>
+                                        </button>
+                                    {{else}}
+                                        <button
+                                            type="button"
+                                            class="mr2"
+                                            {{on "click" this.confirmEnableCommenting}}
+                                            data-test-button="enable-commenting"
+                                        >
+                                            <span>Enable commenting</span>
+                                        </button>
+                                    {{/if}}
+                                </li>
+                            {{/if}}
                             <li>
                                 <button
                                     type="button"
@@ -106,7 +129,8 @@
                 @onLabelEdit={{this.editLabel}}
                 @saveMember={{this.save}}
                 @isSaveRunning={{this.saveTask.isRunning}}
-                @isLoading={{this.isLoading}} />
+                @isLoading={{this.isLoading}}
+                @onEnableCommenting={{this.confirmEnableCommenting}} />
         </form>
     </div>
 </section>

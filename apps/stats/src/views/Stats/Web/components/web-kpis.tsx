@@ -1,6 +1,7 @@
 import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, getYRange} from '@tryghost/shade';
 import {KPI_METRICS} from '../web';
-import {sanitizeChartData} from '@src/utils/chart-helpers';
+import {STATS_RANGES} from '@src/utils/constants';
+import {sanitizeChartData, truncateLeadingEmptyData} from '@src/utils/chart-helpers';
 import {useMemo, useState} from 'react';
 
 export interface KpiDataItem {
@@ -23,7 +24,7 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range, isLoading}) => {
             return [];
         }
 
-        return sanitizeChartData<KpiDataItem>(data, range, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item: KpiDataItem) => {
+        const sanitizedData = sanitizeChartData<KpiDataItem>(data, range, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item: KpiDataItem) => {
             const value = Number(item[currentMetric.dataKey]);
             return {
                 date: String(item.date),
@@ -31,7 +32,15 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range, isLoading}) => {
                 formattedValue: currentMetric.formatter(value),
                 label: currentMetric.label
             };
-        });
+        }) || [];
+
+        // For "all time" range, truncate leading empty data points after aggregation
+        // This works around api_kpis returning zeros for dates before the site had data
+        if (range === STATS_RANGES.allTime.value) {
+            return truncateLeadingEmptyData(sanitizedData);
+        }
+
+        return sanitizedData;
     }, [data, range, currentMetric]);
 
     // Calculate KPI values
@@ -75,22 +84,22 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range, isLoading}) => {
 
     return (
         <Tabs data-testid='web-graph' defaultValue="visits" variant='kpis'>
-            <TabsList className="-mx-6 hidden grid-cols-2 md:!visible md:!grid">
+            <TabsList className="-mx-6 hidden grid-cols-2 md:visible! md:grid!">
                 <KpiTabTrigger value="visits" onClick={() => setCurrentTab('visits')}>
-                    <KpiTabValue color='hsl(var(--chart-blue))' label="Unique visitors" value={kpiValues.visits} />
+                    <KpiTabValue color='var(--chart-blue)' label="Unique visitors" value={kpiValues.visits} />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="views" onClick={() => setCurrentTab('views')}>
-                    <KpiTabValue color='hsl(var(--chart-teal))' label="Total views" value={kpiValues.views} />
+                    <KpiTabValue color='var(--chart-teal)' label="Total views" value={kpiValues.views} />
                 </KpiTabTrigger>
             </TabsList>
             <DropdownMenu>
                 <DropdownMenuTrigger className='md:hidden' asChild>
                     <KpiDropdownButton>
                         {currentTab === 'visits' &&
-                            <KpiTabValue color='hsl(var(--chart-blue))' label="Unique visitors" value={kpiValues.visits} />
+                            <KpiTabValue color='var(--chart-blue)' label="Unique visitors" value={kpiValues.visits} />
                         }
                         {currentTab === 'views' &&
-                            <KpiTabValue color='hsl(var(--chart-teal))' label="Total views" value={kpiValues.views} />
+                            <KpiTabValue color='var(--chart-teal)' label="Total views" value={kpiValues.views} />
                         }
                     </KpiDropdownButton>
                 </DropdownMenuTrigger>

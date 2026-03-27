@@ -1,6 +1,7 @@
 const express = require('../../../../../shared/express');
 const api = require('../../../../api').endpoints;
 const {http} = require('@tryghost/api-framework');
+const auth = require('../../../../services/auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 
@@ -46,6 +47,8 @@ module.exports = function apiRoutes() {
     router.get('/comments', mw.authAdminApi, http(api.comments.browseAll));
     router.get('/comments/:id', mw.authAdminApi, http(api.commentReplies.read));
     router.get('/comments/:id/replies', mw.authAdminApi, http(api.commentReplies.browse));
+    router.get('/comments/:id/reports', mw.authAdminApi, http(api.commentReports.browse));
+    router.get('/comments/:id/likes', mw.authAdminApi, http(api.commentLikes.browse));
     router.get('/comments/post/:post_id', mw.authAdminApi, http(api.comments.browse));
     router.post('/comments', mw.authAdminApi, http(api.comments.add));
     router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
@@ -145,17 +148,20 @@ module.exports = function apiRoutes() {
     router.put('/members/:id', mw.authAdminApi, http(api.members.edit));
     router.del('/members/:id', mw.authAdminApi, http(api.members.destroy));
     router.del('/members/:id/sessions', mw.authAdminApi, http(api.members.logout));
+    router.del('/members/:id/suppression', mw.authAdminApi, http(api.members.deleteEmailSuppression));
 
     router.post('/members/:id/subscriptions/', mw.authAdminApi, http(api.members.createSubscription));
     router.put('/members/:id/subscriptions/:subscription_id', mw.authAdminApi, http(api.members.editSubscription));
 
     router.get('/members/:id/signin_urls', mw.authAdminApi, http(api.memberSigninUrls.read));
 
+    router.post('/members/:id/commenting/disable', mw.authAdminApi, http(api.memberCommenting.disable));
+    router.post('/members/:id/commenting/enable', mw.authAdminApi, http(api.memberCommenting.enable));
+
     // ## Stats
     router.get('/stats/member_count', mw.authAdminApi, http(api.stats.memberCountHistory));
     router.get('/stats/mrr', mw.authAdminApi, http(api.stats.mrr));
     router.get('/stats/subscriptions', mw.authAdminApi, http(api.stats.subscriptions));
-    router.get('/stats/referrers/posts/:id', mw.authAdminApi, http(api.stats.postReferrers));
     router.get('/stats/referrers', mw.authAdminApi, http(api.stats.referrersHistory));
     router.get('/stats/posts/:id/stats', mw.authAdminApi, http(api.stats.postStats));
     router.get('/stats/top-posts', mw.authAdminApi, http(api.stats.topPosts));
@@ -165,10 +171,9 @@ module.exports = function apiRoutes() {
     router.get('/stats/newsletter-basic-stats', mw.authAdminApi, http(api.stats.newsletterBasicStats));
     router.get('/stats/newsletter-click-stats', mw.authAdminApi, http(api.stats.newsletterClickStats));
     router.get('/stats/subscriber-count', mw.authAdminApi, http(api.stats.subscriberCount));
-    router.get('/stats/posts/:id/top-referrers', mw.authAdminApi, http(api.stats.postReferrersAlpha));
+    router.get('/stats/posts/:id/top-referrers', mw.authAdminApi, http(api.stats.postReferrers));
     router.get('/stats/posts/:id/growth', mw.authAdminApi, http(api.stats.postGrowthStats));
     router.get('/stats/top-sources-growth', mw.authAdminApi, http(api.stats.topSourcesGrowth));
-    router.get('/stats/utm-growth', mw.authAdminApi, http(api.stats.utmGrowth));
     router.post('/stats/posts-visitor-counts', mw.authAdminApi, http(api.stats.postsVisitorCounts));
     router.post('/stats/posts-member-counts', mw.authAdminApi, http(api.stats.postsMemberCounts));
 
@@ -280,7 +285,11 @@ module.exports = function apiRoutes() {
         shared.middleware.brute.userReset,
         http(api.authentication.generateResetToken)
     );
-    router.put('/authentication/password_reset', shared.middleware.brute.globalBlock, http(api.authentication.resetPassword));
+    router.put('/authentication/password_reset',
+        shared.middleware.brute.globalBlock,
+        auth.session.initSession,
+        http(api.authentication.resetPassword)
+    );
     router.post('/authentication/invitation', http(api.authentication.acceptInvitation));
     router.get('/authentication/invitation', http(api.authentication.isInvitation));
     router.post('/authentication/setup', http(api.authentication.setup));
@@ -314,6 +323,7 @@ module.exports = function apiRoutes() {
     router.post('/files/upload',
         mw.authAdminApi,
         apiMw.upload.single('file'),
+        apiMw.upload.fileValidation({type: 'files'}),
         http(api.files.upload)
     );
 

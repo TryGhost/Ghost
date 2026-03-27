@@ -1,5 +1,7 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../utils/assertions');
 const sinon = require('sinon');
+const _ = require('lodash');
 
 const models = require('../../../../../../core/server/models');
 const baseUtils = require('../../../../../../core/server/models/base/utils');
@@ -40,8 +42,8 @@ describe('Migration Fixture Utils', function () {
             const manager = new FixtureManager(testFixtures, placeholderMap);
             const processed = manager.fixtures;
 
-            processed.models[0].entries[0].id.should.equal('user123');
-            processed.models[0].entries[0].email.should.equal('test@example.com');
+            assert.equal(processed.models[0].entries[0].id, 'user123');
+            assert.equal(processed.models[0].entries[0].email, 'test@example.com');
         });
 
         it('should handle nested structures', function () {
@@ -69,7 +71,7 @@ describe('Migration Fixture Utils', function () {
             const manager = new FixtureManager(testFixtures, placeholderMap);
             const processed = manager.fixtures;
 
-            processed.models[0].entries[0].authors[0].id.should.equal('user123');
+            assert.equal(processed.models[0].entries[0].authors[0].id, 'user123');
         });
 
         it('should handle arrays of values', function () {
@@ -97,9 +99,9 @@ describe('Migration Fixture Utils', function () {
             const manager = new FixtureManager(testFixtures, placeholderMap);
             const processed = manager.fixtures;
 
-            processed.relations[0].entries.should.have.property('user123');
-            processed.relations[0].entries.user123.should.deepEqual(['Owner', 'Admin']);
-            processed.relations[0].entries.should.not.have.property('__USER_ID__');
+            assert('user123' in processed.relations[0].entries);
+            assert.deepEqual(processed.relations[0].entries.user123, ['Owner', 'Admin']);
+            assert(!('__USER_ID__' in processed.relations[0].entries));
         });
 
         it('should only process fixtures once', function () {
@@ -131,9 +133,9 @@ describe('Migration Fixture Utils', function () {
             const second = manager.fixtures;
             const third = manager.fixtures;
 
-            callCount.should.equal(1);
-            first.should.equal(second);
-            second.should.equal(third);
+            assert.equal(callCount, 1);
+            assert.equal(first, second);
+            assert.equal(second, third);
         });
 
         it('should handle no placeholders gracefully', function () {
@@ -152,7 +154,7 @@ describe('Migration Fixture Utils', function () {
             const manager = new FixtureManager(testFixtures, {});
             const processed = manager.fixtures;
 
-            processed.should.deepEqual(testFixtures);
+            assert.deepEqual(processed, testFixtures);
         });
 
         it('should pass models to placeholder functions', function () {
@@ -180,11 +182,11 @@ describe('Migration Fixture Utils', function () {
             const manager = new FixtureManager(testFixtures, placeholderMap);
             const processed = manager.fixtures;
 
-            processed.models[0].entries[0].id.should.equal('user123');
+            assert.equal(processed.models[0].entries[0].id, 'user123');
 
-            should.exist(receivedModels);
+            assertExists(receivedModels);
 
-            receivedModels.should.equal(models);
+            assert.equal(receivedModels, models);
         });
 
         it('should handle missing placeholder handlers', function () {
@@ -206,7 +208,7 @@ describe('Migration Fixture Utils', function () {
             const processed = manager.fixtures;
 
             // Should leave placeholder unchanged if no handler
-            processed.models[0].entries[0].id.should.equal('__MISSING_HANDLER__');
+            assert.equal(processed.models[0].entries[0].id, '__MISSING_HANDLER__');
         });
 
         it('should handle multiple different placeholders in one value', function () {
@@ -231,7 +233,7 @@ describe('Migration Fixture Utils', function () {
             const manager = new FixtureManager(testFixtures, placeholderMap);
             const processed = manager.fixtures;
 
-            processed.models[0].entries[0].content.should.equal('This is a test post created by John Doe on 2025-06-26');
+            assert.equal(processed.models[0].entries[0].content, 'This is a test post created by John Doe on 2025-06-26');
         });
     });
 
@@ -246,64 +248,64 @@ describe('Migration Fixture Utils', function () {
         });
 
         it('should match undefined with no args', function () {
-            matchFunc()({get: getStub}).should.be.true();
-            getStub.calledOnce.should.be.true();
-            getStub.calledWith(undefined).should.be.true();
+            assert.equal(matchFunc()({get: getStub}), true);
+            sinon.assert.calledOnce(getStub);
+            sinon.assert.calledWith(getStub, undefined);
         });
 
         it('should match key with match string', function () {
-            matchFunc('foo', 'bar')({get: getStub}).should.be.true();
-            getStub.calledOnce.should.be.true();
-            getStub.calledWith('foo').should.be.true();
+            assert.equal(matchFunc('foo', 'bar')({get: getStub}), true);
+            sinon.assert.calledOnce(getStub);
+            sinon.assert.calledWith(getStub, 'foo');
 
-            matchFunc('foo', 'buz')({get: getStub}).should.be.false();
-            getStub.calledTwice.should.be.true();
-            getStub.secondCall.calledWith('foo').should.be.true();
+            assert.equal(matchFunc('foo', 'buz')({get: getStub}), false);
+            sinon.assert.calledTwice(getStub);
+            sinon.assert.calledWith(getStub.secondCall, 'foo');
         });
 
         it('should match value when key is 0', function () {
-            matchFunc('foo', 0, 'bar')({get: getStub}).should.be.true();
-            getStub.calledOnce.should.be.true();
-            getStub.calledWith('foo').should.be.true();
+            assert.equal(matchFunc('foo', 0, 'bar')({get: getStub}), true);
+            sinon.assert.calledOnce(getStub);
+            sinon.assert.calledWith(getStub, 'foo');
 
-            matchFunc('foo', 0, 'buz')({get: getStub}).should.be.false();
-            getStub.calledTwice.should.be.true();
-            getStub.secondCall.calledWith('foo').should.be.true();
+            assert.equal(matchFunc('foo', 0, 'buz')({get: getStub}), false);
+            sinon.assert.calledTwice(getStub);
+            sinon.assert.calledWith(getStub.secondCall, 'foo');
         });
 
         it('should match key & value when match is array', function () {
-            matchFunc(['foo', 'fun'], 'bar', 'baz')({get: getStub}).should.be.true();
-            getStub.calledTwice.should.be.true();
-            getStub.getCall(0).calledWith('fun').should.be.true();
-            getStub.getCall(1).calledWith('foo').should.be.true();
+            assert.equal(matchFunc(['foo', 'fun'], 'bar', 'baz')({get: getStub}), true);
+            sinon.assert.calledTwice(getStub);
+            sinon.assert.calledWith(getStub.getCall(0), 'fun');
+            sinon.assert.calledWith(getStub.getCall(1), 'foo');
 
-            matchFunc(['foo', 'fun'], 'baz', 'bar')({get: getStub}).should.be.false();
-            getStub.callCount.should.eql(4);
-            getStub.getCall(2).calledWith('fun').should.be.true();
-            getStub.getCall(3).calledWith('foo').should.be.true();
+            assert.equal(matchFunc(['foo', 'fun'], 'baz', 'bar')({get: getStub}), false);
+            sinon.assert.callCount(getStub, 4);
+            sinon.assert.calledWith(getStub.getCall(2), 'fun');
+            sinon.assert.calledWith(getStub.getCall(3), 'foo');
         });
 
         it('should match key only when match is array, but value is all', function () {
-            matchFunc(['foo', 'fun'], 'bar', 'all')({get: getStub}).should.be.true();
-            getStub.calledOnce.should.be.true();
-            getStub.calledWith('foo').should.be.true();
+            assert.equal(matchFunc(['foo', 'fun'], 'bar', 'all')({get: getStub}), true);
+            sinon.assert.calledOnce(getStub);
+            sinon.assert.calledWith(getStub, 'foo');
 
-            matchFunc(['foo', 'fun'], 'all', 'bar')({get: getStub}).should.be.false();
-            getStub.callCount.should.eql(3);
-            getStub.getCall(1).calledWith('fun').should.be.true();
-            getStub.getCall(2).calledWith('foo').should.be.true();
+            assert.equal(matchFunc(['foo', 'fun'], 'all', 'bar')({get: getStub}), false);
+            sinon.assert.calledThrice(getStub);
+            sinon.assert.calledWith(getStub.getCall(1), 'fun');
+            sinon.assert.calledWith(getStub.getCall(2), 'foo');
         });
 
         it('should match key & value when match and value are arrays', function () {
-            matchFunc(['foo', 'fun'], 'bar', ['baz', 'buz'])({get: getStub}).should.be.true();
-            getStub.calledTwice.should.be.true();
-            getStub.getCall(0).calledWith('fun').should.be.true();
-            getStub.getCall(1).calledWith('foo').should.be.true();
+            assert.equal(matchFunc(['foo', 'fun'], 'bar', ['baz', 'buz'])({get: getStub}), true);
+            sinon.assert.calledTwice(getStub);
+            sinon.assert.calledWith(getStub.getCall(0), 'fun');
+            sinon.assert.calledWith(getStub.getCall(1), 'foo');
 
-            matchFunc(['foo', 'fun'], 'bar', ['biz', 'buz'])({get: getStub}).should.be.false();
-            getStub.callCount.should.eql(4);
-            getStub.getCall(2).calledWith('fun').should.be.true();
-            getStub.getCall(3).calledWith('foo').should.be.true();
+            assert.equal(matchFunc(['foo', 'fun'], 'bar', ['biz', 'buz'])({get: getStub}), false);
+            sinon.assert.callCount(getStub, 4);
+            sinon.assert.calledWith(getStub.getCall(2), 'fun');
+            sinon.assert.calledWith(getStub.getCall(3), 'foo');
         });
     });
 
@@ -314,14 +316,14 @@ describe('Migration Fixture Utils', function () {
 
             await fixtureManager.addAllFixtures();
 
-            addFixturesForModelStub.callCount.should.eql(fixtures.models.length);
-            addFixturesForRelationStub.callCount.should.eql(fixtures.relations.length);
+            sinon.assert.callCount(addFixturesForModelStub, fixtures.models.length);
+            sinon.assert.callCount(addFixturesForRelationStub, fixtures.relations.length);
 
             // NOTE: users and roles have to be initialized first for the post fixtures to work
-            should.equal(addFixturesForModelStub.firstCall.args[0].name, 'Role');
-            should.equal(addFixturesForModelStub.secondCall.args[0].name, 'User');
+            assert.equal(addFixturesForModelStub.firstCall.args[0].name, 'Role');
+            assert.equal(addFixturesForModelStub.secondCall.args[0].name, 'User');
 
-            should.equal(addFixturesForRelationStub.firstCall.args[0].from.relation, 'roles');
+            assert.equal(addFixturesForRelationStub.firstCall.args[0].from.relation, 'roles');
         });
     });
 
@@ -335,13 +337,13 @@ describe('Migration Fixture Utils', function () {
             });
 
             fixtureManager.addFixturesForModel(postFixtures).then(function (result) {
-                should.exist(result);
-                result.should.be.an.Object();
-                result.should.have.property('expected', 11);
-                result.should.have.property('done', 11);
+                assertExists(result);
+                assert(_.isPlainObject(result));
+                assert.equal(result.expected, 11);
+                assert.equal(result.done, 11);
 
-                postOneStub.callCount.should.eql(11);
-                postAddStub.callCount.should.eql(11);
+                sinon.assert.callCount(postOneStub, 11);
+                sinon.assert.callCount(postAddStub, 11);
 
                 done();
             }).catch(done);
@@ -356,13 +358,13 @@ describe('Migration Fixture Utils', function () {
             });
 
             fixtureManager.addFixturesForModel(newsletterFixtures).then(function (result) {
-                should.exist(result);
-                result.should.be.an.Object();
-                result.should.have.property('expected', 1);
-                result.should.have.property('done', 1);
+                assertExists(result);
+                assert(_.isPlainObject(result));
+                assert.equal(result.expected, 1);
+                assert.equal(result.done, 1);
 
-                newsletterOneStub.callCount.should.eql(1);
-                newsletterAddStub.callCount.should.eql(1);
+                sinon.assert.calledOnce(newsletterOneStub);
+                sinon.assert.calledOnce(newsletterAddStub);
 
                 done();
             }).catch(done);
@@ -377,13 +379,13 @@ describe('Migration Fixture Utils', function () {
             });
 
             fixtureManager.addFixturesForModel(postFixtures).then(function (result) {
-                should.exist(result);
-                result.should.be.an.Object();
-                result.should.have.property('expected', 11);
-                result.should.have.property('done', 0);
+                assertExists(result);
+                assert(_.isPlainObject(result));
+                assert.equal(result.expected, 11);
+                assert.equal(result.done, 0);
 
-                postOneStub.callCount.should.eql(11);
-                postAddStub.callCount.should.eql(0);
+                sinon.assert.callCount(postOneStub, 11);
+                sinon.assert.notCalled(postAddStub);
 
                 done();
             }).catch(done);
@@ -410,20 +412,20 @@ describe('Migration Fixture Utils', function () {
 
             fixtureManager.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
                 const FIXTURE_COUNT = 137;
-                should.exist(result);
-                result.should.be.an.Object();
-                result.should.have.property('expected', FIXTURE_COUNT);
-                result.should.have.property('done', FIXTURE_COUNT);
+                assertExists(result);
+                assert(_.isPlainObject(result));
+                assert.equal(result.expected, FIXTURE_COUNT);
+                assert.equal(result.done, FIXTURE_COUNT);
 
                 // Permissions & Roles
-                permsAllStub.calledOnce.should.be.true();
-                rolesAllStub.calledOnce.should.be.true();
-                dataMethodStub.filter.callCount.should.eql(FIXTURE_COUNT);
-                dataMethodStub.find.callCount.should.eql(10);
-                baseUtilAttachStub.callCount.should.eql(FIXTURE_COUNT);
+                sinon.assert.calledOnce(permsAllStub);
+                sinon.assert.calledOnce(rolesAllStub);
+                sinon.assert.callCount(dataMethodStub.filter, FIXTURE_COUNT);
+                sinon.assert.callCount(dataMethodStub.find, 10);
+                sinon.assert.callCount(baseUtilAttachStub, FIXTURE_COUNT);
 
-                fromItem.related.callCount.should.eql(FIXTURE_COUNT);
-                fromItem.find.callCount.should.eql(FIXTURE_COUNT);
+                sinon.assert.callCount(fromItem.related, FIXTURE_COUNT);
+                sinon.assert.callCount(fromItem.find, FIXTURE_COUNT);
 
                 done();
             }).catch(done);
@@ -447,19 +449,19 @@ describe('Migration Fixture Utils', function () {
             const tagsAllStub = sinon.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
 
             fixtureManager.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
-                should.exist(result);
-                result.should.be.an.Object();
-                result.should.have.property('expected', 7);
-                result.should.have.property('done', 7);
+                assertExists(result);
+                assert(_.isPlainObject(result));
+                assert.equal(result.expected, 7);
+                assert.equal(result.done, 7);
 
                 // Posts & Tags
-                postsAllStub.calledOnce.should.be.true();
-                tagsAllStub.calledOnce.should.be.true();
-                dataMethodStub.filter.callCount.should.eql(7);
-                dataMethodStub.find.callCount.should.eql(7);
-                fromItem.related.callCount.should.eql(7);
-                fromItem.find.callCount.should.eql(7);
-                baseUtilAttachStub.callCount.should.eql(7);
+                sinon.assert.calledOnce(postsAllStub);
+                sinon.assert.calledOnce(tagsAllStub);
+                sinon.assert.callCount(dataMethodStub.filter, 7);
+                sinon.assert.callCount(dataMethodStub.find, 7);
+                sinon.assert.callCount(fromItem.related, 7);
+                sinon.assert.callCount(fromItem.find, 7);
+                sinon.assert.callCount(baseUtilAttachStub, 7);
 
                 done();
             }).catch(done);
@@ -484,22 +486,22 @@ describe('Migration Fixture Utils', function () {
             const tagsAllStub = sinon.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
 
             fixtureManager.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
-                should.exist(result);
-                result.should.be.an.Object();
-                result.should.have.property('expected', 7);
-                result.should.have.property('done', 0);
+                assertExists(result);
+                assert(_.isPlainObject(result));
+                assert.equal(result.expected, 7);
+                assert.equal(result.done, 0);
 
                 // Posts & Tags
-                postsAllStub.calledOnce.should.be.true();
-                tagsAllStub.calledOnce.should.be.true();
-                dataMethodStub.filter.callCount.should.eql(7);
-                dataMethodStub.find.callCount.should.eql(7);
+                sinon.assert.calledOnce(postsAllStub);
+                sinon.assert.calledOnce(tagsAllStub);
+                sinon.assert.callCount(dataMethodStub.filter, 7);
+                sinon.assert.callCount(dataMethodStub.find, 7);
 
-                fromItem.related.callCount.should.eql(7);
-                fromItem.find.callCount.should.eql(7);
+                sinon.assert.callCount(fromItem.related, 7);
+                sinon.assert.callCount(fromItem.find, 7);
 
-                fromItem.tags.called.should.be.false();
-                fromItem.attach.called.should.be.false();
+                sinon.assert.notCalled(fromItem.tags);
+                sinon.assert.notCalled(fromItem.attach);
 
                 done();
             }).catch(done);
@@ -509,8 +511,8 @@ describe('Migration Fixture Utils', function () {
     describe('findModelFixtureEntry', function () {
         it('should fetch a single fixture entry', function () {
             const foundFixture = fixtureManager.findModelFixtureEntry('Integration', {slug: 'zapier'});
-            foundFixture.should.be.an.Object();
-            foundFixture.should.eql({
+            assert(_.isPlainObject(foundFixture));
+            assert.deepEqual(foundFixture, {
                 slug: 'zapier',
                 name: 'Zapier',
                 description: 'Built-in Zapier integration',
@@ -523,14 +525,15 @@ describe('Migration Fixture Utils', function () {
     describe('findModelFixtures', function () {
         it('should fetch a fixture with multiple entries', function () {
             const foundFixture = fixtureManager.findModelFixtures('Permission', {object_type: 'db'});
-            foundFixture.should.be.an.Object();
-            foundFixture.entries.should.be.an.Array().with.lengthOf(4);
-            foundFixture.entries[0].should.eql({
+            assert(_.isPlainObject(foundFixture));
+            assert(Array.isArray(foundFixture.entries));
+            assert.equal(foundFixture.entries.length, 4);
+            assert.deepEqual(foundFixture.entries[0], {
                 name: 'Export database',
                 action_type: 'exportContent',
                 object_type: 'db'
             });
-            foundFixture.entries[3].should.eql({
+            assert.deepEqual(foundFixture.entries[3], {
                 name: 'Backup database',
                 action_type: 'backupContent',
                 object_type: 'db'
@@ -541,9 +544,9 @@ describe('Migration Fixture Utils', function () {
     describe('findPermissionRelationsForObject', function () {
         it('should fetch a fixture with multiple entries', function () {
             const foundFixture = fixtureManager.findPermissionRelationsForObject('db');
-            foundFixture.should.be.an.Object();
-            foundFixture.entries.should.be.an.Object();
-            foundFixture.entries.should.have.property('Administrator', {db: 'all'});
+            assert(_.isPlainObject(foundFixture));
+            assert(_.isPlainObject(foundFixture.entries));
+            assert.deepEqual(foundFixture.entries.Administrator, {db: 'all'});
         });
     });
 });

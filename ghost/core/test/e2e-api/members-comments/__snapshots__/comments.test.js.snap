@@ -5,6 +5,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -32,13 +33,14 @@ Object {
 
 exports[`Comments API Tier-only posts Members with access Can comment on a post 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "445",
+  "content-length": "464",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\//,
   "x-powered-by": "Express",
 }
@@ -49,6 +51,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -76,13 +79,14 @@ Object {
 
 exports[`Comments API Tier-only posts Members with access Can reply to a comment 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "436",
+  "content-length": "455",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
@@ -108,12 +112,13 @@ Object {
 
 exports[`Comments API Tier-only posts Members without access Can not comment on a post 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "277",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -138,12 +143,13 @@ Object {
 
 exports[`Comments API Tier-only posts Members without access Can not reply to a comment 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "277",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -153,6 +159,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -176,6 +183,7 @@ Object {
     },
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
@@ -197,6 +205,7 @@ Object {
       "replies": Array [
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -235,12 +244,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Browsing comments does not return the member unsubscribe_url 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1338",
+  "content-length": "1395",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -250,6 +260,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
@@ -271,6 +282,7 @@ Object {
       "replies": Array [
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -295,6 +307,7 @@ Object {
     },
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -332,12 +345,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can browse all comments of a post (legacy) 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1338",
+  "content-length": "1395",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -347,6 +361,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
@@ -368,6 +383,7 @@ Object {
       "replies": Array [
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -392,6 +408,7 @@ Object {
     },
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -429,12 +446,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can browse all comments of a post 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1338",
+  "content-length": "1395",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -444,6 +462,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -467,6 +486,7 @@ Object {
     },
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
@@ -488,6 +508,7 @@ Object {
       "replies": Array [
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -526,12 +547,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can browse all comments of a post with default order 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1338",
+  "content-length": "1395",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -541,6 +563,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -568,13 +591,14 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can comment on a post 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "445",
+  "content-length": "464",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\//,
   "x-powered-by": "Express",
 }
@@ -585,6 +609,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -612,12 +637,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can edit a comment on a post 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "436",
+  "content-length": "455",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/",
   "x-powered-by": "Express",
 }
@@ -633,21 +659,24 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can fetch counts 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "public, max-age=0",
   "content-length": "88",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
 
 exports[`Comments API when commenting enabled for all when authenticated Can like a comment 1: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin",
   "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/",
   "x-powered-by": "Express",
 }
@@ -658,6 +687,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -685,21 +715,24 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can like a comment 3: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "433",
+  "content-length": "452",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
 
 exports[`Comments API when commenting enabled for all when authenticated Can like a reply 1: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin",
   "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
@@ -710,6 +743,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -737,12 +771,44 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can like a reply 3: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "444",
+  "content-length": "463",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated Can not delete a comment which does not belong to you 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Unable to find member",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Permission error, cannot edit comment.",
+      "property": null,
+      "type": "NoPermissionError",
+    },
+  ],
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated Can not delete a comment which does not belong to you 2: [headers] 1`] = `
+Object {
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "247",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -752,6 +818,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -779,12 +846,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can not edit a comment as a member who is not you 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "443",
+  "content-length": "462",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -809,12 +877,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can not edit a comment which does not belong to you 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "269",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -839,21 +908,24 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can not reply to a reply 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "260",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
 
 exports[`Comments API when commenting enabled for all when authenticated Can remove a like (unlike) 1: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin",
   "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/",
   "x-powered-by": "Express",
 }
@@ -864,6 +936,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -891,12 +964,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can remove a like (unlike) 3: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "423",
+  "content-length": "442",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -906,6 +980,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -933,13 +1008,14 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can reply to a comment 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "436",
+  "content-length": "455",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
@@ -950,6 +1026,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -977,13 +1054,14 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can reply to a comment with custom support email 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "436",
+  "content-length": "455",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
@@ -994,6 +1072,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -1021,13 +1100,14 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can reply to a comment with www domain 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "436",
+  "content-length": "455",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
@@ -1038,6 +1118,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -1065,13 +1146,14 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can reply to your own comment 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "436",
+  "content-length": "455",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
@@ -1079,9 +1161,11 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can report a comment 1: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -1091,6 +1175,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1126,12 +1211,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can request last page of replies 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "502",
+  "content-length": "521",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1141,6 +1227,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1162,6 +1249,7 @@ Object {
     },
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1183,6 +1271,7 @@ Object {
     },
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1204,6 +1293,7 @@ Object {
     },
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1225,6 +1315,7 @@ Object {
     },
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1246,6 +1337,7 @@ Object {
     },
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1267,6 +1359,7 @@ Object {
     },
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1302,12 +1395,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can return replies 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2929",
+  "content-length": "3062",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1332,21 +1426,24 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Cannot like a comment multiple times 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "218",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
 
 exports[`Comments API when commenting enabled for all when authenticated Cannot report a comment twice 1: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -1371,21 +1468,23 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Cannot unlike a comment if it has not been liked 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "205",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
 
-exports[`Comments API when commenting enabled for all when authenticated Limits returned replies to 3 1: [body] 1`] = `
+exports[`Comments API when commenting enabled for all when authenticated Returns all replies when reading a single comment 1: [body] 1`] = `
 Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
@@ -1407,6 +1506,7 @@ Object {
       "replies": Array [
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1428,6 +1528,7 @@ Object {
         },
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1449,6 +1550,51 @@ Object {
         },
         Object {
           "count": Object {
+            "direct_replies": 0,
+            "likes": Any<Number>,
+          },
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "edited_at": null,
+          "html": "<p>This is a reply</p>",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
+          "in_reply_to_snippet": null,
+          "liked": Any<Boolean>,
+          "member": Object {
+            "avatar_image": null,
+            "expertise": null,
+            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "name": null,
+            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+          },
+          "parent_id": Nullable<StringMatching>,
+          "status": "published",
+        },
+        Object {
+          "count": Object {
+            "direct_replies": 0,
+            "likes": Any<Number>,
+          },
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "edited_at": null,
+          "html": "<p>This is a reply</p>",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
+          "in_reply_to_snippet": null,
+          "liked": Any<Boolean>,
+          "member": Object {
+            "avatar_image": null,
+            "expertise": null,
+            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "name": null,
+            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+          },
+          "parent_id": Nullable<StringMatching>,
+          "status": "published",
+        },
+        Object {
+          "count": Object {
+            "direct_replies": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1475,14 +1621,15 @@ Object {
 }
 `;
 
-exports[`Comments API when commenting enabled for all when authenticated Limits returned replies to 3 2: [headers] 1`] = `
+exports[`Comments API when commenting enabled for all when authenticated Returns all replies when reading a single comment 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1638",
+  "content-length": "2560",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1492,6 +1639,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
@@ -1513,6 +1661,7 @@ Object {
       "replies": Array [
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1551,12 +1700,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated browse by post doesn't count deleted or hidden comments in replies count 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "894",
+  "content-length": "932",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1579,12 +1729,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated browse by post excludes deleted comments 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "103",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1607,12 +1758,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated browse by post excludes deleted comments if all replies are hidden or deleted 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "103",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1622,6 +1774,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
@@ -1659,12 +1812,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated browse by post excludes deleted replies 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "515",
+  "content-length": "534",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1687,12 +1841,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated browse by post excludes hidden comments 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "103",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1715,12 +1870,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated browse by post excludes hidden comments if all replies are hidden or deleted 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "103",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1730,6 +1886,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
@@ -1767,12 +1924,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated browse by post excludes hidden replies 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "515",
+  "content-length": "534",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1782,6 +1940,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
@@ -1803,6 +1962,7 @@ Object {
       "replies": Array [
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1841,12 +2001,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated browse by post includes deleted comments if they have published replies 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "894",
+  "content-length": "932",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1856,6 +2017,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
@@ -1877,6 +2039,7 @@ Object {
       "replies": Array [
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1915,12 +2078,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated browse by post includes hidden comments if they have published replies 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "893",
+  "content-length": "931",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1930,6 +2094,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
@@ -1951,6 +2116,7 @@ Object {
       "replies": Array [
         Object {
           "count": Object {
+            "direct_replies": 1,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1972,6 +2138,7 @@ Object {
         },
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2010,12 +2177,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated replies to replies can browse comments with replies to replies 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1399",
+  "content-length": "1456",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2025,6 +2193,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -2052,13 +2221,14 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated replies to replies can set in_reply_to_id when creating a reply 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "489",
+  "content-length": "508",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
@@ -2069,6 +2239,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -2096,13 +2267,14 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated replies to replies cannot set in_reply_to_id to a deleted comment 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "454",
+  "content-length": "473",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
@@ -2113,6 +2285,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -2140,13 +2313,14 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated replies to replies cannot set in_reply_to_id to a hidden comment 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "454",
+  "content-length": "473",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
@@ -2157,6 +2331,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -2184,12 +2359,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated replies to replies has redacted in_reply_to_snippet when referenced comment is deleted 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "474",
+  "content-length": "493",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2199,6 +2375,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -2226,12 +2403,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated replies to replies has redacted in_reply_to_snippet when referenced comment is hidden 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "474",
+  "content-length": "493",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2241,6 +2419,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -2268,13 +2447,14 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated replies to replies in_reply_to_id is ignored id in_reply_to_id has a different parent 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "454",
+  "content-length": "473",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
@@ -2285,6 +2465,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -2312,13 +2493,14 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated replies to replies in_reply_to_id is ignored when no parent specified 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "432",
+  "content-length": "451",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\//,
   "x-powered-by": "Express",
 }
@@ -2329,6 +2511,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -2356,13 +2539,14 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated replies to replies includes in_reply_to_snippet in response 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "501",
+  "content-length": "520",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
@@ -2373,6 +2557,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -2400,12 +2585,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated replies to replies includes in_reply_to_snippet in response 4: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "501",
+  "content-length": "520",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2415,6 +2601,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
@@ -2436,6 +2623,7 @@ Object {
       "replies": Array [
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2474,12 +2662,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when not authenticated Can browse all comments of a post (legacy) 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "918",
+  "content-length": "956",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2489,6 +2678,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": Any<Number>,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
@@ -2510,6 +2700,7 @@ Object {
       "replies": Array [
         Object {
           "count": Object {
+            "direct_replies": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2548,12 +2739,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when not authenticated Can browse all comments of a post 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "918",
+  "content-length": "956",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2578,12 +2770,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when not authenticated cannot comment on a post 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "250",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2608,12 +2801,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when not authenticated cannot like a comment 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "211",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2638,12 +2832,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when not authenticated cannot reply on a post 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "250",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2668,12 +2863,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when not authenticated cannot report a comment 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "211",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2698,12 +2894,13 @@ Object {
 
 exports[`Comments API when commenting enabled for all when not authenticated cannot unlike a comment 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "211",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2713,6 +2910,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -2740,13 +2938,14 @@ Object {
 
 exports[`Comments API when paid only commenting Members with access Can comment on a post 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "445",
+  "content-length": "464",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\//,
   "x-powered-by": "Express",
 }
@@ -2757,6 +2956,7 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
+        "direct_replies": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
@@ -2784,13 +2984,14 @@ Object {
 
 exports[`Comments API when paid only commenting Members with access Can reply to a comment 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "436",
+  "content-length": "455",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
@@ -2816,12 +3017,13 @@ Object {
 
 exports[`Comments API when paid only commenting Members without access Can not comment on a post 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "277",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2846,12 +3048,13 @@ Object {
 
 exports[`Comments API when paid only commenting Members without access Can not reply to a comment 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "277",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;

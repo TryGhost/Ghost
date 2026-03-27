@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../utils/assertions');
 const sinon = require('sinon');
 const testUtils = require('../../../../../utils');
 const configUtils = require('../../../../../utils/config-utils');
@@ -65,7 +66,7 @@ describe('Unit - services/routing/controllers/entry', function () {
             .resolves(null);
 
         controllers.entry(req, res, function (err) {
-            should.not.exist(err);
+            assert.equal(err, undefined);
             done();
         });
     });
@@ -103,7 +104,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                 });
 
             controllers.entry(req, res, function (err) {
-                should.not.exist(err);
+                assert.equal(err, undefined);
                 done();
             });
         });
@@ -118,8 +119,8 @@ describe('Unit - services/routing/controllers/entry', function () {
                 });
 
             urlUtilsRedirectToAdminStub.callsFake(function (statusCode, _res, editorUrl) {
-                statusCode.should.eql(302);
-                editorUrl.should.eql(EDITOR_URL + post.id);
+                assert.equal(statusCode, 302);
+                assert.equal(editorUrl, EDITOR_URL + post.id);
                 done();
             });
 
@@ -146,8 +147,8 @@ describe('Unit - services/routing/controllers/entry', function () {
 
             controllers.entry(req, res, async (err) => {
                 await configUtils.restore();
-                urlUtilsRedirectToAdminStub.called.should.eql(false);
-                should.not.exist(err);
+                sinon.assert.notCalled(urlUtilsRedirectToAdminStub);
+                assert.equal(err, undefined);
                 done(err);
             });
         });
@@ -168,7 +169,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                 });
 
             controllers.entry(req, res, function (err) {
-                should.not.exist(err);
+                assert.equal(err, undefined);
                 done();
             });
         });
@@ -192,12 +193,12 @@ describe('Unit - services/routing/controllers/entry', function () {
                 });
 
             urlUtilsRedirect301Stub.callsFake(function (_res, postUrl) {
-                postUrl.should.eql(post.url);
+                assert.equal(postUrl, post.url);
                 done();
             });
 
             controllers.entry(req, res, function (err) {
-                should.exist(err);
+                assertExists(err);
                 done(err);
             });
         });
@@ -221,7 +222,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                 });
 
             urlUtilsRedirect301Stub.callsFake(function (_res, postUrl) {
-                postUrl.should.eql(post.url + '?query=true');
+                assert.equal(postUrl, post.url + '?query=true');
                 done();
             });
 

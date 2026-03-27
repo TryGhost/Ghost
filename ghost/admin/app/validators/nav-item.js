@@ -20,7 +20,6 @@ export default BaseValidator.create({
     url(model) {
         let url = model.url;
         let hasValidated = model.hasValidated;
-        /* eslint-disable camelcase */
         let validatorOptions = {require_protocol: true};
         /* eslint-enable camelcase */
         let urlRegex = new RegExp(/^(\/|#|[a-zA-Z0-9-]+:)/);

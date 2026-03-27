@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 const mappers = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers');
@@ -27,7 +27,7 @@ describe('Unit: endpoints/utils/serializers/output/default', function () {
 
         serializers.output.default.all(response, apiConfig, frame);
 
-        frame.response.should.eql({
+        assert.deepEqual(frame.response, {
             stuffs: [response]
         });
     });
@@ -54,7 +54,7 @@ describe('Unit: endpoints/utils/serializers/output/default', function () {
 
         serializers.output.default.all(response, apiConfig, frame);
 
-        frame.response.should.eql({
+        assert.deepEqual(frame.response, {
             stuffs: response.data,
             meta: response.meta
         });
@@ -73,7 +73,7 @@ describe('Unit: endpoints/utils/serializers/output/default', function () {
 
         serializers.output.default.all(response, apiConfig, frame);
 
-        frame.response.should.eql({
+        assert.deepEqual(frame.response, {
             stuffs: [
                 {title: 'foo', hello: 'world'}
             ]
@@ -106,7 +106,7 @@ describe('Unit: endpoints/utils/serializers/output/default', function () {
 
         serializers.output.default.all(response, apiConfig, frame);
 
-        frame.response.should.eql({
+        assert.deepEqual(frame.response, {
             stuffs: [
                 {title: 'foo', hello: 'world'},
                 {title: 'bar', hello: 'world'}
@@ -137,7 +137,7 @@ describe('Unit: endpoints/utils/serializers/output/default', function () {
 
         serializers.output.default.all(response, apiConfig, frame);
 
-        frame.response.should.eql({
+        assert.deepEqual(frame.response, {
             stuffs: [
                 {title: 'foo', custom: 'thing'}
             ]
@@ -178,7 +178,7 @@ describe('Unit: endpoints/utils/serializers/output/default', function () {
 
         serializers.output.default.all(response, apiConfig, frame);
 
-        frame.response.should.eql({
+        assert.deepEqual(frame.response, {
             stuffs: [
                 {title: 'foo', custom: 'thing'},
                 {title: 'bar', custom: 'thing'}

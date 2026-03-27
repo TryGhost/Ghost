@@ -2,6 +2,7 @@ import IntegrationsSettingsImg from '../../../assets/images/integrations-setting
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
+import useFeatureFlag from '../../../hooks/use-feature-flag';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, SettingGroupHeader, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {type Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
@@ -20,6 +21,16 @@ interface IntegrationItemProps {
     disabled?: boolean;
     testId?: string;
     custom?: boolean;
+}
+
+interface BuiltInIntegrationItem {
+    active?: boolean;
+    detail: string;
+    disabled?: boolean;
+    icon: React.ReactNode;
+    modal: string;
+    testId: string;
+    title: string;
 }
 
 const IntegrationItem: React.FC<IntegrationItemProps> = ({
@@ -66,7 +77,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
         detail={detail}
         hideActions={!disabled}
         testId={testId}
-        title={active ? <span className='inline-flex items-center gap-1'>{title} <span className='inline-flex items-center rounded-full bg-[rgba(48,207,67,0.15)] px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wide text-green'>Active</span></span> : title}
+        title={active ? <span className='inline-flex items-center gap-1'>{title} <span className='inline-flex items-center rounded-full bg-[rgba(48,207,67,0.15)] px-1.5 py-0.5 text-2xs font-semibold tracking-wide text-green uppercase'>Active</span></span> : title}
         onClick={handleClick}
     />;
 };
@@ -79,69 +90,100 @@ const BuiltInIntegrations: React.FC = () => {
         updateRoute(modal);
     };
 
-    const zapierDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
+    const builtInApiIntegrationsDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
+    const transistorFeatureEnabled = useFeatureFlag('transistor');
 
     const pinturaEditor = usePinturaEditor();
 
     const {settings} = useGlobalData();
-    const [unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername] = getSettingValues<boolean>(settings, [
+    const [unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername, transistorEnabled] = getSettingValues<boolean>(settings, [
         'unsplash',
         'firstpromoter',
         'slack_url',
-        'slack_username'
+        'slack_username',
+        'transistor'
     ]);
+
+    const items: BuiltInIntegrationItem[] = [
+        {
+            detail: 'Automation for your apps',
+            disabled: builtInApiIntegrationsDisabled,
+            icon: <Icon name='zapier' size={32} />,
+            modal: 'integrations/zapier',
+            testId: 'zapier-integration',
+            title: 'Zapier'
+        },
+        {
+            active: !!(slackUrl && slackUsername),
+            detail: 'A messaging app for teams',
+            icon: <Icon name='slack' size={32} />,
+            modal: 'integrations/slack',
+            testId: 'slack-integration',
+            title: 'Slack'
+        },
+        {
+            active: !!unsplashEnabled,
+            detail: 'Beautiful, free photos',
+            icon: <Icon name='unsplash' size={32} />,
+            modal: 'integrations/unsplash',
+            testId: 'unsplash-integration',
+            title: 'Unsplash'
+        },
+        {
+            active: !!firstPromoterEnabled,
+            detail: 'Launch your member referral program',
+            icon: <Icon name='firstpromoter' size={32} />,
+            modal: 'integrations/firstpromoter',
+            testId: 'firstpromoter-integration',
+            title: 'FirstPromoter'
+        },
+        {
+            active: pinturaEditor.isEnabled,
+            detail: 'Advanced image editing',
+            icon: <Icon name='pintura' size={32} />,
+            modal: 'integrations/pintura',
+            testId: 'pintura-integration',
+            title: 'Pintura'
+        },
+        ...(transistorFeatureEnabled ? [{
+            active: !!transistorEnabled,
+            detail: 'Give your members access to private podcasts',
+            disabled: builtInApiIntegrationsDisabled,
+            icon: <Icon name='transistor' size={32} />,
+            modal: 'integrations/transistor',
+            testId: 'transistor-integration',
+            title: 'Transistor.fm'
+        }] : []),
+        {
+            detail: 'Access your content programmatically',
+            icon: <Icon name='angle-brackets' size={32} />,
+            modal: 'integrations/contentapi',
+            testId: 'content-api-integration',
+            title: 'Content API'
+        }
+    ];
+
+    const sortedItems = [
+        ...items.filter(item => !item.disabled),
+        ...items.filter(item => item.disabled)
+    ];
 
     return (
         <List titleSeparator={false}>
-            <IntegrationItem
-                action={() => {
-                    openModal('integrations/zapier');
-                }}
-                detail='Automation for your apps'
-                disabled={zapierDisabled}
-                icon={<Icon name='zapier' size={32} />}
-                testId='zapier-integration'
-                title='Zapier' />
-
-            <IntegrationItem
-                action={() => {
-                    openModal('integrations/slack');
-                }}
-                active={slackUrl && slackUsername}
-                detail='A messaging app for teams'
-                icon={<Icon name='slack' size={32} />}
-                testId='slack-integration'
-                title='Slack' />
-
-            <IntegrationItem
-                action={() => {
-                    openModal('integrations/unsplash');
-                }}
-                active={unsplashEnabled}
-                detail='Beautiful, free photos'
-                icon={<Icon name='unsplash' size={32} />}
-                testId='unsplash-integration'
-                title='Unsplash' />
-
-            <IntegrationItem
-                action={() => {
-                    openModal('integrations/firstpromoter');
-                }}
-                active={firstPromoterEnabled}
-                detail='Launch your member referral program'
-                icon={<Icon name='firstpromoter' size={32} />}
-                testId='firstpromoter-integration'
-                title='FirstPromoter' />
-
-            <IntegrationItem
-                action={() => {
-                    openModal('integrations/pintura');
-                }}
-                active={pinturaEditor.isEnabled}
-                detail='Advanced image editing'
-                icon={<Icon name='pintura' size={32} />}
-                testId='pintura-integration'
-                title='Pintura' />
+            {sortedItems.map(item => (
+                <IntegrationItem
+                    key={item.testId}
+                    action={() => {
+                        openModal(item.modal);
+                    }}
+                    active={item.active}
+                    detail={item.detail}
+                    disabled={item.disabled}
+                    icon={item.icon}
+                    testId={item.testId}
+                    title={item.title}
+                />
+            ))}
         </List>
     );
 };
@@ -221,7 +263,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const buttons = (
         <Button
-            className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center whitespace-nowrap rounded px-3 text-sm font-semibold text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black'
+            className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center rounded px-3 text-sm font-semibold whitespace-nowrap text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black'
             color='clear'
             label='Add custom integration'
             link
@@ -243,7 +285,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className=' z-10 mt-6 flex items-start justify-between'>
                         <SettingGroupHeader description='Make Ghost work with apps and tools.' title='Integrations' />
                         {
-                            <Button className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center whitespace-nowrap rounded px-3 text-sm font-semibold text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black' color='clear' label='Add custom integration' link onClick={() => {
+                            <Button className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center rounded px-3 text-sm font-semibold whitespace-nowrap text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black' color='clear' label='Add custom integration' link onClick={() => {
                                 updateRoute('integrations/new');
                                 setSelectedTab('custom');
                             }} />

@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
 const I18n = require('../../../../../core/frontend/services/theme-engine/i18n/i18n');
@@ -8,12 +8,12 @@ const logging = require('@tryghost/logging');
 describe('I18n Class behavior', function () {
     it('defaults to en', function () {
         const i18n = new I18n();
-        i18n.locale().should.eql('en');
+        assert.equal(i18n.locale(), 'en');
     });
 
     it('can have a different locale set', function () {
         const i18n = new I18n({locale: 'fr'});
-        i18n.locale().should.eql('fr');
+        assert.equal(i18n.locale(), 'fr');
     });
 
     describe('file loading behavior', function () {
@@ -22,12 +22,12 @@ describe('I18n Class behavior', function () {
 
             let fileSpy = sinon.spy(i18n, '_readTranslationsFile');
 
-            i18n.locale().should.eql('fr');
+            assert.equal(i18n.locale(), 'fr');
             i18n.init();
 
-            i18n.locale().should.eql('fr');
-            fileSpy.calledTwice.should.be.true();
-            fileSpy.secondCall.args[0].should.eql('en');
+            assert.equal(i18n.locale(), 'fr');
+            sinon.assert.calledTwice(fileSpy);
+            assert.equal(fileSpy.secondCall.args[0], 'en');
         });
     });
 
@@ -44,23 +44,24 @@ describe('I18n Class behavior', function () {
         });
 
         it('correctly loads strings', function () {
-            i18n._strings.should.eql(fakeStrings);
+            assert.equal(i18n._strings, fakeStrings);
         });
 
         it('correctly uses dot notation', function () {
-            i18n.t('test.string.path').should.eql('I am correct');
+            assert.equal(i18n.t('test.string.path'), 'I am correct');
         });
 
         it('uses key fallback correctly', function () {
             const loggingStub = sinon.stub(logging, 'error');
-            i18n.t('unknown.string').should.eql('An error occurred');
+            assert.equal(i18n.t('unknown.string'), 'An error occurred');
             sinon.assert.calledOnce(loggingStub);
         });
 
         it('errors for invalid strings', function () {
-            should(function () {
-                i18n.t('unknown string');
-            }).throw('i18n.t() called with an invalid key: unknown string');
+            assert.throws(
+                () => i18n.t('unknown string'),
+                {message: 'i18n.t() called with an invalid key: unknown string'}
+            );
         });
     });
 
@@ -79,15 +80,15 @@ describe('I18n Class behavior', function () {
         });
 
         it('correctly loads strings', function () {
-            i18n._strings.should.eql(fakeStrings);
+            assert.equal(i18n._strings, fakeStrings);
         });
 
         it('correctly uses fulltext with bracket notation', function () {
-            i18n.t('Full text').should.eql('I am correct');
+            assert.equal(i18n.t('Full text'), 'I am correct');
         });
 
         it('uses key fallback correctly', function () {
-            i18n.t('unknown string').should.eql('unknown string');
+            assert.equal(i18n.t('unknown string'), 'unknown string');
         });
     });
 });

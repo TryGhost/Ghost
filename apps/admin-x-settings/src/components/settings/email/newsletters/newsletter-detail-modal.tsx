@@ -275,7 +275,7 @@ const Sidebar: React.FC<{
                         onChange={e => updateNewsletter({subscribe_on_signup: e.target.checked})}
                     />
                 </Form>
-                <div className='mb-5 mt-10'>
+                <div className='mt-10 mb-5'>
                     {newsletter.status === 'active' ? (!onlyOne && <Button color='red' disabled={activeNewsletters.length === 1} label='Archive newsletter' link onClick={confirmStatusChange}/>) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
                 </div>
             </>
@@ -292,7 +292,7 @@ const Sidebar: React.FC<{
                         </div>
                         <div className='flex-column flex gap-1'>
                             <ImageUpload
-                                deleteButtonClassName='!top-1 !right-1'
+                                deleteButtonClassName='top-1! right-1!'
                                 height={newsletter.header_image ? '66px' : '64px'}
                                 id='logo'
                                 imageURL={newsletter.header_image || undefined}
@@ -397,7 +397,7 @@ const Sidebar: React.FC<{
                 <Separator />
                 <div className='my-5 flex w-full items-start'>
                     <span>
-                        <Icon className='mr-2 mt-[-1px]' colorClass='text-red' name='heart'/>
+                        <Icon className='mt-[-1px] mr-2' colorClass='text-red' name='heart'/>
                     </span>
                     <Form marginBottom={false}>
                         <Toggle
@@ -762,7 +762,7 @@ const Sidebar: React.FC<{
 
     return (
         <div className='flex flex-col'>
-            <div className='px-7 pb-7 pt-0'>
+            <div className='px-7 pt-0 pb-7'>
                 <TabView selectedTab={selectedTab} stickyHeader={true} tabs={tabs} onTabChange={handleTabChange} />
             </div>
         </div>

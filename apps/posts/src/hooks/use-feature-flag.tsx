@@ -1,5 +1,4 @@
 import {Navigate} from '@tryghost/admin-x-framework';
-import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/post-analytics-context';
 
 /**
@@ -11,14 +10,10 @@ import {useGlobalData} from '@src/providers/post-analytics-context';
  * @returns An object containing the feature flag status and optional component to render
  */
 export const useFeatureFlag = (flagName: string, fallbackPath: string) => {
-    const {isLoading, settings} = useGlobalData();
+    const {isLoading, data} = useGlobalData();
 
-    // Parse labs settings
-    const labsJSON = getSettingValue<string>(settings, 'labs') || '{}';
-    const labs = JSON.parse(labsJSON);
-
-    // Check if the feature flag is enabled
-    const isEnabled = labs[flagName] === true;
+    // Check if the feature flag is enabled from config.labs
+    const isEnabled = data?.labs?.[flagName] === true;
 
     // If loading, don't make a decision yet
     if (isLoading) {

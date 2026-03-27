@@ -34,6 +34,10 @@ const NewsletterTableRows: React.FC<{
     sortBy: TopNewslettersOrder;
 }> = React.memo(({range, selectedNewsletterId, shouldFetchStats, sortBy}) => {
     const navigate = useNavigate();
+    const {settings} = useGlobalData();
+
+    // Get site timezone from settings for displaying dates consistently
+    const siteTimezone = String(settings.find(setting => setting.key === 'timezone')?.value || 'Etc/UTC');
 
     // Fetch newsletter stats with reactive sort order - isolated to this component
     const {data: newsletterStatsData, isLoading: isStatsLoading, isClicksLoading} = useNewsletterStatsWithRangeSplit(
@@ -72,7 +76,7 @@ const NewsletterTableRows: React.FC<{
                             <TableCell className="font-medium">
                                 <div className='group/link inline-flex items-center gap-2'>
                                     {post.post_id ?
-                                        <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
+                                        <Button className='h-auto p-0 text-left whitespace-normal hover:underline!' title="View post analytics" variant='link' onClick={() => {
                                             navigate(`/posts/analytics/${post.post_id}/`, {crossApp: true});
                                         }}>
                                             {post.post_title}
@@ -84,8 +88,8 @@ const NewsletterTableRows: React.FC<{
                                     }
                                 </div>
                             </TableCell>
-                            <TableCell className="whitespace-nowrap text-sm">
-                                {formatDisplayDate(post.send_date)}
+                            <TableCell className="text-sm whitespace-nowrap">
+                                {formatDisplayDate(post.send_date, siteTimezone)}
                             </TableCell>
                             <TableCell className='text-right font-mono text-sm'>
                                 {formatNumber(post.sent_to)}
@@ -93,7 +97,7 @@ const NewsletterTableRows: React.FC<{
                             {emailTrackOpensEnabled &&
                         <TableCell className='text-right font-mono text-sm'>
                             <span className="group-hover:hidden">{formatPercentage(post.open_rate)}</span>
-                            <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_opens)}</span>
+                            <span className="hidden group-hover:visible! group-hover:block!">{formatNumber(post.total_opens)}</span>
                         </TableCell>
                             }
 
@@ -104,7 +108,7 @@ const NewsletterTableRows: React.FC<{
                             ) : (
                                 <>
                                     <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
-                                    <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_clicks)}</span>
+                                    <span className="hidden group-hover:visible! group-hover:block!">{formatNumber(post.total_clicks)}</span>
                                 </>
                             )}
                         </TableCell>
@@ -114,7 +118,7 @@ const NewsletterTableRows: React.FC<{
                 </>
                 :
                 <TableRow className='border-none hover:bg-transparent'>
-                    <TableCell className='text-center group-hover:!bg-transparent' colSpan={5}>
+                    <TableCell className='text-center group-hover:bg-transparent!' colSpan={colSpan}>
                         <EmptyIndicator
                             className='size-full py-20'
                             title={`No newsletters ${getPeriodText(range)}`}
@@ -360,9 +364,9 @@ const Newsletters: React.FC = () => {
     // const hasNewslettersInPeriod = newsletterStatsData?.stats && newsletterStatsData.stats.length > 0;
     // const pageData = isKPIsLoading || isNewsletterStatsLoading ? undefined : (hasNewslettersInPeriod ? ['data exists'] : []);
 
-    if (!appSettings?.newslettersEnabled) {
+    if (appSettings && !appSettings.newslettersEnabled) {
         return (
-            <Navigate to='/' />
+            <Navigate to='/analytics' />
         );
     }
 

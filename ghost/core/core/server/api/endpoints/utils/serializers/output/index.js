@@ -17,6 +17,10 @@ module.exports = {
         return require('./comments');
     },
 
+    get member_commenting() {
+        return require('./member-commenting');
+    },
+
     get authentication() {
         return require('./authentication');
     },

@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const Gravatar = require('../../../../../core/server/lib/image/gravatar');
 
 describe('lib/image: gravatar', function () {
@@ -14,10 +15,10 @@ describe('lib/image: gravatar', function () {
             }
         }, request: () => {}});
 
-        gravatar.url('exists@example.com', {
+        assert.equal(gravatar.url('exists@example.com', {
             size: 180,
             rating: 'r'
-        }).should.eql('https://www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=180&r=r&d=blank');
+        }), 'https://www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=180&r=r&d=blank');
     });
 
     it('can successfully lookup a gravatar url', function (done) {
@@ -31,9 +32,9 @@ describe('lib/image: gravatar', function () {
         }, request: () => {}});
 
         gravatar.lookup({email: 'exists@example.com'}).then(function (result) {
-            should.exist(result);
-            should.exist(result.image);
-            result.image.should.eql('https://www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&r=x&d=mp');
+            assertExists(result);
+            assertExists(result.image);
+            assert.equal(result.image, 'https://www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&r=x&d=mp');
 
             done();
         }).catch(done);
@@ -52,8 +53,8 @@ describe('lib/image: gravatar', function () {
         }});
 
         gravatar.lookup({email: 'invalid@example.com'}).then(function (result) {
-            should.exist(result);
-            should.not.exist(result.image);
+            assertExists(result);
+            assert.equal(result.image, undefined);
 
             done();
         }).catch(done);
@@ -69,7 +70,7 @@ describe('lib/image: gravatar', function () {
                 } : null;
             }
         }, request: (url, options) => {
-            options.timeout.request.should.eql(delay);
+            assert.equal(options.timeout.request, delay);
         }});
 
         gravatar.lookup({email: 'exists@example.com'}, delay);

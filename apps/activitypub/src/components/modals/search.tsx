@@ -192,7 +192,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
 
     return (
         <>
-            <div className='sticky -top-6 z-30 -mt-6 flex h-[72px] shrink-0 items-center gap-2 bg-white pb-2 pt-3 before:pointer-events-none before:absolute before:-inset-x-6 before:bottom-0 before:h-0 before:border-b before:border-b-gray-150 before:content-[""] dark:bg-[#101114] dark:before:border-b-gray-950'>
+            <div className='sticky -top-6 z-30 -mt-6 flex h-[72px] shrink-0 items-center gap-2 bg-white pt-3 pb-2 before:pointer-events-none before:absolute before:-inset-x-6 before:bottom-0 before:h-0 before:border-b before:border-b-gray-150 before:content-[""] dark:bg-[#101114] dark:before:border-b-gray-950'>
                 <LucideIcon.Search className='text-gray-600' size={18} strokeWidth={1.5} />
                 <Input
                     ref={queryInputRef}
@@ -206,7 +206,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                     onKeyDown={handleKeyDown}
                 />
                 {showLoading && (
-                    <LoadingIndicator className='!absolute right-0 mr-0.5 shrink-0' size='sm' />
+                    <LoadingIndicator className='absolute! right-0 mr-0.5 shrink-0' size='sm' />
                 )}
             </div>
             <div className='h-full'>
@@ -272,7 +272,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                                                 name: account.name,
                                                 handle: account.handle
                                             }}/>
-                                            <div className='flex flex-col break-anywhere'>
+                                            <div className='break-anywhere flex flex-col'>
                                                 <span className='line-clamp-1 font-semibold text-black dark:text-white'>{account.name}</span>
                                                 <span className='line-clamp-1 text-sm text-gray-700 dark:text-gray-600'>{account.handle}</span>
                                             </div>

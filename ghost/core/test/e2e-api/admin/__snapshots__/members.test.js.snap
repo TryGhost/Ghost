@@ -14,6 +14,12 @@ Object {
         "url": "http://127.0.0.1:2369/static-page-test/",
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member-attributed-to-page@test.com",
@@ -60,7 +66,7 @@ exports[`Members API - member attribution Can read member attributed to a page 2
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1094",
+  "content-length": "1190",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -83,6 +89,12 @@ Object {
         "url": "http://127.0.0.1:2369/html-ipsum/",
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member-attributed-to-post@test.com",
@@ -129,7 +141,7 @@ exports[`Members API - member attribution Can read member attributed to a post 2
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1077",
+  "content-length": "1173",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -152,6 +164,12 @@ Object {
         "url": "http://127.0.0.1:2369/tag/kitchen-sink/",
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member-attributed-to-tag@test.com",
@@ -198,7 +216,7 @@ exports[`Members API - member attribution Can read member attributed to a tag 2:
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1083",
+  "content-length": "1179",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -221,6 +239,12 @@ Object {
         "url": "http://127.0.0.1:2369/author/joe-bloggs/",
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member-attributed-to-author@test.com",
@@ -267,7 +291,7 @@ exports[`Members API - member attribution Can read member attributed to an autho
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1088",
+  "content-length": "1184",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -290,6 +314,12 @@ Object {
         "url": "http://127.0.0.1:2369/a-static-page/",
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member-attributed-to-url@test.com",
@@ -336,7 +366,7 @@ exports[`Members API - member attribution Can read member attributed to an url 2
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1061",
+  "content-length": "1157",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -440,6 +470,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "memberAddNewsletterSubscribed@test.com",
@@ -473,7 +509,7 @@ exports[`Members API Adding newsletters to member with no subscriptions works ev
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "782",
+  "content-length": "878",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -497,6 +533,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "memberAddNewsletterSubscribed@test.com",
@@ -537,7 +579,63 @@ exports[`Members API Adding newsletters to member with no subscriptions works ev
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "877",
+  "content-length": "973",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API Bulk operations Can bulk add a label to members 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 8,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;
+
+exports[`Members API Bulk operations Can bulk add a label to members 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "95",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API Bulk operations Can bulk add a label to members with filter 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 1,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;
+
+exports[`Members API Bulk operations Can bulk add a label to members with filter 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "95",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -798,6 +896,34 @@ Object {
 }
 `;
 
+exports[`Members API Bulk operations Handles duplicate labels gracefully when bulk adding 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 1,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;
+
+exports[`Members API Bulk operations Handles duplicate labels gracefully when bulk adding 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "95",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Members API Can add 1: [body] 1`] = `
 Object {
   "members": Array [
@@ -812,6 +938,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "memberTestAdd@test.com",
@@ -845,7 +977,7 @@ exports[`Members API Can add 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "915",
+  "content-length": "1011",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -869,6 +1001,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "memberPassVerifivation@test.com",
@@ -915,7 +1053,7 @@ exports[`Members API Can add a member and trigger host email verification limits
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "972",
+  "content-length": "1068",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -939,6 +1077,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "memberFailVerifivation@test.com",
@@ -985,7 +1129,159 @@ exports[`Members API Can add a member and trigger host email verification limits
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "972",
+  "content-length": "1068",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API Can add a member and trigger host webhook verification limits 1: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
+      "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "memberPassWebhookVerification@test.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": "pass webhook verification",
+      "newsletters": Array [
+        Object {
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Default Newsletter",
+          "status": "active",
+        },
+        Object {
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Weekly newsletter",
+          "status": "active",
+        },
+      ],
+      "note": null,
+      "status": "free",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "tiers": Array [],
+      "unsubscribe_url": Any<String>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API Can add a member and trigger host webhook verification limits 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1083",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API Can add a member and trigger host webhook verification limits 3: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
+      "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "memberFailWebhookVerification@test.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": "fail webhook verification",
+      "newsletters": Array [
+        Object {
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Default Newsletter",
+          "status": "active",
+        },
+        Object {
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Weekly newsletter",
+          "status": "active",
+        },
+      ],
+      "note": null,
+      "status": "free",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "tiers": Array [],
+      "unsubscribe_url": Any<String>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API Can add a member and trigger host webhook verification limits 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1083",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1009,6 +1305,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member_getting_confirmation_old_2@test.com",
@@ -1042,7 +1344,7 @@ exports[`Members API Can add a member that is not subscribed (old) 2: [headers] 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "791",
+  "content-length": "887",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1066,6 +1368,12 @@ Object {
         "url": "http://127.0.0.1:2369/html-ipsum/",
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member1@test.com",
@@ -1112,8 +1420,18 @@ Object {
             "name": null,
           },
           "default_payment_card_last4": null,
+          "discount_end": null,
+          "discount_start": null,
           "id": Any<String>,
+          "next_payment": Object {
+            "amount": 500,
+            "currency": "USD",
+            "discount": null,
+            "interval": "month",
+            "original_amount": 500,
+          },
           "offer": null,
+          "offer_redemptions": Array [],
           "plan": Object {
             "amount": 500,
             "currency": "USD",
@@ -1193,7 +1511,7 @@ exports[`Members API Can add a subscription 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2825",
+  "content-length": "3090",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1216,6 +1534,12 @@ Object {
         "url": "http://127.0.0.1:2369/html-ipsum/",
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member1@test.com",
@@ -1262,8 +1586,18 @@ Object {
             "name": null,
           },
           "default_payment_card_last4": null,
+          "discount_end": null,
+          "discount_start": null,
           "id": Any<String>,
+          "next_payment": Object {
+            "amount": 500,
+            "currency": "USD",
+            "discount": null,
+            "interval": "month",
+            "original_amount": 500,
+          },
           "offer": null,
+          "offer_redemptions": Array [],
           "plan": Object {
             "amount": 500,
             "currency": "USD",
@@ -1343,7 +1677,7 @@ exports[`Members API Can add a subscription 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2825",
+  "content-length": "3090",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1366,6 +1700,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "memberTestAddNewsletter2@test.com",
@@ -1406,7 +1746,7 @@ exports[`Members API Can add and edit with custom newsletters 2: [headers] 1`] =
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1033",
+  "content-length": "1129",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1430,6 +1770,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "memberTestAddNewsletter2@test.com",
@@ -1470,7 +1816,7 @@ exports[`Members API Can add and edit with custom newsletters 4: [headers] 1`] =
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1032",
+  "content-length": "1128",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1493,6 +1839,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member_getting_confirmation_old@test.com",
@@ -1539,7 +1891,7 @@ exports[`Members API Can add and send a signup confirmation email (old) 2: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "984",
+  "content-length": "1080",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1574,6 +1926,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member_getting_confirmation@test.com",
@@ -1620,7 +1978,7 @@ exports[`Members API Can add and send a signup confirmation email 2: [headers] 1
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "979",
+  "content-length": "1075",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1828,7 +2186,6 @@ If you did not make this request, you can simply delete this message. You will n
 exports[`Members API Can add and send a signup confirmation email 5: [metadata 1] 1`] = `
 Object {
   "encoding": "base64",
-  "forceTextContent": true,
   "from": "\\"Ghost's Test Site\\" <noreply@127.0.0.1>",
   "generateTextFromHTML": false,
   "headers": Object {
@@ -1865,6 +2222,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "compedtest@test.com",
@@ -1905,7 +2268,7 @@ exports[`Members API Can add complimentary subscription (out of date) 2: [header
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "849",
+  "content-length": "945",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1929,6 +2292,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "compedtest@test.com",
@@ -1989,7 +2358,7 @@ exports[`Members API Can add complimentary subscription (out of date) 4: [header
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2608",
+  "content-length": "2868",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2003,6 +2372,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "with-product@test.com",
@@ -2029,6 +2404,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip-paid@test.com",
@@ -2055,6 +2436,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip@test.com",
@@ -2088,6 +2475,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "comped@test.com",
@@ -2127,6 +2520,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "trialing@test.com",
@@ -2160,6 +2559,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "paid@test.com",
@@ -2193,6 +2598,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member2@test.com",
@@ -2226,6 +2637,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member1@test.com",
@@ -2275,7 +2692,7 @@ exports[`Members API Can browse 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "10812",
+  "content-length": "12208",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2289,6 +2706,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member1@test.com",
@@ -2338,7 +2761,7 @@ exports[`Members API Can browse with filter 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "919",
+  "content-length": "1015",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2352,6 +2775,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "with-product@test.com",
@@ -2378,6 +2807,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip-paid@test.com",
@@ -2404,6 +2839,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip@test.com",
@@ -2453,7 +2894,7 @@ exports[`Members API Can browse with limit 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3221",
+  "content-length": "3631",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2467,6 +2908,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "with-product@test.com",
@@ -2493,6 +2940,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip-paid@test.com",
@@ -2519,6 +2972,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip@test.com",
@@ -2552,6 +3011,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "comped@test.com",
@@ -2591,6 +3056,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "trialing@test.com",
@@ -2624,6 +3095,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "paid@test.com",
@@ -2657,6 +3134,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member2@test.com",
@@ -2690,6 +3173,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member1@test.com",
@@ -2739,7 +3228,7 @@ exports[`Members API Can browse with limit=all 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "10813",
+  "content-length": "12209",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2753,6 +3242,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "with-product@test.com",
@@ -2779,6 +3274,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip-paid@test.com",
@@ -2805,6 +3306,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip@test.com",
@@ -2838,6 +3345,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "comped@test.com",
@@ -2877,6 +3390,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "trialing@test.com",
@@ -2910,6 +3429,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "paid@test.com",
@@ -2943,6 +3468,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member2@test.com",
@@ -2976,6 +3507,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member1@test.com",
@@ -3025,7 +3562,7 @@ exports[`Members API Can browse with more than maximum allowed limit 2: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "10813",
+  "content-length": "12209",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3039,6 +3576,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member1@test.com",
@@ -3088,10 +3631,100 @@ exports[`Members API Can browse with search 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "919",
+  "content-length": "1015",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API Can create a comped member with labels via API 1: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
+      "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
+      "comped": true,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "comped-with-labels@test.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": "Comped with Labels",
+      "newsletters": Array [
+        Object {
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Default Newsletter",
+          "status": "active",
+        },
+      ],
+      "note": null,
+      "status": "comped",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "tiers": Array [
+        Object {
+          "active": true,
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "currency": "usd",
+          "description": null,
+          "expiry_at": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "monthly_price": 500,
+          "monthly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Default Product",
+          "slug": "default-product",
+          "trial_days": 0,
+          "type": "paid",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "visibility": "public",
+          "welcome_page_url": "/welcome-paid",
+          "yearly_price": 5000,
+          "yearly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        },
+      ],
+      "unsubscribe_url": Any<String>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API Can create a comped member with labels via API 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "3197",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
@@ -3111,6 +3744,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "create-member-comped-test@email.com",
@@ -3171,7 +3810,7 @@ exports[`Members API Can create a member with an existing complimentary subscrip
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2659",
+  "content-length": "2919",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3195,6 +3834,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "create-member-paid-test@email.com",
@@ -3255,7 +3900,7 @@ exports[`Members API Can create a member with an existing paid subscription 2: [
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2645",
+  "content-length": "2911",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3279,6 +3924,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "compedtest4@test.com",
@@ -3339,7 +3990,7 @@ exports[`Members API Can create a new member with a product (complimentary) 2: [
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2285",
+  "content-length": "2503",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3385,6 +4036,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "memberTestDestroy@test.com",
@@ -3431,7 +4088,7 @@ exports[`Members API Can destroy 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "954",
+  "content-length": "1050",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3497,6 +4154,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member2Change@test.com",
@@ -3537,7 +4200,7 @@ exports[`Members API Can edit by id 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "867",
+  "content-length": "963",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3561,6 +4224,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "cantChangeMe@test.com",
@@ -3594,7 +4263,7 @@ exports[`Members API Can edit by id 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "766",
+  "content-length": "862",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3631,14 +4300,14 @@ exports[`Members API Can fetch member counts stats 1: [body] 1`] = `
 Object {
   "data": Array [
     Object {
-      "comped": 4,
+      "comped": 5,
       "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
       "free": 5,
       "paid": 2,
     },
   ],
   "resource": "members",
-  "total": 11,
+  "total": 12,
 }
 `;
 
@@ -3660,6 +4329,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member1@test.com",
@@ -3709,7 +4384,7 @@ exports[`Members API Can filter by conversion attribution 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "919",
+  "content-length": "1015",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3723,6 +4398,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "with-product@test.com",
@@ -3749,6 +4430,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip-paid@test.com",
@@ -3775,6 +4462,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "comped@test.com",
@@ -3814,6 +4507,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "trialing@test.com",
@@ -3847,6 +4546,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "paid@test.com",
@@ -3896,7 +4601,7 @@ exports[`Members API Can filter by paid status 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "8511",
+  "content-length": "9619",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3910,6 +4615,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip-paid@test.com",
@@ -3936,6 +4647,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "trialing@test.com",
@@ -3969,6 +4686,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member1@test.com",
@@ -4018,69 +4741,7 @@ exports[`Members API Can filter by signup attribution 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3646",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Can filter by signup attribution 3: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Array [
-        Object {
-          "description": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Daily newsletter",
-          "status": "active",
-        },
-      ],
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
-exports[`Members API Can filter by signup attribution 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "830",
+  "content-length": "4105",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4094,6 +4755,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "with-product@test.com",
@@ -4120,6 +4787,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "comped@test.com",
@@ -4159,6 +4832,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "trialing@test.com",
@@ -4192,6 +4871,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "paid@test.com",
@@ -4241,7 +4926,7 @@ exports[`Members API Can filter by tier id 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "7788",
+  "content-length": "8800",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4255,6 +4940,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member2create@test.com",
@@ -4294,6 +4985,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip@test.com",
@@ -4327,6 +5024,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "comped@test.com",
@@ -4382,7 +5085,7 @@ exports[`Members API Can filter on newsletter slug 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3800",
+  "content-length": "4252",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4396,6 +5099,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "create-member-paid-test@email.com",
@@ -4450,6 +5159,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "create-member-comped-test@email.com",
@@ -4504,6 +5219,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "compedtest4@test.com",
@@ -4558,6 +5279,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "compedtest2@test.com",
@@ -4612,6 +5339,72 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
+      "comped": true,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "comped-with-labels@test.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": "Comped with Labels",
+      "newsletters": Array [
+        Object {
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Default Newsletter",
+          "status": "active",
+        },
+      ],
+      "note": null,
+      "status": "comped",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "tiers": Array [
+        Object {
+          "active": true,
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "currency": "usd",
+          "description": null,
+          "expiry_at": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "monthly_price": 500,
+          "monthly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Default Product",
+          "slug": "default-product",
+          "trial_days": 0,
+          "type": "paid",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "visibility": "public",
+          "welcome_page_url": "/welcome-paid",
+          "yearly_price": 5000,
+          "yearly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        },
+      ],
+      "unsubscribe_url": Any<String>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+    Object {
+      "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "compedtest@test.com",
@@ -4666,6 +5459,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "with-product@test.com",
@@ -4713,6 +5512,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "comped@test.com",
@@ -4773,6 +5578,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member1@test.com",
@@ -4833,7 +5644,7 @@ Object {
       "page": 1,
       "pages": 1,
       "prev": null,
-      "total": 8,
+      "total": 9,
     },
   },
 }
@@ -4843,7 +5654,7 @@ exports[`Members API Can filter on tier slug 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "18428",
+  "content-length": "23059",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4857,6 +5668,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip-paid@test.com",
@@ -4899,7 +5716,7 @@ exports[`Members API Can filter using contains operators 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "824",
+  "content-length": "920",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4913,6 +5730,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "with-product@test.com",
@@ -4939,6 +5762,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip-paid@test.com",
@@ -4965,6 +5794,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "comped@test.com",
@@ -5004,6 +5839,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "trialing@test.com",
@@ -5037,6 +5878,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "paid@test.com",
@@ -5086,7 +5933,7 @@ exports[`Members API Can ignore any unknown includes 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "8511",
+  "content-length": "9619",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -5113,6 +5960,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "paid@test.com",
@@ -5146,6 +5999,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member2@test.com",
@@ -5179,6 +6038,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member1@test.com",
@@ -5212,6 +6077,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "trialing@test.com",
@@ -5245,6 +6116,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "comped@test.com",
@@ -5284,6 +6161,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip@test.com",
@@ -5317,6 +6200,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip-paid@test.com",
@@ -5343,6 +6232,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "with-product@test.com",
@@ -5399,6 +6294,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member2@test.com",
@@ -5432,6 +6333,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "paid@test.com",
@@ -5465,6 +6372,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member1@test.com",
@@ -5498,6 +6411,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "trialing@test.com",
@@ -5531,6 +6450,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "comped@test.com",
@@ -5570,6 +6495,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip@test.com",
@@ -5603,6 +6534,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip-paid@test.com",
@@ -5629,6 +6566,12 @@ Object {
     },
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "with-product@test.com",
@@ -5694,6 +6637,12 @@ Object {
         "url": "http://127.0.0.1:2369/html-ipsum/",
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member1@test.com",
@@ -5734,7 +6683,7 @@ exports[`Members API Can read 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1059",
+  "content-length": "1155",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -5757,6 +6706,12 @@ Object {
         "url": "http://127.0.0.1:2369/html-ipsum/",
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member1@test.com",
@@ -5798,7 +6753,7 @@ exports[`Members API Can read and include email_recipients 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1081",
+  "content-length": "1177",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -5821,6 +6776,12 @@ Object {
         "url": "http://127.0.0.1:2369/html-ipsum/",
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member1@test.com",
@@ -5861,7 +6822,7 @@ exports[`Members API Can read and include tiers 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1059",
+  "content-length": "1155",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -5884,6 +6845,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member2subscribe@test.com",
@@ -5917,7 +6884,7 @@ exports[`Members API Can subscribe by setting (old) subscribed property to true 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "773",
+  "content-length": "869",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -5941,6 +6908,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member2subscribe@test.com",
@@ -5987,7 +6960,7 @@ exports[`Members API Can subscribe by setting (old) subscribed property to true 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "968",
+  "content-length": "1064",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6010,6 +6983,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member3change@test.com",
@@ -6050,7 +7029,7 @@ exports[`Members API Can subscribe to a newsletter 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "857",
+  "content-length": "953",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6074,6 +7053,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member3change@test.com",
@@ -6114,7 +7099,7 @@ exports[`Members API Can subscribe to a newsletter 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "855",
+  "content-length": "951",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6127,7 +7112,7 @@ exports[`Members API Can subscribe to a newsletter 5: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5427",
+  "content-length": "5505",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6150,6 +7135,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member2unsusbcribeold@test.com",
@@ -6190,7 +7181,7 @@ exports[`Members API Can unsubscribe by setting (old) subscribed property to fal
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "875",
+  "content-length": "971",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6214,6 +7205,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member2unsusbcribeold@test.com",
@@ -6247,7 +7244,7 @@ exports[`Members API Can unsubscribe by setting (old) subscribed property to fal
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "778",
+  "content-length": "874",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6381,6 +7378,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member_not_getting_confirmation@test.com",
@@ -6427,7 +7430,7 @@ exports[`Members API Does not send a signup email when email verification is req
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "990",
+  "content-length": "1086",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6484,6 +7487,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member2@test.com",
@@ -6533,7 +7542,7 @@ exports[`Members API Search by case-insensitive email MEMBER2 receives member wi
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "766",
+  "content-length": "862",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6547,6 +7556,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member1@test.com",
@@ -6596,7 +7611,7 @@ exports[`Members API Search by case-insensitive name egg receives member with na
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "919",
+  "content-length": "1015",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6639,6 +7654,12 @@ Object {
   "members": Array [
     Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "paid@test.com",
@@ -6688,7 +7709,7 @@ exports[`Members API Search for paid members retrieves member with email paid@te
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2100",
+  "content-length": "2367",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6711,6 +7732,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "memberTestChangeSubscribedAttribute@test.com",
@@ -6757,7 +7784,7 @@ exports[`Members API Setting subscribed when editing a member won't reset to def
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "981",
+  "content-length": "1077",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6781,6 +7808,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "memberTestChangeSubscribedAttribute@test.com",
@@ -6827,7 +7860,7 @@ exports[`Members API Setting subscribed when editing a member won't reset to def
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "981",
+  "content-length": "1077",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6850,6 +7883,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "member2create@test.com",
@@ -6896,176 +7935,11 @@ exports[`Members API Subscribes to default newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "955",
+  "content-length": "1051",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Updates the email_disabled field 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": Object {
-        "id": null,
-        "referrer_medium": "Ghost Admin",
-        "referrer_source": "Created manually",
-        "referrer_url": null,
-        "title": null,
-        "type": null,
-        "url": null,
-      },
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "ok@email.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Existing Member",
-      "newsletters": Array [
-        Object {
-          "description": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Default Newsletter",
-          "status": "active",
-        },
-        Object {
-          "description": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Weekly newsletter",
-          "status": "active",
-        },
-      ],
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API Updates the email_disabled field 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "862",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Updates the email_disabled field when a member email is updated 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": null,
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "suppressed@email.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": Object {
-          "reason": "fail",
-          "timestamp": "2023-11-02T15:37:09.000Z",
-        },
-        "suppressed": true,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Test Member 123",
-      "newsletters": Array [],
-      "note": null,
-      "status": "free",
-      "subscribed": false,
-      "subscriptions": Any<Array>,
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API Updates the email_disabled field when a member email is updated 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "594",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Updates the email_disabled field when a member email is updated 3: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": null,
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "ok@email.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Test Member 123",
-      "newsletters": Array [],
-      "note": null,
-      "status": "free",
-      "subscribed": false,
-      "subscriptions": Any<Array>,
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API Updates the email_disabled field when a member email is updated 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "535",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
@@ -7085,6 +7959,12 @@ Object {
         "url": "http://127.0.0.1:2369/short-and-sweet/",
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip@test.com",
@@ -7125,7 +8005,7 @@ exports[`Members API Updating member data without newsletters does not change ne
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1038",
+  "content-length": "1134",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -7148,6 +8028,12 @@ Object {
         "url": "http://127.0.0.1:2369/short-and-sweet/",
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "vip@test.com",
@@ -7181,7 +8067,7 @@ exports[`Members API Updating newsletter subscriptions does not unsubscribe memb
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "942",
+  "content-length": "1038",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -7204,6 +8090,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "jon.snow@test.com",
@@ -7237,7 +8129,7 @@ exports[`Members API can change the email address 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "754",
+  "content-length": "850",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -7261,6 +8153,12 @@ Object {
         "url": null,
       },
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "aegon.targaryen@test.com",
@@ -7294,7 +8192,7 @@ exports[`Members API can change the email address 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "761",
+  "content-length": "857",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -7308,6 +8206,81 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "1209",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API deleteEmailSuppression Can delete email suppression for a member 1: [body] 1`] = `Object {}`;
+
+exports[`Members API deleteEmailSuppression Can delete email suppression for a member 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API deleteEmailSuppression Returns 404 for non-existent member 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Member not found.",
+      "property": null,
+      "type": "NotFoundError",
+    },
+  ],
+}
+`;
+
+exports[`Members API deleteEmailSuppression Returns 404 for non-existent member 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "203",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API deleteEmailSuppression Returns 500 when suppression removal fails 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Failed to remove email suppression.",
+      "property": null,
+      "type": "InternalServerError",
+    },
+  ],
+}
+`;
+
+exports[`Members API deleteEmailSuppression Returns 500 when suppression removal fails 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "227",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

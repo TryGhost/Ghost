@@ -1,5 +1,6 @@
+const assert = require('node:assert/strict');
+const {assertObjectMatches} = require('../../utils/assertions');
 const {agentProvider, fixtureManager, configUtils} = require('../../utils/e2e-framework');
-const should = require('should');
 const models = require('../../../core/server/models');
 const urlService = require('../../../core/server/services/url');
 const memberAttributionService = require('../../../core/server/services/member-attribution');
@@ -27,18 +28,18 @@ describe('Member Attribution Service', function () {
                         time: Date.now()
                     }
                 ]);
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: null,
                     url: subdomainRelative,
                     type: 'url'
-                }));
+                });
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: null,
                     url: absoluteUrl,
                     type: 'url',
                     title: subdomainRelative
-                }));
+                });
             });
 
             it('resolves posts', async function () {
@@ -52,20 +53,20 @@ describe('Member Attribution Service', function () {
                         time: Date.now()
                     }
                 ]);
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: post.id,
                     url,
                     type: 'post'
-                }));
+                });
 
                 const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: post.id,
                     url: absoluteUrl,
                     type: 'post',
                     title: post.get('title')
-                }));
+                });
             });
 
             it('resolves removed resources', async function () {
@@ -83,21 +84,21 @@ describe('Member Attribution Service', function () {
                 ]);
 
                 // Without subdirectory
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: post.id,
                     url: urlWithoutSubdirectory,
                     type: 'post'
-                }));
+                });
 
                 // Unpublish this post
                 await models.Post.edit({status: 'draft'}, {id});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: null,
                     url: absoluteUrl,
                     type: 'url',
                     title: urlWithoutSubdirectory
-                }));
+                });
 
                 await models.Post.edit({status: 'published'}, {id});
             });
@@ -105,7 +106,7 @@ describe('Member Attribution Service', function () {
             it('resolves pages', async function () {
                 const id = fixtureManager.get('posts', 5).id;
                 const post = await models.Post.where('id', id).fetch({require: true});
-                should(post.get('type')).eql('page');
+                assert.equal(post.get('type'), 'page');
 
                 const url = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: true});
 
@@ -115,20 +116,20 @@ describe('Member Attribution Service', function () {
                         time: Date.now()
                     }
                 ]);
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: post.id,
                     url,
                     type: 'page'
-                }));
+                });
 
                 const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: post.id,
                     url: absoluteUrl,
                     type: 'page',
                     title: post.get('title')
-                }));
+                });
             });
 
             it('resolves tags', async function () {
@@ -142,20 +143,20 @@ describe('Member Attribution Service', function () {
                         time: Date.now()
                     }
                 ]);
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: tag.id,
                     url,
                     type: 'tag'
-                }));
+                });
 
                 const absoluteUrl = urlService.getUrlByResourceId(tag.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: tag.id,
                     url: absoluteUrl,
                     type: 'tag',
                     title: tag.get('name')
-                }));
+                });
             });
 
             it('resolves authors', async function () {
@@ -169,20 +170,87 @@ describe('Member Attribution Service', function () {
                         time: Date.now()
                     }
                 ]);
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: author.id,
                     url,
                     type: 'author'
-                }));
+                });
 
                 const absoluteUrl = urlService.getUrlByResourceId(author.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: author.id,
                     url: absoluteUrl,
                     type: 'author',
                     title: author.get('name')
-                }));
+                });
+            });
+
+            it('resolves email-only posts via id and type', async function () {
+                // Simulates the offer link flow: member-attribution.js extracts
+                // attribution_id and attribution_type from the URL search params
+                // and stores them as {id, type} entries in the URL history
+                const id = fixtureManager.get('posts', 0).id;
+                const post = await models.Post.where('id', id).fetch({require: true});
+
+                // Make the post email-only (must set email_only flag first,
+                // otherwise the model rejects the 'sent' status)
+                await models.Post.edit({posts_meta: {email_only: true}, status: 'published'}, {id});
+                await models.Post.edit({status: 'sent'}, {id});
+
+                try {
+                    const attribution = await memberAttributionService.service.getAttribution([
+                        {
+                            id: post.id,
+                            type: 'post',
+                            time: Date.now()
+                        }
+                    ]);
+
+                    // Should resolve to the post, not fall through to homepage
+                    assertObjectMatches(attribution, {
+                        id: post.id,
+                        url: `/email/${post.get('uuid')}/`,
+                        type: 'post'
+                    });
+
+                    const resource = await attribution.fetchResource();
+                    const expectedUrl = urlUtils.createUrl(`/email/${post.get('uuid')}/`, true);
+
+                    assertObjectMatches(resource, {
+                        id: post.id,
+                        url: expectedUrl,
+                        type: 'post',
+                        title: post.get('title')
+                    });
+                } finally {
+                    await models.Post.edit({posts_meta: {email_only: false}, status: 'published'}, {id});
+                }
+            });
+
+            it('does not resolve draft posts via id and type', async function () {
+                const id = fixtureManager.get('posts', 0).id;
+                const post = await models.Post.where('id', id).fetch({require: true});
+
+                await models.Post.edit({status: 'draft'}, {id});
+
+                try {
+                    const attribution = await memberAttributionService.service.getAttribution([
+                        {
+                            id: post.id,
+                            type: 'post',
+                            time: Date.now()
+                        }
+                    ]);
+
+                    // Draft posts should not resolve — falls through to null attribution
+                    assertObjectMatches(attribution, {
+                        id: null,
+                        type: null
+                    });
+                } finally {
+                    await models.Post.edit({status: 'published'}, {id});
+                }
             });
         });
 
@@ -206,18 +274,18 @@ describe('Member Attribution Service', function () {
                         time: Date.now()
                     }
                 ]);
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: null,
                     url: subdomainRelative,
                     type: 'url'
-                }));
+                });
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: null,
                     url: absoluteUrl,
                     type: 'url',
                     title: subdomainRelative
-                }));
+                });
             });
 
             it('resolves posts', async function () {
@@ -227,7 +295,7 @@ describe('Member Attribution Service', function () {
                 const urlWithoutSubdirectory = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: false});
 
                 // Check if we are actually testing with subdirectories
-                should(url).startWith('/subdirectory/');
+                assert(url.startsWith('/subdirectory/'));
 
                 const attribution = await memberAttributionService.service.getAttribution([
                     {
@@ -237,20 +305,20 @@ describe('Member Attribution Service', function () {
                 ]);
 
                 // Without subdirectory
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: post.id,
                     url: urlWithoutSubdirectory,
                     type: 'post'
-                }));
+                });
 
                 const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: post.id,
                     url: absoluteUrl,
                     type: 'post',
                     title: post.get('title')
-                }));
+                });
             });
 
             it('resolves removed resources', async function () {
@@ -261,7 +329,7 @@ describe('Member Attribution Service', function () {
                 const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
 
                 // Check if we are actually testing with subdirectories
-                should(url).startWith('/subdirectory/');
+                assert(url.startsWith('/subdirectory/'));
 
                 const attribution = await memberAttributionService.service.getAttribution([
                     {
@@ -271,27 +339,27 @@ describe('Member Attribution Service', function () {
                 ]);
 
                 // Without subdirectory
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: post.id,
                     url: urlWithoutSubdirectory,
                     type: 'post'
-                }));
+                });
 
                 // Unpublish this post
                 await models.Post.edit({status: 'draft'}, {id});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: null,
                     url: absoluteUrl,
                     type: 'url',
                     title: urlWithoutSubdirectory
-                }));
+                });
             });
 
             it('resolves pages', async function () {
                 const id = fixtureManager.get('posts', 5).id;
                 const post = await models.Post.where('id', id).fetch({require: true});
-                should(post.get('type')).eql('page');
+                assert.equal(post.get('type'), 'page');
 
                 const url = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: true});
                 const urlWithoutSubdirectory = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: false});
@@ -302,20 +370,20 @@ describe('Member Attribution Service', function () {
                         time: Date.now()
                     }
                 ]);
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: post.id,
                     url: urlWithoutSubdirectory,
                     type: 'page'
-                }));
+                });
 
                 const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: post.id,
                     url: absoluteUrl,
                     type: 'page',
                     title: post.get('title')
-                }));
+                });
             });
 
             it('resolves tags', async function () {
@@ -330,20 +398,20 @@ describe('Member Attribution Service', function () {
                         time: Date.now()
                     }
                 ]);
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: tag.id,
                     url: urlWithoutSubdirectory,
                     type: 'tag'
-                }));
+                });
 
                 const absoluteUrl = urlService.getUrlByResourceId(tag.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: tag.id,
                     url: absoluteUrl,
                     type: 'tag',
                     title: tag.get('name')
-                }));
+                });
             });
 
             it('resolves authors', async function () {
@@ -358,20 +426,20 @@ describe('Member Attribution Service', function () {
                         time: Date.now()
                     }
                 ]);
-                attribution.should.match(({
+                assertObjectMatches(attribution, {
                     id: author.id,
                     url: urlWithoutSubdirectory,
                     type: 'author'
-                }));
+                });
 
                 const absoluteUrl = urlService.getUrlByResourceId(author.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                assertObjectMatches(await attribution.fetchResource(), {
                     id: author.id,
                     url: absoluteUrl,
                     type: 'author',
                     title: author.get('name')
-                }));
+                });
             });
         });
     });
@@ -391,14 +459,14 @@ describe('Member Attribution Service', function () {
                     referrerUrl: null
                 }
             ]);
-            attribution.should.match(({
+            assertObjectMatches(attribution, {
                 id: null,
                 url: '/',
                 type: 'url',
                 referrerSource: 'Ghost Explore',
                 referrerMedium: 'Ghost Network',
                 referrerUrl: null
-            }));
+            });
         });
 
         it('resolves Portal signup URLs', async function () {
@@ -411,14 +479,14 @@ describe('Member Attribution Service', function () {
                     referrerSource: 'casper'
                 }
             ]);
-            attribution.should.match(({
+            assertObjectMatches(attribution, {
                 id: null,
                 url: '/',
                 type: 'url',
                 referrerSource: 'casper',
                 referrerMedium: null,
                 referrerUrl: null
-            }));
+            });
         });
     });
 });

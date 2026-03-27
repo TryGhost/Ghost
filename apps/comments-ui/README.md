@@ -10,7 +10,10 @@ Comments widget that is embedded at the bottom of posts in Ghost.
 
 ### Running via Ghost `yarn dev` in root folder
 
-You can automatically start the comments dev server when developing Ghost by running Ghost (in root folder) via `yarn dev --all` or `yarn dev --comments`. This will host the comments JavaScript files, and makes sure that Ghost uses these locally hosted assets instead of the ones from the CDN.
+Comments UI runs automatically when using Ghost's development command from the monorepo root:
+```bash
+yarn dev
+```
 
 ## Release
 
@@ -33,4 +36,4 @@ If the CI doesn't clear JsDelivr cache to get the new version out instantly, you
 
 # Copyright & License
 
-Copyright (c) 2013-2025 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).

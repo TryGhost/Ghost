@@ -165,7 +165,7 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
                 }
             }}
         >
-            <DialogContent className="top-[50%] h-[100vh] max-h-[100vh] w-[100vw] max-w-[100vw] translate-y-[-50%] items-center border-none bg-transparent p-0 shadow-none data-[state=closed]:zoom-out-100 data-[state=open]:zoom-in-100 data-[state=closed]:slide-out-to-top-[50%] data-[state=open]:slide-in-from-top-[50%]" onClick={() => onClose()}>
+            <DialogContent className="top-[50%] h-[100vh] max-h-[100vh] w-[100vw] max-w-[100vw] translate-y-[-50%] items-center border-none bg-transparent p-0 shadow-none data-[state=closed]:zoom-out-100 data-[state=closed]:slide-out-to-top-[50%] data-[state=open]:zoom-in-100 data-[state=open]:slide-in-from-top-[50%]" onClick={() => onClose()}>
                 <img
                     alt={images[currentIndex].alt}
                     className="mx-auto max-h-[90vh] max-w-[90vw] object-contain"
@@ -176,33 +176,33 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
                 {images.length > 1 && (
                     <>
                         <Button
-                            className="absolute left-5 top-1/2 size-11 -translate-y-1/2 rounded-full bg-black/50 p-0 pr-0.5 hover:bg-black/70"
+                            className="absolute top-1/2 left-5 size-11 -translate-y-1/2 rounded-full bg-black/50 p-0 pr-0.5 hover:bg-black/70"
                             disabled={isFirstImage}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 goToPrev();
                             }}
                         >
-                            <LucideIcon.ChevronLeft className="!size-6" />
+                            <LucideIcon.ChevronLeft className="size-6!" />
                             <span className="sr-only">Previous image</span>
                         </Button>
 
                         <Button
-                            className="absolute right-5 top-1/2 size-11 -translate-y-1/2 rounded-full bg-black/50 p-0 pl-0.5 hover:bg-black/70"
+                            className="absolute top-1/2 right-5 size-11 -translate-y-1/2 rounded-full bg-black/50 p-0 pl-0.5 hover:bg-black/70"
                             disabled={isLastImage}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 goToNext();
                             }}
                         >
-                            <LucideIcon.ChevronRight className="!size-6" />
+                            <LucideIcon.ChevronRight className="size-6!" />
                             <span className="sr-only">Next image</span>
                         </Button>
                     </>
                 )}
                 <DialogClose asChild>
-                    <Button className="absolute right-5 top-5 size-11 rounded-full bg-black/50 p-0 hover:bg-black/70">
-                        <LucideIcon.X className="!size-5" />
+                    <Button className="absolute top-5 right-5 size-11 rounded-full bg-black/50 p-0 hover:bg-black/70">
+                        <LucideIcon.X className="size-5!" />
                         <span className="sr-only">Close</span>
                     </Button>
                 </DialogClose>

@@ -12,7 +12,7 @@ Uses an **Ember Bridge** system for smooth migration:
 ## Development
 
 ```bash
-# Start development server
+# Start development server (from monorepo root)
 yarn dev
 ```
 

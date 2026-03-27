@@ -2,7 +2,8 @@
 // As it stands, these tests depend on the database, and as such are integration tests.
 // These tests are here to cover the headers sent with requests and high-level redirects that can't be
 // tested with the unit tests
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const moment = require('moment');
@@ -21,10 +22,10 @@ describe('Dynamic Routing', function () {
                 return done(err);
             }
 
-            should.not.exist(res.headers['x-cache-invalidate']);
-            should.not.exist(res.headers['X-CSRF-Token']);
-            should.not.exist(res.headers['set-cookie']);
-            should.exist(res.headers.date);
+            assert.equal(res.headers['x-cache-invalidate'], undefined);
+            assert.equal(res.headers['X-CSRF-Token'], undefined);
+            assert.equal(res.headers['set-cookie'], undefined);
+            assertExists(res.headers.date);
 
             done();
         };
@@ -58,14 +59,14 @@ describe('Dynamic Routing', function () {
 
                     const $ = cheerio.load(res.text);
 
-                    should.not.exist(res.headers['x-cache-invalidate']);
-                    should.not.exist(res.headers['X-CSRF-Token']);
-                    should.not.exist(res.headers['set-cookie']);
-                    should.exist(res.headers.date);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
+                    assert.equal(res.headers['X-CSRF-Token'], undefined);
+                    assert.equal(res.headers['set-cookie'], undefined);
+                    assertExists(res.headers.date);
 
-                    $('title').text().should.equal('Ghost');
-                    $('body.home-template').length.should.equal(1);
-                    $('article.post').length.should.equal(7);
+                    assert.equal($('title').text(), 'Ghost');
+                    assert.equal($('body.home-template').length, 1);
+                    assert.equal($('article.post').length, 7);
 
                     done();
                 });
@@ -131,13 +132,13 @@ describe('Dynamic Routing', function () {
 
                     const $ = cheerio.load(res.text);
 
-                    should.not.exist(res.headers['x-cache-invalidate']);
-                    should.not.exist(res.headers['X-CSRF-Token']);
-                    should.not.exist(res.headers['set-cookie']);
-                    should.exist(res.headers.date);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
+                    assert.equal(res.headers['X-CSRF-Token'], undefined);
+                    assert.equal(res.headers['set-cookie'], undefined);
+                    assertExists(res.headers.date);
 
-                    $('body').attr('class').should.eql('tag-template tag-getting-started has-sans-title has-sans-body');
-                    $('article.post').length.should.equal(5);
+                    assert.equal($('body').attr('class'), 'tag-template tag-getting-started has-sans-title has-sans-body');
+                    assert.equal($('article.post').length, 5);
 
                     done();
                 });
@@ -196,7 +197,7 @@ describe('Dynamic Routing', function () {
 
             it('should redirect to tag settings', function (done) {
                 request.get('/tag/getting-started/edit/')
-                    .expect('Location', 'http://127.0.0.1:2369/ghost/#/tags/getting-started/')
+                    .expect('Location', /\/ghost\/#\/tags\/getting-started\//)
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(302)
                     .end(doEnd(done));
@@ -396,7 +397,7 @@ describe('Dynamic Routing', function () {
 
             it('should redirect to editor', function (done) {
                 request.get('/author/ghost-owner/edit/')
-                    .expect('Location', 'http://127.0.0.1:2369/ghost/#/settings/staff/ghost-owner/')
+                    .expect('Location', /\/ghost\/#\/settings\/staff\/ghost-owner\//)
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(302)
                     .end(doEnd(done));

@@ -44,6 +44,7 @@ services:
     ports:
       - "1025:1025"  # SMTP server
       - "8025:8025"  # Web interface
+      - "8026:8025"  # Web interface (for e2e tests)
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8025"]
       interval: 1s
@@ -84,14 +85,6 @@ services:
       # Redis cache (optional)
       adapters__cache__Redis__host: redis
       adapters__cache__Redis__port: 6379
-      # Public app assets - proxied through Caddy gateway to host dev servers
-      # Using /ghost/assets/* paths
-      portal__url: /ghost/assets/portal/portal.min.js
-      comments__url: /ghost/assets/comments-ui/comments-ui.min.js
-      sodoSearch__url: /ghost/assets/sodo-search/sodo-search.min.js
-      sodoSearch__styles: /ghost/assets/sodo-search/main.css
-      signupForm__url: /ghost/assets/signup-form/signup-form.min.js
-      announcementBar__url: /ghost/assets/announcement-bar/announcement-bar.min.js
     depends_on:
       mysql:
         condition: service_healthy
@@ -136,7 +129,7 @@ services:
       - ./docker/stripe/entrypoint.sh:/entrypoint.sh:ro
       - shared-config:/mnt/shared-config
     environment:
-      - GHOST_URL=http://ghost-dev:2368
+      - GHOST_URL=${GHOST_URL:-http://ghost-dev:2368}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
     healthcheck:
       test: ["CMD", "test", "-f", "/mnt/shared-config/.env.stripe"]

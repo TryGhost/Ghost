@@ -8,10 +8,12 @@ export * from './components/ui/breadcrumb';
 export * from './components/ui/button';
 export * from './components/ui/card';
 export * from './components/ui/chart';
+export * from './components/ui/checkbox';
 export * from './components/ui/command';
 export * from './components/ui/data-list';
 export * from './components/ui/dialog';
 export * from './components/ui/dropdown-menu';
+export * from './components/ui/dropzone';
 export * from './components/ui/empty-indicator';
 export * from './components/ui/field';
 export * from './components/ui/filters';
@@ -54,6 +56,8 @@ export * from './components/layout/header';
 export * from './components/layout/view-header';
 
 // Feature components — Complete functional components (share modal, etc.)
+export {default as ColorPicker} from './components/features/color-picker/color-picker';
+export type {ColorPickerProps} from './components/features/color-picker/color-picker';
 export {default as PostShareModal} from './components/features/post-share-modal';
 export * from './components/features/table-filter-tabs/table-filter-tabs';
 export * from './components/features/utm-campaign-tabs/utm-campaign-tabs';
@@ -79,7 +83,7 @@ export {useSimplePagination} from './hooks/use-simple-pagination';
 
 // Utils
 export * from '@/lib/utils';
-export {cn, debounce, kebabToPascalCase, formatUrl, formatQueryDate, formatTimestamp, formatNumber, formatDuration, formatPercentage, formatDisplayDate, isValidDomain, getYRange, getYRangeWithMinPadding, getYRangeWithLargePadding, calculateYAxisWidth, getRangeDates, getCountryFlag, sanitizeChartData, formatDisplayDateWithRange, centsToDollars, getRangeForStartDate, formatMemberName, getMemberInitials, stringToHslColor, abbreviateNumber} from '@/lib/utils';
+export {cn, debounce, kebabToPascalCase, formatUrl, formatQueryDate, formatTimestamp, formatNumber, formatDuration, formatPercentage, formatDisplayDate, formatDisplayTime, isValidDomain, getYRange, getYRangeWithMinPadding, getYRangeWithLargePadding, calculateYAxisWidth, getRangeDates, getCountryFlag, sanitizeChartData, formatDisplayDateWithRange, centsToDollars, getRangeForStartDate, formatMemberName, getMemberInitials, stringToHslColor, abbreviateNumber} from '@/lib/utils';
 
 export {default as ShadeApp} from './shade-app';
 export type {ShadeAppProps} from './shade-app';

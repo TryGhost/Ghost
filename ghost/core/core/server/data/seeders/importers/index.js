@@ -22,6 +22,7 @@ module.exports = [
     require('./redirects-importer'),
     require('./members-click-events-importer'),
     require('./offers-importer'),
+    require('./offer-redemptions-importer'),
     require('./members-created-events-importer'),
     require('./members-login-events-importer'),
     require('./members-status-events-importer'),
@@ -37,5 +38,6 @@ module.exports = [
     require('./recommendations-importer'),
     require('./recommendation-click-events-importer'),
     require('./recommendation-subscribe-events-importer'),
-    require('./comments-importer')
+    require('./comments-importer'),
+    require('./comment-reports-importer')
 ];

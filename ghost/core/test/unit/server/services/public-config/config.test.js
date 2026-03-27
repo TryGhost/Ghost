@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const configUtils = require('../../../../utils/config-utils');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const getConfigProperties = require('../../../../../core/server/services/public-config/config');
@@ -43,6 +43,25 @@ describe('Public-config Service', function () {
             const configProperties = getConfigProperties();
 
             assert.deepEqual(Object.keys(configProperties), allowedKeys);
+        });
+
+        it('should return GHOST_BUILD_VERSION as version when set', function () {
+            process.env.GHOST_BUILD_VERSION = '6.21.2+abc1234';
+
+            const configProperties = getConfigProperties();
+
+            assert.equal(configProperties.version, '6.21.2+abc1234');
+
+            delete process.env.GHOST_BUILD_VERSION;
+        });
+
+        it('should return package version when GHOST_BUILD_VERSION is not set', function () {
+            delete process.env.GHOST_BUILD_VERSION;
+
+            const configProperties = getConfigProperties();
+
+            assert.match(configProperties.version, /^\d+\.\d+\.\d+/);
+            assert.notEqual(configProperties.version, '6.21.2+abc1234');
         });
 
         it('should return null for tenor apikey when unset', function () {

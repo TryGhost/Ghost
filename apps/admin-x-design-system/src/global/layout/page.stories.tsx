@@ -388,21 +388,21 @@ export const ExampleDetailScreen: Story = {
                 type='page'
             >
                 <div className='grid grid-cols-3 border-b border-grey-200 pb-5 tablet:grid-cols-4'>
-                    <div className='col-span-3 -ml-5 mb-5 hidden h-full gap-4 px-5 tablet:col-span-1 tablet:mb-0 tablet:!flex tablet:flex-col tablet:gap-0'>
+                    <div className='col-span-3 mb-5 -ml-5 hidden h-full gap-4 px-5 tablet:col-span-1 tablet:mb-0 tablet:flex! tablet:flex-col tablet:gap-0'>
                         <span>Last seen on <strong>22 June 2023</strong></span>
                         <span className='tablet:mt-2'>Created on <strong>27 Jan 2021</strong></span>
                     </div>
                     <div className='flex h-full flex-col tablet:px-5'>
                         <Heading level={6}>Emails received</Heading>
-                        <span className='mt-1 text-4xl font-bold leading-none'>181</span>
+                        <span className='mt-1 text-4xl leading-none font-bold'>181</span>
                     </div>
                     <div className='flex h-full flex-col tablet:px-5'>
                         <Heading level={6}>Emails opened</Heading>
-                        <span className='mt-1 text-4xl font-bold leading-none'>104</span>
+                        <span className='mt-1 text-4xl leading-none font-bold'>104</span>
                     </div>
                     <div className='-mr-5 flex h-full flex-col tablet:px-5'>
                         <Heading level={6}>Average open rate</Heading>
-                        <span className='mt-1 text-4xl font-bold leading-none'>57%</span>
+                        <span className='mt-1 text-4xl leading-none font-bold'>57%</span>
                     </div>
                 </div>
                 <div className='grid grid-cols-2 items-baseline border-b border-grey-200 py-5 tablet:grid-cols-4'>

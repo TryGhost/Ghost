@@ -1,0 +1,46 @@
+name: Publish tb-cli Image
+
+on:
+  workflow_dispatch: # Manual trigger from GitHub UI or CLI
+  push:
+    branches: [main]
+    paths:
+      - 'docker/tb-cli/**'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: Build and push tb-cli to GHCR
+    runs-on: ubuntu-latest
+    if: github.repository == 'TryGhost/Ghost' && github.ref == 'refs/heads/main'
+    concurrency:
+      group: publish-tb-cli
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/tb-cli/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/tryghost/tb-cli:latest
+            ghcr.io/tryghost/tb-cli:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

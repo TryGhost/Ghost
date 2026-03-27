@@ -2,10 +2,46 @@ import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
+import tailwindcss from 'eslint-plugin-tailwindcss'
 import tseslint from 'typescript-eslint'
 import { globalIgnores } from 'eslint/config'
 import noRelativeImportPaths from 'eslint-plugin-no-relative-import-paths'
 import ghostPlugin from 'eslint-plugin-ghost';
+
+const noHardcodedGhostPaths = {
+  meta: {
+    type: 'problem',
+    docs: {
+      description: 'Disallow hardcoded /ghost/ paths that break subdirectory installations',
+    },
+    messages: {
+      noHardcodedPath: 'Do not hardcode /ghost/ paths. Use getGhostPaths() from @tryghost/admin-x-framework/helpers to support subdirectory installations.',
+    },
+  },
+  create(context) {
+    const pattern = /^\/ghost\//;
+    return {
+      Literal(node) {
+        if (typeof node.value === 'string' && pattern.test(node.value)) {
+          context.report({node, messageId: 'noHardcodedPath'});
+        }
+      },
+      TemplateLiteral(node) {
+        const first = node.quasis[0];
+        if (first && pattern.test(first.value.raw)) {
+          context.report({node, messageId: 'noHardcodedPath'});
+        }
+      },
+    };
+  },
+};
+
+const localPlugin = {
+  rules: {
+    'no-hardcoded-ghost-paths': noHardcodedGhostPaths,
+  },
+};
+const tailwindCssConfig = `${import.meta.dirname}/src/index.css`;
 
 export default tseslint.config([
   globalIgnores(['dist']),
@@ -20,6 +56,8 @@ export default tseslint.config([
     plugins: {
       'no-relative-import-paths': noRelativeImportPaths,
       ghost: ghostPlugin,
+      local: localPlugin,
+      tailwindcss,
     },
     languageOptions: {
       parserOptions: {
@@ -29,8 +67,15 @@ export default tseslint.config([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    settings: {
+      tailwindcss: {
+        config: tailwindCssConfig,
+      },
+    },
     rules: {
       'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
+      'tailwindcss/classnames-order': 'error',
+      'tailwindcss/no-contradicting-classname': 'error',
     },
   },
   // Apply no-relative-import-paths rule for src files (auto-fix supported)
@@ -41,6 +86,14 @@ export default tseslint.config([
         'error',
         { allowSameFolder: true, rootDir: 'src', prefix: '@' },
       ],
+    },
+  },
+  // Prevent hardcoded /ghost/ paths in production code (not tests, where mocks need fixed paths)
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/**/*.test.*'],
+    rules: {
+      'local/no-hardcoded-ghost-paths': 'error',
     },
   },
   // Apply no-relative-import-paths rule for test-utils files

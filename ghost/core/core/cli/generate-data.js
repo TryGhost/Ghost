@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 const Command = require('./command');
 const DataGenerator = require('../server/data/seeders/data-generator');
 const config = require('../shared/config');

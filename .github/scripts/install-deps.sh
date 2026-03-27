@@ -4,8 +4,28 @@ set -euo pipefail
 # Install dependencies with --ignore-scripts and selectively run sqlite3 postinstall
 # This maintains security while ensuring sqlite3 binaries are built when needed
 
-echo "Installing dependencies with --ignore-scripts..."
-yarn install --frozen-lockfile --prefer-offline --ignore-scripts "$@"
+max_attempts=4
+
+install_dependencies() {
+    yarn install --frozen-lockfile --prefer-offline --ignore-scripts "$@"
+}
+
+for attempt in $(seq 1 "$max_attempts"); do
+    echo "Installing dependencies with --ignore-scripts... (attempt ${attempt}/${max_attempts})"
+
+    if install_dependencies "$@"; then
+        break
+    fi
+
+    if [ "$attempt" -eq "$max_attempts" ]; then
+        echo "Dependency installation failed after ${max_attempts} attempts"
+        exit 1
+    fi
+
+    sleep_seconds=$((attempt * 15))
+    echo "::warning::Dependency installation failed, retrying in ${sleep_seconds} seconds..."
+    sleep "$sleep_seconds"
+done
 
 # Check if sqlite3 binary already exists (from cache or previous build)
 if [ -d "node_modules/sqlite3" ]; then

@@ -24,7 +24,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
         <>
             <header className='z-40 -mx-8 bg-white/70 backdrop-blur-md dark:bg-black'>
                 <div
-                    className='relative flex w-full items-center justify-between gap-5 px-8 pb-0 pt-8'
+                    className='relative flex w-full items-center justify-between gap-5 px-8 pt-8 pb-0'
                     data-header='header'
                 >
                     <H1
@@ -36,7 +36,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                     {appSettings?.analytics.webAnalytics && (
                         <div className='flex items-center gap-2 text-sm'>
                             {site?.url && (
-                                <div className='hidden items-center gap-1.5 sm:!visible sm:!flex'>
+                                <div className='hidden items-center gap-1.5 sm:visible! sm:flex!'>
                                     {/* No need for favicon as it's already shown in the left sidebar + globe icon represents "web" better */}
                                     <LucideIcon.Globe className='text-muted-foreground' size={16} strokeWidth={1.5} />
                                     <a
@@ -64,7 +64,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                     )}
                 </div>
             </header>
-            <Navbar className='sticky top-0 z-40 transform-gpu flex-col items-start gap-y-0 border-none bg-white/70 pb-6 pt-9 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
+            <Navbar className='sticky top-0 z-40 transform-gpu flex-col items-start gap-y-0 border-none bg-white/70 pt-9 pb-6 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
                 <NavbarNavigation>
                     <PageMenu defaultValue={normalizedPath} responsive>
                         <PageMenuItem value="/analytics/" onClick={() => {

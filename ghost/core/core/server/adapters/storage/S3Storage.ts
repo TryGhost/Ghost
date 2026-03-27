@@ -307,17 +307,26 @@ export default class S3Storage extends StorageBase {
             });
         }
 
-        return relativePath.slice(this.storagePath.length + 1);
+        const result = relativePath.slice(this.storagePath.length + 1);
+
+        const normalized = path.posix.normalize(result);
+        if (normalized.startsWith('..')) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.invalidUrlParameter, {url})
+            });
+        }
+
+        return normalized;
     }
 
-    async exists(fileName: string, targetDir: string): Promise<boolean> {
+    async exists(fileName: string, targetDir?: string): Promise<boolean> {
         if (!fileName?.trim()) {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.emptyFileName, {method: 'exists'})
             });
         }
 
-        const relativePath = path.posix.join(targetDir, fileName);
+        const relativePath = targetDir ? path.posix.join(targetDir, fileName) : fileName;
         const key = this.buildKey(relativePath);
 
         try {
@@ -348,14 +357,14 @@ export default class S3Storage extends StorageBase {
         };
     }
 
-    async delete(fileName: string, targetDir: string): Promise<void> {
+    async delete(fileName: string, targetDir?: string): Promise<void> {
         if (!fileName?.trim()) {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.emptyFileName, {method: 'delete'})
             });
         }
 
-        const relativePath = path.posix.join(targetDir, fileName);
+        const relativePath = targetDir ? path.posix.join(targetDir, fileName) : fileName;
         const key = this.buildKey(relativePath);
 
         try {
@@ -387,6 +396,12 @@ export default class S3Storage extends StorageBase {
         }
 
         const pathWithStorage = path.posix.join(this.storagePath, relativePath);
+
+        if (!pathWithStorage.startsWith(this.storagePath + '/') && pathWithStorage !== this.storagePath) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.invalidUrlParameter, {url: relativePath})
+            });
+        }
 
         if (!this.tenantPrefix) {
             return pathWithStorage;

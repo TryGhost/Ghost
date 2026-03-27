@@ -1,6 +1,6 @@
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Tabs, TabsList, TabsTrigger, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {CONTENT_TYPES, ContentType, getContentDescription, getContentTitle} from '@src/utils/content-helpers';
-import {getAudienceQueryParam} from '../../components/audience-select';
+import {getAudienceQueryParam} from '@src/utils/audience';
 import {getClickHandler} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/global-data-provider';
@@ -87,11 +87,11 @@ const TopContentTable: React.FC<TopContentTableProps> = ({tableHeader = false, d
 interface TopContentProps {
     range: number;
     totalVisitors: number;
-    utmFilterParams?: Record<string, string>;
+    audience: number;
+    filterParams?: Record<string, string>;
 }
 
-const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, utmFilterParams = {}}) => {
-    const {audience} = useGlobalData();
+const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, audience, filterParams = {}}) => {
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
 
@@ -101,7 +101,7 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, utmFilterP
             date_from: formatQueryDate(startDate),
             date_to: formatQueryDate(endDate),
             member_status: getAudienceQueryParam(audience),
-            ...utmFilterParams
+            ...filterParams
         };
 
         if (timezone) {
@@ -117,7 +117,7 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, utmFilterP
         // For POSTS_AND_PAGES, don't add post_type filter to get both
 
         return params;
-    }, [startDate, endDate, timezone, audience, selectedContentType, utmFilterParams]);
+    }, [startDate, endDate, timezone, audience, selectedContentType, filterParams]);
 
     // Get filtered content data
     const {data: topContentData, isLoading: isLoading} = useTopContent({
@@ -147,7 +147,7 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, utmFilterP
 
     return (
         <Card className='group/datalist' data-testid='top-content-card'>
-            <div className='flex items-center justify-between gap-6 px-6 pb-5 pt-6'>
+            <div className='flex items-center justify-between gap-6 px-6 pt-6 pb-5'>
                 <CardHeader className='p-0'>
                     <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
                     <CardDescription>{getContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
@@ -164,7 +164,7 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, utmFilterP
                             <TabsTrigger value={CONTENT_TYPES.PAGES}>Pages</TabsTrigger>
                         </TabsList>
                     </Tabs>
-                    <div className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>Visitors</div>
+                    <div className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>Visitors</div>
                 </div>
                 <Separator />
                 {isLoading ?

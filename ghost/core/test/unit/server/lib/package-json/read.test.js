@@ -1,4 +1,4 @@
-require('should');
+const assert = require('node:assert/strict');
 
 const tmp = require('tmp');
 const join = require('path').join;
@@ -22,7 +22,7 @@ describe('package-json read', function () {
 
             packageJSON.readPackages(packagePath.name)
                 .then(function (pkgs) {
-                    pkgs.should.eql({
+                    assert.deepEqual(pkgs, {
                         casper: {
                             name: 'casper',
                             path: join(packagePath.name, 'casper'),
@@ -53,7 +53,7 @@ describe('package-json read', function () {
 
             packageJSON.readPackages(packagePath.name)
                 .then(function (pkgs) {
-                    pkgs.should.eql({
+                    assert.deepEqual(pkgs, {
                         testtheme: {
                             name: 'testtheme',
                             path: join(packagePath.name, 'testtheme'),
@@ -86,7 +86,7 @@ describe('package-json read', function () {
 
             packageJSON.readPackages(packagePath.name)
                 .then(function (pkgs) {
-                    pkgs.should.eql({
+                    assert.deepEqual(pkgs, {
                         testtheme: {
                             name: 'testtheme',
                             path: join(packagePath.name, 'testtheme'),
@@ -119,7 +119,7 @@ describe('package-json read', function () {
 
             packageJSON.readPackages(packagePath.name)
                 .then(function (pkgs) {
-                    pkgs.should.eql({
+                    assert.deepEqual(pkgs, {
                         testtheme: {
                             name: 'testtheme',
                             path: join(packagePath.name, 'testtheme'),
@@ -154,7 +154,7 @@ describe('package-json read', function () {
 
             try {
                 const pkgs = await packageJSON.readPackages(packagePath.name);
-                pkgs.should.eql({
+                assert.deepEqual(pkgs, {
                     testtheme: {
                         name: 'testtheme',
                         path: join(packagePath.name, 'testtheme'),
@@ -183,7 +183,7 @@ describe('package-json read', function () {
 
             packageJSON.readPackage(packagePath.name, 'casper')
                 .then(function (pkgs) {
-                    pkgs.should.eql({
+                    assert.deepEqual(pkgs, {
                         casper: {
                             name: 'casper',
                             path: join(packagePath.name, 'casper'),
@@ -214,7 +214,7 @@ describe('package-json read', function () {
 
             packageJSON.readPackage(packagePath.name, 'testtheme')
                 .then(function (pkgs) {
-                    pkgs.should.eql({
+                    assert.deepEqual(pkgs, {
                         testtheme: {
                             name: 'testtheme',
                             path: join(packagePath.name, 'testtheme'),
@@ -247,7 +247,7 @@ describe('package-json read', function () {
 
             packageJSON.readPackage(packagePath.name, 'testtheme')
                 .then(function (pkgs) {
-                    pkgs.should.eql({
+                    assert.deepEqual(pkgs, {
                         testtheme: {
                             name: 'testtheme',
                             path: join(packagePath.name, 'testtheme'),
@@ -278,7 +278,7 @@ describe('package-json read', function () {
 
             packageJSON.readPackage(packagePath.name, 'casper')
                 .then(function (pkgs) {
-                    pkgs.should.eql({
+                    assert.deepEqual(pkgs, {
                         casper: {
                             name: 'casper',
                             path: join(packagePath.name, 'casper'),
@@ -304,7 +304,7 @@ describe('package-json read', function () {
                     done('Should have thrown an error');
                 })
                 .catch(function (err) {
-                    err.message.should.eql('Package not found');
+                    assert.equal(err.message, 'Package not found');
                     done();
                 })
                 .finally(packagePath.removeCallback);
@@ -319,7 +319,7 @@ describe('package-json read', function () {
 
             packageJSON.readPackage(packagePath.name, 'casper.zip')
                 .then(function (pkg) {
-                    pkg.should.eql({});
+                    assert.deepEqual(pkg, {});
 
                     done();
                 })

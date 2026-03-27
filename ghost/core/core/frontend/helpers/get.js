@@ -10,7 +10,6 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const _ = require('lodash');
-const jsonpath = require('jsonpath');
 const nqlLang = require('@tryghost/nql-lang');
 
 const messages = {
@@ -48,6 +47,89 @@ const pathAliases = {
 };
 
 /**
+ * @typedef {Object.<string, unknown>} GetHelperAPIOptions
+ * @property {string} [filter] Example: "featured:true" or "featured:true+status:published"
+ * @property {string|number} [limit] Example: "3" or 3 or "all"
+ * @property {string} [include] Example: "tags,authors"
+ * @property {string} [fields] Example: "title,slug"
+ * @property {string} [formats] Example: "html"
+ * @property {string|number} [page] Example: "2" or 2
+ * @property {string} [order] Example: "published_at desc"
+ * @property {string} [id] Example: "123"
+ * @property {string} [slug] Example: "my-post"
+ * @property {{member?: {uuid?: string}}} [context]
+ * NOTE: Themes can pass additional top-level query params, and they are forwarded as-is.
+ */
+
+/**
+ * Generate a deterministic cache key for a {{#get}} query.
+ * Sorts top-level option keys for deterministic serialization.
+ *
+ * @param {string} resource The resource type (posts, tags, etc.)
+ * @param {GetHelperAPIOptions} apiOptions The API options
+ * @returns {string|null} Deterministic cache key, or null when options are not serializable
+ */
+function generateCacheKey(resource, apiOptions) {
+    const sortedOptions = Object.fromEntries(
+        Object.entries(apiOptions).sort(([a], [b]) => a.localeCompare(b))
+    );
+
+    try {
+        return `${resource}|${JSON.stringify(sortedOptions)}`;
+    } catch (err) {
+        // If key generation fails, skip deduplication for this invocation.
+        return null;
+    }
+}
+
+/**
+ * Resolve a simple path like "post.tags[*].slug" against an object.
+ * Supports dot-notation, [N] array indexing, and [*] array wildcards.
+ * Always returns an array of matched values.
+ */
+const VALID_SEGMENT = /^\w+(\[(\*|\d+)\])?$/;
+
+function querySimplePath(obj, pathString) {
+    const parts = pathString.split('.');
+    let current = [obj];
+
+    for (const part of parts) {
+        if (current.length === 0) {
+            break;
+        }
+
+        if (!VALID_SEGMENT.test(part)) {
+            throw new errors.IncorrectUsageError({
+                message: `{{#get}} helper — unsupported path segment "${part}" in "${pathString}"`
+            });
+        }
+
+        // Match e.g. "tags[*]" or "tags[0]"
+        const bracketMatch = part.match(/^(.+?)\[(\*|\d+)\]$/);
+        const key = bracketMatch ? bracketMatch[1] : part;
+        const bracket = bracketMatch ? bracketMatch[2] : null;
+
+        const next = [];
+        for (const item of current) {
+            if (item !== null && item !== undefined && item[key] !== undefined) {
+                next.push(item[key]);
+            }
+        }
+
+        if (bracket === '*') {
+            current = next.flatMap(item => (Array.isArray(item) ? item : []));
+        } else if (bracket !== null) {
+            const index = parseInt(bracket, 10);
+            current = next.flatMap(item => (item !== null && item !== undefined && item[index] !== undefined ? [item[index]] : []));
+        } else {
+            current = next;
+        }
+    }
+
+    return current;
+}
+
+/**
  * ## Is Browse
  * Is this a Browse request or a Read request?
  * @param {Object} options
@@ -83,10 +165,10 @@ function resolvePaths(globals, data, value) {
         path = path.replace(/\.\[/g, '[');
 
         if (path.charAt(0) === '@') {
-            result = jsonpath.query(globals, path.slice(1));
+            result = querySimplePath(globals, path.slice(1));
         } else {
             // Do the query, which always returns an array of matches
-            result = jsonpath.query(data, path);
+            result = querySimplePath(data, path);
         }
 
         // Handle the case where the single data property we return is a Date
@@ -107,8 +189,8 @@ function resolvePaths(globals, data, value) {
  * Ensure options passed in make sense
  *
  * @param {Object} data
- * @param {Object} options
- * @returns {*}
+ * @param {GetHelperAPIOptions} options
+ * @returns {GetHelperAPIOptions}
  */
 function parseOptions(globals, data, options) {
     if (_.isString(options.filter)) {
@@ -206,7 +288,7 @@ function optimiseFilterCacheability(resource, options) {
  * @param {String} resource
  * @param {String} controllerName
  * @param {String} action
- * @param {Object} apiOptions
+ * @param {GetHelperAPIOptions} apiOptions
  * @returns {Promise<Object>}
  */
 async function makeAPICall(resource, controllerName, action, apiOptions) {
@@ -258,6 +340,46 @@ async function makeAPICall(resource, controllerName, action, apiOptions) {
 }
 
 /**
+ * Prepare and render the response from a {{#get}} query
+ *
+ * @param {Object} response API response
+ * @param {string} resource Resource type (posts, tags, etc.)
+ * @param {Object} options Handlebars options
+ * @param {Object} data Handlebars data frame
+ * @returns {string | SafeString} Rendered template output
+ */
+function renderResponse(response, resource, options, data) {
+    const templateResponse = {
+        ...response,
+        [resource]: _.cloneDeep(response[resource])
+    };
+
+    // prepare data properties for use with handlebars
+    if (templateResponse[resource] && templateResponse[resource].length) {
+        templateResponse[resource].forEach(prepareContextResource);
+    }
+
+    // block params allows the theme developer to name the data using something like
+    // `{{#get "posts" as |result pageInfo|}}`
+    const blockParams = [templateResponse[resource]];
+    if (templateResponse.meta && templateResponse.meta.pagination) {
+        templateResponse.pagination = templateResponse.meta.pagination;
+        blockParams.push(templateResponse.meta.pagination);
+    }
+
+    // Call the main template function
+    const rendered = options.fn(templateResponse, {
+        data: data,
+        blockParams: blockParams
+    });
+
+    if (templateResponse['@@ABORTED_GET_HELPER@@']) {
+        return new SafeString(`<span data-aborted-get-helper>Could not load content</span>` + rendered);
+    }
+    return rendered;
+}
+
+/**
  * ## Get
  * @param {String} resource
  * @param {Object} options
@@ -294,37 +416,51 @@ module.exports = async function get(resource, options) {
     // Parse the options we're going to pass to the API
     apiOptions = parseOptions(ghostGlobals, this, apiOptions);
     apiOptions.context = {member: data.member};
-    try {
-        const response = await makeAPICall(resource, controllerName, action, apiOptions);
 
-        // prepare data properties for use with handlebars
-        if (response[resource] && response[resource].length) {
-            response[resource].forEach(prepareContextResource);
+    // Per-request deduplication: check if we have a cached result for this query
+    const queryCache = options.data?._queryCache instanceof Map ? options.data._queryCache : null;
+    let cacheKey;
+    let cachedResponse;
+
+    if (queryCache) {
+        cacheKey = generateCacheKey(resource, apiOptions);
+
+        if (cacheKey && queryCache.has(cacheKey)) {
+            try {
+                // Await cached promise (handles both resolved and in-flight)
+                cachedResponse = await queryCache.get(cacheKey);
+            } catch (error) {
+                // Cached promise rejected - fall through to make new request
+                queryCache.delete(cacheKey);
+            }
         }
+    }
+
+    try {
+        if (cachedResponse) {
+            returnedRowsCount = cachedResponse[resource] && cachedResponse[resource].length;
+            return renderResponse(cachedResponse, resource, options, data);
+        }
+
+        // Store promise before awaiting to dedupe concurrent in-flight requests
+        const responsePromise = makeAPICall(resource, controllerName, action, apiOptions);
+
+        if (queryCache && cacheKey) {
+            queryCache.set(cacheKey, responsePromise);
+        }
+
+        const response = await responsePromise;
 
         // used for logging details of slow requests
         returnedRowsCount = response[resource] && response[resource].length;
 
-        // block params allows the theme developer to name the data using something like
-        // `{{#get "posts" as |result pageInfo|}}`
-        const blockParams = [response[resource]];
-        if (response.meta && response.meta.pagination) {
-            response.pagination = response.meta.pagination;
-            blockParams.push(response.meta.pagination);
-        }
-
-        // Call the main template function
-        const rendered = options.fn(response, {
-            data: data,
-            blockParams: blockParams
-        });
-
-        if (response['@@ABORTED_GET_HELPER@@']) {
-            return new SafeString(`<span data-aborted-get-helper>Could not load content</span>` + rendered);
-        } else {
-            return rendered;
-        }
+        return renderResponse(response, resource, options, data);
     } catch (error) {
+        // Remove failed API request from cache so retries can try again.
+        // Do not evict cache when rendering a cached response fails.
+        if (!cachedResponse && queryCache && cacheKey) {
+            queryCache.delete(cacheKey);
+        }
         logging.error(error);
         data.error = error.message;
         return options.inverse(self, {data: data});
@@ -352,3 +488,5 @@ module.exports = async function get(resource, options) {
 module.exports.async = true;
 
 module.exports.optimiseFilterCacheability = optimiseFilterCacheability;
+
+module.exports.querySimplePath = querySimplePath;

@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
@@ -55,8 +55,8 @@ describe('Content API key authentication', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(403);
 
-            firstResponse.body.errors[0].type.should.equal('HostLimitError');
-            firstResponse.body.errors[0].message.should.equal('Custom limit error message');
+            assert.equal(firstResponse.body.errors[0].type, 'HostLimitError');
+            assert.equal(firstResponse.body.errors[0].message, 'Custom limit error message');
 
             // CASE: explore endpoint can only be reached by Admin API
             const secondResponse = await request.get(localUtils.API.getApiQuery('explore/'))
@@ -64,7 +64,7 @@ describe('Content API key authentication', function () {
                 .expect('Cache-Control', testUtils.cacheRules.noCache)
                 .expect(404);
 
-            secondResponse.body.errors[0].type.should.equal('NotFoundError');
+            assert.equal(secondResponse.body.errors[0].type, 'NotFoundError');
         });
     });
 });

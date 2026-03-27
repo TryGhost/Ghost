@@ -58,6 +58,28 @@
         "ghost/admin/lib/koenig-editor/package.json"
     ],
     "packageRules": [
+        // Always require dashboard approval for major updates
+        // This was largely to avoid the noise of major updates which were ESM only
+        // The idea was to check and accept major updates if they were NOT ESM
+        // But this hasn't been workable with our capacity
+        // Plus, ESM-only is an edge case in the grand scheme of dependencies
+        {
+            "description": "Require dashboard approval for major updates",
+            "matchUpdateTypes": [
+                "major"
+            ],
+            "dependencyDashboardApproval": true
+        },
+
+        // Group NQL packages separately from other TryGhost packages
+        {
+            "groupName": "NQL packages",
+            "matchPackageNames": [
+                "@tryghost/nql",
+                "@tryghost/nql-lang"
+            ]
+        },
+
         // Always automerge these packages:
         {
             "matchPackageNames": [

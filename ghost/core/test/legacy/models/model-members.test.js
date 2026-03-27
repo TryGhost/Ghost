@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 const BaseModel = require('../../../core/server/models/base');
 const {Label} = require('../../../core/server/models/label');
 const {Product} = require('../../../core/server/models/product');
@@ -29,7 +30,7 @@ describe('Member Model', function run() {
                 email: 'test@test.member'
             }, context);
 
-            should.exist(member, 'Member should have been created');
+            assertExists(member, 'Member should have been created');
 
             const product = await Product.add({
                 name: 'Ghost Product',
@@ -107,8 +108,8 @@ describe('Member Model', function run() {
             const subscription1 = subscriptions.find(({id}) => id === 'fake_subscription_id1');
             const subscription2 = subscriptions.find(({id}) => id === 'fake_subscription_id2');
 
-            should.exist(subscription1);
-            should.exist(subscription2);
+            assertExists(subscription1);
+            assertExists(subscription2);
         });
     });
 
@@ -129,7 +130,7 @@ describe('Member Model', function run() {
                 customer_id: 'fake_customer_id1'
             }, context);
 
-            should.exist(customer1, 'MemberStripeCustomer should have been created');
+            assertExists(customer1, 'MemberStripeCustomer should have been created');
 
             await MemberStripeCustomer.add({
                 member_id: customer1.get('member_id'),
@@ -142,14 +143,14 @@ describe('Member Model', function run() {
                 withRelated: ['stripeCustomers']
             }));
 
-            should.exist(member.related('stripeCustomers'), 'Member should have been fetched with stripeCustomers');
+            assertExists(member.related('stripeCustomers'), 'Member should have been fetched with stripeCustomers');
 
             const stripeCustomers = member.related('stripeCustomers');
 
-            should.equal(stripeCustomers.length, 2, 'Should  be two stripeCustomers');
+            assert.equal(stripeCustomers.length, 2, 'Should  be two stripeCustomers');
 
-            should.equal(stripeCustomers.models[0].get('customer_id'), 'fake_customer_id1');
-            should.equal(stripeCustomers.models[1].get('customer_id'), 'fake_customer_id2');
+            assert.equal(stripeCustomers.models[0].get('customer_id'), 'fake_customer_id1');
+            assert.equal(stripeCustomers.models[1].get('customer_id'), 'fake_customer_id2');
         });
     });
 
@@ -168,20 +169,20 @@ describe('Member Model', function run() {
                 email: 'test@test.member'
             }, context);
 
-            should.exist(member, 'Member should have been created');
+            assertExists(member, 'Member should have been created');
 
             const label = await Label.findOne({
                 slug: 'a-unique-slug-for-testing-members-model'
             }, context);
 
-            should.exist(label, 'Label should have been created');
+            assertExists(label, 'Label should have been created');
 
             const memberLabel = await BaseModel.knex('members_labels').where({
                 label_id: label.get('id'),
                 member_id: member.get('id')
             }).select().first();
 
-            should.exist(memberLabel, 'Label should have been attached to member');
+            assertExists(memberLabel, 'Label should have been attached to member');
 
             await MemberStripeCustomer.add({
                 member_id: member.get('id'),
@@ -192,7 +193,7 @@ describe('Member Model', function run() {
                 member_id: member.get('id')
             }, context);
 
-            should.exist(customer, 'Customer should have been created');
+            assertExists(customer, 'Customer should have been created');
 
             const product = await Product.add({
                 name: 'Ghost Product',
@@ -235,7 +236,7 @@ describe('Member Model', function run() {
                 customer_id: customer.get('customer_id')
             }, context);
 
-            should.exist(subscription, 'Subscription should have been created');
+            assertExists(subscription, 'Subscription should have been created');
 
             await Member.destroy(Object.assign({
                 id: member.get('id')
@@ -244,23 +245,23 @@ describe('Member Model', function run() {
             const memberAfterDestroy = await Member.findOne({
                 email: 'test@test.member'
             });
-            should.not.exist(memberAfterDestroy, 'Member should have been destroyed');
+            assert.equal(memberAfterDestroy, null, 'Member should have been destroyed');
 
-            const memberLabelAfterDestroy = await BaseModel.knex('members_labels').where({
+            const memberLabelsAfterDestroy = await BaseModel.knex('members_labels').where({
                 label_id: label.get('id'),
                 member_id: member.get('id')
-            }).select().first();
-            should.not.exist(memberLabelAfterDestroy, 'Label should have been removed from member');
+            }).select();
+            assert.deepEqual(memberLabelsAfterDestroy, [], 'Label should have been removed from member');
 
             const customerAfterDestroy = await MemberStripeCustomer.findOne({
                 member_id: member.get('id')
             });
-            should.not.exist(customerAfterDestroy, 'MemberStripeCustomer should have been destroyed');
+            assert.equal(customerAfterDestroy, null, 'MemberStripeCustomer should have been destroyed');
 
             const subscriptionAfterDestroy = await StripeCustomerSubscription.findOne({
                 customer_id: customer.get('customer_id')
             });
-            should.not.exist(subscriptionAfterDestroy, 'StripeCustomerSubscription should have been destroyed');
+            assert.equal(subscriptionAfterDestroy, null, 'StripeCustomerSubscription should have been destroyed');
         });
     });
 
@@ -269,8 +270,8 @@ describe('Member Model', function run() {
 
         it('can use search query', function (done) {
             Member.findAll({search: 'egg'}).then(function (queryResult) {
-                queryResult.length.should.equal(1);
-                queryResult.models[0].get('name').should.equal('Mr Egg');
+                assert.equal(queryResult.length, 1);
+                assert.equal(queryResult.models[0].get('name'), 'Mr Egg');
                 done();
             }).catch(done);
         });
@@ -298,11 +299,11 @@ describe('Member Model', function run() {
                 name: 'Product-Add-Test'
             }, context);
 
-            should.exist(createdProduct, 'Product should have been created');
+            assertExists(createdProduct, 'Product should have been created');
 
             const products = member.related('products').toJSON();
 
-            should.exist(
+            assertExists(
                 products.find(model => model.name === 'Product-Add-Test')
             );
         });
@@ -329,30 +330,30 @@ describe('Member Model', function run() {
                 email: 'filter-test@test.member'
             }, context);
 
-            should.exist(member, 'Member should have been created');
+            assertExists(member, 'Member should have been created');
 
             const product = await Product.findOne({
                 slug: 'vip'
             }, context);
 
-            should.exist(product, 'Product should have been created');
+            assertExists(product, 'Product should have been created');
 
             const memberProduct = await BaseModel.knex('members_products').where({
                 product_id: product.get('id'),
                 member_id: member.get('id')
             }).select().first();
 
-            should.exist(memberProduct, 'Product should have been attached to member');
+            assertExists(memberProduct, 'Product should have been attached to member');
 
             const vipProductMembers = await Member.findPage({filter: 'products:vip'});
             const foundMemberInVIP = vipProductMembers.data.find(model => model.id === member.id);
 
-            should.exist(foundMemberInVIP, 'Member should have been included in products filter');
+            assertExists(foundMemberInVIP, 'Member should have been included in products filter');
 
             const podcastProductMembers = await Member.findPage({filter: 'products:podcast'});
             const foundMemberInPodcast = podcastProductMembers.data.find(model => model.id === member.id);
 
-            should.not.exist(foundMemberInPodcast, 'Member should not have been included in products filter');
+            assert.equal(foundMemberInPodcast, undefined, 'Member should not have been included in products filter');
         });
     });
 
@@ -375,12 +376,12 @@ describe('Member Model', function run() {
                 email: 'name-filter-test@test.member'
             }, context);
 
-            should.exist(member, 'Member should have been created');
+            assertExists(member, 'Member should have been created');
 
             const membersByName = await Member.findPage({filter: `name:'Name Filter Test'`});
             const foundMember = membersByName.data.find(model => model.id === member.id);
 
-            should.exist(foundMember, 'Member should have been included in name filter');
+            assertExists(foundMember, 'Member should have been included in name filter');
         });
 
         it('Should allow filtering on email', async function () {
@@ -400,12 +401,12 @@ describe('Member Model', function run() {
                 email: 'email-filter-test@test.member'
             }, context);
 
-            should.exist(member, 'Member should have been created');
+            assertExists(member, 'Member should have been created');
 
             const membersByName = await Member.findPage({filter: `email:email-filter-test@test.member`});
             const foundMember = membersByName.data.find(model => model.id === member.id);
 
-            should.exist(foundMember, 'Member should have been included in name filter');
+            assertExists(foundMember, 'Member should have been included in name filter');
         });
 
         it('Should allow filtering on subscriptions', async function () {
@@ -481,7 +482,7 @@ describe('Member Model', function run() {
 
             {
                 const members = await Member.findPage({filter: `subscriptions.status:canceled+subscriptions.status:-active`});
-                should.equal(members.data.length, 0, 'Can search for members with canceled subscription and no active ones');
+                assert.equal(members.data.length, 0, 'Can search for members with canceled subscription and no active ones');
             }
 
             await StripeCustomerSubscription.edit({
@@ -493,12 +494,12 @@ describe('Member Model', function run() {
 
             {
                 const members = await Member.findPage({filter: `subscriptions.status:canceled+subscriptions.status:-active`});
-                should.equal(members.data.length, 1, 'Can search for members with canceled subscription and no active ones');
+                assert.equal(members.data.length, 1, 'Can search for members with canceled subscription and no active ones');
             }
 
             {
                 const members = await Member.findPage({filter: `subscriptions.plan_interval:year`});
-                should.equal(members.data.length, 1, 'Can search for members by plan_interval');
+                assert.equal(members.data.length, 1, 'Can search for members by plan_interval');
             }
 
             await StripeCustomerSubscription.edit({
@@ -510,7 +511,7 @@ describe('Member Model', function run() {
 
             {
                 const members = await Member.findPage({filter: `subscriptions.plan_interval:month+subscriptions.plan_interval:-year`});
-                should.equal(members.data.length, 0, 'Can search for members by plan_interval');
+                assert.equal(members.data.length, 0, 'Can search for members by plan_interval');
             }
         });
 
@@ -582,7 +583,7 @@ describe('Member Model', function run() {
             const members = await Member.findPage({filter: `offer_redemptions:${offerId}`});
             // convert members to json
             const membersJson = members.data.map(model => model.toJSON());
-            should.equal(membersJson[0].email, email, 'Can search for members with offer_redemptions');
+            assert.equal(membersJson[0].email, email, 'Can search for members with offer_redemptions');
         });
     });
 });

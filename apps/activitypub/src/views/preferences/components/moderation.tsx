@@ -124,7 +124,7 @@ const Moderation: React.FC = () => {
 
                                                 {unblockedAccountIds.has(account.apId) ? (
                                                     <Button
-                                                        className='ml-auto min-w-[90px] text-red hover:!bg-red/5 hover:text-red-400'
+                                                        className='ml-auto min-w-[90px] text-red hover:bg-red/5! hover:text-red-400'
                                                         variant='outline'
                                                         onClick={(e) => {
                                                             e.stopPropagation();
@@ -176,7 +176,7 @@ const Moderation: React.FC = () => {
 
                                         {unblockedDomainIds.has(domain.url) ? (
                                             <Button
-                                                className='ml-auto min-w-[90px] text-red hover:!bg-red/5 hover:text-red-400'
+                                                className='ml-auto min-w-[90px] text-red hover:bg-red/5! hover:text-red-400'
                                                 variant='outline'
                                                 onClick={() => handleDomainBlock(domain)}
                                             >

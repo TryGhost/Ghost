@@ -265,6 +265,10 @@
             "flags": "PUBLIC,RO",
             "type": "string"
         },
+        "stripe_billing_portal_configuration_id": {
+            "defaultValue": null,
+            "type": "string"
+        },
         "stripe_secret_key": {
             "defaultValue": null,
             "type": "string"
@@ -561,6 +565,43 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        }
+    },
+    "transistor": {
+        "transistor": {
+            "defaultValue": "false",
+            "validations": {
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        },
+        "transistor_portal_enabled": {
+            "defaultValue": "true",
+            "validations": {
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean",
+            "flags": "PUBLIC"
+        },
+        "transistor_portal_heading": {
+            "defaultValue": "Podcasts",
+            "type": "string",
+            "flags": "PUBLIC"
+        },
+        "transistor_portal_description": {
+            "defaultValue": "Access your private podcast feed",
+            "type": "string",
+            "flags": "PUBLIC"
+        },
+        "transistor_portal_button_text": {
+            "defaultValue": "View",
+            "type": "string",
+            "flags": "PUBLIC"
+        },
+        "transistor_portal_url_template": {
+            "defaultValue": "https://partner.transistor.fm/ghost/{memberUuid}",
+            "type": "string",
+            "flags": "PUBLIC"
         }
     }
 }

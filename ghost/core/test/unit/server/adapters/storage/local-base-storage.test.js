@@ -2,7 +2,6 @@ const assert = require('assert/strict');
 const path = require('path');
 const http = require('http');
 const express = require('express');
-const should = require('should');
 const LocalStorageBase = require('../../../../../core/server/adapters/storage/LocalStorageBase');
 
 describe('Local Storage Base', function () {
@@ -34,30 +33,66 @@ describe('Local Storage Base', function () {
     });
 
     describe('urlToPath', function () {
-        it('returns path from url', function () {
+        it('returns relative path from full url', function () {
             let localStorageBase = new LocalStorageBase({
                 storagePath: '/media-storage/path/',
                 staticFileURLPrefix: 'content/media',
                 siteUrl: 'http://example.com/blog/'
             });
 
-            localStorageBase.urlToPath('http://example.com/blog/content/media/2021/11/media.mp4')
-                .should.eql('/media-storage/path/2021/11/media.mp4');
+            assert.equal(
+                localStorageBase.urlToPath('http://example.com/blog/content/media/2021/11/media.mp4'),
+                '2021/11/media.mp4'
+            );
+        });
+
+        it('returns relative path from prefix url', function () {
+            let localStorageBase = new LocalStorageBase({
+                storagePath: '/media-storage/path/',
+                staticFileURLPrefix: 'content/media',
+                siteUrl: 'http://example.com/'
+            });
+
+            assert.equal(
+                localStorageBase.urlToPath('/content/media/2021/11/media.mp4'),
+                '2021/11/media.mp4'
+            );
+        });
+
+        it('throws if the url resolves outside the storage root', function () {
+            let localStorageBase = new LocalStorageBase({
+                storagePath: '/media-storage/path/',
+                staticFileURLPrefix: 'content/media',
+                siteUrl: 'http://example.com/blog/'
+            });
+
+            assert.throws(() => {
+                localStorageBase.urlToPath('http://example.com/blog/content/media/2021/11/../../../../../../etc/passwd');
+            }, {message: 'The URL "http://example.com/blog/content/media/2021/11/../../../../../../etc/passwd" is not a valid URL for this site.'});
+        });
+
+        it('throws if the prefix url resolves outside the storage root', function () {
+            let localStorageBase = new LocalStorageBase({
+                storagePath: '/media-storage/path/',
+                staticFileURLPrefix: 'content/media',
+                siteUrl: 'http://example.com/'
+            });
+
+            assert.throws(() => {
+                localStorageBase.urlToPath('/content/media/../../etc/passwd');
+            }, {message: 'The URL "/content/media/../../etc/passwd" is not a valid URL for this site.'});
         });
 
         it('throws if the url does not match current site', function () {
             let localStorageBase = new LocalStorageBase({
                 storagePath: '/media-storage/path/',
                 staticFileURLPrefix: 'content/media',
-                url: 'http://example.com/blog/'
+                siteUrl: 'http://example.com/blog/'
             });
 
-            try {
+            assert.throws(() => {
                 localStorageBase.urlToPath('http://anothersite.com/blog/content/media/2021/11/media.mp4');
-                should.fail('urlToPath when urls do not match');
-            } catch (error) {
-                error.message.should.eql('The URL "http://anothersite.com/blog/content/media/2021/11/media.mp4" is not a valid URL for this site.');
-            }
+            }, {message: 'The URL "http://anothersite.com/blog/content/media/2021/11/media.mp4" is not a valid URL for this site.'});
         });
     });
 });

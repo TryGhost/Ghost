@@ -2,7 +2,9 @@ import DateRangeSelect from '../components/date-range-select';
 import DisabledSourcesIndicator from '../components/disabled-sources-indicator';
 import GrowthKPIs from './components/growth-kpis';
 import GrowthSources from './components/growth-sources';
-import React, {useMemo, useState} from 'react';
+import NewSubscribersCadence from './components/new-subscribers-cadence';
+import PaidMembersChangeChart from './components/paid-subscription-change-chart';
+import React, {useEffect, useMemo, useState} from 'react';
 import SortButton from '../components/sort-button';
 import StatsHeader from '../layout/stats-header';
 import StatsLayout from '../layout/stats-layout';
@@ -40,7 +42,10 @@ type SourcesOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc' | 'so
 type UnifiedSortOrder = TopPostsOrder | SourcesOrder;
 
 const Growth: React.FC = () => {
-    const {range, site} = useGlobalData();
+    const {range, site, settings} = useGlobalData();
+
+    // Get site timezone from settings for displaying dates consistently
+    const siteTimezone = String(settings.find(setting => setting.key === 'timezone')?.value || 'Etc/UTC');
     const navigate = useNavigate();
     const [sortBy, setSortBy] = useState<UnifiedSortOrder>('free_members desc');
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
@@ -49,6 +54,17 @@ const Growth: React.FC = () => {
 
     // Get the initial tab from URL search parameters
     const initialTab = searchParams.get('tab') || 'total-members';
+
+    // Track current KPI tab to conditionally show paid member charts
+    const [currentKpiTab, setCurrentKpiTab] = useState(initialTab);
+
+    // Sync currentKpiTab with URL changes (one-way: URL -> state only)
+    useEffect(() => {
+        if (initialTab !== currentKpiTab) {
+            setCurrentKpiTab(initialTab);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialTab]);
 
     // Get stats from custom hook once
     const {isLoading, chartData, totals, currencySymbol, subscriptionData} = useGrowthStats(range);
@@ -138,11 +154,22 @@ const Growth: React.FC = () => {
                             currencySymbol={currencySymbol}
                             initialTab={initialTab}
                             isLoading={isPageLoading}
-                            subscriptionData={subscriptionData}
                             totals={totals}
+                            onTabChange={setCurrentKpiTab}
                         />
                     </CardContent>
                 </Card>
+                {appSettings?.paidMembersEnabled && currentKpiTab === 'paid-members' && (
+                    <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[2fr_minmax(460px,1fr)]'>
+                        <PaidMembersChangeChart
+                            isLoading={isPageLoading}
+                            memberData={chartData}
+                            range={range}
+                            subscriptionData={subscriptionData}
+                        />
+                        <NewSubscribersCadence isLoading={isPageLoading} range={range} />
+                    </div>
+                )}
                 <Card className='w-full overflow-x-auto' data-testid='top-content-card'>
                     <CardHeader>
                         <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
@@ -151,7 +178,7 @@ const Growth: React.FC = () => {
                     <CardContent>
                         <Table>
                             <TableHeader>
-                                <TableRow className='[&>th]:h-auto [&>th]:pb-2 [&>th]:pt-0'>
+                                <TableRow className='[&>th]:h-auto [&>th]:pt-0 [&>th]:pb-2'>
                                     <TableHead className='min-w-[320px] pl-0'>
                                         <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
                                             setSelectedContentType(value as ContentType);
@@ -208,7 +235,7 @@ const Growth: React.FC = () => {
                                     ) : (
                                         !appSettings?.analytics.membersTrackSources ? (
                                             <TableRow className='last:border-none'>
-                                                <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                                                <TableCell className='border-none py-12 group-hover:bg-transparent!' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
                                                     <DisabledSourcesIndicator />
                                                 </TableCell>
                                             </TableRow>
@@ -219,7 +246,7 @@ const Growth: React.FC = () => {
                                                         <div className='group/link inline-flex flex-col items-start gap-px'>
                                                             {post.post_id && post.attribution_type === 'post' ?
                                                                 <Button
-                                                                    className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline'
+                                                                    className='h-auto p-0 text-left leading-tight font-medium whitespace-normal hover:underline!'
                                                                     title='View post analytics'
                                                                     variant='link'
                                                                     onClick={getClickHandler(post.attribution_url, post.post_id, site.url || '', navigate, post.attribution_type)}
@@ -232,7 +259,7 @@ const Growth: React.FC = () => {
                                                                 </span>
                                                             }
                                                             {post.published_at && formatDisplayDate && new Date(post.published_at).getTime() > 0 && (
-                                                                <span className='text-muted-foreground'>Published on {formatDisplayDate(post.published_at)}</span>
+                                                                <span className='text-muted-foreground'>Published on {formatDisplayDate(post.published_at, siteTimezone)}</span>
                                                             )}
                                                         </div>
                                                     </TableCell>
@@ -253,7 +280,7 @@ const Growth: React.FC = () => {
                                             ))
                                         ) : (
                                             <TableRow className='border-none'>
-                                                <TableCell className='py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                                                <TableCell className='py-12 group-hover:bg-transparent!' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
                                                     <EmptyIndicator
                                                         description='Try adjusting your date range to see more data.'
                                                         title={`No conversions ${getPeriodText(range)}`}

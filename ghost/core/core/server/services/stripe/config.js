@@ -14,6 +14,7 @@ const messages = {
  * @prop {string} checkoutSessionCancelUrl
  * @prop {string} checkoutSetupSessionSuccessUrl
  * @prop {string} checkoutSetupSessionCancelUrl
+ * @prop {string} billingPortalReturnUrl
  */
 
 module.exports = {
@@ -34,12 +35,26 @@ module.exports = {
             const billingCancelUrl = new URL(siteUrl);
             billingCancelUrl.searchParams.set('stripe', 'billing-update-cancel');
 
+            const billingPortalReturnUrl = new URL(siteUrl);
+            billingPortalReturnUrl.searchParams.set('stripe', 'return');
+
             return {
                 checkoutSessionSuccessUrl: checkoutSuccessUrl.href,
                 checkoutSessionCancelUrl: checkoutCancelUrl.href,
                 checkoutSetupSessionSuccessUrl: billingSuccessUrl.href,
-                checkoutSetupSessionCancelUrl: billingCancelUrl.href
+                checkoutSetupSessionCancelUrl: billingCancelUrl.href,
+                billingPortalReturnUrl: billingPortalReturnUrl.href
             };
+        }
+
+        function parseIgnoreCustomerList(value) {
+            if (!Array.isArray(value)) {
+                return [];
+            }
+
+            return value
+                .map(customerId => String(customerId).trim())
+                .filter(Boolean);
         }
 
         const keys = settingsHelpers.getActiveStripeKeys();
@@ -58,8 +73,10 @@ module.exports = {
         }
 
         const webhookHandlerUrl = new URL('members/webhooks/stripe/', urlUtils.getSiteUrl());
+        const webhookCustomerIgnoreList = parseIgnoreCustomerList(config.get('stripeWebhookCustomerIgnoreList'));
 
         const urls = getStripeUrlConfig();
+        const siteUrl = urlUtils.getSiteUrl();
 
         return {
             ...keys,
@@ -69,7 +86,9 @@ module.exports = {
                 return labs.isSet('stripeAutomaticTax');
             },
             webhookSecret: webhookSecret,
-            webhookHandlerUrl: webhookHandlerUrl.href
+            webhookHandlerUrl: webhookHandlerUrl.href,
+            webhookCustomerIgnoreList,
+            siteUrl
         };
     }
 };

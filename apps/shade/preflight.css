@@ -1,5 +1,22 @@
 :where(.shade) {
     /*
+     * Neutralize TW v4 default --text-{size}--line-height theme variables.
+     * In v3, text-* utilities only set font-size. In v4, they reference
+     * var(--tw-leading, var(--text-{size}--line-height)) which forces a
+     * line-height from the built-in theme. Setting these to `initial`
+     * makes them the CSS "guaranteed-invalid value", so the var() chain
+     * collapses and line-height behaves as `inherit` — matching v3.
+     */
+    --text-xs--line-height: initial;
+    --text-sm--line-height: initial;
+    --text-base--line-height: initial;
+    --text-lg--line-height: initial;
+    --text-xl--line-height: initial;
+    --text-2xl--line-height: initial;
+    --text-3xl--line-height: initial;
+    --text-4xl--line-height: initial;
+
+    /*
     1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)
     2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)
     */
@@ -34,23 +51,7 @@
         -webkit-text-size-adjust: 100%; /* 2 */
         -moz-tab-size: 4; /* 3 */
         tab-size: 4; /* 3 */
-        font-family: theme(
-            "fontFamily.sans",
-            ui-sans-serif,
-            system-ui,
-            -apple-system,
-            BlinkMacSystemFont,
-            "Segoe UI",
-            Roboto,
-            "Helvetica Neue",
-            Arial,
-            "Noto Sans",
-            sans-serif,
-            "Apple Color Emoji",
-            "Segoe UI Emoji",
-            "Segoe UI Symbol",
-            "Noto Color Emoji"
-        ); /* 4 */
+        font-family: Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif; /* 4 */
     }
 
     /*
@@ -124,17 +125,7 @@
     kbd,
     samp,
     pre {
-        font-family: theme(
-            "fontFamily.mono",
-            ui-monospace,
-            SFMono-Regular,
-            Menlo,
-            Monaco,
-            Consolas,
-            "Liberation Mono",
-            "Courier New",
-            monospace
-        ); /* 1 */
+        font-family: Consolas, Liberation Mono, Menlo, Courier, monospace; /* 1 */
         font-size: 1em; /* 2 */
     }
 

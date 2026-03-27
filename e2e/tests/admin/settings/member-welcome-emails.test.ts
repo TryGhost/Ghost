@@ -15,8 +15,6 @@ interface AutomatedEmailsResponse {
 }
 
 test.describe('Ghost Admin - Member Welcome Emails', () => {
-    test.use({labs: {welcomeEmails: true}});
-
     test('can enable free welcome emails', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
@@ -51,7 +49,6 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
         await welcomeEmailsSection.disableFreeWelcomeEmail();
 
         await expect(welcomeEmailsSection.freeWelcomeEmailToggle).toHaveAttribute('aria-checked', 'false');
-        await expect(welcomeEmailsSection.freeWelcomeEmailEditButton).toBeHidden();
 
         // TODO: Update test once full E2E functionality is added for welcome emails
         // We shouldn't assert via API directly, but for now this verifies the toggle works as expected
@@ -88,7 +85,24 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
         expect(freeWelcomeEmail?.subject).toBe('Custom Welcome Subject');
     });
 
-    test('edited welcome email persists after page reload', async ({page}) => {
+    test('edited welcome email content persists after page reload', async ({page}) => {
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+        const updatedContent = 'Persisted editor content';
+
+        await welcomeEmailsSection.goto();
+        await welcomeEmailsSection.enableFreeWelcomeEmail();
+        await welcomeEmailsSection.openFreeWelcomeEmailModal();
+        await welcomeEmailsSection.replaceWelcomeEmailContent(updatedContent);
+        await welcomeEmailsSection.saveWelcomeEmail();
+
+        await page.reload();
+        await welcomeEmailsSection.section.waitFor({state: 'visible'});
+
+        await welcomeEmailsSection.openFreeWelcomeEmailModal();
+        await expect(welcomeEmailsSection.modalLexicalEditor).toContainText(updatedContent);
+    });
+
+    test('edited welcome email subject persists after page reload', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
         // Enable and edit free welcome email
@@ -109,8 +123,37 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
     });
 });
 
+test.describe('Ghost Admin - Welcome Email Customize Button - flag enabled', () => {
+    test.use({labs: {welcomeEmailsDesignCustomization: true}});
+
+    test('customize button opens modal when labs flag is enabled', async ({page}) => {
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+
+        await welcomeEmailsSection.goto();
+
+        await expect(welcomeEmailsSection.customizeButton).toBeVisible();
+        await welcomeEmailsSection.customizeButton.click();
+
+        await expect(welcomeEmailsSection.customizeModal).toBeVisible();
+
+        await welcomeEmailsSection.customizeModal.getByRole('button', {name: 'Close'}).click();
+
+        await expect(welcomeEmailsSection.customizeModal).toBeHidden();
+    });
+});
+
+test.describe('Ghost Admin - Welcome Email Customize Button - flag disabled', () => {
+    test('customize button is hidden when labs flag is disabled', async ({page}) => {
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+
+        await welcomeEmailsSection.goto();
+
+        await expect(welcomeEmailsSection.customizeButton).toBeHidden();
+    });
+});
+
 test.describe('Ghost Admin - Paid Member Welcome Emails', () => {
-    test.use({labs: {welcomeEmails: true}, stripeConnected: true});
+    test.use({stripeEnabled: true});
 
     test('can enable paid welcome emails', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);

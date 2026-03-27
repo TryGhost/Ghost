@@ -8,7 +8,7 @@ const ObjectId = require('bson-objectid').default;
 const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
-const config = require('../../../../../shared/config');
+const hasActiveOffer = require('../utils/has-active-offer');
 const StartOutboxProcessingEvent = require('../../../outbox/events/start-outbox-processing-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
 const messages = {
@@ -21,7 +21,18 @@ const messages = {
     productNotFound: 'Could not find Product {id}',
     bulkActionRequiresFilter: 'Cannot perform {action} without a filter or all=true',
     tierArchived: 'Cannot use archived Tiers',
-    invalidEmail: 'Invalid Email'
+    invalidEmail: 'Invalid Email',
+    offerNotFound: 'Could not find Offer {id}',
+    offerNotActive: 'Offer is not active',
+    offerIsTrialOffer: 'Trial offers cannot be applied to existing subscriptions',
+    offerIsSignupOffer: 'Signup offers cannot be applied to existing subscriptions',
+    offerNoCoupon: 'Offer does not have a valid coupon',
+    offerTierMismatch: 'Offer is not valid for this subscription tier',
+    offerCadenceMismatch: 'Offer is not valid for this subscription cadence',
+    offerAlreadyRedeemed: 'This offer has already been redeemed on this subscription',
+    subscriptionNotActive: 'Cannot apply offer to an inactive subscription',
+    subscriptionHasOffer: 'Subscription already has an offer applied',
+    subscriptionCancelling: 'Cannot apply retention offer to a subscription that is already cancelling'
 };
 
 const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
@@ -49,7 +60,6 @@ module.exports = class MemberRepository {
      * @param {any} deps.OfferRedemption
      * @param {any} deps.Outbox
      * @param {import('../../services/stripe-api')} deps.stripeAPIService
-     * @param {any} deps.labsService
      * @param {any} deps.productRepository
      * @param {any} deps.offersAPI
      * @param {ITokenService} deps.tokenService
@@ -70,7 +80,6 @@ module.exports = class MemberRepository {
         OfferRedemption,
         Outbox,
         stripeAPIService,
-        labsService,
         productRepository,
         offersAPI,
         tokenService,
@@ -94,7 +103,6 @@ module.exports = class MemberRepository {
         this._offersAPI = offersAPI;
         this.tokenService = tokenService;
         this._newslettersService = newslettersService;
-        this._labsService = labsService;
         this._AutomatedEmail = AutomatedEmail;
 
         DomainEvents.subscribe(OfferRedemptionEvent, async function (event) {
@@ -142,7 +150,11 @@ module.exports = class MemberRepository {
     }
 
     isComplimentarySubscription(subscription) {
-        return subscription.plan && subscription.plan.nickname && subscription.plan.nickname.toLowerCase() === 'complimentary';
+        return this.isComplimentaryPlanNickname(subscription.plan?.nickname);
+    }
+
+    isComplimentaryPlanNickname(nickname) {
+        return nickname && nickname.toLowerCase() === 'complimentary';
     }
 
     /**
@@ -343,12 +355,16 @@ module.exports = class MemberRepository {
         const memberAddOptions = {...(options || {}), withRelated};
         let member;
 
-        const hasTestInbox = Boolean(config.get('memberWelcomeEmailTestInbox'));
-        if (hasTestInbox && WELCOME_EMAIL_SOURCES.includes(source)) {
-            const freeWelcomeEmail = this._AutomatedEmail ? await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.free}) : null;
-            const isFreeWelcomeEmailActive = freeWelcomeEmail && freeWelcomeEmail.get('lexical') && freeWelcomeEmail.get('status') === 'active';
-            const isFreeSignup = !stripeCustomer;
+        const isFreeSignup = !stripeCustomer;
+        const shouldCheckFreeWelcomeEmail = WELCOME_EMAIL_SOURCES.includes(source) && isFreeSignup;
+        let isFreeWelcomeEmailActive = false;
 
+        if (shouldCheckFreeWelcomeEmail) {
+            const freeWelcomeEmail = this._AutomatedEmail ? await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.free}) : null;
+            isFreeWelcomeEmailActive = freeWelcomeEmail && freeWelcomeEmail.get('lexical') && freeWelcomeEmail.get('status') === 'active';
+        }
+
+        if (isFreeWelcomeEmailActive && isFreeSignup) {
             const runMemberCreation = async (transacting) => {
                 const newMember = await this._Member.add({
                     ...memberData,
@@ -356,25 +372,21 @@ module.exports = class MemberRepository {
                     labels
                 }, {...memberAddOptions, transacting});
 
-                // Only send the free welcome email if:
-                // 1. The free welcome email is active
-                // 2. The member is not signing up for a paid subscription (no stripeCustomer)
-                if (isFreeWelcomeEmailActive && isFreeSignup) {
-                    const timestamp = eventData.created_at || newMember.get('created_at');
+                const timestamp = eventData.created_at || newMember.get('created_at');
 
-                    await this._Outbox.add({
-                        id: ObjectId().toHexString(),
-                        event_type: MemberCreatedEvent.name,
-                        payload: JSON.stringify({
-                            memberId: newMember.id,
-                            email: newMember.get('email'),
-                            name: newMember.get('name'),
-                            source,
-                            timestamp,
-                            status: 'free'
-                        })
-                    }, {transacting});
-                }
+                await this._Outbox.add({
+                    id: ObjectId().toHexString(),
+                    event_type: MemberCreatedEvent.name,
+                    payload: JSON.stringify({
+                        memberId: newMember.id,
+                        uuid: newMember.get('uuid'),
+                        email: newMember.get('email'),
+                        name: newMember.get('name'),
+                        source,
+                        timestamp,
+                        status: 'free'
+                    })
+                }, {transacting});
 
                 return newMember;
             };
@@ -385,9 +397,7 @@ module.exports = class MemberRepository {
                 member = await this._Member.transaction(runMemberCreation);
             }
 
-            if (isFreeWelcomeEmailActive && isFreeSignup) {
-                this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: member.id}), memberAddOptions);
-            }
+            this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: member.id}), memberAddOptions);
         } else {
             member = await this._Member.add({
                 ...memberData,
@@ -795,9 +805,10 @@ module.exports = class MemberRepository {
             }
         }
 
+        // require: false so concurrent deletes don't throw "No Rows Deleted"
         return this._Member.destroy({
             id: data.id
-        }, options);
+        }, {...options, require: false});
     }
 
     async bulkDestroy(options) {
@@ -989,12 +1000,19 @@ module.exports = class MemberRepository {
 
         const stripeSubscriptionData = await this._stripeAPIService.getSubscription(data.subscription.id);
         let paymentMethodId;
-        if (!stripeSubscriptionData.default_payment_method) {
-            paymentMethodId = null;
-        } else if (typeof stripeSubscriptionData.default_payment_method === 'string') {
+        if (stripeSubscriptionData.default_payment_method) {
             paymentMethodId = stripeSubscriptionData.default_payment_method;
         } else {
-            paymentMethodId = stripeSubscriptionData.default_payment_method.id;
+            // If the subscription doesn't have a payment method, we fall back to the customer's default.
+            // This is set when the customer uses the Stripe billing portal to update their payment method.
+            const customerId = stripeSubscriptionData.customer;
+            const customer = await this._stripeAPIService.getCustomer(customerId);
+            const customerPaymentMethod = customer.invoice_settings?.default_payment_method;
+            if (customerPaymentMethod) {
+                paymentMethodId = customerPaymentMethod;
+            } else {
+                paymentMethodId = null;
+            }
         }
         const stripePaymentMethodData = paymentMethodId ? await this._stripeAPIService.getCardPaymentMethod(paymentMethodId) : null;
 
@@ -1097,7 +1115,9 @@ module.exports = class MemberRepository {
                 canceled: stripeSubscriptionData.cancel_at_period_end,
                 discount: stripeSubscriptionData.discount
             }),
-            offer_id: offerId
+            offer_id: offerId,
+            discount_start: stripeSubscriptionData.discount?.start ? new Date(stripeSubscriptionData.discount.start * 1000) : null,
+            discount_end: stripeSubscriptionData.discount?.end ? new Date(stripeSubscriptionData.discount.end * 1000) : null
         };
 
         const getStatus = (modelToCheck) => {
@@ -1133,25 +1153,34 @@ module.exports = class MemberRepository {
                 await stripeCustomerSubscriptionModel.destroy(options);
             }
         } else if (stripeCustomerSubscriptionModel) {
-            // CASE: Offer is already mapped against sub, don't overwrite it with NULL
-            // Needed for trial offers, which don't have a stripe coupon/discount attached to sub
+            const previousOfferId = stripeCustomerSubscriptionModel.get('offer_id');
+
+            // CASE: Only preserve offer_id for active trials (trial offers don't have Stripe discounts)
+            // Otherwise, allow offer_id to be cleared when the Stripe discount expires
             if (!subscriptionData.offer_id) {
-                delete subscriptionData.offer_id;
+                const trialEndAt = subscriptionData.trial_end_at;
+                const hasActiveTrial = trialEndAt && new Date(trialEndAt) > new Date();
+
+                if (hasActiveTrial) {
+                    delete subscriptionData.offer_id;
+                }
             }
+
             const updatedStripeCustomerSubscriptionModel = await this._StripeCustomerSubscription.edit(subscriptionData, {
                 ...options,
                 id: stripeCustomerSubscriptionModel.id
             });
 
-            // CASE: Existing free member subscribes to a paid tier with an offer
-            // Stripe doesn't send the discount/offer info in the subscription.created event
-            // So we need to record the offer redemption event upon updating the subscription here
-            if (stripeCustomerSubscriptionModel.get('offer_id') === null && subscriptionData.offer_id) {
+            // CASE: Record offer redemption when offer_id changes to a new non-null value
+            // This covers: null→new (free member upgrade), old→new (retention offer replacing expired signup offer)
+            // The OfferRedemptionEvent handler has a dedup check for repeated webhook deliveries
+            if (previousOfferId !== subscriptionData.offer_id && subscriptionData.offer_id) {
+                const redemptionTimestamp = subscriptionData.discount_start || updatedStripeCustomerSubscriptionModel.get('created_at');
                 const offerRedemptionEvent = OfferRedemptionEvent.create({
                     memberId: memberModel.id,
                     offerId: subscriptionData.offer_id,
                     subscriptionId: updatedStripeCustomerSubscriptionModel.id
-                }, updatedStripeCustomerSubscriptionModel.get('created_at'));
+                }, redemptionTimestamp);
                 this.dispatchEvent(offerRedemptionEvent, options);
             }
 
@@ -1437,7 +1466,7 @@ module.exports = class MemberRepository {
 
             const context = options?.context || {};
             const source = this._resolveContextSource(context);
-            const shouldSendPaidWelcomeEmail = config.get('memberWelcomeEmailTestInbox') && WELCOME_EMAIL_SOURCES.includes(source);
+            const shouldSendPaidWelcomeEmail = WELCOME_EMAIL_SOURCES.includes(source);
             let isPaidWelcomeEmailActive = false;
             if (shouldSendPaidWelcomeEmail && this._AutomatedEmail) {
                 const paidWelcomeEmail = await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.paid}, options);
@@ -1452,6 +1481,7 @@ module.exports = class MemberRepository {
                     event_type: MemberCreatedEvent.name,
                     payload: JSON.stringify({
                         memberId: memberModel.id,
+                        uuid: memberModel.get('uuid'),
                         email: memberModel.get('email'),
                         name: memberModel.get('name'),
                         source,
@@ -1620,6 +1650,171 @@ module.exports = class MemberRepository {
                 subscription: updatedSubscription
             }, options);
         }
+    }
+
+    /**
+     * @param {Object} data
+     * @param {string} [data.id] - Member ID
+     * @param {string} [data.email] - Member email
+     * @param {Object} data.subscription
+     * @param {string} data.subscription.subscription_id - Stripe subscription ID
+     * @param {string} data.offerId - Offer ID to apply
+     * @param {string} data.couponId - Stripe coupon ID for the offer
+     * @param {Object} [options]
+     */
+    async applyOfferToSubscription(data, options = {}) {
+        if (!this._stripeAPIService.configured) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.noStripeConnection, {action: 'apply offer to Subscription'})
+            });
+        }
+
+        if (!options.transacting) {
+            return this._Member.transaction((transacting) => {
+                return this.applyOfferToSubscription(data, {
+                    ...options,
+                    transacting
+                });
+            });
+        }
+
+        // Find member
+        let findQuery = null;
+        if (data.id) {
+            findQuery = {id: data.id};
+        } else if (data.email) {
+            findQuery = {email: data.email};
+        }
+
+        if (!findQuery) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.memberNotFound, {id: 'unknown'})
+            });
+        }
+
+        const member = await this._Member.findOne(findQuery, options);
+        if (!member) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.memberNotFound, {id: data.id || data.email})
+            });
+        }
+
+        // Fetch subscription with related data
+        const subscriptionModel = await member.related('stripeSubscriptions').query({
+            where: {
+                subscription_id: data.subscription.subscription_id
+            }
+        }).fetchOne({
+            ...options,
+            forUpdate: true,
+            withRelated: ['stripePrice', 'stripePrice.stripeProduct', 'stripePrice.stripeProduct.product']
+        });
+
+        if (!subscriptionModel) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.subscriptionNotFound, {id: data.subscription.subscription_id})
+            });
+        }
+
+        // Validate subscription is active
+        const subscriptionStatus = subscriptionModel.get('status');
+        if (!this.isActiveSubscriptionStatus(subscriptionStatus)) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.subscriptionNotActive)
+            });
+        }
+
+        // Check subscription doesn't already have an active offer
+        if (await hasActiveOffer(subscriptionModel, this._offersAPI, options)) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.subscriptionHasOffer)
+            });
+        }
+
+        // Get tier and cadence from subscription
+        const stripePrice = subscriptionModel.related('stripePrice');
+        const stripeProduct = stripePrice.related('stripeProduct');
+        const product = stripeProduct.related('product');
+
+        const tierId = product.id;
+        const cadence = stripePrice.get('interval');
+
+        // Fetch and validate offer
+        const offer = await this._offersAPI.getOffer({id: data.offerId}, options);
+
+        if (!offer) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.offerNotFound, {id: data.offerId})
+            });
+        }
+
+        if (offer.status !== 'active') {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerNotActive)
+            });
+        }
+
+        if (offer.type === 'trial') {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerIsTrialOffer)
+            });
+        }
+
+        if (offer.redemption_type === 'signup') {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerIsSignupOffer)
+            });
+        }
+
+        if (offer.redemption_type === 'retention' && subscriptionModel.get('cancel_at_period_end')) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.subscriptionCancelling)
+            });
+        }
+
+        if (offer.tier && offer.tier.id !== tierId) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerTierMismatch)
+            });
+        }
+
+        if (offer.cadence !== cadence) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerCadenceMismatch)
+            });
+        }
+
+        // Check not already redeemed on this subscription
+        const existingRedemption = await this._OfferRedemption.findOne({
+            offer_id: data.offerId,
+            subscription_id: subscriptionModel.id
+        }, options);
+
+        if (existingRedemption) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerAlreadyRedeemed)
+            });
+        }
+
+        const stripeSubscriptionId = subscriptionModel.get('subscription_id');
+
+        // Besides trial offers, all other offers rely on a Stripe Coupon
+        if (!data.couponId) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerNoCoupon)
+            });
+        }
+
+        const updatedSubscription = await this._stripeAPIService.addCouponToSubscription(
+            stripeSubscriptionId,
+            data.couponId
+        );
+
+        return this.linkSubscription({
+            id: member.id,
+            subscription: updatedSubscription,
+            offerId: data.offerId
+        }, options);
     }
 
     async createSubscription(data, options) {
@@ -1808,34 +2003,83 @@ module.exports = class MemberRepository {
      * @param {Object} options
      * @param {Object} [options.transacting]
      */
-    async cancelComplimentarySubscription({id}, options) {
+    /**
+     * Removes all complimentary access for a member.
+     * Handles two types:
+     * 1. Stripe-backed: Subscriptions with plan_nickname 'Complimentary' — cancelled via Stripe, then synced via linkSubscription
+     * 2. Ghost-only: Products in members_products not backed by any active Stripe subscription — removed directly
+     *
+     * @param {{id: string}} data - member identifier
+     * @param {Object} options
+     */
+    async removeComplimentarySubscription({id}, options) {
         if (!this._stripeAPIService.configured) {
             throw new errors.BadRequestError({message: tpl(messages.noStripeConnection, {action: 'cancel Complimentary Subscription'})});
         }
 
-        const member = await this._Member.findOne({
-            id: id
-        });
+        const member = await this._Member.findOne({id});
+        const subscriptions = await member.related('stripeSubscriptions').fetch(options);
 
-        const subscriptions = await member.related('stripeSubscriptions').fetch();
-
+        // 1. Cancel Stripe-backed complimentary subscriptions
         for (const subscription of subscriptions.models) {
-            if (subscription.get('status') !== 'canceled') {
+            const isComp = this.isComplimentaryPlanNickname(subscription.get('plan_nickname'));
+            const isActive = this.isActiveSubscriptionStatus(subscription.get('status'));
+
+            if (isActive && isComp) {
                 try {
                     const updatedSubscription = await this._stripeAPIService.cancelSubscription(
                         subscription.get('subscription_id')
                     );
-                    // Only needs to update `status`
                     await this.linkSubscription({
                         id: id,
                         subscription: updatedSubscription
                     }, options);
                 } catch (err) {
-                    logging.error(`There was an error cancelling subscription ${subscription.get('subscription_id')}`);
+                    logging.error(`Error cancelling complimentary subscription ${subscription.get('subscription_id')}`);
                     logging.error(err);
                 }
             }
         }
+
+        // 2. Remove Ghost-only comp products (products not backed by any active Stripe subscription)
+        await member.load([
+            'products',
+            'stripeSubscriptions',
+            'stripeSubscriptions.stripePrice',
+            'stripeSubscriptions.stripePrice.stripeProduct'
+        ], options);
+
+        const activeSubscriptionProductIds = new Set(
+            member.related('stripeSubscriptions').models
+                .filter(sub => this.isActiveSubscriptionStatus(sub.get('status')))
+                .map(sub => sub.related('stripePrice')?.related('stripeProduct')?.get('product_id'))
+                .filter(Boolean)
+        );
+
+        const currentProducts = member.related('products').toJSON();
+        const filteredProducts = currentProducts.filter(product => activeSubscriptionProductIds.has(product.id));
+
+        if (filteredProducts.length !== currentProducts.length) {
+            await this._Member.edit({products: filteredProducts}, {id});
+        }
+
         return true;
+    }
+
+    /**
+     * @param {string} memberId
+     * @param {import('../../commenting').MemberCommenting} commenting
+     * @param {string} actionName
+     * @param {Object} context
+     */
+    async saveCommenting(memberId, commenting, actionName, context) {
+        return this._Member.edit(
+            {commenting},
+            {
+                id: memberId,
+                context,
+                actionName
+            }
+        );
     }
 };

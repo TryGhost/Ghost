@@ -1,13 +1,13 @@
 const sinon = require('sinon');
 const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
 const models = require('../../../../core/server/models');
-const labs = require('../../../../core/shared/labs');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const configUtils = require('../../../utils/config-utils');
 const {sendEmail, matchEmailSnapshot} = require('../../../utils/batch-email-utils');
 const cheerio = require('cheerio');
 const fs = require('fs-extra');
 const {DEFAULT_NODES} = require('@tryghost/kg-default-nodes');
+const ImageSize = require('../../../../core/server/lib/image/image-size');
 
 const goldenPost = fs.readJsonSync('./test/utils/fixtures/email-service/golden-post.json');
 
@@ -62,6 +62,21 @@ function createParagraphCard(text = 'Hello world.') {
         indent: 0,
         type: 'paragraph',
         version: 1
+    };
+}
+
+function createImageCard(src) {
+    return {
+        type: 'image',
+        version: 1,
+        src,
+        width: null,
+        height: null,
+        title: '',
+        alt: '',
+        caption: '',
+        cardWidth: 'regular',
+        href: ''
     };
 }
 
@@ -168,9 +183,7 @@ describe('Can send cards via email', function () {
     // NOTE: this is to workaround the email snapshot utils not handling slight discrepancies in email body, but it
     // means we can have snapshots for both free and non-free members
     ['status:free', 'status:-free'].forEach(function (status) {
-        it(`renders the golden post correctly (no labs flags) (${status})`, async function () {
-            sinon.stub(labs, 'isSet').returns(false);
-
+        it(`renders the golden post correctly (${status})`, async function () {
             const data = await sendEmail(agent, {
                 lexical: JSON.stringify(goldenPost)
             }, status);
@@ -178,25 +191,6 @@ describe('Can send cards via email', function () {
             splitPreheader(data);
 
             await matchEmailSnapshot();
-        });
-
-        ['contentVisibility'].forEach(function (flag) {
-            it(`renders the golden post correctly (labs flag(s): ${flag}) (${status})`, async function () {
-                sinon.stub(labs, 'isSet').callsFake((key) => {
-                    if (flag.split(',').includes(key)) {
-                        return true;
-                    }
-                    return false;
-                });
-
-                const data = await sendEmail(agent, {
-                    lexical: JSON.stringify(goldenPost)
-                }, status);
-
-                splitPreheader(data);
-
-                await matchEmailSnapshot();
-            });
         });
     });
 
@@ -261,5 +255,50 @@ describe('Can send cards via email', function () {
         Object.keys(spies).forEach((node) => {
             sinon.assert.called(spies[node]);
         });
+    });
+
+    it('uses URL-based dimension lookup for CDN images', async function () {
+        const cdnImageUrl = 'https://cdn.com/uuid/content/images/image.jpg';
+
+        const imageSizeFromUrlStub = sinon.stub(ImageSize.prototype, '_imageSizeFromUrl').resolves({
+            width: 1200,
+            height: 800
+        });
+        const storagePathSpy = sinon.spy(ImageSize.prototype, 'getImageSizeFromStoragePath');
+
+        const data = await sendEmail(agent, {
+            feature_image: cdnImageUrl,
+            lexical: createLexicalJson([
+                createParagraphCard('Feature image test.')
+            ])
+        });
+
+        assert.ok(data.html.includes(cdnImageUrl));
+        sinon.assert.calledWithMatch(imageSizeFromUrlStub, cdnImageUrl);
+        sinon.assert.neverCalledWithMatch(storagePathSpy, cdnImageUrl);
+
+        const $ = cheerio.load(data.html);
+        const featureImage = $(`img[src="${cdnImageUrl}"]`).first();
+        assert.ok(featureImage.length > 0);
+        assert.equal(featureImage.attr('width'), '600');
+    });
+
+    it('does not use storage-path lookup for CDN post content images', async function () {
+        const cdnImageUrl = 'https://cdn.com/uuid/content/images/post-image.jpg';
+
+        const urlStub = sinon.stub(ImageSize.prototype, '_imageSizeFromUrl').resolves({width: 1200, height: 800});
+        const storagePathSpy = sinon.spy(ImageSize.prototype, 'getImageSizeFromStoragePath');
+
+        const data = await sendEmail(agent, {
+            lexical: createLexicalJson([
+                createImageCard(cdnImageUrl)
+            ])
+        });
+
+        assert.ok(data.html.includes(cdnImageUrl));
+        sinon.assert.notCalled(urlStub);
+        sinon.assert.neverCalledWithMatch(storagePathSpy, sinon.match((value) => {
+            return typeof value === 'string' && value.includes('/uuid/content/images/post-image.jpg');
+        }));
     });
 });

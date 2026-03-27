@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 const SubscriptionEventService = require('../../../../../../../core/server/services/stripe/services/webhook/subscription-event-service');
 
@@ -8,7 +8,7 @@ describe('SubscriptionEventService', function () {
     let memberRepository;
 
     beforeEach(function () {
-        memberRepository = {get: sinon.stub(), linkSubscription: sinon.stub()};
+        memberRepository = {get: sinon.stub(), linkSubscription: sinon.stub(), removeComplimentarySubscription: sinon.stub()};
 
         service = new SubscriptionEventService({memberRepository});
     });
@@ -104,10 +104,12 @@ describe('SubscriptionEventService', function () {
             customer: 'cust_123'
         };
 
-        memberRepository.get.resolves({id: 'member_123'});
+        memberRepository.get
+            .onFirstCall().resolves({id: 'member_123'})
+            .onSecondCall().resolves({get: sinon.stub().returns('free')});
 
         await service.handleSubscriptionEvent(subscription);
 
-        assert(memberRepository.linkSubscription.calledWith({id: 'member_123', subscription}));
+        sinon.assert.calledWith(memberRepository.linkSubscription, {id: 'member_123', subscription});
     });
 });

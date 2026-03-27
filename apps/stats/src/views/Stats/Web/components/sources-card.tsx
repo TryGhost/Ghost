@@ -129,7 +129,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
 
     return (
         <Card className='group/datalist' data-testid='top-sources-card'>
-            <div className='flex items-center justify-between gap-6 px-6 pb-5 pt-6'>
+            <div className='flex items-center justify-between gap-6 px-6 pt-6 pb-5'>
                 <CardHeader className='p-0'>
                     <CardTitle>{title}</CardTitle>
                     <CardDescription>{description}</CardDescription>
@@ -137,8 +137,8 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
             </div>
             <CardContent className='overflow-hidden'>
                 <div className='mb-2 flex h-6 items-center justify-between'>
-                    <div className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>Source</div>
-                    <div className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>Visitors</div>
+                    <div className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>Source</div>
+                    <div className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>Visitors</div>
                 </div>
                 <Separator />
                 {isLoading && !data ?
@@ -152,7 +152,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                             onSourceClick={onSourceClick} />
                     ) : (
                         <EmptyIndicator
-                            className='mt-8 w-full py-20'
+                            className='w-full py-20'
                             title={`No visitors ${getPeriodText(range)}`}
                         >
                             <LucideIcon.Globe strokeWidth={1.5} />

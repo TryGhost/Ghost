@@ -23,6 +23,7 @@ export interface ToggleProps {
     hint?: React.ReactNode;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
     gap?: string;
+    align?: 'start' | 'center';
     testId?: string;
 }
 
@@ -42,6 +43,7 @@ const Toggle: React.FC<ToggleProps> = ({
     name,
     onChange,
     gap = 'gap-2',
+    align = 'start',
     testId
 }) => {
     const id = useId();
@@ -53,19 +55,19 @@ const Toggle: React.FC<ToggleProps> = ({
     case 'sm':
         sizeStyles = ' h-3 w-5';
         thumbSizeStyles = ' h-2 w-2 data-[state=checked]:translate-x-[10px]';
-        labelStyles = 'mt-[-5.5px]';
+        labelStyles = align === 'start' ? 'mt-[-5.5px]' : '';
         break;
 
     case 'lg':
         sizeStyles = ' h-5 w-8';
         thumbSizeStyles = ' h-4 w-4 data-[state=checked]:translate-x-[14px]';
-        labelStyles = 'mt-[-1px]';
+        labelStyles = align === 'start' ? 'mt-[-1px]' : '';
         break;
 
     default:
         sizeStyles = ' min-w-[28px] h-4 w-7';
         thumbSizeStyles = ' h-3 w-3 data-[state=checked]:translate-x-[14px]';
-        labelStyles = 'mt-[-3px]';
+        labelStyles = align === 'start' ? 'mt-[-3px]' : '';
         break;
     }
 
@@ -104,11 +106,11 @@ const Toggle: React.FC<ToggleProps> = ({
 
     return (
         <div>
-            <div className={`group flex items-start ${gap} dark:text-white ${direction === 'rtl' && 'justify-between'} ${separator && 'pb-2'} ${containerClasses}`}>
+            <div className={`group flex ${align === 'center' ? 'items-center' : 'items-start'} ${gap} dark:text-white ${direction === 'rtl' && 'justify-between'} ${separator && 'pb-2'} ${containerClasses}`}>
                 <TogglePrimitive.Root className={clsx(
                     toggleBgClass,
                     'appearance-none rounded-full bg-grey-300 transition duration-100 dark:bg-grey-800',
-                    'enabled:hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 enabled:group-hover:opacity-80',
+                    'enabled:group-hover:opacity-80 enabled:hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-40',
                     sizeStyles,
                     direction === 'rtl' && ' order-2'
                 )} data-testid={testId} defaultChecked={checked} disabled={disabled} id={id} name={name} onCheckedChange={handleCheckedChange}>

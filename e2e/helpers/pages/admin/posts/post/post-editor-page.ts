@@ -17,11 +17,48 @@ class SettingsMenu extends BasePage {
     }
 }
 
+class PublishFlow extends BasePage {
+    readonly publishButton: Locator;
+    readonly publishTypeSetting: Locator;
+    readonly publishTypeButton: Locator;
+    readonly emailRecipientsSetting: Locator;
+    readonly continueButton: Locator;
+    readonly confirmButton: Locator;
+
+    constructor(page: Page) {
+        super(page);
+
+        this.publishButton = page.locator('[data-test-button="publish-flow"]').first();
+        this.publishTypeSetting = page.locator('[data-test-setting="publish-type"]');
+        this.publishTypeButton = this.publishTypeSetting.locator('> button');
+        this.emailRecipientsSetting = page.locator('[data-test-setting="email-recipients"]');
+        this.continueButton = page.locator('[data-test-modal="publish-flow"] [data-test-button="continue"]');
+        this.confirmButton = page.locator('[data-test-modal="publish-flow"] [data-test-button="confirm-publish"]');
+    }
+
+    async open(): Promise<void> {
+        await this.publishButton.click();
+    }
+
+    async selectPublishType(type: 'publish' | 'publish+send' | 'send'): Promise<void> {
+        await this.publishTypeButton.click();
+        await this.page.locator(`[data-test-publish-type="${type}"] + label`).click();
+    }
+
+    async confirm(): Promise<void> {
+        await this.continueButton.click();
+        await this.confirmButton.click({force: true});
+        await this.confirmButton.waitFor({state: 'hidden'});
+    }
+}
+
 export class PostEditorPage extends AdminPage {
     readonly titleInput: Locator;
+    readonly postStatus: Locator;
     readonly previewButton: Locator;
     readonly previewModal: PostPreviewModal;
     readonly settingsToggleButton: Locator;
+    readonly publishFlow: PublishFlow;
 
     readonly settingsMenu: SettingsMenu;
 
@@ -30,9 +67,11 @@ export class PostEditorPage extends AdminPage {
         this.pageUrl = '/ghost/#/editor/post/';
 
         this.titleInput = page.getByRole('textbox', {name: 'Post title'});
+        this.postStatus = page.locator('[data-test-editor-post-status]');
         this.previewButton = page.getByRole('button', {name: 'Preview'});
         this.previewModal = new PostPreviewModal(page);
         this.settingsToggleButton = page.getByTestId('settings-menu-toggle');
+        this.publishFlow = new PublishFlow(page);
 
         this.settingsMenu = new SettingsMenu(page);
     }

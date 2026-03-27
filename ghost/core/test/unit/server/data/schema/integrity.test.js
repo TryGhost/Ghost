@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const _ = require('lodash');
 const yaml = require('js-yaml');
 const crypto = require('crypto');
@@ -35,9 +35,9 @@ const validateRouteSettings = require('../../../../../core/server/services/route
  */
 describe('DB version integrity', function () {
     // Only these variables should need updating
-    const currentSchemaHash = '5d8ff12fd51267005bff200abc420bb0';
-    const currentFixturesHash = 'c583f33910bb84a70847303b323be2db';
-    const currentSettingsHash = '64007c832bc27eefbe4d0ed3f888eeab';
+    const currentSchemaHash = 'c193998d02d13e8b85162315d938772c';
+    const currentFixturesHash = '4dcbd7b52bc9ce23e6f5f1673118ba73';
+    const currentSettingsHash = 'a102b80d2ab0cd92325ed007c94d7da6';
     const currentRoutesHash = '3d180d52c663d173a6be791ef411ed01';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
@@ -63,10 +63,10 @@ describe('DB version integrity', function () {
         settingsHash = crypto.createHash('md5').update(JSON.stringify(defaultSettings), 'binary').digest('hex');
         routesHash = crypto.createHash('md5').update(JSON.stringify(defaultRoutes), 'binary').digest('hex');
 
-        schemaHash.should.eql(currentSchemaHash, 'Database schema has changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
-        fixturesHash.should.eql(currentFixturesHash, 'Fixtures have changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
-        settingsHash.should.eql(currentSettingsHash, 'Default settings have changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
-        routesHash.should.eql(currentRoutesHash, 'Default routes have changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
-        routesHash.should.eql(routeSettings.getDefaultHash());
+        assert.equal(schemaHash, currentSchemaHash, 'Database schema has changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
+        assert.equal(fixturesHash, currentFixturesHash, 'Fixtures have changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
+        assert.equal(settingsHash, currentSettingsHash, 'Default settings have changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
+        assert.equal(routesHash, currentRoutesHash, 'Default routes have changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
+        assert.equal(routesHash, routeSettings.getDefaultHash());
     });
 });

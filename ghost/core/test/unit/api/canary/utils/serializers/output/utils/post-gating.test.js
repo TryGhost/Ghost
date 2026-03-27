@@ -1,9 +1,8 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const gating = require('../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/post-gating');
 const membersContentGating = require('../../../../../../../../core/server/services/members/content-gating');
-const labs = require('../../../../../../../../core/shared/labs');
 
 describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function () {
     afterEach(function () {
@@ -92,17 +91,72 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
             assert.equal(attrs.html, '<p>Can read this</p>');
         });
 
-        describe('contentVisibility', function () {
-            let contentVisibilityStub;
+        describe('member UUID substitution', function () {
+            it('replaces %7Buuid%7D placeholder with member UUID', function () {
+                const attrs = {
+                    visibility: 'public',
+                    html: '<iframe src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D"></iframe>'
+                };
 
-            beforeEach(function () {
-                contentVisibilityStub = sinon.stub(labs, 'isSet').withArgs('contentVisibility').returns(true);
+                frame.original.context.member = {uuid: 'test-member-uuid-123'};
+
+                gating.forPost(attrs, frame);
+
+                assert.equal(attrs.html, '<iframe src="https://partner.transistor.fm/ghost/embed/test-member-uuid-123"></iframe>');
             });
 
-            afterEach(function () {
-                sinon.restore();
+            it('does not replace placeholder when no member is present', function () {
+                const attrs = {
+                    visibility: 'public',
+                    html: '<iframe src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D"></iframe>'
+                };
+
+                gating.forPost(attrs, frame);
+
+                assert.equal(attrs.html, '<iframe src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D"></iframe>');
             });
 
+            it('does not replace placeholder when member has no UUID', function () {
+                const attrs = {
+                    visibility: 'public',
+                    html: '<iframe src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D"></iframe>'
+                };
+
+                frame.original.context.member = {id: '123'};
+
+                gating.forPost(attrs, frame);
+
+                assert.equal(attrs.html, '<iframe src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D"></iframe>');
+            });
+
+            it('replaces multiple %7Buuid%7D placeholders', function () {
+                const attrs = {
+                    visibility: 'public',
+                    html: '<iframe src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D"></iframe><a href="https://example.com/%7Buuid%7D">Link</a>'
+                };
+
+                frame.original.context.member = {uuid: 'multi-uuid-789'};
+
+                gating.forPost(attrs, frame);
+
+                assert.equal(attrs.html, '<iframe src="https://partner.transistor.fm/ghost/embed/multi-uuid-789"></iframe><a href="https://example.com/multi-uuid-789">Link</a>');
+            });
+
+            it('does not replace non-encoded {uuid} placeholder', function () {
+                const attrs = {
+                    visibility: 'public',
+                    html: '<iframe src="https://partner.transistor.fm/ghost/embed/{uuid}"></iframe>'
+                };
+
+                frame.original.context.member = {uuid: 'test-member-uuid-456'};
+
+                gating.forPost(attrs, frame);
+
+                assert.equal(attrs.html, '<iframe src="https://partner.transistor.fm/ghost/embed/{uuid}"></iframe>');
+            });
+        });
+
+        describe('gated blocks', function () {
             it('does not call stripGatedBlocks when a post has no gated blocks', function () {
                 const attrs = {
                     visibility: 'public',
@@ -142,22 +196,6 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
                 assert.match(attrs.html, /<p>Everyone can see this\.<\/p>\n\s+<p>Anonymous only.<\/p>/);
                 assert.match(attrs.plaintext, /^\n+Everyone can see this.\n+Anonymous only.\n$/);
                 assert.match(attrs.excerpt, /^\n+Everyone can see this.\n+Anonymous only.\n$/);
-            });
-
-            it('does not process gated blocks with contentVisibility flag disabled', function () {
-                contentVisibilityStub.returns(false);
-
-                const regexSpy = sinon.spy(RegExp.prototype, 'test');
-                const stripGatedBlocksStub = sinon.stub(gating, 'stripGatedBlocks');
-
-                const attrs = {
-                    visibility: 'public',
-                    html: '<!--kg-gated-block:begin nonMember:true--><p>gated block</p><!--kg-gated-block:end-->'
-                };
-                gating.forPost(attrs, frame);
-
-                sinon.assert.notCalled(regexSpy);
-                sinon.assert.notCalled(stripGatedBlocksStub);
             });
 
             it('does not call htmlToPlaintext.excerpt more than once', function () {

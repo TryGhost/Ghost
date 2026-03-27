@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 
 const path = require('path');
 const fs = require('fs').promises;
@@ -26,32 +27,36 @@ describe('Minifier', function () {
         it('star glob e.g. css/*.css', async function () {
             let result = await minifier.getMatchingFiles('css/*.css');
 
-            result.should.be.an.Array().with.lengthOf(3);
-            result[0].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','bookmark.css'));
-            result[1].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
-            result[2].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','gallery.css'));
+            assert(Array.isArray(result));
+            assert.equal(result.length, 3);
+            assert.equal(result[0], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','bookmark.css'));
+            assert.equal(result[1], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
+            assert.equal(result[2], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','gallery.css'));
         });
 
         it('match glob range e.g. css/bookmark.css and css/empty.css (css/@(bookmark|empty).css)', async function () {
             let result = await minifier.getMatchingFiles('css/@(bookmark|empty).css');
 
-            result.should.be.an.Array().with.lengthOf(2);
-            result[0].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','bookmark.css'));
-            result[1].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
+            assert(Array.isArray(result));
+            assert.equal(result.length, 2);
+            assert.equal(result[0], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','bookmark.css'));
+            assert.equal(result[1], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
         });
 
         it('reverse match glob e.g. css/!(bookmark).css', async function () {
             let result = await minifier.getMatchingFiles('css/!(bookmark).css');
 
-            result.should.be.an.Array().with.lengthOf(2);
-            result[0].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
-            result[1].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','gallery.css'));
+            assert(Array.isArray(result));
+            assert.equal(result.length, 2);
+            assert.equal(result[0], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
+            assert.equal(result[1], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','gallery.css'));
         });
         it('reverse match glob e.g. css/!(bookmark|gallery).css', async function () {
             let result = await minifier.getMatchingFiles('css/!(bookmark|gallery).css');
 
-            result.should.be.an.Array().with.lengthOf(1);
-            result[0].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
+            assert(Array.isArray(result));
+            assert.equal(result.length, 1);
+            assert.equal(result[0], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
         });
     });
 
@@ -60,14 +65,16 @@ describe('Minifier', function () {
             let result = await minifier.minify({
                 'card.min.js': 'js/*.js'
             });
-            result.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 1);
         });
 
         it('single type, multi file', async function () {
             let result = await minifier.minify({
                 'card.min.css': 'css/*.css'
             });
-            result.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 1);
         });
 
         it('both css and js types + multiple files', async function () {
@@ -76,7 +83,8 @@ describe('Minifier', function () {
                 'card.min.css': 'css/*.css'
             });
 
-            result.should.be.an.Array().with.lengthOf(2);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 2);
         });
 
         it('can replace the content', async function () {
@@ -87,31 +95,32 @@ describe('Minifier', function () {
                     '.kg-gallery-image': 'randomword'
                 }
             });
-            result.should.be.an.Array().with.lengthOf(1);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 1);
 
             const outputPath = minifier.getFullDest(result[0]);
             const content = await fs.readFile(outputPath, {encoding: 'utf8'});
-            content.should.match(/randomword/);
+            assert.match(content, /randomword/);
         });
     });
 
     describe('Bad inputs', function () {
         it('cannot create a minifier without src and dest', function () {
-            (function noObject(){
+            assert.throws((function noObject(){
                 new Minifier();
-            }).should.throw();
+            }));
 
-            (function emptyObject() {
+            assert.throws((function emptyObject() {
                 new Minifier({});
-            }).should.throw();
+            }));
 
-            (function missingSrc() {
+            assert.throws((function missingSrc() {
                 new Minifier({dest: 'a'});
-            }).should.throw();
+            }));
 
-            (function missingDest() {
+            assert.throws((function missingDest() {
                 new Minifier({src: 'a'});
-            }).should.throw();
+            }));
         });
 
         it('can only handle css and js files', async function () {
@@ -119,11 +128,11 @@ describe('Minifier', function () {
                 await minifier.minify({
                     'card.min.ts': 'js/*.ts'
                 });
-                should.fail(minifier, 'Should have errored');
+                assert.fail('Should have errored');
             } catch (err) {
-                should.exist(err);
-                err.errorType.should.eql('IncorrectUsageError');
-                err.message.should.match(/Unexpected destination/);
+                assertExists(err);
+                assert.equal(err.errorType, 'IncorrectUsageError');
+                assert.match(err.message, /Unexpected destination/);
             }
         });
 
@@ -133,11 +142,11 @@ describe('Minifier', function () {
                     'card.min.ts': 'ts/*.ts',
                     'card.min.js': 'js/fake.js'
                 });
-                should.fail(minifier, 'Should have errored');
+                assert.fail('Should have errored');
             } catch (err) {
-                should.exist(err);
-                err.errorType.should.eql('IncorrectUsageError');
-                err.message.should.match(/Unable to read/);
+                assertExists(err);
+                assert.equal(err.errorType, 'IncorrectUsageError');
+                assert.match(err.message, /Unable to read/);
             }
         });
 
@@ -146,7 +155,7 @@ describe('Minifier', function () {
                 'card.min.js': 'js/empty.js'
             });
 
-            result.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(result, []);
         });
 
         it('can minify empty css correctly to no result', async function () {
@@ -154,7 +163,7 @@ describe('Minifier', function () {
                 'card.min.css': 'css/empty.css'
             });
 
-            result.should.be.an.Array().with.lengthOf(0);
+            assert.deepEqual(result, []);
         });
     });
 });

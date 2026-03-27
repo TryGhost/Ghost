@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const EventRepository = require('../../../../../../../core/server/services/members/members-api/repositories/event-repository');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
@@ -21,48 +20,48 @@ describe('EventRepository', function () {
         });
 
         it('throws when using invalid filter', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 eventRepository.getNQLSubset('undefined');
             }, errors.BadRequestError);
         });
 
         it('throws when using properties that aren\'t in the allowlist', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 eventRepository.getNQLSubset('(types:1)');
             }, errors.IncorrectUsageError);
         });
 
         it('throws when using an OR', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 eventRepository.getNQLSubset('type:1,data.created_at:1');
             }, errors.IncorrectUsageError);
 
-            should.throws(() => {
+            assert.throws(() => {
                 eventRepository.getNQLSubset('type:1+data.created_at:1,data.member_id:1');
             }, errors.IncorrectUsageError);
 
-            should.throws(() => {
+            assert.throws(() => {
                 eventRepository.getNQLSubset('type:1,data.created_at:1+data.member_id:1');
             }, errors.IncorrectUsageError);
         });
 
         it('passes when using it correctly with one filter', function () {
             const res = eventRepository.getNQLSubset('type:email_delivered_event');
-            res.should.be.an.Array();
-            res.should.have.lengthOf(2);
+            assert.ok(Array.isArray(res));
+            assert.equal(res.length, 2);
 
-            res[0].should.eql({
+            assert.deepEqual(res[0], {
                 type: 'email_delivered_event'
             });
-            should(res[1]).be.undefined();
+            assert.equal(res[1], undefined);
         });
 
         it('passes when using it correctly with multiple filters', function () {
             const res = eventRepository.getNQLSubset('type:-[email_delivered_event,email_opened_event,email_failed_event]+data.created_at:<0+data.member_id:123');
-            res.should.be.an.Array();
-            res.should.have.lengthOf(2);
+            assert.ok(Array.isArray(res));
+            assert.equal(res.length, 2);
 
-            res[0].should.eql({
+            assert.deepEqual(res[0], {
                 type: {
                     $nin: [
                         'email_delivered_event',
@@ -71,7 +70,7 @@ describe('EventRepository', function () {
                     ]
                 }
             });
-            res[1].should.eql({
+            assert.deepEqual(res[1], {
                 $and: [{
                     'data.created_at': {
                         $lt: 0
@@ -84,9 +83,9 @@ describe('EventRepository', function () {
 
         it('passes when using it correctly with multiple filters used several times', function () {
             const res = eventRepository.getNQLSubset('type:-email_delivered_event+data.created_at:<0+data.member_id:123+type:-[email_opened_event,email_failed_event]+data.created_at:>10');
-            res.should.be.an.Array();
-            res.should.have.lengthOf(2);
-            res[0].should.eql({
+            assert.ok(Array.isArray(res));
+            assert.equal(res.length, 2);
+            assert.deepEqual(res[0], {
                 $and: [{
                     type: {
                         $ne: 'email_delivered_event'
@@ -100,7 +99,7 @@ describe('EventRepository', function () {
                     }
                 }]
             });
-            res[1].should.eql({
+            assert.deepEqual(res[1], {
                 $and: [{
                     'data.created_at': {
                         $lt: 0
@@ -198,8 +197,7 @@ describe('EventRepository', function () {
             }, {
                 type: 'unused'
             });
-            sinon.assert.calledOnce(fake);
-            fake.getCall(0).firstArg.should.match({
+            sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'newsletter'],
                 filter: 'custom:true'
             });
@@ -210,8 +208,7 @@ describe('EventRepository', function () {
                 'data.created_at': 'data.created_at:123'
             });
 
-            sinon.assert.calledOnce(fake);
-            fake.getCall(0).firstArg.should.match({
+            sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'newsletter'],
                 filter: 'custom:true'
             });
@@ -223,8 +220,7 @@ describe('EventRepository', function () {
                 'data.member_id': 'data.member_id:-[3,4,5]+data.member_id:-[1,2,3]'
             });
 
-            sinon.assert.calledOnce(fake);
-            fake.getCall(0).firstArg.should.match({
+            sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'newsletter'],
                 filter: 'custom:true'
             });
@@ -262,8 +258,7 @@ describe('EventRepository', function () {
                 type: 'unused'
             });
 
-            fake.calledOnce.should.be.eql(true);
-            fake.getCall(0).firstArg.should.match({
+            sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'email'],
                 filter: 'failed_at:-null+custom:true',
                 order: 'failed_at desc, id desc'
@@ -277,8 +272,7 @@ describe('EventRepository', function () {
                 'data.created_at': 'data.created_at:123'
             });
 
-            fake.calledOnce.should.be.eql(true);
-            fake.getCall(0).firstArg.should.match({
+            sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'email'],
                 filter: 'delivered_at:-null+custom:true',
                 order: 'delivered_at desc, id desc'
@@ -293,11 +287,123 @@ describe('EventRepository', function () {
                 'data.member_id': 'data.member_id:-[3,4,5]+data.member_id:-[1,2,3]'
             });
 
-            fake.calledOnce.should.be.eql(true);
-            fake.getCall(0).firstArg.should.match({
+            sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'email'],
                 filter: 'opened_at:-null+custom:true',
                 order: 'opened_at desc, id desc'
+            });
+        });
+    });
+
+    describe('getAutomatedEmailSentEvents', function () {
+        let eventRepository;
+        let fake;
+
+        before(function () {
+            fake = sinon.fake.returns({data: [{
+                get: (key) => {
+                    if (key === 'member_id') {
+                        return '123';
+                    }
+                    if (key === 'created_at') {
+                        return new Date('2024-01-01');
+                    }
+                },
+                related: (relation) => {
+                    if (relation === 'member') {
+                        return {toJSON: () => ({id: '123', email: 'test@example.com'})};
+                    }
+                    if (relation === 'automatedEmail') {
+                        return {
+                            toJSON: () => ({
+                                id: 'ae123',
+                                slug: 'member-welcome-email-free'
+                            })
+                        };
+                    }
+                },
+                id: 'aer123'
+            }]});
+            eventRepository = new EventRepository({
+                EmailRecipient: null,
+                MemberSubscribeEvent: null,
+                MemberPaymentEvent: null,
+                MemberStatusEvent: null,
+                MemberLoginEvent: null,
+                MemberPaidSubscriptionEvent: null,
+                labsService: null,
+                AutomatedEmailRecipient: {
+                    findPage: fake
+                }
+            });
+        });
+
+        afterEach(function () {
+            fake.resetHistory();
+        });
+
+        it('works when setting no filters', async function () {
+            await eventRepository.getAutomatedEmailSentEvents({
+                filter: 'no used',
+                order: 'created_at desc, id desc'
+            }, {
+                type: 'unused'
+            });
+
+            sinon.assert.calledOnceWithMatch(fake, {
+                withRelated: ['member', 'automatedEmail'],
+                filter: 'custom:true',
+                order: 'created_at desc, id desc'
+            });
+        });
+
+        it('works when setting a created_at filter', async function () {
+            await eventRepository.getAutomatedEmailSentEvents({
+                order: 'created_at desc, id desc'
+            }, {
+                'data.created_at': 'data.created_at:123'
+            });
+
+            sinon.assert.calledOnceWithMatch(fake, {
+                withRelated: ['member', 'automatedEmail'],
+                filter: 'custom:true',
+                order: 'created_at desc, id desc'
+            });
+        });
+
+        it('works when setting a combination of filters', async function () {
+            await eventRepository.getAutomatedEmailSentEvents({
+                order: 'created_at desc, id desc'
+            }, {
+                'data.created_at': 'data.created_at:123+data.created_at:<99999',
+                'data.member_id': 'data.member_id:-[3,4,5]+data.member_id:-[1,2,3]'
+            });
+
+            sinon.assert.calledOnceWithMatch(fake, {
+                withRelated: ['member', 'automatedEmail'],
+                filter: 'custom:true',
+                order: 'created_at desc, id desc'
+            });
+        });
+
+        it('returns correctly formatted automated_email_sent_event', async function () {
+            const result = await eventRepository.getAutomatedEmailSentEvents({
+                order: 'created_at desc, id desc'
+            }, {});
+
+            assert.equal(result.data.length, 1);
+            assert.deepEqual(result.data[0], {
+                type: 'automated_email_sent_event',
+                data: {
+                    id: 'aer123',
+                    member_id: '123',
+                    created_at: new Date('2024-01-01'),
+                    member: {id: '123', email: 'test@example.com'},
+                    automatedEmail: {
+                        id: 'ae123',
+                        slug: 'member-welcome-email-free'
+                    }
+                }
             });
         });
     });

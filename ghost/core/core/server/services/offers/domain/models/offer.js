@@ -11,6 +11,7 @@ const OfferType = require('./offer-type');
 const OfferDuration = require('./offer-duration');
 const OfferCurrency = require('./offer-currency');
 const OfferStatus = require('./offer-status');
+const OfferRedemptionType = require('./offer-redemption-type');
 const OfferCreatedEvent = require('../events/offer-created-event');
 const OfferCodeChangeEvent = require('../events/offer-code-change-event');
 const OfferCreatedAt = require('./offer-created-at');
@@ -30,8 +31,9 @@ const StripeCoupon = require('./stripe-coupon');
  * @prop {OfferCurrency} [currency]
  * @prop {OfferStatus} status
  * @prop {string|null} [stripeCouponId]
- * @prop {OfferTier} tier
+ * @prop {OfferTier|null} tier
  * @prop {number} redemptionCount
+ * @prop {OfferRedemptionType} redemptionType
  * @prop {string} createdAt
  * @prop {string|null} lastRedeemed
  */
@@ -52,7 +54,8 @@ const StripeCoupon = require('./stripe-coupon');
  * @prop {string} [status]
  * @prop {string} [stripe_coupon_id]
  * @prop {number} [redemptionCount]
- * @prop {TierProps|OfferTier} tier
+ * @prop {string} [redemption_type]
+ * @prop {TierProps|OfferTier|null} tier
  * @prop {Date} [created_at]
  * @prop {Date} [last_redeemed]
  */
@@ -135,12 +138,16 @@ class Offer {
         return this.props.status;
     }
 
+    set status(value) {
+        this.props.status = value;
+    }
+
     get redemptionCount() {
         return this.props.redemptionCount;
     }
 
-    set status(value) {
-        this.props.status = value;
+    get redemptionType() {
+        return this.props.redemptionType;
     }
 
     get oldCode() {
@@ -315,7 +322,6 @@ class Offer {
             });
         }
 
-        //CASE: For offer type trial, the duration can only be `trial`
         if (type.value === 'trial' && duration.value.type !== 'trial') {
             throw new errors.InvalidOfferDuration({
                 message: 'Offer `duration` must be "trial" for offer type "trial".'
@@ -349,7 +355,20 @@ class Offer {
             }
         }
 
-        const tier = OfferTier.create(data.tier);
+        const redemptionType = OfferRedemptionType.create(data.redemption_type || 'signup');
+        const tier = data.tier ? OfferTier.create(data.tier) : null;
+
+        if (redemptionType.value === 'signup' && !tier) {
+            throw new errors.InvalidOfferTier({
+                message: 'Signup offers must be associated with a tier'
+            });
+        }
+
+        if (redemptionType.value === 'retention' && tier) {
+            throw new errors.InvalidOfferTier({
+                message: 'Retention offers cannot be associated with a specific tier'
+            });
+        }
 
         return new Offer({
             id,
@@ -365,6 +384,7 @@ class Offer {
             tier,
             stripeCouponId,
             redemptionCount,
+            redemptionType,
             status,
             createdAt,
             lastRedeemed
@@ -426,7 +446,8 @@ class Offer {
                 id: tier.id,
                 name: tier.name
             },
-            stripe_coupon_id: coupon.id
+            stripe_coupon_id: coupon.id,
+            redemption_type: 'signup'
         };
 
         return this.create(data, uniqueChecker);

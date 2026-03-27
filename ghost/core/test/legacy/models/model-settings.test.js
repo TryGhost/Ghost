@@ -1,11 +1,11 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const testUtils = require('../../utils');
 const db = require('../../../core/server/data/db');
 
 // Stuff we are testing
 const models = require('../../../core/server/models');
 
-const SETTINGS_LENGTH = 97;
+const SETTINGS_LENGTH = 104;
 
 describe('Settings Model', function () {
     before(models.init);
@@ -14,12 +14,12 @@ describe('Settings Model', function () {
     describe('defaults', function () {
         it('populates all defaults', async function () {
             const settings = await models.Settings.findAll();
-            settings.length.should.equal(0);
+            assert.equal(settings.length, 0);
 
             await models.Settings.populateDefaults();
 
             const settingsPopulated = await models.Settings.findAll();
-            settingsPopulated.length.should.equal(SETTINGS_LENGTH);
+            assert.equal(settingsPopulated.length, SETTINGS_LENGTH);
         });
 
         it('doesn\'t overwrite any existing settings', async function () {
@@ -37,18 +37,18 @@ describe('Settings Model', function () {
                 });
 
             const settings = await models.Settings.findAll();
-            settings.length.should.equal(1);
+            assert.equal(settings.length, 1);
 
             await models.Settings.populateDefaults();
 
             const settingsPopulated = await models.Settings.findAll();
-            settingsPopulated.length.should.equal(SETTINGS_LENGTH);
+            assert.equal(settingsPopulated.length, SETTINGS_LENGTH);
 
             const titleSetting = settingsPopulated.models.find(s => s.get('key') === 'title');
-            titleSetting.get('value').should.equal('Testing Defaults');
+            assert.equal(titleSetting.get('value'), 'Testing Defaults');
 
             const descriptionSetting = settingsPopulated.models.find(s => s.get('key') === 'description');
-            descriptionSetting.get('value').should.equal('Thoughts, stories and ideas');
+            assert.equal(descriptionSetting.get('value'), 'Thoughts, stories and ideas');
         });
     });
 });

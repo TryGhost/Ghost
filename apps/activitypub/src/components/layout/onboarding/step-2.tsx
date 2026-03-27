@@ -23,7 +23,7 @@ const Reply: React.FC<{
                 </Avatar>
                 <div className='flex flex-col gap-2 text-sm'>
                     <div className='mt-0.5 flex flex-col gap-0.5'>
-                        <div className='font-semibold leading-tighter'>{name} <span className='font-normal text-gray-700 dark:text-gray-600'>{handle}</span></div>
+                        <div className='leading-tighter font-semibold'>{name} <span className='font-normal text-gray-700 dark:text-gray-600'>{handle}</span></div>
                         <div className='flex items-center gap-1 leading-tighter text-gray-700 dark:text-gray-600'>
                             <LucideIcon.Reply size={14} strokeWidth={1.5} />
                             <span>Replied to your post {timestamp}</span>
@@ -47,14 +47,14 @@ const Reaction: React.FC<{
     return (
         <div>
             <div className='flex w-full items-start gap-3'>
-                <div className={`flex size-9 max-h-9 min-h-9 min-w-9 max-w-9 items-center justify-center rounded-full bg-gradient-to-t text-white ${type === 'like' ? 'from-pink-400 to-pink-600' : 'from-blue-400 to-blue-600'}`}>
+                <div className={`flex size-9 max-h-9 min-h-9 max-w-9 min-w-9 items-center justify-center rounded-full bg-gradient-to-t text-white ${type === 'like' ? 'from-pink-400 to-pink-600' : 'from-blue-400 to-blue-600'}`}>
                     {type === 'like' ? <LucideIcon.Heart size={20} /> : <LucideIcon.Repeat size={20} />}
                 </div>
                 <div className='flex flex-col gap-2 text-sm'>
                     <div className='flex flex-col gap-3'>
                         {children}
                         <div className='flex flex-col gap-0.5'>
-                            <div className='font-semibold leading-tighter'>{names} <span className='font-normal text-gray-700 dark:text-gray-600'>{type === 'like' ? 'liked' : 'reposted'} your post</span></div>
+                            <div className='leading-tighter font-semibold'>{names} <span className='font-normal text-gray-700 dark:text-gray-600'>{type === 'like' ? 'liked' : 'reposted'} your post</span></div>
                             <div className='text-xs text-gray-700 dark:text-gray-600'>{timestamp}</div>
                         </div>
                     </div>
@@ -69,8 +69,8 @@ const Step2: React.FC = () => {
 
     return (
         <div className='relative flex size-full max-h-screen flex-col gap-4 overflow-hidden px-14'>
-            <img className='absolute left-1/2 top-[120px] w-full min-w-[1240px] max-w-[1300px] -translate-x-1/2 dark:hidden' src={apDashedLines} />
-            <img className='absolute left-1/2 top-[120px] hidden w-full min-w-[1240px] max-w-[1300px] -translate-x-1/2 dark:!visible dark:!block' src={apDashedLinesDark} />
+            <img className='absolute top-[120px] left-1/2 w-full max-w-[1300px] min-w-[1240px] -translate-x-1/2 dark:hidden' src={apDashedLines} />
+            <img className='absolute top-[120px] left-1/2 hidden w-full max-w-[1300px] min-w-[1240px] -translate-x-1/2 dark:visible! dark:block!' src={apDashedLinesDark} />
             <Header>
                 <div className='flex flex-col justify-between gap-4 text-xl font-medium'>
                     <h1 className='max-w-[680px]'>Feel the network effect.</h1>
@@ -84,7 +84,7 @@ const Step2: React.FC = () => {
             <div className='mt-8 flex h-full max-h-[670px] flex-col items-stretch justify-end'>
                 <div className='relative -mx-14 mt-5 w-[calc(100%+112px)] overflow-y-hidden px-14 pt-8'>
                     <div className='relative mx-auto h-[694px] w-full max-w-xl rounded-2xl border border-gray-200/70 bg-white shadow-xl dark:border-gray-900 dark:bg-[#101114] dark:shadow-xl dark:shadow-[#1e1b4b]/10'>
-                        <div className='absolute -right-8 -top-4 flex h-8 animate-onboarding-followers items-center gap-1.5 rounded-full bg-gradient-to-t from-black to-gray-900 px-3 font-semibold text-white opacity-0'>
+                        <div className='animate-onboarding-followers absolute -top-4 -right-8 flex h-8 items-center gap-1.5 rounded-full bg-gradient-to-t from-black to-gray-900 px-3 font-semibold text-white opacity-0'>
                             <LucideIcon.TrendingUp size={18} />
                             270 followers this week
                         </div>

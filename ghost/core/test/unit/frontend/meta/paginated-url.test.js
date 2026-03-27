@@ -1,9 +1,11 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const getPaginatedUrl = require('../../../../core/frontend/meta/paginated-url');
 const configUtils = require('../../../utils/config-utils');
 
 describe('getPaginatedUrl', function () {
     let data;
+    const siteUrl = () => configUtils.config.get('url');
 
     beforeEach(function () {
         data = {};
@@ -20,7 +22,7 @@ describe('getPaginatedUrl', function () {
     };
 
     it('should be a function', function () {
-        should.exist(getPaginatedUrl);
+        assertExists(getPaginatedUrl);
     });
 
     describe('index', function () {
@@ -33,11 +35,11 @@ describe('getPaginatedUrl', function () {
             const urls = getTestUrls();
 
             // Check results
-            urls.should.have.property('next', 'http://127.0.0.1:2369/page/2/');
-            urls.should.have.property('prev', null);
-            urls.should.have.property('page1', '/');
-            urls.should.have.property('page5', '/page/5/');
-            urls.should.have.property('page10', '/page/10/');
+            assert.equal(urls.next, `${siteUrl()}/page/2/`);
+            assert.equal(urls.prev, null);
+            assert.equal(urls.page1, '/');
+            assert.equal(urls.page5, '/page/5/');
+            assert.equal(urls.page10, '/page/10/');
         });
 
         it('should calculate correct urls for the second page of an index collection', function () {
@@ -49,11 +51,11 @@ describe('getPaginatedUrl', function () {
             const urls = getTestUrls();
 
             // Check results
-            urls.should.have.property('next', 'http://127.0.0.1:2369/page/3/');
-            urls.should.have.property('prev', 'http://127.0.0.1:2369/');
-            urls.should.have.property('page1', '/');
-            urls.should.have.property('page5', '/page/5/');
-            urls.should.have.property('page10', '/page/10/');
+            assert.equal(urls.next, `${siteUrl()}/page/3/`);
+            assert.equal(urls.prev, `${siteUrl()}/`);
+            assert.equal(urls.page1, '/');
+            assert.equal(urls.page5, '/page/5/');
+            assert.equal(urls.page10, '/page/10/');
         });
 
         it('should calculate correct urls for the last page of an index collection', function () {
@@ -65,11 +67,11 @@ describe('getPaginatedUrl', function () {
             const urls = getTestUrls();
 
             // Check results
-            urls.should.have.property('next', null);
-            urls.should.have.property('prev', 'http://127.0.0.1:2369/page/9/');
-            urls.should.have.property('page1', '/');
-            urls.should.have.property('page5', '/page/5/');
-            urls.should.have.property('page10', '/page/10/');
+            assert.equal(urls.next, null);
+            assert.equal(urls.prev, `${siteUrl()}/page/9/`);
+            assert.equal(urls.page1, '/');
+            assert.equal(urls.page5, '/page/5/');
+            assert.equal(urls.page10, '/page/10/');
         });
     });
 
@@ -83,11 +85,11 @@ describe('getPaginatedUrl', function () {
             const urls = getTestUrls();
 
             // Check results
-            urls.should.have.property('next', 'http://127.0.0.1:2369/featured/page/2/');
-            urls.should.have.property('prev', null);
-            urls.should.have.property('page1', '/featured/');
-            urls.should.have.property('page5', '/featured/page/5/');
-            urls.should.have.property('page10', '/featured/page/10/');
+            assert.equal(urls.next, `${siteUrl()}/featured/page/2/`);
+            assert.equal(urls.prev, null);
+            assert.equal(urls.page1, '/featured/');
+            assert.equal(urls.page5, '/featured/page/5/');
+            assert.equal(urls.page10, '/featured/page/10/');
         });
 
         it('should calculate correct urls for the second page of another collection', function () {
@@ -99,11 +101,11 @@ describe('getPaginatedUrl', function () {
             const urls = getTestUrls();
 
             // Check results
-            urls.should.have.property('next', 'http://127.0.0.1:2369/featured/page/3/');
-            urls.should.have.property('prev', 'http://127.0.0.1:2369/featured/');
-            urls.should.have.property('page1', '/featured/');
-            urls.should.have.property('page5', '/featured/page/5/');
-            urls.should.have.property('page10', '/featured/page/10/');
+            assert.equal(urls.next, `${siteUrl()}/featured/page/3/`);
+            assert.equal(urls.prev, `${siteUrl()}/featured/`);
+            assert.equal(urls.page1, '/featured/');
+            assert.equal(urls.page5, '/featured/page/5/');
+            assert.equal(urls.page10, '/featured/page/10/');
         });
 
         it('should calculate correct urls for the last page of another collection', function () {
@@ -115,11 +117,11 @@ describe('getPaginatedUrl', function () {
             const urls = getTestUrls();
 
             // Check results
-            urls.should.have.property('next', null);
-            urls.should.have.property('prev', 'http://127.0.0.1:2369/featured/page/9/');
-            urls.should.have.property('page1', '/featured/');
-            urls.should.have.property('page5', '/featured/page/5/');
-            urls.should.have.property('page10', '/featured/page/10/');
+            assert.equal(urls.next, null);
+            assert.equal(urls.prev, `${siteUrl()}/featured/page/9/`);
+            assert.equal(urls.page1, '/featured/');
+            assert.equal(urls.page5, '/featured/page/5/');
+            assert.equal(urls.page10, '/featured/page/10/');
         });
     });
 
@@ -141,11 +143,11 @@ describe('getPaginatedUrl', function () {
             const urls = getTestUrls();
 
             // Check results
-            urls.should.have.property('next', 'http://localhost:65535/blog/page/3/');
-            urls.should.have.property('prev', 'http://localhost:65535/blog/');
-            urls.should.have.property('page1', '/blog/');
-            urls.should.have.property('page5', '/blog/page/5/');
-            urls.should.have.property('page10', '/blog/page/10/');
+            assert.equal(urls.next, 'http://localhost:65535/blog/page/3/');
+            assert.equal(urls.prev, 'http://localhost:65535/blog/');
+            assert.equal(urls.page1, '/blog/');
+            assert.equal(urls.page5, '/blog/page/5/');
+            assert.equal(urls.page10, '/blog/page/10/');
         });
 
         it('should calculate correct urls for another collection', function () {
@@ -157,11 +159,11 @@ describe('getPaginatedUrl', function () {
             const urls = getTestUrls();
 
             // Check results
-            urls.should.have.property('next', 'http://localhost:65535/blog/featured/page/3/');
-            urls.should.have.property('prev', 'http://localhost:65535/blog/featured/');
-            urls.should.have.property('page1', '/blog/featured/');
-            urls.should.have.property('page5', '/blog/featured/page/5/');
-            urls.should.have.property('page10', '/blog/featured/page/10/');
+            assert.equal(urls.next, 'http://localhost:65535/blog/featured/page/3/');
+            assert.equal(urls.prev, 'http://localhost:65535/blog/featured/');
+            assert.equal(urls.page1, '/blog/featured/');
+            assert.equal(urls.page5, '/blog/featured/page/5/');
+            assert.equal(urls.page10, '/blog/featured/page/10/');
         });
     });
 });

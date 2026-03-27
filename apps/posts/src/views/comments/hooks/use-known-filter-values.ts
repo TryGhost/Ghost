@@ -6,7 +6,7 @@ export function useKnownFilterValues({comments}: { comments: Comment[] }) {
         const posts = new Map<string, { id: string; title: string }>();
         const members = new Map<
             string,
-            { id: string; name: string; email: string }
+            { id: string; name?: string; email?: string }
         >();
         for (const comment of comments) {
             if (comment.post?.id && comment.post?.title) {

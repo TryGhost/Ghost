@@ -93,7 +93,7 @@ const headerVariants = cva(`sticky top-0 z-50 -mb-4 grid gap-x-4 bg-gradient-to-
     variants: {
         variant: {
             default: `lg:[grid-template-areas:'above_above''title_actions''meta_actions''nav_nav']`,
-            'inline-nav': `lg:[grid-template-areas:'above_above_above''title_nav_actions''meta_nav_actions'] lg:[grid-template-columns:1fr_auto_auto]`
+            'inline-nav': `lg:[grid-template-columns:1fr_auto_auto] lg:[grid-template-areas:'above_above_above''title_nav_actions''meta_nav_actions']`
         }
     },
     defaultVariants: {

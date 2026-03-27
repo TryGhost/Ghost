@@ -55,7 +55,7 @@
             </div>
         </div>
     {{/if}}
-    {{#if this.specificOptions}}
+    {{#if this.hasSpecificOptions}}
         <div class="gh-publish-send-to-option">
             <div class="for-checkbox {{if @disabled "disabled"}}">
                 <label class="checkbox" for="send-email-to-specific">
@@ -81,20 +81,15 @@
 {{#if this.isSpecificChecked}}
     <div data-test-select="specific-members">
         <label class="gh-main-section-header small bn">Selection</label>
-        <GhTokenInput
-            @class="select-members select-members-recipient"
-            @dropdownClass={{@dropdownClass}}
-            @options={{this.specificOptions}}
-            @selected={{this.selectedSpecificOptions}}
+        <GhSegmentTokenInput
+            @nonLabelOptions={{this.nonLabelOptions}}
+            @selectedSegments={{this.selectedSpecificSegments}}
             @disabled={{@disabled}}
-            @searchMessage="All labels selected"
-            @optionsComponent={{component "power-select/options"}}
-            @allowCreation={{false}}
             @renderInPlace={{this.renderInPlace}}
             @onChange={{this.selectSpecificOptions}}
-            as |option|
-        >
-            {{option.name}}
-        </GhTokenInput>
+            @class="select-members select-members-recipient"
+            @dropdownClass={{@dropdownClass}}
+            @searchMessage="All labels selected"
+        />
     </div>
 {{/if}}

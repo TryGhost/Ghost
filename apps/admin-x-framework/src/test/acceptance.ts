@@ -81,11 +81,8 @@ export const responseFixtures = {
 };
 
 const defaultLabFlags = {
-    audienceFeedback: false,
     collections: false,
-    themeErrorsNotification: false,
     outboundLinkTagging: false,
-    announcementBar: false,
     members: false
 };
 
@@ -351,7 +348,7 @@ export async function testUrlValidation(input: Locator, textToEnter: string, exp
     await input.fill(textToEnter);
     await input.blur();
 
-    expect(input).toHaveValue(expectedResult);
+    await expect(input).toHaveValue(expectedResult);
 
     if (expectedError) {
         await expect(input.locator('xpath=../..')).toContainText(expectedError);
@@ -359,5 +356,7 @@ export async function testUrlValidation(input: Locator, textToEnter: string, exp
 };
 
 export async function expectExternalNavigate(page: Page, link: Partial<ExternalLink>) {
-    await page.waitForURL(`/external/${encodeURIComponent(JSON.stringify({isExternal: true, ...link}))}`);
+    const expected = {isExternal: true, ...link};
+    await expect.poll(() => page.locator('body').getAttribute('data-external-navigate').then(v => v && JSON.parse(v))).toEqual(expected);
+    await page.locator('body').evaluate(el => delete el.dataset.externalNavigate);
 };

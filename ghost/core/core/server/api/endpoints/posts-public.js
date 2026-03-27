@@ -1,27 +1,16 @@
 const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const {mapQuery} = require('@tryghost/mongo-utils');
 const postsPublicService = require('../../services/posts-public');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
+const {rejectContentApiRestrictedFieldsTransformer} = require('./utils/api-filter-utils');
 
-const allowedIncludes = ['tags', 'authors', 'tiers', 'sentiment'];
+const ALLOWED_INCLUDES = ['tags', 'authors', 'tiers', 'sentiment'];
 
 const messages = {
     postNotFound: 'Post not found.'
 };
-
-const rejectPrivateFieldsTransformer = input => mapQuery(input, function (value, key) {
-    const lowerCaseKey = key.toLowerCase();
-    if (lowerCaseKey.startsWith('authors.password') || lowerCaseKey.startsWith('authors.email')) {
-        return;
-    }
-
-    return {
-        [key]: value
-    };
-});
 
 /**
  *
@@ -100,7 +89,7 @@ const controller = {
         validation: {
             options: {
                 include: {
-                    values: allowedIncludes
+                    values: ALLOWED_INCLUDES
                 },
                 formats: {
                     values: models.Post.allowedFormats
@@ -111,7 +100,7 @@ const controller = {
         query(frame) {
             const options = {
                 ...frame.options,
-                mongoTransformer: rejectPrivateFieldsTransformer
+                mongoTransformer: rejectContentApiRestrictedFieldsTransformer
             };
             return postsService.browsePosts(options);
         }
@@ -154,7 +143,7 @@ const controller = {
         validation: {
             options: {
                 include: {
-                    values: allowedIncludes
+                    values: ALLOWED_INCLUDES
                 },
                 formats: {
                     values: models.Post.allowedFormats
@@ -165,7 +154,7 @@ const controller = {
         async query(frame) {
             const options = {
                 ...frame.options,
-                mongoTransformer: rejectPrivateFieldsTransformer
+                mongoTransformer: rejectContentApiRestrictedFieldsTransformer
             };
             const model = await models.Post.findOne(frame.data, options);
             if (!model) {

@@ -168,7 +168,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
         return (
             <TableBody>
                 <TableRow className='last:border-none'>
-                    <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                    <TableCell className='border-none py-12 group-hover:bg-transparent!' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
                         <DisabledSourcesIndicator />
                     </TableCell>
                 </TableRow>
@@ -200,7 +200,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
             ) : (
                 <TableBody>
                     <TableRow className='last:border-none'>
-                        <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                        <TableCell className='border-none py-12 group-hover:bg-transparent!' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
                             <EmptyIndicator
                                 description='Try adjusting your date range to see more data.'
                                 title={`No conversions ${getPeriodText(range)}`}
@@ -212,9 +212,9 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
                 </TableBody>
             )}
             {showViewAll && processedData.length > limit &&
-                <TableFooter className='border-none bg-transparent hover:!bg-transparent'>
+                <TableFooter className='border-none bg-transparent hover:bg-transparent!'>
                     <TableRow>
-                        <TableCell className='border-none bg-transparent px-0 pb-0 hover:!bg-transparent' colSpan={4}>
+                        <TableCell className='border-none bg-transparent px-0 pb-0 hover:bg-transparent!' colSpan={4}>
                             <Sheet>
                                 <SheetTrigger asChild>
                                     <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>

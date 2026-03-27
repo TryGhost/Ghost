@@ -76,7 +76,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <Separator />
                 <Toggle
                     checked={shareGrowthData}
-                    containerClasses='!items-center'
+                    containerClasses='items-center!'
                     direction='rtl'
                     gap='gap-0'
                     hint={'Enabling this will use your revenue/member growth data to rank your site more highly on Ghost Explore. Total member count will be displayed publicly, other data will be kept private.'}
@@ -87,7 +87,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 />
                 <div className='-mx-5 -mb-5 flex flex-col items-center bg-grey-75 px-7 py-10 md:-mx-7 md:-mb-7' data-testid='explore-preview'>
                     <div className='relative w-full max-w-[320px] rounded-lg bg-white p-6 text-black shadow-lg'>
-                        <div className='absolute right-3 top-2.5 text-xs uppercase text-grey-300'>Preview</div>
+                        <div className='absolute top-2.5 right-3 text-xs text-grey-300 uppercase'>Preview</div>
                         {icon ?
                             <div className='size-9 rounded-sm bg-cover bg-center' style={{
                                 backgroundImage: `url(${icon})`
@@ -120,7 +120,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <div className='-mx-5 -mb-5 flex items-center justify-between gap-4 rounded-b-xl border-t border-[rgba(142,66,255,0.1)] bg-gradient-to-tr from-[rgba(142,66,255,0.07)] to-[rgba(142,66,255,0.02)] p-6 px-7 md:-mx-7 md:-mb-7'>
                     <div className='flex flex-col'>
                         <span className='font-medium'>Get featured on the Ghost.org homepage</span>
-                        <span className='text-pretty text-sm text-black/80 dark:text-white/80'>Send us a quote we can use to highlight your site</span>
+                        <span className='text-sm text-pretty text-black/80 dark:text-white/80'>Send us a quote we can use to highlight your site</span>
                     </div>
                     <Button className='border border-purple bg-white text-purple hover:bg-purple/5 hover:text-purple dark:bg-transparent' icon="send" label="Send testimonial" onClick={() => {
                         updateRoute('explore/testimonial');

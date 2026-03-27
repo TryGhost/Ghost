@@ -3,6 +3,7 @@ import React, {useState} from 'react';
 import apNodes from '@assets/images/onboarding/ap-nodes.png';
 import apNodesDark from '@assets/images/onboarding/ap-nodes-dark.png';
 import {Button, H3, LucideIcon, Skeleton} from '@tryghost/shade';
+import {sanitizeHtml} from '@src/utils/content-formatters';
 import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
 import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
@@ -44,8 +45,8 @@ const Step1: React.FC = () => {
                     <Button className={`min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90 dark:text-white`} size='lg' onClick={() => navigate('/welcome/2')}>Next &rarr;</Button>
                 </div>
                 <div className='relative z-10 h-full'>
-                    <img className='absolute left-1/2 top-[calc(-280px)] w-full min-w-[1240px] max-w-[1300px] -translate-x-1/2 dark:hidden' src={apNodes} />
-                    <img className='absolute left-1/2 top-[calc(-280px)] hidden w-full min-w-[1240px] max-w-[1300px] -translate-x-1/2 dark:!visible dark:!block' src={apNodesDark} />
+                    <img className='absolute top-[calc(-280px)] left-1/2 w-full max-w-[1300px] min-w-[1240px] -translate-x-1/2 dark:hidden' src={apNodes} />
+                    <img className='absolute top-[calc(-280px)] left-1/2 hidden w-full max-w-[1300px] min-w-[1240px] -translate-x-1/2 dark:visible! dark:block!' src={apNodesDark} />
                     <div className='relative mx-auto mt-0 flex w-96 flex-col gap-3 rounded-lg bg-white p-6 shadow-xl before:absolute before:inset-[80px] before:-z-10 before:rounded-full before:bg-[radial-gradient(circle,#4b5563,#6b7280,#9ca3af)] before:blur-[1000px] xxl:mt-[calc(-280px+20vw)] min-[1800px]:mt-14 dark:border dark:border-gray-950 dark:bg-[#101114] dark:shadow-[#1e1b4b]/5 dark:before:bg-[radial-gradient(circle,#6366f1,#a855f7,#ec4899)]'>
                         <div className='flex items-start justify-between'>
                             <APAvatar
@@ -58,7 +59,7 @@ const Step1: React.FC = () => {
                                 }}
                                 size='md'
                             />
-                            <span className='flex h-5 items-center gap-1 rounded-full bg-gray-100 px-3 text-[11px] font-medium uppercase text-gray-700 dark:bg-gray-925/70 dark:text-gray-500'>
+                            <span className='flex h-5 items-center gap-1 rounded-full bg-gray-100 px-3 text-[11px] font-medium text-gray-700 uppercase dark:bg-gray-925/70 dark:text-gray-500'>
                                 <LucideIcon.Check className='ml-[-2px]' size={14} />
                             Following
                             </span>
@@ -74,19 +75,19 @@ const Step1: React.FC = () => {
                                             <LucideIcon.Check size={16} />
                                         }
                                     </Button>
-                                    <span className={`absolute right-full flex items-center gap-3 text-nowrap font-mono text-sm font-medium uppercase text-purple after:mr-3 after:h-[1.5px] after:w-24 after:scale-0 after:bg-purple after:will-change-transform after:content-[""] ${!usersLoading && 'after:animate-onboarding-handle-line'}`}><span className={`opacity-0 ${!usersLoading && 'animate-onboarding-handle-label'}`}>Your social web handle</span></span>
+                                    <span className={`absolute right-full flex items-center gap-3 font-mono text-sm font-medium text-nowrap text-purple uppercase after:mr-3 after:h-[1.5px] after:w-24 after:scale-0 after:bg-purple after:will-change-transform after:content-[""] ${!usersLoading && 'after:animate-onboarding-handle-line'}`}><span className={`opacity-0 ${!usersLoading && 'animate-onboarding-handle-label'}`}>Your social web handle</span></span>
                                 </div>
                             </div>
                         </div>
                         <p className='leading-tight text-gray-800 dark:text-gray-600'>
                             {account?.bio ? (
-                                <span dangerouslySetInnerHTML={{__html: account.bio}} />
+                                <span dangerouslySetInnerHTML={{__html: sanitizeHtml(account.bio)}} />
                             ) : (
                                 <Skeleton count={3} randomize={true} />
                             )}
                         </p>
                         <div className='mt-1 flex gap-2 text-sm text-gray-800 dark:text-gray-600'>
-                            <div className='flex [&>*:not(:first-child)]:-ml-2 [&>*:nth-child(1)]:z-30 [&>*:nth-child(2)]:z-20 [&>*:nth-child(3)]:z-10 [&>*]:pointer-events-none [&>*]:size-5 [&>*]:border [&>*]:border-white dark:[&>*]:border-[#101114] [&_img]:size-5'>
+                            <div className='flex [&_img]:size-5 [&>*]:pointer-events-none [&>*]:size-5 [&>*]:border [&>*]:border-white dark:[&>*]:border-[#101114] [&>*:not(:first-child)]:-ml-2 [&>*:nth-child(1)]:z-30 [&>*:nth-child(2)]:z-20 [&>*:nth-child(3)]:z-10'>
                                 {transformedUsers.map(user => (
                                     <APAvatar key={user.id} author={user} disabled={true} size='xs' />
                                 ))}

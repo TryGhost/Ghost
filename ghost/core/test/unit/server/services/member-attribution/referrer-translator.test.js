@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 
 const ReferrerTranslator = require('../../../../../core/server/services/member-attribution/referrer-translator');
 
@@ -19,7 +19,7 @@ describe('ReferrerTranslator', function () {
         });
 
         it('returns ghost explore from source ref for valid history', async function () {
-            should(translator.getReferrerDetails([
+            assert.deepEqual(translator.getReferrerDetails([
                 {
                     referrerSource: 'ghost-explore',
                     referrerMedium: null,
@@ -35,7 +35,7 @@ describe('ReferrerTranslator', function () {
                     referrerMedium: null,
                     referrerUrl: 'https://t.co'
                 }
-            ])).eql({
+            ]), {
                 referrerSource: 'Ghost Explore',
                 referrerMedium: 'Ghost Network',
                 referrerUrl: null,
@@ -48,7 +48,7 @@ describe('ReferrerTranslator', function () {
         });
 
         it('returns ghost explore from url for valid history', async function () {
-            should(translator.getReferrerDetails([
+            assert.deepEqual(translator.getReferrerDetails([
                 {
                     referrerSource: null,
                     referrerMedium: null,
@@ -64,7 +64,7 @@ describe('ReferrerTranslator', function () {
                     referrerMedium: null,
                     referrerUrl: 'https://t.co'
                 }
-            ])).eql({
+            ]), {
                 referrerSource: 'Ghost Explore',
                 referrerMedium: 'Ghost Network',
                 referrerUrl: 'ghost.org',
@@ -77,7 +77,7 @@ describe('ReferrerTranslator', function () {
         });
 
         it('returns ghost explore from admin url for valid history', async function () {
-            should(translator.getReferrerDetails([
+            assert.deepEqual(translator.getReferrerDetails([
                 {
                     referrerSource: null,
                     referrerMedium: null,
@@ -93,7 +93,7 @@ describe('ReferrerTranslator', function () {
                     referrerMedium: null,
                     referrerUrl: 'https://t.co'
                 }
-            ])).eql({
+            ]), {
                 referrerSource: 'Ghost Explore',
                 referrerMedium: 'Ghost Network',
                 referrerUrl: 'admin.example.com',
@@ -106,7 +106,7 @@ describe('ReferrerTranslator', function () {
         });
 
         it('returns ghost newsletter ref for valid history', async function () {
-            should(translator.getReferrerDetails([
+            assert.deepEqual(translator.getReferrerDetails([
                 {
                     referrerSource: 'publisher-weekly-newsletter',
                     referrerMedium: null,
@@ -122,7 +122,7 @@ describe('ReferrerTranslator', function () {
                     referrerMedium: null,
                     referrerUrl: 'https://t.co'
                 }
-            ])).eql({
+            ]), {
                 referrerSource: 'publisher weekly newsletter',
                 referrerMedium: 'Email',
                 referrerUrl: null,
@@ -135,7 +135,7 @@ describe('ReferrerTranslator', function () {
         });
 
         it('returns ghost.org ref for valid history', async function () {
-            should(translator.getReferrerDetails([
+            assert.deepEqual(translator.getReferrerDetails([
                 {
                     referrerSource: null,
                     referrerMedium: null,
@@ -151,7 +151,7 @@ describe('ReferrerTranslator', function () {
                     referrerMedium: null,
                     referrerUrl: null
                 }
-            ])).eql({
+            ]), {
                 referrerSource: 'Ghost.org',
                 referrerMedium: 'Ghost Network',
                 referrerUrl: 'ghost.org',
@@ -164,7 +164,7 @@ describe('ReferrerTranslator', function () {
         });
 
         it('returns ref source for valid history', async function () {
-            should(translator.getReferrerDetails([
+            assert.deepEqual(translator.getReferrerDetails([
                 {
                     referrerSource: 'twitter',
                     referrerMedium: null,
@@ -180,7 +180,7 @@ describe('ReferrerTranslator', function () {
                     referrerMedium: null,
                     referrerUrl: null
                 }
-            ])).eql({
+            ]), {
                 referrerSource: 'Twitter',
                 referrerMedium: 'social',
                 referrerUrl: null,
@@ -193,13 +193,13 @@ describe('ReferrerTranslator', function () {
         });
 
         it('returns known source for ref source if exists', async function () {
-            should(translator.getReferrerDetails([
+            assert.deepEqual(translator.getReferrerDetails([
                 {
                     referrerSource: 'facebook',
                     referrerMedium: null,
                     referrerUrl: null
                 }
-            ])).eql({
+            ]), {
                 referrerSource: 'Facebook',
                 referrerMedium: 'social',
                 referrerUrl: null,
@@ -213,7 +213,7 @@ describe('ReferrerTranslator', function () {
 
         describe('returns source and medium for', function () {
             it('known external url with path', async function () {
-                should(translator.getReferrerDetails([
+                assert.deepEqual(translator.getReferrerDetails([
                     {
                         referrerSource: null,
                         referrerMedium: null,
@@ -234,7 +234,7 @@ describe('ReferrerTranslator', function () {
                         referrerMedium: null,
                         referrerUrl: null
                     }
-                ])).eql({
+                ]), {
                     referrerSource: 'Google Product Search',
                     referrerMedium: 'search',
                     referrerUrl: 'google.ac',
@@ -247,7 +247,7 @@ describe('ReferrerTranslator', function () {
             });
 
             it('known external url without path', async function () {
-                should(translator.getReferrerDetails([
+                assert.deepEqual(translator.getReferrerDetails([
                     {
                         referrerSource: null,
                         referrerMedium: null,
@@ -263,7 +263,7 @@ describe('ReferrerTranslator', function () {
                         referrerMedium: null,
                         referrerUrl: null
                     }
-                ])).eql({
+                ]), {
                     referrerSource: 'Twitter',
                     referrerMedium: 'social',
                     referrerUrl: 't.co',
@@ -277,7 +277,7 @@ describe('ReferrerTranslator', function () {
         });
 
         it('returns external ref url as source', async function () {
-            should(translator.getReferrerDetails([
+            assert.deepEqual(translator.getReferrerDetails([
                 {
                     referrerSource: null,
                     referrerMedium: null,
@@ -293,7 +293,7 @@ describe('ReferrerTranslator', function () {
                     referrerMedium: null,
                     referrerUrl: null
                 }
-            ])).eql({
+            ]), {
                 referrerSource: 'sample.com',
                 referrerMedium: null,
                 referrerUrl: 'sample.com',
@@ -306,7 +306,7 @@ describe('ReferrerTranslator', function () {
         });
 
         it('returns null for empty history', async function () {
-            should(translator.getReferrerDetails([])).eql({
+            assert.deepEqual(translator.getReferrerDetails([]), {
                 referrerSource: null,
                 referrerMedium: null,
                 referrerUrl: null,
@@ -319,13 +319,13 @@ describe('ReferrerTranslator', function () {
         });
 
         it('returns null for history with only site url', async function () {
-            should(translator.getReferrerDetails([
+            assert.deepEqual(translator.getReferrerDetails([
                 {
                     referrerSource: null,
                     referrerMedium: null,
                     referrerUrl: 'https://example.com'
                 }
-            ])).eql({
+            ]), {
                 referrerSource: 'Direct',
                 referrerMedium: null,
                 referrerUrl: null,
@@ -339,7 +339,7 @@ describe('ReferrerTranslator', function () {
 
         describe('UTM parameter extraction', function () {
             it('extracts all UTM parameters', async function () {
-                should(translator.getReferrerDetails([
+                assert.deepEqual(translator.getReferrerDetails([
                     {
                         referrerSource: 'google',
                         referrerMedium: null,
@@ -355,7 +355,7 @@ describe('ReferrerTranslator', function () {
                         referrerMedium: null,
                         referrerUrl: null
                     }
-                ])).eql({
+                ]), {
                     referrerSource: 'Google',
                     referrerMedium: 'unknown',
                     referrerUrl: null,
@@ -368,14 +368,14 @@ describe('ReferrerTranslator', function () {
             });
 
             it('extracts partial UTM parameters (only utmSource)', async function () {
-                should(translator.getReferrerDetails([
+                assert.deepEqual(translator.getReferrerDetails([
                     {
                         referrerSource: 'facebook',
                         referrerMedium: null,
                         referrerUrl: null,
                         utmSource: 'twitter_campaign'
                     }
-                ])).eql({
+                ]), {
                     referrerSource: 'Facebook',
                     referrerMedium: 'social',
                     referrerUrl: null,
@@ -388,7 +388,7 @@ describe('ReferrerTranslator', function () {
             });
 
             it('extracts partial UTM parameters (source and campaign)', async function () {
-                should(translator.getReferrerDetails([
+                assert.deepEqual(translator.getReferrerDetails([
                     {
                         referrerSource: null,
                         referrerMedium: null,
@@ -396,7 +396,7 @@ describe('ReferrerTranslator', function () {
                         utmSource: 'instagram',
                         utmCampaign: 'summer_promo'
                     }
-                ])).eql({
+                ]), {
                     referrerSource: 'Twitter',
                     referrerMedium: 'social',
                     referrerUrl: 't.co',
@@ -409,7 +409,7 @@ describe('ReferrerTranslator', function () {
             });
 
             it('uses earliest entry with UTM data when multiple entries have UTM', async function () {
-                should(translator.getReferrerDetails([
+                assert.deepEqual(translator.getReferrerDetails([
                     {
                         referrerSource: 'google',
                         referrerMedium: null,
@@ -424,7 +424,7 @@ describe('ReferrerTranslator', function () {
                         utmSource: 'earliest_source',
                         utmCampaign: 'earliest_campaign'
                     }
-                ])).eql({
+                ]), {
                     referrerSource: 'Google',
                     referrerMedium: 'unknown',
                     referrerUrl: null,
@@ -437,7 +437,7 @@ describe('ReferrerTranslator', function () {
             });
 
             it('returns null UTM values when no history entries contain UTM data', async function () {
-                should(translator.getReferrerDetails([
+                assert.deepEqual(translator.getReferrerDetails([
                     {
                         referrerSource: 'twitter',
                         referrerMedium: null,
@@ -448,7 +448,7 @@ describe('ReferrerTranslator', function () {
                         referrerMedium: null,
                         referrerUrl: null
                     }
-                ])).eql({
+                ]), {
                     referrerSource: 'Twitter',
                     referrerMedium: 'social',
                     referrerUrl: null,
@@ -461,7 +461,7 @@ describe('ReferrerTranslator', function () {
             });
 
             it('extracts UTM from earliest entry when more recent entries have no UTM', async function () {
-                should(translator.getReferrerDetails([
+                assert.deepEqual(translator.getReferrerDetails([
                     {
                         referrerSource: 'twitter',
                         referrerMedium: null,
@@ -474,7 +474,7 @@ describe('ReferrerTranslator', function () {
                         utmSource: 'delayed_utm',
                         utmMedium: 'social_media'
                     }
-                ])).eql({
+                ]), {
                     referrerSource: 'Twitter',
                     referrerMedium: 'social',
                     referrerUrl: null,
@@ -487,7 +487,7 @@ describe('ReferrerTranslator', function () {
             });
 
             it('combines Ghost referrer with UTM parameters', async function () {
-                should(translator.getReferrerDetails([
+                assert.deepEqual(translator.getReferrerDetails([
                     {
                         referrerSource: 'ghost-explore',
                         referrerMedium: null,
@@ -495,7 +495,7 @@ describe('ReferrerTranslator', function () {
                         utmSource: 'partner_site',
                         utmCampaign: 'q1_2024'
                     }
-                ])).eql({
+                ]), {
                     referrerSource: 'Ghost Explore',
                     referrerMedium: 'Ghost Network',
                     referrerUrl: null,

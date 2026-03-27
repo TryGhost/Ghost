@@ -50,20 +50,20 @@ const Feedback: React.FC<FeedbackProps> = ({feedbackStats}) => {
                                 <TabsTrigger className='h-7' value="positive">
                                     <div className='flex items-center gap-1 text-xs'>
                                         <LucideIcon.ThumbsUp size={14} strokeWidth={1.25} />
-                                        <span className='hidden font-medium sm:!visible sm:!inline'>More like this</span>
+                                        <span className='hidden font-medium sm:visible! sm:inline!'>More like this</span>
                                         <span className='font-semibold tracking-tight'>{formatPercentage(feedbackStats.positiveFeedback / feedbackStats.totalFeedback)}</span>
                                     </div>
                                 </TabsTrigger>
                                 <TabsTrigger className='h-7' value="negative">
                                     <div className='flex items-center gap-1 text-xs'>
                                         <LucideIcon.ThumbsDown size={14} strokeWidth={1.25} />
-                                        <span className='hidden font-medium sm:!visible sm:!inline'>Less like this</span>
+                                        <span className='hidden font-medium sm:visible! sm:inline!'>Less like this</span>
                                         <span className='font-semibold tracking-tight'>{formatPercentage(feedbackStats.negativeFeedback / feedbackStats.totalFeedback)}</span>
                                     </div>
                                 </TabsTrigger>
                             </TabsList>
                         </Tabs>
-                        <HTable className='mb-3 mr-2 lg:hidden xl:!visible xl:!block'>Date</HTable>
+                        <HTable className='mr-2 mb-3 lg:hidden xl:visible! xl:block!'>Date</HTable>
                     </div>
                     <Separator />
                     {isLoading ?

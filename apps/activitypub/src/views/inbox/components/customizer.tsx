@@ -161,7 +161,7 @@ const CustomizerView: React.FC<CustomizerViewProps> = ({
     <Popover modal={false} onOpenChange={onOpenChange}>
         <PopoverTrigger asChild>
             <Button className={`size-9 rounded-full ${COLOR_OPTIONS[backgroundColor].button}`} variant='ghost'>
-                <Icon.Typography className='!size-[18px]' />
+                <Icon.Typography className='size-[18px]!' />
             </Button>
         </PopoverTrigger>
         <PopoverContent align='end' className='w-[224px]' onCloseAutoFocus={e => e.preventDefault()} onOpenAutoFocus={e => e.preventDefault()}>
@@ -193,7 +193,7 @@ const CustomizerView: React.FC<CustomizerViewProps> = ({
                         variant="secondary"
                         onClick={() => onFontStyleChange('sans')}
                     >
-                        <span className='text-[2rem] font-bold leading-none'>Aa</span>
+                        <span className='text-[2rem] leading-none font-bold'>Aa</span>
                         <span className='text-[1.1rem]'>System</span>
                     </Button>
                     <Button
@@ -201,7 +201,7 @@ const CustomizerView: React.FC<CustomizerViewProps> = ({
                         variant="secondary"
                         onClick={() => onFontStyleChange('serif')}
                     >
-                        <span className='pt-1 font-serif text-[2rem] font-bold leading-none'>Aa</span>
+                        <span className='pt-1 font-serif text-[2rem] leading-none font-bold'>Aa</span>
                         <span className='font-serif text-[1.2rem]'>Serif</span>
                     </Button>
                 </div>

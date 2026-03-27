@@ -14,25 +14,25 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
     visits: {
         dataKey: 'visits',
         label: 'Visitors',
-        color: 'hsl(var(--chart-blue))',
+        color: 'var(--chart-blue)',
         formatter: formatNumber
     },
     views: {
         dataKey: 'pageviews',
         label: 'Pageviews',
-        color: 'hsl(var(--chart-teal))',
+        color: 'var(--chart-teal)',
         formatter: formatNumber
     },
     'bounce-rate': {
         dataKey: 'bounce_rate',
         label: 'Bounce rate',
-        color: 'hsl(var(--chart-purple))',
+        color: 'var(--chart-purple)',
         formatter: formatPercentage
     },
     duration: {
         dataKey: 'avg_session_sec',
         label: 'Time on page',
-        color: 'hsl(var(--chart-orange))',
+        color: 'var(--chart-orange)',
         formatter: formatDuration
     }
 };
@@ -65,7 +65,7 @@ const Kpis:React.FC<KpisProps> = ({data, range}) => {
         <Card>
             <CardContent>
                 <Tabs defaultValue={currentTab} variant='kpis'>
-                    <TabsList className="-mx-6 hidden grid-cols-2 md:!visible md:!grid">
+                    <TabsList className="-mx-6 hidden grid-cols-2 md:visible! md:grid!">
                         <KpiTabTrigger value="visits" onClick={() => {
                             setCurrentTab('visits');
                         }}>
@@ -81,10 +81,10 @@ const Kpis:React.FC<KpisProps> = ({data, range}) => {
                         <DropdownMenuTrigger className='md:hidden' asChild>
                             <KpiDropdownButton>
                                 {currentTab === 'visits' &&
-                                    <KpiTabValue color='hsl(var(--chart-blue))' label="Unique visitors" value={kpiValues.visits} />
+                                    <KpiTabValue color='var(--chart-blue)' label="Unique visitors" value={kpiValues.visits} />
                                 }
                                 {currentTab === 'views' &&
-                                    <KpiTabValue color='hsl(var(--chart-teal))' label="Total views" value={kpiValues.views} />
+                                    <KpiTabValue color='var(--chart-teal)' label="Total views" value={kpiValues.views} />
                                 }
                             </KpiDropdownButton>
                         </DropdownMenuTrigger>

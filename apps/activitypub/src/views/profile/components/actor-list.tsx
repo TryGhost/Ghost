@@ -84,7 +84,7 @@ const ActorList: React.FC<ActorListProps> = ({
                                             >
                                                 <APAvatar author={actor} />
                                                 <div>
-                                                    <div className='text-gray-600 break-anywhere'>
+                                                    <div className='break-anywhere text-gray-600'>
                                                         <span className='mr-1 line-clamp-1 font-bold text-black dark:text-white'>{getName(actor)}</span>
                                                         <div className='line-clamp-1 text-sm'>{actorHandle}</div>
                                                     </div>
@@ -113,7 +113,7 @@ const ActorList: React.FC<ActorListProps> = ({
             <div ref={loadMoreRef} className='h-1'></div>
             {
                 (isFetchingNextPage || isLoading) && (
-                    <div className='mt-6 flex flex-col items-center justify-center space-y-4 text-center'>
+                    <div className='mt-6 flex flex-col items-center justify-center gap-4 text-center'>
                         <LoadingIndicator size='md' />
                     </div>
                 )

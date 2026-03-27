@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 
 const Cache = require('../../../../core/shared/custom-theme-settings-cache/custom-theme-settings-cache');
 
@@ -15,14 +15,13 @@ describe('Cache', function () {
 
             const getAll = cache.getAll();
 
-            getAll.should.have.size(2);
-            getAll.should.deepEqual({
+            assert.deepEqual(getAll, {
                 one: 1,
                 two: 2
             });
 
-            cache.get('one').should.equal(1);
-            cache.get('two').should.equal(2);
+            assert.equal(cache.get('one'), 1);
+            assert.equal(cache.get('two'), 2);
         });
 
         it('clears cache before filling', function () {
@@ -42,9 +41,7 @@ describe('Cache', function () {
 
             const getAll = cache.getAll();
 
-            getAll.should.have.size(1);
-            getAll.should.not.have.keys('one', 'two');
-            getAll.should.deepEqual({
+            assert.deepEqual(getAll, {
                 three: 3
             });
         });
@@ -58,7 +55,7 @@ describe('Cache', function () {
 
             const returned = cache.populate(settings1);
 
-            should(returned).equal(undefined);
+            assert.equal(returned, undefined);
         });
     });
 
@@ -72,8 +69,8 @@ describe('Cache', function () {
 
             cache.populate(settings);
 
-            cache.get('one').should.equal(1);
-            cache.get('two').should.equal(2);
+            assert.equal(cache.get('one'), 1);
+            assert.equal(cache.get('two'), 2);
         });
 
         it('returns undefined for unknown value', function () {
@@ -85,13 +82,13 @@ describe('Cache', function () {
 
             cache.populate(settings);
 
-            should(cache.get('unknown')).equal(undefined);
+            assert.equal(cache.get('unknown'), undefined);
         });
 
         it('returns undefined when cache is empty', function () {
             const cache = new Cache();
 
-            should(cache.get('unknown')).equal(undefined);
+            assert.equal(cache.get('unknown'), undefined);
         });
     });
 
@@ -107,8 +104,7 @@ describe('Cache', function () {
 
             const returned = cache.getAll();
 
-            returned.should.have.size(2);
-            returned.should.deepEqual({
+            assert.deepEqual(returned, {
                 one: 1,
                 two: 2
             });
@@ -127,7 +123,7 @@ describe('Cache', function () {
 
             returned.new = 'exists';
 
-            should.not.exist(cache.get('new'));
+            assert.equal(cache.get('new'), undefined);
         });
     });
 
@@ -143,8 +139,8 @@ describe('Cache', function () {
 
             cache.clear();
 
-            cache.getAll().should.deepEqual({});
-            should.not.exist(cache.get('one'));
+            assert.deepEqual(cache.getAll(), {});
+            assert.equal(cache.get('one'), undefined);
         });
     });
 });

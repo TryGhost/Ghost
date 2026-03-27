@@ -1,5 +1,4 @@
-const assert = require('assert/strict');
-const should = require('should');
+const assert = require('node:assert/strict');
 
 const OutboundLinkTagger = require('../../../../../core/server/services/member-attribution/outbound-link-tagger');
 
@@ -19,7 +18,7 @@ describe('OutboundLinkTagger', function () {
             const url = new URL('https://example.com/');
             const updatedUrl = await service.addToUrl(url);
 
-            should(updatedUrl.toString()).equal('https://example.com/?ref=blog.com');
+            assert.equal(updatedUrl.toString(), 'https://example.com/?ref=blog.com');
         });
 
         it('does not add if disabled', async function () {
@@ -30,7 +29,7 @@ describe('OutboundLinkTagger', function () {
             const url = new URL('https://example.com/');
             const updatedUrl = await service.addToUrl(url);
 
-            should(updatedUrl.toString()).equal('https://example.com/');
+            assert.equal(updatedUrl.toString(), 'https://example.com/');
         });
 
         it('uses sluggified newsletter name for internal urls', async function () {
@@ -50,7 +49,7 @@ describe('OutboundLinkTagger', function () {
 
             const updatedUrl = await service.addToUrl(url, newsletter);
 
-            should(updatedUrl.toString()).equal('https://example.com/?ref=used-newsletter-name-newsletter');
+            assert.equal(updatedUrl.toString(), 'https://example.com/?ref=used-newsletter-name-newsletter');
         });
 
         it('does not repeat newsletter at the end of the newsletter name', async function () {
@@ -69,7 +68,7 @@ describe('OutboundLinkTagger', function () {
             };
             const updatedUrl = await service.addToUrl(url, newsletter);
 
-            should(updatedUrl.toString()).equal('https://example.com/?ref=weekly-newsletter');
+            assert.equal(updatedUrl.toString(), 'https://example.com/?ref=weekly-newsletter');
         });
 
         it('does not add ref to blocked domains', async function () {
@@ -80,12 +79,17 @@ describe('OutboundLinkTagger', function () {
             const url = new URL('https://facebook.com/');
             const updatedUrl = await service.addToUrl(url);
 
-            should(updatedUrl.toString()).equal('https://facebook.com/');
+            assert.equal(updatedUrl.toString(), 'https://facebook.com/');
 
             const urlTwo = new URL('https://web.archive.org/');
             const updatedUrlTwo = await service.addToUrl(urlTwo);
 
-            should(updatedUrlTwo.toString()).equal('https://web.archive.org/');
+            assert.equal(updatedUrlTwo.toString(), 'https://web.archive.org/');
+
+            const urlThree = new URL('https://ad.doubleclick.net/');
+            const updatedUrlThree = await service.addToUrl(urlThree);
+
+            assert.equal(updatedUrlThree.toString(), 'https://ad.doubleclick.net/');
         });
 
         it('does not add ref if utm_source is present', async function () {
@@ -95,7 +99,7 @@ describe('OutboundLinkTagger', function () {
             });
             const url = new URL('https://example.com/?utm_source=hello');
             const updatedUrl = await service.addToUrl(url);
-            should(updatedUrl.toString()).equal('https://example.com/?utm_source=hello');
+            assert.equal(updatedUrl.toString(), 'https://example.com/?utm_source=hello');
         });
 
         it('does not add ref if ref is present', async function () {
@@ -105,7 +109,7 @@ describe('OutboundLinkTagger', function () {
             });
             const url = new URL('https://example.com/?ref=hello');
             const updatedUrl = await service.addToUrl(url);
-            should(updatedUrl.toString()).equal('https://example.com/?ref=hello');
+            assert.equal(updatedUrl.toString(), 'https://example.com/?ref=hello');
         });
 
         it('does not add ref if source is present', async function () {
@@ -115,7 +119,18 @@ describe('OutboundLinkTagger', function () {
             });
             const url = new URL('https://example.com/?source=hello');
             const updatedUrl = await service.addToUrl(url);
-            should(updatedUrl.toString()).equal('https://example.com/?source=hello');
+            assert.equal(updatedUrl.toString(), 'https://example.com/?source=hello');
+        });
+
+        it('preserves existing query param encoding when appending ref', async function () {
+            const service = new OutboundLinkTagger({
+                getSiteUrl: () => 'https://blog.com',
+                isEnabled: () => true
+            });
+            const url = new URL('https://adserver.example.com/jump?iu=/12345678/Ad_Unit_1&sz=300x250&c=[TIMESTAMP]');
+            const updatedUrl = await service.addToUrl(url);
+
+            assert.equal(updatedUrl.toString(), 'https://adserver.example.com/jump?iu=/12345678/Ad_Unit_1&sz=300x250&c=[TIMESTAMP]&ref=blog.com');
         });
 
         it('does not add ref if the protocol is not http(s)', async function () {
@@ -126,7 +141,7 @@ describe('OutboundLinkTagger', function () {
             const urlStr = 'javascript:alert("Hello, World!")';
             const url = new URL(urlStr);
             const updatedUrl = await service.addToUrl(url);
-            should(updatedUrl.toString()).equal(urlStr);
+            assert.equal(updatedUrl.toString(), urlStr);
         });
     });
 

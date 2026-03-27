@@ -45,9 +45,9 @@ const FollowButton: React.FC<FollowButtonProps> = ({onFollow, onUnfollow, author
             onClick={handleClick}
         >
             {showCheckmark ? (
-                <LucideIcon.Check className='-mb-px !size-3 !stroke-[2.4]' />
+                <LucideIcon.Check className='-mb-px size-3! stroke-[2.4]!' />
             ) : (
-                <LucideIcon.Plus className='!size-[14px] !stroke-2' />
+                <LucideIcon.Plus className='size-[14px]! stroke-2!' />
             )}
         </Button>
     );

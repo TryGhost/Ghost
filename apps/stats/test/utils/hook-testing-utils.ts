@@ -45,9 +45,7 @@ export interface HookMockSetup {
 
 export const setupCommonHookMocks = (): HookMockSetup => {
     const mockUseGlobalData = vi.fn().mockReturnValue({
-        audience: 'all-members',
         range: 30,
-        setAudience: vi.fn(),
         setRange: vi.fn()
     });
 

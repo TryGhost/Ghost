@@ -9,6 +9,7 @@ const UniqueChecker = require('./unique-checker');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
+const debug = require('@tryghost/debug')('offers:api');
 
 const messages = {
     offerNotFoundAfterDuplicateError: 'Tried to create duplicate offer for the Stripe coupon {couponId}, but could not find offer in database'
@@ -23,16 +24,44 @@ class OffersAPI {
     }
 
     /**
+     * Archives all previous retention offers on a given cadence.
+     * As retention offers exist per cadence ("Monthly retention", "Yearly retention"), we allow for at most 1 active retention offer per cadence.
+     * @param {string} offerId
+     * @param {'month'|'year'} cadence
+     * @param {Object} [options]
+     */
+    async archiveActiveRetentionOffers(offerId, cadence, options = {}) {
+        const activeRetentionOffers = await this.repository.getAll({
+            transacting: options.transacting,
+            filter: 'status:active+redemption_type:retention'
+        }, {withRedemptionStats: false});
+
+        for (const activeRetentionOffer of activeRetentionOffers) {
+            if (activeRetentionOffer.id === offerId || activeRetentionOffer.cadence.value !== cadence) {
+                continue;
+            }
+
+            activeRetentionOffer.status = OfferStatus.create('archived');
+            await this.repository.save(activeRetentionOffer, options);
+        }
+    }
+
+    /**
      * @param {object} data
      * @param {string} data.id
+     * @param {Object} [options]
      *
      * @returns {Promise<OfferMapper.OfferDTO>}
      */
-    async getOffer(data) {
-        return this.repository.createTransaction(async (transaction) => {
-            const options = {transacting: transaction};
-
+    async getOffer(data, options = {}) {
+        if (options.transacting) {
             const offer = await this.repository.getById(data.id, options);
+
+            return offer ? OfferMapper.toDTO(offer) : null;
+        }
+
+        return this.repository.createTransaction(async (transaction) => {
+            const offer = await this.repository.getById(data.id, {transacting: transaction});
 
             if (!offer) {
                 return null;
@@ -55,6 +84,14 @@ class OffersAPI {
             const offer = await Offer.create(data, uniqueChecker);
 
             await this.repository.save(offer, saveOptions);
+
+            if (offer.redemptionType.value === 'retention' && offer.status.value === 'active') {
+                await this.archiveActiveRetentionOffers(
+                    offer.id,
+                    offer.cadence.value,
+                    saveOptions
+                );
+            }
 
             return OfferMapper.toDTO(offer);
         });
@@ -110,6 +147,14 @@ class OffersAPI {
 
             await this.repository.save(offer, updateOptions);
 
+            if (offer.redemptionType.value === 'retention' && offer.status.value === 'active') {
+                await this.archiveActiveRetentionOffers(
+                    offer.id,
+                    offer.cadence.value,
+                    updateOptions
+                );
+            }
+
             return OfferMapper.toDTO(offer);
         });
     }
@@ -126,6 +171,100 @@ class OffersAPI {
             const offers = await this.repository.getAll(opts);
 
             return offers.map(OfferMapper.toDTO);
+        });
+    }
+
+    /**
+     * @param {object} options
+     * @param {string} options.subscriptionId
+     * @param {string} options.tierId
+     * @param {'month'|'year'} options.cadence
+     * @param {'signup'|'retention'} [options.redemptionType]
+     * @returns {Promise<OfferMapper.PublicOfferDTO[]>}
+     */
+    async listOffersAvailableToSubscription({subscriptionId, tierId, cadence, redemptionType}) {
+        debug(`listOffersAvailableToSubscription: subscriptionId=${subscriptionId}, tierId=${tierId}, cadence=${cadence}, redemptionType=${redemptionType}`);
+
+        if (!subscriptionId || !tierId || !cadence) {
+            throw new errors.IncorrectUsageError({
+                message: 'subscriptionId, tierId, and cadence are required'
+            });
+        }
+
+        return await this.repository.createTransaction(async (transaction) => {
+            const allOffers = await this.repository.getAll({
+                transacting: transaction,
+                filter: 'status:active'
+            }, {withRedemptionStats: false});
+
+            debug(`listOffersAvailableToSubscription: found ${allOffers.length} active offers`);
+
+            if (allOffers.length === 0) {
+                debug(`listOffersAvailableToSubscription: no active offers exist`);
+                return [];
+            }
+
+            // Filter by tier and cadence - Null-tier offers (retention) match any tier with the correct cadence
+            let available = allOffers.filter(offer => (offer.tier === null || offer.tier.id === tierId) && offer.cadence.value === cadence);
+            debug(`listOffersAvailableToSubscription: ${available.length} offers match tier and cadence`);
+
+            if (available.length === 0) {
+                const tierIds = [...new Set(allOffers.filter(o => o.tier !== null).map(o => o.tier.id))];
+                const cadences = [...new Set(allOffers.map(o => o.cadence.value))];
+                debug(`listOffersAvailableToSubscription: no offers match - available tiers: [${tierIds.join(', ')}], available cadences: [${cadences.join(', ')}]`);
+
+                return [];
+            }
+
+            // Filter by redemption type if specified
+            if (redemptionType) {
+                const beforeFilter = available.length;
+                available = available.filter(offer => offer.redemptionType.value === redemptionType);
+
+                debug(`listOffersAvailableToSubscription: ${available.length} offers match redemption type (filtered ${beforeFilter - available.length})`);
+            }
+
+            // Filter out trial offers (can't apply trials to existing subscriptions)
+            const beforeTrialFilter = available.length;
+            available = available.filter(offer => offer.type.value !== 'trial');
+
+            if (beforeTrialFilter > available.length) {
+                debug(`listOffersAvailableToSubscription: filtered out ${beforeTrialFilter - available.length} trial offers`);
+            }
+
+            // Filter out offers already redeemed on this subscription
+            const redeemedOfferIds = await this.repository.getRedeemedOfferIdsForSubscription(
+                subscriptionId,
+                {transacting: transaction}
+            );
+
+            const beforeRedeemedFilter = available.length;
+            available = available.filter(offer => !redeemedOfferIds.includes(offer.id));
+
+            if (redeemedOfferIds.length > 0) {
+                debug(`listOffersAvailableToSubscription: filtered ${beforeRedeemedFilter - available.length} already-redeemed offers`);
+            }
+
+            debug(`listOffersAvailableToSubscription: returning ${available.length} available offers`);
+            return available.map(OfferMapper.toPublicDTO);
+        });
+    }
+
+    /**
+     * @param {object} options
+     * @param {string[]} options.subscriptionIds
+     * @returns {Promise<Array<{subscription_id: string, offer_id: string}>>}
+     */
+    async getRedeemedOfferIdsForSubscriptions({subscriptionIds}) {
+        if (subscriptionIds.length === 0) {
+            return [];
+        }
+
+        return await this.repository.createTransaction(async (transaction) => {
+            return await this.repository.getRedeemedOfferIdsForSubscriptions(
+                subscriptionIds,
+                {transacting: transaction}
+            );
         });
     }
 

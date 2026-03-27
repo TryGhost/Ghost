@@ -8,6 +8,7 @@ const TokenService = require('./services/token-service');
 const GeolocationService = require('./services/geolocation-service');
 const MemberBREADService = require('./services/member-bread-service');
 const MemberRepository = require('./repositories/member-repository');
+const NextPaymentCalculator = require('./services/next-payment-calculator');
 
 const EventRepository = require('./repositories/event-repository');
 const ProductRepository = require('./repositories/product-repository');
@@ -64,7 +65,8 @@ module.exports = function MembersAPI({
         Comment,
         MemberFeedback,
         Outbox,
-        AutomatedEmail
+        AutomatedEmail,
+        AutomatedEmailRecipient
     },
     tiersService,
     stripeAPIService,
@@ -76,7 +78,9 @@ module.exports = function MembersAPI({
     settingsCache,
     sentry,
     settingsHelpers,
-    urlUtils
+    urlUtils,
+    commentsService,
+    emailAddressService
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -96,7 +100,6 @@ module.exports = function MembersAPI({
         stripeAPIService,
         tokenService,
         newslettersService,
-        labsService,
         productRepository,
         AutomatedEmail,
         Member,
@@ -130,8 +133,11 @@ module.exports = function MembersAPI({
         Comment,
         labsService,
         memberAttributionService,
-        MemberEmailChangeEvent
+        MemberEmailChangeEvent,
+        AutomatedEmailRecipient
     });
+
+    const nextPaymentCalculator = new NextPaymentCalculator();
 
     const memberBREADService = new MemberBREADService({
         offersAPI,
@@ -151,7 +157,9 @@ module.exports = function MembersAPI({
         stripeService: stripeAPIService,
         memberAttributionService,
         emailSuppressionList,
-        settingsHelpers
+        settingsHelpers,
+        nextPaymentCalculator,
+        commentsService
     });
 
     const geolocationService = new GeolocationService();
@@ -203,8 +211,10 @@ module.exports = function MembersAPI({
         labsService,
         newslettersService,
         settingsCache,
+        settingsHelpers,
         sentry,
-        urlUtils
+        urlUtils,
+        emailAddressService
     });
 
     const wellKnownController = new WellKnownController({
@@ -306,6 +316,25 @@ module.exports = function MembersAPI({
         return tokenService.encodeIdentityToken({sub: member.email});
     }
 
+    async function getMemberEntitlementToken(transientId) {
+        const member = await getMemberIdentityDataFromTransientId(transientId);
+        if (!member) {
+            return null;
+        }
+
+        const activeTierIds = [...new Set((member.subscriptions || [])
+            .filter(sub => users.isActiveSubscriptionStatus(sub.status))
+            .map(sub => sub?.tier?.id)
+            .filter(Boolean))];
+
+        return tokenService.encodeEntitlementToken({
+            sub: member.email,
+            memberUuid: member.uuid,
+            paid: member.status !== 'free',
+            activeTierIds
+        });
+    }
+
     async function setMemberGeolocationFromIp(email, ip) {
         if (!email || !ip) {
             throw new errors.IncorrectUsageError({
@@ -357,6 +386,10 @@ module.exports = function MembersAPI({
             body.json(),
             forwardError((req, res) => routerController.createCheckoutSetupSession(req, res))
         ),
+        createBillingPortalSession: Router().use(
+            body.json(),
+            forwardError((req, res) => routerController.createBillingPortalSession(req, res))
+        ),
         updateEmailAddress: Router().use(
             body.json(),
             forwardError((req, res) => memberController.updateEmailAddress(req, res))
@@ -364,6 +397,14 @@ module.exports = function MembersAPI({
         updateSubscription: Router({mergeParams: true}).use(
             body.json(),
             forwardError((req, res) => memberController.updateSubscription(req, res))
+        ),
+        applyOfferToSubscription: Router({mergeParams: true}).use(
+            body.json(),
+            forwardError((req, res) => memberController.applyOfferToSubscription(req, res))
+        ),
+        getMemberOffers: Router().use(
+            body.json(),
+            forwardError((req, res) => routerController.getMemberOffers(req, res))
         ),
         wellKnown: Router()
             .get('/jwks.json',
@@ -394,6 +435,7 @@ module.exports = function MembersAPI({
         middleware,
         getMemberDataFromMagicLinkToken,
         getMemberIdentityToken,
+        getMemberEntitlementToken,
         getMemberIdentityDataFromTransientId,
         getMemberIdentityData,
         cycleTransientId,

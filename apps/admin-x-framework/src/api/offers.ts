@@ -1,5 +1,6 @@
 import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 import {updateQueryCache, insertToQueryCache} from '../utils/api/update-queries';
+import {useQueryClient} from '@tanstack/react-query';
 
 export type Offer = {
     id: string;
@@ -16,16 +17,17 @@ export type Offer = {
     currency: string | null;
     status: string;
     redemption_count: number;
+    redemption_type: 'signup' | 'retention';
     tier: {
         id: string;
         name?: string;
-    },
+    } | null,
     created_at?: string;
     last_redeemed? : string;
 }
 
 export type PartialNewOffer = Omit<Offer, 'redemption_count'>;
-export type NewOffer = Partial<Pick<PartialNewOffer, 'id'>> & Omit<PartialNewOffer, 'id'>;
+export type NewOffer = Partial<Pick<PartialNewOffer, 'id' | 'duration_in_months'>> & Omit<PartialNewOffer, 'id' | 'duration_in_months'>;
 
 export interface OffersResponseType {
     meta?: Meta
@@ -42,6 +44,14 @@ export interface OfferAddResponseType {
 }
 
 const dataType = 'OffersResponseType';
+
+export const useInvalidateOffers = () => {
+    const queryClient = useQueryClient();
+
+    return () => {
+        return queryClient.invalidateQueries([dataType]);
+    };
+};
 
 export const useBrowseOffers = createQuery<OffersResponseType>({
     dataType,

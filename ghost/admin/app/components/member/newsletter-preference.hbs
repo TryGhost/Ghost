@@ -46,6 +46,16 @@
 
                 <a class="midgrey" href="https://ghost.org/help/disabled-emails" target="_blank" rel="noopener noreferrer">Learn more</a>
             </p>
+
+            <button
+                type="button"
+                class="gh-btn gh-btn-primary gh-btn-icon"
+                {{on "click" this.reEnableEmail}}
+                disabled={{this.isReEnabling}}
+                data-test-button="reenable-email"
+            >
+                <span>Re-enable email</span>
+            </button>
         </div>
     {{else}}
         <div class="gh-member-newsletter-footer middarkgrey">

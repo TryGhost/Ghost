@@ -1,7 +1,3 @@
-type LabsService = {
-    isSet: (flag: string) => boolean;
-};
-
 type ConfigService = {
     get: (key: string) => string | undefined;
 }
@@ -29,17 +25,14 @@ const DefaultWarmupOptions: WarmupVolumeOptions = {
 
 export class DomainWarmingService {
     #emailModel: EmailModel;
-    #labs: LabsService;
     #config: ConfigService;
     #warmupConfig: WarmupVolumeOptions;
 
     constructor(dependencies: {
         models: {Email: EmailModel};
-        labs: LabsService;
         config: ConfigService;
     }) {
         this.#emailModel = dependencies.models.Email;
-        this.#labs = dependencies.labs;
         this.#config = dependencies.config;
 
         this.#warmupConfig = DefaultWarmupOptions;
@@ -49,12 +42,6 @@ export class DomainWarmingService {
      * @returns Whether the domain warming feature is enabled
      */
     isEnabled(): boolean {
-        const hasLabsFlag = this.#labs.isSet('domainWarmup');
-
-        if (!hasLabsFlag) {
-            return false;
-        }
-
         const fallbackDomain = this.#config.get('hostSettings:managedEmail:fallbackDomain');
         const fallbackAddress = this.#config.get('hostSettings:managedEmail:fallbackAddress');
 
@@ -82,17 +69,22 @@ export class DomainWarmingService {
      */
     async getWarmupLimit(emailCount: number): Promise<number> {
         const day = await this.#getDaysSinceFirstEmail();
-        if (day >= this.#warmupConfig.totalDays) {
-            return Infinity;
-        }
 
-        const limit = Math.round(
-            this.#warmupConfig.start *
-            Math.pow(
-                this.#warmupConfig.end / this.#warmupConfig.start,
-                day / (this.#warmupConfig.totalDays - 1)
-            )
-        );
+        let limit = 0;
+
+        if (day >= this.#warmupConfig.totalDays) {
+            // Max limit if we're after the warm-up period
+            limit = Infinity;
+        } else {
+            // Interpolate the warmup amount
+            limit = Math.round(
+                this.#warmupConfig.start *
+                Math.pow(
+                    this.#warmupConfig.end / this.#warmupConfig.start,
+                    day / (this.#warmupConfig.totalDays - 1)
+                )
+            );
+        }
 
         return Math.min(emailCount, limit);
     }

@@ -136,6 +136,10 @@
     padding-bottom: 12px;
 }
 
+.gh-members-activity .gh-list-scrolling tbody tr:hover > .gh-list-data {
+    background: var(--whitegrey-l2);
+}
+
 .gh-members-activity .gh-list h3 {
     margin-bottom: 4px;
 }

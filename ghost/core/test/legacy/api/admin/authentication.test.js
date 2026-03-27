@@ -1,7 +1,7 @@
 const nock = require('nock');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyISODateTime, anyErrorId, stringMatching} = matchers;
+const {anyContentVersion, anyEtag, anyISODateTime, anyErrorId} = matchers;
 
 const {tokens} = require('@tryghost/security');
 const models = require('../../../../core/server/models');
@@ -135,6 +135,38 @@ describe('Authentication API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+        });
+
+        it('only returns status when setup is complete', async function () {
+            const {body} = await agent
+                .get('authentication/setup')
+                .expectStatus(200);
+
+            const [setup] = body.setup;
+            assert.equal(setup.status, true, 'Setup should be complete');
+            assert.equal(setup.email, undefined, 'Email should not be returned after setup is complete');
+            assert.equal(setup.name, undefined, 'Name should not be returned after setup is complete');
+            assert.equal(setup.title, undefined, 'Title should not be returned after setup is complete');
+        });
+
+        it('only returns status when setup is complete even with config values set', async function () {
+            const configUtils = require('../../../utils/config-utils');
+
+            configUtils.set('user_email', 'owner@example.com');
+            configUtils.set('user_name', 'Owner Name');
+
+            try {
+                const {body} = await agent
+                    .get('authentication/setup')
+                    .expectStatus(200);
+
+                const [setup] = body.setup;
+                assert.equal(setup.status, true, 'Setup should be complete');
+                assert.equal(setup.email, undefined, 'Email should not be returned after setup is complete');
+                assert.equal(setup.name, undefined, 'Name should not be returned after setup is complete');
+            } finally {
+                await configUtils.restore();
+            }
         });
 
         it('complete setup again', function () {
@@ -390,7 +422,7 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot({
                     password_reset: [{
-                        emailVerificationToken: stringMatching(/^[0-9]{6}$/)
+                        message: 'Password updated'
                     }]
                 })
                 .matchHeaderSnapshot({

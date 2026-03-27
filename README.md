@@ -86,7 +86,7 @@ For anyone wishing to contribute to Ghost or to hack/customize core files we rec
 
 A big thanks to our sponsors and partners who make Ghost possible. If you're interested in sponsoring Ghost and supporting the project, please check out our profile on [GitHub sponsors](https://github.com/sponsors/TryGhost) :heart:
 
-**[DigitalOcean](https://m.do.co/c/9ff29836d717)** • **[Fastly](https://www.fastly.com/)** • **[Tinybird](https://tbrd.co/ghost)**
+**[DigitalOcean](https://m.do.co/c/9ff29836d717)** • **[Fastly](https://www.fastly.com/)** • **[Tinybird](https://tbrd.co/ghost)** • **[BairesDev](https://www.bairesdev.com)** • **[Hostinger](https://www.hostinger.com/)**
 
 &nbsp;
 
@@ -100,5 +100,5 @@ To stay up to date with all the latest news and product updates, make sure you [
 
 # License & trademark
 
-Copyright (c) 2013-2025 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).
 Ghost and the Ghost Logo are trademarks of Ghost Foundation Ltd. Please see our [trademark policy](https://ghost.org/trademark/) for info on acceptable usage.

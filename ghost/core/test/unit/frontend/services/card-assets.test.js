@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 
 const path = require('path');
 const fs = require('fs').promises;
@@ -36,7 +36,7 @@ describe('Card Asset Service', function () {
 
         await cardAssets.load();
 
-        cardAssets.files.should.eql([]);
+        assert.deepEqual(cardAssets.files, []);
     });
 
     it('can load a single css file', async function () {
@@ -49,7 +49,7 @@ describe('Card Asset Service', function () {
 
         await cardAssets.load(true);
 
-        cardAssets.files.should.eql(['cards.min.css']);
+        assert.deepEqual(cardAssets.files, ['cards.min.css']);
     });
 
     it('can correctly load nothing when config is false', async function () {
@@ -62,14 +62,14 @@ describe('Card Asset Service', function () {
 
         await cardAssets.load(false);
 
-        cardAssets.files.should.eql([]);
+        assert.deepEqual(cardAssets.files, []);
     });
 
     describe('Generate the correct glob strings', function () {
         it('CARD ASSET SERVICE DEFAULT CASE: do nothing', function () {
             const cardAssets = new CardAssetService();
 
-            cardAssets.generateGlobs().should.eql({});
+            assert.deepEqual(cardAssets.generateGlobs(), {});
         });
 
         it('GHOST DEFAULT CASE: exclude bookmark and gallery', function () {
@@ -77,7 +77,7 @@ describe('Card Asset Service', function () {
                 config: themeDefaults.card_assets
             });
 
-            cardAssets.generateGlobs().should.eql({
+            assert.deepEqual(cardAssets.generateGlobs(), {
                 'cards.min.css': 'css/*.css',
                 'cards.min.js': 'js/*.js'
             });
@@ -88,7 +88,7 @@ describe('Card Asset Service', function () {
                 config: true
             });
 
-            cardAssets.generateGlobs().should.eql({
+            assert.deepEqual(cardAssets.generateGlobs(), {
                 'cards.min.css': 'css/*.css',
                 'cards.min.js': 'js/*.js'
             });
@@ -99,7 +99,7 @@ describe('Card Asset Service', function () {
                 config: false
             });
 
-            cardAssets.generateGlobs().should.eql({});
+            assert.deepEqual(cardAssets.generateGlobs(), {});
         });
 
         it('CASE: card_assets is an object with an exclude property, generate inverse match strings', function () {
@@ -109,7 +109,7 @@ describe('Card Asset Service', function () {
                 }
             });
 
-            cardAssets.generateGlobs().should.eql({
+            assert.deepEqual(cardAssets.generateGlobs(), {
                 'cards.min.css': 'css/!(bookmarks).css',
                 'cards.min.js': 'js/!(bookmarks).js'
             });
@@ -122,7 +122,7 @@ describe('Card Asset Service', function () {
                 }
             });
 
-            cardAssets.generateGlobs().should.eql({
+            assert.deepEqual(cardAssets.generateGlobs(), {
                 'cards.min.css': 'css/@(gallery).css',
                 'cards.min.js': 'js/@(gallery).js'
             });
@@ -136,7 +136,7 @@ describe('Card Asset Service', function () {
                 }
             });
 
-            cardAssets.generateGlobs().should.eql({
+            assert.deepEqual(cardAssets.generateGlobs(), {
                 'cards.min.css': 'css/@(gallery).css',
                 'cards.min.js': 'js/@(gallery).js'
             });

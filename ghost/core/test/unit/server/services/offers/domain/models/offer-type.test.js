@@ -1,54 +1,48 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 
 const OfferType = require('../../../../../../../core/server/services/offers/domain/models/offer-type');
 
 describe('OfferType', function () {
     describe('OfferType.create factory', function () {
-        it('Creates an Offer type containing either "fixed" or "percent"', function () {
+        it('Creates an Offer type containing either "fixed", "percent" or "trial"', function () {
             OfferType.create('fixed');
             OfferType.create('percent');
             OfferType.create('trial');
 
             try {
                 OfferType.create('other');
-                should.fail();
+                assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferType.InvalidOfferType,
-                    'expected an InvalidOfferType error'
-                );
+                assert(err instanceof OfferType.InvalidOfferType, 'expected an InvalidOfferType error');
             }
 
             try {
                 OfferType.create();
-                should.fail();
+                assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferType.InvalidOfferType,
-                    'expected an InvalidOfferType error'
-                );
+                assert(err instanceof OfferType.InvalidOfferType, 'expected an InvalidOfferType error');
             }
         });
     });
 
     describe('OfferType.Percentage', function () {
         it('Is an OfferType with a value of "percent"', function () {
-            should.equal(OfferType.Percentage.value, 'percent');
-            should.ok(OfferType.Percentage.equals(OfferType.create('percent')));
+            assert.equal(OfferType.Percentage.value, 'percent');
+            assert(OfferType.Percentage.equals(OfferType.create('percent')));
         });
     });
 
     describe('OfferType.Fixed', function () {
         it('Is an OfferType with a value of "fixed"', function () {
-            should.equal(OfferType.Fixed.value, 'fixed');
-            should.ok(OfferType.Fixed.equals(OfferType.create('fixed')));
+            assert.equal(OfferType.Fixed.value, 'fixed');
+            assert(OfferType.Fixed.equals(OfferType.create('fixed')));
         });
     });
 
     describe('OfferType.Trial', function () {
         it('Is an OfferType with a value of "trial"', function () {
-            should.equal(OfferType.Trial.value, 'trial');
-            should.ok(OfferType.Trial.equals(OfferType.create('trial')));
+            assert.equal(OfferType.Trial.value, 'trial');
+            assert(OfferType.Trial.equals(OfferType.create('trial')));
         });
     });
 });

@@ -44,7 +44,14 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         commentsIsLoading: false,
         commentIdToHighlight: null,
         commentIdToScrollTo: initialCommentId,
-        pageUrl
+        showMissingCommentNotice: false,
+        pageUrl,
+        supportEmail: null,
+        isMember: false,
+        isAdmin: false,
+        isPaidOnly: false,
+        hasRequiredTier: true,
+        isCommentingDisabled: false
     });
 
     const iframeRef = React.createRef<HTMLIFrameElement>();
@@ -134,11 +141,23 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 if (admin) {
                     // this is a bit of a hack, but we need to fetch the comments fully populated if the user is an admin
                     const adminComments = await adminApi.browse({page: 1, postId: options.postId, order: state.order, memberUuid: state.member?.uuid});
-                    setState({
-                        ...state,
-                        adminApi: adminApi,
-                        comments: adminComments.comments,
-                        pagination: adminComments.meta.pagination
+                    setState((currentState) => {
+                        // Don't overwrite comments when initSetup loaded extra data
+                        // for permalink scrolling (multiple pages or expanded replies)
+                        if ((currentState.pagination && currentState.pagination.page > 1) || initialCommentId) {
+                            return {
+                                adminApi,
+                                admin,
+                                isAdmin: true
+                            };
+                        }
+                        return {
+                            adminApi,
+                            admin,
+                            isAdmin: true,
+                            comments: adminComments.comments,
+                            pagination: adminComments.meta.pagination
+                        };
                     });
                 }
             } catch (e) {
@@ -149,7 +168,8 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
 
             setState({
                 adminApi,
-                admin
+                admin,
+                isAdmin: !!admin
             });
         } catch (e) {
             /* eslint-disable no-console */
@@ -215,47 +235,10 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     };
 
     /**
-     * Load all replies for a parent comment if the target reply isn't already loaded.
-     */
-    const loadRepliesForComment = async (
-        parentId: string,
-        comments: Comment[]
-    ): Promise<Comment[]> => {
-        const parent = comments.find(c => c.id === parentId);
-        const hasMoreReplies = parent && parent.count.replies > parent.replies.length;
-
-        if (!hasMoreReplies) {
-            return comments;
-        }
-
-        let allReplies: Comment[] = [];
-        let hasMore = true;
-        let afterReplyId: string | undefined;
-
-        while (hasMore) {
-            const response = await api.comments.replies({
-                commentId: parentId,
-                afterReplyId,
-                limit: 100
-            });
-            allReplies = [...allReplies, ...response.comments];
-            hasMore = !!response.meta?.pagination?.next;
-
-            if (response.comments.length > 0) {
-                afterReplyId = response.comments[response.comments.length - 1]?.id;
-            } else {
-                hasMore = false;
-            }
-        }
-
-        return comments.map(c => (c.id === parentId
-            ? {...c, replies: allReplies}
-            : c
-        ));
-    };
-
-    /**
-     * Load additional comment pages and/or replies until the scroll target is found.
+     * Load additional comment pages and/or replies until the scroll
+     * target is found. After paginating to the parent comment, if the
+     * target reply isn't in the inline replies (partial API response),
+     * fetch all replies from the server.
      */
     const loadScrollTarget = async (
         targetId: string,
@@ -269,7 +252,8 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         let comments = paginatedComments;
 
         if (parentId && !isCommentLoaded(comments, targetId)) {
-            comments = await loadRepliesForComment(parentId, comments);
+            const {comments: allReplies} = await api.comments.replies({commentId: parentId, limit: 'all'});
+            comments = comments.map(c => (c.id === parentId ? {...c, replies: allReplies} : c));
         }
 
         return {comments, pagination, found: isCommentLoaded(comments, targetId)};
@@ -278,14 +262,14 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     /** Initialize comments setup once in viewport, fetch data and setup state */
     const initSetup = async () => {
         try {
-            const {member, labs} = await api.init();
+            const {member, labs, supportEmail} = await api.init();
             const {count, comments: initialComments, pagination: initialPagination} = await fetchComments();
 
             let comments = initialComments;
             let pagination = initialPagination;
             let scrollTargetFound = false;
 
-            const shouldFindScrollTarget = labs?.commentPermalinks && initialCommentId && pagination;
+            const shouldFindScrollTarget = initialCommentId && pagination;
             if (shouldFindScrollTarget) {
                 const targetComment = await fetchScrollTarget(initialCommentId);
                 if (targetComment) {
@@ -295,6 +279,12 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                     scrollTargetFound = result.found;
                 }
             }
+
+            // Compute tier access values
+            const isMember = !!member;
+            const isPaidOnly = options.commentsEnabled === 'paid';
+            const isPaidMember = !!member?.paid;
+            const hasRequiredTier = isPaidMember || !isPaidOnly;
 
             setState({
                 member,
@@ -306,10 +296,15 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 labs: labs,
                 commentsIsLoading: false,
                 commentIdToHighlight: null,
-                commentIdToScrollTo: scrollTargetFound ? initialCommentId : null
+                commentIdToScrollTo: scrollTargetFound ? initialCommentId : null,
+                showMissingCommentNotice: !!initialCommentId && !scrollTargetFound,
+                supportEmail,
+                isMember,
+                isPaidOnly,
+                hasRequiredTier,
+                isCommentingDisabled: member?.can_comment === false
             });
         } catch (e) {
-            /* eslint-disable no-console */
             console.error(`[Comments] Failed to initialize:`, e);
             /* eslint-enable no-console */
             setState({

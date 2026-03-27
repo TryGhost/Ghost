@@ -1,13 +1,16 @@
-import {CommentFactory, MemberFactory, PostFactory, createCommentFactory, createMemberFactory, createPostFactory} from '@/data-factory';
+import {
+    CommentFactory,
+    MemberFactory,
+    PostFactory,
+    createCommentFactory,
+    createMemberFactory,
+    createPostFactory
+} from '@/data-factory';
 import {CommentsPage} from '@/helpers/pages';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {expect, test} from '@/helpers/playwright';
 
-const useReactShell = process.env.USE_REACT_SHELL === 'true';
-
 test.describe('Ghost Admin - Comment Moderation', () => {
-    test.skip(!useReactShell, 'Skipping: requires USE_REACT_SHELL=true');
-
     let postFactory: PostFactory;
     let memberFactory: MemberFactory;
     let commentFactory: CommentFactory;
@@ -21,38 +24,10 @@ test.describe('Ghost Admin - Comment Moderation', () => {
         await settingsService.setCommentsEnabled('all');
     });
 
-    test.describe('with commentPermalinks disabled', () => {
-        test.use({labs: {commentModeration: true, commentPermalinks: false}});
-
-        test('view post action navigates to post', async ({page}) => {
-            const post = await postFactory.create({status: 'published'});
-            const member = await memberFactory.create();
-            await commentFactory.create({
-                post_id: post.id,
-                member_id: member.id,
-                html: '<p>Test comment without permalink</p>'
-            });
-
-            const commentsPage = new CommentsPage(page);
-            await commentsPage.goto();
-            await commentsPage.waitForComments();
-
-            const commentRow = commentsPage.getCommentRowByText('Test comment without permalink');
-            await commentsPage.openMoreMenu(commentRow);
-
-            const popupPromise = page.waitForEvent('popup');
-            await commentsPage.getViewPostMenuItem().click();
-            const postPage = await popupPromise;
-
-            await expect(postPage).toHaveURL(new RegExp(`/${post.slug}/`));
-            expect(postPage.url()).not.toContain('#ghost-comments-');
-        });
-    });
-
-    test.describe('with commentPermalinks enabled', () => {
-        test.use({labs: {commentModeration: true, commentPermalinks: true}});
-
-        test('view on post action navigates to comment permalink', async ({page}) => {
+    test.describe('view on post', () => {
+        test('view on post action navigates to comment permalink', async ({
+            page
+        }) => {
             const post = await postFactory.create({status: 'published'});
             const member = await memberFactory.create();
             const comment = await commentFactory.create({
@@ -65,20 +40,22 @@ test.describe('Ghost Admin - Comment Moderation', () => {
             await commentsPage.goto();
             await commentsPage.waitForComments();
 
-            const commentRow = commentsPage.getCommentRowByText('Test comment with permalink');
+            const commentRow = commentsPage.getCommentRowByText(
+                'Test comment with permalink'
+            );
             await commentsPage.openMoreMenu(commentRow);
 
             const popupPromise = page.waitForEvent('popup');
-            await commentsPage.getViewOnPostMenuItem().click();
+            await commentsPage.viewOnPostMenuItem.click();
             const postPage = await popupPromise;
 
-            await expect(postPage).toHaveURL(new RegExp(`/${post.slug}/.*#ghost-comments-${comment.id}`));
+            await expect(postPage).toHaveURL(
+                new RegExp(`/${post.slug}/.*#ghost-comments-${comment.id}`)
+            );
         });
     });
 
     test.describe('deep linking', () => {
-        test.use({labs: {commentModeration: true}});
-
         test('can deep link to a specific comment by id', async ({page}) => {
             const post = await postFactory.create({status: 'published'});
             const member = await memberFactory.create();
@@ -99,20 +76,34 @@ test.describe('Ghost Admin - Comment Moderation', () => {
             await page.goto(`/ghost/#/comments?id=is:${targetComment.id}`);
             await commentsPage.waitForComments();
 
-            await expect(commentsPage.getCommentRowByText('This is the target comment')).toBeVisible();
-            await expect(commentsPage.getCommentRowByText('This is another comment')).not.toBeVisible();
+            await expect(
+                commentsPage.getCommentRowByText('This is the target comment')
+            ).toBeVisible();
+            await expect(
+                commentsPage.getCommentRowByText('This is another comment')
+            ).toBeHidden();
 
-            await expect(page.getByRole('button', {name: 'Filter'})).not.toBeVisible();
+            await expect(
+                page.getByRole('button', {name: 'Filter'})
+            ).toBeHidden();
 
-            const showAllButton = page.getByRole('button', {name: 'Show all comments'});
+            const showAllButton = page.getByRole('button', {
+                name: 'Show all comments'
+            });
             await expect(showAllButton).toBeVisible();
 
             await showAllButton.click();
-            await expect(commentsPage.getCommentRowByText('This is the target comment')).toBeVisible();
-            await expect(commentsPage.getCommentRowByText('This is another comment')).toBeVisible();
+            await expect(
+                commentsPage.getCommentRowByText('This is the target comment')
+            ).toBeVisible();
+            await expect(
+                commentsPage.getCommentRowByText('This is another comment')
+            ).toBeVisible();
 
-            await expect(page.getByRole('button', {name: 'Filter'})).toBeVisible();
-            await expect(showAllButton).not.toBeVisible();
+            await expect(
+                page.getByRole('button', {name: 'Filter'})
+            ).toBeVisible();
+            await expect(showAllButton).toBeHidden();
         });
     });
 });

@@ -5,7 +5,8 @@ const moment = require('moment');
 
 const messages = {
     stripeNotConnected: 'Missing Stripe connection.',
-    memberAlreadyExists: 'Member already exists.'
+    memberAlreadyExists: 'Member already exists.',
+    memberNotFound: 'Member not found.'
 };
 
 /**
@@ -38,8 +39,9 @@ module.exports = class MemberBREADService {
      * @param {import('@tryghost/member-attribution/lib/service')} deps.memberAttributionService
      * @param {import('@tryghost/email-suppression-list/lib/email-suppression-list').IEmailSuppressionList} deps.emailSuppressionList
      * @param {import('@tryghost/settings-helpers')} deps.settingsHelpers
+     * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
      */
-    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers}) {
+    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers, nextPaymentCalculator, commentsService}) {
         this.offersAPI = offersAPI;
         /** @private */
         this.memberRepository = memberRepository;
@@ -55,6 +57,10 @@ module.exports = class MemberBREADService {
         this.emailSuppressionList = emailSuppressionList;
         /** @private */
         this.settingsHelpers = settingsHelpers;
+        /** @private */
+        this.nextPaymentCalculator = nextPaymentCalculator;
+        /** @private */
+        this.commentsService = commentsService;
     }
 
     /**
@@ -160,18 +166,84 @@ module.exports = class MemberBREADService {
     }
 
     /**
+     * @private Builds a map between Stripe subscription IDs and their redeemed offers (from offer_redemptions)
+     * @param {import('bookshelf').Model[]} subscriptions - Bookshelf subscription models
+     * @returns {Promise<Map<string, OfferDTO[]>>}
+     */
+    async fetchSubscriptionOfferRedemptions(subscriptions) {
+        const subscriptionOfferRedemptions = new Map();
+
+        if (subscriptions.length === 0) {
+            return subscriptionOfferRedemptions;
+        }
+
+        try {
+            const subscriptionIdMap = new Map();
+            const subscriptionIds = [];
+
+            for (const subscription of subscriptions) {
+                subscriptionIdMap.set(subscription.id, subscription.get('subscription_id'));
+
+                subscriptionIds.push(subscription.id);
+            }
+
+            const redemptions = await this.offersAPI.getRedeemedOfferIdsForSubscriptions({
+                subscriptionIds
+            });
+
+            const fetchedOffers = new Map();
+
+            for (const redemption of redemptions) {
+                const stripeSubId = subscriptionIdMap.get(redemption.subscription_id);
+
+                let offer = fetchedOffers.get(redemption.offer_id);
+
+                if (!offer) {
+                    offer = await this.offersAPI.getOffer({id: redemption.offer_id});
+
+                    fetchedOffers.set(redemption.offer_id, offer);
+                }
+
+                if (offer && stripeSubId) {
+                    if (!subscriptionOfferRedemptions.has(stripeSubId)) {
+                        subscriptionOfferRedemptions.set(stripeSubId, []);
+                    }
+
+                    subscriptionOfferRedemptions.get(stripeSubId).push(offer);
+                }
+            }
+        } catch (e) {
+            logging.error(`Failed to load offer redemptions for subscriptions - ${subscriptions.map(s => s.id).join(', ')}.`);
+            logging.error(e);
+        }
+
+        return subscriptionOfferRedemptions;
+    }
+
+    /**
      * @private
      * @param {Object} member JSON serialized member
      * @param {Map<string, OfferDTO>} subscriptionOffers result from fetchSubscriptionOffers
+     * @param {Map<string, OfferDTO[]>} subscriptionOfferRedemptions result from fetchSubscriptionOfferRedemptions
      */
-    attachOffersToSubscriptions(member, subscriptionOffers) {
+    attachOffersToSubscriptions(member, subscriptionOffers, subscriptionOfferRedemptions) {
         member.subscriptions = member.subscriptions.map((subscription) => {
             const offer = subscriptionOffers.get(subscription.id);
-            if (offer) {
-                subscription.offer = offer;
-            } else {
-                subscription.offer = null;
-            }
+            subscription.offer = offer || null;
+            subscription.offer_redemptions = subscriptionOfferRedemptions.get(subscription.id) || [];
+            return subscription;
+        });
+    }
+
+    /**
+     * @private
+     * Attaches next_payment information to each subscription
+     * Must be called after attachOffersToSubscriptions so that subscription.offer is available
+     * @param {Object} member JSON serialized member
+     */
+    attachNextPaymentToSubscriptions(member) {
+        member.subscriptions = member.subscriptions.map((subscription) => {
+            subscription.next_payment = this.nextPaymentCalculator.calculate(subscription);
             return subscription;
         });
     }
@@ -237,10 +309,17 @@ module.exports = class MemberBREADService {
         }
 
         const member = model.toJSON(options);
+        const stripeSubscriptions = model.related('stripeSubscriptions');
 
         member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
         this.attachSubscriptionsToMember(member);
-        this.attachOffersToSubscriptions(member, await this.fetchSubscriptionOffers(model.related('stripeSubscriptions')));
+
+        const [offerMap, offerRedemptionsMap] = await Promise.all([
+            this.fetchSubscriptionOffers(stripeSubscriptions),
+            this.fetchSubscriptionOfferRedemptions(stripeSubscriptions)
+        ]);
+        this.attachOffersToSubscriptions(member, offerMap, offerRedemptionsMap);
+        this.attachNextPaymentToSubscriptions(member);
         await this.attachAttributionsToMember(member, subscriptionIdMap);
 
         const suppressionData = await this.emailSuppressionList.getSuppressionData(member.email);
@@ -285,9 +364,14 @@ module.exports = class MemberBREADService {
             throw error;
         }
 
-        const sharedOptions = options.transacting ? {
-            transacting: options.transacting
-        } : {};
+        // Only pass specific options to downstream calls, filtering out options like
+        // `withRelated` that could cause errors in repositories that don't support them.
+        // - transacting: needed for database transaction consistency
+        // - context: needed to determine source (admin/api/member/import) for staff notifications
+        const sharedOptions = {
+            ...(options.transacting && {transacting: options.transacting}),
+            ...(options.context && {context: options.context})
+        };
 
         try {
             if (data.stripe_customer_id) {
@@ -319,7 +403,7 @@ module.exports = class MemberBREADService {
         }
 
         if (data.comped) {
-            await this.memberRepository.setComplimentarySubscription(model, options);
+            await this.memberRepository.setComplimentarySubscription(model, sharedOptions);
         }
 
         return this.read({id: model.id}, options);
@@ -360,7 +444,7 @@ module.exports = class MemberBREADService {
                         transacting: options.transacting
                     });
                 } else if (!(data.comped) && hasCompedSubscription) {
-                    await this.memberRepository.cancelComplimentarySubscription(model, {
+                    await this.memberRepository.removeComplimentarySubscription(model, {
                         context: options.context,
                         transacting: options.transacting
                     });
@@ -369,6 +453,67 @@ module.exports = class MemberBREADService {
         }
 
         return this.read({id: model.id}, options);
+    }
+
+    /**
+     * @param {string} memberId
+     * @param {string} reason
+     * @param {Date|null} until
+     * @param {boolean} hideComments
+     * @param {Object} context
+     * @returns {Promise<Object>}
+     */
+    async disableCommenting(memberId, reason, until, hideComments, context) {
+        const model = await this.memberRepository.get({id: memberId});
+
+        if (!model) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.memberNotFound)
+            });
+        }
+
+        const commenting = model.get('commenting');
+        const updated = commenting.disable(reason, until);
+
+        await this.memberRepository.saveCommenting(
+            memberId,
+            updated,
+            'commenting_disabled',
+            context
+        );
+
+        if (hideComments) {
+            await this.commentsService.api.bulkUpdateStatus(`member_id:'${memberId}'+status:published`, 'hidden');
+        }
+
+        return this.read({id: memberId});
+    }
+
+    /**
+     * @param {string} memberId
+     * @param {Object} context
+     * @returns {Promise<Object>}
+     */
+    async enableCommenting(memberId, context) {
+        const model = await this.memberRepository.get({id: memberId});
+
+        if (!model) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.memberNotFound)
+            });
+        }
+
+        const commenting = model.get('commenting');
+        const updated = commenting.enable();
+
+        await this.memberRepository.saveCommenting(
+            memberId,
+            updated,
+            'commenting_enabled',
+            context
+        );
+
+        return this.read({id: memberId});
     }
 
     async logout(options) {
@@ -416,7 +561,10 @@ module.exports = class MemberBREADService {
         }
 
         const subscriptions = page.data.flatMap(model => model.related('stripeSubscriptions').slice());
-        const offerMap = await this.fetchSubscriptionOffers(subscriptions);
+        const [offerMap, offerRedemptionsMap] = await Promise.all([
+            this.fetchSubscriptionOffers(subscriptions),
+            this.fetchSubscriptionOfferRedemptions(subscriptions)
+        ]);
 
         const bulkSuppressionData = await this.emailSuppressionList.getBulkSuppressionData(page.data.map(member => member.get('email')));
 
@@ -424,7 +572,8 @@ module.exports = class MemberBREADService {
             const member = model.toJSON(options);
             member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
             this.attachSubscriptionsToMember(member);
-            this.attachOffersToSubscriptions(member, offerMap);
+            this.attachOffersToSubscriptions(member, offerMap, offerRedemptionsMap);
+            this.attachNextPaymentToSubscriptions(member);
             if (!originalWithRelated.includes('products')) {
                 delete member.products;
             }
@@ -433,6 +582,7 @@ module.exports = class MemberBREADService {
                 info: bulkSuppressionData[index].info
             };
             member.unsubscribe_url = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
+
             return member;
         });
 

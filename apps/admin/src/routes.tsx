@@ -10,6 +10,7 @@ import { routes as postRoutes } from "@tryghost/posts/src/routes";
 // Stats (aka analytics)
 import GlobalDataProvider from "@tryghost/stats/src/providers/global-data-provider";
 import { routes as statsRoutes } from "@tryghost/stats/src/routes";
+import MyProfileRedirect from "./my-profile-redirect";
 
 // Ember
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
@@ -37,6 +38,7 @@ export const routes: RouteObject[] = [
                         <Outlet />
                     </PostsAppContextProvider>
                 ),
+                // Filter out catch-all routes
                 children: postRoutes[0].children!.filter((route) => route.path !== "*"),
             },
             {
@@ -50,6 +52,11 @@ export const routes: RouteObject[] = [
             {
                 path: `network`,
                 loader: () => redirect("/activitypub"),
+            },
+            {
+                path: "my-profile",
+                Component: MyProfileRedirect,
+                handle: { allowInForceUpgrade: true } satisfies RouteHandle,
             },
             {
                 path: "",

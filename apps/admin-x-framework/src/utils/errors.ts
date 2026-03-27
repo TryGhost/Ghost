@@ -15,9 +15,12 @@ export interface ErrorResponse {
 }
 
 export class APIError extends Error {
+    public readonly response?: Response;
+    public readonly data?: unknown;
+
     constructor(
-        public readonly response?: Response,
-        public readonly data?: unknown,
+        response?: Response,
+        data?: unknown,
         message?: string,
         errorOptions?: ErrorOptions
     ) {
@@ -26,17 +29,22 @@ export class APIError extends Error {
         }
 
         super(message || 'Something went wrong, please try again.', errorOptions);
+        this.response = response;
+        this.data = data;
     }
 }
 
 export class JSONError extends APIError {
+    public readonly data?: ErrorResponse;
+
     constructor(
         response: Response,
-        public readonly data?: ErrorResponse,
+        data?: ErrorResponse,
         message?: string,
         errorOptions?: ErrorOptions
     ) {
         super(response, data, message, errorOptions);
+        this.data = data;
     }
 }
 

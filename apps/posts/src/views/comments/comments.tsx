@@ -6,15 +6,11 @@ import CommentsList from './components/comments-list';
 import React, {useCallback} from 'react';
 import {Button, EmptyIndicator, LoadingIndicator, LucideIcon, createFilter} from '@tryghost/shade';
 import {useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
-import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useFilterState} from './hooks/use-filter-state';
 import {useKnownFilterValues} from './hooks/use-known-filter-values';
 
 const Comments: React.FC = () => {
     const {filters, nql, setFilters, clearFilters, isSingleIdFilter} = useFilterState();
-    const {data: configData} = useBrowseConfig();
-    const commentPermalinksEnabled = configData?.config?.labs?.commentPermalinks === true;
-
     const handleAddFilter = useCallback((field: string, value: string, operator: string = 'is') => {
         setFilters((prevFilters) => {
             // Remove any existing filter for the same field
@@ -29,6 +25,7 @@ const Comments: React.FC = () => {
         isError,
         isFetching,
         isFetchingNextPage,
+        isRefetching,
         fetchNextPage,
         hasNextPage
     } = useBrowseComments({
@@ -37,6 +34,9 @@ const Comments: React.FC = () => {
     });
 
     const {knownPosts, knownMembers} = useKnownFilterValues({comments: data?.comments ?? []});
+
+    // If we are fetching comments, but not fetching the next page and not refetching, we should show the loading indicator
+    const shouldShowLoading = isFetching && !isFetchingNextPage && !isRefetching;
 
     return (
         <CommentsLayout>
@@ -51,7 +51,7 @@ const Comments: React.FC = () => {
                 )}
             </CommentsHeader>
             <CommentsContent>
-                {(isFetching && !isFetchingNextPage) ? (
+                {shouldShowLoading ? (
                     <div className="flex h-full items-center justify-center">
                         <LoadingIndicator size="lg" />
                     </div>
@@ -78,7 +78,6 @@ const Comments: React.FC = () => {
                 ) : (
                     <>
                         <CommentsList
-                            commentPermalinksEnabled={commentPermalinksEnabled}
                             fetchNextPage={fetchNextPage}
                             hasNextPage={hasNextPage}
                             isFetchingNextPage={isFetchingNextPage}

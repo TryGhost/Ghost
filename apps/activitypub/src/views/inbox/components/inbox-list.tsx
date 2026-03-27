@@ -116,7 +116,7 @@ const InboxList:React.FC<InboxListProps> = ({
                                                 </li>
                                             ))}
                                             {isFetchingNextPage && (
-                                                <li className='flex flex-col items-center justify-center space-y-4 text-center'>
+                                                <li className='flex flex-col items-center justify-center gap-4 text-center'>
                                                     <LoadingIndicator size='md' />
                                                 </li>
                                             )}
@@ -173,7 +173,7 @@ const InboxList:React.FC<InboxListProps> = ({
                     setIsReaderOpen(open);
                 }}
             >
-                <DialogContent className='inset-y-3 h-[calc(100vh-24px)] w-screen max-w-[calc(100vw-24px)] !animate-none p-0 focus:outline-none dark:bg-gray-950'>
+                <DialogContent className='inset-y-3 h-[calc(100vh-24px)] w-screen max-w-[calc(100vw-24px)] animate-none! p-0 focus:outline-hidden dark:bg-gray-950'>
                     <DialogHeader className='hidden'>
                         <DialogTitle>Reader</DialogTitle>
                         <DialogDescription>Ghost reader for long form articles</DialogDescription>

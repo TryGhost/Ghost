@@ -18,11 +18,13 @@ class InvalidOfferCode extends InvalidPropError {}
 class InvalidOfferType extends InvalidPropError {}
 class InvalidOfferAmount extends InvalidPropError {}
 class InvalidOfferCurrency extends InvalidPropError {}
+class InvalidOfferTier extends InvalidPropError {}
 class InvalidOfferTierName extends InvalidPropError {}
 class InvalidOfferCadence extends InvalidPropError {}
 class InvalidOfferDuration extends InvalidPropError {}
 class InvalidOfferCoupon extends InvalidPropError {}
 class InvalidOfferStatus extends InvalidPropError {}
+class InvalidOfferRedemptionType extends InvalidPropError {}
 class InvalidStripeCoupon extends InvalidPropError {}
 
 module.exports = {
@@ -35,8 +37,10 @@ module.exports = {
     InvalidOfferCurrency,
     InvalidOfferCadence,
     InvalidOfferDuration,
+    InvalidOfferTier,
     InvalidOfferTierName,
     InvalidOfferCoupon,
     InvalidOfferStatus,
+    InvalidOfferRedemptionType,
     InvalidStripeCoupon
 };

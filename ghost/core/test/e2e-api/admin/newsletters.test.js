@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const {agentProvider, mockManager, fixtureManager, configUtils, dbUtils, matchers, regexes} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyErrorId, anyISODateTime, anyLocationFor, anyNumber} = matchers;
@@ -1661,9 +1661,10 @@ describe('Newsletters API', function () {
             assert.equal(newsletter.header_image, `${siteUrl}content/images/newsletter-header.jpg`);
         });
 
-        it('Can read newsletter with header_image as absolute site URL even when CDN is configured', async function () {
+        it('Can read newsletter with header_image as CDN URL when image CDN is configured', async function () {
+            const cdnUrl = 'https://cdn.example.com';
             urlUtilsHelper.stubUrlUtilsWithCdn({
-                assetBaseUrls: {media: 'https://cdn.example.com', files: 'https://cdn.example.com'}
+                assetBaseUrls: {media: cdnUrl, image: cdnUrl}
             }, sinon);
 
             const res = await agent
@@ -1671,7 +1672,7 @@ describe('Newsletters API', function () {
                 .expectStatus(200);
 
             const newsletter = res.body.newsletters[0];
-            assert.equal(newsletter.header_image, `${siteUrl}content/images/newsletter-header.jpg`);
+            assert.equal(newsletter.header_image, `${cdnUrl}/content/images/newsletter-header.jpg`);
         });
     });
 });

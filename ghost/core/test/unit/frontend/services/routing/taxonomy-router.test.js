@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
@@ -34,40 +35,42 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
     it('instantiate', function () {
         const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', {}, routerCreatedSpy);
 
-        should.exist(taxonomyRouter.router);
-        should.exist(taxonomyRouter.rssRouter);
+        assertExists(taxonomyRouter.router);
+        assertExists(taxonomyRouter.rssRouter);
 
-        taxonomyRouter.taxonomyKey.should.eql('tag');
-        taxonomyRouter.getPermalinks().getValue().should.eql('/tag/:slug/');
+        assert.equal(taxonomyRouter.taxonomyKey, 'tag');
+        assert.equal(taxonomyRouter.getPermalinks().getValue(), '/tag/:slug/');
 
-        routerCreatedSpy.calledOnce.should.be.true();
-        routerCreatedSpy.calledWith(taxonomyRouter).should.be.true();
+        sinon.assert.calledOnce(routerCreatedSpy);
+        sinon.assert.calledWith(routerCreatedSpy, taxonomyRouter);
 
-        taxonomyRouter.mountRouter.callCount.should.eql(1);
-        taxonomyRouter.mountRouter.args[0][0].should.eql('/tag/:slug/');
-        taxonomyRouter.mountRouter.args[0][1].should.eql(taxonomyRouter.rssRouter.router());
+        sinon.assert.calledOnce(taxonomyRouter.mountRouter);
+        assert.equal(taxonomyRouter.mountRouter.args[0][0], '/tag/:slug/');
+        assert.equal(taxonomyRouter.mountRouter.args[0][1], taxonomyRouter.rssRouter.router());
 
-        taxonomyRouter.mountRoute.callCount.should.eql(3);
+        sinon.assert.calledThrice(taxonomyRouter.mountRoute);
 
         // permalink route
-        taxonomyRouter.mountRoute.args[0][0].should.eql('/tag/:slug/');
-        taxonomyRouter.mountRoute.args[0][1].should.eql(controllers.channel);
+        assert.equal(taxonomyRouter.mountRoute.args[0][0], '/tag/:slug/');
+        assert.equal(taxonomyRouter.mountRoute.args[0][1], controllers.channel);
 
         // pagination feature
-        taxonomyRouter.mountRoute.args[1][0].should.eql('/tag/:slug/page/:page(\\d+)');
-        taxonomyRouter.mountRoute.args[1][1].should.eql(controllers.channel);
+        assert.equal(taxonomyRouter.mountRoute.args[1][0], '/tag/:slug/page/:page(\\d+)');
+        assert.equal(taxonomyRouter.mountRoute.args[1][1], controllers.channel);
 
         // edit feature
-        taxonomyRouter.mountRoute.args[2][0].should.eql('/tag/:slug/edit');
-        taxonomyRouter.mountRoute.args[2][1].should.eql(taxonomyRouter._redirectEditOption.bind(taxonomyRouter));
+        assert.equal(taxonomyRouter.mountRoute.args[2][0], '/tag/:slug/edit');
+        // We'd can't compare to `taxonomyRouter._redirectEditOption.bind(taxonomyRouter)`, so this is the next best thing.
+        assert(typeof taxonomyRouter.mountRoute.args[2][1] === 'function');
+        assert(taxonomyRouter.mountRoute.args[2][1].name.includes('_redirectEditOption'));
     });
 
     it('_prepareContext behaves as expected', function () {
         const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG, routerCreatedSpy);
         taxonomyRouter._prepareContext(req, res, next);
-        next.calledOnce.should.eql(true);
+        sinon.assert.calledOnce(next);
 
-        res.routerOptions.should.eql({
+        assert.deepEqual(res.routerOptions, {
             type: 'channel',
             name: 'tag',
             permalinks: '/tag/:slug/',

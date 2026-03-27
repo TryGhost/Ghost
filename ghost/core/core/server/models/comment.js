@@ -1,14 +1,10 @@
 const ghostBookshelf = require('./base');
 const _ = require('lodash');
-const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const {ValidationError} = require('@tryghost/errors');
 
 const messages = {
-    emptyComment: 'The body of a comment cannot be empty',
-    commentNotFound: 'Comment could not be found',
-    notYourCommentToEdit: 'You may only edit your own comments',
-    notYourCommentToDestroy: 'You may only delete your own comments'
+    emptyComment: 'The body of a comment cannot be empty'
 };
 
 /**
@@ -46,7 +42,7 @@ const Comment = ghostBookshelf.Model.extend({
         return this.belongsTo('Comment', 'parent_id');
     },
 
-    inReplyTo() {
+    in_reply_to() {
         return this.belongsTo('Comment', 'in_reply_to_id');
     },
 
@@ -56,9 +52,7 @@ const Comment = ghostBookshelf.Model.extend({
 
     replies() {
         return this.hasMany('Comment', 'parent_id', 'id')
-            .query('orderBy', 'created_at', 'ASC')
-            // Note: this limit is not working
-            .query('limit', 3);
+            .query('orderBy', 'created_at', 'ASC');
     },
 
     // Called by our filtered-collection bookshelf plugin
@@ -170,49 +164,6 @@ const Comment = ghostBookshelf.Model.extend({
         return softDelete();
     },
 
-    async permissible(commentModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission, hasMemberPermission) {
-        const self = this;
-
-        if (hasUserPermission) {
-            return true;
-        }
-
-        if (_.isString(commentModelOrId)) {
-            // Grab the original args without the first one
-            const origArgs = _.toArray(arguments).slice(1);
-
-            // Get the actual comment model
-            return this.findOne({
-                id: commentModelOrId
-            }).then(function then(foundCommentModel) {
-                if (!foundCommentModel) {
-                    throw new errors.NotFoundError({
-                        message: tpl(messages.commentNotFound)
-                    });
-                }
-
-                // Build up the original args but substitute with actual model
-                const newArgs = [foundCommentModel].concat(origArgs);
-
-                return self.permissible.apply(self, newArgs);
-            });
-        }
-
-        if (action === 'edit' && commentModelOrId.get('member_id') !== context.member.id) {
-            return Promise.reject(new errors.NoPermissionError({
-                message: tpl(messages.notYourCommentToEdit)
-            }));
-        }
-
-        if (action === 'destroy' && commentModelOrId.get('member_id') !== context.member.id) {
-            return Promise.reject(new errors.NoPermissionError({
-                message: tpl(messages.notYourCommentToDestroy)
-            }));
-        }
-
-        return hasMemberPermission;
-    },
-
     applyRepliesWithRelatedOption(withRelated, isAdmin) {
         // we want to apply filters when fetching replies so we don't expose data that should be hidden
         // - public requests never return hidden or deleted replies
@@ -246,9 +197,9 @@ const Comment = ghostBookshelf.Model.extend({
                     // Do not include replies for replies
                     options.withRelated = [
                         // Relations
-                        'inReplyTo', 'member', 'count.likes', 'count.liked'
+                        'in_reply_to', 'member', 'count.direct_replies', 'count.likes', 'count.liked'
                     ];
-                    
+
                     // Add count.reports for admin requests only
                     if (options.isAdmin) {
                         options.withRelated.push('count.reports');
@@ -256,11 +207,11 @@ const Comment = ghostBookshelf.Model.extend({
                 } else {
                     options.withRelated = [
                         // Relations
-                        'member', 'inReplyTo', 'count.replies', 'count.likes', 'count.liked',
-                        // Replies (limited to 3)
-                        'replies', 'replies.member', 'replies.inReplyTo', 'replies.count.likes', 'replies.count.liked'
+                        'member', 'in_reply_to', 'count.replies', 'count.direct_replies', 'count.likes', 'count.liked',
+                        'replies', 'replies.member', 'replies.in_reply_to',
+                        'replies.count.direct_replies', 'replies.count.likes', 'replies.count.liked'
                     ];
-                    
+
                     // Add count.reports for admin requests only
                     if (options.isAdmin) {
                         options.withRelated.push('count.reports');
@@ -278,20 +229,43 @@ const Comment = ghostBookshelf.Model.extend({
     async findPage(options) {
         const {withRelated} = this.defaultRelations('findPage', options);
 
-        const relationsToLoadIndividually = [
-            'replies',
-            'replies.member',
-            'replies.inReplyTo',
-            'replies.count.likes',
-            'replies.count.liked'
-        ].filter(relation => (withRelated.includes(relation) || withRelated.some(r => typeof r === 'object' && r[relation])));
-
-        this.applyRepliesWithRelatedOption(relationsToLoadIndividually, options.isAdmin);
-
-        const result = await ghostBookshelf.Model.findPage.call(this, options);
-        for (const model of result.data) {
-            await model.load(relationsToLoadIndividually, _.omit(options, 'withRelated'));
+        // Identify reply-related relations to load separately in batch
+        const replyRelationKeys = [
+            'replies', 'replies.member', 'replies.in_reply_to',
+            'replies.count.direct_replies', 'replies.count.likes', 'replies.count.liked'
+        ];
+        if (options.isAdmin) {
+            replyRelationKeys.push('replies.count.reports');
         }
+
+        // Remove reply relations from options.withRelated to avoid double-loading
+        // and collect them for batch loading via Collection.load()
+        const relationsToLoadInBatch = [];
+        const isReplyRelation = (rel) => {
+            const name = typeof rel === 'string' ? rel : Object.keys(rel)[0];
+            return replyRelationKeys.includes(name);
+        };
+        options.withRelated = withRelated.filter((rel) => {
+            if (isReplyRelation(rel)) {
+                relationsToLoadInBatch.push(rel);
+                return false;
+            }
+            return true;
+        });
+
+        // Apply status filtering on the batch relations
+        this.applyRepliesWithRelatedOption(relationsToLoadInBatch, options.isAdmin);
+
+        // Base findPage WITHOUT reply relations
+        const result = await ghostBookshelf.Model.findPage.call(this, options);
+
+        // Batch-load reply relations for ALL comments at once using Collection.load()
+        // instead of the previous N+1 per-model model.load() loop
+        if (result.data.length > 0 && relationsToLoadInBatch.length > 0) {
+            const collection = ghostBookshelf.Collection.forge(result.data, {model: this});
+            await collection.load(relationsToLoadInBatch, _.omit(options, 'withRelated'));
+        }
+
         return result;
     },
 
@@ -301,12 +275,30 @@ const Comment = ghostBookshelf.Model.extend({
                 const excludedCommentStatuses = options.isAdmin ? ['deleted'] : ['hidden', 'deleted'];
 
                 modelOrCollection.query('columns', 'comments.*', (qb) => {
-                    qb.count('replies.id')
-                        .from('comments AS replies')
-                        .whereRaw('replies.parent_id = comments.id')
-                        .whereNotIn('replies.status', excludedCommentStatuses)
+                    qb.count('r.id')
+                        .from('comments AS r')
+                        .whereRaw('r.parent_id = comments.id')
+                        .whereNotIn('r.status', excludedCommentStatuses)
                         .as('count__replies');
                 });
+            },
+            direct_replies(modelOrCollection, options) {
+                const excludedCommentStatuses = options.isAdmin ? ['deleted'] : ['hidden', 'deleted'];
+                const statusPlaceholders = excludedCommentStatuses.map(() => '?').join(',');
+
+                // Split into two separate indexed subqueries instead of a single OR-based query.
+                // An OR between parent_id and in_reply_to_id defeats MySQL index usage,
+                // causing full table scans. Two separate subqueries each use their own index.
+                modelOrCollection.query('columns', 'comments.*', ghostBookshelf.knex.raw(`(
+                    (SELECT COUNT(*) FROM comments AS r1
+                     WHERE r1.parent_id = comments.id
+                       AND r1.in_reply_to_id IS NULL
+                       AND r1.status NOT IN (${statusPlaceholders}))
+                    +
+                    (SELECT COUNT(*) FROM comments AS r2
+                     WHERE r2.in_reply_to_id = comments.id
+                       AND r2.status NOT IN (${statusPlaceholders}))
+                ) as count__direct_replies`, [...excludedCommentStatuses, ...excludedCommentStatuses]));
             },
             likes(modelOrCollection) {
                 modelOrCollection.query('columns', 'comments.*', (qb) => {

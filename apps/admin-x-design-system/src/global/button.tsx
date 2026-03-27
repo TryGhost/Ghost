@@ -58,7 +58,7 @@ const Button: React.FC<ButtonProps> = React.forwardRef(({
 
     if (!unstyled) {
         className = clsx(
-            'inline-flex items-center justify-center whitespace-nowrap rounded text-sm transition',
+            'inline-flex items-center justify-center rounded text-sm whitespace-nowrap transition',
             ((link && color !== 'clear' && color !== 'black') || (!link && color !== 'clear')) ? 'font-bold' : 'font-semibold',
             !link ? `${size === 'sm' ? 'h-7' : 'h-[34px]'}` : '',
             !link ? `${size === 'sm' || label && icon ? 'px-3' : 'px-4'}` : '',
@@ -77,14 +77,14 @@ const Button: React.FC<ButtonProps> = React.forwardRef(({
             break;
         case 'light-grey':
             className = clsx(
-                link ? 'text-grey-800 hover:text-green-400 dark:text-white' : `bg-grey-200 text-black dark:bg-grey-900 dark:text-white ${!disabled && 'hover:!bg-grey-300 dark:hover:!bg-grey-800'}`,
+                link ? 'text-grey-800 hover:text-green-400 dark:text-white' : `bg-grey-200 text-black dark:bg-grey-900 dark:text-white ${!disabled && 'hover:bg-grey-300! dark:hover:bg-grey-800!'}`,
                 className
             );
             loadingIndicatorColor = 'dark';
             break;
         case 'grey':
             className = clsx(
-                link ? 'text-black hover:text-grey-800 dark:text-white' : `bg-grey-100 text-black dark:bg-grey-900 dark:text-white ${!disabled && 'hover:!bg-grey-300 dark:hover:!bg-grey-800'}`,
+                link ? 'text-black hover:text-grey-800 dark:text-white' : `bg-grey-100 text-black dark:bg-grey-900 dark:text-white ${!disabled && 'hover:bg-grey-300! dark:hover:bg-grey-800!'}`,
                 className
             );
             loadingIndicatorColor = 'dark';
@@ -114,7 +114,7 @@ const Button: React.FC<ButtonProps> = React.forwardRef(({
             break;
         case 'outline':
             className = clsx(
-                link ? 'text-black hover:text-grey-800 dark:text-white' : `border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white ${!disabled && 'hover:!border-black dark:hover:!border-white'}`,
+                link ? 'text-black hover:text-grey-800 dark:text-white' : `border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white ${!disabled && 'hover:border-black! dark:hover:border-white!'}`,
                 className
             );
             loadingIndicatorColor = 'dark';

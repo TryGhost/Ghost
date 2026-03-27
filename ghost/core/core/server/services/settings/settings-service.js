@@ -23,6 +23,18 @@ const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
 const MAGIC_LINK_TOKEN_MAX_USAGE_COUNT = 7;
 
+const getSettingsOverrides = () => {
+    const settingsOverrides = config.get('hostSettings:settingsOverrides') || {};
+    const limitOverrides = {};
+
+    // Transistor.fm's Ghost-based features should be treated as off if the webhooks functionality is limited by the host
+    if (config.get('hostSettings:limits:customIntegrations:disabled') === true) {
+        limitOverrides.transistor = false;
+    }
+
+    return Object.assign({}, settingsOverrides, limitOverrides);
+};
+
 /**
  * @returns {SettingsBREADService} instance of the PostsService
  */
@@ -74,11 +86,11 @@ module.exports = {
     async init() {
         const cacheStore = adapterManager.getAdapter('cache:settings');
         const settingsCollection = await models.Settings.populateDefaults();
-        const settingsOverrides = config.get('hostSettings:settingsOverrides') || {};
+        const settingsOverrides = getSettingsOverrides();
         SettingsCache.init(events, settingsCollection, this.getCalculatedFields(), cacheStore, settingsOverrides);
 
         // Validate site_uuid matches config
-        await this.validateSiteUuid();
+        this.validateSiteUuid();
     },
 
     /**
@@ -158,7 +170,7 @@ module.exports = {
      * The configured site_uuid is only used once when the site_uuid setting is set in a migration
      * Exits with an error if they differ
      */
-    async validateSiteUuid() {
+    validateSiteUuid() {
         const configSiteUuid = config.get('site_uuid');
         const settingSiteUuid = SettingsCache.get('site_uuid');
 

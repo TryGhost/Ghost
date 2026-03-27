@@ -21,7 +21,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({
     tocItems,
     iframeElement,
     modalRef,
-    className = '!visible absolute inset-y-0 right-7 z-40 hidden lg:!block',
+    className = 'visible! absolute inset-y-0 right-7 z-40 hidden lg:block!',
     onOpenChange
 }) => {
     const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
@@ -186,7 +186,7 @@ const TableOfContentsView: React.FC<TableOfContentsViewProps> = ({items, activeH
         <Popover modal={false} open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
                 <div
-                    className='absolute right-2 top-1/2 flex -translate-y-1/2 flex-col items-end gap-2 rounded-md p-2 text-base dark:bg-black'
+                    className='absolute top-1/2 right-2 flex -translate-y-1/2 flex-col items-end gap-2 rounded-md p-2 text-base dark:bg-black'
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
                 >

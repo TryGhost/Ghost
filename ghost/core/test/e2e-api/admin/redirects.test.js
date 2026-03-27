@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const fs = require('fs-extra');
 const path = require('path');
@@ -24,7 +24,7 @@ describe('Redirects API', function () {
             .expect('Content-Disposition', 'Attachment; filename="redirects.json"')
             .expect(200)
             .expect((res) => {
-                res.body.should.eql([
+                assert.deepEqual(res.body, [
                     {from: '^/post/[0-9]+/([a-z0-9\\-]+)', to: '/$1'},
                     {permanent: true, from: '/my-old-blog-post/', to: '/revamped-url/'},
                     {permanent: true, from: '/test-params', to: '/result?q=abc'},
@@ -61,7 +61,7 @@ describe('Redirects API', function () {
             .expect('Content-Type', /application\/json/)
             .expect(200)
             .expect((res) => {
-                res.body.should.be.empty();
+                assert.deepEqual(res.body, {});
             });
     });
 });

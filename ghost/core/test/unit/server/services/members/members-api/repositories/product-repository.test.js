@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const ProductRepository = require('../../../../../../../core/server/services/members/members-api/repositories/product-repository');
 
@@ -16,7 +16,7 @@ describe('MemberRepository', function () {
                 withRelated: ['stripePrices']
             });
 
-            assert.ok(listStub.called);
+            sinon.assert.called(listStub);
 
             assert.equal(listStub.args[0][0].filter, 'type:paid+active:true', 'should only take into account paid and active records');
             assert.equal(listStub.args[0][0].limit, 1, 'should only fetch a single record');

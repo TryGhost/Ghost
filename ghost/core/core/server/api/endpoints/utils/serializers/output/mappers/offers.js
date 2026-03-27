@@ -18,6 +18,7 @@ module.exports = (model, frame) => {
             currency_restriction: jsonModel.currency_restriction,
             currency: jsonModel.currency,
             status: jsonModel.status,
+            redemption_type: jsonModel.redemption_type,
             tier: jsonModel.tier
         };
 
