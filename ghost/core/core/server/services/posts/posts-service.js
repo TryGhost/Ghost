@@ -70,6 +70,13 @@ class PostsService {
 
         await this.postEmailHandler.createOrRetryEmail(model);
 
+        try {
+            // Presence is informational and should not block a successful save.
+            await this.#refreshEditingLeaseAfterSave(model, frame.options?.context);
+        } catch {
+            // ignore presence refresh failures
+        }
+
         const dto = model.toJSON(frame.options);
 
         if (typeof options?.eventHandler === 'function') {
@@ -211,6 +218,48 @@ class PostsService {
         }
 
         return currentLease.editing_by === userId || postsMeta?.get('editing_session_id') === sessionId;
+    }
+
+    async #refreshEditingLeaseAfterSave(model, context) {
+        const userId = context?.user;
+        const postId = model?.get?.('id') || model?.id;
+        const postType = model?.get?.('type') || model?.attributes?.type;
+
+        if (!userId || !postId || !postType) {
+            return;
+        }
+
+        const user = await this.models.User.findOne({id: userId}, {require: false});
+
+        if (!user) {
+            return;
+        }
+
+        const post = await this.models.Post.findOne(
+            {id: postId, type: postType, status: 'all'},
+            {context, withRelated: ['posts_meta'], require: false}
+        );
+
+        if (!post) {
+            return;
+        }
+
+        const postsMeta = post.related('posts_meta');
+        const currentLease = this.#serializeEditingMeta(postsMeta, post.id);
+
+        if (currentLease.editing_heartbeat_at && currentLease.editing_by !== user.get('id')) {
+            return;
+        }
+
+        const shouldKeepSessionId = currentLease.editing_by === user.get('id');
+
+        await this.#upsertPostMeta(post.id, {
+            editing_by: user.get('id'),
+            editing_name: user.get('name'),
+            editing_avatar: user.get('profile_image'),
+            editing_session_id: shouldKeepSessionId ? (postsMeta?.get('editing_session_id') || null) : null,
+            editing_heartbeat_at: new Date()
+        });
     }
 
     async #upsertPostMeta(postId, data) {

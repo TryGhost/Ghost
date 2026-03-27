@@ -1,5 +1,6 @@
 const PostsService = require('../../../../../core/server/services/posts/posts-service');
 const assert = require('node:assert/strict');
+const db = require('../../../../../core/server/data/db');
 const sinon = require('sinon');
 
 describe('Posts Service', function () {
@@ -268,7 +269,11 @@ describe('Posts Service', function () {
             mockModels = {
                 Post: {
                     findOne: sinon.stub(),
-                    edit: sinon.stub()
+                    edit: sinon.stub(),
+                    generateId: sinon.stub().returns('meta-id')
+                },
+                User: {
+                    findOne: sinon.stub()
                 },
                 Member: {
                     findPage: sinon.stub()
@@ -360,6 +365,12 @@ describe('Posts Service', function () {
             const postData = {id: 'post-123', title: 'Test Post'};
             const model = {
                 get: sinon.stub().callsFake((key) => {
+                    if (key === 'id') {
+                        return 'post-123';
+                    }
+                    if (key === 'type') {
+                        return 'post';
+                    }
                     if (key === 'newsletter_id') {
                         return null;
                     }
@@ -383,6 +394,203 @@ describe('Posts Service', function () {
 
             assert.deepEqual(result, postData);
             sinon.assert.calledOnceWithExactly(eventHandler, 'published_updated', postData);
+        });
+
+        it('refreshes the editing lease on save when there is no active editor', async function () {
+            const now = new Date(Date.now() - (3 * 60 * 1000));
+            const postData = {id: 'post-123', title: 'Test Post'};
+            const model = {
+                get: sinon.stub().callsFake((key) => {
+                    if (key === 'id') {
+                        return 'post-123';
+                    }
+                    if (key === 'type') {
+                        return 'post';
+                    }
+                    if (key === 'status') {
+                        return 'draft';
+                    }
+                    return null;
+                }),
+                previous: sinon.stub().returns('draft'),
+                toJSON: sinon.stub().returns(postData),
+                wasChanged: sinon.stub().returns(true)
+            };
+            const postsMeta = {
+                get(key) {
+                    if (key === 'editing_by') {
+                        return 'old-user';
+                    }
+                    if (key === 'editing_name') {
+                        return 'Old User';
+                    }
+                    if (key === 'editing_avatar') {
+                        return '/content/images/old.png';
+                    }
+                    if (key === 'editing_session_id') {
+                        return 'old-session';
+                    }
+                    if (key === 'editing_heartbeat_at') {
+                        return now;
+                    }
+                    return null;
+                }
+            };
+            const savedPost = {
+                id: 'post-123',
+                related: sinon.stub().withArgs('posts_meta').returns(postsMeta)
+            };
+            const user = {
+                get: sinon.stub().callsFake((key) => {
+                    if (key === 'id') {
+                        return 'user-1';
+                    }
+                    if (key === 'name') {
+                        return 'New User';
+                    }
+                    if (key === 'profile_image') {
+                        return '/content/images/new.png';
+                    }
+                    return null;
+                })
+            };
+            const queryBuilder = {
+                insert: sinon.stub().returnsThis(),
+                onConflict: sinon.stub().returnsThis(),
+                merge: sinon.stub().resolves()
+            };
+            const fakeKnex = sinon.stub().returns(queryBuilder);
+
+            mockModels.Post.edit.resolves(model);
+            mockModels.Post.findOne.resolves(savedPost);
+            mockModels.User.findOne.resolves(user);
+            sinon.stub(db, 'knex').get(() => fakeKnex);
+
+            const frame = {
+                data: {posts: [{status: 'draft'}]},
+                options: {
+                    id: 'post-123',
+                    context: {
+                        user: 'user-1'
+                    }
+                }
+            };
+
+            await postsService.editPost(frame);
+
+            sinon.assert.calledOnceWithExactly(mockModels.Post.findOne, {
+                id: 'post-123',
+                type: 'post',
+                status: 'all'
+            }, {
+                context: frame.options.context,
+                withRelated: ['posts_meta'],
+                require: false
+            });
+            sinon.assert.calledOnceWithExactly(mockModels.User.findOne, {id: 'user-1'}, {require: false});
+            sinon.assert.calledOnceWithExactly(fakeKnex, 'posts_meta');
+            sinon.assert.calledOnce(queryBuilder.insert);
+            assert.equal(queryBuilder.insert.firstCall.args[0].id, 'meta-id');
+            assert.equal(queryBuilder.insert.firstCall.args[0].post_id, 'post-123');
+            assert.equal(queryBuilder.insert.firstCall.args[0].editing_by, 'user-1');
+            assert.equal(queryBuilder.insert.firstCall.args[0].editing_name, 'New User');
+            assert.equal(queryBuilder.insert.firstCall.args[0].editing_avatar, '/content/images/new.png');
+            assert.equal(queryBuilder.insert.firstCall.args[0].editing_session_id, null);
+            assert.ok(queryBuilder.insert.firstCall.args[0].editing_heartbeat_at instanceof Date);
+            sinon.assert.calledOnceWithExactly(queryBuilder.onConflict, 'post_id');
+            sinon.assert.calledOnce(queryBuilder.merge);
+            assert.equal(queryBuilder.merge.firstCall.args[0].editing_by, 'user-1');
+            assert.equal(queryBuilder.merge.firstCall.args[0].editing_name, 'New User');
+            assert.equal(queryBuilder.merge.firstCall.args[0].editing_avatar, '/content/images/new.png');
+            assert.equal(queryBuilder.merge.firstCall.args[0].editing_session_id, null);
+            assert.ok(queryBuilder.merge.firstCall.args[0].editing_heartbeat_at instanceof Date);
+        });
+
+        it('does not steal the editing lease from another active editor on save', async function () {
+            const postData = {id: 'post-123', title: 'Test Post'};
+            const model = {
+                get: sinon.stub().callsFake((key) => {
+                    if (key === 'id') {
+                        return 'post-123';
+                    }
+                    if (key === 'type') {
+                        return 'post';
+                    }
+                    if (key === 'status') {
+                        return 'draft';
+                    }
+                    return null;
+                }),
+                previous: sinon.stub().returns('draft'),
+                toJSON: sinon.stub().returns(postData),
+                wasChanged: sinon.stub().returns(true)
+            };
+            const postsMeta = {
+                get(key) {
+                    if (key === 'editing_by') {
+                        return 'user-2';
+                    }
+                    if (key === 'editing_name') {
+                        return 'Other User';
+                    }
+                    if (key === 'editing_avatar') {
+                        return '/content/images/other.png';
+                    }
+                    if (key === 'editing_session_id') {
+                        return 'other-session';
+                    }
+                    if (key === 'editing_heartbeat_at') {
+                        return new Date();
+                    }
+                    return null;
+                }
+            };
+            const savedPost = {
+                id: 'post-123',
+                related: sinon.stub().withArgs('posts_meta').returns(postsMeta)
+            };
+            const user = {
+                get: sinon.stub().callsFake((key) => {
+                    if (key === 'id') {
+                        return 'user-1';
+                    }
+                    if (key === 'name') {
+                        return 'New User';
+                    }
+                    if (key === 'profile_image') {
+                        return '/content/images/new.png';
+                    }
+                    return null;
+                })
+            };
+            const queryBuilder = {
+                insert: sinon.stub().returnsThis(),
+                onConflict: sinon.stub().returnsThis(),
+                merge: sinon.stub().resolves()
+            };
+            const fakeKnex = sinon.stub().returns(queryBuilder);
+
+            mockModels.Post.edit.resolves(model);
+            mockModels.Post.findOne.resolves(savedPost);
+            mockModels.User.findOne.resolves(user);
+            sinon.stub(db, 'knex').get(() => fakeKnex);
+
+            const frame = {
+                data: {posts: [{status: 'draft'}]},
+                options: {
+                    id: 'post-123',
+                    context: {
+                        user: 'user-1'
+                    }
+                }
+            };
+
+            await postsService.editPost(frame);
+
+            sinon.assert.notCalled(fakeKnex);
+            sinon.assert.notCalled(queryBuilder.insert);
+            sinon.assert.notCalled(queryBuilder.onConflict);
+            sinon.assert.notCalled(queryBuilder.merge);
         });
     });
 
