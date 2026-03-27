@@ -158,6 +158,15 @@ const BuiltInIntegrations: React.FC = () => {
                     title='Transistor.fm' />
             )}
 
+            <IntegrationItem
+                action={() => {
+                    openModal('integrations/contentapi');
+                }}
+                detail='Access your content programmatically'
+                icon={<Icon name='angle-brackets' size={32} />}
+                testId='content-api-integration'
+                title='Content API' />
+
         </List>
     );
 };
