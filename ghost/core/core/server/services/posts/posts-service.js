@@ -3,6 +3,7 @@ const {BadRequestError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const ObjectId = require('bson-objectid').default;
+const db = require('../../data/db');
 const pick = require('lodash/pick');
 const DomainEvents = require('@tryghost/domain-events');
 const PostEmailHandler = require('./post-email-handler');
@@ -15,6 +16,8 @@ const messages = {
     unsupportedBulkAction: 'Unsupported bulk action',
     postNotFound: 'Post not found.'
 };
+
+const EDITING_TTL_MS = 2 * 60 * 1000;
 
 class PostsService {
     constructor({urlUtils, models, isSet, stats, emailService, postsExporter}) {
@@ -76,6 +79,77 @@ class PostsService {
         return dto;
     }
 
+    async touchEditing({id, type, context, sessionId}) {
+        const post = await this.models.Post.findOne(
+            {id, type, status: 'all'},
+            {context, withRelated: ['posts_meta'], require: false}
+        );
+
+        if (!post) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.postNotFound)
+            });
+        }
+
+        const userId = context?.user;
+        const user = userId ? await this.models.User.findOne({id: userId}, {require: false}) : null;
+        const postsMeta = post.related('posts_meta');
+        const currentLease = this.#serializeEditingMeta(postsMeta, post.id);
+
+        if (!user) {
+            return currentLease;
+        }
+
+        if (this.#canClaimEditingLease(postsMeta, user.get('id'), sessionId)) {
+            const now = new Date();
+            const lease = {
+                editing_by: user.get('id'),
+                editing_name: user.get('name'),
+                editing_avatar: user.get('profile_image'),
+                editing_session_id: sessionId,
+                editing_heartbeat_at: now
+            };
+
+            await this.#upsertPostMeta(post.id, lease);
+
+            return this.#serializeEditingMeta({
+                get(key) {
+                    return lease[key];
+                }
+            }, post.id);
+        }
+
+        return currentLease;
+    }
+
+    async clearEditing({id, type, context, sessionId}) {
+        const post = await this.models.Post.findOne(
+            {id, type, status: 'all'},
+            {context, withRelated: ['posts_meta'], require: false}
+        );
+
+        if (!post) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.postNotFound)
+            });
+        }
+
+        const postsMeta = post.related('posts_meta');
+        const currentSessionId = postsMeta?.get('editing_session_id');
+
+        if (!currentSessionId || currentSessionId !== sessionId) {
+            return;
+        }
+
+        await this.#upsertPostMeta(post.id, {
+            editing_by: null,
+            editing_name: null,
+            editing_avatar: null,
+            editing_session_id: null,
+            editing_heartbeat_at: null
+        });
+    }
+
     /**
      * @param {any} model
      * @returns {EventString}
@@ -96,6 +170,58 @@ class PostsService {
         if (model.get('status') === 'scheduled' && model.wasChanged()) {
             return 'scheduled_updated';
         }
+    }
+
+    #isLeaseActive(heartbeatAt) {
+        if (!heartbeatAt) {
+            return false;
+        }
+
+        return (Date.now() - new Date(heartbeatAt).getTime()) < EDITING_TTL_MS;
+    }
+
+    #serializeEditingMeta(postsMeta, postId = null) {
+        const id = postId || postsMeta?.get?.('post_id') || null;
+        const heartbeatAt = postsMeta?.get?.('editing_heartbeat_at') || null;
+
+        if (!this.#isLeaseActive(heartbeatAt)) {
+            return {
+                id,
+                editing_by: null,
+                editing_name: null,
+                editing_avatar: null,
+                editing_heartbeat_at: null
+            };
+        }
+
+        return {
+            id,
+            editing_by: postsMeta.get('editing_by') || null,
+            editing_name: postsMeta.get('editing_name') || null,
+            editing_avatar: postsMeta.get('editing_avatar') || null,
+            editing_heartbeat_at: new Date(heartbeatAt).toISOString()
+        };
+    }
+
+    #canClaimEditingLease(postsMeta, userId, sessionId) {
+        const currentLease = this.#serializeEditingMeta(postsMeta);
+
+        if (!currentLease.editing_heartbeat_at) {
+            return true;
+        }
+
+        return currentLease.editing_by === userId || postsMeta?.get('editing_session_id') === sessionId;
+    }
+
+    async #upsertPostMeta(postId, data) {
+        await db.knex('posts_meta')
+            .insert({
+                id: this.models.Post.generateId(),
+                post_id: postId,
+                ...data
+            })
+            .onConflict('post_id')
+            .merge(data);
     }
 
     #mergeFilters(...filters) {

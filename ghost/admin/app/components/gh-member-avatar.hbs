@@ -1,5 +1,5 @@
 <figure class="gh-member-gravatar {{@containerClass}}">
-    {{#if @member.email}}
+    {{#if (or @member.email @member.name @member.avatarImage @member.avatar_image @name)}}
         <div class="gh-member-initials flex items-center justify-center br-100 {{@containerClass}}" style={{this.backgroundStyle}}>
             <span class="gh-member-avatar-label {{or @sizeClass "gh-member-list-avatar"}}">{{this.initials}}</span>
         </div>

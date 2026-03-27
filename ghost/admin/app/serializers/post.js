@@ -9,6 +9,10 @@ export default class PostSerializer extends ApplicationSerializer.extend(Embedde
         publishedAtUTC: {key: 'published_at'},
         createdAtUTC: {key: 'created_at'},
         updatedAtUTC: {key: 'updated_at'},
+        editingBy: {key: 'editing_by'},
+        editingName: {key: 'editing_name'},
+        editingAvatar: {key: 'editing_avatar'},
+        editingHeartbeatAt: {key: 'editing_heartbeat_at'},
         email: {embedded: 'always'},
         newsletter: {embedded: 'always'},
         postRevisions: {embedded: 'always'}
@@ -27,6 +31,10 @@ export default class PostSerializer extends ApplicationSerializer.extend(Embedde
         delete json.email;
         delete json.newsletter;
         delete json.post_revisions;
+        delete json.editing_by;
+        delete json.editing_name;
+        delete json.editing_avatar;
+        delete json.editing_heartbeat_at;
         // Deprecated property (replaced with data.authors)
         delete json.author;
         // Page-only properties

@@ -120,6 +120,10 @@ export default Model.extend(Comparable, ValidationEngine, {
     featureImageAlt: attr('string'),
     featureImageCaption: attr('string'),
     showTitleAndFeatureImage: attr('boolean', {defaultValue: true}),
+    editingBy: attr('string'),
+    editingName: attr('string'),
+    editingAvatar: attr('string'),
+    editingHeartbeatAt: attr('moment-utc'),
 
     authors: hasMany('user', {embedded: 'always', async: false}),
     email: belongsTo('email', {async: false}),

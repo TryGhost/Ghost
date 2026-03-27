@@ -53,6 +53,12 @@ module.exports = {
         };
     },
 
+    touchEditing(editing, _apiConfig, frame) {
+        frame.response = {
+            pages: [editing]
+        };
+    },
+
     bulkEdit(bulkActionResult, _apiConfig, frame) {
         frame.response = {
             bulk: {
