@@ -1,0 +1,22 @@
+{{#if this.activeEditor}}
+    <span
+        class={{this.indicatorClass}}
+        data-test-active-editor
+        title="Last activity {{gh-format-post-time this.activeEditor.heartbeatAt absolute=true}}"
+    >
+        {{#if this.isListVariant}}
+            {{svg-jar "pen"}}
+            <span class="gh-post-editing-indicator-label">{{this.indicatorText}}</span>
+        {{else}}
+            {{#if this.indicatorPrefix}}
+                <span class="gh-post-editing-indicator-prefix">{{this.indicatorPrefix}}</span>
+            {{/if}}
+            <GhMemberAvatar
+                @member={{this.editingMember}}
+                @containerClass="gh-post-editing-indicator-avatar"
+                @sizeClass="gh-post-editing-indicator-avatar-label"
+            />
+            <span class="gh-post-editing-indicator-label">{{this.indicatorText}}</span>
+        {{/if}}
+    </span>
+{{/if}}

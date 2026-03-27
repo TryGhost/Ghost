@@ -131,6 +131,16 @@ export default function mockPosts(server) {
         return post.update(attrs);
     });
 
+    server.post('/posts/:id/editing/', function ({posts}, {params}) {
+        return {
+            posts: [posts.find(params.id)]
+        };
+    });
+
+    server.del('/posts/:id/editing/', function () {
+        return new Response(204);
+    });
+
     server.del('/posts/:id/');
 
     server.del('/posts/', function ({posts}, {queryParams}) {

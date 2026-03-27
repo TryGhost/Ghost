@@ -40,10 +40,11 @@
                                 and sent to {{gh-pluralize @post.email.emailCount "member"}}
                             {{else}}
                                 and sent
+                                {{/if}}
                             {{/if}}
-                        {{/if}}
-                    </span>
+                        </span>
                 </p>
+                <GhPostEditingIndicator @post={{@post}} @variant="list" />
             {{/unless}}
         </a>
     {{else}}
@@ -137,10 +138,11 @@
                                 {{#if this.isHovered}}
                                     <span {{css-transition "anim-fade-in-scale"}}>to {{gh-pluralize @post.email.emailCount "member"}}</span>
                                 {{/if}}
-                            {{/if}}
-                        </span>
-                    {{/if}}
+                                {{/if}}
+                            </span>
+                        {{/if}}
                 </p>
+                <GhPostEditingIndicator @post={{@post}} @variant="list" />
             {{/unless}}
         </LinkTo>
     {{/if}}

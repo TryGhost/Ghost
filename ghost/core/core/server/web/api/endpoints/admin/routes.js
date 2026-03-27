@@ -34,6 +34,8 @@ module.exports = function apiRoutes() {
     router.put('/posts/bulk', mw.authAdminApi, http(api.posts.bulkEdit));
     router.get('/posts/:id', mw.authAdminApi, http(api.posts.read));
     router.get('/posts/slug/:slug', mw.authAdminApi, http(api.posts.read));
+    router.post('/posts/:id/editing', mw.authAdminApi, http(api.posts.touchEditing));
+    router.delete('/posts/:id/editing', mw.authAdminApi, http(api.posts.clearEditing));
     router.put('/posts/:id', mw.authAdminApi, http(api.posts.edit));
     router.delete('/posts/:id', mw.authAdminApi, http(api.posts.destroy));
     router.post('/posts/:id/copy', mw.authAdminApi, http(api.posts.copy));
@@ -57,6 +59,8 @@ module.exports = function apiRoutes() {
     router.post('/pages', mw.authAdminApi, http(api.pages.add));
     router.get('/pages/:id', mw.authAdminApi, http(api.pages.read));
     router.get('/pages/slug/:slug', mw.authAdminApi, http(api.pages.read));
+    router.post('/pages/:id/editing', mw.authAdminApi, http(api.pages.touchEditing));
+    router.delete('/pages/:id/editing', mw.authAdminApi, http(api.pages.clearEditing));
     router.put('/pages/:id', mw.authAdminApi, http(api.pages.edit));
     router.delete('/pages/:id', mw.authAdminApi, http(api.pages.destroy));
     router.post('/pages/:id/copy', mw.authAdminApi, http(api.pages.copy));

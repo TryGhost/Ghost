@@ -112,7 +112,14 @@ module.exports = async (model, frame, options = {}) => {
     }
 
     // Transforms post/page metadata to flat structure
-    let metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
+    const editingMetaAttrs = ['editing_by', 'editing_name', 'editing_avatar', 'editing_heartbeat_at'];
+    const omittedMetaAttrs = ['id', 'post_id', 'editing_session_id'];
+
+    if (utils.isContentAPI(frame) || !options.includeEditingPresence) {
+        omittedMetaAttrs.push(...editingMetaAttrs);
+    }
+
+    let metaAttrs = _.keys(_.omit(postsMetaSchema, omittedMetaAttrs));
     _(metaAttrs).filter((k) => {
         return (!frame.options.columns || (frame.options.columns && frame.options.columns.includes(k)));
     }).each((attr) => {
@@ -120,7 +127,13 @@ module.exports = async (model, frame, options = {}) => {
         //       The undefined value is possible because `posts_meta` table is lazily created only one of the
         //       values is assigned.
         const defaultValue = (attr === 'email_only') ? false : null;
-        jsonModel[attr] = _.get(jsonModel.posts_meta, attr) || defaultValue;
+        const value = _.get(jsonModel.posts_meta, attr) || defaultValue;
+
+        if (editingMetaAttrs.includes(attr) && value === null) {
+            return;
+        }
+
+        jsonModel[attr] = value;
     });
     delete jsonModel.posts_meta;
 

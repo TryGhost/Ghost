@@ -35,9 +35,10 @@ module.exports = {
             };
         }) || [];
 
+        const includeEditingPresence = ['browse', 'read'].includes(apiConfig.method);
         if (models.meta) {
             for (let model of models.data) {
-                let page = await mappers.pages(model, frame, {tiers});
+                let page = await mappers.pages(model, frame, {tiers, includeEditingPresence});
                 pages.push(page);
             }
             frame.response = {
@@ -47,9 +48,15 @@ module.exports = {
 
             return;
         }
-        let page = await mappers.pages(models, frame, {tiers});
+        let page = await mappers.pages(models, frame, {tiers, includeEditingPresence});
         frame.response = {
             pages: [page]
+        };
+    },
+
+    touchEditing(editing, _apiConfig, frame) {
+        frame.response = {
+            pages: [editing]
         };
     },
 

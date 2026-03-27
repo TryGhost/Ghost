@@ -63,5 +63,15 @@ export default function mockPages(server) {
         return page.update(attrs);
     });
 
+    server.post('/pages/:id/editing/', function ({pages}, {params}) {
+        return {
+            pages: [pages.find(params.id)]
+        };
+    });
+
+    server.del('/pages/:id/editing/', function () {
+        return new Response(204);
+    });
+
     server.del('/pages/:id/');
 }

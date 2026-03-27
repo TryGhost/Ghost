@@ -38,6 +38,7 @@ const DUPLICATED_POST_TITLE_SUFFIX = '(Copy)';
 const AUTOSAVE_TIMEOUT = 3000;
 // time in ms to force a save if the user is continuously typing
 const TIMEDSAVE_TIMEOUT = 60000;
+const EDITING_LEASE_INTERVAL = 30000;
 
 const TK_REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u);
 const WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
@@ -158,9 +159,11 @@ export default class LexicalEditorController extends Controller {
     @service search;
     @service session;
     @service settings;
+    @service store;
     @service ui;
     @service localRevisions;
     @service('unsaved-changes') unsavedChanges;
+    @service postEditing;
 
     @inject config;
 
@@ -186,6 +189,7 @@ export default class LexicalEditorController extends Controller {
     _leaveConfirmed = false;
     _saveOnLeavePerformed = false;
     _previousTagNames = null; // set by setPost and _postSaved, used in hasDirtyAttributes
+    editingSessionId = null;
 
     /* debug properties ------------------------------------------------------*/
 
@@ -914,6 +918,8 @@ export default class LexicalEditorController extends Controller {
         if (titlesMatch && bodiesMatch) {
             this.set('hasDirtyAttributes', false);
         }
+
+        this._startEditingLease(post);
     }
 
     @task
@@ -1072,6 +1078,7 @@ export default class LexicalEditorController extends Controller {
         // don't do anything else if we're setting the same post
         if (post === this.post) {
             this.set('shouldFocusTitle', post.get('isNew'));
+            this._startEditingLease(post);
             return;
         }
 
@@ -1091,6 +1098,7 @@ export default class LexicalEditorController extends Controller {
         // TODO: can these be `boundOneWay` on the model as per the other attrs?
         post.set('titleScratch', post.get('title'));
         post.set('lexicalScratch', post.get('lexical'));
+        this._startEditingLease(post);
 
         this._previousTagNames = this._tagNames;
 
@@ -1328,10 +1336,14 @@ export default class LexicalEditorController extends Controller {
     // called when the editor route is left or the post model is swapped
     reset() {
         let post = this.post;
+        const editingSessionId = this.editingSessionId;
+        const postId = post?.id;
+        const postType = post?.displayName;
 
         // make sure the save tasks aren't still running in the background
         // after leaving the edit route
         this.cancelAutosave();
+        this.editingLeaseTask.cancelAll();
 
         this._unregisterUnsavedChanges?.();
         this._unregisterUnsavedChanges = null;
@@ -1348,9 +1360,16 @@ export default class LexicalEditorController extends Controller {
             }
         }
 
+        if (postId && editingSessionId) {
+            this.postEditing.release({postId, postType, sessionId: editingSessionId}).catch(() => {
+                // ignore lease release failures and rely on TTL expiry
+            });
+        }
+
         this._previousTagNames = [];
         this._leaveConfirmed = false;
         this._saveOnLeavePerformed = false;
+        this.editingSessionId = null;
 
         this._setPostState = null;
         this._postStates = [];
@@ -1399,6 +1418,24 @@ export default class LexicalEditorController extends Controller {
     }).drop())
         _timedSaveTask;
 
+    @restartableTask
+    *editingLeaseTask(postId, postType, sessionId) {
+        while (this.post?.id === postId && this.editingSessionId === sessionId) {
+            try {
+                const lease = yield this.postEditing.touch({postId, postType, sessionId});
+                this._applyEditingLease(lease, postType);
+            } catch (error) {
+                // ignore presence errors, this is informational only
+            }
+
+            if (config.environment === 'test') {
+                return;
+            }
+
+            yield timeout(EDITING_LEASE_INTERVAL);
+        }
+    }
+
     /* Private methods -------------------------------------------------------*/
 
     _assignLexicalDiffToLeaveModalReason() {
@@ -1439,6 +1476,32 @@ export default class LexicalEditorController extends Controller {
             console.error(error); // eslint-disable-line
             Sentry.captureException(error);
         }
+    }
+
+    _applyEditingLease(lease, postType) {
+        if (!lease || !this.post || lease.id !== this.post.id) {
+            return;
+        }
+
+        this.store.pushPayload({
+            [this.postEditing._resourcePath(postType)]: [lease]
+        });
+    }
+
+    _startEditingLease(post = this.post) {
+        if (config.environment === 'test') {
+            return;
+        }
+
+        if (!post || post.isNew || !post.id) {
+            return;
+        }
+
+        if (!this.editingSessionId) {
+            this.editingSessionId = this.postEditing.generateSessionId();
+        }
+
+        this.editingLeaseTask.perform(post.id, post.displayName, this.editingSessionId);
     }
 
     _hasDirtyAttributes() {

@@ -119,7 +119,12 @@ module.exports = {
         frontmatter: {type: 'text', maxlength: 65535, nullable: true},
         feature_image_alt: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 191}}},
         feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
-        email_only: {type: 'boolean', nullable: false, defaultTo: false}
+        email_only: {type: 'boolean', nullable: false, defaultTo: false},
+        editing_by: {type: 'string', maxlength: 24, nullable: true},
+        editing_name: {type: 'string', maxlength: 191, nullable: true},
+        editing_avatar: {type: 'string', maxlength: 2000, nullable: true},
+        editing_session_id: {type: 'string', maxlength: 50, nullable: true},
+        editing_heartbeat_at: {type: 'dateTime', nullable: true}
     },
     // NOTE: this is the staff table
     users: {

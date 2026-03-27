@@ -35,9 +35,10 @@ module.exports = {
                 yearly_price_id: null
             };
         }) || [];
+        const includeEditingPresence = ['browse', 'read'].includes(apiConfig.method);
         if (models.meta) {
             for (let model of models.data) {
-                let post = await mappers.posts(model, frame, {tiers});
+                let post = await mappers.posts(model, frame, {tiers, includeEditingPresence});
                 posts.push(post);
             }
             frame.response = {
@@ -47,9 +48,15 @@ module.exports = {
 
             return;
         }
-        let post = await mappers.posts(models, frame, {tiers});
+        let post = await mappers.posts(models, frame, {tiers, includeEditingPresence});
         frame.response = {
             posts: [post]
+        };
+    },
+
+    touchEditing(editing, _apiConfig, frame) {
+        frame.response = {
+            posts: [editing]
         };
     },
 
