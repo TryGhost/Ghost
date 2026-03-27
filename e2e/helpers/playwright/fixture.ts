@@ -72,6 +72,8 @@ export interface GhostConfig {
     hostSettings__billing__enabled?: string;
     hostSettings__billing__url?: string;
     hostSettings__forceUpgrade?: string;
+    hostSettings__limits__customIntegrations__disabled?: string;
+    hostSettings__limits__customIntegrations__error?: string;
 }
 
 export interface GhostInstanceFixture {

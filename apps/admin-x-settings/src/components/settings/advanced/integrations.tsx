@@ -23,6 +23,16 @@ interface IntegrationItemProps {
     custom?: boolean;
 }
 
+interface BuiltInIntegrationItem {
+    active?: boolean;
+    detail: string;
+    disabled?: boolean;
+    icon: React.ReactNode;
+    modal: string;
+    testId: string;
+    title: string;
+}
+
 const IntegrationItem: React.FC<IntegrationItemProps> = ({
     icon,
     title,
@@ -80,7 +90,7 @@ const BuiltInIntegrations: React.FC = () => {
         updateRoute(modal);
     };
 
-    const zapierDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
+    const builtInApiIntegrationsDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
     const transistorFeatureEnabled = useFeatureFlag('transistor');
 
     const pinturaEditor = usePinturaEditor();
@@ -94,79 +104,86 @@ const BuiltInIntegrations: React.FC = () => {
         'transistor'
     ]);
 
+    const items: BuiltInIntegrationItem[] = [
+        {
+            detail: 'Automation for your apps',
+            disabled: builtInApiIntegrationsDisabled,
+            icon: <Icon name='zapier' size={32} />,
+            modal: 'integrations/zapier',
+            testId: 'zapier-integration',
+            title: 'Zapier'
+        },
+        {
+            active: !!(slackUrl && slackUsername),
+            detail: 'A messaging app for teams',
+            icon: <Icon name='slack' size={32} />,
+            modal: 'integrations/slack',
+            testId: 'slack-integration',
+            title: 'Slack'
+        },
+        {
+            active: !!unsplashEnabled,
+            detail: 'Beautiful, free photos',
+            icon: <Icon name='unsplash' size={32} />,
+            modal: 'integrations/unsplash',
+            testId: 'unsplash-integration',
+            title: 'Unsplash'
+        },
+        {
+            active: !!firstPromoterEnabled,
+            detail: 'Launch your member referral program',
+            icon: <Icon name='firstpromoter' size={32} />,
+            modal: 'integrations/firstpromoter',
+            testId: 'firstpromoter-integration',
+            title: 'FirstPromoter'
+        },
+        {
+            active: pinturaEditor.isEnabled,
+            detail: 'Advanced image editing',
+            icon: <Icon name='pintura' size={32} />,
+            modal: 'integrations/pintura',
+            testId: 'pintura-integration',
+            title: 'Pintura'
+        },
+        ...(transistorFeatureEnabled ? [{
+            active: !!transistorEnabled,
+            detail: 'Give your members access to private podcasts',
+            disabled: builtInApiIntegrationsDisabled,
+            icon: <Icon name='transistor' size={32} />,
+            modal: 'integrations/transistor',
+            testId: 'transistor-integration',
+            title: 'Transistor.fm'
+        }] : []),
+        {
+            detail: 'Access your content programmatically',
+            icon: <Icon name='angle-brackets' size={32} />,
+            modal: 'integrations/contentapi',
+            testId: 'content-api-integration',
+            title: 'Content API'
+        }
+    ];
+
+    const sortedItems = [
+        ...items.filter(item => !item.disabled),
+        ...items.filter(item => item.disabled)
+    ];
+
     return (
         <List titleSeparator={false}>
-            <IntegrationItem
-                action={() => {
-                    openModal('integrations/zapier');
-                }}
-                detail='Automation for your apps'
-                disabled={zapierDisabled}
-                icon={<Icon name='zapier' size={32} />}
-                testId='zapier-integration'
-                title='Zapier' />
-
-            <IntegrationItem
-                action={() => {
-                    openModal('integrations/slack');
-                }}
-                active={slackUrl && slackUsername}
-                detail='A messaging app for teams'
-                icon={<Icon name='slack' size={32} />}
-                testId='slack-integration'
-                title='Slack' />
-
-            <IntegrationItem
-                action={() => {
-                    openModal('integrations/unsplash');
-                }}
-                active={unsplashEnabled}
-                detail='Beautiful, free photos'
-                icon={<Icon name='unsplash' size={32} />}
-                testId='unsplash-integration'
-                title='Unsplash' />
-
-            <IntegrationItem
-                action={() => {
-                    openModal('integrations/firstpromoter');
-                }}
-                active={firstPromoterEnabled}
-                detail='Launch your member referral program'
-                icon={<Icon name='firstpromoter' size={32} />}
-                testId='firstpromoter-integration'
-                title='FirstPromoter' />
-
-            <IntegrationItem
-                action={() => {
-                    openModal('integrations/pintura');
-                }}
-                active={pinturaEditor.isEnabled}
-                detail='Advanced image editing'
-                icon={<Icon name='pintura' size={32} />}
-                testId='pintura-integration'
-                title='Pintura' />
-
-            {transistorFeatureEnabled && (
+            {sortedItems.map(item => (
                 <IntegrationItem
+                    key={item.testId}
                     action={() => {
-                        openModal('integrations/transistor');
+                        openModal(item.modal);
                     }}
-                    active={transistorEnabled}
-                    detail='Give your members access to private podcasts'
-                    icon={<Icon name='transistor' size={32} />}
-                    testId='transistor-integration'
-                    title='Transistor.fm' />
-            )}
-
-            <IntegrationItem
-                action={() => {
-                    openModal('integrations/contentapi');
-                }}
-                detail='Access your content programmatically'
-                icon={<Icon name='angle-brackets' size={32} />}
-                testId='content-api-integration'
-                title='Content API' />
-
+                    active={item.active}
+                    detail={item.detail}
+                    disabled={item.disabled}
+                    icon={item.icon}
+                    testId={item.testId}
+                    title={item.title}
+                />
+            ))}
         </List>
     );
 };
