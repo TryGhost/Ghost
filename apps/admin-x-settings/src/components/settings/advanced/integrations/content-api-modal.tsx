@@ -29,15 +29,9 @@ const ContentApiModal = NiceModal.create(() => {
                     }} />
                 </div>
             }
-            okColor='black'
-            okLabel='Close'
             testId='content-api-modal'
             title=''
             stickyFooter
-            onOk={() => {
-                updateRoute('integrations');
-                modal.remove();
-            }}
         >
             <IntegrationHeader
                 detail='Access your content programmatically'
