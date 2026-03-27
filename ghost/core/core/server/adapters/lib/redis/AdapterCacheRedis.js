@@ -181,6 +181,9 @@ class AdapterCacheRedis extends BaseCacheAdapter {
                 this.cache.get(key).then((result) => {
                     clearTimeout(timer);
                     resolve(result);
+                }).catch(() => {
+                    clearTimeout(timer);
+                    resolve(null);
                 });
             });
         }

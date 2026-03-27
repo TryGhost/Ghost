@@ -60,6 +60,24 @@ describe('Adapter Cache Redis', function () {
             assert.equal(value, 'value from cache');
         });
 
+        it('returns null if the cache get rejects and getTimeoutMilliseconds is set', async function () {
+            const redisCacheInstanceStub = {
+                get: sinon.stub().rejects(new Error('Stream isn\'t writeable and enableOfflineQueue options is false')),
+                store: {
+                    getClient: sinon.stub().returns({
+                        on: sinon.stub()
+                    })
+                }
+            };
+            const cache = new RedisCache({
+                cache: redisCacheInstanceStub,
+                getTimeoutMilliseconds: 100
+            });
+
+            const value = await cache.get('key');
+            assert.equal(value, null);
+        });
+
         it('returns null if getTimeoutMilliseconds is exceeded', async function () {
             const redisCacheInstanceStub = {
                 get: sinon.stub().callsFake(async () => {
