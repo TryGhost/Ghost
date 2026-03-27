@@ -170,6 +170,19 @@ describe('UNIT: settings cache', function () {
         assert.deepEqual(cache.getPublic(), values);
     });
 
+    it('.getPublic() respects a transistor override when computing portal visibility', function () {
+        cache = createCacheManager({
+            transistor: false
+        });
+        cache.set('transistor', {value: true});
+        cache.set('transistor_portal_enabled', {value: true});
+
+        let values = _.zipObject(_.keys(publicSettings), _.fill(Array(_.size(publicSettings)), null));
+        values.transistor_portal_enabled = false;
+
+        assert.deepEqual(cache.getPublic(), values);
+    });
+
     it('.reset() and .init() do not double up events', function () {
         const setSpy = sinon.spy(cache, 'set');
 
