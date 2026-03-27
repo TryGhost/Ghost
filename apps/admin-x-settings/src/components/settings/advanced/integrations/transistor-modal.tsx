@@ -14,7 +14,7 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const TransistorModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();
-    const {settings} = useGlobalData();
+    const {config, settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
 
@@ -22,6 +22,7 @@ const TransistorModal = NiceModal.create(() => {
     const handleError = useHandleError();
     const [regenerated, setRegenerated] = useState(false);
 
+    const builtInApiIntegrationsDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
     const [transistorEnabled] = getSettingValues<boolean>(settings, ['transistor']);
     const [enabled, setEnabled] = useState<boolean>(!!transistorEnabled);
     const [okLabel, setOkLabel] = useState('Save');
@@ -29,6 +30,12 @@ const TransistorModal = NiceModal.create(() => {
     useEffect(() => {
         setEnabled(transistorEnabled || false);
     }, [transistorEnabled]);
+
+    useEffect(() => {
+        if (builtInApiIntegrationsDisabled) {
+            updateRoute('integrations');
+        }
+    }, [builtInApiIntegrationsDisabled, updateRoute]);
 
     const integration = integrations.find(({slug}) => slug === 'transistor');
     const adminApiKey = integration?.api_keys?.find(key => key.type === 'admin');
