@@ -15,6 +15,35 @@ const AutomatedEmail = ghostBookshelf.Model.extend({
         };
     },
 
+    /**
+     * @returns {import('bookshelf').Model}
+     */
+    emailDesignSetting() {
+        return this.belongsTo('EmailDesignSetting', 'email_design_setting_id', 'id');
+    },
+
+    /**
+     * Sets the default email_design_setting_id when not provided.
+     * This ensures backwards compatibility with admin clients that don't
+     * yet know about the email_design_setting_id field.
+     *
+     * @param {import('bookshelf').Model} model
+     * @param {Object} attrs
+     * @param {Object} options
+     */
+    async onCreating(model, attrs, options) {
+        ghostBookshelf.Model.prototype.onCreating.apply(this, arguments);
+
+        if (!model.get('email_design_setting_id')) {
+            const defaultDesignSetting = await ghostBookshelf.model('EmailDesignSetting')
+                .findOne({slug: 'default-automated-email'}, {require: false, ...options});
+
+            if (defaultDesignSetting) {
+                model.set('email_design_setting_id', defaultDesignSetting.id);
+            }
+        }
+    },
+
     parse() {
         const attrs = ghostBookshelf.Model.prototype.parse.apply(this, arguments);
 
