@@ -121,6 +121,10 @@ export class PostEditorPage extends AdminPage {
         await this.page.keyboard.type(body);
     }
 
+    async waitForSaved(): Promise<void> {
+        await this.postStatus.filter({hasText: /Saved/}).waitFor({timeout: 30000});
+    }
+
     get previewModalDesktopFrame(): DesktopPreviewFrame {
         return this.previewModal.desktopPreview;
     }

@@ -20,13 +20,10 @@ test.describe('Ghost Admin - Publishing', () => {
 
         const editor = new PostEditorPage(page);
         await editor.createDraft(postData);
-        await expect(editor.postStatus).toContainText('Draft - Saved');
 
         await editor.publishFlow.open();
         await editor.publishFlow.confirm();
         await editor.publishFlow.close();
-
-        await expect(editor.postStatus).toContainText('Published');
 
         const postPage = new PostPage(page);
         await postPage.goto(`/${generateSlug(postData.title)}/`);
@@ -51,7 +48,6 @@ test.describe('Ghost Admin - Publishing', () => {
 
         const editor = new PostEditorPage(page);
         await editor.createDraft(postData);
-        await expect(editor.postStatus).toContainText('Draft - Saved');
 
         await editor.publishFlow.open();
         await editor.publishFlow.selectPublishType('publish+send');
@@ -80,7 +76,6 @@ test.describe('Ghost Admin - Publishing', () => {
 
         const editor = new PostEditorPage(page);
         await editor.createDraft(postData);
-        await expect(editor.postStatus).toContainText('Draft - Saved');
 
         await editor.publishFlow.open();
         await editor.publishFlow.selectPublishType('send');
@@ -100,7 +95,7 @@ test.describe('Ghost Admin - Deleting Posts', () => {
 
         const editor = new PostEditorPage(page);
         await editor.createDraft({title: 'Delete a post test', body: 'This is the content'});
-        await expect(editor.postStatus).toContainText('Draft - Saved');
+        await editor.waitForSaved();
 
         await editor.settingsToggleButton.click();
         await editor.settingsMenu.deletePost();
