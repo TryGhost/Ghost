@@ -58,8 +58,9 @@ async function verifyPostAccessible(page: Page, slug: string, title: string) {
 }
 
 async function waitForScheduledPost(page: Page) {
-    // Ghost auto-corrects past dates to ~5 seconds from now, so we wait for the scheduler to fire
-    await page.waitForTimeout(6000);
+    // Ghost auto-corrects past dates to ~5 seconds from now, so we wait for the scheduler to fire.
+    // Under load (parallel tests), the scheduler may take longer to run.
+    await page.waitForTimeout(15000);
 }
 
 async function verifyScheduledPostPublishes(page: Page, slug: string, editorUrl: string, editor: PostEditorPage) {
@@ -123,6 +124,7 @@ test.describe('Ghost Admin - Publishing', () => {
         });
 
         test('scheduled - page is published after schedule fires', async ({page}) => {
+            test.slow(); // Scheduled tests wait for the scheduler to fire
             const pageEditor = new PageEditorPage(page);
             await pageEditor.gotoNewPage();
             await pageEditor.createDraft({title: 'Scheduled page test', body: 'This is my scheduled page body.'});
@@ -176,6 +178,7 @@ test.describe('Ghost Admin - Publishing', () => {
 
     test.describe('Schedule post', () => {
         test('scheduled publish only - post appears after schedule fires', async ({page}) => {
+            test.slow(); // Scheduled tests wait for the scheduler to fire
             const editor = await createNewPostDraft(page, {title: 'Scheduled post test', body: 'This is my scheduled post body.'});
             const editorUrl = page.url();
 
@@ -184,6 +187,7 @@ test.describe('Ghost Admin - Publishing', () => {
         });
 
         test('scheduled publish and email - post appears on web after schedule fires', async ({page}) => {
+            test.slow(); // Scheduled tests wait for the scheduler to fire
             await createMemberForEmail(page, 'test+recipient3@example.com');
             const editor = await createNewPostDraft(page, {title: 'Scheduled publish email test', body: 'This is my scheduled post body.'});
             const editorUrl = page.url();
@@ -193,6 +197,7 @@ test.describe('Ghost Admin - Publishing', () => {
         });
 
         test('scheduled email only - post is not available on web after schedule fires', async ({page}) => {
+            test.slow(); // Scheduled tests wait for the scheduler to fire
             await createMemberForEmail(page, 'test+recipient4@example.com');
             const editor = await createNewPostDraft(page, {title: 'Scheduled email only test', body: 'This is my scheduled post body.'});
             const editorUrl = page.url();

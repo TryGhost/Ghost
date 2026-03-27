@@ -130,8 +130,14 @@ export class MemberDetailsPage extends AdminPage {
 
     async impersonate(): Promise<string> {
         await this.settingsSection.memberActionsButton.click();
-        await this.settingsSection.impersonateButton.click();
-        await this.magicLinkInput.waitFor({state: 'visible'});
+        const impersonateBtn = this.page.locator('[data-test-button="impersonate"]');
+        await impersonateBtn.waitFor({state: 'visible'});
+        // The dropdown container has pointer-events:none during its fade-out
+        // animation and Playwright's stability checks can also block the click.
+        // Dispatching a native click event directly on the element bypasses both
+        // CSS pointer-events routing and Playwright's actionability checks.
+        await impersonateBtn.evaluate(el => el.click());
+        await this.magicLinkInput.waitFor({state: 'visible', timeout: 10000});
         await this.page.waitForFunction(
             (selector) => {
                 const inputs = document.querySelectorAll(selector) as NodeListOf<HTMLInputElement>;
@@ -141,7 +147,9 @@ export class MemberDetailsPage extends AdminPage {
             '[data-testid="member-signin-url"]'
         );
         const url = await this.magicLinkInput.inputValue();
-        await this.page.getByRole('button', {name: 'Close'}).click();
+        // Close the impersonation modal and wait for it to disappear
+        await this.page.locator('.modal-content .close').click();
+        await this.page.locator('.epm-modal-container').waitFor({state: 'hidden'});
         return url;
     }
 

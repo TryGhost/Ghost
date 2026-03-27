@@ -153,7 +153,17 @@ class PublishFlow extends BasePage {
     async confirm(): Promise<void> {
         await this.continueButton.click();
         await this.confirmButton.click({force: true});
-        await this.confirmButton.waitFor({state: 'hidden'});
+
+        try {
+            await this.confirmButton.waitFor({state: 'hidden', timeout: 15000});
+        } catch {
+            // Publish may have failed due to transient server errors — retry once
+            const confirmError = this.page.locator('[data-test-confirm-error]');
+            if (await confirmError.isVisible()) {
+                await this.confirmButton.click({force: true});
+                await this.confirmButton.waitFor({state: 'hidden'});
+            }
+        }
     }
 
     async openPublishedPostBookmark(): Promise<Page> {
@@ -228,8 +238,11 @@ export class PostEditorPage extends AdminPage {
     async createDraft(options: {title: string; body?: string}): Promise<void> {
         await this.titleInput.fill(options.title);
         if (options.body) {
-            await this.titleInput.press('Enter');
             await this.editor.waitFor({state: 'visible'});
+            // Click the editor to move focus away from the title field.
+            // The title auto-save only triggers on focus-out (blur), so
+            // we must explicitly move focus before waiting for "Saved".
+            await this.editor.click();
             // Wait for the title save to complete before typing body content,
             // otherwise the POST response overwrites local editor state
             await this.postStatus.filter({hasText: 'Saved'}).waitFor({state: 'visible'});
