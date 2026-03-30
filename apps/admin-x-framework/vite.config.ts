@@ -1,6 +1,6 @@
 import path from 'path';
 import react from '@vitejs/plugin-react';
-import glob from 'glob';
+import {globSync} from 'glob';
 import {resolve} from 'path';
 import {defineConfig} from 'vitest/config';
 
@@ -26,7 +26,7 @@ export default (function viteConfig() {
             outDir: 'dist',
             lib: {
                 formats: ['es', 'cjs'],
-                entry: glob.sync(resolve(__dirname, 'src/**/*.{ts,tsx}')).reduce((entries, libpath) => {
+                entry: globSync(resolve(__dirname, 'src/**/*.{ts,tsx}')).reduce((entries, libpath) => {
                     if (libpath.endsWith('.d.ts')) {
                         return entries;
                     }

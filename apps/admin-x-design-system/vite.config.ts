@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react';
-import glob from 'glob';
+import {globSync} from 'glob';
 import {resolve} from 'path';
 import svgr from 'vite-plugin-svgr';
 import {defineConfig} from 'vitest/config';
@@ -26,7 +26,7 @@ export default (function viteConfig() {
             outDir: 'es',
             lib: {
                 formats: ['es'],
-                entry: glob.sync(resolve(__dirname, 'src/**/*.{ts,tsx}')).reduce((entries, path) => {
+                entry: globSync(resolve(__dirname, 'src/**/*.{ts,tsx}')).reduce((entries, path) => {
                     if (path.includes('.stories.') || path.endsWith('.d.ts')) {
                         return entries;
                     }
