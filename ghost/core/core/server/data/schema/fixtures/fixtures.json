@@ -52,6 +52,14 @@
             ]
         },
         {
+            "name": "EmailDesignSetting",
+            "entries": [
+                {
+                    "slug": "default-automated-email"
+                }
+            ]
+        },
+        {
             "name": "Tag",
             "entries": [
                 {
