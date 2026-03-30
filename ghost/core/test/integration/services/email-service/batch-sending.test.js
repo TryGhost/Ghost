@@ -102,6 +102,36 @@ async function assertVerificationRequiredBlocksEmailSend(requestAgent) {
     }
 }
 
+function setupBatchSendingTestState() {
+    configUtils.set('bulkEmail:batchSize', 100);
+    stubbedSend = sinon.fake.resolves({
+        id: 'stubbed-email-id'
+    });
+    mockManager.mockMail();
+    mockManager.mockMailgun(function () {
+        // Allows for setting stubbedSend during tests
+        return stubbedSend.call(this, ...arguments);
+    });
+    mockManager.mockStripe();
+}
+
+async function resetBatchSendingTestState() {
+    await configUtils.restore();
+    settingsCache.set('email_verification_required', {value: false});
+    mockManager.restore();
+    await jobManager.allSettled();
+    nock.cleanAll();
+}
+
+async function getAuthenticatedBatchSendingAgents() {
+    const agents = await agentProvider.getAgentsWithFrontend();
+
+    await fixtureManager.init('newsletters', 'members:newsletters');
+    await agents.adminAgent.loginAsOwner();
+
+    return agents;
+}
+
 function sortBatches(a, b) {
     const aId = a.get('provider_id');
     const bId = b.get('provider_id');
@@ -167,37 +197,14 @@ describe('Email verification checks', function () {
     let verificationGhostServer;
 
     before(async function () {
-        const agents = await agentProvider.getAgentsWithFrontend();
+        const agents = await getAuthenticatedBatchSendingAgents();
         verificationAgent = agents.adminAgent;
         verificationGhostServer = agents.ghostServer;
-
-        await fixtureManager.init('newsletters', 'members:newsletters');
-        await verificationAgent.loginAsOwner();
     });
 
-    beforeEach(function () {
-        configUtils.set('bulkEmail:batchSize', 100);
-        stubbedSend = sinon.fake.resolves({
-            id: 'stubbed-email-id'
-        });
-        mockManager.mockMail();
-        mockManager.mockMailgun(function () {
-            // Allows for setting stubbedSend during tests
-            return stubbedSend.call(this, ...arguments);
-        });
-        mockManager.mockStripe();
-    });
+    beforeEach(setupBatchSendingTestState);
 
-    afterEach(async function () {
-        await configUtils.restore();
-        await models.Settings.edit([{
-            key: 'email_verification_required',
-            value: false
-        }], {context: {internal: true}});
-        mockManager.restore();
-        await jobManager.allSettled();
-        nock.cleanAll();
-    });
+    afterEach(resetBatchSendingTestState);
 
     after(async function () {
         mockManager.restore();
@@ -216,37 +223,15 @@ describe.skip('Batch sending tests', function () {
     let linkRedirectService, linkRedirectRepository, linkTrackingService, linkClickRepository;
     let ghostServer;
 
-    beforeEach(function () {
-        configUtils.set('bulkEmail:batchSize', 100);
-        stubbedSend = sinon.fake.resolves({
-            id: 'stubbed-email-id'
-        });
-        mockManager.mockMail();
-        mockManager.mockMailgun(function () {
-            // Allows for setting stubbedSend during tests
-            return stubbedSend.call(this, ...arguments);
-        });
-        mockManager.mockStripe();
-    });
+    beforeEach(setupBatchSendingTestState);
 
-    afterEach(async function () {
-        await configUtils.restore();
-        await models.Settings.edit([{
-            key: 'email_verification_required',
-            value: false
-        }], {context: {internal: true}});
-        mockManager.restore();
-        await jobManager.allSettled();
-    });
+    afterEach(resetBatchSendingTestState);
 
     before(async function () {
-        const agents = await agentProvider.getAgentsWithFrontend();
+        const agents = await getAuthenticatedBatchSendingAgents();
         agent = agents.adminAgent;
         frontendAgent = agents.frontendAgent;
         ghostServer = agents.ghostServer;
-
-        await fixtureManager.init('newsletters', 'members:newsletters');
-        await agent.loginAsOwner();
 
         linkRedirectService = require('../../../../core/server/services/link-redirection');
         linkRedirectRepository = linkRedirectService.linkRedirectRepository;
