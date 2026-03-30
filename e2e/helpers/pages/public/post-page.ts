@@ -5,6 +5,8 @@ import {PublicPage} from './public-page';
 export class PostPage extends PublicPage {
     readonly postTitle: Locator;
     readonly postContent: Locator;
+    readonly articleTitle: Locator;
+    readonly articleBody: Locator;
     readonly commentsSection: CommentsSection;
     readonly transistorCard: Locator;
     readonly transistorIframe: Locator;
@@ -14,6 +16,8 @@ export class PostPage extends PublicPage {
         super(page);
         this.postTitle = page.locator('article h1').first();
         this.postContent = page.locator('article.gh-article');
+        this.articleTitle = page.locator('.gh-article-title');
+        this.articleBody = page.locator('.gh-content.gh-canvas > p');
         this.commentsSection = new CommentsSection(page);
         this.transistorCard = page.locator('.kg-transistor-card');
         this.transistorIframe = page.locator('iframe[data-kg-transistor-embed]');
