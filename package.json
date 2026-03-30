@@ -89,19 +89,23 @@
   },
   "devDependencies": {
     "@actions/core": "1.11.1",
+    "@playwright/test": "1.58.2",
+    "bindings": "1.5.0",
     "chalk": "4.1.2",
     "chokidar": "3.6.0",
     "concurrently": "8.2.2",
     "eslint": "8.57.1",
     "eslint-plugin-ghost": "3.5.0",
     "eslint-plugin-react": "7.37.5",
+    "file-uri-to-path": "1.0.0",
     "husky": "8.0.3",
     "inquirer": "8.2.7",
     "jsonc-parser": "3.3.1",
     "lint-staged": "15.5.2",
     "nx": "22.0.4",
     "rimraf": "5.0.10",
-    "typescript": "5.8.3"
+    "typescript": "5.8.3",
+    "validator": "13.12.0"
   },
   "dependencies": {},
   "nx": {

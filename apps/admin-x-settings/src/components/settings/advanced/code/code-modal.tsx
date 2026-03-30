@@ -2,7 +2,6 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import {ButtonGroup, CodeEditor, Heading, Modal, TabView} from '@tryghost/admin-x-design-system';
-import {type ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useSaveButton} from '../../../../hooks/use-save-button';
 
@@ -25,8 +24,8 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
 
     const [selectedTab, setSelectedTab] = useState<'header' | 'footer'>('header');
 
-    const headerEditorRef = useRef<ReactCodeMirrorRef>(null);
-    const footerEditorRef = useRef<ReactCodeMirrorRef>(null);
+    const headerEditorRef = useRef<React.ComponentRef<typeof CodeEditor>>(null);
+    const footerEditorRef = useRef<React.ComponentRef<typeof CodeEditor>>(null);
 
     const html = useMemo(() => import('@codemirror/lang-html').then(module => module.html()), []);
 

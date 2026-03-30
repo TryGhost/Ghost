@@ -234,6 +234,7 @@
     "@types/common-tags": "1.8.4",
     "@types/express": "4.17.21",
     "@types/jsonwebtoken": "9.0.10",
+    "@types/mocha": "10.0.10",
     "@types/mime-types": "3.0.1",
     "@types/node": "22.18.10",
     "@types/node-jose": "1.1.13",

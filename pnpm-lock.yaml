@@ -21,6 +21,12 @@ importers:
       '@actions/core':
         specifier: 1.11.1
         version: 1.11.1
+      '@playwright/test':
+        specifier: 1.58.2
+        version: 1.58.2
+      bindings:
+        specifier: 1.5.0
+        version: 1.5.0
       chalk:
         specifier: 4.1.2
         version: 4.1.2
@@ -39,6 +45,9 @@ importers:
       eslint-plugin-react:
         specifier: 7.37.5
         version: 7.37.5(eslint@8.57.1)
+      file-uri-to-path:
+        specifier: 1.0.0
+        version: 1.0.0
       husky:
         specifier: 8.0.3
         version: 8.0.3
@@ -60,6 +69,9 @@ importers:
       typescript:
         specifier: 5.8.3
         version: 5.8.3
+      validator:
+        specifier: 13.12.0
+        version: 13.12.0
 
   apps/activitypub:
     dependencies:
@@ -2258,6 +2270,9 @@ importers:
       '@types/mime-types':
         specifier: 3.0.1
         version: 3.0.1
+      '@types/mocha':
+        specifier: 10.0.10
+        version: 10.0.10
       '@types/node':
         specifier: 22.18.10
         version: 22.18.10
@@ -8759,6 +8774,9 @@ packages:
 
   '@types/minimist@1.2.2':
     resolution: {integrity: sha512-jhuKLIRrhvCPLqwPcx6INqmKeiA5EWrsCOPhrlFSrbrmU4ZMPjj5Ul/oLCMDO98XRUIwVm78xICz4EPCektzeQ==}
+
+  '@types/mocha@10.0.10':
+    resolution: {integrity: sha512-xPyYSz1cMPnJQhl0CLMH68j3gprKZaTjG3s5Vi+fDgx+uhG9NOXwbVt52eFS8ECyXhyKcjDLCBEqBExKuiZb7Q==}
 
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
@@ -30310,6 +30328,8 @@ snapshots:
 
   '@types/minimist@1.2.2': {}
 
+  '@types/mocha@10.0.10': {}
+
   '@types/ms@2.1.0': {}
 
   '@types/mysql@2.15.27':
@@ -32391,7 +32411,6 @@ snapshots:
   bindings@1.5.0:
     dependencies:
       file-uri-to-path: 1.0.0
-    optional: true
 
   bintrees@1.0.2: {}
 
@@ -37688,8 +37707,7 @@ snapshots:
       strtok3: 6.3.0
       token-types: 4.2.1
 
-  file-uri-to-path@1.0.0:
-    optional: true
+  file-uri-to-path@1.0.0: {}
 
   filesize@4.2.1: {}
 
