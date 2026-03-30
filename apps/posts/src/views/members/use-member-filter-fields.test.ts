@@ -7,6 +7,7 @@ import {
 import {describe, expect, it, vi} from 'vitest';
 import {memberFields} from './member-fields';
 import {renderHook} from '@testing-library/react';
+import type {ValueSource} from '@tryghost/shade';
 
 vi.mock('@tryghost/shade', () => ({
     LucideIcon: new Proxy({}, {
@@ -16,25 +17,21 @@ vi.mock('@tryghost/shade', () => ({
     })
 }));
 
-vi.mock('@src/components/label-picker/label-filter-renderer', () => ({
-    default: () => null
-}));
-
 describe('useMemberFilterFields', () => {
+    const labelValueSource = {id: 'labels', useOptions: vi.fn()} as unknown as ValueSource<string>;
+    const postValueSource = {id: 'posts', useOptions: vi.fn()} as unknown as ValueSource<string>;
+    const emailValueSource = {id: 'emails', useOptions: vi.fn()} as unknown as ValueSource<string>;
+    const tierValueSource = {id: 'tiers', useOptions: vi.fn()} as unknown as ValueSource<string>;
+
     it('hydrates grouped member fields from the local schema', () => {
         const {result} = renderHook(() => useMemberFilterFields({
-            labelsOptions: [{value: 'vip', label: 'VIP'}],
+            labelValueSource,
             newsletters: [{slug: 'weekly', name: 'Weekly', status: 'active'}],
             paidMembersEnabled: true,
             emailFiltersEnabled: true,
-            postResourceOptions: [{value: 'post_1', label: 'Welcome'}],
-            onPostResourceSearchChange: vi.fn(),
-            postResourceSearchValue: 'wel',
-            postResourceLoading: false,
-            emailResourceOptions: [{value: 'email_1', label: 'Launch'}],
-            onEmailResourceSearchChange: vi.fn(),
-            emailResourceSearchValue: 'lau',
-            emailResourceLoading: false,
+            postValueSource,
+            emailValueSource,
+            tierValueSource,
             offers: [{id: 'offer_1', name: 'Offer', redemption_type: 'signup', cadence: 'month'} as never],
             membersTrackSources: true,
             emailTrackOpens: true,
@@ -55,19 +52,20 @@ describe('useMemberFilterFields', () => {
         const emailPostField = emailFields.find(field => field.key === 'emails.post_id');
 
         expect(labelField?.operators?.map(operator => operator.value)).toEqual(memberFields.label.operators);
-        expect(labelField?.options).toEqual([{value: 'vip', label: 'VIP'}]);
+        expect(labelField).toMatchObject({
+            options: [],
+            valueSource: labelValueSource
+        });
         expect(labelField?.customRenderer).toBeTypeOf('function');
 
         expect(signupField).toMatchObject({
-            options: [{value: 'post_1', label: 'Welcome'}],
-            searchValue: 'wel',
-            isLoading: false
+            options: [],
+            valueSource: postValueSource
         });
 
         expect(emailPostField).toMatchObject({
-            options: [{value: 'email_1', label: 'Launch'}],
-            searchValue: 'lau',
-            isLoading: false
+            options: [],
+            valueSource: emailValueSource
         });
     });
 
@@ -90,10 +88,7 @@ describe('useMemberFilterFields', () => {
     it('keeps the feedback filter visible without a separate feature flag', () => {
         const {result} = renderHook(() => useMemberFilterFields({
             emailFiltersEnabled: true,
-            emailResourceOptions: [{value: 'email_1', label: 'Launch'}],
-            onEmailResourceSearchChange: vi.fn(),
-            emailResourceSearchValue: 'lau',
-            emailResourceLoading: false,
+            emailValueSource,
             siteTimezone: 'UTC'
         }));
 
@@ -101,9 +96,8 @@ describe('useMemberFilterFields', () => {
         const feedbackField = emailFields.find(field => field.key === 'newsletter_feedback');
 
         expect(feedbackField).toMatchObject({
-            options: [{value: 'email_1', label: 'Launch'}],
-            searchValue: 'lau',
-            isLoading: false
+            options: [],
+            valueSource: emailValueSource
         });
     });
 
