@@ -24,6 +24,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
 const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
+const {setupMockVerificationWebhook} = require('../../utils/verification-webhook-test-utils.ts');
 
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = await models[eventType].where('member_id', memberId).fetchAll();
@@ -62,6 +63,42 @@ async function createMember(data) {
     });
 
     return member;
+}
+
+function mockAdminVerificationSignupEvents({memberTotal = 0} = {}) {
+    let adminTotal = 0;
+
+    return sinon.stub(membersService.api.events, 'getSignupEvents').callsFake(async (_options, filter) => {
+        if (filter?.source === 'admin') {
+            adminTotal += 1;
+
+            return {
+                meta: {
+                    pagination: {
+                        total: adminTotal
+                    }
+                }
+            };
+        }
+
+        if (filter?.source === 'member') {
+            return {
+                meta: {
+                    pagination: {
+                        total: memberTotal
+                    }
+                }
+            };
+        }
+
+        return {
+            meta: {
+                pagination: {
+                    total: 0
+                }
+            }
+        };
+    });
 }
 
 const newsletterSnapshot = {
@@ -960,118 +997,94 @@ describe('Members API', function () {
 
     it('Can add a member and trigger host webhook verification limits', async function () {
         mockManager.mockLabsEnabled('verificationFlow');
-        const webhookUrl = 'https://test-webhook-receiver.com/mock-verification-event-endpoint/';
-        const webhookSecret = 'not-a-live-secret';
-        const receivedWebhookRequests = [];
-        const webhookEndpoint = new URL(webhookUrl);
+        const {webhookSecret, receivedWebhookRequests} = setupMockVerificationWebhook({persist: true});
+        const signupEventsStub = mockAdminVerificationSignupEvents();
+        let memberPassVerification;
+        let memberFailVerification;
 
-        configUtils.set('hostSettings:siteId', '1');
-        configUtils.set('hostSettings:emailVerification', {
-            apiThreshold: 0,
-            adminThreshold: 1,
-            importThreshold: 0,
-            verified: false,
-            escalationAddress: 'test@example.com',
-            webhookType: 'mock_verification_event',
-            webhookUrl,
-            webhookSecret
-        });
+        try {
+            assert.ok(!settingsCache.get('email_verification_required'), 'Email verification should NOT be required');
 
-        nock(webhookEndpoint.origin)
-            .persist()
-            .post(webhookEndpoint.pathname)
-            .reply(function (_uri, requestBody) {
-                const rawBody = Buffer.isBuffer(requestBody) ?
-                    requestBody.toString('utf8') :
-                    typeof requestBody === 'string' ?
-                        requestBody :
-                        JSON.stringify(requestBody);
-                const parsedBody = typeof requestBody === 'object' && !Buffer.isBuffer(requestBody) ?
-                    requestBody :
-                    JSON.parse(rawBody);
+            const member = {
+                name: 'pass webhook verification',
+                email: 'memberPassWebhookVerification@test.com'
+            };
 
-                receivedWebhookRequests.push({
-                    body: parsedBody,
-                    headers: this.req.headers,
-                    rawBody
+            const {body: passBody} = await agent
+                .post(`/members/`)
+                .body({members: [member]})
+                .expectStatus(201)
+                .matchBodySnapshot({
+                    members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('members')
                 });
+            memberPassVerification = passBody.members[0];
 
-                return [200, {status: 'OK'}];
+            await DomainEvents.allSettled();
+            assert.ok(!settingsCache.get('email_verification_required'), 'Email verification should NOT be required');
+
+            const memberFailLimit = {
+                name: 'fail webhook verification',
+                email: 'memberFailWebhookVerification@test.com'
+            };
+
+            const {body: failBody} = await agent
+                .post(`/members/`)
+                .body({members: [memberFailLimit]})
+                .expectStatus(201)
+                .matchBodySnapshot({
+                    members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('members')
+                });
+            memberFailVerification = failBody.members[0];
+
+            await DomainEvents.allSettled();
+            assert.ok(settingsCache.get('email_verification_required'), 'Email verification should be required');
+            emailMockReceiver.assertSentEmailCount(0);
+
+            const matchingRequest = receivedWebhookRequests.find((request) => {
+                return request.body.type === 'mock_verification_event' &&
+                    request.body.siteId === '1' &&
+                    request.body.amountTriggered === 2 &&
+                    request.body.threshold === 1 &&
+                    request.body.method === 'admin';
             });
 
-        assert.ok(!settingsCache.get('email_verification_required'), 'Email verification should NOT be required');
+            assert.ok(matchingRequest, 'Expected the verification webhook request to be sent with the configured payload');
 
-        const member = {
-            name: 'pass webhook verification',
-            email: 'memberPassWebhookVerification@test.com'
-        };
+            const requestTimestamp = Array.isArray(matchingRequest.headers['x-ghost-request-timestamp']) ?
+                matchingRequest.headers['x-ghost-request-timestamp'][0] :
+                matchingRequest.headers['x-ghost-request-timestamp'];
+            const requestSignature = Array.isArray(matchingRequest.headers['x-ghost-signature']) ?
+                matchingRequest.headers['x-ghost-signature'][0] :
+                matchingRequest.headers['x-ghost-signature'];
+            const expectedSignature = crypto.createHmac('sha256', webhookSecret)
+                .update(`${requestTimestamp}:${matchingRequest.rawBody}`)
+                .digest('base64');
 
-        const {body: passBody} = await agent
-            .post(`/members/`)
-            .body({members: [member]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-        const memberPassVerification = passBody.members[0];
+            assert.ok(requestTimestamp, 'Expected the verification webhook request to include a timestamp header');
+            assert.equal(requestSignature, expectedSignature, 'Expected the verification webhook request to be signed');
+        } finally {
+            signupEventsStub.restore();
+            await configUtils.restore();
+            nock.cleanAll();
 
-        await DomainEvents.allSettled();
-        assert.ok(!settingsCache.get('email_verification_required'), 'Email verification should NOT be required');
+            if (memberPassVerification?.id) {
+                await agent.delete(`/members/${memberPassVerification.id}`);
+            }
 
-        const memberFailLimit = {
-            name: 'fail webhook verification',
-            email: 'memberFailWebhookVerification@test.com'
-        };
-
-        const {body: failBody} = await agent
-            .post(`/members/`)
-            .body({members: [memberFailLimit]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-        const memberFailVerification = failBody.members[0];
-
-        await DomainEvents.allSettled();
-        assert.ok(settingsCache.get('email_verification_required'), 'Email verification should be required');
-        emailMockReceiver.assertSentEmailCount(0);
-
-        const matchingRequest = receivedWebhookRequests.find((request) => {
-            return request.body.type === 'mock_verification_event' &&
-                request.body.siteId === '1' &&
-                request.body.amountTriggered === 2 &&
-                request.body.threshold === 1 &&
-                request.body.method === 'admin';
-        });
-
-        assert.ok(matchingRequest, 'Expected the verification webhook request to be sent with the configured payload');
-
-        const requestTimestamp = Array.isArray(matchingRequest.headers['x-ghost-request-timestamp']) ?
-            matchingRequest.headers['x-ghost-request-timestamp'][0] :
-            matchingRequest.headers['x-ghost-request-timestamp'];
-        const requestSignature = Array.isArray(matchingRequest.headers['x-ghost-signature']) ?
-            matchingRequest.headers['x-ghost-signature'][0] :
-            matchingRequest.headers['x-ghost-signature'];
-        const expectedSignature = crypto.createHmac('sha256', webhookSecret)
-            .update(`${requestTimestamp}:${matchingRequest.rawBody}`)
-            .digest('base64');
-
-        assert.ok(requestTimestamp, 'Expected the verification webhook request to include a timestamp header');
-        assert.equal(requestSignature, expectedSignature, 'Expected the verification webhook request to be signed');
-
-        // state cleanup
-        await agent.delete(`/members/${memberPassVerification.id}`);
-        await agent.delete(`/members/${memberFailVerification.id}`);
+            if (memberFailVerification?.id) {
+                await agent.delete(`/members/${memberFailVerification.id}`);
+            }
+        }
     });
 
     it('Can add and send a signup confirmation email', async function () {

@@ -1,6 +1,7 @@
 const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
 const moment = require('moment');
 const models = require('../../../../core/server/models');
+const nock = require('nock');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
@@ -11,6 +12,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const emailService = require('../../../../core/server/services/email-service');
 const {mockSetting, stripeMocker} = require('../../../utils/e2e-framework-mock-manager');
 const {sendEmail, sendFailedEmail, matchEmailSnapshot, getDefaultNewsletter, retryEmail} = require('../../../utils/batch-email-utils');
+const {setupMockVerificationWebhook} = require('../../../utils/verification-webhook-test-utils.ts');
 
 const mobileDocExample = '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]]],"ghostVersion":"4.0"}';
 const mobileDocWithPaywall = '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}';
@@ -23,6 +25,61 @@ const mobileDocWithReplacements = '{"version":"0.3.1","atoms":[],"cards":[["emai
 let agent;
 let stubbedSend;
 let frontendAgent;
+
+async function assertVerificationRequiredBlocksEmailSend(requestAgent) {
+    const {scope: webhookScope} = setupMockVerificationWebhook({
+        apiThreshold: 100,
+        adminThreshold: 100,
+        importThreshold: 100
+    });
+
+    const members = require('../../../../core/server/services/members');
+    const events = members.api.events;
+    const getSignupEvents = sinon.stub(events, 'getSignupEvents').resolves({
+        meta: {
+            pagination: {
+                total: 100000
+            }
+        }
+    });
+
+    try {
+        assert.equal(settingsCache.get('email_verification_required'), false, 'This test requires email verification to be disabled initially');
+
+        const post = {
+            title: 'A random test post',
+            status: 'draft',
+            feature_image_alt: 'Testing sending',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
+            created_at: moment().subtract(2, 'days').toISOString(),
+            updated_at: moment().subtract(2, 'days').toISOString()
+        };
+
+        const res = await requestAgent.post('posts/')
+            .body({posts: [post]})
+            .expectStatus(201);
+
+        const id = res.body.posts[0].id;
+
+        const updatedPost = {
+            status: 'published',
+            updated_at: res.body.posts[0].updated_at
+        };
+
+        const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
+        await requestAgent.put(`posts/${id}/?newsletter=${newsletterSlug}`)
+            .body({posts: [updatedPost]})
+            .expectStatus(403);
+
+        sinon.assert.calledTwice(getSignupEvents);
+        assert.equal(settingsCache.get('email_verification_required'), true);
+        assert.equal(webhookScope.isDone(), true);
+    } finally {
+        getSignupEvents.restore();
+        await configUtils.restore();
+        nock.cleanAll();
+    }
+}
 
 function sortBatches(a, b) {
     const aId = a.get('provider_id');
@@ -83,6 +140,50 @@ async function testEmailBatches(settings, email_recipient_filter, expectedBatche
     const memberIds = emailRecipients.map(recipient => recipient.get('member_id'));
     assert.equal(memberIds.length, _.uniq(memberIds).length);
 }
+
+describe('Email verification checks', function () {
+    let verificationAgent;
+    let verificationGhostServer;
+
+    before(async function () {
+        const agents = await agentProvider.getAgentsWithFrontend();
+        verificationAgent = agents.adminAgent;
+        verificationGhostServer = agents.ghostServer;
+
+        await fixtureManager.init('newsletters', 'members:newsletters');
+        await verificationAgent.loginAsOwner();
+    });
+
+    beforeEach(function () {
+        mockManager.mockLabsEnabled('verificationFlow');
+        stubbedSend = sinon.fake.resolves({
+            id: 'stubbed-email-id'
+        });
+        mockManager.mockMail();
+        mockManager.mockMailgun(function () {
+            return stubbedSend.call(this, ...arguments);
+        });
+        mockManager.mockStripe();
+    });
+
+    afterEach(async function () {
+        settingsCache.set('email_verification_required', {value: false});
+        mockManager.restore();
+        await jobManager.allSettled();
+        nock.cleanAll();
+    });
+
+    after(async function () {
+        mockManager.restore();
+        if (verificationGhostServer) {
+            await verificationGhostServer.stop();
+        }
+    });
+
+    it('Blocks email sending when verificationFlow is enabled', async function () {
+        await assertVerificationRequiredBlocksEmailSend(verificationAgent);
+    });
+});
 
 // The batch sending tests have some sort of ordering issue that causes them to fail intermittently
 // We need to decide if they are worth keeping, or if we should rewrite them to be more reliable
