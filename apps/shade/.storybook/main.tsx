@@ -1,4 +1,3 @@
-import {createRequire} from 'node:module';
 import {dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import type { StorybookConfig } from "@storybook/react-vite";
@@ -6,7 +5,6 @@ import path from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const require = createRequire(import.meta.url);
 
 const config: StorybookConfig = {
     stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
@@ -38,14 +36,12 @@ const config: StorybookConfig = {
 		if (Array.isArray(config.resolve.alias)) {
 			config.resolve.alias = [
 				...config.resolve.alias,
-				{find: '@', replacement: path.resolve(__dirname, '../src')},
-				{find: 'crypto', replacement: require.resolve('rollup-plugin-node-builtins')}
+				{find: '@', replacement: path.resolve(__dirname, '../src')}
 			];
 		} else {
 			config.resolve.alias = {
 				...(config.resolve.alias ?? {}),
-				'@': path.resolve(__dirname, '../src'),
-				crypto: require.resolve('rollup-plugin-node-builtins')
+				'@': path.resolve(__dirname, '../src')
 			};
 		}
 
