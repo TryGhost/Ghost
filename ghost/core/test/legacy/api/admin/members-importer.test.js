@@ -1,12 +1,11 @@
 const path = require('path');
-const nock = require('nock');
 const supertest = require('supertest');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../core/shared/config');
-const configUtils = require('../../../utils/config-utils');
 const settingsCache = require('../../../../core/shared/settings-cache');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
+const {setupMockVerificationWebhook} = require('../../../utils/verification-webhook-test-utils.ts');
 
 const {mockManager} = require('../../../utils/e2e-framework');
 const assert = require('node:assert/strict');
@@ -14,27 +13,6 @@ const {assertExists} = require('../../../utils/assertions');
 
 let request;
 let emailMockReceiver;
-
-const mockVerificationWebhook = () => {
-    const webhookUrl = 'https://test-webhook-receiver.com/mock-verification-event-endpoint/';
-    const webhookEndpoint = new URL(webhookUrl);
-    const scope = nock(webhookEndpoint.origin)
-        .post(webhookEndpoint.pathname)
-        .reply(200, {status: 'OK'});
-
-    configUtils.set('hostSettings:siteId', '1');
-    configUtils.set('hostSettings:emailVerification', {
-        apiThreshold: 2,
-        adminThreshold: 2,
-        importThreshold: 1,
-        verified: false,
-        webhookType: 'mock_verification_event',
-        webhookUrl,
-        webhookSecret: 'not-a-live-secret'
-    });
-
-    return scope;
-};
 
 describe('Members Importer API', function () {
     before(async function () {
@@ -266,7 +244,11 @@ describe('Members Importer API', function () {
     });
 
     it('Can import members with host emailVerification limits', async function () {
-        const webhookScope = mockVerificationWebhook();
+        const {scope: webhookScope} = setupMockVerificationWebhook({
+            apiThreshold: 2,
+            adminThreshold: 2,
+            importThreshold: 1
+        });
 
         const res = await request
             .post(localUtils.API.getApiQuery(`members/upload/`))
@@ -321,7 +303,11 @@ describe('Members Importer API', function () {
 
         assert(!settingsCache.get('email_verification_required'), 'Email verification should not be required');
 
-        const webhookScope = mockVerificationWebhook();
+        const {scope: webhookScope} = setupMockVerificationWebhook({
+            apiThreshold: 2,
+            adminThreshold: 2,
+            importThreshold: 1
+        });
 
         const awaitCompletion = jobManager.awaitCompletion('members-import');
 

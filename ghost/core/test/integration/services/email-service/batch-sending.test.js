@@ -12,6 +12,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const emailService = require('../../../../core/server/services/email-service');
 const {mockSetting, stripeMocker} = require('../../../utils/e2e-framework-mock-manager');
 const {sendEmail, sendFailedEmail, matchEmailSnapshot, getDefaultNewsletter, retryEmail} = require('../../../utils/batch-email-utils');
+const {setupMockVerificationWebhook} = require('../../../utils/verification-webhook-test-utils.ts');
 
 const mobileDocExample = '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]]],"ghostVersion":"4.0"}';
 const mobileDocWithPaywall = '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}';
@@ -25,33 +26,12 @@ let agent;
 let stubbedSend;
 let frontendAgent;
 
-function mockVerificationWebhook({
-    apiThreshold = 100,
-    adminThreshold = 100,
-    importThreshold = 100
-} = {}) {
-    const webhookUrl = 'https://test-webhook-receiver.com/mock-verification-event-endpoint/';
-    const webhookEndpoint = new URL(webhookUrl);
-    const scope = nock(webhookEndpoint.origin)
-        .post(webhookEndpoint.pathname)
-        .reply(200, {status: 'OK'});
-
-    configUtils.set('hostSettings:siteId', '1');
-    configUtils.set('hostSettings:emailVerification', {
-        apiThreshold,
-        adminThreshold,
-        importThreshold,
-        verified: false,
-        webhookType: 'mock_verification_event',
-        webhookUrl,
-        webhookSecret: 'not-a-live-secret'
-    });
-
-    return scope;
-}
-
 async function assertVerificationRequiredBlocksEmailSend(requestAgent) {
-    const webhookScope = mockVerificationWebhook();
+    const {scope: webhookScope} = setupMockVerificationWebhook({
+        apiThreshold: 100,
+        adminThreshold: 100,
+        importThreshold: 100
+    });
 
     // We stub a lot of imported members to mimic a large import that is in progress but is not yet finished
     // the current verification required value is off. But when creating an email, we need to update that check to avoid this issue.
