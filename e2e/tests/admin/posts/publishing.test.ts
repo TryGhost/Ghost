@@ -4,10 +4,10 @@ import {PostPage} from '@/helpers/pages';
 import {createMemberFactory, generateSlug} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
 
-async function getNewsletters(request: APIRequestContext): Promise<{id: string}[]> {
+async function getNewsletters(request: APIRequestContext): Promise<string[]> {
     const response = await request.get('/ghost/api/admin/newsletters/?status=active&limit=all');
     const data = await response.json();
-    return data.newsletters.map((n: {id: string}) => ({id: n.id}));
+    return data.newsletters.map((n: {id: string}) => n.id);
 }
 
 test.describe('Ghost Admin - Publishing', () => {
@@ -39,7 +39,7 @@ test.describe('Ghost Admin - Publishing', () => {
         await memberFactory.create({
             email: 'publish-email-test@example.com',
             name: 'Publishing member',
-            newsletters: newsletters as never
+            newsletters
         });
 
         const postsPage = new PostsPage(page);
@@ -67,7 +67,7 @@ test.describe('Ghost Admin - Publishing', () => {
         await memberFactory.create({
             email: 'email-only-test@example.com',
             name: 'Publishing member',
-            newsletters: newsletters as never
+            newsletters
         });
 
         const postsPage = new PostsPage(page);
