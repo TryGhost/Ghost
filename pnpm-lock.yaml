@@ -1002,6 +1002,9 @@ importers:
       '@testing-library/react-hooks':
         specifier: 8.0.1
         version: 8.0.1(@types/react@18.3.26)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/color':
+        specifier: 4.2.1
+        version: 4.2.1
       '@types/lodash-es':
         specifier: 4.17.12
         version: 4.17.12
@@ -8574,6 +8577,9 @@ packages:
 
   '@types/color@3.0.6':
     resolution: {integrity: sha512-NMiNcZFRUAiUUCCf7zkAelY8eV3aKqfbzyFQlXpPIEeoNDbsEHGpb854V3gzTsGKYj830I5zPuOwU/TP5/cW6A==}
+
+  '@types/color@4.2.1':
+    resolution: {integrity: sha512-ResWeDLy1vozIMbD6JLRKuNBbIcIlBkjTIxVHHd5Cqtm77T+ahH3BWE/PWv1OhFd1HAwcn8no4ig2uTaRXpYQQ==}
 
   '@types/common-tags@1.8.4':
     resolution: {integrity: sha512-S+1hLDJPjWNDhcGxsxEbepzaxWqURP/o+3cP4aa2w7yBXgdcmKGQtZzP8JbyfOd0m+33nh+8+kvxYE2UJtBDkg==}
@@ -30108,6 +30114,10 @@ snapshots:
   '@types/color-name@1.1.2': {}
 
   '@types/color@3.0.6':
+    dependencies:
+      '@types/color-convert': 2.0.2
+
+  '@types/color@4.2.1':
     dependencies:
       '@types/color-convert': 2.0.2
 

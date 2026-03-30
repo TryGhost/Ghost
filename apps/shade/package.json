@@ -36,6 +36,7 @@
         "@tailwindcss/vite": "4.2.1",
         "@testing-library/react": "14.3.1",
         "@testing-library/react-hooks": "8.0.1",
+        "@types/color": "4.2.1",
         "@types/lodash-es": "4.17.12",
         "@types/node": "22.18.10",
         "@types/react": "18.3.26",
