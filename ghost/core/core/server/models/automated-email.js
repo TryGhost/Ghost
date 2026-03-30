@@ -32,7 +32,7 @@ const AutomatedEmail = ghostBookshelf.Model.extend({
      * @param {Object} options
      */
     async onCreating(model, attrs, options) {
-        ghostBookshelf.Model.prototype.onCreating.apply(this, arguments);
+        await ghostBookshelf.Model.prototype.onCreating.apply(this, arguments);
 
         if (!model.get('email_design_setting_id')) {
             const defaultDesignSetting = await ghostBookshelf.model('EmailDesignSetting')
