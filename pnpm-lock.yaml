@@ -544,6 +544,18 @@ importers:
       '@codemirror/lang-html':
         specifier: 6.4.11
         version: 6.4.11
+      '@dnd-kit/sortable':
+        specifier: 7.0.2
+        version: 7.0.2(@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+      '@ebay/nice-modal-react':
+        specifier: 1.2.13
+        version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@sentry/react':
+        specifier: 7.120.4
+        version: 7.120.4(react@18.3.1)
+      '@tanstack/react-query':
+        specifier: 4.36.1
+        version: 4.36.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/color-utils':
         specifier: 0.2.10
         version: 0.2.10
@@ -562,12 +574,27 @@ importers:
       '@tryghost/timezone-data':
         specifier: 0.4.12
         version: 0.4.12
+      clsx:
+        specifier: 2.1.1
+        version: 2.1.1
+      lucide-react:
+        specifier: 0.553.0
+        version: 0.553.0(react@18.3.1)
       react:
         specifier: 18.3.1
         version: 18.3.1
       react-dom:
         specifier: 18.3.1
         version: 18.3.1(react@18.3.1)
+      react-hot-toast:
+        specifier: 2.6.0
+        version: 2.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-select:
+        specifier: 5.10.2
+        version: 5.10.2(@types/react@18.3.26)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      semver:
+        specifier: 7.7.4
+        version: 7.7.4
       validator:
         specifier: 13.12.0
         version: 13.12.0

@@ -40,14 +40,23 @@
   },
   "dependencies": {
     "@codemirror/lang-html": "6.4.11",
+    "@dnd-kit/sortable": "7.0.2",
+    "@ebay/nice-modal-react": "1.2.13",
+    "@sentry/react": "7.120.4",
+    "@tanstack/react-query": "4.36.1",
     "@tryghost/color-utils": "0.2.10",
     "@tryghost/i18n": "0.0.0",
     "@tryghost/kg-unsplash-selector": "0.3.24",
     "@tryghost/limit-service": "1.4.1",
     "@tryghost/nql": "0.12.10",
     "@tryghost/timezone-data": "0.4.12",
+    "clsx": "2.1.1",
+    "lucide-react": "0.553.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "react-hot-toast": "2.6.0",
+    "react-select": "5.10.2",
+    "semver": "7.7.4",
     "validator": "13.12.0"
   },
   "devDependencies": {
