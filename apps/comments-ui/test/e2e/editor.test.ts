@@ -192,7 +192,7 @@ test.describe('Editor', async () => {
 
             // Check comment
             expect(mockedApi.comments).toHaveLength(1);
-            expect(mockedApi.comments[0].html).toBe('<blockquote><p>This is a quote</p><p>This is a new line</p></blockquote><p>This is a new paragraph<br></p>');
+            expect(mockedApi.comments[0].html).toBe('<blockquote><p>This is a quote</p><p>This is a new line</p></blockquote><p>This is a new paragraph</p>');
         });
 
         test('Can paste an URL to create a link', async ({page}) => {
@@ -349,4 +349,3 @@ test.describe('Editor', async () => {
         });
     });
 });
-

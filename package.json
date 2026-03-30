@@ -104,6 +104,7 @@
     "lint-staged": "15.5.2",
     "nx": "22.0.4",
     "rimraf": "5.0.10",
+    "semver": "7.7.4",
     "typescript": "5.8.3",
     "validator": "13.12.0"
   },

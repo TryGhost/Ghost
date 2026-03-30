@@ -35,6 +35,7 @@
         "@types/jest": "29.5.14",
         "@types/react": "18.3.26",
         "msw": "2.11.5",
+        "tailwindcss": "4.2.1",
         "vite": "5.4.20",
         "vitest": "1.6.1"
     },
@@ -46,7 +47,11 @@
         "moment-timezone": "0.5.45",
         "papaparse": "5.3.2",
         "react": "18.3.1",
-        "react-dom": "18.3.1"
+        "react-dom": "18.3.1",
+        "react-router": "7.9.4",
+        "sonner": "2.0.7",
+        "use-debounce": "10.0.6",
+        "zod": "4.1.12"
     },
     "nx": {
         "targets": {

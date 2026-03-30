@@ -1,5 +1,5 @@
 import {clsx, type ClassValue} from 'clsx';
-import isEmail from 'validator/es/lib/isEmail';
+import isEmail from 'validator/es/lib/isEmail.js';
 import {twMerge} from 'tailwind-merge';
 import moment from 'moment-timezone';
 import type {Moment} from 'moment';
