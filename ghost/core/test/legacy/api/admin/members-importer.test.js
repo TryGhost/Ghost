@@ -6,7 +6,6 @@ const localUtils = require('./utils');
 const config = require('../../../../core/shared/config');
 const configUtils = require('../../../utils/config-utils');
 const settingsCache = require('../../../../core/shared/settings-cache');
-const models = require('../../../../core/server/models');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 
 const {mockManager} = require('../../../utils/e2e-framework');
@@ -293,10 +292,7 @@ describe('Members Importer API', function () {
     });
 
     it('Can still import members once email verification is required but does not send email', async function () {
-        await models.Settings.edit([{
-            key: 'email_verification_required',
-            value: true
-        }], {context: {internal: true}});
+        settingsCache.set('email_verification_required', {value: true});
 
         const res = await request
             .post(localUtils.API.getApiQuery(`members/upload/`))
@@ -321,10 +317,7 @@ describe('Members Importer API', function () {
     });
 
     it('Can import members with host emailVerification limits for large imports', async function () {
-        await models.Settings.edit([{
-            key: 'email_verification_required',
-            value: false
-        }], {context: {internal: true}});
+        settingsCache.set('email_verification_required', {value: false});
 
         assert(!settingsCache.get('email_verification_required'), 'Email verification should not be required');
 
