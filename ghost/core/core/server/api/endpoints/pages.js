@@ -175,6 +175,76 @@ const controller = {
         }
     },
 
+    touchEditing: {
+        statusCode: 200,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id',
+            'session_id'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                },
+                session_id: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            docName: 'posts',
+            method: 'edit',
+            unsafeAttrs: UNSAFE_ATTRS
+        },
+        query(frame) {
+            return postsService.touchEditing({
+                id: frame.options.id,
+                type: 'page',
+                context: frame.options.context,
+                sessionId: frame.options.session_id
+            });
+        }
+    },
+
+    clearEditing: {
+        statusCode: 204,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id',
+            'session_id'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                },
+                session_id: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            docName: 'posts',
+            method: 'edit',
+            unsafeAttrs: UNSAFE_ATTRS
+        },
+        async query(frame) {
+            await postsService.clearEditing({
+                id: frame.options.id,
+                type: 'page',
+                context: frame.options.context,
+                sessionId: frame.options.session_id
+            });
+
+            return null;
+        }
+    },
+
     bulkEdit: {
         statusCode: 200,
         headers: {

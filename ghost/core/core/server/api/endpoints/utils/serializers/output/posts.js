@@ -53,6 +53,12 @@ module.exports = {
         };
     },
 
+    touchEditing(editing, _apiConfig, frame) {
+        frame.response = {
+            posts: [editing]
+        };
+    },
+
     exportCSV(models, apiConfig, frame) {
         frame.response = papaparse.unparse(models.data);
     },
