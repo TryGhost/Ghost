@@ -163,14 +163,14 @@ const NewsletterPreviewContent: React.FC<{
                             {showHeader && (
                                 <div className="py-3">
                                     {headerIcon && <img alt="" className="mx-auto mb-2 size-10" role="presentation" src={headerIcon} />}
-                                    {headerTitle && <h4 className="mb-1 text-center text-[1.6rem] font-bold uppercase leading-tight tracking-tight text-grey-900" style={{color: headerTextColor}}>{headerTitle}</h4>}
+                                    {headerTitle && <h4 className="mb-1 text-center text-[1.6rem] leading-tight font-bold tracking-tight text-grey-900 uppercase" style={{color: headerTextColor}}>{headerTitle}</h4>}
                                     {headerSubtitle && <h5 className="mb-1 text-center text-[1.3rem] font-normal text-grey-700" style={{color: secondaryHeaderTextColor}}>{headerSubtitle}</h5>}
                                 </div>
                             )}
                             {showPostTitleSection && (
                                 <div className={clsx('flex flex-col py-8', titleAlignment === 'center' ? 'items-center' : 'items-start')}>
                                     <h2 className={clsx(
-                                        'text-4xl font-bold leading-supertight text-black',
+                                        'text-4xl leading-supertight font-bold text-black',
                                         titleFontCategory === 'serif' && 'font-serif',
                                         titleFontWeight === 'normal' && 'font-normal',
                                         titleFontWeight === 'medium' && 'font-medium',
@@ -188,7 +188,7 @@ const NewsletterPreviewContent: React.FC<{
                                     )}>
                                         <p className="pb-1 text-[1.3rem]" style={{color: secondaryHeaderTextColor}}>
                                             By {authorPlaceholder}
-                                            <span className="before:pl-0.5 before:pr-1 before:content-['•']">{currentDate}</span>
+                                            <span className="before:pr-1 before:pl-0.5 before:content-['•']">{currentDate}</span>
                                         </p>
                                         <p className="pb-1 text-[1.3rem] underline" style={{color: secondaryHeaderTextColor}}><span>View in browser</span></p>
                                     </div>
@@ -224,7 +224,7 @@ const NewsletterPreviewContent: React.FC<{
                                 <p className="mb-6" style={{color: textColor}}>This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.</p>
                                 <p className="mb-6" style={{color: textColor}}>Over there on the right you&apos;ll see some settings that allow you to customize the look and feel of this template – from colors and typography to layout and buttons – to make it perfectly suited to your brand.</p>
                                 <p className="mb-[52px]" style={{color: textColor}}>Email templates are exceptionally finnicky to make, but we&apos;ve spent a long time optimising this one to make it work beautifully across devices, email clients and content types. So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.</p>
-                                <hr className={clsx('my-[52px] border-[#e0e7eb]', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-t-0 border-dotted')} style={{borderColor: dividerColor}} />
+                                <hr className={clsx('my-[52px] border-[#e0e7eb]', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-t-0 border-b-2 border-dotted')} style={{borderColor: dividerColor}} />
                                 <h3
                                     className={clsx(
                                         'mb-[13px] text-[2.6rem] leading-supertight',
@@ -277,13 +277,13 @@ const NewsletterPreviewContent: React.FC<{
                                                     <span className="inline-flex size-[54px] items-center justify-center rounded-full border" style={{borderColor: dividerColor, color: textColor}}>
                                                         <Icon colorClass='' name="thumbs-up" size="md" />
                                                     </span>
-                                                    <span className="font-sans text-[1.3rem] font-medium leading-[1.4]" style={{color: textColor}}>More like this</span>
+                                                    <span className="font-sans text-[1.3rem] leading-[1.4] font-medium" style={{color: textColor}}>More like this</span>
                                                 </div>
                                                 <div className="pointer-events-none flex min-w-[120px] cursor-default flex-col items-center gap-[11px] text-center">
                                                     <span className="inline-flex size-[54px] items-center justify-center rounded-full border" style={{borderColor: dividerColor, color: textColor}}>
                                                         <Icon colorClass='' name="thumbs-down" size="md" />
                                                     </span>
-                                                    <span className="font-sans text-[1.3rem] font-medium leading-[1.4]" style={{color: textColor}}>Less like this</span>
+                                                    <span className="font-sans text-[1.3rem] leading-[1.4] font-medium" style={{color: textColor}}>Less like this</span>
                                                 </div>
                                             </>
                                         )}
@@ -292,7 +292,7 @@ const NewsletterPreviewContent: React.FC<{
                                                 <span className="inline-flex size-[54px] items-center justify-center rounded-full border" style={{borderColor: dividerColor, color: textColor}}>
                                                     <Icon colorClass='' name="comment" size="md" />
                                                 </span>
-                                                <span className="font-sans text-[1.3rem] font-medium leading-[1.4]" style={{color: textColor}}>Comment</span>
+                                                <span className="font-sans text-[1.3rem] leading-[1.4] font-medium" style={{color: textColor}}>Comment</span>
                                             </div>
                                         )}
                                         {showShareButton && (
@@ -300,7 +300,7 @@ const NewsletterPreviewContent: React.FC<{
                                                 <span className="inline-flex size-[54px] items-center justify-center rounded-full border" style={{borderColor: dividerColor, color: textColor}}>
                                                     <Icon colorClass='' name="share" size="md" />
                                                 </span>
-                                                <span className="font-sans text-[1.3rem] font-medium leading-[1.4]" style={{color: textColor}}>Share</span>
+                                                <span className="font-sans text-[1.3rem] leading-[1.4] font-medium" style={{color: textColor}}>Share</span>
                                             </div>
                                         )}
                                     </div>
@@ -310,7 +310,7 @@ const NewsletterPreviewContent: React.FC<{
                             {/* Latest posts */}
                             {showLatestPosts && (
                                 <div className={clsx('border-b border-grey-200 py-6', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-dotted')} style={{borderColor: dividerColor}}>
-                                    <h3 className="mb-4 mt-2 pb-1 text-[1.2rem] font-semibold uppercase tracking-wide text-black" style={{color: textColor}}>Keep reading</h3>
+                                    <h3 className="mt-2 mb-4 pb-1 text-[1.2rem] font-semibold tracking-wide text-black uppercase" style={{color: textColor}}>Keep reading</h3>
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
                                             <h4
@@ -378,7 +378,7 @@ const NewsletterPreviewContent: React.FC<{
                             {/* Subscription details */}
                             {showSubscriptionDetails && (
                                 <div className={clsx('border-b border-grey-200 py-8', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-dotted')} style={{borderColor: dividerColor}}>
-                                    <h4 className="mb-3 text-[1.2rem] uppercase tracking-wide text-black" style={{color: textColor}}>Subscription details</h4>
+                                    <h4 className="mb-3 text-[1.2rem] tracking-wide text-black uppercase" style={{color: textColor}}>Subscription details</h4>
                                     <p className="m-0 mb-4 text-base" style={{color: textColor}}>You are receiving this because you are a paid subscriber to {siteTitle}. Your subscription will renew on 17 Jul 2024.</p>
                                     <div className="flex">
                                         <div className="shrink-0 text-base">
@@ -386,7 +386,7 @@ const NewsletterPreviewContent: React.FC<{
                                             <p style={{color: textColor}}>Email: jamie@example.com</p>
                                             <p style={{color: textColor}}>Member since: 17 July 2023</p>
                                         </div>
-                                        <span className={clsx('w-full self-end whitespace-nowrap text-right text-base', linkStyle === 'underline' && 'underline', linkStyle === 'bold' && 'font-bold')} style={{color: linkColor || accentColor}}>
+                                        <span className={clsx('w-full self-end text-right text-base whitespace-nowrap', linkStyle === 'underline' && 'underline', linkStyle === 'bold' && 'font-bold')} style={{color: linkColor || accentColor}}>
                                             Manage subscription
                                         </span>
                                     </div>
@@ -395,15 +395,15 @@ const NewsletterPreviewContent: React.FC<{
 
                             {/* Footer */}
                             <div className="flex flex-col items-center pt-10">
-                                <div dangerouslySetInnerHTML={{__html: processedFooterContent || ''}} className="text break-words px-8 py-3 text-center text-[1.3rem] leading-base text-grey-700 [&_a]:underline" style={{color: secondaryTextColor}} />
+                                <div dangerouslySetInnerHTML={{__html: processedFooterContent || ''}} className="text px-8 py-3 text-center text-[1.3rem] leading-base break-words text-grey-700 [&_a]:underline" style={{color: secondaryTextColor}} />
 
-                                <div className="px-8 pb-14 pt-3 text-center text-[1.3rem] text-grey-700">
+                                <div className="px-8 pt-3 pb-14 text-center text-[1.3rem] text-grey-700">
                                     <span style={{color: secondaryTextColor}}>{siteTitle} © {currentYear} &mdash; </span>
                                     <span className="pointer-events-none cursor-auto underline" style={{color: secondaryTextColor}}>Unsubscribe</span>
                                 </div>
 
                                 {showBadge && (
-                                    <div className="flex flex-col items-center pb-[40px] pt-[10px]">
+                                    <div className="flex flex-col items-center pt-[10px] pb-[40px]">
                                         <a className="pointer-events-none inline-flex cursor-auto items-center px-2 py-1 text-[1.25rem] font-semibold tracking-tight text-grey-900" href="https://ghost.org" style={{color: textColor}}>
                                             <GhostOrb className="mr-[6px] size-4"/>
                                             <span>Powered by Ghost</span>

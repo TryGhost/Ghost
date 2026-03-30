@@ -771,20 +771,6 @@ table.body h2 span {
                             
                                                         <!-- END MAIN CONTENT AREA -->
                             
-                                                            <tr>
-                                                                <td class=\\"feedback-buttons-container\\" dir=\\"ltr\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 32px 0 24px; border-bottom: 1px solid #e0e7eb; text-align: center; background-color: #ffffff;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
-                                                                    <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
-                                                                        <tr>
-                                                                                <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
-                                                                                    <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/share\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
-                                                                                        <img src=\\"https://static.ghost.org/v6.0.0/images/share-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Share\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
-                                                                                        <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4em; word-break: break-word; font-size: 13px;\\">Share</p>
-                                                                                    </a>
-                                                                                </td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-                                                            </tr>
                             
                             
                             
@@ -976,26 +962,6 @@ Another email card with a similar replacement, Jamie
 
 
 
-
-
-Share
-
-
-[http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/share]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Ghost © 2025 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid]
 
 
@@ -1024,7 +990,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "39376",
+  "content-length": "36590",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1714,20 +1680,6 @@ table.body h2 span {
                             
                                                         <!-- END MAIN CONTENT AREA -->
                             
-                                                            <tr>
-                                                                <td class=\\"feedback-buttons-container\\" dir=\\"ltr\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 32px 0 24px; border-bottom: 1px solid #e0e7eb; text-align: center; background-color: #ffffff;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
-                                                                    <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
-                                                                        <tr>
-                                                                                <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
-                                                                                    <a href=\\"http://127.0.0.1:2369/html-ipsum/#/share\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
-                                                                                        <img src=\\"https://static.ghost.org/v6.0.0/images/share-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Share\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
-                                                                                        <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4em; word-break: break-word; font-size: 13px;\\">Share</p>
-                                                                                    </a>
-                                                                                </td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-                                                            </tr>
                             
                             
                             
@@ -1936,26 +1888,6 @@ Header Level 3
 
 
 
-
-
-Share
-
-
-[http://127.0.0.1:2369/html-ipsum/#/share]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Ghost © 2025 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid]
 
 
@@ -1984,7 +1916,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "43772",
+  "content-length": "41042",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2700,20 +2632,6 @@ table.body h2 span {
                             
                                                         <!-- END MAIN CONTENT AREA -->
                             
-                                                            <tr>
-                                                                <td class=\\"feedback-buttons-container\\" dir=\\"ltr\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 32px 0 24px; border-bottom: 1px solid #e0e7eb; text-align: center; background-color: #ffffff;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
-                                                                    <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
-                                                                        <tr>
-                                                                                <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
-                                                                                    <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/share\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
-                                                                                        <img src=\\"https://static.ghost.org/v6.0.0/images/share-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Share\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
-                                                                                        <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4em; word-break: break-word; font-size: 13px;\\">Share</p>
-                                                                                    </a>
-                                                                                </td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-                                                            </tr>
                             
                             
                             
@@ -2899,26 +2817,6 @@ Testing links [https://ghost.org/] in email excerpt and apostrophes '
 
 
 
-
-
-Share
-
-
-[http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/share]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Ghost © 2025 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid]
 
 
@@ -2960,7 +2858,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "39082",
+  "content-length": "36296",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4012,20 +3910,6 @@ table.body h2 span {
                             
                                                         <!-- END MAIN CONTENT AREA -->
                             
-                                                            <tr>
-                                                                <td class=\\"feedback-buttons-container\\" dir=\\"ltr\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 32px 0 24px; border-bottom: 1px solid #e0e7eb; text-align: center; background-color: #ffffff;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
-                                                                    <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
-                                                                        <tr>
-                                                                                <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
-                                                                                    <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/share\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
-                                                                                        <img src=\\"https://static.ghost.org/v6.0.0/images/share-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Share\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
-                                                                                        <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4em; word-break: break-word; font-size: 13px;\\">Share</p>
-                                                                                    </a>
-                                                                                </td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-                                                            </tr>
                             
                             
                             
@@ -4218,26 +4102,6 @@ Testing links [https://ghost.org/] in email excerpt and apostrophes '
 
 
 
-
-
-Share
-
-
-[http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/share]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Ghost © 2025 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid]
 
 
@@ -4279,7 +4143,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "39959",
+  "content-length": "37173",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -5357,20 +5221,6 @@ table.body h2 span {
                             
                                                         <!-- END MAIN CONTENT AREA -->
                             
-                                                            <tr>
-                                                                <td class=\\"feedback-buttons-container\\" dir=\\"ltr\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 32px 0 24px; border-bottom: 1px solid #e0e7eb; text-align: center; background-color: #ffffff;\\" valign=\\"top\\" bgcolor=\\"#ffffff\\">
-                                                                    <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
-                                                                        <tr>
-                                                                                <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; box-sizing: border-box; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 100%;\\" width=\\"100%\\">
-                                                                                    <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/share\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
-                                                                                        <img src=\\"https://static.ghost.org/v6.0.0/images/share-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Share\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
-                                                                                        <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4em; word-break: break-word; font-size: 13px;\\">Share</p>
-                                                                                    </a>
-                                                                                </td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-                                                            </tr>
                             
                             
                             
@@ -5563,26 +5413,6 @@ Testing links [https://ghost.org/] in email excerpt and apostrophes '
 
 
 
-
-
-Share
-
-
-[http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/#/share]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Ghost © 2025 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid]
 
 
@@ -5624,7 +5454,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "39959",
+  "content-length": "37173",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
