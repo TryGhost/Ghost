@@ -197,6 +197,9 @@ importers:
       '@eslint/js':
         specifier: 9.37.0
         version: 9.37.0
+      '@testing-library/jest-dom':
+        specifier: 6.9.1
+        version: 6.9.1
       '@testing-library/react':
         specifier: 14.3.1
         version: 14.3.1(@types/react@18.3.26)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
