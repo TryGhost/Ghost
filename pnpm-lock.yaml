@@ -466,6 +466,9 @@ importers:
       jsdom:
         specifier: 28.1.0
         version: 28.1.0
+      msw:
+        specifier: 2.11.5
+        version: 2.11.5(@types/node@24.3.0)(typescript@5.8.3)
       sinon:
         specifier: 18.0.1
         version: 18.0.1
@@ -41998,7 +42001,6 @@ snapshots:
       typescript: 5.8.3
     transitivePeerDependencies:
       - '@types/node'
-    optional: true
 
   msw@2.11.5(@types/node@24.3.0)(typescript@5.9.3):
     dependencies:

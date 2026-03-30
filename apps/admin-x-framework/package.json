@@ -86,6 +86,7 @@
         "eslint-plugin-react-refresh": "0.4.24",
         "glob": "11.0.3",
         "jsdom": "28.1.0",
+        "msw": "2.11.5",
         "sinon": "18.0.1",
         "typescript": "5.8.3",
         "vite": "5.4.20",
