@@ -31,7 +31,8 @@ for attempt in $(seq 1 "$max_attempts"); do
     sleep "$sleep_seconds"
 done
 
-sqlite3_dir="$(node <<'NODE'
+sqlite3_dir="$(
+    pnpm --filter ./ghost/core exec node <<'NODE'
 const path = require('path');
 
 try {
