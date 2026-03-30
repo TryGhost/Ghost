@@ -1,6 +1,6 @@
 import {AdminPage} from '@/admin-pages';
 import {BasePage} from '@/helpers/pages';
-import {Download, Locator, Page} from '@playwright/test';
+import {Download, JSHandle, Locator, Page} from '@playwright/test';
 import {readFileSync} from 'fs';
 
 export interface ExportedFile {
@@ -146,52 +146,53 @@ export class MembersPage extends AdminPage {
         });
     }
 
-    async getScrollParentScrollTop(): Promise<number> {
-        return await this.membersList.evaluate((element) => {
-            const getScrollParent = (node: Node | null): HTMLElement | null => {
-                const isElement = node instanceof HTMLElement;
-                const overflowY = isElement && window.getComputedStyle(node).overflowY;
-                const isScrollable = overflowY !== 'visible' && overflowY !== 'hidden';
+    private async getMembersScrollParentHandle(): Promise<JSHandle<HTMLElement>> {
+        return await this.membersList.evaluateHandle((element) => {
+            let node: Node | null = element;
 
-                if (!node) {
-                    return null;
-                } else if (isScrollable &&
-                    (node as HTMLElement).scrollHeight >= (node as HTMLElement).clientHeight) {
-                    return node as HTMLElement;
+            while (node) {
+                if (node instanceof HTMLElement) {
+                    const overflowY = window.getComputedStyle(node).overflowY;
+                    const isScrollable = overflowY !== 'visible' && overflowY !== 'hidden';
+
+                    if (isScrollable && node.scrollHeight >= node.clientHeight) {
+                        return node;
+                    }
                 }
 
-                return getScrollParent(node.parentNode) || document.body;
-            };
+                node = node.parentNode;
+            }
 
-            return getScrollParent(element)?.scrollTop || 0;
-        });
+            return document.body;
+        }) as JSHandle<HTMLElement>;
+    }
+
+    async getScrollParentScrollTop(): Promise<number> {
+        const scrollParent = await this.getMembersScrollParentHandle();
+
+        try {
+            return await scrollParent.evaluate(element => element.scrollTop);
+        } finally {
+            await scrollParent.dispose();
+        }
     }
 
     async scrollScrollParentBy(deltaY: number): Promise<void> {
-        await this.membersList.evaluate((element, pixels) => {
-            const getScrollParent = (node: Node | null): HTMLElement | null => {
-                const isElement = node instanceof HTMLElement;
-                const overflowY = isElement && window.getComputedStyle(node).overflowY;
-                const isScrollable = overflowY !== 'visible' && overflowY !== 'hidden';
+        const scrollParent = await this.getMembersScrollParentHandle();
 
-                if (!node) {
-                    return null;
-                } else if (isScrollable &&
-                    (node as HTMLElement).scrollHeight >= (node as HTMLElement).clientHeight) {
-                    return node as HTMLElement;
-                }
-
-                return getScrollParent(node.parentNode) || document.body;
-            };
-
-            getScrollParent(element)?.scrollBy(0, pixels);
-        }, deltaY);
+        try {
+            await scrollParent.evaluate((element, pixels) => {
+                element.scrollBy(0, pixels);
+            }, deltaY);
+        } finally {
+            await scrollParent.dispose();
+        }
     }
 
     async scrollUntilMaxRenderedIndexAtLeast(targetIndex: number): Promise<number> {
         let maxRenderedIndex = await this.getMaxRenderedIndex();
 
-        for (let i = 0; i < 30 && maxRenderedIndex <= targetIndex; i += 1) {
+        for (let i = 0; i < 30 && maxRenderedIndex < targetIndex; i += 1) {
             await this.scrollScrollParentBy(4000);
             await this.page.waitForFunction((previousMaxIndex) => {
                 const rows = Array.from(document.querySelectorAll('[data-testid="members-list-item"]'));

@@ -1,11 +1,13 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useLocation} from '@tryghost/admin-x-framework';
 
 export const VIRTUAL_LIST_WINDOW_SIZE = 1000;
 export const VIRTUAL_LIST_WINDOW_HISTORY_STATE_KEY = 'ghostVirtualListWindow';
 
 export function getSafeVirtualListWindowSize(windowSize: number = VIRTUAL_LIST_WINDOW_SIZE) {
-    return Math.max(1, Math.floor(windowSize));
+    const normalizedWindowSize = Number.isFinite(windowSize) ? Math.floor(windowSize) : VIRTUAL_LIST_WINDOW_SIZE;
+
+    return Math.max(1, normalizedWindowSize);
 }
 
 export function getVirtualListWindowState({
@@ -47,11 +49,11 @@ export function getStoredUnlockedItemCount(
 
     const storedUnlockedItemCount = (storedWindows as Record<string, unknown>)[historyKey];
 
-    if (typeof storedUnlockedItemCount !== 'number') {
+    if (typeof storedUnlockedItemCount !== 'number' || !Number.isFinite(storedUnlockedItemCount)) {
         return defaultUnlockedItemCount;
     }
 
-    return storedUnlockedItemCount;
+    return getSafeVirtualListWindowSize(storedUnlockedItemCount);
 }
 
 export function setStoredUnlockedItemCount(
@@ -93,21 +95,24 @@ export function useVirtualListWindow(
         windowSize?: number;
     } = {}
 ) {
-    const {pathname, search} = useLocation();
+    const {key: locationEntryKey, pathname, search} = useLocation();
     const safeWindowSize = getSafeVirtualListWindowSize(windowSize);
     const effectiveResetKey = resetKey ?? search;
     const historyKey = getVirtualListWindowHistoryKey(pathname, effectiveResetKey);
     const [unlockedItemCount, setUnlockedItemCount] = useState(() => {
         return getStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, safeWindowSize);
     });
+    const previousHistoryKeyRef = useRef(historyKey);
 
     useEffect(() => {
-        setUnlockedItemCount(getStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, safeWindowSize));
-    }, [historyKey, safeWindowSize]);
+        if (previousHistoryKeyRef.current !== historyKey) {
+            previousHistoryKeyRef.current = historyKey;
+            setUnlockedItemCount(getStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, safeWindowSize));
+            return;
+        }
 
-    useEffect(() => {
         setStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, unlockedItemCount);
-    }, [historyKey, unlockedItemCount]);
+    }, [historyKey, locationEntryKey, safeWindowSize, unlockedItemCount]);
 
     const {visibleItemCount, canFetchMore} = getVirtualListWindowState({
         totalItems,

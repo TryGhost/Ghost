@@ -1,5 +1,5 @@
 import React from 'react';
-import {MemoryRouter, useSearchParams} from 'react-router';
+import {MemoryRouter, useLocation, useSearchParams} from 'react-router';
 import {act, renderHook} from '@testing-library/react';
 import {beforeEach, describe, expect, it} from 'vitest';
 import type {ReactNode} from 'react';
@@ -87,9 +87,10 @@ describe('virtual-list-window', () => {
         expect(getNextUnlockedItemCount(VIRTUAL_LIST_WINDOW_SIZE)).toBe(2000);
     });
 
-    it('normalizes non-positive window sizes to keep fetch more moving forward', () => {
+    it('normalizes invalid window sizes to keep fetch more moving forward', () => {
         expect(getNextUnlockedItemCount(1000, 0)).toBe(1001);
         expect(getNextUnlockedItemCount(1000, -10)).toBe(1001);
+        expect(getNextUnlockedItemCount(1000, Number.NaN)).toBe(2000);
 
         const {result} = renderHook(() => useVirtualListWindow(5000, {windowSize: 0}), {
             wrapper: createWrapper('/?filter=members')
@@ -102,6 +103,20 @@ describe('virtual-list-window', () => {
         });
 
         expect(result.current.visibleItemCount).toBe(2);
+    });
+
+    it('ignores invalid persisted unlocked counts', () => {
+        window.history.replaceState({
+            ghostVirtualListWindow: {
+                '/members-forward::?filter=members': Number.NaN
+            }
+        }, '');
+
+        const {result} = renderHook(() => useVirtualListWindow(5000), {
+            wrapper: createWrapper('/members-forward?filter=members')
+        });
+
+        expect(result.current.visibleItemCount).toBe(1000);
     });
 
     it('resets the unlocked window when the query changes by default', () => {
@@ -168,5 +183,38 @@ describe('virtual-list-window', () => {
         rerender({resetKey: 'members:changed'});
 
         expect(result.current.visibleItemCount).toBe(1000);
+    });
+
+    it('persists the unlocked window into new history entries even when the reset key stays the same', () => {
+        const {result} = renderHook(() => {
+            const state = useVirtualListWindow(5000, {resetKey: 'comments:nql'});
+            const location = useLocation();
+            const [, setSearchParams] = useSearchParams();
+
+            return {
+                ...state,
+                locationKey: location.key,
+                setQuery: (query: string) => setSearchParams(query)
+            };
+        }, {
+            wrapper: createWrapper('/?thread=initial')
+        });
+
+        act(() => {
+            result.current.fetchMore();
+        });
+
+        expect(result.current.visibleItemCount).toBe(2000);
+
+        act(() => {
+            window.history.replaceState({}, '');
+            result.current.setQuery('thread=updated');
+        });
+
+        expect(window.history.state).toMatchObject({
+            ghostVirtualListWindow: {
+                '/::comments:nql': 2000
+            }
+        });
     });
 });
