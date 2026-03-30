@@ -1,5 +1,8 @@
 {
     "$schema": "./node_modules/nx/schemas/nx-schema.json",
+    "cli": {
+        "packageManager": "pnpm"
+    },
     "namedInputs": {
         "default": ["{projectRoot}/**/*", "{workspaceRoot}/ghost/tsconfig.json"]
     },

@@ -21,9 +21,9 @@
     "build:dev": "ember build --environment=development --silent",
     "test:unit": "true",
     "test": "ember exam --split 2 --parallel",
-    "lint:js": "eslint . --cache",
+    "lint:js": "ESLINT_USE_FLAT_CONFIG=false eslint . --cache",
     "lint:hbs": "ember-template-lint .",
-    "lint": "eslint . --cache && ember-template-lint ."
+    "lint": "ESLINT_USE_FLAT_CONFIG=false eslint . --cache && ember-template-lint ."
   },
   "engines": {
     "node": "^22.13.1"
@@ -122,6 +122,7 @@
     "ember-test-selectors": "6.0.0",
     "ember-tooltips": "3.6.0",
     "ember-truth-helpers": "3.1.1",
+    "eslint": "8.57.1",
     "eslint-plugin-babel": "5.3.1",
     "flexsearch": "0.7.43",
     "fs-extra": "11.3.0",

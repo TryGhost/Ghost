@@ -65,9 +65,9 @@
         "test": "pnpm test:types && pnpm test:unit",
         "test:types": "tsc --noEmit",
         "test:unit": "vitest run --coverage",
-        "lint:code": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
+        "lint:code": "ESLINT_USE_FLAT_CONFIG=false eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
         "lint": "pnpm lint:code && pnpm lint:test",
-        "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache"
+        "lint:test": "ESLINT_USE_FLAT_CONFIG=false eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache"
     },
     "files": [
         "dist",
@@ -82,6 +82,7 @@
         "@types/react-dom": "18.3.7",
         "@vitejs/plugin-react": "4.7.0",
         "c8": "10.1.3",
+        "eslint": "8.57.1",
         "eslint-plugin-react-hooks": "4.6.2",
         "eslint-plugin-react-refresh": "0.4.24",
         "glob": "11.0.3",
