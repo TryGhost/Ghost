@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/ember';
+import * as jsxRuntime from 'react/jsx-runtime';
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import React from 'react';
 import ReactDOM from 'react-dom';
