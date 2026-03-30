@@ -9,11 +9,13 @@ import {
 } from '../use-member-filter-fields';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
-import {useBrowseLabels} from '@tryghost/admin-x-framework/api/labels';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {useResourceSearch} from '../hooks/use-resource-search';
+import {useEmailPostValueSource} from '@src/hooks/filter-sources/use-email-post-value-source';
+import {useLabelValueSource} from '@src/hooks/filter-sources/use-label-value-source';
+import {usePostResourceValueSource} from '@src/hooks/filter-sources/use-post-resource-value-source';
+import {useTierValueSource} from '@src/hooks/filter-sources/use-tier-value-source';
 import type {MemberView} from '../hooks/use-member-views';
 
 interface MembersFiltersProps {
@@ -49,7 +51,6 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     savedViews = [],
     activeView
 }) => {
-    const {data: labelsData} = useBrowseLabels({searchParams: {limit: '100'}});
     const {data: tiersData} = useBrowseTiers({searchParams: {limit: '100'}});
     const {data: offersData} = useBrowseOffers({});
     const {data: newslettersData} = useBrowseNewsletters({searchParams: {limit: '100'}});
@@ -63,7 +64,6 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const emailTrackClicks = getSettingValue<boolean>(settings, 'email_track_clicks') === true;
     const siteTimezone = getSiteTimezone(settings);
 
-    const labels = labelsData?.labels || [];
     const tiers = tiersData?.tiers || [];
     const newsletters = newslettersData?.newsletters || [];
     const offers = useMemo(() => offersData?.offers ?? EMPTY_OFFERS, [offersData?.offers]);
@@ -91,8 +91,10 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         onFiltersChange(mapOfferRedemptionFilters(newFilters, values => fromOfferFilterDisplayValues(values, offersOptions)));
     }, [onFiltersChange, offersOptions]);
 
-    const postSearch = useResourceSearch('post');
-    const emailSearch = useResourceSearch('email');
+    const postValueSource = usePostResourceValueSource();
+    const emailValueSource = useEmailPostValueSource();
+    const labelValueSource = useLabelValueSource();
+    const tierValueSource = useTierValueSource(activePaidTiers.map(tier => ({value: tier.id, label: tier.name})));
 
     const filterFields = useMemberFilterFields({
         newsletters,
@@ -100,17 +102,11 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         hasMultipleTiers,
         paidMembersEnabled,
         emailFiltersEnabled,
-        labelsOptions: labels.map(label => ({value: label.slug, label: label.name})),
-        tiersOptions: activePaidTiers.map(tier => ({value: tier.id, label: tier.name})),
+        labelValueSource,
+        tierValueSource,
         offers,
-        postResourceOptions: postSearch.options,
-        onPostResourceSearchChange: postSearch.onSearchChange,
-        postResourceSearchValue: postSearch.searchValue,
-        postResourceLoading: postSearch.isLoading,
-        emailResourceOptions: emailSearch.options,
-        onEmailResourceSearchChange: emailSearch.onSearchChange,
-        emailResourceSearchValue: emailSearch.searchValue,
-        emailResourceLoading: emailSearch.isLoading,
+        postValueSource,
+        emailValueSource,
         membersTrackSources,
         emailTrackOpens,
         emailTrackClicks,

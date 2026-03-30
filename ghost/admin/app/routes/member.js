@@ -8,12 +8,14 @@ export default class MembersRoute extends MembersManagementRoute {
     @service feature;
     @service modals;
     @service router;
+    @service('unsaved-changes') unsavedChanges;
 
     queryParams = {
         postAnalytics: {refreshModel: false}
     };
 
     _requiresBackgroundRefresh = true;
+    _unregisterUnsavedChanges = null;
 
     constructor() {
         super(...arguments);
@@ -42,9 +44,11 @@ export default class MembersRoute extends MembersManagementRoute {
         }
 
         controller.directlyFromAnalytics = false;
-        if (transition.from?.name === 'posts-x') {
+        if (transition.from?.params?.path?.startsWith('posts/analytics')) {
             controller.directlyFromAnalytics = true;
         }
+
+        this._registerUnsavedChanges(controller);
     }
 
     resetController(controller, isExiting) {
@@ -59,9 +63,8 @@ export default class MembersRoute extends MembersManagementRoute {
 
     deactivate() {
         this._requiresBackgroundRefresh = true;
-
-        this.confirmModal = null;
-        this.hasConfirmed = false;
+        this._unregisterUnsavedChanges?.();
+        this._unregisterUnsavedChanges = null;
     }
 
     @action
@@ -71,40 +74,7 @@ export default class MembersRoute extends MembersManagementRoute {
 
     @action
     async willTransition(transition) {
-        let hasDirtyAttributes = this.controller.dirtyAttributes;
-
-        // wait for any existing confirm modal to be closed before allowing transition
-        if (this.confirmModal) {
-            return;
-        }
-
-        if (!this.hasConfirmed && hasDirtyAttributes) {
-            transition.abort();
-
-            if (this.controller.saveTask?.isRunning) {
-                await this.controller.saveTask.last;
-                transition.retry();
-            }
-
-            const shouldLeave = await this.confirmUnsavedChanges();
-
-            if (shouldLeave) {
-                this.controller.model.rollbackAttributes();
-                this.hasConfirmed = true;
-                return transition.retry();
-            }
-        }
-    }
-
-    async confirmUnsavedChanges() {
-        Sentry.captureMessage('showing unsaved changes modal for members route');
-        this.confirmModal = this.modals
-            .open(ConfirmUnsavedChangesModal)
-            .finally(() => {
-                this.confirmModal = null;
-            });
-
-        return this.confirmModal;
+        return this.unsavedChanges.guardTransition(transition);
     }
 
     closeImpersonateModal(transition) {
@@ -115,6 +85,38 @@ export default class MembersRoute extends MembersManagementRoute {
 
             controller.closeImpersonateMemberModal(transition);
         }
+    }
+
+    _registerUnsavedChanges(controller) {
+        this._unregisterUnsavedChanges?.();
+        this._unregisterUnsavedChanges = this.unsavedChanges.register({
+            isDirty: () => controller.dirtyAttributes,
+            confirmLeave: () => this._confirmUnsavedChanges(controller)
+        });
+    }
+
+    async _confirmUnsavedChanges(controller) {
+        if (controller.saveTask?.isRunning) {
+            try {
+                await controller.saveTask.last;
+            } catch (e) {
+                // ignore save errors — we'll check dirty state below
+            }
+        }
+
+        if (!controller.dirtyAttributes) {
+            return true;
+        }
+
+        Sentry.captureMessage('showing unsaved changes modal for members route');
+        const shouldLeave = await this.modals.open(ConfirmUnsavedChangesModal);
+
+        if (shouldLeave) {
+            controller.model.rollbackAttributes();
+            return true;
+        }
+
+        return false;
     }
 
     titleToken() {

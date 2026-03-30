@@ -1,6 +1,5 @@
 import * as Sentry from '@sentry/ember';
 import * as jsxRuntime from 'react/jsx-runtime';
-import AdminXSettings from '../components/admin-x/settings';
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -10,7 +9,6 @@ import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {getSentryConfig} from '../utils/sentry';
-import {importComponent} from '../components/admin-x/admin-x-component';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
     isAjaxError,
@@ -47,7 +45,6 @@ window.ReactDOM = ReactDOM;
 export default Route.extend(ShortcutsRoute, {
     ajax: service(),
     configManager: service(),
-    feature: service(),
     ghostPaths: service(),
     notifications: service(),
     router: service(),
@@ -127,24 +124,9 @@ export default Route.extend(ShortcutsRoute, {
 
             if (isNotFoundError(error)) {
                 if (transition) {
-                    transition.abort();
-
-                    let routeInfo = transition?.to;
-                    let router = this.router;
-                    let params = [];
-
-                    if (routeInfo) {
-                        for (let key of Object.keys(routeInfo.params)) {
-                            params.push(routeInfo.params[key]);
-                        }
-
-                        let url = router.urlFor(routeInfo.name, ...params)
-                            .replace(/^#\//, '')
-                            .replace(/^\//, '')
-                            .replace(/^ghost\//, '');
-
-                        return this.replaceWith('error404', url);
-                    }
+                    // Let Ember render the error substate (error.hbs) in place
+                    // so the URL stays at the attempted destination
+                    return true;
                 }
 
                 // when there's no transition we fall through to our generic error handler
@@ -204,7 +186,7 @@ export default Route.extend(ShortcutsRoute, {
                 return;
             }
 
-            this.router.transitionTo('settings-x');
+            this.router.transitionTo('/settings');
         }
     },
 
@@ -242,14 +224,6 @@ export default Route.extend(ShortcutsRoute, {
         this.stateBridge.triggerSubscriptionChange({
             subscription: this.billing.subscription
         });
-
-        // Preload settings to avoid a delay when opening
-        // Skip preloading when running in AdminForward mode (React handles its own loading)
-        if (!this.feature.inAdminForward) {
-            setTimeout(() => {
-                importComponent(AdminXSettings.packageName);
-            }, 1000);
-        }
     }
 
 });

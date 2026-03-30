@@ -225,9 +225,9 @@ export function isAcceptedResponse(errorOrStatus) {
 
 @classic
 class ajaxService extends AjaxService {
+    @service feature;
     @service session;
     @service upgradeStatus;
-    @service feature;
 
     @inject config;
 
