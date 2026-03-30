@@ -12,6 +12,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@tanstack/react-query": "4.36.1",
     "@tryghost/activitypub": "*",
     "@tryghost/admin-x-framework": "*",
     "@tryghost/admin-x-settings": "*",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@eslint/js": "9.37.0",
+    "@tailwindcss/vite": "4.2.1",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "14.3.1",
     "@types/react": "18.3.26",
@@ -38,6 +40,7 @@
     "globals": "16.4.0",
     "jest-extended": "6.0.0",
     "jsdom": "28.1.0",
+    "msw": "2.11.5",
     "sirv": "3.0.2",
     "tailwindcss": "4.2.1",
     "typescript": "5.8.3",
