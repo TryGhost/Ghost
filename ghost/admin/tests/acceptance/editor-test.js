@@ -92,6 +92,7 @@ describe('Acceptance: Editor', function () {
         await authenticateSession();
         await visit('/editor/post/1');
 
+        expect(find('.error-code')).to.exist;
         expect(find('.error-code').textContent.trim()).to.equal('404');
         expect(currentURL()).to.equal('/editor/post/1');
     });
