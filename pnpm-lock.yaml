@@ -187,6 +187,9 @@ importers:
       '@tryghost/stats':
         specifier: '*'
         version: link:../stats
+      mingo:
+        specifier: 2.5.3
+        version: 2.5.3
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -595,6 +598,9 @@ importers:
       lucide-react:
         specifier: 0.553.0
         version: 0.553.0(react@18.3.1)
+      mingo:
+        specifier: 2.5.3
+        version: 2.5.3
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -936,8 +942,8 @@ importers:
         specifier: 3.13.12
         version: 3.13.12(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@testing-library/jest-dom':
-        specifier: 5.17.0
-        version: 5.17.0
+        specifier: 6.9.1
+        version: 6.9.1
       '@testing-library/react':
         specifier: 14.3.1
         version: 14.3.1(@types/react@18.3.26)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1399,8 +1405,8 @@ importers:
         specifier: 4.36.1
         version: 4.36.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@testing-library/jest-dom':
-        specifier: 5.17.0
-        version: 5.17.0
+        specifier: 6.9.1
+        version: 6.9.1
       '@testing-library/react':
         specifier: 14.3.1
         version: 14.3.1(@types/react@18.3.26)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)

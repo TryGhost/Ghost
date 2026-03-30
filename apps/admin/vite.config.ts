@@ -1,4 +1,5 @@
 import { resolve } from "path";
+import { createRequire } from "module";
 import { defineConfig } from "vitest/config";
 import type { PluginOption } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
@@ -8,6 +9,8 @@ import tailwindcss from "@tailwindcss/vite";
 import { emberAssetsPlugin } from "./vite-ember-assets";
 import { ghostBackendProxyPlugin } from "./vite-backend-proxy";
 import { deepLinksPlugin } from "./vite-deep-links";
+
+const require = createRequire(import.meta.url);
 
 export const GHOST_URL = process.env.GHOST_URL ?? "http://localhost:2368/";
 const GHOST_CARDS_PATH = resolve(__dirname, "../../ghost/core/core/frontend/src/cards");
@@ -58,7 +61,7 @@ export default defineConfig(({ command }) => ({
         alias: {
             "@ghost-cards": GHOST_CARDS_PATH,
             // TODO: Remove this when @tryghost/nql is updated
-            mingo: resolve(__dirname, "../../node_modules/mingo/dist/mingo.js"),
+            mingo: require.resolve("mingo/dist/mingo.js"),
         },
         // Shim node modules utilized by the @tryghost/nql package
         external: ["fs", "path", "util"],
