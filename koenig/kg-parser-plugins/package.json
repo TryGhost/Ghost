@@ -47,7 +47,7 @@
     "should": "13.2.3",
     "sinon": "21.0.3",
     "tsx": "4.21.0",
-    "typescript": "5.8.3",
+    "typescript": "5.9.3",
     "typescript-eslint": "8.57.2"
   },
   "dependencies": {
