@@ -1,7 +1,7 @@
 import {AdminPage} from '@/admin-pages';
 import {BasePage} from '@/helpers/pages';
 import {DesktopPreviewFrame,PostPreviewModal} from '@/helpers/pages';
-import {Locator, Page} from '@playwright/test';
+import {expect, Locator, Page} from '@playwright/test';
 
 class SettingsMenu extends BasePage {
     readonly postUrlInput: Locator;
@@ -113,11 +113,24 @@ export class PostEditorPage extends AdminPage {
     }
 
     async createDraft({title = 'Hello world', body = 'This is my post body.'} = {}): Promise<void> {
+        const editor = this.page.locator('[data-lexical-editor="true"]').first();
+
         await this.titleInput.click();
         await this.titleInput.fill(title);
-        await this.page.locator('[data-lexical-editor="true"]').first().waitFor({state: 'visible'});
+        await editor.waitFor({state: 'visible'});
         await this.page.keyboard.press('Enter');
-        await this.page.waitForTimeout(100);
+
+        await expect.poll(async () => {
+            return await editor.evaluate((element) => {
+                const activeElement = document.activeElement;
+
+                return Boolean(
+                    activeElement &&
+                    (activeElement === element || element.contains(activeElement))
+                );
+            });
+        }).toBe(true);
+
         await this.page.keyboard.type(body);
     }
 
