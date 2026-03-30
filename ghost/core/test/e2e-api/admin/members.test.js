@@ -892,74 +892,7 @@ describe('Members API', function () {
         });
     });
 
-    it('Can add a member and trigger host email verification limits', async function () {
-        mockManager.mockLabsDisabled('verificationFlow');
-
-        configUtils.set('hostSettings:emailVerification', {
-            apiThreshold: 0,
-            adminThreshold: 1,
-            importThreshold: 0,
-            verified: false,
-            escalationAddress: 'test@example.com'
-        });
-
-        assert.ok(!settingsCache.get('email_verification_required'), 'Email verification should NOT be required');
-
-        const member = {
-            name: 'pass verification',
-            email: 'memberPassVerifivation@test.com'
-        };
-
-        const {body: passBody} = await agent
-            .post(`/members/`)
-            .body({members: [member]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-        const memberPassVerification = passBody.members[0];
-
-        await DomainEvents.allSettled();
-        assert.ok(!settingsCache.get('email_verification_required'), 'Email verification should NOT be required');
-
-        const memberFailLimit = {
-            name: 'fail verification',
-            email: 'memberFailVerifivation@test.com'
-        };
-
-        const {body: failBody} = await agent
-            .post(`/members/`)
-            .body({members: [memberFailLimit]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-        const memberFailVerification = failBody.members[0];
-
-        await DomainEvents.allSettled();
-        assert.ok(settingsCache.get('email_verification_required'), 'Email verification should be required');
-
-        mockManager.assert.sentEmail({
-            subject: 'Email needs verification'
-        });
-
-        // state cleanup
-        await agent.delete(`/members/${memberPassVerification.id}`);
-        await agent.delete(`/members/${memberFailVerification.id}`);
-    });
-
     it('Can add a member and trigger host webhook verification limits', async function () {
-        mockManager.mockLabsEnabled('verificationFlow');
         const webhookUrl = 'https://test-webhook-receiver.com/mock-verification-event-endpoint/';
         const webhookSecret = 'not-a-live-secret';
         const receivedWebhookRequests = [];

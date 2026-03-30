@@ -1,4 +1,5 @@
 const path = require('path');
+const nock = require('nock');
 const supertest = require('supertest');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
@@ -15,6 +16,27 @@ const {assertExists} = require('../../../utils/assertions');
 let request;
 let emailMockReceiver;
 
+const mockVerificationWebhook = () => {
+    const webhookUrl = 'https://test-webhook-receiver.com/mock-verification-event-endpoint/';
+    const webhookEndpoint = new URL(webhookUrl);
+    const scope = nock(webhookEndpoint.origin)
+        .post(webhookEndpoint.pathname)
+        .reply(200, {status: 'OK'});
+
+    configUtils.set('hostSettings:siteId', '1');
+    configUtils.set('hostSettings:emailVerification', {
+        apiThreshold: 2,
+        adminThreshold: 2,
+        importThreshold: 1,
+        verified: false,
+        webhookType: 'mock_verification_event',
+        webhookUrl,
+        webhookSecret: 'not-a-live-secret'
+    });
+
+    return scope;
+};
+
 describe('Members Importer API', function () {
     before(async function () {
         await localUtils.startGhost();
@@ -24,7 +46,6 @@ describe('Members Importer API', function () {
 
     beforeEach(function () {
         emailMockReceiver = mockManager.mockMail();
-        mockManager.mockLabsDisabled('verificationFlow');
     });
 
     afterEach(function () {
@@ -246,14 +267,7 @@ describe('Members Importer API', function () {
     });
 
     it('Can import members with host emailVerification limits', async function () {
-        // If this test fails, check if the total members that have been created with fixtures has increased a lot, and if required, increase the amount of imported members
-        configUtils.set('hostSettings:emailVerification', {
-            apiThreshold: 2,
-            adminThreshold: 2,
-            importThreshold: 1, // note: this one isn't really used because (totalMembers - members_created_in_last_30_days) is larger and used instead
-            verified: false,
-            escalationAddress: 'test@example.com'
-        });
+        const webhookScope = mockVerificationWebhook();
 
         const res = await request
             .post(localUtils.API.getApiQuery(`members/upload/`))
@@ -274,13 +288,16 @@ describe('Members Importer API', function () {
         assert.equal(jsonResponse.meta.stats.invalid.length, 0);
 
         assert(!!settingsCache.get('email_verification_required'), 'Email verification should now be required');
-
-        mockManager.assert.sentEmail({
-            subject: 'Email needs verification'
-        });
+        emailMockReceiver.assertSentEmailCount(0);
+        assert.equal(webhookScope.isDone(), true);
     });
 
     it('Can still import members once email verification is required but does not send email', async function () {
+        await models.Settings.edit([{
+            key: 'email_verification_required',
+            value: true
+        }], {context: {internal: true}});
+
         const res = await request
             .post(localUtils.API.getApiQuery(`members/upload/`))
             .field('labels', ['new-global-label'])
@@ -300,8 +317,6 @@ describe('Members Importer API', function () {
         assert.equal(jsonResponse.meta.stats.invalid.length, 0);
 
         assert(!!settingsCache.get('email_verification_required'), 'Email verification should now be required');
-
-        // Don't send another email
         emailMockReceiver.assertSentEmailCount(0);
     });
 
@@ -313,14 +328,7 @@ describe('Members Importer API', function () {
 
         assert(!settingsCache.get('email_verification_required'), 'Email verification should not be required');
 
-        // If this test fails, check if the total members that have been created with fixtures has increased a lot, and if required, increase the amount of imported members
-        configUtils.set('hostSettings:emailVerification', {
-            apiThreshold: 2,
-            adminThreshold: 2,
-            importThreshold: 1, // note: this one isn't really used because (totalMembers - members_created_in_last_30_days) is larger and used instead
-            verified: false,
-            escalationAddress: 'test@example.com'
-        });
+        const webhookScope = mockVerificationWebhook();
 
         const awaitCompletion = jobManager.awaitCompletion('members-import');
 
@@ -346,9 +354,7 @@ describe('Members Importer API', function () {
         mockManager.assert.sentEmail({
             subject: 'Your member import is complete'
         });
-
-        mockManager.assert.sentEmail({
-            subject: 'Email needs verification'
-        });
+        emailMockReceiver.assertSentEmailCount(1);
+        assert.equal(webhookScope.isDone(), true);
     });
 });

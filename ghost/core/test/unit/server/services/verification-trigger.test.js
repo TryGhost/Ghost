@@ -11,6 +11,7 @@ describe('Import threshold', function () {
         // Stub this method to prevent unnecessary subscriptions to domain events
         sinon.stub(DomainEvents, 'subscribe');
     });
+
     afterEach(function () {
         sinon.restore();
     });
@@ -72,45 +73,85 @@ describe('Import threshold', function () {
 describe('Email verification flow', function () {
     let domainEventsStub;
 
+    const buildEventRepository = (memberTotal, sourceTotal) => {
+        return {
+            getSignupEvents: sinon.stub().callsFake(async (_unused, {source}) => ({
+                meta: {
+                    pagination: {
+                        total: source === 'member' ? memberTotal : sourceTotal
+                    }
+                }
+            }))
+        };
+    };
+
+    const createTrigger = ({
+        adminThreshold,
+        apiThreshold,
+        importThreshold,
+        isVerified = () => false,
+        isVerificationRequired = () => false,
+        setVerificationRequired,
+        sendVerificationWebhook,
+        eventRepository,
+        settingsEdit
+    } = {}) => {
+        return new VerificationTrigger({
+            getAdminTriggerThreshold: () => adminThreshold,
+            getApiTriggerThreshold: () => apiThreshold,
+            getImportTriggerThreshold: () => importThreshold,
+            isVerified,
+            isVerificationRequired,
+            setVerificationRequired,
+            sendVerificationWebhook,
+            Settings: {
+                edit: settingsEdit || sinon.stub().resolves(null)
+            },
+            eventRepository
+        });
+    };
+
     beforeEach(function () {
         domainEventsStub = sinon.stub(DomainEvents, 'subscribe');
     });
+
     afterEach(function () {
         sinon.restore();
     });
 
-    it('Triggers verification process', async function () {
-        const emailStub = sinon.stub().resolves(null);
-        const settingsStub = sinon.stub().resolves(null);
-        const trigger = new VerificationTrigger({
-            Settings: {
-                edit: settingsStub
-            },
-            isVerified: () => false,
-            isVerificationRequired: () => false,
-            sendVerificationEmail: emailStub
+    it('Triggers verification process through the webhook flow', async function () {
+        const sendVerificationWebhook = sinon.stub().resolves(true);
+        const settingsEdit = sinon.stub().resolves(null);
+        const trigger = createTrigger({
+            sendVerificationWebhook,
+            settingsEdit
         });
 
         const result = await trigger._startVerificationProcess({
             amount: 10,
+            threshold: 5,
+            method: 'import',
             throwOnTrigger: false
         });
 
         assert.equal(result.needsVerification, true);
-        sinon.assert.calledOnce(emailStub);
-        sinon.assert.calledOnce(settingsStub);
+        sinon.assert.calledOnce(sendVerificationWebhook);
+        sinon.assert.calledOnce(settingsEdit);
+        sinon.assert.callOrder(sendVerificationWebhook, settingsEdit);
+        assert.deepEqual(sendVerificationWebhook.lastCall.firstArg, {
+            amountTriggered: 10,
+            threshold: 5,
+            method: 'import'
+        });
     });
 
     it('Does not trigger verification when already verified', async function () {
-        const emailStub = sinon.stub().resolves(null);
-        const settingsStub = sinon.stub().resolves(null);
-        const trigger = new VerificationTrigger({
-            Settings: {
-                edit: settingsStub
-            },
+        const sendVerificationWebhook = sinon.stub().resolves(true);
+        const settingsEdit = sinon.stub().resolves(null);
+        const trigger = createTrigger({
             isVerified: () => true,
-            isVerificationRequired: () => false,
-            sendVerificationEmail: emailStub
+            sendVerificationWebhook,
+            settingsEdit
         });
 
         const result = await trigger._startVerificationProcess({
@@ -119,20 +160,17 @@ describe('Email verification flow', function () {
         });
 
         assert.equal(result.needsVerification, false);
-        sinon.assert.notCalled(emailStub);
-        sinon.assert.notCalled(settingsStub);
+        sinon.assert.notCalled(sendVerificationWebhook);
+        sinon.assert.notCalled(settingsEdit);
     });
 
     it('Does not trigger verification when already in progress', async function () {
-        const emailStub = sinon.stub().resolves(null);
-        const settingsStub = sinon.stub().resolves(null);
-        const trigger = new VerificationTrigger({
-            Settings: {
-                edit: settingsStub
-            },
-            isVerified: () => false,
+        const sendVerificationWebhook = sinon.stub().resolves(true);
+        const settingsEdit = sinon.stub().resolves(null);
+        const trigger = createTrigger({
             isVerificationRequired: () => true,
-            sendVerificationEmail: emailStub
+            sendVerificationWebhook,
+            settingsEdit
         });
 
         const result = await trigger._startVerificationProcess({
@@ -141,20 +179,14 @@ describe('Email verification flow', function () {
         });
 
         assert.equal(result.needsVerification, false);
-        sinon.assert.notCalled(emailStub);
-        sinon.assert.notCalled(settingsStub);
+        sinon.assert.notCalled(sendVerificationWebhook);
+        sinon.assert.notCalled(settingsEdit);
     });
 
-    it('Throws when `throwsOnTrigger` is true', async function () {
-        const emailStub = sinon.stub().resolves(null);
-        const settingsStub = sinon.stub().resolves(null);
-        const trigger = new VerificationTrigger({
-            Settings: {
-                edit: settingsStub
-            },
-            isVerified: () => false,
-            isVerificationRequired: () => false,
-            sendVerificationEmail: emailStub
+    it('Throws when `throwOnTrigger` is true', async function () {
+        const sendVerificationWebhook = sinon.stub().resolves(true);
+        const trigger = createTrigger({
+            sendVerificationWebhook
         });
 
         await assert.rejects(
@@ -165,16 +197,10 @@ describe('Email verification flow', function () {
         );
     });
 
-    it('Uses default message when no custom message is provided', async function () {
-        const emailStub = sinon.stub().resolves(null);
-        const settingsStub = sinon.stub().resolves(null);
-        const trigger = new VerificationTrigger({
-            Settings: {
-                edit: settingsStub
-            },
-            isVerified: () => false,
-            isVerificationRequired: () => false,
-            sendVerificationEmail: emailStub
+    it('Uses the default host limit message when throwing', async function () {
+        const sendVerificationWebhook = sinon.stub().resolves(true);
+        const trigger = createTrigger({
+            sendVerificationWebhook
         });
 
         try {
@@ -183,82 +209,33 @@ describe('Email verification flow', function () {
                 throwOnTrigger: true
             });
             assert.fail('Should have thrown');
-        } catch (e) {
-            assert.match(e.message, /We're hard at work processing your import/);
-            assert.equal(e.code, 'EMAIL_VERIFICATION_NEEDED');
+        } catch (error) {
+            assert.match(error.message, /We're hard at work processing your import/);
+            assert.equal(error.code, 'EMAIL_VERIFICATION_NEEDED');
         }
     });
 
-    it('Sends a message containing the number of members imported', async function () {
-        const emailStub = sinon.stub().resolves(null);
-        const settingsStub = sinon.stub().resolves(null);
-        const trigger = new VerificationTrigger({
-            Settings: {
-                edit: settingsStub
-            },
-            isVerified: () => false,
-            isVerificationRequired: () => false,
-            sendVerificationEmail: emailStub
+    it('Does not mark verification required when the webhook is unavailable', async function () {
+        const settingsEdit = sinon.stub().resolves(null);
+        const trigger = createTrigger({
+            settingsEdit
         });
 
-        await trigger._startVerificationProcess({
+        const result = await trigger._startVerificationProcess({
             amount: 10,
             throwOnTrigger: false
         });
 
-        assert.deepEqual(emailStub.lastCall.firstArg, {
-            subject: 'Email needs verification',
-            message: 'Email verification needed for site: {siteUrl}, has imported: {amountTriggered} members in the last 30 days.',
-            amountTriggered: 10
-        });
+        assert.equal(result.needsVerification, false);
+        sinon.assert.notCalled(settingsEdit);
     });
 
-    it('Sends a webhook instead of an email when verificationFlow is enabled', async function () {
-        const emailStub = sinon.stub().resolves(null);
-        const webhookStub = sinon.stub().resolves(true);
-        const settingsStub = sinon.stub().resolves(null);
-        const trigger = new VerificationTrigger({
-            Settings: {
-                edit: settingsStub
-            },
-            isVerified: () => false,
-            isVerificationRequired: () => false,
-            isVerificationFlowEnabled: () => true,
-            sendVerificationEmail: emailStub,
-            sendVerificationWebhook: webhookStub
-        });
-
-        await trigger._startVerificationProcess({
-            amount: 10,
-            threshold: 5,
-            method: 'import',
-            throwOnTrigger: false
-        });
-
-        sinon.assert.notCalled(emailStub);
-        sinon.assert.calledOnce(webhookStub);
-        sinon.assert.calledOnce(settingsStub);
-        sinon.assert.callOrder(webhookStub, settingsStub);
-        assert.deepEqual(webhookStub.lastCall.firstArg, {
-            amountTriggered: 10,
-            threshold: 5,
-            method: 'import'
-        });
-    });
-
-    it('Falls back to email when verificationFlow is enabled but webhook is unconfigured', async function () {
-        const emailStub = sinon.stub().resolves(null);
-        const webhookStub = sinon.stub().resolves(false);
-        const settingsStub = sinon.stub().resolves(null);
-        const trigger = new VerificationTrigger({
-            Settings: {
-                edit: settingsStub
-            },
-            isVerified: () => false,
-            isVerificationRequired: () => false,
-            isVerificationFlowEnabled: () => true,
-            sendVerificationEmail: emailStub,
-            sendVerificationWebhook: webhookStub
+    it('Does not mark verification required when the webhook is unconfigured', async function () {
+        const sendVerificationWebhook = sinon.stub().resolves(false);
+        const settingsEdit = sinon.stub().resolves(null);
+        const trigger = createTrigger({
+            sendVerificationWebhook,
+            settingsEdit
         });
 
         const result = await trigger._startVerificationProcess({
@@ -268,26 +245,17 @@ describe('Email verification flow', function () {
             throwOnTrigger: false
         });
 
-        assert.equal(result.needsVerification, true);
-        sinon.assert.calledOnce(webhookStub);
-        sinon.assert.calledOnce(emailStub);
-        sinon.assert.calledOnce(settingsStub);
-        sinon.assert.callOrder(webhookStub, settingsStub, emailStub);
+        assert.equal(result.needsVerification, false);
+        sinon.assert.calledOnce(sendVerificationWebhook);
+        sinon.assert.notCalled(settingsEdit);
     });
 
-    it('Falls back to email when webhook delivery fails', async function () {
-        const emailStub = sinon.stub().resolves(null);
-        const webhookStub = sinon.stub().rejects(new Error('Webhook failed'));
-        const settingsStub = sinon.stub().resolves(null);
-        const trigger = new VerificationTrigger({
-            Settings: {
-                edit: settingsStub
-            },
-            isVerified: () => false,
-            isVerificationRequired: () => false,
-            isVerificationFlowEnabled: () => true,
-            sendVerificationEmail: emailStub,
-            sendVerificationWebhook: webhookStub
+    it('Does not mark verification required when webhook delivery fails', async function () {
+        const sendVerificationWebhook = sinon.stub().rejects(new Error('Webhook failed'));
+        const settingsEdit = sinon.stub().resolves(null);
+        const trigger = createTrigger({
+            sendVerificationWebhook,
+            settingsEdit
         });
 
         const result = await trigger._startVerificationProcess({
@@ -297,49 +265,25 @@ describe('Email verification flow', function () {
             throwOnTrigger: false
         });
 
-        assert.equal(result.needsVerification, true);
-        sinon.assert.calledOnce(webhookStub);
-        sinon.assert.calledOnce(settingsStub);
-        sinon.assert.calledOnce(emailStub);
-        sinon.assert.callOrder(webhookStub, settingsStub, emailStub);
+        assert.equal(result.needsVerification, false);
+        sinon.assert.calledOnce(sendVerificationWebhook);
+        sinon.assert.notCalled(settingsEdit);
     });
 
     it('Triggers when a number of API events are dispatched', async function () {
-        // We need to use the real event repository here to test event handling
         domainEventsStub.restore();
-        const emailStub = sinon.stub().resolves(null);
-        const settingsStub = sinon.stub().resolves(null);
-        const eventStub = sinon.stub().callsFake(async (_unused, {source}) => {
-            if (source === 'member') {
-                return {
-                    meta: {
-                        pagination: {
-                            total: 15
-                        }
-                    }
-                };
-            } else {
-                return {
-                    meta: {
-                        pagination: {
-                            total: 10
-                        }
-                    }
-                };
-            }
-        });
+        const sendVerificationWebhook = sinon.stub().resolves(true);
+        const eventRepository = buildEventRepository(15, 10);
 
         new VerificationTrigger({
             getApiTriggerThreshold: () => 2,
-            Settings: {
-                edit: settingsStub
-            },
             isVerified: () => false,
             isVerificationRequired: () => false,
-            sendVerificationEmail: emailStub,
-            eventRepository: {
-                getSignupEvents: eventStub
-            }
+            sendVerificationWebhook,
+            Settings: {
+                edit: sinon.stub().resolves(null)
+            },
+            eventRepository
         });
 
         DomainEvents.dispatch(MemberCreatedEvent.create({
@@ -347,32 +291,29 @@ describe('Email verification flow', function () {
             source: 'api'
         }, new Date()));
 
-        sinon.assert.calledOnce(eventStub);
-        assert('source' in eventStub.lastCall.lastArg);
-        assert.equal(eventStub.lastCall.lastArg.source, 'api');
-        assert('created_at' in eventStub.lastCall.lastArg);
-        assert('$gt' in eventStub.lastCall.lastArg.created_at);
-        assert.match(eventStub.lastCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
+        sinon.assert.calledOnce(eventRepository.getSignupEvents);
+        assert('source' in eventRepository.getSignupEvents.lastCall.lastArg);
+        assert.equal(eventRepository.getSignupEvents.lastCall.lastArg.source, 'api');
+        assert('created_at' in eventRepository.getSignupEvents.lastCall.lastArg);
+        assert('$gt' in eventRepository.getSignupEvents.lastCall.lastArg.created_at);
+        assert.match(eventRepository.getSignupEvents.lastCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
     });
 
     it('Does not trigger when site is already verified', async function () {
-        // We need to use the real event repository here to test event handling
         domainEventsStub.restore();
-        const emailStub = sinon.stub().resolves(null);
-        const settingsStub = sinon.stub().resolves(null);
-        const eventStub = sinon.stub();
+        const eventRepository = {
+            getSignupEvents: sinon.stub()
+        };
 
         new VerificationTrigger({
             getApiTriggerThreshold: () => 2,
-            Settings: {
-                edit: settingsStub
-            },
             isVerified: () => true,
             isVerificationRequired: () => false,
-            sendVerificationEmail: emailStub,
-            eventRepository: {
-                getSignupEvents: eventStub
-            }
+            sendVerificationWebhook: sinon.stub().resolves(true),
+            Settings: {
+                edit: sinon.stub().resolves(null)
+            },
+            eventRepository
         });
 
         DomainEvents.dispatch(MemberCreatedEvent.create({
@@ -380,106 +321,27 @@ describe('Email verification flow', function () {
             source: 'api'
         }, new Date()));
 
-        sinon.assert.notCalled(eventStub);
-    });
-
-    it('Triggers when a number of members are imported', async function () {
-        const emailStub = sinon.stub().resolves(null);
-        const settingsStub = sinon.stub().resolves(null);
-        const eventStub = sinon.stub().callsFake(async (_unused, {source}) => {
-            if (source === 'member') {
-                return {
-                    meta: {
-                        pagination: {
-                            total: 15
-                        }
-                    }
-                };
-            } else {
-                return {
-                    meta: {
-                        pagination: {
-                            total: 10
-                        }
-                    }
-                };
-            }
-        });
-
-        const trigger = new VerificationTrigger({
-            getImportTriggerThreshold: () => 2,
-            Settings: {
-                edit: settingsStub
-            },
-            isVerified: () => false,
-            isVerificationRequired: () => false,
-            sendVerificationEmail: emailStub,
-            eventRepository: {
-                getSignupEvents: eventStub
-            }
-        });
-
-        await trigger.testImportThreshold();
-
-        sinon.assert.calledTwice(eventStub);
-        assert('source' in eventStub.firstCall.lastArg);
-        assert.equal(eventStub.firstCall.lastArg.source, 'import');
-        assert('created_at' in eventStub.firstCall.lastArg);
-        assert('$gt' in eventStub.firstCall.lastArg.created_at);
-        assert.match(eventStub.firstCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
-
-        sinon.assert.calledOnce(emailStub);
-        assert.deepEqual(emailStub.lastCall.firstArg, {
-            subject: 'Email needs verification',
-            message: 'Email verification needed for site: {siteUrl}, has imported: {amountTriggered} members in the last 30 days.',
-            amountTriggered: 10
-        });
+        sinon.assert.notCalled(eventRepository.getSignupEvents);
     });
 
     it('Includes threshold and method in webhook payload when import threshold triggers', async function () {
-        const emailStub = sinon.stub().resolves(null);
-        const webhookStub = sinon.stub().resolves(true);
-        const settingsStub = sinon.stub().resolves(null);
-        const eventStub = sinon.stub().callsFake(async (_unused, {source}) => {
-            if (source === 'member') {
-                return {
-                    meta: {
-                        pagination: {
-                            total: 15
-                        }
-                    }
-                };
-            } else {
-                return {
-                    meta: {
-                        pagination: {
-                            total: 10
-                        }
-                    }
-                };
-            }
-        });
-
-        const trigger = new VerificationTrigger({
-            getImportTriggerThreshold: () => 2,
-            Settings: {
-                edit: settingsStub
-            },
-            isVerified: () => false,
-            isVerificationRequired: () => false,
-            isVerificationFlowEnabled: () => true,
-            sendVerificationEmail: emailStub,
-            sendVerificationWebhook: webhookStub,
-            eventRepository: {
-                getSignupEvents: eventStub
-            }
+        const sendVerificationWebhook = sinon.stub().resolves(true);
+        const eventRepository = buildEventRepository(15, 10);
+        const trigger = createTrigger({
+            importThreshold: 2,
+            sendVerificationWebhook,
+            eventRepository
         });
 
         await trigger.testImportThreshold();
 
-        sinon.assert.notCalled(emailStub);
-        sinon.assert.calledOnce(webhookStub);
-        assert.deepEqual(webhookStub.lastCall.firstArg, {
+        sinon.assert.calledTwice(eventRepository.getSignupEvents);
+        assert('source' in eventRepository.getSignupEvents.firstCall.lastArg);
+        assert.equal(eventRepository.getSignupEvents.firstCall.lastArg.source, 'import');
+        assert('created_at' in eventRepository.getSignupEvents.firstCall.lastArg);
+        assert('$gt' in eventRepository.getSignupEvents.firstCall.lastArg.created_at);
+        assert.match(eventRepository.getSignupEvents.firstCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
+        assert.deepEqual(sendVerificationWebhook.lastCall.firstArg, {
             amountTriggered: 10,
             threshold: 5,
             method: 'import'
@@ -487,55 +349,30 @@ describe('Email verification flow', function () {
     });
 
     it('checkVerificationRequired also checks import', async function () {
-        const emailStub = sinon.stub().resolves(null);
-        let isVerificationRequired = false;
-        const isVerificationRequiredStub = sinon.stub().callsFake(() => {
-            return isVerificationRequired;
-        });
-        const settingsStub = sinon.stub().callsFake(() => {
-            isVerificationRequired = true;
-            return Promise.resolve();
-        });
-        const eventStub = sinon.stub().callsFake(async (_unused, {source}) => {
-            if (source === 'member') {
-                return {
-                    meta: {
-                        pagination: {
-                            total: 15
-                        }
-                    }
-                };
-            } else {
-                return {
-                    meta: {
-                        pagination: {
-                            total: 10
-                        }
-                    }
-                };
-            }
-        });
-
-        const trigger = new VerificationTrigger({
-            getImportTriggerThreshold: () => 2,
-            Settings: {
-                edit: settingsStub
+        let verificationRequired = false;
+        const sendVerificationWebhook = sinon.stub().resolves(true);
+        const eventRepository = buildEventRepository(15, 10);
+        const trigger = createTrigger({
+            importThreshold: 2,
+            isVerificationRequired: () => verificationRequired,
+            setVerificationRequired: (value) => {
+                verificationRequired = value;
             },
-            isVerified: () => false,
-            isVerificationRequired: isVerificationRequiredStub,
-            sendVerificationEmail: emailStub,
-            eventRepository: {
-                getSignupEvents: eventStub
-            }
+            settingsEdit: sinon.stub().callsFake(() => {
+                verificationRequired = true;
+                return Promise.resolve();
+            }),
+            sendVerificationWebhook,
+            eventRepository
         });
 
         assert.equal(await trigger.checkVerificationRequired(), true);
-        sinon.assert.calledOnce(emailStub);
+        sinon.assert.calledOnce(sendVerificationWebhook);
     });
 
     it('testImportThreshold does not calculate anything if already verified', async function () {
-        const trigger = new VerificationTrigger({
-            getImportTriggerThreshold: () => 2,
+        const trigger = createTrigger({
+            importThreshold: 2,
             isVerified: () => true
         });
 
@@ -543,9 +380,8 @@ describe('Email verification flow', function () {
     });
 
     it('testImportThreshold does not calculate anything if already pending', async function () {
-        const trigger = new VerificationTrigger({
-            getImportTriggerThreshold: () => 2,
-            isVerified: () => false,
+        const trigger = createTrigger({
+            importThreshold: 2,
             isVerificationRequired: () => true
         });
 
@@ -553,39 +389,12 @@ describe('Email verification flow', function () {
     });
 
     it('Triggers when a number of members are added from Admin', async function () {
-        const emailStub = sinon.stub().resolves(null);
-        const settingsStub = sinon.stub().resolves(null);
-        const eventStub = sinon.stub().callsFake(async (_unused, {source}) => {
-            if (source === 'member') {
-                return {
-                    meta: {
-                        pagination: {
-                            total: 0
-                        }
-                    }
-                };
-            } else {
-                return {
-                    meta: {
-                        pagination: {
-                            total: 10
-                        }
-                    }
-                };
-            }
-        });
-
-        const trigger = new VerificationTrigger({
-            getAdminTriggerThreshold: () => 2,
-            Settings: {
-                edit: settingsStub
-            },
-            isVerified: () => false,
-            isVerificationRequired: () => false,
-            sendVerificationEmail: emailStub,
-            eventRepository: {
-                getSignupEvents: eventStub
-            }
+        const sendVerificationWebhook = sinon.stub().resolves(true);
+        const eventRepository = buildEventRepository(0, 10);
+        const trigger = createTrigger({
+            adminThreshold: 2,
+            sendVerificationWebhook,
+            eventRepository
         });
 
         await trigger._handleMemberCreatedEvent({
@@ -594,56 +403,24 @@ describe('Email verification flow', function () {
             }
         });
 
-        sinon.assert.calledTwice(eventStub);
-        assert('source' in eventStub.firstCall.lastArg);
-        assert.equal(eventStub.firstCall.lastArg.source, 'admin');
-        assert('created_at' in eventStub.firstCall.lastArg);
-        assert('$gt' in eventStub.firstCall.lastArg.created_at);
-        assert.match(eventStub.firstCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
-
-        sinon.assert.calledOnce(emailStub);
-        assert.deepEqual(emailStub.lastCall.firstArg, {
-            subject: 'Email needs verification',
-            message: 'Email verification needed for site: {siteUrl} has added: {amountTriggered} members through the Admin client in the last 30 days.',
-            amountTriggered: 10
+        sinon.assert.calledTwice(eventRepository.getSignupEvents);
+        assert('source' in eventRepository.getSignupEvents.firstCall.lastArg);
+        assert.equal(eventRepository.getSignupEvents.firstCall.lastArg.source, 'admin');
+        assert.deepEqual(sendVerificationWebhook.lastCall.firstArg, {
+            amountTriggered: 10,
+            threshold: 2,
+            method: 'admin'
         });
     });
 
     it('Triggers when a number of members are added from API', async function () {
-        const emailStub = sinon.stub().resolves(null);
-        const settingsStub = sinon.stub().resolves(null);
-        const eventStub = sinon.stub().callsFake(async (_unused, {source}) => {
-            if (source === 'member') {
-                return {
-                    meta: {
-                        pagination: {
-                            total: 0
-                        }
-                    }
-                };
-            } else {
-                return {
-                    meta: {
-                        pagination: {
-                            total: 10
-                        }
-                    }
-                };
-            }
-        });
-
-        const trigger = new VerificationTrigger({
-            getAdminTriggerThreshold: () => 2,
-            getApiTriggerThreshold: () => 2,
-            Settings: {
-                edit: settingsStub
-            },
-            isVerified: () => false,
-            isVerificationRequired: () => false,
-            sendVerificationEmail: emailStub,
-            eventRepository: {
-                getSignupEvents: eventStub
-            }
+        const sendVerificationWebhook = sinon.stub().resolves(true);
+        const eventRepository = buildEventRepository(0, 10);
+        const trigger = createTrigger({
+            adminThreshold: 2,
+            apiThreshold: 2,
+            sendVerificationWebhook,
+            eventRepository
         });
 
         await trigger._handleMemberCreatedEvent({
@@ -652,63 +429,28 @@ describe('Email verification flow', function () {
             }
         });
 
-        sinon.assert.calledTwice(eventStub);
-        assert('source' in eventStub.firstCall.lastArg);
-        assert.equal(eventStub.firstCall.lastArg.source, 'api');
-        assert('created_at' in eventStub.firstCall.lastArg);
-        assert('$gt' in eventStub.firstCall.lastArg.created_at);
-        assert.match(eventStub.firstCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
-
-        sinon.assert.calledOnce(emailStub);
-        assert.deepEqual(emailStub.lastCall.firstArg, {
-            subject: 'Email needs verification',
-            message: 'Email verification needed for site: {siteUrl} has added: {amountTriggered} members through the API in the last 30 days.',
-            amountTriggered: 10
+        sinon.assert.calledTwice(eventRepository.getSignupEvents);
+        assert('source' in eventRepository.getSignupEvents.firstCall.lastArg);
+        assert.equal(eventRepository.getSignupEvents.firstCall.lastArg.source, 'api');
+        assert.deepEqual(sendVerificationWebhook.lastCall.firstArg, {
+            amountTriggered: 10,
+            threshold: 2,
+            method: 'api'
         });
     });
 
-    it('Does not fetch events and trigger when threshold is Infinity', async function () {
-        const emailStub = sinon.stub().resolves(null);
-        const settingsStub = sinon.stub().resolves(null);
-        const eventStub = sinon.stub().callsFake(async (_unused, {source}) => {
-            if (source === 'member') {
-                return {
-                    meta: {
-                        pagination: {
-                            total: 15
-                        }
-                    }
-                };
-            } else {
-                return {
-                    meta: {
-                        pagination: {
-                            total: 10
-                        }
-                    }
-                };
-            }
-        });
-
-        const trigger = new VerificationTrigger({
-            getImportTriggerThreshold: () => Infinity,
-            Settings: {
-                edit: settingsStub
-            },
-            isVerified: () => false,
-            isVerificationRequired: () => false,
-            sendVerificationEmail: emailStub,
-            eventRepository: {
-                getSignupEvents: eventStub
-            }
+    it('Does not fetch events or trigger when threshold is Infinity', async function () {
+        const sendVerificationWebhook = sinon.stub().resolves(true);
+        const eventRepository = buildEventRepository(15, 10);
+        const trigger = createTrigger({
+            importThreshold: Infinity,
+            sendVerificationWebhook,
+            eventRepository
         });
 
         await trigger.testImportThreshold();
 
-        // We shouldn't be fetching the events if the threshold is Infinity
-        sinon.assert.notCalled(eventStub);
-
-        // We shouldn't be sending emails if the threshold is Infinity
-        sinon.assert.notCalled(emailStub);
+        sinon.assert.notCalled(eventRepository.getSignupEvents);
+        sinon.assert.notCalled(sendVerificationWebhook);
     });
 });
