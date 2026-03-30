@@ -3,6 +3,9 @@ import {PostEditorPage, PostsPage} from '@/admin-pages';
 import {PostPage} from '@/helpers/pages';
 import {createMemberFactory, generateSlug} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
+import {usePerTestIsolation} from '@/helpers/playwright/isolation';
+
+usePerTestIsolation();
 
 async function getNewsletters(request: APIRequestContext): Promise<{id: string}[]> {
     const response = await request.get('/ghost/api/admin/newsletters/?status=active&limit=all');
@@ -94,8 +97,9 @@ test.describe('Ghost Admin - Deleting Posts', () => {
         await postsPage.newPostButton.click();
 
         const editor = new PostEditorPage(page);
-        await editor.createDraft({title: 'Delete a post test', body: 'This is the content'});
-        await editor.waitForSaved();
+        await editor.titleInput.fill('Delete a post test');
+        await editor.titleInput.press('Enter');
+        await expect(editor.postStatus).toContainText('Draft - Saved');
 
         await editor.settingsToggleButton.click();
         await editor.settingsMenu.deletePost();
