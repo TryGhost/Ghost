@@ -55,7 +55,7 @@
     "@tryghost/string": "0.3.2",
     "@tryghost/url-utils": "5.2.2",
     "handlebars": "4.7.9",
-    "juice": "10.0.1",
+    "juice": "11.1.1",
     "luxon": "3.7.2"
   }
 }
