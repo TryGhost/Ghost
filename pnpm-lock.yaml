@@ -901,6 +901,9 @@ importers:
       '@tryghost/admin-x-framework':
         specifier: 0.0.0
         version: link:../admin-x-framework
+      '@tryghost/nql-lang':
+        specifier: 0.6.4
+        version: 0.6.4
       '@tryghost/shade':
         specifier: 0.0.0
         version: link:../shade
