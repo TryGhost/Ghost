@@ -201,27 +201,7 @@ const openPublishedPostBookmark = async (page) => {
 };
 
 test.describe('Publishing', () => {
-    // Publish post tests moved to e2e/tests/admin/posts/publishing.test.ts
-
     test.describe('Publish page', () => {
-        // A page can be published and become visible on web
-        test('Immediately', async ({sharedPage}) => {
-            const pageData = {
-                // Title should be unique to avoid slug duplicates
-                title: 'Published page test',
-                body: 'This is my scheduled page body.'
-            };
-
-            await sharedPage.goto('/ghost');
-            await createPage(sharedPage, pageData);
-            await publishPost(sharedPage, {type: null});
-            await closePublishFlow(sharedPage);
-            await checkPostStatus(sharedPage, 'Published');
-
-            // Check published
-            await checkPostPublished(sharedPage, pageData);
-        });
-
         // page should be published at the scheduled time
         test('At the scheduled time', async ({sharedPage}) => {
             const pageData = {
@@ -245,54 +225,6 @@ test.describe('Publishing', () => {
 
             // Check again, now it should have been added to the page
             await checkPostPublished(sharedPage, pageData);
-        });
-    });
-
-    // Lexical rendering tests moved to e2e/tests/admin/posts/lexical-editor.test.ts
-
-    test.describe('Update post', () => {
-        test.describe.configure({retries: 1});
-
-        test('Can update a published post', async ({sharedPage: adminPage}) => {
-            await adminPage.goto('/ghost');
-
-            const date = DateTime.now();
-
-            await createPostDraft(adminPage, {title: 'Testing publish update', body: 'This is the initial published text.'});
-            const editorUrl = await adminPage.url();
-            await publishPost(adminPage);
-            const frontendPage = await openPublishedPostBookmark(adminPage);
-            await closePublishFlow(adminPage);
-            const publishedBody = frontendPage.locator('main > article > section > p');
-            const publishedHeader = frontendPage.locator('main > article > header');
-
-            // check front-end post has the initial body text
-            await expect(publishedBody).toContainText('This is the initial published text.');
-            await expect(publishedHeader).toContainText(date.toFormat('LLL d, yyyy'));
-
-            // add some extra text to the post
-            await adminPage.goto(editorUrl);
-            await adminPage.locator('[data-kg="editor"]').first().click();
-            await adminPage.waitForTimeout(500);
-            await adminPage.keyboard.type(' This is some updated text.');
-
-            // change some post settings
-            await openPostSettingsMenu(adminPage);
-            await adminPage.fill('[data-test-date-time-picker-date-input]', '2022-01-07');
-            await adminPage.fill('[data-test-field="custom-excerpt"]', 'Short description and meta');
-
-            // save
-            const saveButton = await adminPage.locator('[data-test-button="publish-save"]').first();
-            await expect(saveButton).toHaveText('Update');
-            await saveButton.click();
-            await expect(saveButton).toHaveText('Updated');
-
-            // check front-end has new text after reloading
-            await frontendPage.reload();
-            await expect(publishedBody).toContainText('This is some updated text.');
-            await expect(publishedHeader).toContainText('Jan 7, 2022');
-            const metaDescription = frontendPage.locator('meta[name="description"]');
-            await expect(metaDescription).toHaveAttribute('content', 'Short description and meta');
         });
     });
 
