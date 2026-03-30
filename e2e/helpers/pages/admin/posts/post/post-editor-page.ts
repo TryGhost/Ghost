@@ -1,7 +1,7 @@
 import {AdminPage} from '@/admin-pages';
 import {BasePage} from '@/helpers/pages';
 import {DesktopPreviewFrame,PostPreviewModal} from '@/helpers/pages';
-import {expect, Locator, Page} from '@playwright/test';
+import {Locator, Page} from '@playwright/test';
 
 class SettingsMenu extends BasePage {
     readonly postUrlInput: Locator;
