@@ -201,54 +201,7 @@ const openPublishedPostBookmark = async (page) => {
 };
 
 test.describe('Publishing', () => {
-    test.describe('Publish post', () => {
-        // Post should be available on web and sent as a newsletter
-        test('Publish and Email', async ({sharedPage}) => {
-            const postData = {
-                title: 'Publish and email post',
-                body: 'This is my post body.'
-            };
-
-            // Create a member to send and email to
-            await createMember(sharedPage, {email: 'test+recipient1@example.com', name: 'Publishing member'});
-
-            await sharedPage.goto('/ghost');
-            await createPostDraft(sharedPage, postData);
-            await publishPost(sharedPage, {type: 'publish+send'});
-            await checkPostPublished(sharedPage, postData);
-        });
-
-        // Post should only be available on web
-        test('Publish only', async ({sharedPage}) => {
-            const postData = {
-                title: 'Publish post only',
-                body: 'This is my post body.'
-            };
-
-            await sharedPage.goto('/ghost');
-            await createPostDraft(sharedPage, postData);
-            await publishPost(sharedPage);
-            await closePublishFlow(sharedPage);
-
-            await checkPostStatus(sharedPage, 'Published');
-            await checkPostPublished(sharedPage, postData);
-        });
-
-        // Post should be available on web and sent as a newsletter
-        test('Email only', async ({sharedPage}) => {
-            const postData = {
-                title: 'Email only post',
-                body: 'This is my post body.'
-            };
-
-            await createMember(sharedPage, {email: 'test+recipient2@example.com', name: 'Publishing member'});
-
-            await sharedPage.goto('/ghost');
-            await createPostDraft(sharedPage, postData);
-            await publishPost(sharedPage, {type: 'send'});
-            await checkPostNotPublished(sharedPage, postData);
-        });
-    });
+    // Publish post tests moved to e2e/tests/admin/posts/publishing.test.ts
 
     test.describe('Publish page', () => {
         // A page can be published and become visible on web
@@ -295,28 +248,7 @@ test.describe('Publishing', () => {
         });
     });
 
-    test.describe('Lexical Rendering', () => {
-        test.describe.configure({retries: 1});
-
-        test('Renders Lexical editor', async ({sharedPage: adminPage}) => {
-            await adminPage.goto('/ghost');
-
-            await createPostDraft(adminPage, {title: 'Lexical editor test', body: 'This is my post body.'});
-
-            // Check if the lexical editor is present
-            expect(await adminPage.locator('[data-kg="editor"]').first()).toBeVisible();
-        });
-
-        test('Renders secondary hidden lexical editor', async ({sharedPage: adminPage}) => {
-            await adminPage.goto('/ghost');
-            await createPostDraft(adminPage, {title: 'Secondary lexical editor test', body: 'This is my post body.'});
-            const secondaryLexicalEditor = adminPage.locator('[data-secondary-instance="true"]');
-            // Check if the secondary lexical editor exists
-            await expect(secondaryLexicalEditor).toHaveCount(1);
-            // Check if it is hidden
-            await expect(secondaryLexicalEditor).toBeHidden();
-        });
-    });
+    // Lexical rendering tests moved to e2e/tests/admin/posts/lexical-editor.test.ts
 
     test.describe('Update post', () => {
         test.describe.configure({retries: 1});
@@ -680,38 +612,4 @@ test.describe('Updating post access', () => {
     });
 });
 
-test.describe('Deleting a post', () => {
-    test('Delete a saved post', async ({page}) => {
-        await page.goto('/ghost');
-
-        await createPostDraft(page, {title: 'Delete a post test', body: 'This is the content'});
-
-        await expect(page.locator('[data-test-editor-post-status]')).toContainText('Draft - Saved');
-
-        await openPostSettingsMenu(page);
-
-        await page.locator('[data-test-button="delete-post"]').click();
-
-        await page.locator('[data-test-button="delete-post-confirm"]').click();
-
-        await expect(
-            page.locator('[data-test-screen-title]')
-        ).toContainText('Posts');
-    });
-
-    test('Delete a post with unsaved changes', async ({page}) => {
-        await page.goto('/ghost');
-
-        await createPostDraft(page, {title: 'Delete a post test', body: 'This is the content'});
-
-        await openPostSettingsMenu(page);
-
-        await page.locator('[data-test-button="delete-post"]').click();
-
-        await page.locator('[data-test-button="delete-post-confirm"]').click();
-
-        await expect(
-            page.locator('[data-test-screen-title]')
-        ).toContainText('Posts');
-    });
-});
+// Delete post tests moved to e2e/tests/admin/posts/publishing.test.ts
