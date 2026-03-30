@@ -72,6 +72,13 @@ describe('Import threshold', function () {
 
 describe('Email verification flow', function () {
     let domainEventsStub;
+    const thirtyDayFilterPattern = /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/;
+    const defaultVerificationProcess = {
+        amount: 10,
+        threshold: 5,
+        method: 'import',
+        throwOnTrigger: false
+    };
 
     const buildEventRepository = (memberTotal, sourceTotal) => {
         return {
@@ -111,6 +118,46 @@ describe('Email verification flow', function () {
         });
     };
 
+    const assertSignupEventsQuery = (eventRepository, source, call = 'firstCall') => {
+        const signupEventsCall = eventRepository.getSignupEvents[call];
+
+        assert('source' in signupEventsCall.lastArg);
+        assert.equal(signupEventsCall.lastArg.source, source);
+        assert('created_at' in signupEventsCall.lastArg);
+        assert('$gt' in signupEventsCall.lastArg.created_at);
+        assert.match(signupEventsCall.lastArg.created_at.$gt, thirtyDayFilterPattern);
+    };
+
+    const assertVerificationProcessDidNotTrigger = ({
+        triggerOptions = {},
+        processOptions = defaultVerificationProcess,
+        preserveDefaultWebhook = false
+    } = {}) => {
+        const sendVerificationWebhook = preserveDefaultWebhook ? undefined : (triggerOptions.sendVerificationWebhook ?? sinon.stub().resolves(true));
+        const settingsEdit = sinon.stub().resolves(null);
+        const trigger = createTrigger({
+            ...triggerOptions,
+            ...(sendVerificationWebhook ? {sendVerificationWebhook} : {}),
+            settingsEdit
+        });
+
+        return trigger._startVerificationProcess(processOptions).then((result) => {
+            assert.equal(result.needsVerification, false);
+
+            return {
+                sendVerificationWebhook,
+                settingsEdit
+            };
+        });
+    };
+
+    const dispatchMemberCreatedEvent = (source) => {
+        DomainEvents.dispatch(MemberCreatedEvent.create({
+            memberId: 'hello!',
+            source
+        }, new Date()));
+    };
+
     beforeEach(function () {
         domainEventsStub = sinon.stub(DomainEvents, 'subscribe');
     });
@@ -145,42 +192,34 @@ describe('Email verification flow', function () {
         });
     });
 
-    it('Does not trigger verification when already verified', async function () {
-        const sendVerificationWebhook = sinon.stub().resolves(true);
-        const settingsEdit = sinon.stub().resolves(null);
-        const trigger = createTrigger({
-            isVerified: () => true,
-            sendVerificationWebhook,
-            settingsEdit
-        });
-
-        const result = await trigger._startVerificationProcess({
+    [{
+        name: 'already verified',
+        triggerOptions: {
+            isVerified: () => true
+        },
+        processOptions: {
             amount: 10,
             throwOnTrigger: false
-        });
-
-        assert.equal(result.needsVerification, false);
-        sinon.assert.notCalled(sendVerificationWebhook);
-        sinon.assert.notCalled(settingsEdit);
-    });
-
-    it('Does not trigger verification when already in progress', async function () {
-        const sendVerificationWebhook = sinon.stub().resolves(true);
-        const settingsEdit = sinon.stub().resolves(null);
-        const trigger = createTrigger({
-            isVerificationRequired: () => true,
-            sendVerificationWebhook,
-            settingsEdit
-        });
-
-        const result = await trigger._startVerificationProcess({
+        }
+    }, {
+        name: 'already in progress',
+        triggerOptions: {
+            isVerificationRequired: () => true
+        },
+        processOptions: {
             amount: 10,
             throwOnTrigger: false
-        });
+        }
+    }].forEach(({name, triggerOptions, processOptions}) => {
+        it(`Does not trigger verification when ${name}`, async function () {
+            const {sendVerificationWebhook, settingsEdit} = await assertVerificationProcessDidNotTrigger({
+                triggerOptions,
+                processOptions
+            });
 
-        assert.equal(result.needsVerification, false);
-        sinon.assert.notCalled(sendVerificationWebhook);
-        sinon.assert.notCalled(settingsEdit);
+            sinon.assert.notCalled(sendVerificationWebhook);
+            sinon.assert.notCalled(settingsEdit);
+        });
     });
 
     it('Throws when `throwOnTrigger` is true', async function () {
@@ -215,59 +254,37 @@ describe('Email verification flow', function () {
         }
     });
 
-    it('Does not mark verification required when the webhook is unavailable', async function () {
-        const settingsEdit = sinon.stub().resolves(null);
-        const trigger = createTrigger({
-            settingsEdit
+    [{
+        name: 'the webhook is unavailable',
+        preserveDefaultWebhook: true
+    }, {
+        name: 'the webhook is unconfigured',
+        sendVerificationWebhook: () => sinon.stub().resolves(false),
+        processOptions: defaultVerificationProcess,
+        expectedWebhookCalls: 1
+    }, {
+        name: 'webhook delivery fails',
+        sendVerificationWebhook: () => sinon.stub().rejects(new Error('Webhook failed')),
+        processOptions: defaultVerificationProcess,
+        expectedWebhookCalls: 1
+    }].forEach(({name, sendVerificationWebhook: buildWebhook, processOptions, expectedWebhookCalls, preserveDefaultWebhook}) => {
+        it(`Does not mark verification required when ${name}`, async function () {
+            const {sendVerificationWebhook, settingsEdit} = await assertVerificationProcessDidNotTrigger({
+                triggerOptions: buildWebhook ? {
+                    sendVerificationWebhook: buildWebhook()
+                } : {},
+                processOptions: processOptions ?? {
+                    amount: 10,
+                    throwOnTrigger: false
+                },
+                preserveDefaultWebhook
+            });
+
+            if (typeof expectedWebhookCalls === 'number') {
+                assert.equal(sendVerificationWebhook.callCount, expectedWebhookCalls);
+            }
+            sinon.assert.notCalled(settingsEdit);
         });
-
-        const result = await trigger._startVerificationProcess({
-            amount: 10,
-            throwOnTrigger: false
-        });
-
-        assert.equal(result.needsVerification, false);
-        sinon.assert.notCalled(settingsEdit);
-    });
-
-    it('Does not mark verification required when the webhook is unconfigured', async function () {
-        const sendVerificationWebhook = sinon.stub().resolves(false);
-        const settingsEdit = sinon.stub().resolves(null);
-        const trigger = createTrigger({
-            sendVerificationWebhook,
-            settingsEdit
-        });
-
-        const result = await trigger._startVerificationProcess({
-            amount: 10,
-            threshold: 5,
-            method: 'import',
-            throwOnTrigger: false
-        });
-
-        assert.equal(result.needsVerification, false);
-        sinon.assert.calledOnce(sendVerificationWebhook);
-        sinon.assert.notCalled(settingsEdit);
-    });
-
-    it('Does not mark verification required when webhook delivery fails', async function () {
-        const sendVerificationWebhook = sinon.stub().rejects(new Error('Webhook failed'));
-        const settingsEdit = sinon.stub().resolves(null);
-        const trigger = createTrigger({
-            sendVerificationWebhook,
-            settingsEdit
-        });
-
-        const result = await trigger._startVerificationProcess({
-            amount: 10,
-            threshold: 5,
-            method: 'import',
-            throwOnTrigger: false
-        });
-
-        assert.equal(result.needsVerification, false);
-        sinon.assert.calledOnce(sendVerificationWebhook);
-        sinon.assert.notCalled(settingsEdit);
     });
 
     it('Triggers when a number of API events are dispatched', async function () {
@@ -286,17 +303,10 @@ describe('Email verification flow', function () {
             eventRepository
         });
 
-        DomainEvents.dispatch(MemberCreatedEvent.create({
-            memberId: 'hello!',
-            source: 'api'
-        }, new Date()));
+        dispatchMemberCreatedEvent('api');
 
         sinon.assert.calledOnce(eventRepository.getSignupEvents);
-        assert('source' in eventRepository.getSignupEvents.lastCall.lastArg);
-        assert.equal(eventRepository.getSignupEvents.lastCall.lastArg.source, 'api');
-        assert('created_at' in eventRepository.getSignupEvents.lastCall.lastArg);
-        assert('$gt' in eventRepository.getSignupEvents.lastCall.lastArg.created_at);
-        assert.match(eventRepository.getSignupEvents.lastCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
+        assertSignupEventsQuery(eventRepository, 'api', 'lastCall');
     });
 
     it('Does not trigger when site is already verified', async function () {
@@ -316,10 +326,7 @@ describe('Email verification flow', function () {
             eventRepository
         });
 
-        DomainEvents.dispatch(MemberCreatedEvent.create({
-            memberId: 'hello!',
-            source: 'api'
-        }, new Date()));
+        dispatchMemberCreatedEvent('api');
 
         sinon.assert.notCalled(eventRepository.getSignupEvents);
     });
@@ -336,11 +343,7 @@ describe('Email verification flow', function () {
         await trigger.testImportThreshold();
 
         sinon.assert.calledTwice(eventRepository.getSignupEvents);
-        assert('source' in eventRepository.getSignupEvents.firstCall.lastArg);
-        assert.equal(eventRepository.getSignupEvents.firstCall.lastArg.source, 'import');
-        assert('created_at' in eventRepository.getSignupEvents.firstCall.lastArg);
-        assert('$gt' in eventRepository.getSignupEvents.firstCall.lastArg.created_at);
-        assert.match(eventRepository.getSignupEvents.firstCall.lastArg.created_at.$gt, /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
+        assertSignupEventsQuery(eventRepository, 'import');
         assert.deepEqual(sendVerificationWebhook.lastCall.firstArg, {
             amountTriggered: 10,
             threshold: 5,
@@ -388,54 +391,42 @@ describe('Email verification flow', function () {
         assert.equal(await trigger.testImportThreshold(), undefined);
     });
 
-    it('Triggers when a number of members are added from Admin', async function () {
-        const sendVerificationWebhook = sinon.stub().resolves(true);
-        const eventRepository = buildEventRepository(0, 10);
-        const trigger = createTrigger({
+    [{
+        name: 'Admin',
+        source: 'admin',
+        triggerOptions: {
+            adminThreshold: 2
+        }
+    }, {
+        name: 'API',
+        source: 'api',
+        triggerOptions: {
             adminThreshold: 2,
-            sendVerificationWebhook,
-            eventRepository
-        });
+            apiThreshold: 2
+        }
+    }].forEach(({name, source, triggerOptions}) => {
+        it(`Triggers when a number of members are added from ${name}`, async function () {
+            const sendVerificationWebhook = sinon.stub().resolves(true);
+            const eventRepository = buildEventRepository(0, 10);
+            const trigger = createTrigger({
+                ...triggerOptions,
+                sendVerificationWebhook,
+                eventRepository
+            });
 
-        await trigger._handleMemberCreatedEvent({
-            data: {
-                source: 'admin'
-            }
-        });
+            await trigger._handleMemberCreatedEvent({
+                data: {
+                    source
+                }
+            });
 
-        sinon.assert.calledTwice(eventRepository.getSignupEvents);
-        assert('source' in eventRepository.getSignupEvents.firstCall.lastArg);
-        assert.equal(eventRepository.getSignupEvents.firstCall.lastArg.source, 'admin');
-        assert.deepEqual(sendVerificationWebhook.lastCall.firstArg, {
-            amountTriggered: 10,
-            threshold: 2,
-            method: 'admin'
-        });
-    });
-
-    it('Triggers when a number of members are added from API', async function () {
-        const sendVerificationWebhook = sinon.stub().resolves(true);
-        const eventRepository = buildEventRepository(0, 10);
-        const trigger = createTrigger({
-            adminThreshold: 2,
-            apiThreshold: 2,
-            sendVerificationWebhook,
-            eventRepository
-        });
-
-        await trigger._handleMemberCreatedEvent({
-            data: {
-                source: 'api'
-            }
-        });
-
-        sinon.assert.calledTwice(eventRepository.getSignupEvents);
-        assert('source' in eventRepository.getSignupEvents.firstCall.lastArg);
-        assert.equal(eventRepository.getSignupEvents.firstCall.lastArg.source, 'api');
-        assert.deepEqual(sendVerificationWebhook.lastCall.firstArg, {
-            amountTriggered: 10,
-            threshold: 2,
-            method: 'api'
+            sinon.assert.calledTwice(eventRepository.getSignupEvents);
+            assertSignupEventsQuery(eventRepository, source);
+            assert.deepEqual(sendVerificationWebhook.lastCall.firstArg, {
+                amountTriggered: 10,
+                threshold: 2,
+                method: source
+            });
         });
     });
 

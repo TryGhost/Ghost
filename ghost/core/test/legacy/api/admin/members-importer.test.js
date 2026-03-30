@@ -14,6 +14,14 @@ const {assertExists} = require('../../../utils/assertions');
 let request;
 let emailMockReceiver;
 
+const setupImportVerificationWebhook = () => {
+    return setupMockVerificationWebhook({
+        apiThreshold: 2,
+        adminThreshold: 2,
+        importThreshold: 1
+    });
+};
+
 describe('Members Importer API', function () {
     before(async function () {
         await localUtils.startGhost();
@@ -244,11 +252,7 @@ describe('Members Importer API', function () {
     });
 
     it('Can import members with host emailVerification limits', async function () {
-        const {scope: webhookScope} = setupMockVerificationWebhook({
-            apiThreshold: 2,
-            adminThreshold: 2,
-            importThreshold: 1
-        });
+        const {scope: webhookScope} = setupImportVerificationWebhook();
 
         const res = await request
             .post(localUtils.API.getApiQuery(`members/upload/`))
@@ -303,11 +307,7 @@ describe('Members Importer API', function () {
 
         assert(!settingsCache.get('email_verification_required'), 'Email verification should not be required');
 
-        const {scope: webhookScope} = setupMockVerificationWebhook({
-            apiThreshold: 2,
-            adminThreshold: 2,
-            importThreshold: 1
-        });
+        const {scope: webhookScope} = setupImportVerificationWebhook();
 
         const awaitCompletion = jobManager.awaitCompletion('members-import');
 
