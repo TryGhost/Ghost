@@ -120,16 +120,19 @@ export class PostEditorPage extends AdminPage {
         await editor.waitFor({state: 'visible'});
         await this.page.keyboard.press('Enter');
 
-        await expect.poll(async () => {
-            return await editor.evaluate((element) => {
-                const activeElement = document.activeElement;
+        await this.page.waitForFunction(() => {
+            const element = document.querySelector('[data-lexical-editor="true"]');
+            if (!element) {
+                return false;
+            }
 
-                return Boolean(
-                    activeElement &&
-                    (activeElement === element || element.contains(activeElement))
-                );
-            });
-        }).toBe(true);
+            const activeElement = document.activeElement;
+
+            return Boolean(
+                activeElement &&
+                (activeElement === element || element.contains(activeElement))
+            );
+        });
 
         await this.page.keyboard.type(body);
     }
