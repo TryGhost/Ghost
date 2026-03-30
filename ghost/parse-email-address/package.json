@@ -34,5 +34,12 @@
   },
   "dependencies": {
     "parse-email-address": "0.0.2"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": ["{projectRoot}/build"]
+      }
+    }
   }
 }
