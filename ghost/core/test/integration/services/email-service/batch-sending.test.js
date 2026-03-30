@@ -1,6 +1,7 @@
 const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
 const moment = require('moment');
 const models = require('../../../../core/server/models');
+const nock = require('nock');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
@@ -23,6 +24,83 @@ const mobileDocWithReplacements = '{"version":"0.3.1","atoms":[],"cards":[["emai
 let agent;
 let stubbedSend;
 let frontendAgent;
+
+function mockVerificationWebhook({
+    apiThreshold = 100,
+    adminThreshold = 100,
+    importThreshold = 100
+} = {}) {
+    const webhookUrl = 'https://test-webhook-receiver.com/mock-verification-event-endpoint/';
+    const webhookEndpoint = new URL(webhookUrl);
+    const scope = nock(webhookEndpoint.origin)
+        .post(webhookEndpoint.pathname)
+        .reply(200, {status: 'OK'});
+
+    configUtils.set('hostSettings:siteId', '1');
+    configUtils.set('hostSettings:emailVerification', {
+        apiThreshold,
+        adminThreshold,
+        importThreshold,
+        verified: false,
+        webhookType: 'mock_verification_event',
+        webhookUrl,
+        webhookSecret: 'not-a-live-secret'
+    });
+
+    return scope;
+}
+
+async function assertVerificationRequiredBlocksEmailSend(requestAgent) {
+    const webhookScope = mockVerificationWebhook();
+
+    // We stub a lot of imported members to mimic a large import that is in progress but is not yet finished
+    // the current verification required value is off. But when creating an email, we need to update that check to avoid this issue.
+    const members = require('../../../../core/server/services/members');
+    const events = members.api.events;
+    const getSignupEvents = sinon.stub(events, 'getSignupEvents').resolves({
+        meta: {
+            pagination: {
+                total: 100000
+            }
+        }
+    });
+
+    try {
+        assert.equal(settingsCache.get('email_verification_required'), false, 'This test requires email verification to be disabled initially');
+
+        const post = {
+            title: 'A random test post',
+            status: 'draft',
+            feature_image_alt: 'Testing sending',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
+            created_at: moment().subtract(2, 'days').toISOString(),
+            updated_at: moment().subtract(2, 'days').toISOString()
+        };
+
+        const res = await requestAgent.post('posts/')
+            .body({posts: [post]})
+            .expectStatus(201);
+
+        const id = res.body.posts[0].id;
+
+        const updatedPost = {
+            status: 'published',
+            updated_at: res.body.posts[0].updated_at
+        };
+
+        const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
+        await requestAgent.put(`posts/${id}/?newsletter=${newsletterSlug}`)
+            .body({posts: [updatedPost]})
+            .expectStatus(403);
+
+        sinon.assert.calledTwice(getSignupEvents);
+        assert.equal(settingsCache.get('email_verification_required'), true);
+        assert.equal(webhookScope.isDone(), true);
+    } finally {
+        getSignupEvents.restore();
+        nock.cleanAll();
+    }
+}
 
 function sortBatches(a, b) {
     const aId = a.get('provider_id');
@@ -83,6 +161,53 @@ async function testEmailBatches(settings, email_recipient_filter, expectedBatche
     const memberIds = emailRecipients.map(recipient => recipient.get('member_id'));
     assert.equal(memberIds.length, _.uniq(memberIds).length);
 }
+
+describe('Email verification checks', function () {
+    let verificationAgent;
+    let verificationGhostServer;
+
+    before(async function () {
+        const agents = await agentProvider.getAgentsWithFrontend();
+        verificationAgent = agents.adminAgent;
+        verificationGhostServer = agents.ghostServer;
+
+        await fixtureManager.init('newsletters', 'members:newsletters');
+        await verificationAgent.loginAsOwner();
+    });
+
+    beforeEach(function () {
+        configUtils.set('bulkEmail:batchSize', 100);
+        stubbedSend = sinon.fake.resolves({
+            id: 'stubbed-email-id'
+        });
+        mockManager.mockMail();
+        mockManager.mockMailgun(function () {
+            // Allows for setting stubbedSend during tests
+            return stubbedSend.call(this, ...arguments);
+        });
+        mockManager.mockStripe();
+    });
+
+    afterEach(async function () {
+        await configUtils.restore();
+        await models.Settings.edit([{
+            key: 'email_verification_required',
+            value: false
+        }], {context: {internal: true}});
+        mockManager.restore();
+        await jobManager.allSettled();
+        nock.cleanAll();
+    });
+
+    after(async function () {
+        mockManager.restore();
+        await verificationGhostServer.stop();
+    });
+
+    it('blocks email sending when verification is required via webhook config', async function () {
+        await assertVerificationRequiredBlocksEmailSend(verificationAgent);
+    });
+});
 
 // The batch sending tests have some sort of ordering issue that causes them to fail intermittently
 // We need to decide if they are worth keeping, or if we should rewrite them to be more reliable
@@ -501,58 +626,8 @@ describe.skip('Batch sending tests', function () {
         assert.equal(memberIds.length, _.uniq(memberIds).length);
     });
 
-    it('Cannot send an email if verification is required', async function () {
-        // First enable import thresholds
-        configUtils.set('hostSettings:emailVerification', {
-            apiThreshold: 100,
-            adminThreshold: 100,
-            importThreshold: 100,
-            verified: false,
-            escalationAddress: 'test@example.com'
-        });
-
-        // We stub a lot of imported members to mimic a large import that is in progress but is not yet finished
-        // the current verification required value is off. But when creating an email, we need to update that check to avoid this issue.
-        const members = require('../../../../core/server/services/members');
-        const events = members.api.events;
-        const getSignupEvents = sinon.stub(events, 'getSignupEvents').resolves({
-            meta: {
-                pagination: {
-                    total: 100000
-                }
-            }
-        });
-
-        assert.equal(settingsCache.get('email_verification_required'), false, 'This test requires email verification to be disabled initially');
-
-        const post = {
-            title: 'A random test post',
-            status: 'draft',
-            feature_image_alt: 'Testing sending',
-            feature_image_caption: 'Testing <b>feature image caption</b>',
-            created_at: moment().subtract(2, 'days').toISOString(),
-            updated_at: moment().subtract(2, 'days').toISOString()
-        };
-
-        const res = await agent.post('posts/')
-            .body({posts: [post]})
-            .expectStatus(201);
-
-        const id = res.body.posts[0].id;
-
-        const updatedPost = {
-            status: 'published',
-            updated_at: res.body.posts[0].updated_at
-        };
-
-        const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
-        await agent.put(`posts/${id}/?newsletter=${newsletterSlug}`)
-            .body({posts: [updatedPost]})
-            .expectStatus(403);
-        sinon.assert.calledTwice(getSignupEvents);
-        assert.equal(settingsCache.get('email_verification_required'), true);
-
-        await configUtils.restore();
+    it('Cannot send an email when webhook verification is required', async function () {
+        await assertVerificationRequiredBlocksEmailSend(agent);
     });
 
     // FLAKEY

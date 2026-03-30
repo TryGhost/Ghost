@@ -904,7 +904,6 @@ describe('Members API', function () {
             adminThreshold: 1,
             importThreshold: 0,
             verified: false,
-            escalationAddress: 'test@example.com',
             webhookType: 'mock_verification_event',
             webhookUrl,
             webhookSecret
