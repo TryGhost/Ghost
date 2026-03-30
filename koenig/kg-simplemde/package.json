@@ -25,17 +25,17 @@
   },
   "devDependencies": {
     "browserify": "17.0.1",
-    "debug": "*",
-    "gulp": "*",
+    "debug": "4.4.3",
+    "gulp": "5.0.1",
     "gulp-clean-css": "4.3.0",
-    "gulp-concat": "*",
-    "gulp-debug": "*",
-    "gulp-header": "*",
-    "gulp-jsbeautifier": "*",
-    "gulp-rename": "*",
+    "gulp-concat": "2.6.1",
+    "gulp-debug": "5.0.1",
+    "gulp-header": "2.0.12",
+    "gulp-jsbeautifier": "3.0.1",
+    "gulp-rename": "2.1.0",
     "gulp-uglify": "3.0.2",
-    "vinyl-buffer": "*",
-    "vinyl-source-stream": "*"
+    "vinyl-buffer": "1.0.1",
+    "vinyl-source-stream": "2.0.0"
   },
   "repository": {
     "type": "git",

@@ -34,8 +34,8 @@
   },
   "dependencies": {
     "@tryghost/kg-utils": "1.0.43",
-    "mobiledoc-dom-renderer": "^0.7.0",
-    "simple-dom": "^1.4.0"
+    "mobiledoc-dom-renderer": "0.7.2",
+    "simple-dom": "1.4.0"
   },
   "devDependencies": {
     "@eslint/js": "9.39.4",

@@ -52,7 +52,7 @@
     "@lexical/rich-text": "0.13.1",
     "@tryghost/kg-default-nodes": "2.0.19",
     "@tryghost/kg-default-transforms": "1.2.42",
-    "jsdom": "^29.0.0",
+    "jsdom": "29.0.1",
     "lexical": "0.13.1"
   }
 }

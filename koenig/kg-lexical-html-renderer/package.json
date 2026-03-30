@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "c8": "11.0.0",
-    "jsdom": "^29.0.0",
+    "jsdom": "29.0.1",
     "mocha": "11.7.5",
     "prettier": "3.8.1",
     "should": "13.2.3",
@@ -42,7 +42,7 @@
     "@lexical/rich-text": "0.13.1",
     "@tryghost/kg-default-nodes": "2.0.19",
     "@tryghost/kg-default-transforms": "1.2.42",
-    "jsdom": "^29.0.0",
+    "jsdom": "29.0.1",
     "lexical": "0.13.1"
   }
 }

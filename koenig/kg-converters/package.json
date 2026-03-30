@@ -37,11 +37,11 @@
     "c8": "11.0.0",
     "mocha": "11.7.5",
     "sinon": "21.0.3",
-    "tsx": "^4.0.0",
+    "tsx": "4.21.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.57.2"
   },
   "dependencies": {
-    "lodash": "^4.17.21"
+    "lodash": "4.17.23"
   }
 }
