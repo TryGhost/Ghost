@@ -126,6 +126,9 @@ jobs:
               - 'apps/shade/**'
               - 'apps/admin-x-framework/**'
               - 'apps/activitypub/**'
+            shade:
+              - *shared
+              - 'apps/shade/**'
             announcement-bar:
               - *shared
               - 'apps/announcement-bar/**'
@@ -202,6 +205,7 @@ jobs:
       changed_core: ${{ steps.changed.outputs.core }}
       changed_admin_x_settings: ${{ steps.changed.outputs.admin-x-settings }}
       changed_activitypub: ${{ steps.changed.outputs.activitypub }}
+      changed_shade: ${{ steps.changed.outputs.shade }}
       changed_announcement_bar: ${{ steps.changed.outputs.announcement-bar }}
       changed_comments_ui: ${{ steps.changed.outputs.comments-ui }}
       changed_portal: ${{ steps.changed.outputs.portal }}
@@ -748,6 +752,35 @@ jobs:
           name: comments-ui-playwright-report
           path: apps/comments-ui/playwright-report
           retention-days: 30
+
+      - uses: tryghost/actions/actions/slack-build@main
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  job_shade_storybook:
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_shade == 'true'
+    name: Shade Storybook build
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - run: yarn workspace @tryghost/shade build-storybook
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -1350,6 +1383,7 @@ jobs:
         job_browser-tests,
         job_admin_x_settings,
         job_activitypub,
+        job_shade_storybook,
         job_comments_ui,
         job_signup_form,
         job_tinybird-tests,
