@@ -37,11 +37,12 @@ runs:
         path: ${{ env.CACHED_DEPENDENCY_PATHS }}
         key: ${{ env.DEPENDENCY_CACHE_KEY }}
 
-    - name: Install dependencies on cache miss
-      if: steps.dep-cache.outputs.cache-hit != 'true' && steps.dep-cache-retry-attempt.outputs.cache-hit != 'true'
+    - name: Install dependencies
       shell: bash
       run: |
-        echo "::warning::Dependency cache could not be restored after retry - installing dependencies from scratch"
+        if [ "${{ steps.dep-cache.outputs.cache-hit }}" != "true" ] && [ "${{ steps.dep-cache-retry-attempt.outputs.cache-hit }}" != "true" ]; then
+          echo "::warning::Dependency cache could not be restored after retry - installing dependencies from scratch"
+        fi
         bash .github/scripts/install-deps.sh
 
     - name: Set cache miss output
