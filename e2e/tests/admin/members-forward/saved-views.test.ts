@@ -29,7 +29,7 @@ async function saveCurrentView(page: Page, name: string) {
     await dialog.waitFor({state: 'hidden'});
 }
 
-test.describe('Ghost Admin - Member Saved Views', () => {
+test.describe('Ghost Admin - Members Forward Saved Views', () => {
     test.use({labs: {membersForward: true}});
 
     let memberFactory: MemberFactory;
