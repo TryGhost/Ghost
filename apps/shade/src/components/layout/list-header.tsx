@@ -1,4 +1,5 @@
 import {H1} from './heading';
+import {DropdownMenu, DropdownMenuContent, DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
 import {cn} from '@/lib/utils';
 
 import React from 'react';
@@ -58,17 +59,156 @@ function ListHeaderDescription({className, children}: ListHeaderDescriptionProps
     );
 }
 
-type ListHeaderActionGroupProps = PropsWithChildrenAndClassName;
-function ListHeaderActionGroup({className, children}: ListHeaderActionGroupProps) {
+type ListHeaderActionGroupPrimaryProps = React.PropsWithChildren;
+function ListHeaderActionGroupPrimary({children}: ListHeaderActionGroupPrimaryProps) {
+    return <>{children}</>;
+}
+
+type ListHeaderActionGroupMobileMenuProps = React.PropsWithChildren;
+function ListHeaderActionGroupMobileMenu({children}: ListHeaderActionGroupMobileMenuProps) {
+    return <DropdownMenu>{children}</DropdownMenu>;
+}
+
+type ListHeaderActionGroupMobileMenuTriggerProps = React.ComponentPropsWithoutRef<typeof DropdownMenuTrigger>;
+function ListHeaderActionGroupMobileMenuTrigger({children, ...props}: ListHeaderActionGroupMobileMenuTriggerProps) {
     return (
-        <div
-            className={cn('flex items-center gap-2', className)}
-            data-list-header='list-header-action-group'
-        >
+        <DropdownMenuTrigger asChild {...props}>
             {children}
-        </div>
+        </DropdownMenuTrigger>
     );
 }
+
+type ListHeaderActionGroupMobileMenuContentProps = React.ComponentPropsWithoutRef<typeof DropdownMenuContent>;
+function ListHeaderActionGroupMobileMenuContent({children, ...props}: ListHeaderActionGroupMobileMenuContentProps) {
+    return (
+        <DropdownMenuContent align='end' sideOffset={8} {...props}>
+            {children}
+        </DropdownMenuContent>
+    );
+}
+
+const DEFAULT_MOBILE_MENU_BREAKPOINT = 640;
+
+const isBelowBreakpoint = (breakpoint: number) => {
+    if (typeof window === 'undefined') {
+        return false;
+    }
+
+    return window.innerWidth < breakpoint;
+};
+
+const useShouldCollapseActionGroup = (breakpoint: number) => {
+    const [shouldCollapse, setShouldCollapse] = React.useState(() => isBelowBreakpoint(breakpoint));
+
+    React.useEffect(() => {
+        const onResize = () => {
+            setShouldCollapse(isBelowBreakpoint(breakpoint));
+        };
+
+        onResize();
+        window.addEventListener('resize', onResize);
+
+        return () => {
+            window.removeEventListener('resize', onResize);
+        };
+    }, [breakpoint]);
+
+    return shouldCollapse;
+};
+
+type ListHeaderActionGroupProps = PropsWithChildrenAndClassName & {
+    mobileMenuBreakpoint?: number;
+};
+type ListHeaderActionGroupComponent = React.FC<ListHeaderActionGroupProps> & {
+    Primary: React.FC<ListHeaderActionGroupPrimaryProps>;
+    MobileMenu: React.FC<ListHeaderActionGroupMobileMenuProps>;
+    MobileMenuTrigger: React.FC<ListHeaderActionGroupMobileMenuTriggerProps>;
+    MobileMenuContent: React.FC<ListHeaderActionGroupMobileMenuContentProps>;
+};
+
+const ListHeaderActionGroup: ListHeaderActionGroupComponent = Object.assign(
+    function ListHeaderActionGroup({className, children, mobileMenuBreakpoint = DEFAULT_MOBILE_MENU_BREAKPOINT}: ListHeaderActionGroupProps) {
+        const childNodes = React.Children.toArray(children);
+        const desktopChildren: React.ReactNode[] = [];
+        let mobileMenu: React.ReactElement | null = null;
+        let primaryAction: React.ReactNode = null;
+        const shouldCollapse = useShouldCollapseActionGroup(mobileMenuBreakpoint);
+
+        childNodes.forEach((child) => {
+            if (!React.isValidElement(child)) {
+                desktopChildren.push(child);
+                return;
+            }
+
+            const childElement = child as React.ReactElement<{children?: React.ReactNode}>;
+
+            if (childElement.type === ListHeaderActionGroupMobileMenu) {
+                mobileMenu = childElement;
+                return;
+            }
+
+            if (childElement.type === ListHeaderActionGroupPrimary) {
+                primaryAction = childElement.props.children ?? null;
+                desktopChildren.push(childElement.props.children ?? null);
+                return;
+            }
+
+            desktopChildren.push(childElement);
+        });
+
+        if (!mobileMenu) {
+            return (
+                <div
+                    className={cn('flex items-center justify-end gap-2', className)}
+                    data-list-header='list-header-action-group'
+                >
+                    {children}
+                </div>
+            );
+        }
+
+        if (!shouldCollapse) {
+            return (
+                <div
+                    className={cn('flex items-center justify-end gap-2', className)}
+                    data-list-header='list-header-action-group'
+                >
+                    <div
+                        className='flex items-center justify-end gap-2'
+                        data-list-header='list-header-action-group-desktop'
+                    >
+                        {desktopChildren}
+                    </div>
+                </div>
+            );
+        }
+
+        return (
+            <div
+                className={cn('flex items-center justify-end gap-2', className)}
+                data-list-header='list-header-action-group'
+            >
+                <div
+                    className='ml-auto flex items-center gap-2'
+                    data-list-header='list-header-action-group-mobile'
+                >
+                    {mobileMenu}
+                    {primaryAction && (
+                        <div data-list-header='list-header-action-group-mobile-primary'>
+                            {primaryAction}
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    },
+    {
+        Primary: ListHeaderActionGroupPrimary,
+        MobileMenu: ListHeaderActionGroupMobileMenu,
+        MobileMenuTrigger: ListHeaderActionGroupMobileMenuTrigger,
+        MobileMenuContent: ListHeaderActionGroupMobileMenuContent
+    }
+);
 
 type ListHeaderActionsProps = PropsWithChildrenAndClassName;
 function ListHeaderActions({className, children}: ListHeaderActionsProps) {
@@ -83,26 +223,38 @@ function ListHeaderActions({className, children}: ListHeaderActionsProps) {
 }
 
 type ListHeaderProps = PropsWithChildrenAndClassName;
-function ListHeader({className, children}: ListHeaderProps) {
-    return (
-        <header
-            className={cn(
-                'sticky top-0 z-50 -mb-4 flex items-start justify-between gap-4 bg-gradient-to-b from-background via-background/70 to-background/70 p-4 backdrop-blur-md lg:-mb-8 lg:p-8 dark:bg-black',
-                className
-            )}
-            data-list-header='list-header'
-        >
-            {children}
-        </header>
-    );
-}
+type ListHeaderComponent = React.FC<ListHeaderProps> & {
+    Left: React.FC<ListHeaderLeftProps>;
+    Breadcrumb: React.FC<ListHeaderBreadcrumbProps>;
+    Title: React.FC<ListHeaderTitleProps>;
+    Description: React.FC<ListHeaderDescriptionProps>;
+    Actions: React.FC<ListHeaderActionsProps>;
+    ActionGroup: ListHeaderActionGroupComponent;
+};
 
-ListHeader.Left = ListHeaderLeft;
-ListHeader.Breadcrumb = ListHeaderBreadcrumb;
-ListHeader.Title = ListHeaderTitle;
-ListHeader.Actions = ListHeaderActions;
-ListHeader.ActionGroup = ListHeaderActionGroup;
-ListHeader.Description = ListHeaderDescription;
+const ListHeader: ListHeaderComponent = Object.assign(
+    function ListHeader({className, children}: ListHeaderProps) {
+        return (
+            <header
+                className={cn(
+                    'sticky top-0 z-50 -mb-4 flex items-start justify-between gap-4 bg-gradient-to-b from-background via-background/70 to-background/70 p-4 backdrop-blur-md lg:-mb-8 lg:p-8 dark:bg-black',
+                    className
+                )}
+                data-list-header='list-header'
+            >
+                {children}
+            </header>
+        );
+    },
+    {
+        Left: ListHeaderLeft,
+        Breadcrumb: ListHeaderBreadcrumb,
+        Title: ListHeaderTitle,
+        Description: ListHeaderDescription,
+        Actions: ListHeaderActions,
+        ActionGroup: ListHeaderActionGroup
+    }
+);
 
 export {
     ListHeader,
@@ -110,6 +262,10 @@ export {
     ListHeaderBreadcrumb,
     ListHeaderActions,
     ListHeaderActionGroup,
+    ListHeaderActionGroupPrimary,
+    ListHeaderActionGroupMobileMenu,
+    ListHeaderActionGroupMobileMenuTrigger,
+    ListHeaderActionGroupMobileMenuContent,
     ListHeaderTitle,
     ListHeaderDescription
 };
