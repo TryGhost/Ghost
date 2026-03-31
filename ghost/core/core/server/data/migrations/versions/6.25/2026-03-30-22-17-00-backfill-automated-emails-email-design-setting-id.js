@@ -32,6 +32,7 @@ module.exports = createTransactionalMigration(
             .first();
 
         if (!defaultEmailDesignSetting) {
+            logging.warn(`Default email_design_settings row not found for slug: ${DEFAULT_SLUG} — skipping revert`);
             return;
         }
 
