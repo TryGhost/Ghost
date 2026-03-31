@@ -1,15 +1,7 @@
 import {Table, TableHead, TableHeader, TableRow, cn} from '@tryghost/shade';
 import type {ActiveColumn} from '../member-query-params';
 import type {CSSProperties, RefObject} from 'react';
-
-export type MemberTableColumnStyles = {
-    created: CSSProperties;
-    dynamic: CSSProperties;
-    location: CSSProperties;
-    member: CSSProperties;
-    openRate: CSSProperties;
-    status: CSSProperties;
-};
+import type {MemberTableColumnStyles} from './member-table-layout';
 
 const PINNED_EDGE_FADE_STYLE = {
     left: '100%',

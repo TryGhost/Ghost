@@ -1,3 +1,5 @@
+import type {CSSProperties} from 'react';
+
 const BASE_MEMBER_TABLE_COLUMN_WIDTHS = {
     member: 40,
     status: 15,
@@ -19,6 +21,15 @@ const DYNAMIC_MEMBER_TABLE_COLUMN_MIN_WIDTH = 220;
 
 type BaseMemberTableColumnKey = keyof typeof BASE_MEMBER_TABLE_COLUMN_WIDTHS;
 
+export type MemberTableColumnStyles = {
+    created: CSSProperties;
+    dynamic: CSSProperties;
+    location: CSSProperties;
+    member: CSSProperties;
+    openRate: CSSProperties;
+    status: CSSProperties;
+};
+
 export interface MemberTableLayout {
     tableWidthPercentage: number;
     minTableWidth: number;
@@ -26,6 +37,11 @@ export interface MemberTableLayout {
     baseColumnWidthPercentages: Record<BaseMemberTableColumnKey, number>;
     baseColumnMinWidths: Record<BaseMemberTableColumnKey, number>;
     dynamicColumnMinWidth: number;
+}
+
+export interface MemberTableLayoutStyles {
+    tableStyle: CSSProperties;
+    columnStyles: MemberTableColumnStyles;
 }
 
 function getNormalizedActiveColumnCount(activeColumnCount: number) {
@@ -101,5 +117,27 @@ export function getMemberTableLayout({
             created: BASE_MEMBER_TABLE_COLUMN_MIN_WIDTHS.created
         },
         dynamicColumnMinWidth: DYNAMIC_MEMBER_TABLE_COLUMN_MIN_WIDTH
+    };
+}
+
+export function getMemberTableLayoutStyles(layout: MemberTableLayout): MemberTableLayoutStyles {
+    const createColumnStyle = (width: number, minWidth: number): CSSProperties => ({
+        width: `${width}%`,
+        minWidth: `${minWidth}px`
+    });
+
+    return {
+        tableStyle: {
+            '--members-table-width': `${layout.tableWidthPercentage}%`,
+            '--members-table-min-width': `${layout.minTableWidth}px`
+        } as CSSProperties,
+        columnStyles: {
+            member: createColumnStyle(layout.baseColumnWidthPercentages.member, layout.baseColumnMinWidths.member),
+            status: createColumnStyle(layout.baseColumnWidthPercentages.status, layout.baseColumnMinWidths.status),
+            openRate: createColumnStyle(layout.baseColumnWidthPercentages.openRate, layout.baseColumnMinWidths.openRate),
+            location: createColumnStyle(layout.baseColumnWidthPercentages.location, layout.baseColumnMinWidths.location),
+            created: createColumnStyle(layout.baseColumnWidthPercentages.created, layout.baseColumnMinWidths.created),
+            dynamic: createColumnStyle(layout.dynamicColumnWidthPercentage, layout.dynamicColumnMinWidth)
+        }
     };
 }

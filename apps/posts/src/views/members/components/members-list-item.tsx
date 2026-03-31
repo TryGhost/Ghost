@@ -6,6 +6,7 @@ import {TableCell, TableRow, cn} from '@tryghost/shade';
 import {getActiveColumnValue} from '../member-query-params';
 import type {ActiveColumn} from '../member-query-params';
 import type {CSSProperties} from 'react';
+import type {MemberTableColumnStyles} from './member-table-layout';
 
 const PINNED_EDGE_FADE_POSITION_STYLE = {
     left: '100%'
@@ -203,14 +204,7 @@ function MembersListItemDynamicColumn({
 interface MembersListItemProps {
     item: Member;
     activeColumns: ActiveColumn[];
-    columnStyles: {
-        member: CSSProperties;
-        status: CSSProperties;
-        openRate: CSSProperties;
-        location: CSSProperties;
-        created: CSSProperties;
-        dynamic: CSSProperties;
-    };
+    columnStyles: MemberTableColumnStyles;
     showPinnedEdge: boolean;
     showEmailOpenRate: boolean;
     timezone: string;

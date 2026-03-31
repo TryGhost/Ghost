@@ -1,15 +1,15 @@
 import MembersListItem from './members-list-item';
 import {Button} from '@tryghost/shade';
 import {Member} from '@tryghost/admin-x-framework/api/members';
-import {MemberTableColumnStyles, MembersTableColGroup, MembersTableHeader, PinnedMemberHeader} from './member-table-chrome';
+import {MembersTableColGroup, MembersTableHeader, PinnedMemberHeader} from './member-table-chrome';
 import {Table, TableBody, TableCell, TableRow} from '@tryghost/shade';
 import {forwardRef, useEffect, useMemo, useRef, useState} from 'react';
-import {getMemberTableLayout} from './member-table-layout';
+import {getMemberTableLayout, getMemberTableLayoutStyles} from './member-table-layout';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
 import {useVirtualListWindow} from '@components/virtual-table/virtual-list-window';
 import type {ActiveColumn} from '../member-query-params';
-import type {CSSProperties, RefObject} from 'react';
+import type {RefObject} from 'react';
 
 const SpacerRow = ({height}: { height: number }) => (
     <tr aria-hidden="true" style={{height}}>
@@ -78,42 +78,7 @@ function MembersList({
             activeColumnCount: activeColumns.length
         });
     }, [activeColumns.length, showEmailOpenRate]);
-    const tableStyle = {
-        '--members-table-width': `${layout.tableWidthPercentage}%`,
-        '--members-table-min-width': `${layout.minTableWidth}px`
-    } as CSSProperties;
-    const memberColumnStyle = {
-        width: `${layout.baseColumnWidthPercentages.member}%`,
-        minWidth: `${layout.baseColumnMinWidths.member}px`
-    } as CSSProperties;
-    const statusColumnStyle = {
-        width: `${layout.baseColumnWidthPercentages.status}%`,
-        minWidth: `${layout.baseColumnMinWidths.status}px`
-    } as CSSProperties;
-    const openRateColumnStyle = {
-        width: `${layout.baseColumnWidthPercentages.openRate}%`,
-        minWidth: `${layout.baseColumnMinWidths.openRate}px`
-    } as CSSProperties;
-    const locationColumnStyle = {
-        width: `${layout.baseColumnWidthPercentages.location}%`,
-        minWidth: `${layout.baseColumnMinWidths.location}px`
-    } as CSSProperties;
-    const createdColumnStyle = {
-        width: `${layout.baseColumnWidthPercentages.created}%`,
-        minWidth: `${layout.baseColumnMinWidths.created}px`
-    } as CSSProperties;
-    const dynamicColumnStyle = {
-        width: `${layout.dynamicColumnWidthPercentage}%`,
-        minWidth: `${layout.dynamicColumnMinWidth}px`
-    } as CSSProperties;
-    const columnStyles: MemberTableColumnStyles = {
-        created: createdColumnStyle,
-        dynamic: dynamicColumnStyle,
-        location: locationColumnStyle,
-        member: memberColumnStyle,
-        openRate: openRateColumnStyle,
-        status: statusColumnStyle
-    };
+    const {tableStyle, columnStyles} = useMemo(() => getMemberTableLayoutStyles(layout), [layout]);
 
     useScrollRestoration({parentRef, isLoading});
 
@@ -226,7 +191,7 @@ function MembersList({
             >
                 <div className="relative">
                     <PinnedMemberHeader
-                        columnStyle={stickyColumnWidth > 0 ? {width: stickyColumnWidth} : memberColumnStyle}
+                        columnStyle={stickyColumnWidth > 0 ? {width: stickyColumnWidth} : columnStyles.member}
                         showPinnedEdge={showPinnedEdge}
                     />
                     <div
