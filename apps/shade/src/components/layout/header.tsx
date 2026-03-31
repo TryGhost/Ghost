@@ -8,8 +8,7 @@ type PropsWithChildrenAndClassName = React.PropsWithChildren & {
     className?: string;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface HeaderAboveProps extends PropsWithChildrenAndClassName {}
+type HeaderAboveProps = PropsWithChildrenAndClassName;
 function HeaderAbove({className, children}: HeaderAboveProps) {
     return (
         <div
@@ -21,8 +20,7 @@ function HeaderAbove({className, children}: HeaderAboveProps) {
     );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface HeaderTitleProps extends PropsWithChildrenAndClassName {}
+type HeaderTitleProps = PropsWithChildrenAndClassName;
 function HeaderTitle({className, children}: HeaderTitleProps) {
     return (
         <H1
@@ -37,8 +35,7 @@ function HeaderTitle({className, children}: HeaderTitleProps) {
     );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface HeaderMetaProps extends PropsWithChildrenAndClassName {}
+type HeaderMetaProps = PropsWithChildrenAndClassName;
 function HeaderMeta({className, children}: HeaderMetaProps) {
     return (
         <div
@@ -50,8 +47,7 @@ function HeaderMeta({className, children}: HeaderMetaProps) {
     );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface HeaderActionGroupProps extends PropsWithChildrenAndClassName {}
+type HeaderActionGroupProps = PropsWithChildrenAndClassName;
 function HeaderActionGroup({className, children}: HeaderActionGroupProps) {
     return (
         <div
@@ -63,8 +59,7 @@ function HeaderActionGroup({className, children}: HeaderActionGroupProps) {
     );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface HeaderActionsProps extends PropsWithChildrenAndClassName {}
+type HeaderActionsProps = PropsWithChildrenAndClassName;
 function HeaderActions({className, children}: HeaderActionsProps) {
     return (
         <div
@@ -76,8 +71,7 @@ function HeaderActions({className, children}: HeaderActionsProps) {
     );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface HeaderNavProps extends PropsWithChildrenAndClassName {}
+type HeaderNavProps = PropsWithChildrenAndClassName;
 function HeaderNav({className, children}: HeaderNavProps) {
     return (
         <div
