@@ -53,7 +53,7 @@
         "@tryghost/admin-x-framework": "0.0.0",
         "@tryghost/shade": "0.0.0",
         "i18n-iso-countries": "7.14.0",
-        "moment": "2.24.0",
+        "moment": "2.29.4",
         "moment-timezone": "0.5.45",
         "react": "18.3.1",
         "react-dom": "18.3.1",
