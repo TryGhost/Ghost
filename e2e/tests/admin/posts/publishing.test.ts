@@ -37,11 +37,6 @@ async function expectPostStatus(editor: PostEditorPage, status: string | RegExp,
     }
 }
 
-async function waitForDraftEditorToSettle(editor: PostEditorPage): Promise<void> {
-    await expect(editor.postStatus.first()).toContainText('Draft');
-    await expect(editor.postStatus.first()).not.toContainText('Saving');
-}
-
 async function publishPost(editor: PostEditorPage): Promise<Page> {
     await editor.publishFlow.open();
     await editor.publishFlow.confirm();
@@ -89,42 +84,6 @@ async function createAuthenticatedPublicPage(browser: Browser, baseURL: string, 
     };
 }
 
-async function withAuthenticatedPublicPage<T>(browser: Browser, baseURL: string, member: Member, callback: (postPage: PostPage) => Promise<T>): Promise<T> {
-    const {context, postPage} = await createAuthenticatedPublicPage(browser, baseURL, member);
-
-    try {
-        return await callback(postPage);
-    } finally {
-        await context.close();
-    }
-}
-
-async function createPostWithTierVisibility(page: Page, {
-    title,
-    body,
-    tierName
-}: {
-    title: string;
-    body: string;
-    tierName: string;
-}): Promise<string> {
-    const postsPage = new PostsPage(page);
-    await postsPage.goto();
-    await postsPage.newPostButton.click();
-
-    const editor = new PostEditorPage(page);
-    await editor.createDraft({title, body});
-    await waitForDraftEditorToSettle(editor);
-    await editor.settingsToggleButton.click();
-    await editor.settingsMenu.setVisibility('tiers');
-    await editor.settingsMenu.clearVisibilityTiers();
-    await editor.settingsMenu.selectVisibilityTier(tierName);
-    await editor.publishFlow.open();
-    await editor.publishFlow.confirm();
-
-    return generateSlug(title);
-}
-
 async function createTierVisibilityFixture(request: APIRequestContext, timestamp: number): Promise<{
     allowedTierName: string;
     allowedMember: Member;
@@ -168,14 +127,6 @@ async function createTierVisibilityFixture(request: APIRequestContext, timestamp
         allowedMember,
         disallowedMember
     };
-}
-
-function tierAccessMessage(tierName: string): string {
-    return `on the ${tierName} tier only`;
-}
-
-async function expectTierGate(postPage: PostPage, tierName: string): Promise<void> {
-    await expect(postPage.accessCtaHeading).toContainText(tierAccessMessage(tierName));
 }
 
 test.describe('Ghost Admin - Publishing', () => {
@@ -339,34 +290,53 @@ test.describe('Ghost Admin - Publishing', () => {
         test.use({stripeEnabled: true});
 
         test('only allows selected tier members', async ({page, browser}) => {
-            test.setTimeout(60000);
-
             const timestamp = Date.now();
             const title = `gold-tier-post-${timestamp}`;
             const body = 'Only gold members can see this';
             const {allowedTierName, allowedMember, disallowedMember} = await createTierVisibilityFixture(page.request, timestamp);
-            const slug = await createPostWithTierVisibility(page, {title, body, tierName: allowedTierName});
+            const accessMessage = `on the ${allowedTierName} tier only`;
+
+            const postsPage = new PostsPage(page);
+            await postsPage.goto();
+            await postsPage.newPostButton.click();
+
+            const editor = new PostEditorPage(page);
+            await editor.createDraft({title, body});
+            await expect(editor.postStatus.first()).toContainText('Draft');
+            await expect(editor.postStatus.first()).not.toContainText('Saving');
+            await editor.settingsToggleButton.click();
+            await editor.settingsMenu.setVisibility('tiers');
+            await editor.settingsMenu.clearVisibilityTiers();
+            await editor.settingsMenu.selectVisibilityTier(allowedTierName);
+            await editor.publishFlow.open();
+            await editor.publishFlow.confirm();
+
+            const slug = generateSlug(title);
 
             const anonymousPage = await page.context().newPage();
             try {
                 const anonymousPostPage = new PostPage(anonymousPage);
                 await anonymousPostPage.gotoPost(slug);
-                await expectTierGate(anonymousPostPage, allowedTierName);
+                await expect(anonymousPostPage.accessCtaHeading).toContainText(accessMessage);
             } finally {
                 await anonymousPage.close();
             }
 
             const baseURL = new URL(page.url()).origin;
-            await withAuthenticatedPublicPage(browser, baseURL, disallowedMember, async (postPage) => {
-                await postPage.gotoPost(slug);
-                await expectTierGate(postPage, allowedTierName);
-            });
+            const disallowedSession = await createAuthenticatedPublicPage(browser, baseURL, disallowedMember);
+            const allowedSession = await createAuthenticatedPublicPage(browser, baseURL, allowedMember);
 
-            await withAuthenticatedPublicPage(browser, baseURL, allowedMember, async (postPage) => {
-                await postPage.gotoPost(slug);
-                await expect(postPage.accessCtaContent).toBeHidden();
-                await expect(postPage.articleBody).toHaveText(body);
-            });
+            try {
+                await disallowedSession.postPage.gotoPost(slug);
+                await expect(disallowedSession.postPage.accessCtaHeading).toContainText(accessMessage);
+
+                await allowedSession.postPage.gotoPost(slug);
+                await expect(allowedSession.postPage.accessCtaContent).toBeHidden();
+                await expect(allowedSession.postPage.articleBody).toHaveText(body);
+            } finally {
+                await disallowedSession.context.close();
+                await allowedSession.context.close();
+            }
         });
     });
 
