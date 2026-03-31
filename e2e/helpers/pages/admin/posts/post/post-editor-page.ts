@@ -7,10 +7,6 @@ class SettingsMenu extends BasePage {
     readonly postUrlInput: Locator;
     readonly publishDateInput: Locator;
     readonly publishTimeInput: Locator;
-    readonly visibilitySelect: Locator;
-    readonly visibilitySegmentSelect: Locator;
-    readonly visibilitySegmentInput: Locator;
-    readonly visibilitySelectedTokens: Locator;
     readonly customExcerptInput: Locator;
     readonly deletePostButton: Locator;
     readonly deletePostConfirmButton: Locator;
@@ -21,43 +17,9 @@ class SettingsMenu extends BasePage {
         this.postUrlInput = page.getByRole('textbox', {name: 'Post URL'});
         this.publishDateInput = page.getByLabel('Date Picker');
         this.publishTimeInput = page.getByLabel('Time Picker');
-        this.visibilitySelect = page.locator('[data-test-select="post-visibility"]');
-        this.visibilitySegmentSelect = page.locator('[data-test-visibility-segment-select]');
-        this.visibilitySegmentInput = this.visibilitySegmentSelect.getByTestId('token-input-search');
-        this.visibilitySelectedTokens = this.visibilitySegmentSelect.locator('[data-test-selected-token]');
         this.customExcerptInput = page.locator('[data-test-field="custom-excerpt"]');
         this.deletePostButton = page.locator('[data-test-button="delete-post"]');
         this.deletePostConfirmButton = page.locator('[data-test-button="delete-post-confirm"]');
-    }
-
-    async setVisibility(visibility: 'public' | 'members' | 'paid' | 'tiers'): Promise<void> {
-        await this.visibilitySelect.selectOption(visibility);
-
-        if (visibility === 'tiers') {
-            await this.visibilitySegmentSelect.waitFor({state: 'visible'});
-        }
-    }
-
-    async clearVisibilityTiers(): Promise<void> {
-        await this.visibilitySelectedTokens.first().waitFor({state: 'attached'});
-
-        while (await this.visibilitySelectedTokens.count() > 0) {
-            const count = await this.visibilitySelectedTokens.count();
-            // Click the close icon which has data-selected-index needed by the handler
-            const closeIcon = this.visibilitySegmentSelect.locator('[data-selected-index]').first();
-            await closeIcon.click({force: true});
-            // Wait until a token is actually removed
-            await this.page.waitForFunction(
-                expected => document.querySelectorAll('[data-test-visibility-segment-select] [data-test-selected-token]').length < expected,
-                count
-            );
-        }
-    }
-
-    async selectVisibilityTier(name: string): Promise<void> {
-        await this.visibilitySegmentInput.click();
-        await this.page.keyboard.type(name);
-        await this.page.locator(`[data-test-visibility-segment-option="${name}"]`).click();
     }
 
     async deletePost(): Promise<void> {
