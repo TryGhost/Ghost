@@ -15,7 +15,7 @@ function getVirtualListWindowState({
 
     return {
         visibleItemCount,
-        canFetchMore: totalItems > visibleItemCount
+        canLoadMore: totalItems > visibleItemCount
     };
 }
 
@@ -102,14 +102,14 @@ export function useVirtualListWindow(
         setStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, unlockedItemCount);
     }, [historyKey, locationEntryKey, unlockedItemCount]);
 
-    const {visibleItemCount, canFetchMore} = getVirtualListWindowState({
+    const {visibleItemCount, canLoadMore} = getVirtualListWindowState({
         totalItems,
         unlockedItemCount
     });
 
     return {
         visibleItemCount,
-        canFetchMore,
-        fetchMore: () => setUnlockedItemCount(current => getNextUnlockedItemCount(current))
+        canLoadMore,
+        loadMore: () => setUnlockedItemCount(current => getNextUnlockedItemCount(current))
     };
 }

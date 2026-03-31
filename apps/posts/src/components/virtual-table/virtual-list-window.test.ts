@@ -40,7 +40,7 @@ describe('virtual-list-window', () => {
         expect(remounted.result.current.visibleItemCount).toBe(2000);
     });
 
-    it('writes the unlocked window to the current history entry when fetch more is used', () => {
+    it('writes the unlocked window to the current history entry when load more is used', () => {
         window.history.replaceState({}, '');
 
         const {result} = renderHook(() => useVirtualListWindow(5000), {
@@ -48,7 +48,7 @@ describe('virtual-list-window', () => {
         });
 
         act(() => {
-            result.current.fetchMore();
+            result.current.loadMore();
         });
 
         expect(window.history.state).toMatchObject({
@@ -64,7 +64,7 @@ describe('virtual-list-window', () => {
         });
 
         expect(result.current).toMatchObject({
-            canFetchMore: true,
+            canLoadMore: true,
             visibleItemCount: 1000
         });
     });
@@ -75,12 +75,12 @@ describe('virtual-list-window', () => {
         });
 
         expect(result.current).toMatchObject({
-            canFetchMore: false,
+            canLoadMore: false,
             visibleItemCount: 125
         });
     });
 
-    it('unlocks the next 1,000 rows each time fetch more is requested', () => {
+    it('unlocks the next 1,000 rows each time load more is requested', () => {
         const {result} = renderHook(() => useVirtualListWindow(5000), {
             wrapper: createWrapper('/members-forward?filter=members')
         });
@@ -88,7 +88,7 @@ describe('virtual-list-window', () => {
         expect(result.current.visibleItemCount).toBe(1000);
 
         act(() => {
-            result.current.fetchMore();
+            result.current.loadMore();
         });
 
         expect(result.current.visibleItemCount).toBe(2000);
@@ -122,7 +122,7 @@ describe('virtual-list-window', () => {
         });
 
         act(() => {
-            result.current.fetchMore();
+            result.current.loadMore();
         });
 
         expect(result.current.visibleItemCount).toBe(2000);
@@ -154,7 +154,7 @@ describe('virtual-list-window', () => {
         );
 
         act(() => {
-            result.current.fetchMore();
+            result.current.loadMore();
         });
 
         expect(result.current.visibleItemCount).toBe(2000);
@@ -188,7 +188,7 @@ describe('virtual-list-window', () => {
         });
 
         act(() => {
-            result.current.fetchMore();
+            result.current.loadMore();
         });
 
         expect(result.current.visibleItemCount).toBe(2000);

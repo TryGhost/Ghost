@@ -1,5 +1,5 @@
+import LoadMoreButton from '@components/virtual-table/load-more-button';
 import MembersListItem from './members-list-item';
-import {Button} from '@tryghost/shade';
 import {Member} from '@tryghost/admin-x-framework/api/members';
 import {MembersTableColGroup, MembersTableHeader, PinnedMemberHeader} from './member-table-chrome';
 import {Table, TableBody, TableCell, TableRow} from '@tryghost/shade';
@@ -71,7 +71,7 @@ function MembersList({
     const [stickyColumnWidth, setStickyColumnWidth] = useState(0);
     const [stickyTop, setStickyTop] = useState(0);
     const [showPinnedEdge, setShowPinnedEdge] = useState(false);
-    const {visibleItemCount, canFetchMore, fetchMore} = useVirtualListWindow(totalItems);
+    const {visibleItemCount, canLoadMore, loadMore} = useVirtualListWindow(totalItems);
     const layout = useMemo(() => {
         return getMemberTableLayout({
             showEmailOpenRate,
@@ -267,16 +267,8 @@ function MembersList({
                 </Table>
             </div>
 
-            {canFetchMore && (
-                <div className="flex justify-center px-4 py-6">
-                    <Button
-                        disabled={isFetchingNextPage}
-                        variant="outline"
-                        onClick={fetchMore}
-                    >
-                        {isFetchingNextPage ? 'Loading more...' : 'Fetch more'}
-                    </Button>
-                </div>
+            {canLoadMore && (
+                <LoadMoreButton isLoading={isFetchingNextPage} onClick={loadMore} />
             )}
         </div>
     );

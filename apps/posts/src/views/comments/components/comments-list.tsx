@@ -1,5 +1,6 @@
 import CommentContent from './comment-content';
 import CommentThreadSidebar from './comment-thread-sidebar';
+import LoadMoreButton from '@components/virtual-table/load-more-button';
 import {Button, LucideIcon} from '@tryghost/shade';
 import {Comment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
 import {CommentAvatar} from './comment-avatar';
@@ -57,7 +58,7 @@ function CommentsList({
     isLoading?: boolean;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
-    const {visibleItemCount, canFetchMore, fetchMore} = useVirtualListWindow(totalItems, {resetKey});
+    const {visibleItemCount, canLoadMore, loadMore} = useVirtualListWindow(totalItems, {resetKey});
     const [searchParams, setSearchParams] = useSearchParams();
     const [threadSidebarOpen, setThreadSidebarOpen] = useState(false);
     const [selectedThreadCommentId, setSelectedThreadCommentId] = useState<string | null>(null);
@@ -215,16 +216,8 @@ function CommentsList({
                 </div>
             </div>
 
-            {canFetchMore && (
-                <div className="flex justify-center px-4 py-6">
-                    <Button
-                        disabled={isFetchingNextPage}
-                        variant="outline"
-                        onClick={fetchMore}
-                    >
-                        {isFetchingNextPage ? 'Loading more...' : 'Fetch more'}
-                    </Button>
-                </div>
+            {canLoadMore && (
+                <LoadMoreButton isLoading={isFetchingNextPage} onClick={loadMore} />
             )}
 
             <CommentThreadSidebar

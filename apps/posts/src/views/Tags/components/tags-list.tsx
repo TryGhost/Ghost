@@ -1,3 +1,4 @@
+import LoadMoreButton from '@components/virtual-table/load-more-button';
 import {
     Button,
     LucideIcon,
@@ -53,7 +54,7 @@ function TagsList({
     fetchNextPage: () => void;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
-    const {visibleItemCount, canFetchMore, fetchMore} = useVirtualListWindow(totalItems);
+    const {visibleItemCount, canLoadMore, loadMore} = useVirtualListWindow(totalItems);
     const {visibleItems, spaceBefore, spaceAfter} = useInfiniteVirtualScroll({
         items,
         totalItems: visibleItemCount,
@@ -148,16 +149,8 @@ function TagsList({
                 </TableBody>
             </Table>
 
-            {canFetchMore && (
-                <div className="flex justify-center px-4 py-6">
-                    <Button
-                        disabled={isFetchingNextPage}
-                        variant="outline"
-                        onClick={fetchMore}
-                    >
-                        {isFetchingNextPage ? 'Loading more...' : 'Fetch more'}
-                    </Button>
-                </div>
+            {canLoadMore && (
+                <LoadMoreButton isLoading={isFetchingNextPage} onClick={loadMore} />
             )}
         </div>
     );
