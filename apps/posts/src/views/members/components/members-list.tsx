@@ -124,13 +124,32 @@ function MembersList({
         const basePaddingBottom = parseFloat(getComputedStyle(pageHeader).paddingBottom) || 0;
         const baseMarginBottom = parseFloat(getComputedStyle(pageHeader).marginBottom) || 0;
 
+        const resetHeaderSpacing = () => {
+            if (initialPaddingBottom) {
+                pageHeader.style.setProperty('padding-bottom', initialPaddingBottom);
+            } else {
+                pageHeader.style.removeProperty('padding-bottom');
+            }
+            if (initialMarginBottom) {
+                pageHeader.style.setProperty('margin-bottom', initialMarginBottom);
+            } else {
+                pageHeader.style.removeProperty('margin-bottom');
+            }
+        };
+
         const updateStickyPosition = () => {
+            const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+            if (!isDesktop) {
+                resetHeaderSpacing();
+                setStickyColumnWidth(0);
+                setStickyTop(0);
+                return;
+            }
+
             const stickyHeaderHeight = stickyHeader.getBoundingClientRect().height;
             const memberHeaderWidth = scrollingMemberHeader.getBoundingClientRect().width;
-
             pageHeader.style.setProperty('padding-bottom', `${basePaddingBottom + stickyHeaderHeight}px`, 'important');
             pageHeader.style.setProperty('margin-bottom', `${baseMarginBottom - stickyHeaderHeight}px`, 'important');
-
             const pageHeaderHeight = pageHeader.getBoundingClientRect().height;
 
             setStickyColumnWidth(memberHeaderWidth);
@@ -149,16 +168,7 @@ function MembersList({
         window.addEventListener('resize', updateStickyPosition);
 
         return () => {
-            if (initialPaddingBottom) {
-                pageHeader.style.setProperty('padding-bottom', initialPaddingBottom);
-            } else {
-                pageHeader.style.removeProperty('padding-bottom');
-            }
-            if (initialMarginBottom) {
-                pageHeader.style.setProperty('margin-bottom', initialMarginBottom);
-            } else {
-                pageHeader.style.removeProperty('margin-bottom');
-            }
+            resetHeaderSpacing();
             resizeObserver.disconnect();
             window.removeEventListener('resize', updateStickyPosition);
         };
@@ -184,7 +194,7 @@ function MembersList({
     };
 
     return (
-        <div ref={parentRef} className="w-full min-w-0" data-testid="members-list-scroll-root">
+        <div ref={parentRef} className="-mt-4 w-full min-w-0 lg:-mt-8" data-testid="members-list-scroll-root">
             <div
                 className="sticky z-[60] hidden overflow-visible bg-transparent lg:block"
                 style={{top: stickyTop}}

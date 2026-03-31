@@ -6,7 +6,7 @@ import MembersHeaderSearch from './components/members-header-search';
 import MembersLayout from './components/members-layout';
 import MembersList from './components/members-list';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {Button, EmptyIndicator, Header, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
+import {Button, EmptyIndicator, ListHeader, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
 import {buildMemberListSearchParams, getMemberActiveColumns} from './member-query-params';
 import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
@@ -96,8 +96,8 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                     isLoading={shouldShowLoading}
                     totalMembers={totalMembers}
                 >
-                    <Header.Actions>
-                        <Header.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
+                    <ListHeader.Actions>
+                        <ListHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
                             <div className="hidden lg:flex">
                                 <MembersHeaderSearch
                                     search={searchInput}
@@ -132,8 +132,8 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                                     void refetch();
                                 }}
                             />
-                        </Header.ActionGroup>
-                    </Header.Actions>
+                        </ListHeader.ActionGroup>
+                    </ListHeader.Actions>
                 </MembersHeader>
 
                 {(shouldShowFiltersRow || shouldShowMobileSearchRow) && (
