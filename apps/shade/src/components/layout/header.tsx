@@ -90,22 +90,35 @@ const headerVariants = cva(`sticky top-0 z-50 -mb-4 grid gap-x-4 bg-gradient-to-
 });
 
 interface HeaderProps extends PropsWithChildrenAndClassName, VariantProps<typeof headerVariants> {}
-function Header({className, children, variant}: HeaderProps) {
-    return (
-        <header
-            className={cn(headerVariants({variant, className}))}
-            data-header='header'
-        >
-            {children}
-        </header>
-    );
-}
+type HeaderComponent = React.ForwardRefExoticComponent<HeaderProps & React.RefAttributes<HTMLElement>> & {
+    Above: typeof HeaderAbove;
+    Title: typeof HeaderTitle;
+    Actions: typeof HeaderActions;
+    ActionGroup: typeof HeaderActionGroup;
+    Nav: typeof HeaderNav;
+    Meta: typeof HeaderMeta;
+};
 
-Header.Above = HeaderAbove;
-Header.Title = HeaderTitle;
-Header.Actions = HeaderActions;
-Header.ActionGroup = HeaderActionGroup;
-Header.Nav = HeaderNav;
-Header.Meta = HeaderMeta;
+const Header: HeaderComponent = Object.assign(
+    React.forwardRef<HTMLElement, HeaderProps>(function Header({className, children, variant}, ref) {
+        return (
+            <header
+                ref={ref}
+                className={cn(headerVariants({variant, className}))}
+                data-header='header'
+            >
+                {children}
+            </header>
+        );
+    }),
+    {
+        Above: HeaderAbove,
+        Title: HeaderTitle,
+        Actions: HeaderActions,
+        ActionGroup: HeaderActionGroup,
+        Nav: HeaderNav,
+        Meta: HeaderMeta
+    }
+);
 
 export {Header, HeaderActions, HeaderTitle, HeaderNav, HeaderMeta};

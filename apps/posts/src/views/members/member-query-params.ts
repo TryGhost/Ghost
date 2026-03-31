@@ -63,7 +63,7 @@ export function buildMemberListSearchParams({filters, nql, search}: BuildMemberL
 
     const params: Record<string, string> = {
         include: getMemberIncludes(filters),
-        limit: '50',
+        limit: '100',
         order: 'created_at desc'
     };
 

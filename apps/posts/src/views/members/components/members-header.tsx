@@ -1,5 +1,5 @@
 import React from 'react';
-import {ListHeader} from '@tryghost/shade';
+import {Header} from '@tryghost/shade';
 
 interface MembersHeaderProps {
     children?: React.ReactNode;
@@ -7,30 +7,28 @@ interface MembersHeaderProps {
     isLoading: boolean;
 }
 
-const MembersHeader: React.FC<MembersHeaderProps> = ({
+const MembersHeader = React.forwardRef<HTMLElement, MembersHeaderProps>(function MembersHeader({
     children,
     totalMembers,
     isLoading
-}) => {
+}, ref) {
     return (
-        <ListHeader
-            blurredBackground={false}
-            className="relative"
-            sticky={false}
+        <Header
+            ref={ref}
+            className="relative static! top-auto! z-auto! mb-0! bg-transparent! p-0! backdrop-blur-none!"
+            variant="inline-nav"
         >
-            <ListHeader.Left>
-                <ListHeader.Title>
-                    Members{' '}
-                    {!isLoading && (
-                        <ListHeader.Count>
-                            {totalMembers.toLocaleString()}
-                        </ListHeader.Count>
-                    )}
-                </ListHeader.Title>
-            </ListHeader.Left>
+            <Header.Title>
+                Members{' '}
+                {!isLoading && (
+                    <span className="font-normal text-muted-foreground">
+                        {totalMembers.toLocaleString()}
+                    </span>
+                )}
+            </Header.Title>
             {children}
-        </ListHeader>
+        </Header>
     );
-};
+});
 
 export default MembersHeader;

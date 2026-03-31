@@ -5,8 +5,8 @@ import MembersHeader from './components/members-header';
 import MembersHeaderSearch from './components/members-header-search';
 import MembersLayout from './components/members-layout';
 import MembersList from './components/members-list';
-import React, {useEffect, useMemo, useState} from 'react';
-import {Button, EmptyIndicator, ListHeader, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {Button, EmptyIndicator, Header, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
 import {buildMemberListSearchParams, getMemberActiveColumns} from './member-query-params';
 import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
@@ -21,6 +21,7 @@ import {useSearchParams} from 'react-router';
 const SEARCH_DEBOUNCE_MS = 250;
 
 const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
+    const headerRef = useRef<HTMLDivElement>(null);
     const {filters, nql, search, setFilters, setSearch, hasFilterOrSearch, clearAll} = useMembersFilterState(timezone);
     const {data: configData} = useBrowseConfig();
     const savedViews = useMemberViews();
@@ -29,20 +30,16 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
     const [searchInput, setSearchInput] = useState(search);
     const [debouncedSearch] = useDebounce(searchInput, SEARCH_DEBOUNCE_MS);
 
-    // Check if email analytics is enabled
     const emailAnalyticsEnabled = configData?.config?.emailAnalytics === true;
 
-    // Extract active columns from filters (max 2)
     const activeColumns = useMemo(() => {
         return getMemberActiveColumns(filters);
     }, [filters]);
 
-    // Check if bulk delete is permitted (not allowed if subscription filters are active)
     const canBulkDelete = useMemo(() => {
         return canBulkDeleteMembers(filters, nql);
     }, [filters, nql]);
 
-    // Build search params for the API query, merging with defaults so we don't lose include/limit/order
     const searchParams = useMemo(() => {
         return buildMemberListSearchParams({
             filters,
@@ -90,19 +87,17 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
         }
     }, [searchInput]);
 
-    // Position filters and mobile search below the header actions
     const filtersClassName = 'flex flex-col gap-4 px-4 lg:flex-row lg:items-center sidebar:gap-2 lg:px-8 lg:gap-6';
 
     return (
         <MembersLayout>
-            <div className='sticky top-0 z-50 flex flex-col gap-4 bg-gradient-to-b from-background via-background/70 to-background/70 py-4 backdrop-blur-md sidebar:gap-6 sidebar:py-6 dark:bg-black'>
+            <div ref={headerRef} className='sticky top-0 z-50 flex flex-col gap-4 bg-gradient-to-b from-background via-background/70 to-background/70 py-4 backdrop-blur-md sidebar:gap-6 sidebar:py-6 dark:bg-black'>
                 <MembersHeader
                     isLoading={shouldShowLoading}
                     totalMembers={totalMembers}
                 >
-                    {/* Actions - always inline in the actions area */}
-                    <ListHeader.Actions>
-                        <ListHeader.ActionGroup className="justify-end">
+                    <Header.Actions>
+                        <Header.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
                             <div className="hidden lg:flex">
                                 <MembersHeaderSearch
                                     search={searchInput}
@@ -137,10 +132,10 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                                     void refetch();
                                 }}
                             />
-                        </ListHeader.ActionGroup>
-                    </ListHeader.Actions>
-
+                        </Header.ActionGroup>
+                    </Header.Actions>
                 </MembersHeader>
+
                 {(shouldShowFiltersRow || shouldShowMobileSearchRow) && (
                     <div className={cn(filtersClassName, !shouldShowFiltersRow && 'lg:hidden')}>
                         {shouldShowMobileSearchRow && (
@@ -210,6 +205,7 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                         isFetchingNextPage={isFetchingNextPage}
                         isLoading={isFetching && !isFetchingNextPage}
                         items={data.members}
+                        pageHeaderRef={headerRef}
                         showEmailOpenRate={emailAnalyticsEnabled}
                         timezone={timezone}
                         totalItems={totalMembers}

@@ -5,6 +5,12 @@ import {MemberAvatar} from '@components/member-avatar';
 import {TableCell, TableRow, cn} from '@tryghost/shade';
 import {getActiveColumnValue} from '../member-query-params';
 import type {ActiveColumn} from '../member-query-params';
+import type {CSSProperties} from 'react';
+import type {MemberTableColumnStyles} from './member-table-layout';
+
+const PINNED_EDGE_FADE_POSITION_STYLE = {
+    left: '100%'
+} as CSSProperties;
 
 // --- Helpers ---
 
@@ -49,6 +55,14 @@ function getStatusLabel(status: Member['status']): string {
     }
 }
 
+function isModifiedClick(event: Pick<React.MouseEvent<HTMLElement>, 'button' | 'metaKey' | 'ctrlKey' | 'shiftKey' | 'altKey'>) {
+    return event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+}
+
+function openMemberInNewTab(memberId: string) {
+    window.open(`#/members/${memberId}`, '_blank', 'noopener');
+}
+
 // --- Sub-components ---
 
 function MembersListItemName({item, onClick}: { item: Member; onClick?: (memberId: string) => void }) {
@@ -63,19 +77,15 @@ function MembersListItemName({item, onClick}: { item: Member; onClick?: (memberI
             />
             <div className="min-w-0">
                 <a
-                    className="cursor-pointer before:absolute before:top-0 before:left-0 before:z-10 before:h-full before:w-[calc(100vw-300px-64px)]"
+                    className="cursor-pointer"
                     href={`#/members/${item.id}`}
                     onClick={onClick ? (e) => {
-                        if (
-                            e.button !== 0 ||
-                            e.metaKey ||
-                            e.ctrlKey ||
-                            e.shiftKey ||
-                            e.altKey
-                        ) {
+                        if (isModifiedClick(e)) {
+                            e.stopPropagation();
                             return;
                         }
                         e.preventDefault();
+                        e.stopPropagation();
                         onClick(item.id);
                     } : undefined}
                 >
@@ -196,6 +206,8 @@ function MembersListItemDynamicColumn({
 interface MembersListItemProps {
     item: Member;
     activeColumns: ActiveColumn[];
+    columnStyles: MemberTableColumnStyles;
+    showPinnedEdge: boolean;
     showEmailOpenRate: boolean;
     timezone: string;
     onClick: (memberId: string) => void;
@@ -204,36 +216,84 @@ interface MembersListItemProps {
 function MembersListItem({
     item,
     activeColumns,
+    columnStyles,
+    showPinnedEdge,
     showEmailOpenRate,
     timezone,
     onClick,
     ...props
 }: MembersListItemProps &
     Omit<React.HTMLAttributes<HTMLTableRowElement>, 'onClick'>) {
+    const memberCellStyle = {
+        ...columnStyles.member,
+        '--members-sticky-hover-bg': 'color-mix(in hsl, var(--muted) 50%, var(--background))'
+    } as CSSProperties;
+    const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
+        if (isModifiedClick(event)) {
+            openMemberInNewTab(item.id);
+            return;
+        }
+
+        onClick(item.id);
+    };
+    const handleRowAuxClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
+        if (event.button !== 1) {
+            return;
+        }
+
+        event.preventDefault();
+        openMemberInNewTab(item.id);
+    };
+
     return (
         <TableRow
             {...props}
+            className={cn('group cursor-pointer', props.className)}
             data-testid="members-list-item"
+            onAuxClick={handleRowAuxClick}
+            onClick={handleRowClick}
         >
-            <TableCell className="px-4 py-3">
+            <TableCell className={cn(
+                'sticky left-0 z-20 bg-background px-4 py-3 group-hover:bg-[var(--members-sticky-hover-bg)]'
+            )} style={memberCellStyle}>
                 <MembersListItemName item={item} onClick={onClick} />
+                {showPinnedEdge && (
+                    <>
+                        <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-y-px w-[24px] group-hover:opacity-0"
+                            style={{
+                                ...PINNED_EDGE_FADE_POSITION_STYLE,
+                                background: 'linear-gradient(to right, var(--background) 0px, color-mix(in hsl, var(--background) 78%, transparent) 6px, color-mix(in hsl, var(--background) 28%, transparent) 16px, transparent 24px)'
+                            }}
+                        />
+                        <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-y-px w-[24px] opacity-0 group-hover:opacity-100"
+                            style={{
+                                ...PINNED_EDGE_FADE_POSITION_STYLE,
+                                background: 'linear-gradient(to right, var(--members-sticky-hover-bg) 0px, color-mix(in hsl, var(--members-sticky-hover-bg) 78%, transparent) 6px, color-mix(in hsl, var(--members-sticky-hover-bg) 28%, transparent) 16px, transparent 24px)'
+                            }}
+                        />
+                    </>
+                )}
             </TableCell>
-            <TableCell className="px-4 py-3">
+            <TableCell className="px-4 py-3" style={columnStyles.status}>
                 <MembersListItemStatus status={item.status} tiers={item.tiers} />
             </TableCell>
             {showEmailOpenRate && (
-                <TableCell className="hidden px-4 py-3 lg:table-cell">
+                <TableCell className="hidden px-4 py-3 lg:table-cell" style={columnStyles.openRate}>
                     <MembersListItemOpenRate emailOpenRate={item.email_open_rate} />
                 </TableCell>
             )}
-            <TableCell className="hidden px-4 py-3 lg:table-cell">
+            <TableCell className="hidden px-4 py-3 lg:table-cell" style={columnStyles.location}>
                 <MembersListItemLocation geolocation={item.geolocation} />
             </TableCell>
-            <TableCell className="hidden px-4 py-3 lg:table-cell">
+            <TableCell className="hidden px-4 py-3 lg:table-cell" style={columnStyles.created}>
                 <MembersListItemCreated createdAt={item.created_at} />
             </TableCell>
             {activeColumns.map(col => (
-                <TableCell key={col.key} className="hidden px-4 py-3 lg:table-cell">
+                <TableCell key={col.key} className="hidden px-4 py-3 lg:table-cell" style={columnStyles.dynamic}>
                     <MembersListItemDynamicColumn
                         column={col}
                         member={item}
