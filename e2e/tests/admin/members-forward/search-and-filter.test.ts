@@ -73,6 +73,26 @@ test.describe('Ghost Admin - Members Forward Search and Filter', () => {
         await expect(membersPage.memberRows).toHaveCount(4);
     });
 
+    test('adds a second label filter without replacing the first', async ({page}) => {
+        await memberFactory.createMany([
+            {name: 'Both Labels', email: 'both@example.com', labels: ['VIP', 'Premium']},
+            {name: 'VIP Only', email: 'vip@example.com', labels: ['VIP']},
+            {name: 'Premium Only', email: 'premium@example.com', labels: ['Premium']},
+            {name: 'No Label', email: 'nolabel@example.com'}
+        ]);
+
+        const membersPage = new MembersForwardPage(page);
+        await membersPage.goto();
+        await expect(membersPage.memberRows).toHaveCount(4);
+
+        await membersPage.addFilter('Label', 'VIP');
+        await expect(membersPage.memberRows).toHaveCount(2);
+
+        await membersPage.addFilter('Label', 'Premium');
+        await expect(membersPage.memberRows).toHaveCount(1);
+        await expect(membersPage.getMemberByName('Both Labels')).toBeVisible();
+    });
+
     test('shows no results state when search matches nothing', async ({page}) => {
         await memberFactory.create({name: 'Existing Member', email: 'exists@example.com'});
 
