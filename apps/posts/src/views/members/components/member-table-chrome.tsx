@@ -45,8 +45,7 @@ export const MembersTableHeader = ({
     columnStyles,
     headerRef,
     memberHeaderRef,
-    showEmailOpenRate,
-    showPinnedEdge
+    showEmailOpenRate
 }: {
     activeColumns: ActiveColumn[];
     className?: string;
@@ -54,7 +53,6 @@ export const MembersTableHeader = ({
     headerRef?: RefObject<HTMLTableSectionElement | null>;
     memberHeaderRef?: RefObject<HTMLTableCellElement | null>;
     showEmailOpenRate: boolean;
-    showPinnedEdge: boolean;
 }) => {
     return (
         <TableHeader
@@ -68,13 +66,6 @@ export const MembersTableHeader = ({
                     style={columnStyles.member}
                 >
                     Member
-                    {showPinnedEdge && (
-                        <div
-                            aria-hidden="true"
-                            className="pointer-events-none absolute inset-y-px w-[24px]"
-                            style={PINNED_EDGE_FADE_STYLE}
-                        />
-                    )}
                 </TableHead>
                 <TableHead className="bg-transparent px-4 py-3" style={columnStyles.status}>
                     Status

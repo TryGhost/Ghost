@@ -250,7 +250,6 @@ function MembersList({
                                 headerRef={stickyHeaderRef}
                                 memberHeaderRef={scrollingMemberHeaderRef}
                                 showEmailOpenRate={showEmailOpenRate}
-                                showPinnedEdge={false}
                             />
                         </Table>
                     </div>
@@ -273,7 +272,6 @@ function MembersList({
                         className="lg:h-0 lg:overflow-hidden lg:[&_th]:pointer-events-none lg:[&_th]:h-0 lg:[&_th]:border-0 lg:[&_th]:p-0 lg:[&_th]:text-[0px] lg:[&_th]:leading-none lg:[&_th]:opacity-0 lg:[&_tr]:h-0 lg:[&_tr]:border-0"
                         columnStyles={columnStyles}
                         showEmailOpenRate={showEmailOpenRate}
-                        showPinnedEdge={false}
                     />
                     <TableBody>
                         <SpacerRow height={spaceBefore} />

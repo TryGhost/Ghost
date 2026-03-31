@@ -1,15 +1,10 @@
 import React from 'react';
-import {MemoryRouter, useLocation, useSearchParams} from 'react-router';
+import {MemoryRouter, useSearchParams} from 'react-router';
 import {act, renderHook} from '@testing-library/react';
 import {beforeEach, describe, expect, it} from 'vitest';
 import type {ReactNode} from 'react';
 
-import {
-    VIRTUAL_LIST_WINDOW_SIZE,
-    getNextUnlockedItemCount,
-    getVirtualListWindowState,
-    useVirtualListWindow
-} from './virtual-list-window';
+import {useVirtualListWindow} from './virtual-list-window';
 
 function createWrapper(initialEntry: string) {
     return function Wrapper({children}: {children: ReactNode}) {
@@ -64,45 +59,39 @@ describe('virtual-list-window', () => {
     });
 
     it('caps the visible window at 1,000 rows by default', () => {
-        expect(getVirtualListWindowState({
-            totalItems: 1500,
-            unlockedItemCount: VIRTUAL_LIST_WINDOW_SIZE
-        })).toEqual({
+        const {result} = renderHook(() => useVirtualListWindow(1500), {
+            wrapper: createWrapper('/members-forward?filter=members')
+        });
+
+        expect(result.current).toMatchObject({
             canFetchMore: true,
             visibleItemCount: 1000
         });
     });
 
     it('shows all items when the total is below the cap', () => {
-        expect(getVirtualListWindowState({
-            totalItems: 125,
-            unlockedItemCount: VIRTUAL_LIST_WINDOW_SIZE
-        })).toEqual({
+        const {result} = renderHook(() => useVirtualListWindow(125), {
+            wrapper: createWrapper('/members-forward?filter=members')
+        });
+
+        expect(result.current).toMatchObject({
             canFetchMore: false,
             visibleItemCount: 125
         });
     });
 
     it('unlocks the next 1,000 rows each time fetch more is requested', () => {
-        expect(getNextUnlockedItemCount(VIRTUAL_LIST_WINDOW_SIZE)).toBe(2000);
-    });
-
-    it('normalizes invalid window sizes to keep fetch more moving forward', () => {
-        expect(getNextUnlockedItemCount(1000, 0)).toBe(1001);
-        expect(getNextUnlockedItemCount(1000, -10)).toBe(1001);
-        expect(getNextUnlockedItemCount(1000, Number.NaN)).toBe(2000);
-
-        const {result} = renderHook(() => useVirtualListWindow(5000, {windowSize: 0}), {
-            wrapper: createWrapper('/?filter=members')
+        const {result} = renderHook(() => useVirtualListWindow(5000), {
+            wrapper: createWrapper('/members-forward?filter=members')
         });
 
-        expect(result.current.visibleItemCount).toBe(1);
+        expect(result.current.visibleItemCount).toBe(1000);
 
         act(() => {
             result.current.fetchMore();
         });
 
-        expect(result.current.visibleItemCount).toBe(2);
+        expect(result.current.visibleItemCount).toBe(2000);
     });
 
     it('ignores invalid persisted unlocked counts', () => {
@@ -188,12 +177,10 @@ describe('virtual-list-window', () => {
     it('persists the unlocked window into new history entries even when the reset key stays the same', () => {
         const {result} = renderHook(() => {
             const state = useVirtualListWindow(5000, {resetKey: 'comments:nql'});
-            const location = useLocation();
             const [, setSearchParams] = useSearchParams();
 
             return {
                 ...state,
-                locationKey: location.key,
                 setQuery: (query: string) => setSearchParams(query)
             };
         }, {

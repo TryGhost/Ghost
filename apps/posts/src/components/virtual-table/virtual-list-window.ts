@@ -1,16 +1,10 @@
 import {useEffect, useRef, useState} from 'react';
 import {useLocation} from '@tryghost/admin-x-framework';
 
-export const VIRTUAL_LIST_WINDOW_SIZE = 1000;
-export const VIRTUAL_LIST_WINDOW_HISTORY_STATE_KEY = 'ghostVirtualListWindow';
+const VIRTUAL_LIST_WINDOW_SIZE = 1000;
+const VIRTUAL_LIST_WINDOW_HISTORY_STATE_KEY = 'ghostVirtualListWindow';
 
-export function getSafeVirtualListWindowSize(windowSize: number = VIRTUAL_LIST_WINDOW_SIZE) {
-    const normalizedWindowSize = Number.isFinite(windowSize) ? Math.floor(windowSize) : VIRTUAL_LIST_WINDOW_SIZE;
-
-    return Math.max(1, normalizedWindowSize);
-}
-
-export function getVirtualListWindowState({
+function getVirtualListWindowState({
     totalItems,
     unlockedItemCount
 }: {
@@ -25,21 +19,18 @@ export function getVirtualListWindowState({
     };
 }
 
-export function getNextUnlockedItemCount(
-    unlockedItemCount: number,
-    windowSize: number = VIRTUAL_LIST_WINDOW_SIZE
-) {
-    return unlockedItemCount + getSafeVirtualListWindowSize(windowSize);
+function getNextUnlockedItemCount(unlockedItemCount: number) {
+    return unlockedItemCount + VIRTUAL_LIST_WINDOW_SIZE;
 }
 
-export function getVirtualListWindowHistoryKey(pathname: string, resetKey: string) {
+function getVirtualListWindowHistoryKey(pathname: string, resetKey: string) {
     return `${pathname}::${resetKey}`;
 }
 
-export function getStoredUnlockedItemCount(
+function getStoredUnlockedItemCount(
     historyState: Record<string, unknown> | null | undefined,
     historyKey: string,
-    defaultUnlockedItemCount: number
+    defaultUnlockedItemCount: number = VIRTUAL_LIST_WINDOW_SIZE
 ) {
     const storedWindows = historyState?.[VIRTUAL_LIST_WINDOW_HISTORY_STATE_KEY];
 
@@ -53,10 +44,10 @@ export function getStoredUnlockedItemCount(
         return defaultUnlockedItemCount;
     }
 
-    return getSafeVirtualListWindowSize(storedUnlockedItemCount);
+    return Math.max(1, Math.floor(storedUnlockedItemCount));
 }
 
-export function setStoredUnlockedItemCount(
+function setStoredUnlockedItemCount(
     historyState: Record<string, unknown> | null | undefined,
     historyKey: string,
     unlockedItemCount: number
@@ -88,31 +79,28 @@ function getCurrentHistoryState() {
 export function useVirtualListWindow(
     totalItems: number,
     {
-        resetKey,
-        windowSize = VIRTUAL_LIST_WINDOW_SIZE
+        resetKey
     }: {
         resetKey?: string;
-        windowSize?: number;
     } = {}
 ) {
     const {key: locationEntryKey, pathname, search} = useLocation();
-    const safeWindowSize = getSafeVirtualListWindowSize(windowSize);
     const effectiveResetKey = resetKey ?? search;
     const historyKey = getVirtualListWindowHistoryKey(pathname, effectiveResetKey);
     const [unlockedItemCount, setUnlockedItemCount] = useState(() => {
-        return getStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, safeWindowSize);
+        return getStoredUnlockedItemCount(getCurrentHistoryState(), historyKey);
     });
     const previousHistoryKeyRef = useRef(historyKey);
 
     useEffect(() => {
         if (previousHistoryKeyRef.current !== historyKey) {
             previousHistoryKeyRef.current = historyKey;
-            setUnlockedItemCount(getStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, safeWindowSize));
+            setUnlockedItemCount(getStoredUnlockedItemCount(getCurrentHistoryState(), historyKey));
             return;
         }
 
         setStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, unlockedItemCount);
-    }, [historyKey, locationEntryKey, safeWindowSize, unlockedItemCount]);
+    }, [historyKey, locationEntryKey, unlockedItemCount]);
 
     const {visibleItemCount, canFetchMore} = getVirtualListWindowState({
         totalItems,
@@ -122,6 +110,6 @@ export function useVirtualListWindow(
     return {
         visibleItemCount,
         canFetchMore,
-        fetchMore: () => setUnlockedItemCount(current => getNextUnlockedItemCount(current, safeWindowSize))
+        fetchMore: () => setUnlockedItemCount(current => getNextUnlockedItemCount(current))
     };
 }
