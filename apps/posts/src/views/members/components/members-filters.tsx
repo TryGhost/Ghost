@@ -24,6 +24,7 @@ interface MembersFiltersProps {
     onFiltersChange: (filters: Filter[]) => void;
     savedViews?: MemberView[];
     activeView?: MemberView | null;
+    iconOnly?: boolean;
 }
 
 const EMPTY_OFFERS: typeof buildOfferOptions extends (offers: infer T) => unknown ? T : never = [];
@@ -49,7 +50,8 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     nql,
     onFiltersChange,
     savedViews = [],
-    activeView
+    activeView,
+    iconOnly = false
 }) => {
     const {data: tiersData} = useBrowseTiers({searchParams: {limit: '100'}});
     const {data: offersData} = useBrowseOffers({});
@@ -114,10 +116,12 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     });
 
     const hasFilters = filters.length > 0;
+    const showIconOnlyTrigger = iconOnly && !hasFilters;
+
     const clearAndSaveButtons = hasFilters ? (
         <div className="flex shrink-0 items-center gap-2 sm:absolute sm:top-0 sm:right-0">
             <button
-                className="flex items-center gap-1 text-sm font-normal text-muted-foreground hover:text-foreground"
+                className="hidden items-center gap-1 text-sm font-normal text-muted-foreground hover:text-foreground lg:inline-flex"
                 type="button"
                 onClick={() => onFiltersChange([])}
             >
@@ -137,6 +141,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 
     return (
         <Filters
+            addButtonClassName={showIconOnlyTrigger ? 'min-w-[34px] gap-0 px-2 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-sm !px-3' : undefined}
             addButtonIcon={hasFilters ? <LucideIcon.FunnelPlus /> : <LucideIcon.Funnel />}
             addButtonText={hasFilters ? 'Add filter' : 'Filter'}
             allowMultiple={true}

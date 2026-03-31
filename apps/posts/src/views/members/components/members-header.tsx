@@ -13,7 +13,11 @@ const MembersHeader: React.FC<MembersHeaderProps> = ({
     isLoading
 }) => {
     return (
-        <ListHeader className="relative pb-6! md:sticky">
+        <ListHeader
+            blurredBackground={false}
+            className="relative"
+            sticky={false}
+        >
             <ListHeader.Left>
                 <ListHeader.Title>
                     Members{' '}

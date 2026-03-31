@@ -5,7 +5,7 @@ import MembersHeader from './components/members-header';
 import MembersHeaderSearch from './components/members-header-search';
 import MembersLayout from './components/members-layout';
 import MembersList from './components/members-list';
-import React, {useMemo} from 'react';
+import React, {useMemo, useState} from 'react';
 import {Button, EmptyIndicator, ListHeader, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
 import {buildMemberListSearchParams, getMemberActiveColumns} from './member-query-params';
 import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
@@ -22,6 +22,7 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
     const {data: configData} = useBrowseConfig();
     const savedViews = useMemberViews();
     const activeView = useActiveMemberView(savedViews, nql);
+    const [showMobileSearch, setShowMobileSearch] = useState(false);
 
     // Check if email analytics is enabled
     const emailAnalyticsEnabled = configData?.config?.emailAnalytics === true;
@@ -66,28 +67,71 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
     const totalMembers = data?.meta?.pagination?.total ?? 0;
     const hasFilters = filters.length > 0;
 
-    // Position filters: inline with actions when no filters, full width row below when filters active
-    const filtersClassName = cn(
-        'flex flex-row basis-full',
-        !hasFilters && 'items-center gap-2',
-        hasFilters && 'pt-5'
-    );
+    const shouldShowFiltersRow = hasFilters;
+    const shouldShowMobileSearchRow = showMobileSearch;
+
+    // Position filters and mobile search below the header actions
+    const filtersClassName = 'flex flex-col gap-2 px-4 pt-2 pb-4 lg:flex-row lg:items-center lg:gap-2 lg:px-8 lg:pt-2 lg:pb-5';
 
     return (
         <MembersLayout>
-            <MembersHeader
-                isLoading={shouldShowLoading}
-                totalMembers={totalMembers}
-            >
-                {/* Actions - always inline in the actions area */}
-                <ListHeader.Actions>
-                    <ListHeader.ActionGroup className="flex-wrap justify-end sm:flex-nowrap">
-                        <MembersHeaderSearch
-                            search={search}
-                            onSearchChange={setSearch}
-                        />
-                        {/* When no filters, show filter button inline with other actions */}
-                        {!hasFilters && (
+            <div className='sticky top-0 z-50 bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black'>
+                <MembersHeader
+                    isLoading={shouldShowLoading}
+                    totalMembers={totalMembers}
+                >
+                    {/* Actions - always inline in the actions area */}
+                    <ListHeader.Actions>
+                        <ListHeader.ActionGroup className="justify-end">
+                            <div className="hidden lg:flex">
+                                <MembersHeaderSearch
+                                    search={search}
+                                    onSearchChange={setSearch}
+                                />
+                            </div>
+                            <Button
+                                aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
+                                className="lg:hidden"
+                                variant="outline"
+                                onClick={() => setShowMobileSearch(prev => !prev)}
+                            >
+                                <LucideIcon.Search className="size-4" />
+                            </Button>
+                            {!hasFilters && (
+                                <MembersFilters
+                                    activeView={activeView}
+                                    filters={filters}
+                                    iconOnly={true}
+                                    nql={nql}
+                                    savedViews={savedViews}
+                                    onFiltersChange={setFilters}
+                                />
+                            )}
+                            <MembersActions
+                                canBulkDelete={canBulkDelete}
+                                hasFilterOrSearch={hasFilterOrSearch}
+                                memberCount={totalMembers}
+                                nql={nql}
+                                search={search}
+                                onImportComplete={() => {
+                                    void refetch();
+                                }}
+                            />
+                        </ListHeader.ActionGroup>
+                    </ListHeader.Actions>
+
+                </MembersHeader>
+                {(shouldShowFiltersRow || shouldShowMobileSearchRow) && (
+                    <div className={cn(filtersClassName, !shouldShowFiltersRow && 'lg:hidden')}>
+                        {shouldShowMobileSearchRow && (
+                            <div className="lg:hidden">
+                                <MembersHeaderSearch
+                                    search={search}
+                                    onSearchChange={setSearch}
+                                />
+                            </div>
+                        )}
+                        {shouldShowFiltersRow && (
                             <MembersFilters
                                 activeView={activeView}
                                 filters={filters}
@@ -96,32 +140,9 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                                 onFiltersChange={setFilters}
                             />
                         )}
-                        <MembersActions
-                            canBulkDelete={canBulkDelete}
-                            hasFilterOrSearch={hasFilterOrSearch}
-                            memberCount={totalMembers}
-                            nql={nql}
-                            search={search}
-                            onImportComplete={() => {
-                                void refetch();
-                            }}
-                        />
-                    </ListHeader.ActionGroup>
-                </ListHeader.Actions>
-
-                {/* When filters are active, show them in a row below */}
-                {hasFilters && (
-                    <div className={filtersClassName}>
-                        <MembersFilters
-                            activeView={activeView}
-                            filters={filters}
-                            nql={nql}
-                            savedViews={savedViews}
-                            onFiltersChange={setFilters}
-                        />
                     </div>
                 )}
-            </MembersHeader>
+            </div>
             <MembersContent>
                 {shouldShowLoading ? (
                     <div className="flex h-full items-center justify-center">
@@ -187,10 +208,12 @@ const Members: React.FC = () => {
     if (shouldDelayHydration) {
         return (
             <MembersLayout>
-                <MembersHeader
-                    isLoading={true}
-                    totalMembers={0}
-                />
+                <div className='sticky top-0 z-50 bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black'>
+                    <MembersHeader
+                        isLoading={true}
+                        totalMembers={0}
+                    />
+                </div>
                 <MembersContent>
                     <div className="flex h-full items-center justify-center">
                         <LoadingIndicator size="lg" />
