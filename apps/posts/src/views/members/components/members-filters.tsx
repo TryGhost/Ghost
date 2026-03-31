@@ -1,6 +1,6 @@
 import ManageViewPopover from './manage-view-popover';
 import React, {useCallback, useMemo} from 'react';
-import {Filter, Filters, LucideIcon} from '@tryghost/shade';
+import {Button, Filter, Filters, LucideIcon} from '@tryghost/shade';
 import {
     buildOfferOptions,
     fromOfferFilterDisplayValues,
@@ -119,15 +119,16 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const showIconOnlyTrigger = iconOnly && !hasFilters;
 
     const clearAndSaveButtons = hasFilters ? (
-        <div className="flex shrink-0 items-center gap-2 sm:absolute sm:top-0 sm:right-0">
-            <button
-                className="hidden items-center gap-1 text-sm font-normal text-muted-foreground hover:text-foreground lg:inline-flex"
+        <div className="flex shrink-0 items-center gap-4 sm:absolute sm:top-0 sm:right-0">
+            <Button
+                className="hidden items-center gap-1 !px-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground lg:inline-flex"
                 type="button"
+                variant="ghost"
                 onClick={() => onFiltersChange([])}
             >
                 <LucideIcon.X className="size-4" />
                 Clear
-            </button>
+            </Button>
             {nql && (
                 <ManageViewPopover
                     activeView={activeView}
@@ -151,7 +152,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
             filters={displayFilters}
             keyboardShortcut="f"
             popoverAlign={'start'}
-            popoverContentClassName='w-[280px] translate-x-[-32px] [&_[data-slot=command-list]]:max-h-[450px]'
+            popoverContentClassName='z-[80] w-[280px] translate-x-[-32px] [&_[data-slot=command-list]]:max-h-[450px]'
             showClearButton={hasFilters}
             showSearchInput={true}
             onChange={handleFiltersChange}

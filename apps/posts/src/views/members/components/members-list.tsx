@@ -196,7 +196,7 @@ function MembersList({
     return (
         <div ref={parentRef} className="-mt-4 w-full min-w-0 lg:-mt-8" data-testid="members-list-scroll-root">
             <div
-                className="sticky z-[60] hidden overflow-visible bg-transparent lg:block"
+                className="sticky z-[50] hidden overflow-visible bg-transparent lg:block"
                 style={{top: stickyTop}}
             >
                 <div className="relative">

@@ -87,7 +87,7 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
         }
     }, [searchInput]);
 
-    const filtersClassName = 'flex flex-col gap-4 px-4 lg:flex-row lg:items-center sidebar:gap-2 lg:px-8 lg:gap-6';
+    const filtersClassName = 'flex flex-col gap-4 px-4 lg:flex-row lg:items-center sidebar:gap-6 lg:px-8 lg:gap-6';
 
     return (
         <MembersLayout>
