@@ -18,9 +18,9 @@ const MembersHeader: React.FC<MembersHeaderProps> = ({
                 <ListHeader.Title>
                     Members{' '}
                     {!isLoading && (
-                        <span className="font-normal text-muted-foreground">
+                        <ListHeader.Count>
                             {totalMembers.toLocaleString()}
-                        </span>
+                        </ListHeader.Count>
                     )}
                 </ListHeader.Title>
             </ListHeader.Left>

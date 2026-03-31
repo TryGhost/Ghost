@@ -59,6 +59,18 @@ function ListHeaderDescription({className, children}: ListHeaderDescriptionProps
     );
 }
 
+type ListHeaderCountProps = PropsWithChildrenAndClassName;
+function ListHeaderCount({className, children}: ListHeaderCountProps) {
+    return (
+        <span
+            className={cn('ml-2 lg:ml-3 font-normal text-[1.9rem] lg:text-[2.2rem] text-muted-foreground tabular-nums', className)}
+            data-list-header='list-header-count'
+        >
+            {children}
+        </span>
+    );
+}
+
 type ListHeaderActionGroupPrimaryProps = React.PropsWithChildren;
 function ListHeaderActionGroupPrimary({children}: ListHeaderActionGroupPrimaryProps) {
     return <>{children}</>;
@@ -227,6 +239,7 @@ type ListHeaderComponent = React.FC<ListHeaderProps> & {
     Left: React.FC<ListHeaderLeftProps>;
     Breadcrumb: React.FC<ListHeaderBreadcrumbProps>;
     Title: React.FC<ListHeaderTitleProps>;
+    Count: React.FC<ListHeaderCountProps>;
     Description: React.FC<ListHeaderDescriptionProps>;
     Actions: React.FC<ListHeaderActionsProps>;
     ActionGroup: ListHeaderActionGroupComponent;
@@ -250,6 +263,7 @@ const ListHeader: ListHeaderComponent = Object.assign(
         Left: ListHeaderLeft,
         Breadcrumb: ListHeaderBreadcrumb,
         Title: ListHeaderTitle,
+        Count: ListHeaderCount,
         Description: ListHeaderDescription,
         Actions: ListHeaderActions,
         ActionGroup: ListHeaderActionGroup
@@ -267,5 +281,6 @@ export {
     ListHeaderActionGroupMobileMenuTrigger,
     ListHeaderActionGroupMobileMenuContent,
     ListHeaderTitle,
+    ListHeaderCount,
     ListHeaderDescription
 };

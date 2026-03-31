@@ -30,7 +30,10 @@ export const Default: Story = {
         children: (
             <>
                 <ListHeader.Left>
-                    <ListHeader.Title>Members 12,345</ListHeader.Title>
+                    <ListHeader.Title>
+                        Members
+                        <ListHeader.Count>12,345</ListHeader.Count>
+                    </ListHeader.Title>
                 </ListHeader.Left>
                 <ListHeader.Actions>
                     <ListHeader.ActionGroup>
@@ -49,7 +52,10 @@ export const WithDescription: Story = {
         children: (
             <>
                 <ListHeader.Left>
-                    <ListHeader.Title>Members 12,345</ListHeader.Title>
+                    <ListHeader.Title>
+                        Members
+                        <ListHeader.Count>12,345</ListHeader.Count>
+                    </ListHeader.Title>
                     <ListHeader.Description>Manage your members</ListHeader.Description>
                 </ListHeader.Left>
                 <ListHeader.Actions>
@@ -79,7 +85,10 @@ export const WithBreadcrumbAndDescription: Story = {
                             </BreadcrumbList>
                         </Breadcrumb>
                     </ListHeader.Breadcrumb>
-                    <ListHeader.Title>Members 12,345</ListHeader.Title>
+                    <ListHeader.Title>
+                        Members
+                        <ListHeader.Count>12,345</ListHeader.Count>
+                    </ListHeader.Title>
                     <ListHeader.Description>Manage your members</ListHeader.Description>
                 </ListHeader.Left>
                 <ListHeader.Actions>
@@ -98,7 +107,10 @@ export const MobileResponsive: Story = {
     render: () => (
         <ListHeader>
             <ListHeader.Left>
-                <ListHeader.Title>Members 12,345</ListHeader.Title>
+                <ListHeader.Title>
+                    Members
+                    <ListHeader.Count>12,345</ListHeader.Count>
+                </ListHeader.Title>
             </ListHeader.Left>
             <ListHeader.Actions>
                 <ListHeader.ActionGroup mobileMenuBreakpoint={740}>
@@ -173,7 +185,10 @@ export const MobileResponsiveWithBreadcrumbAndDescription: Story = {
                         </BreadcrumbList>
                     </Breadcrumb>
                 </ListHeader.Breadcrumb>
-                <ListHeader.Title>Members 12,345</ListHeader.Title>
+                <ListHeader.Title>
+                    Members
+                    <ListHeader.Count>12,345</ListHeader.Count>
+                </ListHeader.Title>
                 <ListHeader.Description>Manage your members</ListHeader.Description>
             </ListHeader.Left>
             <ListHeader.Actions>
