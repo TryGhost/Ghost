@@ -108,6 +108,7 @@ export class MembersPage extends AdminPage {
     readonly newMemberButton: Locator;
     public readonly fetchMoreButton: Locator;
     public readonly membersList: Locator;
+    public readonly membersListScrollRoot: Locator;
     readonly memberListItems: Locator;
     readonly emptyStateHeading: Locator;
 
@@ -127,6 +128,7 @@ export class MembersPage extends AdminPage {
 
         this.fetchMoreButton = page.getByRole('button', {name: 'Fetch more'});
         this.membersList = page.getByTestId('members-list');
+        this.membersListScrollRoot = page.getByTestId('members-list-scroll-root');
         this.memberListItems = page.getByTestId('members-list-item');
         this.emptyStateHeading = page.getByRole('heading', {name: 'Start building your audience'});
 
@@ -147,7 +149,7 @@ export class MembersPage extends AdminPage {
     }
 
     private async getMembersScrollParentHandle(): Promise<JSHandle<HTMLElement>> {
-        return await this.membersList.evaluateHandle((element) => {
+        return await this.membersListScrollRoot.evaluateHandle((element) => {
             let node: Node | null = element;
 
             while (node) {

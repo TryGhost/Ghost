@@ -90,16 +90,17 @@ const headerVariants = cva(`sticky top-0 z-50 -mb-4 grid gap-x-4 bg-gradient-to-
 });
 
 interface HeaderProps extends PropsWithChildrenAndClassName, VariantProps<typeof headerVariants> {}
-function Header({className, children, variant}: HeaderProps) {
+const Header = React.forwardRef<HTMLElement, HeaderProps>(function Header({className, children, variant}, ref) {
     return (
         <header
+            ref={ref}
             className={cn(headerVariants({variant, className}))}
             data-header='header'
         >
             {children}
         </header>
     );
-}
+});
 
 Header.Above = HeaderAbove;
 Header.Title = HeaderTitle;
