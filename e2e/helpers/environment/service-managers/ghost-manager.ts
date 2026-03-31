@@ -205,7 +205,8 @@ export class GhostManager {
         const env = [
             ...BASE_GHOST_ENV,
             `database__connection__database=${database}`,
-            `url=http://localhost:${this.getGatewayPort()}`
+            `url=http://localhost:${this.getGatewayPort()}`,
+            `scheduling__schedulerUrl=http://host.docker.internal:${this.getGatewayPort()}/ghost/api/admin`
         ];
 
         // Add Tinybird config if available
