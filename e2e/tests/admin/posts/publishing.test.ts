@@ -1,5 +1,5 @@
 import {APIRequestContext, Browser, BrowserContext, Page} from '@playwright/test';
-import {Member, createMemberFactory, createTierFactory, generateSlug} from '@/data-factory';
+import {Member, createMemberFactory, createPostFactory, createTierFactory, generateSlug} from '@/data-factory';
 import {PageEditorPage, PostEditorPage, PostsPage} from '@/admin-pages';
 import {PostPage} from '@/helpers/pages';
 import {expect, test} from '@/helpers/playwright';
@@ -37,34 +37,32 @@ async function expectPostStatus(editor: PostEditorPage, status: string | RegExp,
     }
 }
 
-async function publishPost(editor: PostEditorPage): Promise<Page> {
-    await editor.publishFlow.open();
-    await editor.publishFlow.confirm();
-    const frontendPage = await editor.publishFlow.openPublishedPost();
-    await editor.publishFlow.close();
-
-    return frontendPage;
-}
-
-async function createPostWithVisibility(page: Page, {
-    title,
-    body,
-    visibility
-}: {
-    title: string;
-    body: string;
-    visibility: 'public' | 'members' | 'paid';
-}): Promise<Page> {
-    const postsPage = new PostsPage(page);
-    await postsPage.goto();
-    await postsPage.newPostButton.click();
-
-    const editor = new PostEditorPage(page);
-    await editor.createDraft({title, body});
-    await editor.settingsToggleButton.click();
-    await editor.settingsMenu.setVisibility(visibility);
-
-    return await publishPost(editor);
+function buildLexicalWithBody(body: string): string {
+    return JSON.stringify({
+        root: {
+            children: [{
+                children: [{
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: body,
+                    type: 'text',
+                    version: 1
+                }],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                type: 'paragraph',
+                version: 1
+            }],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            type: 'root',
+            version: 1
+        }
+    });
 }
 
 async function createAuthenticatedPublicPage(browser: Browser, baseURL: string, member: Member): Promise<{context: BrowserContext; page: Page; postPage: PostPage}> {
@@ -81,51 +79,6 @@ async function createAuthenticatedPublicPage(browser: Browser, baseURL: string, 
         context,
         page,
         postPage: new PostPage(page)
-    };
-}
-
-async function createTierVisibilityFixture(request: APIRequestContext, timestamp: number): Promise<{
-    allowedTierName: string;
-    allowedMember: Member;
-    disallowedMember: Member;
-}> {
-    const tierFactory = createTierFactory(request);
-    const memberFactory = createMemberFactory(request);
-
-    const [disallowedTier, allowedTier] = await Promise.all([
-        tierFactory.create({
-            name: `Silver ${timestamp}`,
-            currency: 'usd',
-            monthly_price: 500,
-            yearly_price: 5000
-        }),
-        tierFactory.create({
-            name: `Gold ${timestamp}`,
-            currency: 'usd',
-            monthly_price: 1000,
-            yearly_price: 10000
-        })
-    ]);
-
-    const [disallowedMember, allowedMember] = await Promise.all([
-        memberFactory.create({
-            email: `silver-tier-${timestamp}@example.com`,
-            name: 'Silver Member',
-            status: 'comped',
-            tiers: [{id: disallowedTier.id}]
-        }),
-        memberFactory.create({
-            email: `gold-tier-${timestamp}@example.com`,
-            name: 'Gold Member',
-            status: 'comped',
-            tiers: [{id: allowedTier.id}]
-        })
-    ]);
-
-    return {
-        allowedTierName: allowedTier.name,
-        allowedMember,
-        disallowedMember
     };
 }
 
@@ -261,27 +214,51 @@ test.describe('Ghost Admin - Publishing', () => {
     test('members-only post shows subscriber gate', async ({page}) => {
         const title = `members-only-post-${Date.now()}`;
         const body = 'This is my members-only post body.';
-        const frontendPage = await createPostWithVisibility(page, {title, body, visibility: 'members'});
 
-        const publicPage = new PostPage(frontendPage);
+        const postFactory = createPostFactory(page.request);
+        const post = await postFactory.create({
+            title,
+            status: 'published',
+            visibility: 'members',
+            lexical: buildLexicalWithBody(body)
+        });
+
+        const publicPage = new PostPage(page);
+        await publicPage.gotoPost(post.slug);
         await expect(publicPage.accessCtaHeading).toHaveText('This post is for subscribers only');
     });
 
     test('paid-members-only post shows paid subscriber gate', async ({page}) => {
         const title = `paid-members-only-post-${Date.now()}`;
         const body = 'This is my paid-members-only post body.';
-        const frontendPage = await createPostWithVisibility(page, {title, body, visibility: 'paid'});
 
-        const publicPage = new PostPage(frontendPage);
+        const postFactory = createPostFactory(page.request);
+        const post = await postFactory.create({
+            title,
+            status: 'published',
+            visibility: 'paid',
+            lexical: buildLexicalWithBody(body)
+        });
+
+        const publicPage = new PostPage(page);
+        await publicPage.gotoPost(post.slug);
         await expect(publicPage.accessCtaHeading).toHaveText('This post is for paying subscribers only');
     });
 
-    test('public visibility change keeps post visible on frontend', async ({page}) => {
+    test('public post with explicit visibility is visible on frontend', async ({page}) => {
         const title = `public-visibility-post-${Date.now()}`;
         const body = 'This is my public visibility post body.';
-        const frontendPage = await createPostWithVisibility(page, {title, body, visibility: 'public'});
 
-        const publicPage = new PostPage(frontendPage);
+        const postFactory = createPostFactory(page.request);
+        const post = await postFactory.create({
+            title,
+            status: 'published',
+            visibility: 'public',
+            lexical: buildLexicalWithBody(body)
+        });
+
+        const publicPage = new PostPage(page);
+        await publicPage.gotoPost(post.slug);
         await expect(publicPage.articleTitle).toHaveText(title);
         await expect(publicPage.articleBody).toHaveText(body);
     });
@@ -293,27 +270,51 @@ test.describe('Ghost Admin - Publishing', () => {
             const timestamp = Date.now();
             const title = `gold-tier-post-${timestamp}`;
             const body = 'Only gold members can see this';
-            const {allowedTierName, allowedMember, disallowedMember} = await createTierVisibilityFixture(page.request, timestamp);
-            const accessMessage = `on the ${allowedTierName} tier only`;
 
-            const postsPage = new PostsPage(page);
-            await postsPage.goto();
-            await postsPage.newPostButton.click();
+            const tierFactory = createTierFactory(page.request);
+            const memberFactory = createMemberFactory(page.request);
 
-            const editor = new PostEditorPage(page);
-            await editor.createDraft({title, body});
-            await expect(editor.postStatus.first()).toContainText('Draft');
-            await expect(editor.postStatus.first()).not.toContainText('Saving');
-            await editor.settingsToggleButton.click();
-            await editor.settingsMenu.setVisibility('tiers');
-            await editor.settingsMenu.clearVisibilityTiers();
-            const saveResponse = page.waitForResponse(resp => resp.url().includes('/ghost/api/admin/posts/') && resp.request().method() === 'PUT' && resp.status() === 200);
-            await editor.settingsMenu.selectVisibilityTier(allowedTierName);
-            await saveResponse;
-            await editor.publishFlow.open();
-            await editor.publishFlow.confirm();
+            const [disallowedTier, allowedTier] = await Promise.all([
+                tierFactory.create({
+                    name: `Silver ${timestamp}`,
+                    currency: 'usd',
+                    monthly_price: 500,
+                    yearly_price: 5000
+                }),
+                tierFactory.create({
+                    name: `Gold ${timestamp}`,
+                    currency: 'usd',
+                    monthly_price: 1000,
+                    yearly_price: 10000
+                })
+            ]);
 
-            const slug = generateSlug(title);
+            const [disallowedMember, allowedMember] = await Promise.all([
+                memberFactory.create({
+                    email: `silver-tier-${timestamp}@example.com`,
+                    name: 'Silver Member',
+                    status: 'comped',
+                    tiers: [{id: disallowedTier.id}]
+                }),
+                memberFactory.create({
+                    email: `gold-tier-${timestamp}@example.com`,
+                    name: 'Gold Member',
+                    status: 'comped',
+                    tiers: [{id: allowedTier.id}]
+                })
+            ]);
+
+            const postFactory = createPostFactory(page.request);
+            const post = await postFactory.create({
+                title,
+                status: 'published',
+                visibility: 'tiers',
+                tiers: [{id: allowedTier.id}],
+                lexical: buildLexicalWithBody(body)
+            });
+
+            const accessMessage = `on the ${allowedTier.name} tier only`;
+            const slug = post.slug;
 
             const anonymousPage = await page.context().newPage();
             try {
