@@ -1,33 +1,17 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React from 'react';
 import {InputGroup, InputGroupAddon, InputGroupInput, LucideIcon} from '@tryghost/shade';
-import {useDebounce} from 'use-debounce';
-
-const SEARCH_DEBOUNCE_MS = 250;
 
 interface MembersHeaderSearchProps {
     search: string;
     onSearchChange: (search: string) => void;
+    autoFocus?: boolean;
 }
 
 const MembersHeaderSearch: React.FC<MembersHeaderSearchProps> = ({
     search,
-    onSearchChange
+    onSearchChange,
+    autoFocus = false
 }) => {
-    const [inputValue, setInputValue] = useState(search);
-    const [debouncedSearch] = useDebounce(inputValue, SEARCH_DEBOUNCE_MS);
-    const latestSearchRef = useRef(search);
-
-    useEffect(() => {
-        latestSearchRef.current = search;
-        setInputValue(search);
-    }, [search]);
-
-    useEffect(() => {
-        if (debouncedSearch !== latestSearchRef.current) {
-            onSearchChange(debouncedSearch);
-        }
-    }, [debouncedSearch, onSearchChange]);
-
     return (
         <InputGroup className="min-w-0 basis-full lg:w-[240px] lg:basis-auto">
             <InputGroupAddon>
@@ -35,9 +19,10 @@ const MembersHeaderSearch: React.FC<MembersHeaderSearchProps> = ({
             </InputGroupAddon>
             <InputGroupInput
                 aria-label="Search members"
+                autoFocus={autoFocus}
                 placeholder="Search members..."
-                value={inputValue}
-                onChange={event => setInputValue(event.target.value)}
+                value={search}
+                onChange={event => onSearchChange(event.target.value)}
             />
         </InputGroup>
     );

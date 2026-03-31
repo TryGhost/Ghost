@@ -5,7 +5,7 @@ import MembersHeader from './components/members-header';
 import MembersHeaderSearch from './components/members-header-search';
 import MembersLayout from './components/members-layout';
 import MembersList from './components/members-list';
-import React, {useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {Button, EmptyIndicator, ListHeader, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
 import {buildMemberListSearchParams, getMemberActiveColumns} from './member-query-params';
 import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
@@ -15,7 +15,10 @@ import {useActiveMemberView, useMemberViews} from './hooks/use-member-views';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
+import {useDebounce} from 'use-debounce';
 import {useSearchParams} from 'react-router';
+
+const SEARCH_DEBOUNCE_MS = 250;
 
 const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
     const {filters, nql, search, setFilters, setSearch, hasFilterOrSearch, clearAll} = useMembersFilterState(timezone);
@@ -23,6 +26,8 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
     const savedViews = useMemberViews();
     const activeView = useActiveMemberView(savedViews, nql);
     const [showMobileSearch, setShowMobileSearch] = useState(false);
+    const [searchInput, setSearchInput] = useState(search);
+    const [debouncedSearch] = useDebounce(searchInput, SEARCH_DEBOUNCE_MS);
 
     // Check if email analytics is enabled
     const emailAnalyticsEnabled = configData?.config?.emailAnalytics === true;
@@ -66,12 +71,27 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
 
     const totalMembers = data?.meta?.pagination?.total ?? 0;
     const hasFilters = filters.length > 0;
-
-    const shouldShowFiltersRow = hasFilters;
     const shouldShowMobileSearchRow = showMobileSearch;
+    const shouldShowFiltersRow = hasFilters;
+
+    useEffect(() => {
+        setSearchInput(search);
+    }, [search]);
+
+    useEffect(() => {
+        if (debouncedSearch !== search) {
+            setSearch(debouncedSearch);
+        }
+    }, [debouncedSearch, search, setSearch]);
+
+    useEffect(() => {
+        if (searchInput.trim().length > 0) {
+            setShowMobileSearch(true);
+        }
+    }, [searchInput]);
 
     // Position filters and mobile search below the header actions
-    const filtersClassName = 'flex flex-col gap-4 px-4 lg:flex-row lg:items-center sidebar:gap-2 sidebar:px-8 lg:gap-6';
+    const filtersClassName = 'flex flex-col gap-4 px-4 lg:flex-row lg:items-center sidebar:gap-2 lg:px-8 lg:gap-6';
 
     return (
         <MembersLayout>
@@ -85,13 +105,13 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                         <ListHeader.ActionGroup className="justify-end">
                             <div className="hidden lg:flex">
                                 <MembersHeaderSearch
-                                    search={search}
-                                    onSearchChange={setSearch}
+                                    search={searchInput}
+                                    onSearchChange={setSearchInput}
                                 />
                             </div>
                             <Button
                                 aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
-                                className="lg:hidden"
+                                className={cn('lg:hidden', showMobileSearch && 'bg-secondary hover:bg-secondary')}
                                 variant="outline"
                                 onClick={() => setShowMobileSearch(prev => !prev)}
                             >
@@ -126,8 +146,9 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                         {shouldShowMobileSearchRow && (
                             <div className="lg:hidden">
                                 <MembersHeaderSearch
-                                    search={search}
-                                    onSearchChange={setSearch}
+                                    autoFocus={true}
+                                    search={searchInput}
+                                    onSearchChange={setSearchInput}
                                 />
                             </div>
                         )}
