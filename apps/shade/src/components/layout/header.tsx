@@ -8,8 +8,7 @@ type PropsWithChildrenAndClassName = React.PropsWithChildren & {
     className?: string;
 };
 
-type HeaderAboveProps = PropsWithChildrenAndClassName;
-function HeaderAbove({className, children}: HeaderAboveProps) {
+function HeaderAbove({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
             className={cn('flex items-center gap-2 [grid-area:above]', className)}
@@ -20,8 +19,7 @@ function HeaderAbove({className, children}: HeaderAboveProps) {
     );
 }
 
-type HeaderTitleProps = PropsWithChildrenAndClassName;
-function HeaderTitle({className, children}: HeaderTitleProps) {
+function HeaderTitle({className, children}: PropsWithChildrenAndClassName) {
     return (
         <H1
             className={cn(
@@ -35,8 +33,7 @@ function HeaderTitle({className, children}: HeaderTitleProps) {
     );
 }
 
-type HeaderMetaProps = PropsWithChildrenAndClassName;
-function HeaderMeta({className, children}: HeaderMetaProps) {
+function HeaderMeta({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
             className={cn('flex items-center justify-start text-muted-foreground [grid-area:meta] pb-4 pt-1', className)}
@@ -47,8 +44,7 @@ function HeaderMeta({className, children}: HeaderMetaProps) {
     );
 }
 
-type HeaderActionGroupProps = PropsWithChildrenAndClassName;
-function HeaderActionGroup({className, children}: HeaderActionGroupProps) {
+function HeaderActionGroup({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
             className={cn('flex items-center gap-2', className)}
@@ -59,8 +55,7 @@ function HeaderActionGroup({className, children}: HeaderActionGroupProps) {
     );
 }
 
-type HeaderActionsProps = PropsWithChildrenAndClassName;
-function HeaderActions({className, children}: HeaderActionsProps) {
+function HeaderActions({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
             className={cn('flex items-center gap-4 [grid-area:actions] sm:justify-self-end self-start', className)}
@@ -71,8 +66,7 @@ function HeaderActions({className, children}: HeaderActionsProps) {
     );
 }
 
-type HeaderNavProps = PropsWithChildrenAndClassName;
-function HeaderNav({className, children}: HeaderNavProps) {
+function HeaderNav({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
             className={cn('flex items-center gap-2 [grid-area:nav] self-start mt-2 lg:mt-0.5', className)}

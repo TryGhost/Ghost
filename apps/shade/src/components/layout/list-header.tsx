@@ -8,8 +8,7 @@ type PropsWithChildrenAndClassName = React.PropsWithChildren & {
     className?: string;
 };
 
-type ListHeaderLeftProps = PropsWithChildrenAndClassName;
-function ListHeaderLeft({className, children}: ListHeaderLeftProps) {
+function ListHeaderLeft({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
             className={cn('flex min-w-0 flex-col gap-1 h-full min-h-[34px] justify-center', className)}
@@ -20,8 +19,7 @@ function ListHeaderLeft({className, children}: ListHeaderLeftProps) {
     );
 }
 
-type ListHeaderBreadcrumbProps = PropsWithChildrenAndClassName;
-function ListHeaderBreadcrumb({className, children}: ListHeaderBreadcrumbProps) {
+function ListHeaderBreadcrumb({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
             className={cn('flex items-center gap-2 text-sm text-muted-foreground', className)}
@@ -32,8 +30,7 @@ function ListHeaderBreadcrumb({className, children}: ListHeaderBreadcrumbProps) 
     );
 }
 
-type ListHeaderTitleProps = PropsWithChildrenAndClassName;
-function ListHeaderTitle({className, children}: ListHeaderTitleProps) {
+function ListHeaderTitle({className, children}: PropsWithChildrenAndClassName) {
     return (
         <H1
             className={cn(
@@ -47,8 +44,7 @@ function ListHeaderTitle({className, children}: ListHeaderTitleProps) {
     );
 }
 
-type ListHeaderDescriptionProps = PropsWithChildrenAndClassName;
-function ListHeaderDescription({className, children}: ListHeaderDescriptionProps) {
+function ListHeaderDescription({className, children}: PropsWithChildrenAndClassName) {
     return (
         <p
             className={cn('text-sm text-muted-foreground', className)}
@@ -59,8 +55,7 @@ function ListHeaderDescription({className, children}: ListHeaderDescriptionProps
     );
 }
 
-type ListHeaderCountProps = PropsWithChildrenAndClassName;
-function ListHeaderCount({className, children}: ListHeaderCountProps) {
+function ListHeaderCount({className, children}: PropsWithChildrenAndClassName) {
     return (
         <span
             className={cn('ml-2 lg:ml-3 font-normal text-[1.9rem] lg:text-[2.2rem] text-muted-foreground tabular-nums', className)}
@@ -222,8 +217,7 @@ const ListHeaderActionGroup: ListHeaderActionGroupComponent = Object.assign(
     }
 );
 
-type ListHeaderActionsProps = PropsWithChildrenAndClassName;
-function ListHeaderActions({className, children}: ListHeaderActionsProps) {
+function ListHeaderActions({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
             className={cn('flex shrink-0 items-center gap-4', className)}
@@ -234,19 +228,18 @@ function ListHeaderActions({className, children}: ListHeaderActionsProps) {
     );
 }
 
-type ListHeaderProps = PropsWithChildrenAndClassName;
-type ListHeaderComponent = React.FC<ListHeaderProps> & {
-    Left: React.FC<ListHeaderLeftProps>;
-    Breadcrumb: React.FC<ListHeaderBreadcrumbProps>;
-    Title: React.FC<ListHeaderTitleProps>;
-    Count: React.FC<ListHeaderCountProps>;
-    Description: React.FC<ListHeaderDescriptionProps>;
-    Actions: React.FC<ListHeaderActionsProps>;
+type ListHeaderComponent = React.FC<PropsWithChildrenAndClassName> & {
+    Left: React.FC<PropsWithChildrenAndClassName>;
+    Breadcrumb: React.FC<PropsWithChildrenAndClassName>;
+    Title: React.FC<PropsWithChildrenAndClassName>;
+    Count: React.FC<PropsWithChildrenAndClassName>;
+    Description: React.FC<PropsWithChildrenAndClassName>;
+    Actions: React.FC<PropsWithChildrenAndClassName>;
     ActionGroup: ListHeaderActionGroupComponent;
 };
 
 const ListHeader: ListHeaderComponent = Object.assign(
-    function ListHeader({className, children}: ListHeaderProps) {
+    function ListHeader({className, children}: PropsWithChildrenAndClassName) {
         return (
             <header
                 className={cn(
