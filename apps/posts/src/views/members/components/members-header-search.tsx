@@ -13,13 +13,14 @@ const MembersHeaderSearch: React.FC<MembersHeaderSearchProps> = ({
     autoFocus = false
 }) => {
     return (
-        <InputGroup className="min-w-0 basis-full lg:w-[240px] lg:basis-auto">
+        <InputGroup className="h-[34px] min-w-0 basis-full lg:w-[160px] lg:basis-auto xl:w-[240px]">
             <InputGroupAddon>
                 <LucideIcon.Search className="size-4" strokeWidth={1.75} />
             </InputGroupAddon>
             <InputGroupInput
                 aria-label="Search members"
                 autoFocus={autoFocus}
+                className='!h-[34px]'
                 placeholder="Search members..."
                 value={search}
                 onChange={event => onSearchChange(event.target.value)}
