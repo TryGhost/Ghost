@@ -2,13 +2,6 @@
     <GhSkipLink @anchor=".gh-main">Skip to main content</GhSkipLink>
 
     <RenderInWormhole @elementId="ember-alerts-wormhole">
-        {{#if this.upgradeStatus.refreshRequired}}
-            <div class="gh-update-banner">
-                {{!-- template-lint-disable no-invalid-link-text --}}
-                <span>Ghost has been updated! To get access to the latest features, refresh or <a href="javascript:window.location.reload(true)">click here</a>.</span>
-            </div>
-        {{/if}}
-
         {{#if (and this.session.user.isAdmin this.showUpdateBanner)}}
         <aside class="gh-update-banner">
             {{#if this.session.user.isOwnerOnly}}
