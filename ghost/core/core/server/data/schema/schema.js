@@ -1177,6 +1177,7 @@ module.exports = {
         sender_name: {type: 'string', maxlength: 191, nullable: true},
         sender_email: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
         sender_reply_to: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
+        email_design_setting_id: {type: 'string', maxlength: 24, nullable: true, references: 'email_design_settings.id'},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [
