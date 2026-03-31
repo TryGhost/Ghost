@@ -6,7 +6,7 @@ import MembersHeaderSearch from './components/members-header-search';
 import MembersLayout from './components/members-layout';
 import MembersList from './components/members-list';
 import React, {useMemo} from 'react';
-import {Button, EmptyIndicator, Header, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
+import {Button, EmptyIndicator, ListHeader, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
 import {buildMemberListSearchParams, getMemberActiveColumns} from './member-query-params';
 import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
@@ -68,9 +68,9 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
 
     // Position filters: inline with actions when no filters, full width row below when filters active
     const filtersClassName = cn(
-        'flex flex-row',
+        'flex flex-row basis-full',
         !hasFilters && 'items-center gap-2',
-        hasFilters && 'col-span-full row-start-4 pt-5'
+        hasFilters && 'pt-5'
     );
 
     return (
@@ -80,8 +80,8 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                 totalMembers={totalMembers}
             >
                 {/* Actions - always inline in the actions area */}
-                <Header.Actions>
-                    <Header.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
+                <ListHeader.Actions>
+                    <ListHeader.ActionGroup className="flex-wrap justify-end sm:flex-nowrap">
                         <MembersHeaderSearch
                             search={search}
                             onSearchChange={setSearch}
@@ -106,8 +106,8 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                                 void refetch();
                             }}
                         />
-                    </Header.ActionGroup>
-                </Header.Actions>
+                    </ListHeader.ActionGroup>
+                </ListHeader.Actions>
 
                 {/* When filters are active, show them in a row below */}
                 {hasFilters && (
