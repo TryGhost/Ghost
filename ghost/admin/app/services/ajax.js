@@ -242,14 +242,6 @@ class ajaxService extends AjaxService {
             'App-Pragma': 'no-cache'
         };
 
-        // Omit the version header when running in forward admin to avoid issues
-        // with the server triggering a version mismatch error. We can expect
-        // the admin and backend will be on different versions from time to time
-        // due to different release cadences.
-        if (!this.feature.inAdminForward) {
-            headers['X-Ghost-Version'] = config.APP.version;
-        }
-
         return headers;
     }
 
