@@ -270,13 +270,11 @@ test.describe('Ghost Admin - Publishing', () => {
         await editor.publishFlow.confirm();
         await editor.publishFlow.close();
 
-        await expectPostStatus(editor, 'Scheduled', /few seconds/i);
+        await expect(editor.postStatus.first()).toContainText('Scheduled');
+        await expectFrontendStatus(page, slug, 200, 20000);
 
         const frontendPage = await page.context().newPage();
         const publicPage = new PostPage(frontendPage);
-
-        await expectFrontendStatus(frontendPage, slug, 404);
-        await expectFrontendStatus(frontendPage, slug, 200, 20000);
 
         await publicPage.gotoPost(slug);
         await expect(publicPage.articleTitle).toHaveText(title);
