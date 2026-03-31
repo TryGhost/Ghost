@@ -2,7 +2,7 @@ const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
 const {DateTime} = require('luxon');
 const {slugify} = require('@tryghost/string');
-const {createTier, createMember, createPostDraft, impersonateMember} = require('../utils');
+const {createMember, createPostDraft} = require('../utils');
 
 // Schedules a post to publish ASAP by setting yesterday + 00:00, which is always in the past.
 // Ghost auto-corrects past dates to 5 seconds from now. We use yesterday (not today) because
@@ -115,14 +115,6 @@ const openPostSettingsMenu = async (page) => {
 };
 
 /**
- * @param {import('@playwright/test').Page} page
- * @param {'public'|'members'|'paid'|'tiers'} visibility
- */
-const setPostVisibility = async (page, visibility) => {
-    await page.locator('[data-test-select="post-visibility"]').selectOption(visibility);
-};
-
-/**
  * @typedef {Object} PublishOptions
  * @property {'publish'|'publish+send'|'send'|null} [type]
  * @property {String} [recipientFilter]
@@ -183,21 +175,6 @@ const publishPost = async (page, {type = 'publish', time, date} = {}) => {
 
     // Wait for the publish flow to complete by checking the confirm button is no longer visible
     await page.locator('[data-test-modal="publish-flow"] [data-test-button="confirm-publish"]').waitFor({state: 'hidden'});
-};
-
-/**
- * When on the publish flow completed step, click the bookmark
- * @param {import('@playwright/test').Page} page
- * @returns {Promise<import('@playwright/test').Page>}
- */
-const openPublishedPostBookmark = async (page) => {
-    // open the published post in a new tab
-    const [frontendPage] = await Promise.all([
-        page.waitForEvent('popup'),
-        page.locator('[data-test-complete-bookmark]').click()
-    ]);
-
-    return frontendPage;
 };
 
 test.describe('Publishing', () => {
@@ -326,107 +303,6 @@ test.describe('Publishing', () => {
 });
 
 test.describe('Updating post access', () => {
-    test.describe('Change post visibility to members-only', () => {
-        test('Only logged-in members (free or paid) can see', async ({sharedPage}) => {
-            await sharedPage.goto('/ghost');
-
-            await createPostDraft(sharedPage);
-            await openPostSettingsMenu(sharedPage);
-            await setPostVisibility(sharedPage, 'members');
-
-            await publishPost(sharedPage);
-            const frontendPage = await openPublishedPostBookmark(sharedPage);
-
-            // Check if content gate for members is present on front-end
-            await expect(frontendPage.locator('.gh-post-upgrade-cta-content h2')).toHaveText('This post is for subscribers only');
-        });
-    });
-
-    test.describe('Change post visibility to paid-members-only', () => {
-        test('Only logged-in, paid members can see', async ({sharedPage}) => {
-            await sharedPage.goto('/ghost');
-
-            await createPostDraft(sharedPage);
-            await openPostSettingsMenu(sharedPage);
-            await setPostVisibility(sharedPage, 'paid');
-
-            await publishPost(sharedPage);
-            const frontendPage = await openPublishedPostBookmark(sharedPage);
-
-            // Check if content gate for paid members is present on front-end
-            await expect(frontendPage.locator('.gh-post-upgrade-cta-content h2')).toHaveText('This post is for paying subscribers only');
-        });
-    });
-
-    test.describe('Change post visibility to public', () => {
-        test('Everyone can see', async ({sharedPage}) => {
-            await sharedPage.goto('/ghost');
-
-            await createPostDraft(sharedPage);
-            await openPostSettingsMenu(sharedPage);
-            await setPostVisibility(sharedPage, 'public');
-
-            await publishPost(sharedPage);
-            const frontendPage = await openPublishedPostBookmark(sharedPage);
-
-            // Check if post content is publicly visible on front-end
-            await expect(frontendPage.locator('.gh-content.gh-canvas > p')).toHaveText('This is my post body.');
-        });
-    });
-
-    test('specific tiers', async ({sharedPage}) => {
-        await sharedPage.goto('/ghost');
-
-        // tiers and members are needed to test the access levels
-        await createTier(sharedPage, {name: 'Silver', monthlyPrice: 5, yearlyPrice: 50});
-        await createTier(sharedPage, {name: 'Gold', monthlyPrice: 10, yearlyPrice: 100});
-        await createMember(sharedPage, {email: 'silver@example.com', compedPlan: 'Silver'});
-        const silverMember = await sharedPage.url();
-        await createMember(sharedPage, {email: 'gold@example.com', compedPlan: 'Gold'});
-        const goldMember = await sharedPage.url();
-
-        await createPostDraft(sharedPage, {body: 'Only gold members can see this'});
-
-        await openPostSettingsMenu(sharedPage);
-        await setPostVisibility(sharedPage, 'tiers');
-
-        // backspace removes existing tiers
-        await expect(sharedPage.locator('[data-test-visibility-segment-select] [data-test-selected-token]')).toHaveCount(3);
-        await sharedPage.locator('[data-test-visibility-segment-select] input').click();
-        await sharedPage.keyboard.press('Backspace');
-        await sharedPage.waitForTimeout(50);
-        await sharedPage.keyboard.press('Backspace');
-        await sharedPage.waitForTimeout(50);
-        await sharedPage.keyboard.press('Backspace');
-        await expect(sharedPage.locator('[data-test-visibility-segment-select] [data-test-selected-token]')).toHaveCount(0);
-
-        // specific tier can be added back on
-        await sharedPage.keyboard.type('Go');
-        const goldOption = sharedPage.locator('[data-test-visibility-segment-option="Gold"]');
-        await goldOption.click();
-
-        // publish
-        await publishPost(sharedPage);
-        const frontendPage = await openPublishedPostBookmark(sharedPage);
-        await closePublishFlow(sharedPage);
-
-        // non-member doesn't have access
-        await expect(frontendPage.locator('.gh-post-upgrade-cta-content h2')).toContainText('on the Gold tier only');
-
-        // member on wrong tier doesn't have access
-        await sharedPage.goto(silverMember);
-        await impersonateMember(sharedPage);
-        await frontendPage.reload();
-        await expect(frontendPage.locator('.gh-post-upgrade-cta-content h2')).toContainText('on the Gold tier only');
-
-        // member on selected tier has access
-        await sharedPage.goto(goldMember);
-        await impersonateMember(sharedPage);
-        await frontendPage.reload();
-        await expect(frontendPage.locator('.gh-post-upgrade-cta-content')).not.toBeVisible();
-        await expect(frontendPage.locator('.gh-content.gh-canvas > p')).toHaveText('Only gold members can see this');
-    });
-
     test('publish time in timezone', async ({page}) => {
         await page.goto('/ghost');
 

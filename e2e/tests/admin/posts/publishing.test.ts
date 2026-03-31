@@ -1,8 +1,9 @@
-import {APIRequestContext, Page} from '@playwright/test';
+import {APIRequestContext, Browser, BrowserContext, Page} from '@playwright/test';
+import {Member, createMemberFactory, createTierFactory, generateSlug} from '@/data-factory';
 import {PageEditorPage, PostEditorPage, PostsPage} from '@/admin-pages';
 import {PostPage} from '@/helpers/pages';
-import {createMemberFactory, generateSlug} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
+import {signInAsMember} from '@/helpers/playwright/flows/sign-in';
 
 async function getNewsletters(request: APIRequestContext): Promise<string[]> {
     const response = await request.get('/ghost/api/admin/newsletters/?status=active&limit=all');
@@ -34,6 +35,98 @@ async function expectPostStatus(editor: PostEditorPage, status: string | RegExp,
         await editor.postStatus.first().hover();
         await expect(editor.postStatus.first()).toContainText(detail);
     }
+}
+
+async function publishPost(editor: PostEditorPage): Promise<Page> {
+    await editor.publishFlow.open();
+    await editor.publishFlow.confirm();
+    const frontendPage = await editor.publishFlow.openPublishedPost();
+    await editor.publishFlow.close();
+
+    return frontendPage;
+}
+
+async function createPostWithVisibility(page: Page, {
+    title,
+    body,
+    visibility
+}: {
+    title: string;
+    body: string;
+    visibility: 'public' | 'members' | 'paid';
+}): Promise<Page> {
+    const postsPage = new PostsPage(page);
+    await postsPage.goto();
+    await postsPage.newPostButton.click();
+
+    const editor = new PostEditorPage(page);
+    await editor.createDraft({title, body});
+    await editor.settingsToggleButton.click();
+    await editor.settingsMenu.setVisibility(visibility);
+
+    return await publishPost(editor);
+}
+
+async function createAuthenticatedPublicPage(browser: Browser, baseURL: string, member: Member): Promise<{context: BrowserContext; page: Page; postPage: PostPage}> {
+    const context = await browser.newContext({
+        baseURL,
+        extraHTTPHeaders: {
+            Origin: baseURL
+        }
+    });
+    const page = await context.newPage();
+    await signInAsMember(page, member);
+
+    return {
+        context,
+        page,
+        postPage: new PostPage(page)
+    };
+}
+
+async function createTierVisibilityFixture(request: APIRequestContext, timestamp: number): Promise<{
+    allowedTierName: string;
+    allowedMember: Member;
+    disallowedMember: Member;
+}> {
+    const tierFactory = createTierFactory(request);
+    const memberFactory = createMemberFactory(request);
+
+    const [disallowedTier, allowedTier] = await Promise.all([
+        tierFactory.create({
+            name: `Silver ${timestamp}`,
+            currency: 'usd',
+            monthly_price: 500,
+            yearly_price: 5000
+        }),
+        tierFactory.create({
+            name: `Gold ${timestamp}`,
+            currency: 'usd',
+            monthly_price: 1000,
+            yearly_price: 10000
+        })
+    ]);
+
+    const [disallowedMember, allowedMember] = await Promise.all([
+        memberFactory.create({
+            email: `silver-tier-${timestamp}@example.com`,
+            name: 'Silver Member',
+            status: 'comped',
+            tiers: [{id: disallowedTier.id}]
+        }),
+        memberFactory.create({
+            email: `gold-tier-${timestamp}@example.com`,
+            name: 'Gold Member',
+            status: 'comped',
+            tiers: [{id: allowedTier.id}]
+        })
+    ]);
+
+    return {
+        allowedTierName: allowedTier.name,
+        allowedMember,
+        disallowedMember
+    };
 }
 
 test.describe('Ghost Admin - Publishing', () => {
@@ -163,6 +256,88 @@ test.describe('Ghost Admin - Publishing', () => {
         await publicPage.gotoPost(generateSlug(title));
         await expect(publicPage.articleTitle).toHaveText(title);
         await expect(publicPage.articleBody).toHaveText(body);
+    });
+
+    test('members-only post shows subscriber gate', async ({page}) => {
+        const title = `members-only-post-${Date.now()}`;
+        const body = 'This is my members-only post body.';
+        const frontendPage = await createPostWithVisibility(page, {title, body, visibility: 'members'});
+
+        const publicPage = new PostPage(frontendPage);
+        await expect(publicPage.accessCtaHeading).toHaveText('This post is for subscribers only');
+    });
+
+    test('paid-members-only post shows paid subscriber gate', async ({page}) => {
+        const title = `paid-members-only-post-${Date.now()}`;
+        const body = 'This is my paid-members-only post body.';
+        const frontendPage = await createPostWithVisibility(page, {title, body, visibility: 'paid'});
+
+        const publicPage = new PostPage(frontendPage);
+        await expect(publicPage.accessCtaHeading).toHaveText('This post is for paying subscribers only');
+    });
+
+    test('public visibility change keeps post visible on frontend', async ({page}) => {
+        const title = `public-visibility-post-${Date.now()}`;
+        const body = 'This is my public visibility post body.';
+        const frontendPage = await createPostWithVisibility(page, {title, body, visibility: 'public'});
+
+        const publicPage = new PostPage(frontendPage);
+        await expect(publicPage.articleTitle).toHaveText(title);
+        await expect(publicPage.articleBody).toHaveText(body);
+    });
+
+    test.describe('specific tier visibility', () => {
+        test.use({stripeEnabled: true});
+
+        test('only allows selected tier members', async ({page, browser}) => {
+            const timestamp = Date.now();
+            const title = `gold-tier-post-${timestamp}`;
+            const body = 'Only gold members can see this';
+            const {allowedTierName, allowedMember, disallowedMember} = await createTierVisibilityFixture(page.request, timestamp);
+            const accessMessage = `on the ${allowedTierName} tier only`;
+
+            const postsPage = new PostsPage(page);
+            await postsPage.goto();
+            await postsPage.newPostButton.click();
+
+            const editor = new PostEditorPage(page);
+            await editor.createDraft({title, body});
+            await expect(editor.postStatus.first()).toContainText('Draft');
+            await expect(editor.postStatus.first()).not.toContainText('Saving');
+            await editor.settingsToggleButton.click();
+            await editor.settingsMenu.setVisibility('tiers');
+            await editor.settingsMenu.clearVisibilityTiers();
+            await editor.settingsMenu.selectVisibilityTier(allowedTierName);
+            await editor.publishFlow.open();
+            await editor.publishFlow.confirm();
+
+            const slug = generateSlug(title);
+
+            const anonymousPage = await page.context().newPage();
+            try {
+                const anonymousPostPage = new PostPage(anonymousPage);
+                await anonymousPostPage.gotoPost(slug);
+                await expect(anonymousPostPage.accessCtaHeading).toContainText(accessMessage);
+            } finally {
+                await anonymousPage.close();
+            }
+
+            const baseURL = new URL(page.url()).origin;
+            const disallowedSession = await createAuthenticatedPublicPage(browser, baseURL, disallowedMember);
+            const allowedSession = await createAuthenticatedPublicPage(browser, baseURL, allowedMember);
+
+            try {
+                await disallowedSession.postPage.gotoPost(slug);
+                await expect(disallowedSession.postPage.accessCtaHeading).toContainText(accessMessage);
+
+                await allowedSession.postPage.gotoPost(slug);
+                await expect(allowedSession.postPage.accessCtaContent).toBeHidden();
+                await expect(allowedSession.postPage.articleBody).toHaveText(body);
+            } finally {
+                await disallowedSession.context.close();
+                await allowedSession.context.close();
+            }
+        });
     });
 
     test('updates a published post', async ({page}) => {
