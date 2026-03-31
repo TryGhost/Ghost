@@ -51,6 +51,15 @@
             ]
         },
         {
+            "name": "EmailDesignSetting",
+            "entries": [
+                {
+                    "id": "680000000000000000000001",
+                    "slug": "default-automated-email"
+                }
+            ]
+        },
+        {
             "name": "Tag",
             "entries": [
                 {
