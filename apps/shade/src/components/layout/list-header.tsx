@@ -12,7 +12,7 @@ type ListHeaderLeftProps = PropsWithChildrenAndClassName;
 function ListHeaderLeft({className, children}: ListHeaderLeftProps) {
     return (
         <div
-            className={cn('flex min-w-0 flex-col gap-1', className)}
+            className={cn('flex min-w-0 flex-col gap-1 h-full min-h-[34px] justify-center', className)}
             data-list-header='list-header-left'
         >
             {children}
@@ -37,7 +37,7 @@ function ListHeaderTitle({className, children}: ListHeaderTitleProps) {
     return (
         <H1
             className={cn(
-                'text-2xl leading-[1.2em] lg:text-3xl',
+                'text-2xl leading-[1.2em] lg:text-3xl whitespace-nowrap',
                 className
             )}
             data-list-header='list-header-title'
