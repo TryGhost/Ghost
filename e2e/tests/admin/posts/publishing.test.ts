@@ -307,7 +307,9 @@ test.describe('Ghost Admin - Publishing', () => {
             await editor.settingsToggleButton.click();
             await editor.settingsMenu.setVisibility('tiers');
             await editor.settingsMenu.clearVisibilityTiers();
+            const saveResponse = page.waitForResponse(resp => resp.url().includes('/ghost/api/admin/posts/') && resp.request().method() === 'PUT' && resp.status() === 200);
             await editor.settingsMenu.selectVisibilityTier(allowedTierName);
+            await saveResponse;
             await editor.publishFlow.open();
             await editor.publishFlow.confirm();
 

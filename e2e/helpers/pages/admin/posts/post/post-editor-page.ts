@@ -39,15 +39,18 @@ class SettingsMenu extends BasePage {
     }
 
     async clearVisibilityTiers(): Promise<void> {
-        await this.visibilitySegmentInput.click();
+        await this.visibilitySelectedTokens.first().waitFor({state: 'attached'});
 
-        let selectedCount = await this.visibilitySelectedTokens.count();
-
-        while (selectedCount > 0) {
-            const token = this.visibilitySelectedTokens.nth(selectedCount - 1);
-            await this.page.keyboard.press('Backspace');
-            await token.waitFor({state: 'detached'});
-            selectedCount -= 1;
+        while (await this.visibilitySelectedTokens.count() > 0) {
+            const count = await this.visibilitySelectedTokens.count();
+            // Click the close icon which has data-selected-index needed by the handler
+            const closeIcon = this.visibilitySegmentSelect.locator('[data-selected-index]').first();
+            await closeIcon.click({force: true});
+            // Wait until a token is actually removed
+            await this.page.waitForFunction(
+                expected => document.querySelectorAll('[data-test-visibility-segment-select] [data-test-selected-token]').length < expected,
+                count
+            );
         }
     }
 
