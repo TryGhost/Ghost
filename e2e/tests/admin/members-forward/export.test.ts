@@ -58,9 +58,7 @@ test.describe('Ghost Admin - Members Forward Export', () => {
         await memberFactory.createMany(membersFixture);
 
         const membersPage = new MembersForwardPage(page);
-        await membersPage.goto();
-
-        await membersPage.addFilter('Label', 'alpha');
+        await page.goto('/ghost/#/members-forward?filter=label:alpha');
         await expect(membersPage.memberRows).toHaveCount(2);
 
         await membersPage.openActionsMenu();

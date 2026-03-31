@@ -29,7 +29,7 @@ describe('member-query-params', () => {
             search: 'jamie'
         })).toEqual({
             include: 'labels,tiers,subscriptions',
-            limit: '50',
+            limit: '100',
             order: 'created_at desc',
             filter: 'label:[vip]+subscriptions.status:active',
             search: 'jamie'
