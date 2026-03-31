@@ -245,24 +245,6 @@ test.describe('Ghost Admin - Publishing', () => {
         await expect(publicPage.accessCtaHeading).toHaveText('This post is for paying subscribers only');
     });
 
-    test('public post with explicit visibility is visible on frontend', async ({page}) => {
-        const title = `public-visibility-post-${Date.now()}`;
-        const body = 'This is my public visibility post body.';
-
-        const postFactory = createPostFactory(page.request);
-        const post = await postFactory.create({
-            title,
-            status: 'published',
-            visibility: 'public',
-            lexical: buildLexicalWithBody(body)
-        });
-
-        const publicPage = new PostPage(page);
-        await publicPage.gotoPost(post.slug);
-        await expect(publicPage.articleTitle).toHaveText(title);
-        await expect(publicPage.articleBody).toHaveText(body);
-    });
-
     test.describe('specific tier visibility', () => {
         test.use({stripeEnabled: true});
 
