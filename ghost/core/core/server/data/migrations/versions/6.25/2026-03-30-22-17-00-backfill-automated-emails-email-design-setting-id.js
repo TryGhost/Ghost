@@ -1,4 +1,4 @@
-const errors = require('@tryghost/errors');
+const {MigrationError} = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const {createTransactionalMigration} = require('../../utils');
 
@@ -13,7 +13,7 @@ module.exports = createTransactionalMigration(
             .first();
 
         if (!defaultEmailDesignSetting) {
-            throw new errors.InternalServerError({
+            throw new MigrationError({
                 message: `Missing default email_design_settings row for slug: ${DEFAULT_SLUG}`
             });
         }
