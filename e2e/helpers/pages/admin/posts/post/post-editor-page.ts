@@ -126,6 +126,8 @@ export class PostEditorPage extends AdminPage {
     readonly lexicalEditor: Locator;
     readonly secondaryEditor: Locator;
     readonly publishSaveButton: Locator;
+    readonly updateFlowButton: Locator;
+    readonly revertToDraftButton: Locator;
 
     readonly settingsMenu: SettingsMenu;
 
@@ -143,6 +145,8 @@ export class PostEditorPage extends AdminPage {
         this.lexicalEditor = page.locator('[data-kg="editor"]').first();
         this.secondaryEditor = page.locator('[data-secondary-instance="true"]');
         this.publishSaveButton = page.locator('[data-test-button="publish-save"]').first();
+        this.updateFlowButton = page.locator('[data-test-button="update-flow"]').first();
+        this.revertToDraftButton = page.locator('[data-test-button="revert-to-draft"]');
 
         this.settingsMenu = new SettingsMenu(page);
     }
@@ -184,6 +188,11 @@ export class PostEditorPage extends AdminPage {
     async appendToBody(text: string): Promise<void> {
         await this.lexicalEditor.click();
         await this.page.keyboard.type(text);
+    }
+
+    async revertToDraft(): Promise<void> {
+        await this.updateFlowButton.click();
+        await this.revertToDraftButton.click();
     }
 
     get previewModalDesktopFrame(): DesktopPreviewFrame {
