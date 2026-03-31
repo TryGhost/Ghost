@@ -74,9 +74,9 @@ test.describe('Ghost Admin - Members Virtual Window', () => {
         const memberDetailsPage = new MemberDetailsPage(page);
 
         await membersPage.goto();
-        await expect(membersPage.fetchMoreButton).toBeVisible();
-        await membersPage.fetchMoreButton.click();
-        await expect(membersPage.fetchMoreButton).toBeHidden();
+        await expect(membersPage.loadMoreButton).toBeVisible();
+        await membersPage.loadMoreButton.click();
+        await expect(membersPage.loadMoreButton).toBeHidden();
 
         await expect.poll(async () => {
             const historyState = await page.evaluate(() => window.history.state);

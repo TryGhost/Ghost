@@ -106,7 +106,7 @@ class SettingsSection extends BasePage {
 
 export class MembersPage extends AdminPage {
     readonly newMemberButton: Locator;
-    public readonly fetchMoreButton: Locator;
+    public readonly loadMoreButton: Locator;
     public readonly membersListScrollRoot: Locator;
     readonly memberListItems: Locator;
     readonly emptyStateHeading: Locator;
@@ -125,7 +125,7 @@ export class MembersPage extends AdminPage {
         this.newMemberButton = page.getByRole('link', {name: 'New member'});
         this.exportMembersButton = page.getByTestId('export-members');
 
-        this.fetchMoreButton = page.getByRole('button', {name: 'Fetch more'});
+        this.loadMoreButton = page.getByRole('button', {name: 'Load more'});
         this.membersListScrollRoot = page.getByTestId('members-list-scroll-root');
         this.memberListItems = page.getByTestId('members-list-item');
         this.emptyStateHeading = page.getByRole('heading', {name: 'Start building your audience'});
