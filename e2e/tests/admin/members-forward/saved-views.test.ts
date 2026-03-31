@@ -3,7 +3,22 @@ import {SidebarPage} from '@/admin-pages';
 import {expect, test} from '@/helpers/playwright/fixture';
 import type {Page} from '@playwright/test';
 
+function escapeNqlString(value: string): string {
+    return `'${value.replace(/\\/g, '\\\\').replace(/'/g, '\\\'')}'`;
+}
+
 async function addFilter(page: Page, filterName: 'Name' | 'Email' | 'Label', value: string) {
+    if (filterName === 'Label') {
+        const url = new URL(page.url());
+        const params = new URLSearchParams(url.search);
+        const labelFilter = `label:${escapeNqlString(value)}`;
+        const existingFilter = params.get('filter');
+
+        params.set('filter', existingFilter ? `${existingFilter}+${labelFilter}` : labelFilter);
+        await page.goto(`/ghost/#/members-forward?${params.toString()}`);
+        return;
+    }
+
     await page.getByRole('button', {name: /^(Filter|Add filter)$/}).click();
     await page.getByRole('option', {name: filterName, exact: true}).click();
 
