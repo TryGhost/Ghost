@@ -176,7 +176,9 @@ describe('Unit: models/automated-email', function () {
 
             await assert.rejects(
                 model.onCreating(model, {}, {}),
-                /Missing default email design setting for automated emails/
+                {
+                    errorType: 'InternalServerError'
+                }
             );
         });
     });
