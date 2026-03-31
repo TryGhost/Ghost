@@ -27,6 +27,15 @@ function formatFrontendDate(date: Date): string {
     }).format(date);
 }
 
+async function expectPostStatus(editor: PostEditorPage, status: string | RegExp, detail?: string | RegExp) {
+    await expect(editor.postStatus.first()).toContainText(status);
+
+    if (detail) {
+        await editor.postStatus.first().hover();
+        await expect(editor.postStatus.first()).toContainText(detail);
+    }
+}
+
 test.describe('Ghost Admin - Publishing', () => {
     test.use({mailgunEnabled: true});
 
@@ -103,6 +112,34 @@ test.describe('Ghost Admin - Publishing', () => {
         const slug = generateSlug(postData.title);
         const response = await page.goto(`/${slug}/`);
         expect(response?.status()).toBe(404);
+    });
+
+    test('unschedules a scheduled post', async ({page}) => {
+        const title = `unschedule-post-${Date.now()}`;
+        const body = 'This is my unscheduled post body.';
+        const slug = generateSlug(title);
+
+        const postsPage = new PostsPage(page);
+        await postsPage.goto();
+        await postsPage.newPostButton.click();
+
+        const editor = new PostEditorPage(page);
+        await editor.createDraft({title, body});
+
+        await editor.publishFlow.open();
+        await editor.publishFlow.schedule({date: '2050-01-01'});
+        await editor.publishFlow.confirm();
+        await editor.publishFlow.close();
+
+        await expectPostStatus(editor, 'Scheduled', /to be published\s+at .*2050/i);
+
+        const frontendPage = await page.context().newPage();
+        await expectFrontendStatus(frontendPage, slug, 404);
+
+        await postsPage.getPostByTitle(title).click();
+        await editor.revertToDraft();
+        await expect(editor.postStatus.first()).toContainText('Draft - Saved');
+        await expectFrontendStatus(frontendPage, slug, 404);
     });
 
     test('publish only - page is visible on frontend', async ({page}) => {

@@ -322,43 +322,6 @@ test.describe('Publishing', () => {
             // Stil not published yet (email only)
             await checkPostNotPublished(sharedPage, postData);
         });
-
-        // A previously scheduled post can be unscheduled, which resets it to a draft
-        test('A scheduled post should be able to be unscheduled', async ({sharedPage, context}) => {
-            const postData = {
-                title: 'Unschedule post test',
-                body: 'This is my unscheduled post body.'
-            };
-
-            await sharedPage.goto('/ghost');
-            await createPostDraft(sharedPage, postData);
-
-            const editorUrl = await sharedPage.url();
-
-            // Schedule far in the future
-            await publishPost(sharedPage, {date: '2050-01-01', time: '10:09'});
-            await closePublishFlow(sharedPage);
-
-            // Check status
-            await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published at 10:09 (UTC) on 01 Jan 2050');
-
-            // Check not published
-            const testsharedPage = await context.newPage();
-
-            // Check not published
-            await checkPostNotPublished(testsharedPage, postData);
-
-            // Now unschedule this post
-            await sharedPage.goto(editorUrl);
-            await sharedPage.locator('[data-test-button="update-flow"]').first().click();
-            await sharedPage.locator('[data-test-button="revert-to-draft"]').click();
-
-            // Check status
-            await checkPostStatus(sharedPage, 'Draft - Saved');
-
-            // Check not published
-            await checkPostNotPublished(testsharedPage, postData);
-        });
     });
 });
 
