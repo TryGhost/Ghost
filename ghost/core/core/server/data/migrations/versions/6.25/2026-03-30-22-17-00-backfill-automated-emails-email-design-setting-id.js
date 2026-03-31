@@ -1,3 +1,4 @@
+const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const {createTransactionalMigration} = require('../../utils');
 
@@ -12,7 +13,9 @@ module.exports = createTransactionalMigration(
             .first();
 
         if (!defaultEmailDesignSetting) {
-            throw new Error(`Missing default email_design_settings row for slug: ${DEFAULT_SLUG}`);
+            throw new errors.InternalServerError({
+                message: `Missing default email_design_settings row for slug: ${DEFAULT_SLUG}`
+            });
         }
 
         await knex('automated_emails')
