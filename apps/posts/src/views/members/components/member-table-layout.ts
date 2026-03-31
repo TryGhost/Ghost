@@ -30,7 +30,7 @@ export type MemberTableColumnStyles = {
     status: CSSProperties;
 };
 
-export interface MemberTableLayout {
+interface MemberTableLayout {
     tableWidthPercentage: number;
     minTableWidth: number;
     dynamicColumnWidthPercentage: number;
@@ -39,7 +39,7 @@ export interface MemberTableLayout {
     dynamicColumnMinWidth: number;
 }
 
-export interface MemberTableLayoutStyles {
+interface MemberTableLayoutStyles {
     tableStyle: CSSProperties;
     columnStyles: MemberTableColumnStyles;
 }

@@ -55,6 +55,14 @@ function getStatusLabel(status: Member['status']): string {
     }
 }
 
+function isModifiedClick(event: Pick<React.MouseEvent<HTMLElement>, 'button' | 'metaKey' | 'ctrlKey' | 'shiftKey' | 'altKey'>) {
+    return event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+}
+
+function openMemberInNewTab(memberId: string) {
+    window.open(`#/members/${memberId}`, '_blank', 'noopener');
+}
+
 // --- Sub-components ---
 
 function MembersListItemName({item, onClick}: { item: Member; onClick?: (memberId: string) => void }) {
@@ -72,13 +80,7 @@ function MembersListItemName({item, onClick}: { item: Member; onClick?: (memberI
                     className="cursor-pointer"
                     href={`#/members/${item.id}`}
                     onClick={onClick ? (e) => {
-                        if (
-                            e.button !== 0 ||
-                            e.metaKey ||
-                            e.ctrlKey ||
-                            e.shiftKey ||
-                            e.altKey
-                        ) {
+                        if (isModifiedClick(e)) {
                             e.stopPropagation();
                             return;
                         }
@@ -226,13 +228,30 @@ function MembersListItem({
         ...columnStyles.member,
         '--members-sticky-hover-bg': 'color-mix(in hsl, var(--muted) 50%, var(--background))'
     } as CSSProperties;
+    const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
+        if (isModifiedClick(event)) {
+            openMemberInNewTab(item.id);
+            return;
+        }
+
+        onClick(item.id);
+    };
+    const handleRowAuxClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
+        if (event.button !== 1) {
+            return;
+        }
+
+        event.preventDefault();
+        openMemberInNewTab(item.id);
+    };
 
     return (
         <TableRow
             {...props}
             className={cn('group cursor-pointer', props.className)}
             data-testid="members-list-item"
-            onClick={() => onClick(item.id)}
+            onAuxClick={handleRowAuxClick}
+            onClick={handleRowClick}
         >
             <TableCell className={cn(
                 'sticky left-0 z-20 bg-background px-4 py-3 group-hover:bg-[var(--members-sticky-hover-bg)]'

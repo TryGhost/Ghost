@@ -205,6 +205,10 @@ export class MembersPage extends AdminPage {
         return maxRenderedIndex;
     }
 
+    getMemberListItemByIndex(index: number): Locator {
+        return this.page.locator(`[data-testid="members-list-item"][data-index="${index}"]`);
+    }
+
     getMemberByName(name: string): Locator {
         return this.memberListItems.filter({hasText: name});
     }

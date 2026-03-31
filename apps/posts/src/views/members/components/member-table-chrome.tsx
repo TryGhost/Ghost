@@ -1,6 +1,6 @@
 import {Table, TableHead, TableHeader, TableRow, cn} from '@tryghost/shade';
 import type {ActiveColumn} from '../member-query-params';
-import type {CSSProperties, RefObject} from 'react';
+import type {CSSProperties, Ref} from 'react';
 import type {MemberTableColumnStyles} from './member-table-layout';
 
 const PINNED_EDGE_FADE_STYLE = {
@@ -42,8 +42,8 @@ export const MembersTableHeader = ({
     activeColumns: ActiveColumn[];
     className?: string;
     columnStyles: MemberTableColumnStyles;
-    headerRef?: RefObject<HTMLTableSectionElement | null>;
-    memberHeaderRef?: RefObject<HTMLTableCellElement | null>;
+    headerRef?: Ref<HTMLTableSectionElement>;
+    memberHeaderRef?: Ref<HTMLTableCellElement>;
     showEmailOpenRate: boolean;
 }) => {
     return (

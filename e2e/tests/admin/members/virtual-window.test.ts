@@ -91,6 +91,7 @@ test.describe('Ghost Admin - Members Virtual Window', () => {
         const targetRowLocator = membersPage.memberListItems.nth(Math.max(0, renderedCount - 5));
         const targetRow = {
             index: Number(await targetRowLocator.getAttribute('data-index')),
+            text: await targetRowLocator.textContent(),
             scrollTop: await membersPage.getScrollParentScrollTop()
         };
 
@@ -102,11 +103,12 @@ test.describe('Ghost Admin - Members Virtual Window', () => {
 
         await page.goBack();
         await expect(page).toHaveURL(/\/ghost\/#\/members-forward$/);
+        await expect(membersPage.getMemberListItemByIndex(targetRow.index)).toContainText(targetRow.text ?? '');
 
         await expect.poll(async () => {
             const scrollTop = await membersPage.getScrollParentScrollTop();
             return Math.abs(scrollTop - targetRow.scrollTop);
-        }).toBeLessThan(500);
+        }).toBeLessThan(250);
 
         expect(await membersPage.getMaxRenderedIndex()).toBeGreaterThan(1000);
     });
