@@ -71,11 +71,11 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
     const shouldShowMobileSearchRow = showMobileSearch;
 
     // Position filters and mobile search below the header actions
-    const filtersClassName = 'flex flex-col gap-4 px-4 lg:flex-row lg:items-center lg:gap-2 lg:px-8 lg:pt-2 lg:pb-5';
+    const filtersClassName = 'flex flex-col gap-4 px-4 lg:flex-row lg:items-center sidebar:gap-2 sidebar:px-8 lg:gap-6';
 
     return (
         <MembersLayout>
-            <div className='sticky top-0 z-50 flex flex-col gap-4 bg-gradient-to-b from-background via-background/70 to-background/70 py-4 backdrop-blur-md dark:bg-black'>
+            <div className='sticky top-0 z-50 flex flex-col gap-4 bg-gradient-to-b from-background via-background/70 to-background/70 py-4 backdrop-blur-md sidebar:gap-6 sidebar:py-6 dark:bg-black'>
                 <MembersHeader
                     isLoading={shouldShowLoading}
                     totalMembers={totalMembers}

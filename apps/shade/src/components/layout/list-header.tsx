@@ -39,7 +39,7 @@ function ListHeaderTitle({className, children}: PropsWithChildrenAndClassName) {
     return (
         <H1
             className={cn(
-                'text-2xl leading-[1.2em] lg:text-3xl whitespace-nowrap',
+                'text-2xl leading-[1.2em] sidebar:text-[2.5rem] whitespace-nowrap',
                 className
             )}
             data-list-header='list-header-title'
@@ -63,7 +63,7 @@ function ListHeaderDescription({className, children}: PropsWithChildrenAndClassN
 function ListHeaderCount({className, children}: PropsWithChildrenAndClassName) {
     return (
         <span
-            className={cn('ml-2 lg:ml-3 font-normal text-[1.9rem] lg:text-[2.2rem] text-muted-foreground tabular-nums', className)}
+            className={cn('ml-2 lg:ml-3 font-normal text-[1.9rem] sidebar:text-[2.2rem] text-muted-foreground tabular-nums', className)}
             data-list-header='list-header-count'
         >
             {children}
