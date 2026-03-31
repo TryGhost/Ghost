@@ -19,16 +19,9 @@ const DYNAMIC_MEMBER_TABLE_COLUMN_MIN_WIDTH = 220;
 
 type BaseMemberTableColumnKey = keyof typeof BASE_MEMBER_TABLE_COLUMN_WIDTHS;
 
-export interface MemberTableLayoutColumn {
-    key: BaseMemberTableColumnKey | `dynamic:${number}`;
-    widthPercentage: number;
-    minWidth: number;
-}
-
 export interface MemberTableLayout {
     tableWidthPercentage: number;
     minTableWidth: number;
-    columns: MemberTableLayoutColumn[];
     dynamicColumnWidthPercentage: number;
     baseColumnWidthPercentages: Record<BaseMemberTableColumnKey, number>;
     baseColumnMinWidths: Record<BaseMemberTableColumnKey, number>;
@@ -75,17 +68,20 @@ export function getMemberTableLayout({
 
     const normalizedActiveColumnCount = getNormalizedActiveColumnCount(activeColumnCount);
     const totalVisibleBaseWidth = visibleBaseColumns.reduce((total, column) => total + column.width, 0);
-    const totalTableWidth =
-        100 + (normalizedActiveColumnCount * DYNAMIC_MEMBER_TABLE_COLUMN_WIDTH);
-
-    const columns = visibleBaseColumns.map((column) => {
+    const totalTableWidth = 100 + (normalizedActiveColumnCount * DYNAMIC_MEMBER_TABLE_COLUMN_WIDTH);
+    const dynamicColumnWidthPercentage = (DYNAMIC_MEMBER_TABLE_COLUMN_WIDTH / totalTableWidth) * 100;
+    const baseColumnWidthPercentages = visibleBaseColumns.reduce<Record<BaseMemberTableColumnKey, number>>((acc, column) => {
         const normalizedBaseWidth = (column.width / totalVisibleBaseWidth) * 100;
 
-        return {
-            key: column.key,
-            widthPercentage: (normalizedBaseWidth / totalTableWidth) * 100,
-            minWidth: BASE_MEMBER_TABLE_COLUMN_MIN_WIDTHS[column.key]
-        };
+        acc[column.key] = (normalizedBaseWidth / totalTableWidth) * 100;
+
+        return acc;
+    }, {
+        member: 0,
+        status: 0,
+        openRate: 0,
+        location: 0,
+        created: 0
     });
 
     const minTableWidth =
@@ -95,22 +91,8 @@ export function getMemberTableLayout({
     return {
         tableWidthPercentage: totalTableWidth,
         minTableWidth,
-        columns: [
-            ...columns,
-            ...Array.from({length: normalizedActiveColumnCount}, (_, index) => ({
-                key: `dynamic:${index}` as const,
-                widthPercentage: (DYNAMIC_MEMBER_TABLE_COLUMN_WIDTH / totalTableWidth) * 100,
-                minWidth: DYNAMIC_MEMBER_TABLE_COLUMN_MIN_WIDTH
-            }))
-        ],
-        dynamicColumnWidthPercentage: (DYNAMIC_MEMBER_TABLE_COLUMN_WIDTH / totalTableWidth) * 100,
-        baseColumnWidthPercentages: {
-            member: columns.find(column => column.key === 'member')?.widthPercentage ?? 0,
-            status: columns.find(column => column.key === 'status')?.widthPercentage ?? 0,
-            openRate: columns.find(column => column.key === 'openRate')?.widthPercentage ?? 0,
-            location: columns.find(column => column.key === 'location')?.widthPercentage ?? 0,
-            created: columns.find(column => column.key === 'created')?.widthPercentage ?? 0
-        },
+        dynamicColumnWidthPercentage,
+        baseColumnWidthPercentages,
         baseColumnMinWidths: {
             member: BASE_MEMBER_TABLE_COLUMN_MIN_WIDTHS.member,
             status: BASE_MEMBER_TABLE_COLUMN_MIN_WIDTHS.status,

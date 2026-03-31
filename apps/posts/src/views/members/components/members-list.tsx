@@ -1,7 +1,8 @@
 import MembersListItem from './members-list-item';
-import {Button, cn} from '@tryghost/shade';
+import {Button} from '@tryghost/shade';
 import {Member} from '@tryghost/admin-x-framework/api/members';
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
+import {MemberTableColumnStyles, MembersTableColGroup, MembersTableHeader, PinnedMemberHeader} from './member-table-chrome';
+import {Table, TableBody, TableCell, TableRow} from '@tryghost/shade';
 import {forwardRef, useEffect, useMemo, useRef, useState} from 'react';
 import {getMemberTableLayout} from './member-table-layout';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
@@ -35,121 +36,6 @@ const PlaceholderRow = forwardRef<HTMLTableRowElement>(
     }
 );
 
-type HeaderColumnStyles = {
-    created: CSSProperties;
-    dynamic: CSSProperties;
-    location: CSSProperties;
-    member: CSSProperties;
-    openRate: CSSProperties;
-    status: CSSProperties;
-};
-
-const PINNED_EDGE_FADE_STYLE = {
-    left: '100%',
-    background: 'linear-gradient(to right, var(--members-sticky-fade-base) 0px, color-mix(in hsl, var(--members-sticky-fade-base) 78%, transparent) 6px, color-mix(in hsl, var(--members-sticky-fade-base) 28%, transparent) 16px, transparent 24px)'
-} as CSSProperties;
-
-const MembersTableColGroup = ({
-    activeColumns,
-    columnStyles,
-    showEmailOpenRate
-}: {
-    activeColumns: ActiveColumn[];
-    columnStyles: HeaderColumnStyles;
-    showEmailOpenRate: boolean;
-}) => {
-    return (
-        <colgroup>
-            <col style={columnStyles.member} />
-            <col style={columnStyles.status} />
-            {showEmailOpenRate && <col style={columnStyles.openRate} />}
-            <col style={columnStyles.location} />
-            <col style={columnStyles.created} />
-            {activeColumns.map(col => (
-                <col key={col.key} style={columnStyles.dynamic} />
-            ))}
-        </colgroup>
-    );
-};
-
-const MembersTableHeader = ({
-    activeColumns,
-    columnStyles,
-    memberHeaderRef,
-    showEmailOpenRate
-}: {
-    activeColumns: ActiveColumn[];
-    columnStyles: HeaderColumnStyles;
-    memberHeaderRef?: RefObject<HTMLTableCellElement | null>;
-    showEmailOpenRate: boolean;
-}) => {
-    return (
-        <TableHeader className="bg-transparent lg:table-header-group">
-            <TableRow>
-                <TableHead ref={memberHeaderRef} className="bg-transparent px-4 py-3" style={columnStyles.member}>
-                    Member
-                </TableHead>
-                <TableHead className="bg-transparent px-4 py-3" style={columnStyles.status}>
-                    Status
-                </TableHead>
-                {showEmailOpenRate && (
-                    <TableHead className="bg-transparent px-4 py-3" style={columnStyles.openRate}>
-                        Open rate
-                    </TableHead>
-                )}
-                <TableHead className="bg-transparent px-4 py-3" style={columnStyles.location}>
-                    Location
-                </TableHead>
-                <TableHead className="bg-transparent px-4 py-3" style={columnStyles.created}>
-                    Created
-                </TableHead>
-                {activeColumns.map(col => (
-                    <TableHead key={col.key} className="bg-transparent px-4 py-3" style={columnStyles.dynamic}>
-                        {col.label}
-                    </TableHead>
-                ))}
-            </TableRow>
-        </TableHeader>
-    );
-};
-
-const PinnedMemberHeader = ({
-    columnStyle,
-    showPinnedEdge
-}: {
-    columnStyle: CSSProperties;
-    showPinnedEdge: boolean;
-}) => {
-    return (
-        <div
-            className={cn(
-                'pointer-events-none absolute inset-y-0 left-0 z-[70] overflow-visible bg-transparent [--members-sticky-fade-base:var(--background)]'
-            )}
-            style={columnStyle}
-        >
-            <Table className="w-full table-fixed border-collapse">
-                <colgroup>
-                    <col style={{width: '100%'}} />
-                </colgroup>
-                <TableHeader className="bg-transparent lg:table-header-group">
-                    <TableRow>
-                        <TableHead className="bg-transparent px-4 py-3">
-                            Member
-                        </TableHead>
-                    </TableRow>
-                </TableHeader>
-            </Table>
-            {showPinnedEdge && (
-                <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-y-px w-[24px]"
-                    style={PINNED_EDGE_FADE_STYLE}
-                />
-            )}
-        </div>
-    );
-};
-
 interface MembersListProps {
     items: Member[];
     totalItems: number;
@@ -178,7 +64,7 @@ function MembersList({
     onRowClick
 }: MembersListProps) {
     const parentRef = useRef<HTMLDivElement>(null);
-    const stickyHeaderRef = useRef<HTMLDivElement>(null);
+    const stickyHeaderRef = useRef<HTMLTableSectionElement>(null);
     const scrollingMemberHeaderRef = useRef<HTMLTableCellElement>(null);
     const headerScrollRef = useRef<HTMLDivElement>(null);
     const horizontalScrollRef = useRef<HTMLDivElement>(null);
@@ -220,6 +106,14 @@ function MembersList({
         width: `${layout.dynamicColumnWidthPercentage}%`,
         minWidth: `${layout.dynamicColumnMinWidth}px`
     } as CSSProperties;
+    const columnStyles: MemberTableColumnStyles = {
+        created: createdColumnStyle,
+        dynamic: dynamicColumnStyle,
+        location: locationColumnStyle,
+        member: memberColumnStyle,
+        openRate: openRateColumnStyle,
+        status: statusColumnStyle
+    };
 
     useScrollRestoration({parentRef, isLoading});
 
@@ -327,8 +221,7 @@ function MembersList({
     return (
         <div ref={parentRef} className="w-full min-w-0" data-testid="members-list-scroll-root">
             <div
-                ref={stickyHeaderRef}
-                className="sticky z-[60] hidden bg-transparent lg:block"
+                className="sticky z-[60] hidden overflow-visible bg-transparent lg:block"
                 style={{top: stickyTop}}
             >
                 <div className="relative">
@@ -342,33 +235,22 @@ function MembersList({
                         style={stickyColumnWidth > 0 ? {clipPath: `inset(0 0 0 ${stickyColumnWidth}px)`} : undefined}
                     >
                         <Table
+                            aria-hidden="true"
                             className="w-full border-collapse lg:w-[var(--members-table-width)] lg:min-w-[var(--members-table-min-width)] lg:table-fixed"
                             style={tableStyle}
                         >
                             <MembersTableColGroup
                                 activeColumns={activeColumns}
-                                columnStyles={{
-                                    created: createdColumnStyle,
-                                    dynamic: dynamicColumnStyle,
-                                    location: locationColumnStyle,
-                                    member: memberColumnStyle,
-                                    openRate: openRateColumnStyle,
-                                    status: statusColumnStyle
-                                }}
+                                columnStyles={columnStyles}
                                 showEmailOpenRate={showEmailOpenRate}
                             />
                             <MembersTableHeader
                                 activeColumns={activeColumns}
-                                columnStyles={{
-                                    created: createdColumnStyle,
-                                    dynamic: dynamicColumnStyle,
-                                    location: locationColumnStyle,
-                                    member: memberColumnStyle,
-                                    openRate: openRateColumnStyle,
-                                    status: statusColumnStyle
-                                }}
+                                columnStyles={columnStyles}
+                                headerRef={stickyHeaderRef}
                                 memberHeaderRef={scrollingMemberHeaderRef}
                                 showEmailOpenRate={showEmailOpenRate}
+                                showPinnedEdge={false}
                             />
                         </Table>
                     </div>
@@ -383,15 +265,15 @@ function MembersList({
                 >
                     <MembersTableColGroup
                         activeColumns={activeColumns}
-                        columnStyles={{
-                            created: createdColumnStyle,
-                            dynamic: dynamicColumnStyle,
-                            location: locationColumnStyle,
-                            member: memberColumnStyle,
-                            openRate: openRateColumnStyle,
-                            status: statusColumnStyle
-                        }}
+                        columnStyles={columnStyles}
                         showEmailOpenRate={showEmailOpenRate}
+                    />
+                    <MembersTableHeader
+                        activeColumns={activeColumns}
+                        className="lg:h-0 lg:overflow-hidden lg:[&_th]:pointer-events-none lg:[&_th]:h-0 lg:[&_th]:border-0 lg:[&_th]:p-0 lg:[&_th]:text-[0px] lg:[&_th]:leading-none lg:[&_th]:opacity-0 lg:[&_tr]:h-0 lg:[&_tr]:border-0"
+                        columnStyles={columnStyles}
+                        showEmailOpenRate={showEmailOpenRate}
+                        showPinnedEdge={false}
                     />
                     <TableBody>
                         <SpacerRow height={spaceBefore} />
@@ -408,14 +290,7 @@ function MembersList({
                                     key={key}
                                     {...props}
                                     activeColumns={activeColumns}
-                                    columnStyles={{
-                                        created: createdColumnStyle,
-                                        dynamic: dynamicColumnStyle,
-                                        location: locationColumnStyle,
-                                        member: memberColumnStyle,
-                                        openRate: openRateColumnStyle,
-                                        status: statusColumnStyle
-                                    }}
+                                    columnStyles={columnStyles}
                                     item={item}
                                     showEmailOpenRate={showEmailOpenRate}
                                     showPinnedEdge={showPinnedEdge}
