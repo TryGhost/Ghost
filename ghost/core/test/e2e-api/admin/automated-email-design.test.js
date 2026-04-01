@@ -19,7 +19,7 @@ describe('Automated Email Design API', function () {
     describe('Read', function () {
         it('Can read the default automated email design', async function () {
             await agent
-                .get('automated_email_design')
+                .get('automated_emails/design')
                 .expectStatus(200)
                 .matchBodySnapshot({
                     automated_email_design: [matchEmailDesignSetting]
@@ -34,7 +34,7 @@ describe('Automated Email Design API', function () {
     describe('Edit', function () {
         it('Can edit the automated email design', async function () {
             await agent
-                .put('automated_email_design')
+                .put('automated_emails/design')
                 .body({automated_email_design: [{
                     background_color: 'dark',
                     button_corners: 'pill',
@@ -52,7 +52,7 @@ describe('Automated Email Design API', function () {
 
         it('Rejects slug modification', async function () {
             await agent
-                .put('automated_email_design')
+                .put('automated_emails/design')
                 .body({automated_email_design: [{
                     slug: 'custom-slug'
                 }]})
@@ -70,7 +70,7 @@ describe('Automated Email Design API', function () {
 
         it('Validates button_corners value', async function () {
             await agent
-                .put('automated_email_design')
+                .put('automated_emails/design')
                 .body({automated_email_design: [{
                     button_corners: 'invalid-value'
                 }]})
@@ -92,7 +92,7 @@ describe('Automated Email Design API', function () {
             await agent.loginAsEditor();
 
             await agent
-                .get('automated_email_design')
+                .get('automated_emails/design')
                 .expectStatus(403)
                 .matchBodySnapshot({
                     errors: [{
@@ -109,7 +109,7 @@ describe('Automated Email Design API', function () {
             await agent.loginAsAuthor();
 
             await agent
-                .get('automated_email_design')
+                .get('automated_emails/design')
                 .expectStatus(403)
                 .matchBodySnapshot({
                     errors: [{
@@ -126,7 +126,7 @@ describe('Automated Email Design API', function () {
             await agent.loginAsContributor();
 
             await agent
-                .put('automated_email_design')
+                .put('automated_emails/design')
                 .body({automated_email_design: [{
                     background_color: 'dark'
                 }]})

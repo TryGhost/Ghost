@@ -187,15 +187,13 @@ module.exports = function apiRoutes() {
 
     // ## Automated Emails
     router.get('/automated_emails', mw.authAdminApi, http(api.automatedEmails.browse));
+    router.get('/automated_emails/design', mw.authAdminApi, http(api.automatedEmailDesign.read));
     router.get('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.read));
     router.post('/automated_emails', mw.authAdminApi, http(api.automatedEmails.add));
+    router.put('/automated_emails/design', mw.authAdminApi, http(api.automatedEmailDesign.edit));
     router.put('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.edit));
     router.del('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.destroy));
     router.post('/automated_emails/:id/test', shared.middleware.brute.previewEmailLimiter, mw.authAdminApi, http(api.automatedEmails.sendTestEmail));
-
-    // ## Automated Email Design (singleton)
-    router.get('/automated_email_design', mw.authAdminApi, http(api.automatedEmailDesign.read));
-    router.put('/automated_email_design', mw.authAdminApi, http(api.automatedEmailDesign.edit));
 
     // ## Roles
     router.get('/roles/', mw.authAdminApi, http(api.roles.browse));
