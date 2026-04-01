@@ -360,8 +360,8 @@ describe('Portal Data links:', () => {
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
 
-            const giftTitle = within(popupFrame.contentDocument).queryByText(/gift a subscription/i);
-            expect(giftTitle).toBeInTheDocument();
+            const giftSubtitle = within(popupFrame.contentDocument).queryByText(/give the gift of a membership/i);
+            expect(giftSubtitle).toBeInTheDocument();
         });
 
         test('does not open when giftSubscriptions labs flag is disabled', async () => {
