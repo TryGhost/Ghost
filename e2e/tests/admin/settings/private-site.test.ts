@@ -1,9 +1,6 @@
 import {HomePage, PrivateSitePage} from '@/helpers/pages';
 import {PrivateSiteSection, SettingsPage} from '@/admin-pages';
 import {expect, test, withIsolatedPage} from '@/helpers/playwright';
-import {usePerTestIsolation} from '@/helpers/playwright/isolation';
-
-usePerTestIsolation();
 
 test.describe('Ghost Admin - Private Site', () => {
     test('private site requires password and can be made public again', async ({page, browser, baseURL}) => {

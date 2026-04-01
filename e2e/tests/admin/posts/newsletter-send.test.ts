@@ -2,9 +2,6 @@ import {APIRequestContext} from '@playwright/test';
 import {PostEditorPage, PostsPage} from '@/admin-pages';
 import {createMemberFactory} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
-import {usePerTestIsolation} from '@/helpers/playwright/isolation';
-
-usePerTestIsolation();
 
 async function getNewsletters(request: APIRequestContext): Promise<{id: string}[]> {
     const response = await request.get('/ghost/api/admin/newsletters/?status=active&limit=all');

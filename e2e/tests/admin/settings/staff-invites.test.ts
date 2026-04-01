@@ -2,9 +2,6 @@ import {EmailClient, MailPit} from '@/helpers/services/email/mail-pit';
 import {InviteSignupPage, SettingsPage} from '@/admin-pages';
 import {expect, test, withIsolatedPage} from '@/helpers/playwright';
 import {extractInviteLink} from '@/helpers/services/email/utils';
-import {usePerTestIsolation} from '@/helpers/playwright/isolation';
-
-usePerTestIsolation();
 
 test.describe('Ghost Admin - Staff Invites', () => {
     const emailClient: EmailClient = new MailPit();

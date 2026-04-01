@@ -1,10 +1,7 @@
 import {MemberDetailsPage, MembersPage} from '@/helpers/pages';
 import {MemberFactory, createMemberFactory} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
-import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 import type {Page} from '@playwright/test';
-
-usePerTestIsolation();
 
 async function mockLargeMembersList(page: Page, members: Array<{id: string}>) {
     await page.route('**/ghost/api/admin/members/**', async (route) => {
