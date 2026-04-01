@@ -4,6 +4,8 @@ import {MemberFactory, createMemberFactory} from '@/data-factory';
 import {MembersPage} from '@/admin-pages';
 
 test.describe('Ghost Admin - Member Filter Actions', () => {
+    test.use({labs: {membersForward: false}});
+
     let memberFactory: MemberFactory;
 
     const membersFixture = [

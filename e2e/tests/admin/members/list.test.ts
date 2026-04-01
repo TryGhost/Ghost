@@ -40,6 +40,20 @@ test.describe('Ghost Admin - Members List', () => {
         await expect(membersPage.memberRows).toHaveCount(0);
     });
 
+    test('preserves filters when redirecting from members-forward', async ({page}) => {
+        await memberFactory.createMany([
+            {name: 'VIP Member', email: 'vip@example.com', labels: ['VIP']},
+            {name: 'Regular Member', email: 'regular@example.com'}
+        ]);
+
+        const membersPage = new MembersListPage(page);
+        await page.goto('/ghost/#/members-forward?filter=label:VIP');
+
+        await expect(page).toHaveURL(/\/members\?filter=label:VIP$/);
+        await expect(membersPage.memberRows).toHaveCount(1);
+        await expect(membersPage.getMemberByName('VIP Member')).toBeVisible();
+    });
+
     test('navigates to member detail when clicking a row', async ({page}) => {
         const member = await memberFactory.create({
             name: 'Detail Test Member',

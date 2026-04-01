@@ -7,6 +7,8 @@ import {MembersPage} from '@/helpers/pages';
 usePerTestIsolation();
 
 test.describe('Ghost Admin - Member Export', () => {
+    test.use({labs: {membersForward: false}});
+
     let memberFactory: MemberFactory;
 
     function extractDownloadedContentSpecifics(content: string) {

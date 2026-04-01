@@ -4,6 +4,8 @@ import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Member Detail Disable Commenting', () => {
+    test.use({labs: {membersForward: false}});
+
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {

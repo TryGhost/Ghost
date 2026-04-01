@@ -52,6 +52,9 @@ class MockFileReader {
     }
 }
 
+const originalCreateObjectURL = URL.createObjectURL;
+const originalRevokeObjectURL = URL.revokeObjectURL;
+
 describe('ImportMembersModal', () => {
     beforeEach(() => {
         vi.stubGlobal('FileReader', MockFileReader);
@@ -71,6 +74,16 @@ describe('ImportMembersModal', () => {
     afterEach(() => {
         vi.restoreAllMocks();
         vi.unstubAllGlobals();
+        Object.defineProperty(URL, 'createObjectURL', {
+            configurable: true,
+            writable: true,
+            value: originalCreateObjectURL
+        });
+        Object.defineProperty(URL, 'revokeObjectURL', {
+            configurable: true,
+            writable: true,
+            value: originalRevokeObjectURL
+        });
     });
 
     it('calls onComplete when the upload response is accepted for background processing', async () => {

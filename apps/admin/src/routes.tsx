@@ -76,7 +76,10 @@ const membersForwardRedirectRoute: RouteObject = {
     path: "/members-forward",
     // TODO: Remove once the legacy Ember members list is deleted.
     handle: emberFallbackHandle,
-    loader: () => redirect("/members")
+    loader: ({request}) => {
+        const url = new URL(request.url);
+        return redirect(`/members${url.search}`);
+    }
 };
 
 export const routes: RouteObject[] = [

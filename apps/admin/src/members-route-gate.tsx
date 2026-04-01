@@ -1,11 +1,13 @@
-import {Outlet} from "@tryghost/admin-x-framework";
+import {Outlet, useLocation} from "@tryghost/admin-x-framework";
 import {EmberFallback} from "./ember-bridge";
 import {useFeatureFlag} from "./hooks/use-feature-flag";
 
 export function MembersRouteGate() {
     const membersForwardEnabled = useFeatureFlag("membersForward");
+    const location = useLocation();
+    const isMembersListRoute = location.pathname === "/members";
 
-    if (!membersForwardEnabled) {
+    if (!membersForwardEnabled && isMembersListRoute) {
         return <EmberFallback />;
     }
 

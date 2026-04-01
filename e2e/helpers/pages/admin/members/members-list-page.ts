@@ -24,11 +24,8 @@ export class MembersListPage extends AdminPage {
         this.pageUrl = '/ghost/#/members';
 
         this.membersList = page.getByTestId('members-list');
-        this.memberRows = page.getByTestId('members-list-item');
-        this.searchInput = page.locator([
-            'input[aria-label="Search members"]:visible',
-            'input[aria-label="Search members mobile"]:visible'
-        ].join(', ')).first();
+        this.memberRows = this.membersList.getByTestId('members-list-item');
+        this.searchInput = page.getByTestId('members-search-input');
         this.actionsButton = page.getByTestId('members-actions');
         this.newMemberButton = page.getByRole('link', {name: 'New member'});
         this.filterButton = page.getByRole('button', {name: /^(Filter|Add filter)$/});
