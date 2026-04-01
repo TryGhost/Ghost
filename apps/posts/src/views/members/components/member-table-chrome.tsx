@@ -54,7 +54,7 @@ export const MembersTableHeader = ({
             <TableRow>
                 <TableHead
                     ref={memberHeaderRef}
-                    className="sticky left-0 z-[70] bg-transparent px-4 py-3 [--members-sticky-fade-base:var(--background)]"
+                    className="sticky left-0 z-[45] bg-transparent px-4 py-3 [--members-sticky-fade-base:var(--background)]"
                     style={columnStyles.member}
                 >
                     Member
@@ -92,7 +92,7 @@ export const PinnedMemberHeader = ({
 }) => {
     return (
         <div
-            className="pointer-events-none absolute inset-y-0 left-0 z-[70] overflow-visible bg-transparent [--members-sticky-fade-base:var(--background)]"
+            className="pointer-events-none absolute inset-y-0 left-0 z-[45] overflow-visible bg-transparent [--members-sticky-fade-base:var(--background)]"
             style={columnStyle}
         >
             <Table className="w-full table-fixed border-collapse">

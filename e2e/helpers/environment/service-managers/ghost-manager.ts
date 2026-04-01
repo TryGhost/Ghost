@@ -102,10 +102,13 @@ export class GhostManager {
         } catch {
             throw new Error(
                 `Build image not found: ${BUILD_IMAGE}\n\n` +
+                `You are running in "build" mode, which requires a pre-built Docker image.\n` +
+                `For local development, "dev" mode is recommended instead.\n\n` +
                 `To fix this, either:\n` +
-                `  1. Build locally: yarn workspace @tryghost/e2e build:docker (with GHOST_E2E_BASE_IMAGE set)\n` +
-                `  2. Pull from registry: docker pull ${BUILD_IMAGE}\n` +
-                `  3. Use a different image: GHOST_E2E_MODE=build GHOST_E2E_IMAGE=<image> yarn workspace @tryghost/e2e test`
+                `  1. (Recommended) Run "yarn dev" first, then re-run tests — dev mode is auto-detected and doesn't need this image\n` +
+                `  2. Build locally: yarn workspace @tryghost/e2e build:docker (with GHOST_E2E_BASE_IMAGE set)\n` +
+                `  3. Pull from registry: docker pull ${BUILD_IMAGE}\n` +
+                `  4. Use a different image: GHOST_E2E_MODE=build GHOST_E2E_IMAGE=<image> yarn workspace @tryghost/e2e test`
             );
         }
 
