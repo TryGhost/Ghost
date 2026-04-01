@@ -27,6 +27,7 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
     const savedViews = useMemberViews();
     const activeView = useActiveMemberView(savedViews, nql);
     const [showMobileSearch, setShowMobileSearch] = useState(false);
+    const [mobileSearchOpenedByUser, setMobileSearchOpenedByUser] = useState(false);
     const [searchInput, setSearchInput] = useState(search);
     const [debouncedSearch] = useDebounce(searchInput, SEARCH_DEBOUNCE_MS);
 
@@ -81,11 +82,16 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
         }
     }, [debouncedSearch, search, setSearch]);
 
-    useEffect(() => {
-        if (searchInput.trim().length > 0) {
-            setShowMobileSearch(true);
+    const handleMobileSearchToggle = () => {
+        if (showMobileSearch) {
+            setShowMobileSearch(false);
+            setMobileSearchOpenedByUser(false);
+            return;
         }
-    }, [searchInput]);
+
+        setMobileSearchOpenedByUser(true);
+        setShowMobileSearch(true);
+    };
 
     const filtersClassName = 'flex flex-col gap-4 px-4 lg:flex-row lg:items-center sidebar:gap-6 lg:px-8 lg:gap-6';
 
@@ -108,7 +114,7 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                                 aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
                                 className={cn('lg:hidden', showMobileSearch && 'bg-secondary hover:bg-secondary')}
                                 variant="outline"
-                                onClick={() => setShowMobileSearch(prev => !prev)}
+                                onClick={handleMobileSearchToggle}
                             >
                                 <LucideIcon.Search className="size-4" />
                             </Button>
@@ -142,7 +148,7 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                             <div className="lg:hidden">
                                 <MembersHeaderSearch
                                     ariaLabel="Search members mobile"
-                                    autoFocus={true}
+                                    autoFocus={mobileSearchOpenedByUser}
                                     search={searchInput}
                                     onSearchChange={setSearchInput}
                                 />
