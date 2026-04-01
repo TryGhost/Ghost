@@ -1658,10 +1658,11 @@ jobs:
           RELEASE_URL="https://github.com/TryGhost/Ghost/releases/tag/${VERSION}"
           CHANGELOG=$(cat /tmp/release-notes.md | head -c 3000)
 
-          # Build Slack payload
+          # Build Slack payload — use --rawfile so newlines in release notes are preserved
           PAYLOAD=$(jq -n \
-            --arg text "👻 *Ghost ${VERSION} is loose!* — <${RELEASE_URL}|Release Notes>\n\n${CHANGELOG}" \
-            '{text: $text}')
+            --arg header ":ghost: Ghost ${VERSION} is loose! - ${RELEASE_URL}" \
+            --rawfile notes /tmp/release-notes.md \
+            '{text: ($header + "\n\n" + $notes)}')
 
           curl -sf -X POST \
             -H 'Content-type: application/json' \
