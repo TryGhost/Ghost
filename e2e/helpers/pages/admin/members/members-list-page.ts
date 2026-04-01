@@ -36,7 +36,9 @@ export class MembersListPage extends AdminPage {
     }
 
     getMemberByName(name: string): Locator {
-        return this.memberRows.filter({hasText: name});
+        return this.memberRows.filter({
+            has: this.page.getByRole('link', {name, exact: true})
+        });
     }
 
     getMemberLinkByName(name: string): Locator {
