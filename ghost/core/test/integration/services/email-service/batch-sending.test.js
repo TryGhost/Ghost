@@ -503,8 +503,6 @@ describe.skip('Batch sending tests', function () {
     });
 
     it('Cannot send an email if verification is required', async function () {
-        // Update this test to check the new flow instead.
-        mockManager.mockLabsEnabled('verificationFlow');
         // First enable import thresholds
         setupEmailVerificationUtils({
             apiThreshold: 100,

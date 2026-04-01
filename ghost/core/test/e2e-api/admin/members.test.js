@@ -937,56 +937,11 @@ describe('Members API', function () {
 
         afterEach(async function () {
             await restoreEmailVerificationUtils();
-            mockManager.mockLabsDisabled('verificationFlow');
         });
 
-        it('Can add a member and trigger host email verification limits -- sends email', async function () {
-            mockManager.mockLabsDisabled('verificationFlow');
-
-            await setupEmailVerificationUtils({
-                adminThreshold: 1,
-                escalationAddress: 'test@example.com'
-            });
-
-            assert.equal(settingsCache.get('email_verification_required'), false, 'Before import: email verification should NOT be required');
-
-            const member = {
-                name: 'pass verification',
-                email: 'memberPassVerifivation@test.com'
-            };
-
-            const passVerificationMember = await createMemberThroughApi({member, agent, tiersCount: 0, newsletterCount: 2});
-
-            await DomainEvents.allSettled();
-
-            assert.equal(settingsCache.get('email_verification_required'), false, 'After one import: Email verification should NOT be required');
-
-            const memberFailLimit = {
-                name: 'fail verification',
-                email: 'memberFailVerifivation@test.com'
-            };
-
-            const triggerVerificationMember = await createMemberThroughApi({member: memberFailLimit, agent, tiersCount: 0, newsletterCount: 2});
-
-            await DomainEvents.allSettled();
-
-            assert.equal(settingsCache.get('email_verification_required'), true, 'After exceeding limit: Email verification should be required');
-
-            mockManager.assert.sentEmail({
-                subject: 'Email needs verification'
-            });
-
-            // state cleanup
-            await agent.delete(`/members/${passVerificationMember.id}`);
-            await agent.delete(`/members/${triggerVerificationMember.id}`);
-        });
-
-        it('Can add a member and trigger host email verification limits - sends webhook', async function () {
-            mockManager.mockLabsEnabled('verificationFlow');
-
+        it('Can add a member and trigger host email verification limits', async function () {
             const {webhookSecret, receivedWebhookRequests} = await setupEmailVerificationUtils({
-                adminThreshold: 1,
-                escalationAddress: 'test@example.com'
+                adminThreshold: 1
             });
 
             assert.equal(settingsCache.get('email_verification_required'), false, 'Before import: email verification should NOT be required');
