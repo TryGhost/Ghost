@@ -3,17 +3,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const {MemberCreatedEvent} = require('../../shared/events');
 
 const messages = {
-    emailVerificationNeeded: `We're hard at work processing your import. To make sure you get great deliverability, we'll need to enable some extra features for your account. A member of our team will be in touch with you by email to review your account make sure everything is configured correctly so you're ready to go.`,
-    emailVerificationEmailSubject: `Email needs verification`,
-    emailVerificationEmailMessageImport: `Email verification needed for site: {siteUrl}, has imported: {amountTriggered} members in the last 30 days.`,
-    emailVerificationEmailMessageAdmin: `Email verification needed for site: {siteUrl} has added: {amountTriggered} members through the Admin client in the last 30 days.`,
-    emailVerificationEmailMessageAPI: `Email verification needed for site: {siteUrl} has added: {amountTriggered} members through the API in the last 30 days.`
-};
-
-const verificationMessageBySource = {
-    api: messages.emailVerificationEmailMessageAPI,
-    admin: messages.emailVerificationEmailMessageAdmin,
-    import: messages.emailVerificationEmailMessageImport
+    emailVerificationNeeded: `We're hard at work processing your import. To make sure you get great deliverability, we'll need to enable some extra features for your account. A member of our team will be in touch by email to review your account and make sure everything is configured correctly so you're ready to go.`
 };
 
 class VerificationTrigger {
@@ -26,8 +16,6 @@ class VerificationTrigger {
      * @param {() => boolean} deps.isVerified Check Ghost config to see if we are already verified
      * @param {() => boolean} deps.isVerificationRequired Check Ghost settings to see whether verification has been requested
      * @param {(value: boolean) => void} deps.setVerificationRequired Directly update the settings cache for email_verification_required
-     * @param {() => boolean} deps.isVerificationFlowEnabled Check whether webhook-based verification flow is enabled
-     * @param {(content: {subject: string, message: string, amountTriggered: number}) => Promise<void>} deps.sendVerificationEmail Sends an email to the escalation address to confirm that customer needs to be verified
      * @param {(content: {amountTriggered: number, threshold: number, method: string}) => Promise<boolean>} deps.sendVerificationWebhook Sends a webhook to the escalation service to confirm that customer needs to be verified
      * @param {any} deps.Settings Ghost Settings model
      * @param {any} deps.eventRepository For querying events
@@ -39,8 +27,6 @@ class VerificationTrigger {
         isVerified,
         isVerificationRequired,
         setVerificationRequired,
-        isVerificationFlowEnabled,
-        sendVerificationEmail,
         sendVerificationWebhook,
         Settings,
         eventRepository
@@ -51,9 +37,7 @@ class VerificationTrigger {
         this._isVerified = isVerified;
         this._isVerificationRequired = isVerificationRequired;
         this._setVerificationRequired = setVerificationRequired || (() => {});
-        this._isVerificationFlowEnabled = isVerificationFlowEnabled || (() => false);
-        this._sendVerificationEmail = sendVerificationEmail;
-        this._sendVerificationWebhook = sendVerificationWebhook;
+        this._sendVerificationWebhook = sendVerificationWebhook || (async () => false);
         this._Settings = Settings;
         this._eventRepository = eventRepository;
 
@@ -74,10 +58,6 @@ class VerificationTrigger {
 
     get _importTriggerThreshold() {
         return this._getImportTriggerThreshold();
-    }
-
-    _shouldUseWebhookFlow() {
-        return this._isVerificationFlowEnabled() && typeof this._sendVerificationWebhook === 'function';
     }
 
     /**
@@ -150,21 +130,6 @@ class VerificationTrigger {
         return {
             needsVerification: true
         };
-    }
-
-    async _startLegacyEmailVerificationProcess({amount, triggerSource, throwOnTrigger}) {
-        // GA removal point: delete this method once webhook delivery fully replaces email escalation.
-        const verificationMessage = verificationMessageBySource[triggerSource] || messages.emailVerificationEmailMessageImport;
-
-        await this._markVerificationRequired();
-
-        await this._sendVerificationEmail({
-            message: verificationMessage,
-            subject: messages.emailVerificationEmailSubject,
-            amountTriggered: amount
-        });
-
-        return this._finishTrigger(throwOnTrigger);
     }
 
     async getImportThreshold() {
@@ -260,36 +225,30 @@ class VerificationTrigger {
             return {needsVerification: false};
         }
 
-        // Only trigger flag change and escalation notification the first time
+        // Only trigger verification once.
         if (this._isVerificationRequired()) {
             return {needsVerification: false};
         }
 
-        const triggerSource = method ?? source ?? 'import';
+        let webhookWasSent = false;
 
-        if (this._shouldUseWebhookFlow()) {
-            try {
-                const webhookWasSent = await this._sendVerificationWebhook({
-                    amountTriggered: amount,
-                    threshold: threshold ?? amount,
-                    method: triggerSource
-                });
-
-                if (webhookWasSent) {
-                    await this._markVerificationRequired();
-                    return this._finishTrigger(throwOnTrigger);
-                }
-            } catch (error) {
-                // `sendVerificationWebhook` already logs delivery failures.
-            }
+        try {
+            webhookWasSent = await this._sendVerificationWebhook({
+                amountTriggered: amount,
+                threshold: threshold ?? amount,
+                method: method ?? source ?? 'import'
+            });
+        } catch (error) {
+            // `sendVerificationWebhook` already logs delivery failures.
+            return {needsVerification: false};
         }
 
-        // Default email flow — used unless the webhook flow is enabled and succeeds.
-        return await this._startLegacyEmailVerificationProcess({
-            amount,
-            triggerSource,
-            throwOnTrigger
-        });
+        if (!webhookWasSent) {
+            return {needsVerification: false};
+        }
+
+        await this._markVerificationRequired();
+        return this._finishTrigger(throwOnTrigger);
     }
 }
 

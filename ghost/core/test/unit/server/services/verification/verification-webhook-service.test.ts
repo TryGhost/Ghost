@@ -35,7 +35,7 @@ describe('VerificationWebhookService', function () {
     };
 
     it('returns false when webhookType is missing', async function () {
-        let warnCalled = false;
+        let warnMessage: string | undefined;
         const service = createService({
             config: {
                 get: (key: string) => {
@@ -52,8 +52,8 @@ describe('VerificationWebhookService', function () {
             },
             logging: {
                 info: () => {},
-                warn: () => {
-                    warnCalled = true;
+                warn: (message: string) => {
+                    warnMessage = message;
                 },
                 error: () => {}
             }
@@ -66,7 +66,7 @@ describe('VerificationWebhookService', function () {
         });
 
         assert.equal(result, false);
-        assert.equal(warnCalled, true);
+        assert.equal(warnMessage, 'Verification webhook is not configured because webhookType is missing.');
     });
 
     it('sends a POST request with the signed webhook payload', async function () {

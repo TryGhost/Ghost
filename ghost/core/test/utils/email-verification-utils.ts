@@ -16,7 +16,6 @@ type EmailVerificationUtilsOptions = {
     persist?: boolean;
     siteId?: string;
     verified?: boolean;
-    escalationAddress?: string;
 };
 
 const DEFAULT_WEBHOOK_URL = 'https://test-webhook-receiver.com/mock-verification-event-endpoint/';
@@ -33,7 +32,6 @@ export async function setupEmailVerificationUtils({
     adminThreshold = 1,
     importThreshold = 0,
     verified = false,
-    escalationAddress = 'test@example.com',
     persist = false,
     siteId = '1'
 }: EmailVerificationUtilsOptions = {}) {
@@ -53,7 +51,6 @@ export async function setupEmailVerificationUtils({
         adminThreshold,
         importThreshold,
         verified,
-        escalationAddress,
         webhookType: DEFAULT_WEBHOOK_TYPE,
         webhookUrl,
         webhookSecret
