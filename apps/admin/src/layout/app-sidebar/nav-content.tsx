@@ -86,12 +86,12 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const isPublishedPostsRouteActive = routing.isRouteActive('posts', {type: 'published'});
     const hasActivePostChild = isDraftPostsRouteActive || isScheduledPostsRouteActive || isPublishedPostsRouteActive || postCustomViews.some(view => view.isActive);
     const postsExpanded = savedPostsExpanded;
-    const isOnMembersForward = location.pathname === '/members-forward';
-    const hasActiveMemberView = isOnMembersForward && memberViews.some(view => view.isActive);
+    const isOnMembersRoute = location.pathname === '/members' || location.pathname === '/members/import';
+    const hasActiveMemberView = memberViews.some(view => view.isActive);
     const membersExpanded = savedMembersExpanded;
     const membersNavActive = isMembersNavActive({
         membersForwardEnabled,
-        isOnMembersForward,
+        isOnMembersRoute,
         hasActiveMemberView,
         isMembersExpanded: membersExpanded,
         isLegacyMembersRouteActive: routing.isRouteActive(getMembersNavActiveRoutes())
@@ -99,7 +99,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const postsRoute = routing.getRouteUrl('posts');
     const isPostsRouteActive = routing.isRouteActive('posts');
     const postsNavActive = isPostsRouteActive || (!postsExpanded && hasActivePostChild);
-    const membersRoute = membersForwardEnabled ? 'members-forward' : routing.getRouteUrl('members');
+    const membersRoute = routing.getRouteUrl('members');
 
     return (
         <SidebarGroup {...props}>

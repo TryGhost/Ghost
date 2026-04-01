@@ -2,12 +2,18 @@ import {MembersFieldMapping} from './mapping';
 
 export type ImportStatus = 'INIT' | 'MAPPING' | 'UPLOADING' | 'PROCESSING' | 'COMPLETE' | 'ERROR';
 
+export interface ImportLabel {
+    name: string;
+    slug: string;
+}
+
 export interface ImportResponse {
     importedCount: number;
     errorCount: number;
     errorCsvUrl: string;
     errorCsvName: string;
     errorList: Array<{message: string; count: number}>;
+    importLabel?: ImportLabel;
 }
 
 export interface ImportState {

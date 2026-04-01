@@ -1,137 +1,75 @@
+import {MemberFactory, createMemberFactory} from '@/data-factory';
+import {MembersListPage} from '@/admin-pages';
 import {expect, test} from '@/helpers/playwright';
 import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
-import {MemberFactory, createMemberFactory} from '@/data-factory';
-import {MembersPage} from '@/helpers/pages';
-
 usePerTestIsolation();
 
-test.describe('Ghost Admin - Member Export', () => {
+const EXPECTED_CSV_HEADER_FIELDS = [
+    'id,',
+    'email,',
+    'name,',
+    'note,',
+    'subscribed_to_emails,',
+    'complimentary_plan,',
+    'stripe_customer_id,',
+    'created_at,',
+    'deleted_at,',
+    'labels,',
+    'tiers'
+];
+
+test.describe('Ghost Admin - Members Export', () => {
+    test.use({labs: {membersForward: true}});
+
     let memberFactory: MemberFactory;
 
-    function extractDownloadedContentSpecifics(content: string) {
-        const contentIds = content.match(/[a-z0-9]{24}/gm);
-        const contentTimestamps = content.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/gm);
-
-        return {
-            contentIds,
-            contentTimestamps
-        };
-    }
-
-    const downloadedContentFields = [
-        'id,',
-        'email,',
-        'name,',
-        'note,',
-        'subscribed_to_emails,',
-        'complimentary_plan,',
-        'stripe_customer_id,',
-        'created_at,',
-        'deleted_at,',
-        'labels,',
-        'tiers'
-    ];
-
     const membersFixture = [
-        {
-            name: 'Test Member 1',
-            email: 'test@member1.com',
-            note: 'This is a test member',
-            labels: ['old']
-        },
-        {
-            name: 'Test Member 2',
-            email: 'test@member2.com',
-            note: 'This is a test member',
-            labels: ['old']
-        },
-        {
-            name: 'Test Member 3',
-            email: 'test@member3.com',
-            note: 'This is a test member',
-            labels: ['old']
-        },
-        {
-            name: 'Sashi',
-            email: 'test@member4.com',
-            note: 'This is a test member',
-            labels: ['dog']
-        },
-        {
-            name: 'Mia',
-            email: 'test@member5.com',
-            note: 'This is a test member',
-            labels: ['dog']
-        },
-        {
-            name: 'Minki',
-            email: 'test@member6.com',
-            note: 'This is a test member',
-            labels: ['dog']
-        }
+        {name: 'Export Member 1', email: 'export1@example.com', note: 'First export test', labels: ['alpha']},
+        {name: 'Export Member 2', email: 'export2@example.com', note: 'Second export test', labels: ['alpha']},
+        {name: 'Export Member 3', email: 'export3@example.com', note: 'Third export test', labels: ['beta']}
     ];
 
     test.beforeEach(async ({page}) => {
         memberFactory = createMemberFactory(page.request);
     });
 
-    test('exports all members to CSV', async ({page}) => {
+    test('exports all members to a CSV with expected fields', async ({page}) => {
         await memberFactory.createMany(membersFixture);
 
-        const membersPage = new MembersPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
-        await membersPage.membersActionsButton.click();
+        await membersPage.openActionsMenu();
+
         const {suggestedFilename, content} = await membersPage.exportMembers();
-        const {contentTimestamps, contentIds} = extractDownloadedContentSpecifics(content);
 
-        expect(content).toMatch(new RegExp(downloadedContentFields.join('')));
+        expect(content).toMatch(new RegExp(EXPECTED_CSV_HEADER_FIELDS.join('')));
 
-        membersFixture.forEach((member) => {
+        for (const member of membersFixture) {
             expect(content).toContain(member.name);
             expect(content).toContain(member.email);
             expect(content).toContain(member.note);
-            expect(content).toContain(member.labels[0]);
-        });
+        }
 
-        expect(contentIds).toHaveLength(6);
-        expect(contentTimestamps).toHaveLength(6);
-
-        expect(suggestedFilename.startsWith('members')).toBe(true);
-        expect(suggestedFilename.endsWith('.csv')).toBe(true);
+        expect(suggestedFilename).toMatch(/^members\.\d{4}-\d{2}-\d{2}\.csv$/);
     });
 
-    test('exports filtered members by label to CSV', async ({page}) => {
+    test('exports only filtered members when a filter is active', async ({page}) => {
         await memberFactory.createMany(membersFixture);
-        const labelToFilterBy = 'dog';
 
-        const membersPage = new MembersPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
-        await membersPage.filterSection.applyLabel(labelToFilterBy);
-        await expect(membersPage.memberListItems).toHaveCount(3);
 
-        await membersPage.membersActionsButton.click();
-        await expect(membersPage.exportMembersButton).toContainText('Export selected members');
+        await membersPage.addFilter('Label', 'alpha');
+        await expect(membersPage.memberRows).toHaveCount(2);
 
-        const {suggestedFilename, content} = await membersPage.exportMembers();
-        const {contentTimestamps, contentIds} = extractDownloadedContentSpecifics(content);
+        await membersPage.openActionsMenu();
+        await expect(membersPage.getMenuItem(/Export 2 members/)).toBeVisible();
 
-        const fixture = membersFixture
-            .filter(member => member.labels[0] === 'dog');
+        const {content} = await membersPage.exportMembers();
 
-        expect(content).toMatch(new RegExp(downloadedContentFields.join('')));
-
-        fixture.forEach((member) => {
-            expect(content).toContain(member.name);
-            expect(content).toContain(member.email);
-            expect(content).toContain(member.note);
-            expect(content).toContain(labelToFilterBy);
-        });
-
-        expect(contentIds).toHaveLength(3);
-        expect(contentTimestamps).toHaveLength(3);
-
-        expect(suggestedFilename.startsWith('members')).toBe(true);
-        expect(suggestedFilename.endsWith('.csv')).toBe(true);
+        expect(content).toContain('export1@example.com');
+        expect(content).toContain('export2@example.com');
+        expect(content).not.toContain('export3@example.com');
     });
 });

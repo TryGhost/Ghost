@@ -44,7 +44,7 @@ async function saveCurrentView(page: Page, name: string) {
     await dialog.waitFor({state: 'hidden'});
 }
 
-test.describe('Ghost Admin - Members Forward Saved Views', () => {
+test.describe('Ghost Admin - Members Saved Views', () => {
     test.use({labs: {membersForward: true}});
 
     let memberFactory: MemberFactory;
@@ -63,7 +63,7 @@ test.describe('Ghost Admin - Members Forward Saved Views', () => {
         });
 
         const sidebar = new SidebarPage(page);
-        await page.goto('/ghost/#/members-forward');
+        await page.goto('/ghost/#/members');
 
         await addFilter(page, 'Name', 'active-nav');
         await saveCurrentView(page, 'View A');

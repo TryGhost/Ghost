@@ -1,17 +1,16 @@
 export function getMembersNavActiveRoutes(): string[] {
-    // TODO: Remove members-forward once the membersForward flag and legacy route split are gone.
-    return ['members-forward', 'members', 'member', 'member.new'];
+    return ['members', 'member', 'member.new'];
 }
 
 export function isMembersNavActive({
     membersForwardEnabled,
-    isOnMembersForward,
+    isOnMembersRoute,
     hasActiveMemberView,
     isMembersExpanded,
     isLegacyMembersRouteActive
 }: {
     membersForwardEnabled: boolean;
-    isOnMembersForward: boolean;
+    isOnMembersRoute: boolean;
     hasActiveMemberView: boolean;
     isMembersExpanded: boolean;
     isLegacyMembersRouteActive: boolean;
@@ -20,7 +19,7 @@ export function isMembersNavActive({
         return isLegacyMembersRouteActive;
     }
 
-    if (isOnMembersForward) {
+    if (isOnMembersRoute) {
         if (!hasActiveMemberView) {
             return true;
         }

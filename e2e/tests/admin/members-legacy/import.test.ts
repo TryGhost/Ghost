@@ -7,7 +7,7 @@ import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Members Import', () => {
     test('imports members from CSV via the UI', async ({page}) => {
-        const membersPage = new MembersPage(page, {route: 'members-forward'});
+        const membersPage = new MembersPage(page, {route: 'members/import'});
         const importModal = new MembersImportModal(page);
 
         const timestamp = Date.now();
@@ -27,8 +27,6 @@ test.describe('Ghost Admin - Members Import', () => {
         writeFileSync(csvPath, csvContent);
 
         await membersPage.goto();
-        await membersPage.membersActionsButton.click();
-        await page.getByRole('menuitem', {name: 'Import members'}).click();
 
         await importModal.fileInput.setInputFiles(csvPath);
 

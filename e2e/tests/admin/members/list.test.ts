@@ -1,17 +1,23 @@
 import {MemberFactory, createMemberFactory} from '@/data-factory';
-import {MembersForwardPage} from '@/admin-pages';
+import {MembersListPage} from '@/admin-pages';
 import {expect, test} from '@/helpers/playwright';
 import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
 usePerTestIsolation();
 
-test.describe('Ghost Admin - Members Forward List', () => {
+test.describe('Ghost Admin - Members List', () => {
     test.use({labs: {membersForward: true}});
 
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {
         memberFactory = createMemberFactory(page.request);
+    });
+
+    test('redirects the legacy members-forward route to members', async ({page}) => {
+        await page.goto('/ghost/#/members-forward');
+
+        await expect(page).toHaveURL(/\/ghost\/#\/members$/);
     });
 
     test('displays members with name, email, status, and created date', async ({page}) => {
@@ -21,7 +27,7 @@ test.describe('Ghost Admin - Members Forward List', () => {
             {name: 'Charlie Clark', email: 'charlie@example.com'}
         ]);
 
-        const membersPage = new MembersForwardPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
 
         await expect(membersPage.memberRows).toHaveCount(3);
@@ -35,7 +41,7 @@ test.describe('Ghost Admin - Members Forward List', () => {
     });
 
     test('shows empty state when there are no members', async ({page}) => {
-        const membersPage = new MembersForwardPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
 
         await expect(membersPage.emptyState).toBeVisible();
@@ -48,7 +54,7 @@ test.describe('Ghost Admin - Members Forward List', () => {
             email: 'detail@example.com'
         });
 
-        const membersPage = new MembersForwardPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
 
         await membersPage.getMemberByName('Detail Test Member').click();

@@ -7,7 +7,7 @@ interface ExportedFile {
     content: string;
 }
 
-export class MembersForwardPage extends AdminPage {
+export class MembersListPage extends AdminPage {
     readonly membersList: Locator;
     readonly memberRows: Locator;
     readonly searchInput: Locator;
@@ -21,7 +21,7 @@ export class MembersForwardPage extends AdminPage {
 
     constructor(page: Page) {
         super(page);
-        this.pageUrl = '/ghost/#/members-forward';
+        this.pageUrl = '/ghost/#/members';
 
         this.membersList = page.getByTestId('members-list');
         this.memberRows = page.getByTestId('members-list-item');

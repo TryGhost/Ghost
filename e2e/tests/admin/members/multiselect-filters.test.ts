@@ -1,5 +1,5 @@
 import {Member, MemberFactory, createMemberFactory, createOfferFactory} from '@/data-factory';
-import {MembersForwardPage} from '@/admin-pages';
+import {MembersListPage} from '@/admin-pages';
 import {PortalOfferPage} from '@/portal-pages';
 import {PublicPage} from '@/public-pages';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
@@ -16,7 +16,7 @@ async function seedMembersAndNavigate(
     members: Partial<Member>[]
 ): Promise<MembersForwardPage> {
     await memberFactory.createMany(members);
-    const membersPage = new MembersForwardPage(page);
+    const membersPage = new MembersListPage(page);
     await membersPage.goto();
     await expect(membersPage.memberRows).toHaveCount(members.length);
     return membersPage;
@@ -63,7 +63,7 @@ async function createOfferAndRedeem(page: Page, request: APIRequestContext, stri
     return {offer, suffix};
 }
 
-test.describe('Ghost Admin - Members Forward Label Multiselect Filter', () => {
+test.describe('Ghost Admin - Members Label Multiselect Filter', () => {
     test.use({labs: {membersForward: true}});
 
     let memberFactory: MemberFactory;
@@ -158,7 +158,7 @@ test.describe('Ghost Admin - Members Forward Label Multiselect Filter', () => {
             {name: 'Other Member', email: 'other@example.com'}
         ]);
 
-        const membersPage = new MembersForwardPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
 
         await membersPage.addMultiselectFilter('Label', ['Delete-Me']);
@@ -173,7 +173,7 @@ test.describe('Ghost Admin - Members Forward Label Multiselect Filter', () => {
     });
 });
 
-test.describe('Ghost Admin - Members Forward Offer Multiselect Filter', () => {
+test.describe('Ghost Admin - Members Offer Multiselect Filter', () => {
     test.use({labs: {membersForward: true}, stripeEnabled: true});
 
     test('opens offer filter and selects an offer to filter members', async ({page, stripe}) => {
@@ -187,7 +187,7 @@ test.describe('Ghost Admin - Members Forward Offer Multiselect Filter', () => {
         const memberFactory = createMemberFactory(page.request);
         await memberFactory.create({name: 'Free Member', email: 'free@example.com'});
 
-        const membersPage = new MembersForwardPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
         await expect(membersPage.memberRows).toHaveCount(2);
 
@@ -205,7 +205,7 @@ test.describe('Ghost Admin - Members Forward Offer Multiselect Filter', () => {
             memberName: 'Searched Member'
         });
 
-        const membersPage = new MembersForwardPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
 
         await membersPage.filterButton.click();
