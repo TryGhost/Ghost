@@ -24,8 +24,7 @@ function parseArgs() {
         bumpType: 'auto',
         branch: 'main',
         dryRun: false,
-        skipChecks: false,
-        waitForChecks: false
+        skipChecks: false
     };
 
     for (const arg of args) {
@@ -37,8 +36,6 @@ function parseArgs() {
             opts.dryRun = true;
         } else if (arg === '--skip-checks') {
             opts.skipChecks = true;
-        } else if (arg === '--wait-for-checks') {
-            opts.waitForChecks = true;
         } else {
             console.error(`Unknown argument: ${arg}`);
             process.exit(1);
@@ -281,10 +278,10 @@ async function main() {
     log(`Tag v${newVersion} does not exist on remote`);
 
     // 5. Wait for CI checks
-    if (opts.waitForChecks && !opts.skipChecks) {
+    if (!opts.skipChecks) {
         const headSha = run('git rev-parse HEAD');
         await waitForChecks(headSha);
-    } else if (opts.skipChecks) {
+    } else {
         log('Skipping CI checks');
     }
 
@@ -315,7 +312,8 @@ async function main() {
         log(`Would push branch ${opts.branch} and tag v${newVersion}`);
     } else {
         logStep('Pushing');
-        run(`git push origin HEAD --follow-tags`);
+        run('git push origin HEAD');
+        run(`git push origin v${newVersion}`);
         log('Pushed branch and tag');
     }
 
