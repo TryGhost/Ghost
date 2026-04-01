@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const models = require('../../models');
 const {DEFAULT_EMAIL_DESIGN_SETTING_SLUG} = require('../../services/member-welcome-emails/constants');
@@ -20,9 +21,11 @@ async function resolveDefaultDesign(options) {
     );
 
     if (!model) {
-        throw new errors.NotFoundError({
+        const err = new errors.InternalServerError({
             message: tpl(messages.defaultDesignNotFound)
         });
+        logging.error(err);
+        throw err;
     }
 
     return model;
@@ -57,7 +60,7 @@ const controller = {
             const data = frame.data.automated_email_design[0];
 
             // Reject slug changes — the slug is an immutable identifier
-            if (data.slug !== undefined) {
+            if ('slug' in data) {
                 throw new errors.ValidationError({
                     message: 'The slug field cannot be modified.'
                 });
