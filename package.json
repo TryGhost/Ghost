@@ -65,7 +65,8 @@
     "postinstall": "patch-package",
     "query:posts": "cd ghost/core/core/server/data/tinybird/scripts && ./query-posts.sh",
     "query:members": "cd ghost/core/core/server/data/tinybird/scripts && ./query-members.sh",
-    "generate:analytics": "cd ghost/core && node core/server/data/tinybird/scripts/analytics-generator.js"
+    "generate:analytics": "cd ghost/core && node core/server/data/tinybird/scripts/analytics-generator.js",
+    "release": "node scripts/release.js"
   },
   "resolutions": {
     "@tryghost/errors": "^1.3.7",
@@ -92,6 +93,7 @@
     "patch-package": "8.0.0",
     "postinstall-postinstall": "2.1.0",
     "rimraf": "5.0.10",
+    "semver": "7.7.2",
     "typescript": "5.8.3"
   }
 }

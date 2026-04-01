@@ -1,0 +1,106 @@
+name: Publish on Tag
+
+on:
+  push:
+    tags:
+      - 'v5.*'
+
+env:
+  FORCE_COLOR: 1
+  NODE_VERSION: '22'
+
+jobs:
+  publish_ghost:
+    name: Publish Ghost to npm
+    runs-on: ubuntu-latest
+    if: github.repository == 'TryGhost/Ghost'
+    environment: npm-release
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Verify tag matches package.json
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(node -p "require('./ghost/core/package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Tag version ($TAG_VERSION) does not match package.json ($PKG_VERSION)"
+            exit 1
+          fi
+          echo "Version verified: $TAG_VERSION"
+
+      - name: Create npm tarball
+        working-directory: ghost/core
+        run: npm pack
+
+      # TODO: Remove once Node v24 ships with npm >= 11
+      - name: Install npm v11 (required for OIDC publishing)
+        run: npm install -g npm@11
+
+      - name: Publish to npm
+        working-directory: ghost/core
+        run: npm publish ghost-*.tgz --access public
+
+      - uses: tryghost/actions/actions/slack-build@main
+        if: failure()
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  create_github_release:
+    needs: [publish_ghost]
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ secrets.CANARY_DOCKER_BUILD }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve previous tag
+        id: prev_tag
+        run: |
+          CURRENT_TAG="${GITHUB_REF_NAME}"
+          PREV_TAG=$(git tag --list 'v5.*' --sort=-version:refname | grep -v '-' | grep -v "^${CURRENT_TAG}$" | head -n 1)
+          if [ -z "$PREV_TAG" ]; then
+            echo "::warning::No previous stable tag found"
+          fi
+          echo "tag=${PREV_TAG}" >> "$GITHUB_OUTPUT"
+          echo "Previous tag: ${PREV_TAG:-<none>}"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          PREV_TAG="${{ steps.prev_tag.outputs.tag }}"
+          if [ -n "$PREV_TAG" ]; then
+            node scripts/lib/release-notes.js "$PREV_TAG" "${GITHUB_REF_NAME}" > /tmp/release-notes.md
+          else
+            echo "This release contains fixes for minor bugs and issues reported by Ghost users." > /tmp/release-notes.md
+          fi
+          cat /tmp/release-notes.md
+
+      - name: Create GitHub Release
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file /tmp/release-notes.md
+
+      - uses: tryghost/actions/actions/slack-build@main
+        if: failure()
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
