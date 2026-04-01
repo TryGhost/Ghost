@@ -121,12 +121,14 @@ function detectBumpType(baseTag, bumpType) {
 
 // --- CI check polling ---
 
+const REQUIRED_CHECK_NAME = 'All required tests passed or skipped';
+
 async function waitForChecks(commit) {
     logStep(`Waiting for CI checks on ${commit.slice(0, 8)}...`);
 
     const token = process.env.GITHUB_TOKEN || process.env.RELEASE_TOKEN;
     if (!token) {
-        throw new Error('GITHUB_TOKEN or RELEASE_TOKEN required for --wait-for-checks');
+        throw new Error('GITHUB_TOKEN or RELEASE_TOKEN required for check polling');
     }
 
     const startTime = Date.now();
@@ -145,49 +147,30 @@ async function waitForChecks(commit) {
 
         const {check_runs: checkRuns} = await response.json();
 
-        if (checkRuns.length === 0) {
-            throw new Error('No checks found for this commit');
-        }
+        // Find the required check — this is the CI gate that aggregates all mandatory checks
+        const requiredCheck = checkRuns.find(r => r.name === REQUIRED_CHECK_NAME);
 
-        let pending = false;
-        let failed = false;
-
-        for (const run of checkRuns) {
-            // Skip release-related, stale, and optional checks
-            if (run.name.includes('release') || run.name.includes('stale') || run.name.includes('[Optional]')) {
-                continue;
+        if (requiredCheck) {
+            if (requiredCheck.status === 'completed' && requiredCheck.conclusion === 'success') {
+                log(`Required check "${REQUIRED_CHECK_NAME}" passed`);
+                return;
             }
-            if (run.conclusion === 'skipped') {
-                continue;
+            if (requiredCheck.status === 'completed' && requiredCheck.conclusion !== 'success') {
+                throw new Error(`Required check "${REQUIRED_CHECK_NAME}" failed (${requiredCheck.conclusion})`);
             }
-            if (run.status === 'completed' && run.conclusion === 'success') {
-                continue;
-            }
-            if (run.status !== 'completed') {
-                pending = true;
-                continue;
-            }
-            // Completed but not success/skipped
-            failed = true;
-        }
-
-        if (!pending && !failed) {
-            log('All status checks passed');
-            return;
-        }
-
-        if (!pending && failed) {
-            throw new Error('Some status checks have failed');
+            log(`Required check is ${requiredCheck.status}, waiting...`);
+        } else {
+            log('Required check not found yet, waiting...');
         }
 
         const elapsedMs = Date.now() - startTime;
         const elapsed = Math.round(elapsedMs / 1000);
 
         if (elapsedMs >= MAX_WAIT_MS) {
-            throw new Error(`Timed out waiting for checks after ${elapsed}s`);
+            throw new Error(`Timed out waiting for "${REQUIRED_CHECK_NAME}" after ${elapsed}s`);
         }
 
-        log(`Checks still running (${elapsed}s elapsed), waiting 30s...`);
+        log(`(${elapsed}s elapsed), polling in 30s...`);
         await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
     }
 }
