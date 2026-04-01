@@ -17,8 +17,7 @@ const settingsCache = require('../../../shared/settings-cache');
 async function configureApi() {
     const cfg = getConfig({settingsHelpers, config, urlUtils});
     if (cfg) {
-        // @NOTE: to not start test mode when running playwright suite
-        cfg.testEnv = process.env.NODE_ENV.startsWith('test') && process.env.NODE_ENV !== 'testing-browser';
+        cfg.testEnv = process.env.NODE_ENV.startsWith('test');
         await module.exports.configure(cfg);
         return true;
     }

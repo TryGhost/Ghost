@@ -63,7 +63,6 @@ cd ghost/core
 yarn test:unit                 # Unit tests only
 yarn test:integration          # Integration tests
 yarn test:e2e                  # E2E API tests (not browser)
-yarn test:browser              # Playwright browser tests for core
 yarn test:all                  # All test types
 
 # E2E browser tests (from root)
