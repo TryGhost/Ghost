@@ -1,3 +1,4 @@
+const assert = require('assert/strict');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyObjectId, anyISODateTime, anyErrorId, anyEtag} = matchers;
 
@@ -66,6 +67,26 @@ describe('Automated Email Design API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+        });
+
+        it('Ignores id in the payload', async function () {
+            // Read the current design to get the real id
+            const {body: before} = await agent
+                .get('automated_emails/design')
+                .expectStatus(200);
+
+            const realId = before.automated_email_design[0].id;
+
+            // Attempt to change the id
+            const {body: after} = await agent
+                .put('automated_emails/design')
+                .body({automated_email_design: [{
+                    id: 'aaaaaaaaaaaaaaaaaaaaaaaa',
+                    background_color: 'light'
+                }]})
+                .expectStatus(200);
+
+            assert.equal(after.automated_email_design[0].id, realId);
         });
 
         it('Validates button_corners value', async function () {
