@@ -32,6 +32,7 @@ export interface Post {
     newsletter_id: string | null;
     show_title_and_feature_image: boolean;
     tags?: Array<{id: string}>;
+    tiers?: Array<{id: string}>;
 }
 
 export class PostFactory extends Factory<Partial<Post>, Post> {

@@ -1,10 +1,12 @@
 const ghostBookshelf = require('./base');
+const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../shared/url-utils');
 const lexicalLib = require('../lib/lexical');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../services/member-welcome-emails/constants');
 
 const MEMBER_WELCOME_EMAIL_SLUG_SET = new Set(Object.values(MEMBER_WELCOME_EMAIL_SLUGS));
+const DEFAULT_EMAIL_DESIGN_SETTING_SLUG = 'default-automated-email';
 
 const AutomatedEmail = ghostBookshelf.Model.extend({
     tableName: 'automated_emails',
@@ -13,6 +15,13 @@ const AutomatedEmail = ghostBookshelf.Model.extend({
         return {
             status: 'inactive'
         };
+    },
+
+    /**
+     * @returns {import('bookshelf').Model}
+     */
+    emailDesignSetting() {
+        return this.belongsTo('EmailDesignSetting', 'email_design_setting_id', 'id');
     },
 
     parse() {
@@ -24,6 +33,24 @@ const AutomatedEmail = ghostBookshelf.Model.extend({
         }
 
         return attrs;
+    },
+
+    async onCreating(model, attrs, options) {
+        if (!model.get('email_design_setting_id')) {
+            const emailDesignSetting = await ghostBookshelf.model('EmailDesignSetting').findOne({
+                slug: DEFAULT_EMAIL_DESIGN_SETTING_SLUG
+            }, options);
+
+            if (!emailDesignSetting) {
+                throw new errors.InternalServerError({
+                    message: 'Missing default email design setting for automated emails'
+                });
+            }
+
+            model.set('email_design_setting_id', emailDesignSetting.get('id'));
+        }
+
+        return ghostBookshelf.Model.prototype.onCreating.call(this, model, attrs, options);
     },
 
     // Alternative to Bookshelf's .format() that is only called when writing to db
