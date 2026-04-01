@@ -12,6 +12,7 @@ Object {
       "additionalPaymentMethods": true,
       "commentModeration": true,
       "customFonts": true,
+      "dripSequences": true,
       "editorExcerpt": true,
       "emailCustomization": true,
       "emailUniqueid": true,

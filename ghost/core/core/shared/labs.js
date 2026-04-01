@@ -48,6 +48,7 @@ const PRIVATE_FEATURES = [
     'themeTranslation',
     'indexnow',
     'membersForward',
+    'dripSequences',
     'welcomeEmailsDesignCustomization',
     'pictureImageFormats',
     'smarterCounts',
