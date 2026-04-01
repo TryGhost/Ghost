@@ -53,6 +53,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - run: yarn --ignore-scripts
+
       - name: Set up Git
         run: |
           git config user.name "Ghost CI"

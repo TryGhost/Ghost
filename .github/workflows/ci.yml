@@ -1628,13 +1628,21 @@ jobs:
           CURRENT_TAG="${GITHUB_REF_NAME}"
           # Find the tag immediately before this one (excluding pre-releases)
           PREV_TAG=$(git tag --list 'v[0-9]*' --sort=-version:refname | grep -v '-' | grep -v "^${CURRENT_TAG}$" | head -n 1)
+          if [ -z "$PREV_TAG" ]; then
+            echo "::warning::No previous stable tag found — release notes will use fallback message"
+          fi
           echo "tag=${PREV_TAG}" >> "$GITHUB_OUTPUT"
-          echo "Previous tag: ${PREV_TAG}"
+          echo "Previous tag: ${PREV_TAG:-<none>}"
 
       - name: Generate release notes
         id: notes
         run: |
-          node scripts/lib/release-notes.js "${{ steps.prev_tag.outputs.tag }}" "${GITHUB_REF_NAME}" > /tmp/release-notes.md
+          PREV_TAG="${{ steps.prev_tag.outputs.tag }}"
+          if [ -n "$PREV_TAG" ]; then
+            node scripts/lib/release-notes.js "$PREV_TAG" "${GITHUB_REF_NAME}" > /tmp/release-notes.md
+          else
+            echo "This release contains fixes for minor bugs and issues reported by Ghost users." > /tmp/release-notes.md
+          fi
           cat /tmp/release-notes.md
 
       - name: Create GitHub Release
