@@ -7,15 +7,15 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '../..');
 const REPO_URL = 'https://github.com/TryGhost/Ghost';
 
-// Emoji priority order (highest first) — matches Ghost's release convention
+// Emoji priority order (lowest index = lowest priority, sorted descending)
 const EMOJI_ORDER = ['💡', '🐛', '🎨', '💄', '✨', '🔒'];
 
-// Matches an emoji at the start of a string (covers most multi-byte emoji)
-const LEADING_EMOJI_RE = /^(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)/u;
+// User-facing emojis — only these are included in release notes
+const USER_FACING_EMOJIS = new Set(EMOJI_ORDER);
 
 function getCommitLog(fromTag, toTag) {
     const range = `${fromTag}..${toTag}`;
-    const format = `* [%h](${REPO_URL}/commit/%h) %s - %an`;
+    const format = '* %s - %an';
     const cmd = `git log --no-merges --pretty=tformat:'${format}' ${range}`;
 
     let log;
@@ -29,33 +29,27 @@ function getCommitLog(fromTag, toTag) {
         return [];
     }
 
-    // Strip PR number references like (#1234)
-    return log.split('\n').map(line => line.replaceAll(/\(#\d+\)/g, '').trim());
+    return log.split('\n').map(line => line.trim());
 }
 
-function extractCommitMessage(line) {
-    // Line format: * [hash](url) <message> - <author>
-    const match = line.match(/\* \[[^\]]+\]\([^)]+\) (.+) - .+$/);
-    return match ? match[1].trim() : '';
+function extractLeadingEmoji(line) {
+    // Line format: * <message> - <author>
+    const match = line.match(/^\* (.)/u);
+    return match ? match[1] : '';
 }
 
 function filterAndSortByEmoji(lines) {
     const emojiLines = lines.filter((line) => {
-        const msg = extractCommitMessage(line);
-        return LEADING_EMOJI_RE.test(msg);
+        const emoji = extractLeadingEmoji(line);
+        return USER_FACING_EMOJIS.has(emoji);
     });
 
     emojiLines.sort((a, b) => {
-        const msgA = extractCommitMessage(a);
-        const msgB = extractCommitMessage(b);
-        const emojiA = (msgA.match(LEADING_EMOJI_RE) || [''])[0];
-        const emojiB = (msgB.match(LEADING_EMOJI_RE) || [''])[0];
+        const emojiA = extractLeadingEmoji(a);
+        const emojiB = extractLeadingEmoji(b);
         const indexA = EMOJI_ORDER.indexOf(emojiA);
         const indexB = EMOJI_ORDER.indexOf(emojiB);
-        // Unknown emojis sort last; lower index = higher priority
-        const orderA = indexA === -1 ? Infinity : indexA;
-        const orderB = indexB === -1 ? Infinity : indexB;
-        return orderA - orderB;
+        return indexB - indexA;
     });
 
     return emojiLines;
