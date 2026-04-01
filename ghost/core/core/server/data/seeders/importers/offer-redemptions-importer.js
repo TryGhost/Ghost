@@ -53,7 +53,7 @@ class OfferRedemptionsImporter extends TableImporter {
             this.subscriptionPool.push({
                 memberId,
                 subscriptionId: subscription.id,
-                subscriptionCreatedAt: new Date(subscription.created_at),
+                subscriptionCreatedAt: dateToDatabaseString.parse(subscription.created_at),
                 redemptionEndAt: this.getRedemptionEndDate(subscription.current_period_end),
                 availableOffers: [...matchingOffers],
                 lastRedeemedAt: null
@@ -78,7 +78,7 @@ class OfferRedemptionsImporter extends TableImporter {
 
     getRedemptionEndDate(currentPeriodEnd) {
         const now = new Date();
-        const endDate = currentPeriodEnd ? new Date(currentPeriodEnd) : now;
+        const endDate = currentPeriodEnd ? dateToDatabaseString.parse(currentPeriodEnd) : now;
 
         return endDate > now ? now : endDate;
     }
@@ -86,7 +86,7 @@ class OfferRedemptionsImporter extends TableImporter {
     getCreatedAt(subscriptionState, offer) {
         const candidateEarliest = new Date(Math.max(
             subscriptionState.subscriptionCreatedAt.valueOf(),
-            new Date(offer.created_at).valueOf(),
+            dateToDatabaseString.parse(offer.created_at).valueOf(),
             subscriptionState.lastRedeemedAt ? subscriptionState.lastRedeemedAt.valueOf() + 1000 : 0
         ));
         const earliest = new Date(Math.min(
