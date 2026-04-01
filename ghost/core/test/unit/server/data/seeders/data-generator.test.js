@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {spawnSync} = require('node:child_process');
 
 const knex = require('knex').default;
 
@@ -9,6 +10,7 @@ const StripeProductsImporter = importers.find(i => i.table === 'stripe_products'
 const StripePricesImporter = importers.find(i => i.table === 'stripe_prices');
 
 const generateEvents = require('../../../../../core/server/data/seeders/utils/event-generator');
+const dateToDatabaseString = require('../../../../../core/server/data/seeders/utils/database-date');
 
 const DataGenerator = require('../../../../../core/server/data/seeders/data-generator');
 
@@ -253,6 +255,30 @@ describe('Importer', function () {
 });
 
 describe('Events Generator', function () {
+    it('Parses database timestamps as UTC in non-UTC timezones', function () {
+        const script = `
+            const dateToDatabaseString = require(${JSON.stringify(require.resolve('../../../../../core/server/data/seeders/utils/database-date'))});
+            process.stdout.write(dateToDatabaseString.parse('2026-03-26 11:50:00.000').toISOString());
+        `;
+        const result = spawnSync(process.execPath, ['-e', script], {
+            env: {
+                ...process.env,
+                TZ: 'America/New_York'
+            },
+            encoding: 'utf8'
+        });
+
+        assert.equal(result.status, 0);
+        assert.equal(result.stdout, '2026-03-26T11:50:00.000Z');
+    });
+
+    it('Returns the start date when a range is inverted', function () {
+        const startDate = new Date('2026-03-26T11:50:00.000Z');
+        const endDate = new Date('2026-03-26T10:00:00.000Z');
+
+        assert.equal(dateToDatabaseString.randomBetween(startDate, endDate).toISOString(), startDate.toISOString());
+    });
+
     it('Generates a set of timestamps which meet the criteria', function () {
         const startTime = new Date();
         startTime.setDate(startTime.getDate() - 30);

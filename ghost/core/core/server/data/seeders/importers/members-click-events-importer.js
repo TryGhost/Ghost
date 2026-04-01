@@ -50,7 +50,7 @@ class MembersClickEventsImporter extends TableImporter {
         }
         this.amount -= 1;
 
-        const openedAt = new Date(this.model.opened_at);
+        const openedAt = dateToDatabaseString.parse(this.model.opened_at);
         const laterOn = new Date(openedAt.getTime() + 1000 * 60 * 15);
         const clickTime = faker.date.between(openedAt.getTime(), laterOn.getTime()); //added getTime here because it threw random errors
 
