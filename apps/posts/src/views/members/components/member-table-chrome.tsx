@@ -49,7 +49,7 @@ export const MembersTableHeader = ({
     return (
         <TableHeader
             ref={headerRef}
-            className={cn('hidden bg-transparent lg:table-header-group', className)}
+            className={cn('hidden bg-transparent lg:table-header-group [&_th]:whitespace-nowrap', className)}
         >
             <TableRow>
                 <TableHead
@@ -99,7 +99,7 @@ export const PinnedMemberHeader = ({
                 <colgroup>
                     <col style={{width: '100%'}} />
                 </colgroup>
-                <TableHeader className="bg-transparent lg:table-header-group">
+                <TableHeader className="bg-transparent lg:table-header-group [&_th]:whitespace-nowrap">
                     <TableRow>
                         <TableHead className="bg-transparent px-4 py-3">
                             Member
