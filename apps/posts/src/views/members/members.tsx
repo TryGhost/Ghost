@@ -141,6 +141,7 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                         {shouldShowMobileSearchRow && (
                             <div className="lg:hidden">
                                 <MembersHeaderSearch
+                                    ariaLabel="Search members mobile"
                                     autoFocus={true}
                                     search={searchInput}
                                     onSearchChange={setSearchInput}
