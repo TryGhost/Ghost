@@ -1464,6 +1464,8 @@ jobs:
         job_comments_ui,
         job_signup_form,
         job_tinybird-tests,
+        job_build_e2e_public_apps,
+        job_build_e2e_image,
         job_e2e_tests
       ]
     if: always()
