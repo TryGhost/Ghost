@@ -149,6 +149,12 @@ jobs:
               - '!ghost/core/core/server/data/tinybird/**/*.md'
             any-code:
               - '!**/*.md'
+            app-code:
+              - 'ghost/**'
+              - 'apps/**'
+              - 'e2e/**'
+              - 'package.json'
+              - 'yarn.lock'
 
       - name: Compute lockfile hash
         run: echo "hash=lockfile-${{ hashFiles('yarn.lock') }}" >> "$GITHUB_ENV"
@@ -212,6 +218,7 @@ jobs:
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
       changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
+      changed_app_code: ${{ steps.changed.outputs.app-code }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
       is_main: ${{ env.IS_MAIN }}
@@ -1083,7 +1090,7 @@ jobs:
     name: E2E Tests (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
     needs: [job_build_artifacts, job_setup]
-    if: needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag != 'true' && needs.job_setup.outputs.changed_app_code == 'true'
     strategy:
       fail-fast: true
       matrix:
