@@ -3,14 +3,13 @@ const supertest = require('supertest');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../core/shared/config');
-const configUtils = require('../../../utils/config-utils');
 const settingsCache = require('../../../../core/shared/settings-cache');
-const models = require('../../../../core/server/models');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 
 const {mockManager} = require('../../../utils/e2e-framework');
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
+const {setupEmailVerificationUtils, restoreEmailVerificationUtils} = require('../../../utils/email-verification-utils');
 
 let request;
 let emailMockReceiver;
@@ -247,11 +246,10 @@ describe('Members Importer API', function () {
 
     it('Can import members with host emailVerification limits', async function () {
         // If this test fails, check if the total members that have been created with fixtures has increased a lot, and if required, increase the amount of imported members
-        configUtils.set('hostSettings:emailVerification', {
+        await setupEmailVerificationUtils({
             apiThreshold: 2,
             adminThreshold: 2,
             importThreshold: 1, // note: this one isn't really used because (totalMembers - members_created_in_last_30_days) is larger and used instead
-            verified: false,
             escalationAddress: 'test@example.com'
         });
 
@@ -273,14 +271,19 @@ describe('Members Importer API', function () {
         assert.equal(jsonResponse.meta.stats.imported, 10);
         assert.equal(jsonResponse.meta.stats.invalid.length, 0);
 
-        assert(!!settingsCache.get('email_verification_required'), 'Email verification should now be required');
+        assert.equal(settingsCache.get('email_verification_required'), true, 'Email verification should now be required');
 
         mockManager.assert.sentEmail({
             subject: 'Email needs verification'
         });
+
+        // Don't reset email verification required flag, as the following test
+        // relies on that value being true already.
     });
 
     it('Can still import members once email verification is required but does not send email', async function () {
+        assert.equal(settingsCache.get('email_verification_required'), true, 'Email verification is already required');
+
         const res = await request
             .post(localUtils.API.getApiQuery(`members/upload/`))
             .field('labels', ['new-global-label'])
@@ -299,28 +302,25 @@ describe('Members Importer API', function () {
         assert.equal(jsonResponse.meta.stats.imported, 10);
         assert.equal(jsonResponse.meta.stats.invalid.length, 0);
 
-        assert(!!settingsCache.get('email_verification_required'), 'Email verification should now be required');
+        assert.equal(settingsCache.get('email_verification_required'), true, 'Email verification should still be required');
 
         // Don't send another email
         emailMockReceiver.assertSentEmailCount(0);
+
+        // reset email verification required flag for next test
+        await restoreEmailVerificationUtils();
     });
 
     it('Can import members with host emailVerification limits for large imports', async function () {
-        await models.Settings.edit([{
-            key: 'email_verification_required',
-            value: false
-        }], {context: {internal: true}});
-
-        assert(!settingsCache.get('email_verification_required'), 'Email verification should not be required');
-
         // If this test fails, check if the total members that have been created with fixtures has increased a lot, and if required, increase the amount of imported members
-        configUtils.set('hostSettings:emailVerification', {
+        await setupEmailVerificationUtils({
             apiThreshold: 2,
             adminThreshold: 2,
             importThreshold: 1, // note: this one isn't really used because (totalMembers - members_created_in_last_30_days) is larger and used instead
-            verified: false,
             escalationAddress: 'test@example.com'
         });
+
+        assert.equal(settingsCache.get('email_verification_required'), false, 'Email verification should not be required');
 
         const awaitCompletion = jobManager.awaitCompletion('members-import');
 
@@ -341,7 +341,7 @@ describe('Members Importer API', function () {
         // Wait for the job to finish
         await awaitCompletion;
 
-        assert(!!settingsCache.get('email_verification_required'), 'Email verification should now be required');
+        assert.equal(settingsCache.get('email_verification_required'), true, 'Email verification should now be required');
 
         mockManager.assert.sentEmail({
             subject: 'Your member import is complete'
@@ -350,5 +350,45 @@ describe('Members Importer API', function () {
         mockManager.assert.sentEmail({
             subject: 'Email needs verification'
         });
+
+        await restoreEmailVerificationUtils();
+    });
+
+    it('Can import members with host emailVerification limits for large imports - webhook flow', async function () {
+        mockManager.mockLabsEnabled('verificationFlow');
+
+        // If this test fails, check if the total members that have been created with fixtures has increased a lot, and if required, increase the amount of imported members
+        const {receivedWebhookRequests} = await setupEmailVerificationUtils({
+            apiThreshold: 2,
+            adminThreshold: 2,
+            importThreshold: 1 // note: this one isn't really used because (totalMembers - members_created_in_last_30_days) is larger and used instead
+        });
+
+        assert.equal(settingsCache.get('email_verification_required'), false, 'Email verification should not be required');
+
+        const awaitCompletion = jobManager.awaitCompletion('members-import');
+
+        const res = await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .field('labels', ['new-global-label'])
+            .attach('membersfile', path.join(__dirname, '/../../../utils/fixtures/csv/valid-members-import-large-501.csv'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(202);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
+        const jsonResponse = res.body;
+
+        assertExists(jsonResponse);
+        assertExists(jsonResponse.meta);
+
+        // Wait for the job to finish
+        await awaitCompletion;
+
+        assert.equal(settingsCache.get('email_verification_required'), true, 'Email verification should now be required');
+
+        assert(receivedWebhookRequests.length > 0, 'Expected to receive webhook requests');
+
+        await restoreEmailVerificationUtils();
     });
 });

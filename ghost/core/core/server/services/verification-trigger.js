@@ -82,7 +82,7 @@ class VerificationTrigger {
 
     /**
      *
-     * @param {MemberCreatedEvent} event
+     * @param {InstanceType<typeof MemberCreatedEvent>} event
      */
     async _handleMemberCreatedEvent(event) {
         const source = event.data?.source;
@@ -94,15 +94,19 @@ class VerificationTrigger {
             sourceThreshold = this._adminTriggerThreshold;
         }
 
-        if (['api', 'admin'].includes(source) && isFinite(sourceThreshold)) {
+        if (['api', 'admin'].includes(source) && Number.isFinite(sourceThreshold)) {
             const createdAt = new Date();
             createdAt.setDate(createdAt.getDate() - 30);
             const events = await this._eventRepository.getSignupEvents({}, {
-                source: source,
+                source,
                 created_at: {
                     $gt: createdAt.toISOString().replace('T', ' ').substring(0, 19)
                 }
             });
+
+            // TODO: Fix off-by-one issue in event dispatch: https://linear.app/ghost/issue/BER-3507/off-by-one-errors-in-event-query-pagination
+            const addOneForCurrentEvent = events.meta.pagination.total < events.meta.pagination.limit && events.data.length !== events.meta.pagination.total;
+            const currentImport = events.meta.pagination.total + (addOneForCurrentEvent ? 1 : 0);
 
             const membersTotal = (await this._eventRepository.getSignupEvents({}, {
                 source: 'member'
@@ -110,9 +114,9 @@ class VerificationTrigger {
 
             const effectiveThreshold = Math.max(sourceThreshold, membersTotal);
 
-            if (events.meta.pagination.total > effectiveThreshold) {
+            if (currentImport > effectiveThreshold) {
                 await this._startVerificationProcess({
-                    amount: events.meta.pagination.total,
+                    amount: currentImport,
                     threshold: effectiveThreshold,
                     method: source,
                     throwOnTrigger: false,
@@ -165,7 +169,7 @@ class VerificationTrigger {
 
     async getImportThreshold() {
         const volumeThreshold = this._importTriggerThreshold;
-        if (!isFinite(volumeThreshold)) {
+        if (!Number.isFinite(volumeThreshold)) {
             return volumeThreshold;
         }
 
@@ -186,7 +190,7 @@ class VerificationTrigger {
     }
 
     async testImportThreshold() {
-        if (!isFinite(this._importTriggerThreshold)) {
+        if (!Number.isFinite(this._importTriggerThreshold)) {
             // Infinite threshold, quick path
             return;
         }
@@ -210,16 +214,18 @@ class VerificationTrigger {
             }
         });
 
+        const currentImport = events.meta.pagination.total;
+
         const membersTotal = (await this._eventRepository.getSignupEvents({}, {
             source: 'member'
         })).meta.pagination.total;
 
         // Import threshold is either the total number of members (discounting any created by imports in
         // the last 30 days) or the threshold defined in config, whichever is greater.
-        const importThreshold = Math.max(membersTotal - events.meta.pagination.total, this._importTriggerThreshold);
-        if (isFinite(importThreshold) && events.meta.pagination.total > importThreshold) {
+        const importThreshold = Math.max(membersTotal - currentImport, this._importTriggerThreshold);
+        if (Number.isFinite(importThreshold) && currentImport > importThreshold) {
             await this._startVerificationProcess({
-                amount: events.meta.pagination.total,
+                amount: currentImport,
                 threshold: importThreshold,
                 method: 'import',
                 throwOnTrigger: false,
