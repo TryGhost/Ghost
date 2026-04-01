@@ -85,6 +85,10 @@ module.exports = {
         return apiFramework.pipeline(require('./automated-emails'), localUtils);
     },
 
+    get automatedEmailDesign() {
+        return apiFramework.pipeline(require('./automated-email-design'), localUtils);
+    },
+
     get membersStripeConnect() {
         return apiFramework.pipeline(require('./members-stripe-connect'), localUtils);
     },
