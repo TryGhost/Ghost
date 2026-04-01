@@ -1001,6 +1001,32 @@ export function isRecentMember({member}) {
     return diffHours < 24;
 }
 
+export function getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval}) {
+    if (selectedInterval === 'month' && portalPlans.includes('monthly')) {
+        return 'month';
+    }
+
+    if (selectedInterval === 'year' && portalPlans.includes('yearly')) {
+        return 'year';
+    }
+
+    if (portalDefaultPlan) {
+        if (portalDefaultPlan === 'monthly' && portalPlans.includes('monthly')) {
+            return 'month';
+        }
+    }
+
+    if (portalPlans.includes('yearly')) {
+        return 'year';
+    }
+
+    if (portalPlans.includes('monthly')) {
+        return 'month';
+    }
+
+    return undefined;
+}
+
 // Translate cadence to human readable string
 export function translateCadence(cadence) {
     if (cadence === 'month') {
