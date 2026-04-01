@@ -306,10 +306,10 @@ describe('Acceptance: Members Test', function () {
             await visit('/members?filter=status%3Afree');
             await click('[data-test-button="members-actions"]');
 
-            expect(find('[data-test-button="export-members"]')).to.have.text('Export selected members (1,000)');
-            expect(find('[data-test-button="add-label-selected"]')).to.have.text('Add label for selected members (1,000)');
-            expect(find('[data-test-button="remove-label-selected"]')).to.have.text('Remove label from selected members (1,000)');
-            expect(find('[data-test-button="delete-selected"]')).to.have.text('Delete selected members (1,000)');
+            expect(find('[data-test-button="export-members"] span')).to.have.text('Export selected members (1,000)');
+            expect(find('[data-test-button="add-label-selected"] span')).to.have.text('Add label for selected members (1,000)');
+            expect(find('[data-test-button="remove-label-selected"] span')).to.have.text('Remove label from selected members (1,000)');
+            expect(find('[data-test-button="delete-selected"] span')).to.have.text('Delete selected members (1,000)');
         });
 
         it('can delete a member (via list)', async function () {
