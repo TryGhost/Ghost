@@ -1,33 +1,50 @@
-name: Release CI
-run-name: "Release CI — ${{ github.ref_name }}"
+name: Release
+run-name: "Release — ${{ inputs.bump-type || 'auto' }} from ${{ inputs.branch || 'main' }}${{ inputs.dry-run && ' (dry run)' || '' }}"
 
 on:
-  push:
-    tags: ['v[0-9]*']
+  # schedule:
+  #   - cron: '0 15 * * 5' # Friday 3pm UTC — disabled until cutover from Ghost-Release (BER-3313)
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Git branch to release from'
+        type: string
+        default: 'main'
+        required: false
+      bump-type:
+        description: 'Version bump type (auto, patch, minor)'
+        type: string
+        required: false
+        default: 'auto'
+      skip-checks:
+        description: 'Skip CI status check verification'
+        type: boolean
+        default: false
+      dry-run:
+        description: 'Dry run (version bump without push)'
+        type: boolean
+        default: false
 
 env:
   FORCE_COLOR: 1
-  HEAD_COMMIT: ${{ github.sha }}
-  CACHED_DEPENDENCY_PATHS: |
-    ${{ github.workspace }}/node_modules
-    ${{ github.workspace }}/apps/*/node_modules
-    ${{ github.workspace }}/ghost/*/node_modules
-    ${{ github.workspace }}/e2e/node_modules
-    ~/.cache/ms-playwright/
-  NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
   NODE_VERSION: 22.18.0
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
-  build:
-    name: Build & Push Release Images
+  release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+    name: Prepare & Push Release
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
+          # PAT is required so that the tag push triggers ci.yml
+          # (pushes made with GITHUB_TOKEN don't trigger downstream workflows)
+          token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          ref: ${{ inputs.branch || 'main' }}
+          fetch-depth: 0
           submodules: true
 
       - uses: actions/setup-node@v4
@@ -36,121 +53,49 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: dep-cache-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
-
-      - name: Verify tag matches package.json
+      - name: Set up Git
         run: |
-          PKG_VERSION=$(node -p "require('./package.json').version")
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
-          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
-            echo "::error::Tag ${GITHUB_REF_NAME} doesn't match package.json version ${PKG_VERSION}"
-            exit 1
+          git config user.name "Ghost CI"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Set up schedule defaults
+        if: github.event_name == 'schedule'
+        run: |
+          echo "RELEASE_BRANCH=main" >> "$GITHUB_ENV"
+          echo "RELEASE_BUMP_TYPE=auto" >> "$GITHUB_ENV"
+          echo "RELEASE_DRY_RUN=" >> "$GITHUB_ENV"
+          echo "RELEASE_SKIP_CHECKS=" >> "$GITHUB_ENV"
+
+      - name: Set up workflow_dispatch inputs
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "RELEASE_BRANCH=${INPUT_BRANCH}" >> "$GITHUB_ENV"
+          echo "RELEASE_BUMP_TYPE=${INPUT_BUMP_TYPE}" >> "$GITHUB_ENV"
+          echo "RELEASE_DRY_RUN=${INPUT_DRY_RUN}" >> "$GITHUB_ENV"
+          echo "RELEASE_SKIP_CHECKS=${INPUT_SKIP_CHECKS}" >> "$GITHUB_ENV"
+        env:
+          INPUT_BRANCH: ${{ inputs.branch }}
+          INPUT_BUMP_TYPE: ${{ inputs.bump-type }}
+          INPUT_DRY_RUN: ${{ inputs.dry-run }}
+          INPUT_SKIP_CHECKS: ${{ inputs.skip-checks }}
+
+      - name: Run release script
+        run: |
+          ARGS="--branch=${{ env.RELEASE_BRANCH }} --bump-type=${{ env.RELEASE_BUMP_TYPE }}"
+          if [ "${{ env.RELEASE_DRY_RUN }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
           fi
+          if [ "${{ env.RELEASE_SKIP_CHECKS }}" = "true" ]; then
+            ARGS="$ARGS --skip-checks"
+          fi
+          node scripts/release.js $ARGS
+        env:
+          GITHUB_TOKEN: ${{ secrets.CANARY_DOCKER_BUILD }}
 
-      - name: Build server and admin assets
-        run: yarn build:production
-
-      - name: Pack standalone distribution
-        run: yarn workspace ghost pack:standalone
-
-      - name: Prepare Docker build context
-        run: mv ghost/core/package/ /tmp/ghost-production/
-
-      - name: Upload admin artifact for CD
-        id: upload-admin
-        uses: actions/upload-artifact@v4
+      - name: Notify on failure
+        if: failure()
+        uses: tryghost/actions/actions/slack-build@main
         with:
-          name: admin-build-cd
-          path: apps/admin/dist
-          retention-days: 7
-          if-no-files-found: error
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Docker meta (core)
-        id: meta-core
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/tryghost/ghost-core
-          tags: |
-            type=semver,pattern=v{{version}}
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha
-          labels: |
-            org.opencontainers.image.title=Ghost Core
-            org.opencontainers.image.description=Ghost production build (server only, no admin)
-            org.opencontainers.image.vendor=TryGhost
-
-      - name: Docker meta (full)
-        id: meta-full
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/tryghost/ghost
-          tags: |
-            type=semver,pattern=v{{version}}
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha
-            type=raw,value=latest
-          labels: |
-            org.opencontainers.image.title=Ghost
-            org.opencontainers.image.description=Ghost production build (server + admin)
-            org.opencontainers.image.vendor=TryGhost
-
-      - name: Build & push core image
-        uses: docker/build-push-action@v6
-        with:
-          context: /tmp/ghost-production
-          file: Dockerfile.production
-          target: core
-          build-args: NODE_VERSION=${{ env.NODE_VERSION }}
-          push: true
-          tags: ${{ steps.meta-core.outputs.tags }}
-          labels: ${{ steps.meta-core.outputs.labels }}
-          cache-from: type=registry,ref=ghcr.io/tryghost/ghost-core:cache-main
-
-      - name: Build & push full image
-        uses: docker/build-push-action@v6
-        with:
-          context: /tmp/ghost-production
-          file: Dockerfile.production
-          target: full
-          build-args: NODE_VERSION=${{ env.NODE_VERSION }}
-          push: true
-          tags: ${{ steps.meta-full.outputs.tags }}
-          labels: ${{ steps.meta-full.outputs.labels }}
-          cache-from: type=registry,ref=ghcr.io/tryghost/ghost:cache-main
-
-    outputs:
-      admin-artifact-id: ${{ steps.upload-admin.outputs.artifact-id }}
-
-  trigger_cd:
-    needs: [build]
-    name: Trigger Pro CD
-    runs-on: ubuntu-latest
-    if: github.repository == 'TryGhost/Ghost'
-    steps:
-      - name: Dispatch to Ghost-Moya cd.yml
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.CANARY_DOCKER_BUILD }}
-          repository: TryGhost/Ghost-Moya
-          event-type: ghost-artifacts-ready
-          client-payload: >-
-            {
-              "ref": "${{ github.ref_name }}",
-              "admin_artifact_id": "${{ needs.build.outputs.admin-artifact-id }}",
-              "admin_artifact_run_id": "${{ github.run_id }}"
-            }
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
