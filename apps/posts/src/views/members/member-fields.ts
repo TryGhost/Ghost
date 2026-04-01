@@ -1,15 +1,8 @@
 import moment from 'moment-timezone';
 import {defineFields} from '../filters/filter-types';
-import {escapeNqlString} from '../filters/filter-normalization';
+import {escapeNqlString, getDayBoundsInUtc} from '../filters/filter-normalization';
 import {numberCodec, scalarCodec, setCodec, textCodec} from '../filters/filter-codecs';
 import type {FilterCodec} from '../filters/filter-types';
-
-function getDayBoundsInUtc(date: string, timezone: string): {start: string; end: string} {
-    const start = moment.tz(date, 'YYYY-MM-DD', timezone).startOf('day').utc().toISOString();
-    const end = moment.tz(date, 'YYYY-MM-DD', timezone).endOf('day').utc().toISOString();
-
-    return {start, end};
-}
 
 const TEXT_OPERATORS = ['is', 'contains', 'does-not-contain', 'starts-with', 'ends-with'] as const;
 const DATE_OPERATORS = ['is-less', 'is-or-less', 'is-greater', 'is-or-greater'] as const;

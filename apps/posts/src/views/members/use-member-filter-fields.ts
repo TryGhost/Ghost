@@ -3,6 +3,7 @@ import moment from 'moment-timezone';
 import {FilterFieldConfig, FilterFieldGroup, FilterOption, ValueSource} from '@tryghost/shade/patterns';
 import {LabelFilterRenderer} from '@src/components/label-picker';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {createOperatorOptions} from '../filters/filter-operator-options';
 import {memberFields} from './member-fields';
 import type {Offer} from '@tryghost/admin-x-framework/api/offers';
 
@@ -26,23 +27,6 @@ interface UseMemberFilterFieldsOptions {
 
 type OfferOption = FilterOption<string>;
 type SearchableFieldOverrides = Pick<FilterFieldConfig, 'options' | 'valueSource'>;
-
-interface OperatorOption {
-    value: string;
-    label: string;
-}
-
-function createOperatorOptions(
-    operators: readonly string[],
-    options: {labels?: Record<string, string>} = {}
-): OperatorOption[] {
-    const labels = options.labels || {};
-
-    return operators.map(operator => ({
-        value: operator,
-        label: labels[operator] ?? operator.replaceAll('-', ' ')
-    }));
-}
 
 const MEMBER_OPERATOR_LABELS: Record<string, string> = {
     'is-any': 'is any of',
