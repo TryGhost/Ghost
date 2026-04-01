@@ -12,6 +12,7 @@ const ALLOWED_TITLE_FONT_WEIGHTS = ['normal', 'medium', 'semibold', 'bold'];
 const ALLOWED_IMAGE_CORNERS = ['square', 'rounded'];
 
 const messages = {
+    immutableSlug: 'slug cannot be edited',
     invalidButtonCorners: `button_corners must be one of: ${ALLOWED_BUTTON_CORNERS.join(', ')}`,
     invalidButtonStyle: `button_style must be one of: ${ALLOWED_BUTTON_STYLES.join(', ')}`,
     invalidLinkStyle: `link_style must be one of: ${ALLOWED_LINK_STYLES.join(', ')}`,
@@ -32,6 +33,13 @@ const validateEmailDesignSetting = async function (frame) {
     }
 
     const data = frame.data.email_design_settings[0];
+
+    if (data.slug !== undefined) {
+        return Promise.reject(new ValidationError({
+            message: tpl(messages.immutableSlug),
+            property: 'slug'
+        }));
+    }
 
     if (data.button_corners !== undefined && !ALLOWED_BUTTON_CORNERS.includes(data.button_corners)) {
         return Promise.reject(new ValidationError({

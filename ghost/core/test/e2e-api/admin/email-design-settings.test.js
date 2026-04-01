@@ -1,4 +1,4 @@
-const {agentProvider, fixtureManager, matchers, dbUtils} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyObjectId, anyISODateTime, anyErrorId, anyEtag} = matchers;
 
 const matchEmailDesignSetting = {
@@ -247,6 +247,30 @@ describe('Email Design Settings API', function () {
                 .put(`email_design_settings/${id}`)
                 .body({email_design_settings: [{
                     image_corners: 'invalid'
+                }]})
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Rejects slug on edit', async function () {
+            const {body: browseBody} = await agent
+                .get('email_design_settings')
+                .expectStatus(200);
+
+            const id = browseBody.email_design_settings[0].id;
+
+            await agent
+                .put(`email_design_settings/${id}`)
+                .body({email_design_settings: [{
+                    slug: 'changed-slug'
                 }]})
                 .expectStatus(422)
                 .matchBodySnapshot({
