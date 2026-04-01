@@ -2,8 +2,8 @@ name: Release
 run-name: "Release — ${{ inputs.bump-type || 'auto' }} from ${{ inputs.branch || 'main' }}${{ inputs.dry-run && ' (dry run)' || '' }}"
 
 on:
-  # schedule:
-  #   - cron: '0 15 * * 5' # Friday 3pm UTC — disabled until cutover from Ghost-Release (BER-3313)
+  schedule:
+    - cron: '0 15 * * 5' # Friday 3pm UTC
   workflow_dispatch:
     inputs:
       branch:
