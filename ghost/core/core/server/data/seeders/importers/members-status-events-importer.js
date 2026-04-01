@@ -1,5 +1,4 @@
 const TableImporter = require('./table-importer');
-const {faker} = require('@faker-js/faker');
 const dateToDatabaseString = require('../utils/database-date');
 
 class MembersStatusEventsImporter extends TableImporter {
@@ -41,7 +40,7 @@ class MembersStatusEventsImporter extends TableImporter {
                 member_id: model.id,
                 from_status: 'free',
                 to_status: model.status,
-                created_at: dateToDatabaseString(faker.date.between(new Date(model.created_at), new Date()))
+                created_at: dateToDatabaseString(dateToDatabaseString.randomBetween(model.created_at, new Date()))
             });
         }
     }
