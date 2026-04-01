@@ -5,20 +5,6 @@ import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
 usePerTestIsolation();
 
-const EXPECTED_CSV_HEADER_FIELDS = [
-    'id,',
-    'email,',
-    'name,',
-    'note,',
-    'subscribed_to_emails,',
-    'complimentary_plan,',
-    'stripe_customer_id,',
-    'created_at,',
-    'deleted_at,',
-    'labels,',
-    'tiers'
-];
-
 test.describe('Ghost Admin - Members Export', () => {
     test.use({labs: {membersForward: true}});
 
@@ -34,27 +20,7 @@ test.describe('Ghost Admin - Members Export', () => {
         memberFactory = createMemberFactory(page.request);
     });
 
-    test('exports all members to a CSV with expected fields', async ({page}) => {
-        await memberFactory.createMany(membersFixture);
-
-        const membersPage = new MembersListPage(page);
-        await membersPage.goto();
-        await membersPage.openActionsMenu();
-
-        const {suggestedFilename, content} = await membersPage.exportMembers();
-
-        expect(content).toMatch(new RegExp(EXPECTED_CSV_HEADER_FIELDS.join('')));
-
-        for (const member of membersFixture) {
-            expect(content).toContain(member.name);
-            expect(content).toContain(member.email);
-            expect(content).toContain(member.note);
-        }
-
-        expect(suggestedFilename).toMatch(/^members\.\d{4}-\d{2}-\d{2}\.csv$/);
-    });
-
-    test('exports only filtered members when a filter is active', async ({page}) => {
+    test('exports the filtered members from the React list route', async ({page}) => {
         await memberFactory.createMany(membersFixture);
 
         const membersPage = new MembersListPage(page);

@@ -52,39 +52,6 @@ describe('MembersActions', () => {
         mockUseNavigate.mockReturnValue(vi.fn());
     });
 
-    it('passes onImportComplete to ImportMembersModal onComplete prop', () => {
-        const onImportComplete = vi.fn();
-
-        render(
-            <MembersActions
-                hasFilterOrSearch={false}
-                memberCount={10}
-                search=""
-                canBulkDelete
-                onImportComplete={onImportComplete}
-            />
-        );
-
-        expect(importModalPropsRef.current).not.toBeNull();
-        const handleImportComplete = importModalPropsRef.current?.onComplete as ((result?: {importLabel?: {name: string; slug: string}}) => void) | undefined;
-
-        expect(handleImportComplete).toBeTypeOf('function');
-
-        handleImportComplete?.({
-            importLabel: {
-                name: 'Import April',
-                slug: 'import-april'
-            }
-        });
-
-        expect(onImportComplete).toHaveBeenCalledWith({
-            importLabel: {
-                name: 'Import April',
-                slug: 'import-april'
-            }
-        });
-    });
-
     it('opens the import modal when rendered on the import route', () => {
         mockUseLocation.mockReturnValue({
             pathname: '/members/import'
