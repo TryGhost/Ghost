@@ -22,7 +22,7 @@ const MembersHeader: React.FC<MembersHeaderProps> = ({
                 <ListHeader.Title>
                     Members{' '}
                     {!isLoading && (
-                        <ListHeader.Count>
+                        <ListHeader.Count className="hidden sm:inline">
                             {totalMembers.toLocaleString()}
                         </ListHeader.Count>
                     )}

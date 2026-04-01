@@ -1,6 +1,6 @@
 import ManageViewPopover from './manage-view-popover';
 import React, {useCallback, useMemo} from 'react';
-import {Button, Filter, Filters, LucideIcon} from '@tryghost/shade';
+import {Button, Filter, Filters, LucideIcon, cn} from '@tryghost/shade';
 import {
     buildOfferOptions,
     fromOfferFilterDisplayValues,
@@ -117,6 +117,10 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 
     const hasFilters = filters.length > 0;
     const showIconOnlyTrigger = iconOnly && !hasFilters;
+    const addFilterButtonClassName = cn(
+        'bg-white dark:bg-gray-950',
+        showIconOnlyTrigger && 'min-w-[34px] gap-0 px-2 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-sm !px-3'
+    );
 
     const clearAndSaveButtons = hasFilters ? (
         <div className="flex shrink-0 items-center gap-4 sm:absolute sm:top-0 sm:right-0">
@@ -142,7 +146,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 
     return (
         <Filters
-            addButtonClassName={showIconOnlyTrigger ? 'min-w-[34px] gap-0 px-2 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-sm !px-3' : undefined}
+            addButtonClassName={addFilterButtonClassName}
             addButtonIcon={hasFilters ? <LucideIcon.FunnelPlus /> : <LucideIcon.Funnel />}
             addButtonText={hasFilters ? 'Add filter' : 'Filter'}
             allowMultiple={true}
