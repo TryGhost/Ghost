@@ -17,6 +17,7 @@ Object {
       "emailUniqueid": true,
       "explore": true,
       "featurebaseFeedback": true,
+      "giftSubscriptions": true,
       "importMemberTier": true,
       "indexnow": true,
       "lexicalIndicators": true,
