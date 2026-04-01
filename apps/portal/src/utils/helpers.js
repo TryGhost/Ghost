@@ -252,6 +252,10 @@ export function hasRecommendations({site}) {
     return site?.recommendations_enabled === true;
 }
 
+export function hasGiftSubscriptions({site}) {
+    return site?.labs?.giftSubscriptions === true;
+}
+
 export function isSigninAllowed({site}) {
     return site?.members_signup_access !== 'none';
 }

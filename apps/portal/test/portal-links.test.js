@@ -344,6 +344,41 @@ describe('Portal Data links:', () => {
         });
     });
 
+    describe('#/portal/gift', () => {
+        test('opens gift page when giftSubscriptions labs flag is enabled', async () => {
+            window.location.hash = '#/portal/gift';
+
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}},
+                showPopup: false
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+
+            const giftTitle = within(popupFrame.contentDocument).queryByText(/gift a subscription/i);
+            expect(giftTitle).toBeInTheDocument();
+        });
+
+        test('does not open when giftSubscriptions labs flag is disabled', async () => {
+            window.location.hash = '#/portal/gift';
+
+            let {
+                popupFrame, triggerButtonFrame
+            } = await setup({
+                site: {...FixtureSite.singleTier.basic, labs: {}},
+                showPopup: false
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(popupFrame).not.toBeInTheDocument();
+        });
+    });
+
     describe('unauthenticated account page access', () => {
         test.each([
             {path: 'account', label: 'account'},
