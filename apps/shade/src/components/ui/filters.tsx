@@ -605,8 +605,12 @@ function FilterInput<T = unknown>({
                 <input
                     aria-describedby={!isValid && validationMessage ? `${field?.key || 'input'}-error` : undefined}
                     aria-invalid={!isValid}
+                    autoComplete="off"
                     className="w-full bg-transparent outline-hidden dark:!bg-transparent"
+                    data-form-type="other"
+                    data-lpignore="true"
                     data-slot="filters-input"
+                    data-1p-ignore
                     onBlur={handleBlur}
                     onChange={handleChange}
                     onKeyDown={handleKeyDown}
