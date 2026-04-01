@@ -90,7 +90,9 @@ export function createRemoteValueSource<Item, T = string>(
                 return mergeFilterOptions(hydratedOptions, visibleOptions);
             }, [hydratedOptions, visibleOptions]);
             const fallbackOptions = useMemo(() => {
-                if (!config.getMissingSelectedOption) {
+                const getMissingSelectedOption = config.getMissingSelectedOption;
+
+                if (!getMissingSelectedOption) {
                     return [];
                 }
 
@@ -101,7 +103,7 @@ export function createRemoteValueSource<Item, T = string>(
                         return [];
                     }
 
-                    return [config.getMissingSelectedOption(selectedValue)];
+                    return [getMissingSelectedOption(selectedValue)];
                 });
             }, [mergedOptions, selectedValues]);
 

@@ -22,7 +22,7 @@ vi.mock('@tryghost/admin-x-framework/api/settings', () => ({
 }));
 
 vi.mock('@src/utils/get-site-timezone', () => ({
-    getSiteTimezone: (...args: Array<Array<{key: string; value: unknown}>>) => getSiteTimezoneMock(...args)
+    getSiteTimezone: (settings: Array<{key: string; value: unknown}>) => getSiteTimezoneMock(settings)
 }));
 
 vi.mock('@views/comments/components/comments-layout', () => ({
