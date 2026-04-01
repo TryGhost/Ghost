@@ -189,7 +189,7 @@ export const memberFields = defineFields({
             type: 'text',
             placeholder: 'Enter email...',
             defaultOperator: 'contains',
-            className: 'w-64'
+            className: 'w-48'
         },
         codec: textCodec()
     },

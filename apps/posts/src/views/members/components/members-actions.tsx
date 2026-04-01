@@ -244,8 +244,9 @@ const MembersActions: React.FC<MembersActionsProps> = ({
 
             {/* New Member Button - styled like Tags */}
             <Button asChild>
-                <a className="font-bold" href="#/members/new">
-                    New member
+                <a aria-label="New member" className="inline-flex items-center gap-2 font-bold" href="#/members/new">
+                    <LucideIcon.Plus className="size-4" />
+                    <span className="hidden sm:inline">New member</span>
                 </a>
             </Button>
 
