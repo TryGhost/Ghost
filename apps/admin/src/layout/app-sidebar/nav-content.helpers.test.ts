@@ -1,15 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {getMembersNavActiveRoutes, isMembersNavActive} from './nav-content.helpers';
-
-describe('getMembersNavActiveRoutes', () => {
-    it('returns only the members routes that are still Ember-owned', () => {
-        expect(getMembersNavActiveRoutes()).toEqual([
-            'members',
-            'member',
-            'member.new'
-        ]);
-    });
-});
+import {isMembersNavActive} from './nav-content.helpers';
 
 describe('isMembersNavActive', () => {
     it('uses the legacy route active state when the feature flag is disabled', () => {

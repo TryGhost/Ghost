@@ -1,7 +1,3 @@
-export function getMembersNavActiveRoutes(): string[] {
-    return ['members', 'member', 'member.new'];
-}
-
 export function isMembersNavActive({
     membersForwardEnabled,
     isOnMembersRoute,

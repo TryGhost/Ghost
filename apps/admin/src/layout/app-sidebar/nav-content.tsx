@@ -11,10 +11,12 @@ import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
 import { NavCustomViews } from "./nav-custom-views";
 import { NavMemberViews } from "./nav-member-views";
 import { useMemberSidebarViews } from "./member-sidebar-views";
-import { getMembersNavActiveRoutes, isMembersNavActive } from "./nav-content.helpers";
+import { isMembersNavActive } from "./nav-content.helpers";
 import { useCustomSidebarViews } from "./use-custom-sidebar-views";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
+
+const LEGACY_MEMBERS_ACTIVE_ROUTES = ['members', 'member', 'member.new'];
 
 function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
     return (
@@ -94,7 +96,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
         isOnMembersRoute,
         hasActiveMemberView,
         isMembersExpanded: membersExpanded,
-        isLegacyMembersRouteActive: routing.isRouteActive(getMembersNavActiveRoutes())
+        isLegacyMembersRouteActive: routing.isRouteActive(LEGACY_MEMBERS_ACTIVE_ROUTES)
     });
     const postsRoute = routing.getRouteUrl('posts');
     const isPostsRouteActive = routing.isRouteActive('posts');
