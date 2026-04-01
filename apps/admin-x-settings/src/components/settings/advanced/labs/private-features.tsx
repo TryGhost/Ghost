@@ -67,6 +67,10 @@ const features: Feature[] = [{
     title: 'Smarter Counts',
     description: 'Use optimized COUNT queries for API pagination when safe',
     flag: 'smarterCounts'
+}, {
+    title: 'Gift Subscriptions',
+    description: 'Allow site visitors to purchase gift subscriptions for others',
+    flag: 'giftSubscriptions'
 }];
 
 const AlphaFeatures: React.FC = () => {
