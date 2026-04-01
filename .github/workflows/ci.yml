@@ -738,11 +738,6 @@ jobs:
         image: tinybirdco/tinybird-local:latest
         ports:
           - 7181:7181
-    env:
-      TINYBIRD_HOST: ${{ secrets.TINYBIRD_HOST }}
-      TINYBIRD_TOKEN: ${{ secrets.TINYBIRD_TOKEN }}
-      TINYBIRD_HOST_STAGING: ${{ secrets.TINYBIRD_HOST_STAGING }}
-      TINYBIRD_TOKEN_STAGING: ${{ secrets.TINYBIRD_TOKEN_STAGING }}
     steps:
       - uses: actions/checkout@v6
       - name: Install Tinybird CLI
@@ -751,10 +746,51 @@ jobs:
         run: tb build
       - name: Test project
         run: tb test run
-      - name: Deployment check - Staging
-        run: tb --cloud --host ${{ env.TINYBIRD_HOST_STAGING }} --token ${{ env.TINYBIRD_TOKEN_STAGING }} deploy --check
-      - name: Deployment check - Production
-        run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deploy --check
+      - name: Trigger and watch traffic analytics infra Tinybird workflow
+        if: github.repository == 'TryGhost/Ghost'
+        env:
+          GH_TOKEN: ${{ secrets.TRAFFIC_ANALYTICS_GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          REPO="TryGhost/traffic-analytics-infra"
+          WORKFLOW="tinybird.yml"
+          BRANCH="main"
+          DISPATCHED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          gh workflow run "$WORKFLOW" \
+            --repo "$REPO" \
+            --ref "$BRANCH" \
+            -f ghost_ref='${{ github.ref }}' \
+            -f run_local_tests='false'
+
+          RUN_ID=""
+          RUN_URL=""
+
+          for attempt in {1..30}; do
+            RUN_ID=$(gh run list \
+              --repo "$REPO" \
+              --workflow "$WORKFLOW" \
+              --branch "$BRANCH" \
+              --event workflow_dispatch \
+              --json databaseId,createdAt,url \
+              --jq 'map(select(.createdAt >= "'"$DISPATCHED_AT"'")) | sort_by(.createdAt) | last | .databaseId // empty')
+
+            if [ -n "$RUN_ID" ]; then
+              RUN_URL=$(gh run view "$RUN_ID" --repo "$REPO" --json url --jq '.url')
+              break
+            fi
+
+            sleep 5
+          done
+
+          if [ -z "$RUN_ID" ]; then
+            echo "::error::Unable to find the triggered workflow run in $REPO"
+            exit 1
+          fi
+
+          echo "Watching remote workflow run: $RUN_URL"
+          gh run watch "$RUN_ID" --repo "$REPO" --exit-status
 
   job_ghost-cli:
     name: Ghost-CLI tests
