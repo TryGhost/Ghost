@@ -7,7 +7,6 @@ import React, {useCallback} from 'react';
 import {Button, EmptyIndicator, LoadingIndicator, LucideIcon, createFilter} from '@tryghost/shade';
 import {useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
 import {useFilterState} from './hooks/use-filter-state';
-import {useKnownFilterValues} from './hooks/use-known-filter-values';
 
 const Comments: React.FC = () => {
     const {filters, nql, setFilters, clearFilters, isSingleIdFilter} = useFilterState();
@@ -32,9 +31,6 @@ const Comments: React.FC = () => {
         searchParams: nql ? {filter: nql} : {},
         keepPreviousData: true
     });
-
-    const {knownPosts, knownMembers} = useKnownFilterValues({comments: data?.comments ?? []});
-
     // If we are fetching comments, but not fetching the next page and not refetching, we should show the loading indicator
     const shouldShowLoading = isFetching && !isFetchingNextPage && !isRefetching;
 
@@ -44,8 +40,6 @@ const Comments: React.FC = () => {
                 {!isSingleIdFilter && (
                     <CommentsFilters
                         filters={filters}
-                        knownMembers={knownMembers}
-                        knownPosts={knownPosts}
                         onFiltersChange={setFilters}
                     />
                 )}
@@ -83,6 +77,7 @@ const Comments: React.FC = () => {
                             isFetchingNextPage={isFetchingNextPage}
                             isLoading={isFetching && !isFetchingNextPage}
                             items={data?.comments ?? []}
+                            resetKey={nql ?? ''}
                             totalItems={data?.meta?.pagination?.total ?? 0}
                             onAddFilter={handleAddFilter}
                         />

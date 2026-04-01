@@ -12,11 +12,16 @@ const processOutbox = require('../../../core/server/services/outbox/jobs/lib/pro
 describe('Member Welcome Emails Integration', function () {
     let membersService;
     let defaultNewsletterSenderState = null;
+    let defaultEmailDesignSettingId;
 
     before(async function () {
         await testUtils.setup('default')();
         membersService = require('../../../core/server/services/members');
         membersService.init();
+        defaultEmailDesignSettingId = await db.knex('email_design_settings')
+            .where('slug', 'default-automated-email')
+            .first('id')
+            .then(row => row.id);
     });
 
     beforeEach(async function () {
@@ -51,6 +56,7 @@ describe('Member Welcome Emails Integration', function () {
 
         await db.knex('automated_emails').insert({
             id: ObjectId().toHexString(),
+            email_design_setting_id: defaultEmailDesignSettingId,
             status: 'active',
             name: 'Free Member Welcome Email',
             slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
@@ -61,6 +67,7 @@ describe('Member Welcome Emails Integration', function () {
 
         await db.knex('automated_emails').insert({
             id: ObjectId().toHexString(),
+            email_design_setting_id: defaultEmailDesignSettingId,
             status: 'active',
             name: 'Paid Member Welcome Email',
             slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,

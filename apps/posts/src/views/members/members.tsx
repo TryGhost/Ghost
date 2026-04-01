@@ -5,7 +5,7 @@ import MembersHeader from './components/members-header';
 import MembersHeaderSearch from './components/members-header-search';
 import MembersLayout from './components/members-layout';
 import MembersList from './components/members-list';
-import React, {useMemo} from 'react';
+import React, {useMemo, useRef} from 'react';
 import {Button, EmptyIndicator, Header, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
 import {buildMemberListSearchParams, getMemberActiveColumns} from './member-query-params';
 import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
@@ -18,25 +18,22 @@ import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useSearchParams} from 'react-router';
 
 const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
+    const headerRef = useRef<HTMLElement>(null);
     const {filters, nql, search, setFilters, setSearch, hasFilterOrSearch, clearAll} = useMembersFilterState(timezone);
     const {data: configData} = useBrowseConfig();
     const savedViews = useMemberViews();
     const activeView = useActiveMemberView(savedViews, nql);
 
-    // Check if email analytics is enabled
     const emailAnalyticsEnabled = configData?.config?.emailAnalytics === true;
 
-    // Extract active columns from filters (max 2)
     const activeColumns = useMemo(() => {
         return getMemberActiveColumns(filters);
     }, [filters]);
 
-    // Check if bulk delete is permitted (not allowed if subscription filters are active)
     const canBulkDelete = useMemo(() => {
         return canBulkDeleteMembers(filters, nql);
     }, [filters, nql]);
 
-    // Build search params for the API query, merging with defaults so we don't lose include/limit/order
     const searchParams = useMemo(() => {
         return buildMemberListSearchParams({
             filters,
@@ -65,8 +62,6 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
 
     const totalMembers = data?.meta?.pagination?.total ?? 0;
     const hasFilters = filters.length > 0;
-
-    // Position filters: inline with actions when no filters, full width row below when filters active
     const filtersClassName = cn(
         'flex flex-row',
         !hasFilters && 'items-center gap-2',
@@ -76,17 +71,16 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
     return (
         <MembersLayout>
             <MembersHeader
+                ref={headerRef}
                 isLoading={shouldShowLoading}
                 totalMembers={totalMembers}
             >
-                {/* Actions - always inline in the actions area */}
                 <Header.Actions>
                     <Header.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
                         <MembersHeaderSearch
                             search={search}
                             onSearchChange={setSearch}
                         />
-                        {/* When no filters, show filter button inline with other actions */}
                         {!hasFilters && (
                             <MembersFilters
                                 activeView={activeView}
@@ -109,7 +103,6 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                     </Header.ActionGroup>
                 </Header.Actions>
 
-                {/* When filters are active, show them in a row below */}
                 {hasFilters && (
                     <div className={filtersClassName}>
                         <MembersFilters
@@ -168,6 +161,7 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                         isFetchingNextPage={isFetchingNextPage}
                         isLoading={isFetching && !isFetchingNextPage}
                         items={data.members}
+                        pageHeaderRef={headerRef}
                         showEmailOpenRate={emailAnalyticsEnabled}
                         timezone={timezone}
                         totalItems={totalMembers}

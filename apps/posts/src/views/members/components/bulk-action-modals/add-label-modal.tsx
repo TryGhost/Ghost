@@ -63,10 +63,13 @@ export function AddLabelModal({
                     isDuplicateName={picker.isDuplicateName}
                     isLoading={picker.isLoading}
                     labels={picker.labels}
-                    selectedSlugs={picker.selectedSlugs}
+                    resolvedSelectedLabels={picker.resolvedSelectedLabels}
+                    searchValue={picker.searchValue}
+                    selectedSlugs={selectedSlugs}
                     onCreate={picker.createLabel}
                     onDelete={picker.deleteLabel}
                     onEdit={picker.editLabel}
+                    onSearchChange={picker.onSearchChange}
                     onToggle={picker.toggleLabel}
                 />
 

@@ -7,13 +7,13 @@ interface MembersHeaderProps {
     isLoading: boolean;
 }
 
-const MembersHeader: React.FC<MembersHeaderProps> = ({
+const MembersHeader = React.forwardRef<HTMLElement, MembersHeaderProps>(function MembersHeader({
     children,
     totalMembers,
     isLoading
-}) => {
+}, ref) {
     return (
-        <Header className="relative pb-6! md:sticky" variant="inline-nav">
+        <Header ref={ref} className="relative pb-6! md:sticky" variant="inline-nav">
             <Header.Title>
                 Members{' '}
                 {!isLoading && (
@@ -25,6 +25,6 @@ const MembersHeader: React.FC<MembersHeaderProps> = ({
             {children}
         </Header>
     );
-};
+});
 
 export default MembersHeader;

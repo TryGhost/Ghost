@@ -33,6 +33,7 @@ export interface FilterI18nConfig {
     noFieldsFound: string;
     noResultsFound: string;
     loading: string;
+    loadMore: string;
     select: string;
     true: string;
     false: string;
@@ -109,6 +110,7 @@ export const DEFAULT_I18N: FilterI18nConfig = {
     noFieldsFound: 'No fields found.',
     noResultsFound: 'No results found.',
     loading: 'Loading...',
+    loadMore: 'Load more',
     select: 'Select...',
     true: 'True',
     false: 'False',
@@ -212,6 +214,8 @@ const FilterContext = createContext<FilterContextValue>({
 });
 
 const useFilterContext = () => useContext(FilterContext);
+
+const SEARCH_RESET_DELAY_MS = 200;
 
 // Reusable input variant component for consistent styling
 const filterInputVariants = cva(
@@ -695,6 +699,27 @@ export interface FilterFieldGroup<T = unknown> {
 // Union type for both flat and grouped field configurations
 export type FilterFieldsConfig<T = unknown> = FilterFieldConfig<T>[] | FilterFieldGroup<T>[];
 
+export interface ValueSourceParams<T = string> {
+    query: string;
+    selectedValues: T[];
+}
+
+export interface ValueSourceState<T = string> {
+    options: FilterOption<T>[];
+    isInitialLoad: boolean;
+    isSearching: boolean;
+    isLoadingMore: boolean;
+    hasMore: boolean;
+    loadMore: () => void;
+}
+
+export type ValueSourceResult<T = string> = ValueSourceState<T>;
+
+export interface ValueSource<T = string> {
+    readonly id: string;
+    useOptions(params: ValueSourceParams<T>): ValueSourceResult<T>;
+}
+
 export interface FilterFieldConfig<T = unknown> {
     key?: string;
     label?: string;
@@ -720,6 +745,7 @@ export interface FilterFieldConfig<T = unknown> {
     fields?: FilterFieldConfig<T>[];
     // Field-specific options
     options?: FilterOption<T>[];
+    isLoading?: boolean;
     operators?: FilterOperator[];
     customRenderer?: (props: CustomRendererProps<T>) => React.ReactNode;
     customValueRenderer?: (values: T[], options: FilterOption<T>[]) => React.ReactNode;
@@ -745,12 +771,8 @@ export interface FilterFieldConfig<T = unknown> {
     offLabel?: string;
     // Input event handlers
     onInputChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    // Search event handler for select/multiselect fields
-    onSearchChange?: (searchTerm: string) => void;
-    // Controlled search value for select/multiselect fields
-    searchValue?: string;
-    // Shows loading indicator in the dropdown
-    isLoading?: boolean;
+    // Value source for select/multiselect fields
+    valueSource?: ValueSource<string>;
     // Default operator to use when creating a filter for this field
     defaultOperator?: string;
     // Default value to use when creating a filter for this field
@@ -763,6 +785,8 @@ export interface FilterFieldConfig<T = unknown> {
     // Auto-close dropdown after selection (even for multiselect types)
     autoCloseOnSelect?: boolean;
 }
+
+export type FieldSpec<T = unknown> = FilterFieldConfig<T>;
 
 // Helper functions to handle both flat and grouped field configurations
 const isFieldGroup = <T = unknown,>(item: FilterFieldConfig<T> | FilterFieldGroup<T>): item is FilterFieldGroup<T> => {
@@ -1000,28 +1024,187 @@ interface SelectOptionsPopoverProps<T = unknown> {
     inline?: boolean;
 }
 
-function SelectOptionsPopover<T = unknown>({
+interface ResolvedSelectOptionsPopoverProps<T = unknown> extends SelectOptionsPopoverProps<T> {
+    searchInput: string;
+    onSearchChange: (value: string) => void;
+    shouldClientFilter: boolean;
+    isInitialLoad: boolean;
+    isSearching: boolean;
+    isLoadingMore: boolean;
+    hasMore: boolean;
+    onLoadMore: () => void;
+}
+
+interface SelectOptionsSearchInputProps {
+    searchable: boolean;
+    label?: string;
+    searchInput: string;
+    isSearching: boolean;
+    className: string;
+    onSearchChange: (value: string) => void;
+}
+
+function SelectOptionsSearchInput({
+    searchable,
+    label,
+    searchInput,
+    isSearching,
+    className,
+    onSearchChange
+}: Readonly<SelectOptionsSearchInputProps>) {
+    const context = useFilterContext();
+
+    if (!searchable) {
+        return null;
+    }
+
+    return (
+        <div className="relative">
+            <CommandInput
+                className={className}
+                placeholder={context.i18n.placeholders.searchField(label || '')}
+                value={searchInput}
+                onValueChange={onSearchChange}
+            />
+            {isSearching && (
+                <Loader2 className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+            )}
+        </div>
+    );
+}
+
+function filterOptionsBySearchInput<T = unknown>(options: FilterOption<T>[], searchInput: string): FilterOption<T>[] {
+    const normalizedSearch = searchInput.trim().toLowerCase();
+
+    if (!normalizedSearch) {
+        return options;
+    }
+
+    return options.filter((option) => {
+        return option.label.toLowerCase().includes(normalizedSearch) ||
+            option.detail?.toLowerCase().includes(normalizedSearch);
+    });
+}
+
+interface SelectOptionsListProps<T = unknown> {
+    contextLabel?: string;
+    selectedOptions: FilterOption<T>[];
+    unselectedOptions: FilterOption<T>[];
+    isInitialLoad: boolean;
+    isLoadingMore: boolean;
+    hasMore: boolean;
+    onLoadMore: () => void;
+    onSelectSelected: (option: FilterOption<T>) => void;
+    onSelectUnselected: (option: FilterOption<T>) => void;
+}
+
+function SelectOptionsList<T = unknown>({
+    contextLabel,
+    selectedOptions,
+    unselectedOptions,
+    isInitialLoad,
+    isLoadingMore,
+    hasMore,
+    onLoadMore,
+    onSelectSelected,
+    onSelectUnselected
+}: Readonly<SelectOptionsListProps<T>>) {
+    const context = useFilterContext();
+
+    return (
+        <CommandList className="outline-hidden">
+            {isInitialLoad ? (
+                <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                    <Loader2 className="mr-2 size-4 animate-spin" />
+                    {context.i18n.loading}
+                </div>
+            ) : (
+                <CommandEmpty>{context.i18n.noResultsFound}</CommandEmpty>
+            )}
+
+            {selectedOptions.length > 0 && (
+                <CommandGroup heading={contextLabel}>
+                    {selectedOptions.map(option => (
+                        <CommandItem
+                            key={String(option.value)}
+                            className="group flex items-center gap-2"
+                            onSelect={() => onSelectSelected(option)}
+                        >
+                            {option.icon && option.icon}
+                            <div className="flex flex-col overflow-hidden">
+                                <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                            </div>
+                            <Check className="ms-auto text-primary" />
+                        </CommandItem>
+                    ))}
+                </CommandGroup>
+            )}
+
+            {unselectedOptions.length > 0 && (
+                <>
+                    {selectedOptions.length > 0 && <CommandSeparator />}
+                    <CommandGroup>
+                        {unselectedOptions.map(option => (
+                            <CommandItem
+                                key={String(option.value)}
+                                className="group flex items-center gap-2"
+                                value={option.label + (option.detail ? ` - ${option.detail}` : '')}
+                                onSelect={() => onSelectUnselected(option)}
+                            >
+                                {option.icon && option.icon}
+                                <div className="flex flex-col overflow-hidden">
+                                    <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                    {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                </div>
+                                <Check className="ms-auto text-primary opacity-0" />
+                            </CommandItem>
+                        ))}
+                    </CommandGroup>
+                </>
+            )}
+            {hasMore && (
+                <>
+                    {(selectedOptions.length > 0 || unselectedOptions.length > 0) && <CommandSeparator />}
+                    <div className="p-1.5">
+                        <button
+                            className="flex w-full items-center justify-center rounded-xs px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+                            disabled={isLoadingMore}
+                            type="button"
+                            onClick={onLoadMore}
+                        >
+                            {isLoadingMore && <Loader2 className="mr-2 size-4 animate-spin" />}
+                            {isLoadingMore ? context.i18n.loading : context.i18n.loadMore}
+                        </button>
+                    </div>
+                </>
+            )}
+        </CommandList>
+    );
+}
+
+function ResolvedSelectOptionsPopover<T = unknown>({
     field,
     values,
     onChange,
     onClose,
-    inline = false
-}: SelectOptionsPopoverProps<T>) {
+    inline = false,
+    searchInput,
+    onSearchChange,
+    shouldClientFilter,
+    isInitialLoad,
+    isSearching,
+    isLoadingMore,
+    hasMore,
+    onLoadMore
+}: Readonly<ResolvedSelectOptionsPopoverProps<T>>) {
     const [open, setOpen] = useState(false);
-    const [searchInput, setSearchInput] = useState(field.searchValue || '');
     // Track selected options separately so they persist during async search
     const [cachedSelectedOptions, setCachedSelectedOptions] = useState<FilterOption<T>[]>([]);
     const context = useFilterContext();
 
-    // Sync searchInput with controlled searchValue
-    useEffect(() => {
-        if (field.searchValue !== undefined) {
-            setSearchInput(field.searchValue);
-        }
-    }, [field.searchValue]);
-
     const isMultiSelect = field.type === 'multiselect' || values.length > 1;
-    const effectiveValues = (field.value !== undefined ? (field.value as T[]) : values) || [];
+    const effectiveValues = useMemo(() => field.value ?? values, [field.value, values]);
 
     // Focus the search input when the popover opens
     useEffect(() => {
@@ -1040,8 +1223,7 @@ function SelectOptionsPopover<T = unknown>({
     // Memoize to get stable reference for useEffect dependency
     const optionsFromField = useMemo(
         () => field.options?.filter(opt => effectiveValues.includes(opt.value)) || [],
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [field.options, JSON.stringify(effectiveValues)]
+        [field.options, effectiveValues]
     );
 
     // Sync cached options when field options or selected values change
@@ -1072,22 +1254,25 @@ function SelectOptionsPopover<T = unknown>({
 
     // Use cached options for display, falling back to field options
     // This ensures selected items stay visible during async search
-    const selectedOptions = effectiveValues.length > 0
-        ? (cachedSelectedOptions.length > 0 ? cachedSelectedOptions : optionsFromField)
-        : [];
+    const selectedOptions = useMemo(() => {
+        if (effectiveValues.length === 0) {
+            return [];
+        }
+
+        return cachedSelectedOptions.length > 0 ? cachedSelectedOptions : optionsFromField;
+    }, [cachedSelectedOptions, effectiveValues.length, optionsFromField]);
+    const visibleSelectedOptions = useMemo(() => {
+        return filterOptionsBySearchInput(selectedOptions, searchInput);
+    }, [searchInput, selectedOptions]);
     const unselectedOptions = field.options?.filter(opt => !effectiveValues.includes(opt.value)) || [];
 
     const handleSearchChange = (value: string) => {
-        setSearchInput(value);
-        field.onSearchChange?.(value);
+        onSearchChange(value);
     };
 
     const handleClose = () => {
         setOpen(false);
-        // Only clear search if not controlled
-        if (field.searchValue === undefined) {
-            setTimeout(() => setSearchInput(''), 200);
-        }
+        setTimeout(() => onSearchChange(''), SEARCH_RESET_DELAY_MS);
         onClose?.();
     };
 
@@ -1095,108 +1280,63 @@ function SelectOptionsPopover<T = unknown>({
     if (inline) {
         return (
             <div className="w-full">
-                <Command>
-                    {field.searchable !== false && (
-                        <CommandInput
-                            className="h-8.5 text-sm"
-                            placeholder={context.i18n.placeholders.searchField(field.label || '')}
-                            value={searchInput}
-                            onValueChange={handleSearchChange}
-                        />
-                    )}
-                    <CommandList className="outline-hidden">
-                        {field.isLoading ? (
-                            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
-                                <Loader2 className="mr-2 size-4 animate-spin" />
-                                {context.i18n.loading}
-                            </div>
-                        ) : (
-                            <CommandEmpty>{context.i18n.noResultsFound}</CommandEmpty>
-                        )}
-
-                        {/* Selected items */}
-                        {selectedOptions.length > 0 && (
-                            <CommandGroup heading={field.label || 'Selected'}>
-                                {selectedOptions.map(option => (
-                                    <CommandItem
-                                        key={String(option.value)}
-                                        className="group flex items-center gap-2"
-                                        onSelect={() => {
-                                            if (isMultiSelect) {
-                                                const next = effectiveValues.filter(v => v !== option.value) as T[];
-                                                if (field.onValueChange) {
-                                                    field.onValueChange(next);
-                                                } else {
-                                                    onChange(next);
-                                                }
-                                            } else {
-                                                if (field.onValueChange) {
-                                                    field.onValueChange([] as T[]);
-                                                } else {
-                                                    onChange([] as T[]);
-                                                }
-                                            }
-                                        }}
-                                    >
-                                        {option.icon && option.icon}
-                                        <div className="flex flex-col overflow-hidden">
-                                            <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
-                                            {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
-                                        </div>
-                                        <Check className="ms-auto text-primary" />
-                                    </CommandItem>
-                                ))}
-                            </CommandGroup>
-                        )}
-
-                        {/* Available items */}
-                        {unselectedOptions.length > 0 && (
-                            <>
-                                {selectedOptions.length > 0 && <CommandSeparator />}
-                                <CommandGroup>
-                                    {unselectedOptions.map(option => (
-                                        <CommandItem
-                                            key={String(option.value)}
-                                            className="group flex items-center gap-2"
-                                            value={option.label + (option.detail ? ` - ${option.detail}` : '')}
-                                            onSelect={() => {
-                                                if (isMultiSelect) {
-                                                    const newValues = [...effectiveValues, option.value] as T[];
-                                                    if (field.maxSelections && newValues.length > field.maxSelections) {
-                                                        return; // Don't exceed max selections
-                                                    }
-                                                    if (field.onValueChange) {
-                                                        field.onValueChange(newValues);
-                                                    } else {
-                                                        onChange(newValues);
-                                                    }
-                                                    // Auto-close if configured
-                                                    if (field.autoCloseOnSelect) {
-                                                        onClose?.();
-                                                    }
-                                                    // For multiselect, don't close the popover to allow multiple selections
-                                                } else {
-                                                    if (field.onValueChange) {
-                                                        field.onValueChange([option.value] as T[]);
-                                                    } else {
-                                                        onChange([option.value] as T[]);
-                                                    }
-                                                    onClose?.();
-                                                }
-                                            }}
-                                        >
-                                            {option.icon && option.icon}
-                                            <div className="flex flex-col overflow-hidden">
-                                                <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
-                                                {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
-                                            </div>
-                                            <Check className="ms-auto text-primary opacity-0" />
-                                        </CommandItem>
-                                    ))}
-                                </CommandGroup>
-                            </>
-                        )}
-                    </CommandList>
+                <Command shouldFilter={shouldClientFilter}>
+                    <SelectOptionsSearchInput
+                        className="h-8.5 pr-8 text-sm"
+                        isSearching={isSearching}
+                        label={field.label}
+                        searchable={field.searchable !== false}
+                        searchInput={searchInput}
+                        onSearchChange={handleSearchChange}
+                    />
+                    <SelectOptionsList
+                        contextLabel={field.label || 'Selected'}
+                        hasMore={hasMore}
+                        isInitialLoad={isInitialLoad}
+                        isLoadingMore={isLoadingMore}
+                        selectedOptions={visibleSelectedOptions}
+                        unselectedOptions={unselectedOptions}
+                        onLoadMore={onLoadMore}
+                        onSelectSelected={(option) => {
+                            if (isMultiSelect) {
+                                const next = effectiveValues.filter(v => v !== option.value) as T[];
+                                if (field.onValueChange) {
+                                    field.onValueChange(next);
+                                } else {
+                                    onChange(next);
+                                }
+                            } else {
+                                if (field.onValueChange) {
+                                    field.onValueChange([] as T[]);
+                                } else {
+                                    onChange([] as T[]);
+                                }
+                            }
+                        }}
+                        onSelectUnselected={(option) => {
+                            if (isMultiSelect) {
+                                const newValues = [...effectiveValues, option.value] as T[];
+                                if (field.maxSelections && newValues.length > field.maxSelections) {
+                                    return;
+                                }
+                                if (field.onValueChange) {
+                                    field.onValueChange(newValues);
+                                } else {
+                                    onChange(newValues);
+                                }
+                                if (field.autoCloseOnSelect) {
+                                    onClose?.();
+                                }
+                            } else {
+                                if (field.onValueChange) {
+                                    field.onValueChange([option.value] as T[]);
+                                } else {
+                                    onChange([option.value] as T[]);
+                                }
+                                onClose?.();
+                            }
+                        }}
+                    />
                 </Command>
             </div>
         );
@@ -1207,8 +1347,8 @@ function SelectOptionsPopover<T = unknown>({
             open={open}
             onOpenChange={(isOpen) => {
                 setOpen(isOpen);
-                if (!isOpen && field.searchValue === undefined) {
-                    setTimeout(() => setSearchInput(''), 200);
+                if (!isOpen) {
+                    setTimeout(() => onSearchChange(''), SEARCH_RESET_DELAY_MS);
                 }
             }}
         >
@@ -1247,117 +1387,146 @@ function SelectOptionsPopover<T = unknown>({
                     field.className || 'w-[200px]'
                 )}
             >
-                <Command>
-                    {field.searchable !== false && (
-                        <CommandInput
-                            className="h-[34px] text-sm"
-                            placeholder={context.i18n.placeholders.searchField(field.label || '')}
-                            value={searchInput}
-                            onValueChange={handleSearchChange}
-                        />
-                    )}
-                    <CommandList className="outline-hidden">
-                        {field.isLoading ? (
-                            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
-                                <Loader2 className="mr-2 size-4 animate-spin" />
-                                {context.i18n.loading}
-                            </div>
-                        ) : (
-                            <CommandEmpty>{context.i18n.noResultsFound}</CommandEmpty>
-                        )}
-
-                        {/* Selected items */}
-                        {selectedOptions.length > 0 && (
-                            <CommandGroup>
-                                {selectedOptions.map(option => (
-                                    <CommandItem
-                                        key={String(option.value)}
-                                        className="group flex items-center gap-2"
-                                        onSelect={() => {
-                                            if (isMultiSelect) {
-                                                onChange(values.filter(v => v !== option.value) as T[]);
-                                            } else {
-                                                onChange([] as T[]);
-                                            }
-                                            if (!isMultiSelect) {
-                                                setOpen(false);
-                                                handleClose();
-                                            }
-                                        }}
-                                    >
-                                        {option.icon && option.icon}
-                                        <div className="flex flex-col overflow-hidden">
-                                            <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
-                                            {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
-                                        </div>
-                                        <Check className="ms-auto text-primary" />
-                                    </CommandItem>
-                                ))}
-                            </CommandGroup>
-                        )}
-
-                        {/* Available items */}
-                        {unselectedOptions.length > 0 && (
-                            <>
-                                {selectedOptions.length > 0 && <CommandSeparator />}
-                                <CommandGroup>
-                                    {unselectedOptions.map(option => (
-                                        <CommandItem
-                                            key={String(option.value)}
-                                            className="group flex items-center gap-2"
-                                            value={option.label + (option.detail ? ` - ${option.detail}` : '')}
-                                            onSelect={() => {
-                                                if (isMultiSelect) {
-                                                    const newValues = [...values, option.value] as T[];
-                                                    if (field.maxSelections && newValues.length > field.maxSelections) {
-                                                        return; // Don't exceed max selections
-                                                    }
-                                                    onChange(newValues);
-                                                    // Auto-close if configured
-                                                    if (field.autoCloseOnSelect) {
-                                                        handleClose();
-                                                    }
-                                                } else {
-                                                    onChange([option.value] as T[]);
-                                                    setOpen(false);
-                                                    handleClose();
-                                                }
-                                            }}
-                                        >
-                                            {option.icon && option.icon}
-                                            <div className="flex flex-col overflow-hidden">
-                                                <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
-                                                {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
-                                            </div>
-                                            <Check className="ms-auto text-primary opacity-0" />
-                                        </CommandItem>
-                                    ))}
-                                </CommandGroup>
-                            </>
-                        )}
-                    </CommandList>
+                <Command shouldFilter={shouldClientFilter}>
+                    <SelectOptionsSearchInput
+                        className="h-[34px] pr-8 text-sm"
+                        isSearching={isSearching}
+                        label={field.label}
+                        searchable={field.searchable !== false}
+                        searchInput={searchInput}
+                        onSearchChange={handleSearchChange}
+                    />
+                    <SelectOptionsList
+                        hasMore={hasMore}
+                        isInitialLoad={isInitialLoad}
+                        isLoadingMore={isLoadingMore}
+                        selectedOptions={visibleSelectedOptions}
+                        unselectedOptions={unselectedOptions}
+                        onLoadMore={onLoadMore}
+                        onSelectSelected={(option) => {
+                            if (isMultiSelect) {
+                                onChange(values.filter(v => v !== option.value) as T[]);
+                            } else {
+                                onChange([] as T[]);
+                            }
+                            if (!isMultiSelect) {
+                                setOpen(false);
+                                handleClose();
+                            }
+                        }}
+                        onSelectUnselected={(option) => {
+                            if (isMultiSelect) {
+                                const newValues = [...values, option.value] as T[];
+                                if (field.maxSelections && newValues.length > field.maxSelections) {
+                                    return;
+                                }
+                                onChange(newValues);
+                                if (field.autoCloseOnSelect) {
+                                    handleClose();
+                                }
+                            } else {
+                                onChange([option.value] as T[]);
+                                setOpen(false);
+                                handleClose();
+                            }
+                        }}
+                    />
                 </Command>
             </PopoverContent>
         </Popover>
     );
 }
 
+function ValueSourceSelectOptionsPopover<T = unknown>({
+    field,
+    values,
+    onChange,
+    onClose,
+    inline = false,
+    searchInput,
+    onSearchChange
+}: Readonly<SelectOptionsPopoverProps<T> & {
+    field: FilterFieldConfig<T> & {valueSource: ValueSource<string>};
+    searchInput: string;
+    onSearchChange: (value: string) => void;
+}>) {
+    const effectiveValues = useMemo(() => field.value ?? values, [field.value, values]);
+    const sourceState = field.valueSource.useOptions({
+        query: searchInput,
+        selectedValues: effectiveValues as string[]
+    });
+    const resolvedField = useMemo(() => ({
+        ...field,
+        options: sourceState.options as FilterOption<T>[]
+    }), [field, sourceState.options]);
+
+    return (
+        <ResolvedSelectOptionsPopover
+            field={resolvedField}
+            hasMore={sourceState.hasMore}
+            inline={inline}
+            isInitialLoad={sourceState.isInitialLoad}
+            isLoadingMore={sourceState.isLoadingMore}
+            isSearching={sourceState.isSearching}
+            searchInput={searchInput}
+            shouldClientFilter={false}
+            values={values}
+            onChange={onChange}
+            onClose={onClose}
+            onLoadMore={sourceState.loadMore}
+            onSearchChange={onSearchChange}
+        />
+    );
+}
+
+function SelectOptionsPopover<T = unknown>({
+    field,
+    values,
+    onChange,
+    onClose,
+    inline = false
+}: SelectOptionsPopoverProps<T>) {
+    const [searchInput, setSearchInput] = useState('');
+    const staticOptionsCount = field.options?.length ?? 0;
+
+    if (field.valueSource) {
+        return (
+            <ValueSourceSelectOptionsPopover
+                key={field.valueSource.id}
+                field={field as FilterFieldConfig<T> & {valueSource: ValueSource<string>}}
+                inline={inline}
+                searchInput={searchInput}
+                values={values}
+                onChange={onChange}
+                onClose={onClose}
+                onSearchChange={setSearchInput}
+            />
+        );
+    }
+
+    return (
+        <ResolvedSelectOptionsPopover
+            field={field}
+            hasMore={false}
+            inline={inline}
+            isInitialLoad={!!field.isLoading && staticOptionsCount === 0}
+            isLoadingMore={false}
+            isSearching={!!field.isLoading && staticOptionsCount > 0}
+            searchInput={searchInput}
+            shouldClientFilter={true}
+            values={values}
+            onChange={onChange}
+            onClose={onClose}
+            onLoadMore={() => {}}
+            onSearchChange={setSearchInput}
+        />
+    );
+}
+
 function FilterValueSelector<T = unknown>({field, values, onChange, operator}: FilterValueSelectorProps<T>) {
     const [open, setOpen] = useState(false);
-    const [searchInput, setSearchInput] = useState(field.searchValue || '');
+    const [searchInput, setSearchInput] = useState('');
     const context = useFilterContext();
-
-    // Sync searchInput with controlled searchValue
-    useEffect(() => {
-        if (field.searchValue !== undefined) {
-            setSearchInput(field.searchValue);
-        }
-    }, [field.searchValue]);
-
-    const handleSearchChange = (value: string) => {
-        setSearchInput(value);
-        field.onSearchChange?.(value);
-    };
 
     // Focus the search input when the popover opens
     useEffect(() => {
@@ -1676,8 +1845,8 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
             open={open}
             onOpenChange={(isOpen) => {
                 setOpen(isOpen);
-                if (!isOpen && field.searchValue === undefined) {
-                    setTimeout(() => setSearchInput(''), 200);
+                if (!isOpen) {
+                    setTimeout(() => setSearchInput(''), SEARCH_RESET_DELAY_MS);
                 }
             }}
         >
@@ -1716,18 +1885,11 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                             className="h-[34px] text-sm"
                             placeholder={context.i18n.placeholders.searchField(field.label || '')}
                             value={searchInput}
-                            onValueChange={handleSearchChange}
+                            onValueChange={setSearchInput}
                         />
                     )}
                     <CommandList className="outline-hidden">
-                        {field.isLoading ? (
-                            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
-                                <Loader2 className="mr-2 size-4 animate-spin" />
-                                {context.i18n.loading}
-                            </div>
-                        ) : (
-                            <CommandEmpty>{context.i18n.noResultsFound}</CommandEmpty>
-                        )}
+                        <CommandEmpty>{context.i18n.noResultsFound}</CommandEmpty>
 
                         {/* Selected items */}
                         {selectedOptions.length > 0 && (
@@ -2052,51 +2214,56 @@ export function Filters<T = unknown>({
         [filters, onChange]
     );
 
+    const closeFilterPopover = useCallback(() => {
+        setAddFilterOpen(false);
+        setSelectedFieldKeyForOptions(null);
+        setTempSelectedValues([]);
+    }, []);
+
     const addFilter = useCallback(
         (fieldKey: string) => {
             const field = fieldsMap[fieldKey];
-            if (field && field.key) {
-                // For select and multiselect types, show options directly
-                if (field.type === 'select' || field.type === 'multiselect') {
-                    setSelectedFieldKeyForOptions(field.key!);
-                    // For multiselect, check if there's already a filter and use its values
-                    const existingFilter = filters.find(f => f.field === fieldKey);
-                    const initialValues = field.type === 'multiselect' && existingFilter ? existingFilter.values : [];
-                    setTempSelectedValues(initialValues);
-                    return;
-                }
-
-                // For other types, add filter directly
-                const defaultOperator =
-            field.defaultOperator ||
-                (field.type === 'daterange'
-                    ? 'between'
-                    : field.type === 'numberrange'
-                        ? 'between'
-                        : field.type === 'boolean'
-                            ? 'is'
-                            : 'is');
-                let defaultValues: unknown[] = [];
-
-                if (field.defaultValue !== undefined) {
-                    defaultValues = [field.defaultValue] as unknown[];
-                } else if (['text', 'number', 'date', 'email', 'url', 'tel', 'time', 'datetime'].includes(field.type || '')) {
-                    defaultValues = [''] as unknown[];
-                } else if (field.type === 'daterange') {
-                    defaultValues = ['', ''] as unknown[];
-                } else if (field.type === 'numberrange') {
-                    defaultValues = [field.min || 0, field.max || 100] as unknown[];
-                } else if (field.type === 'boolean') {
-                    defaultValues = [false] as unknown[];
-                }
-
-                const newFilter = createFilter<T>(fieldKey, defaultOperator, defaultValues as T[]);
-                const newFilters = [...filters, newFilter];
-                onChange(newFilters);
-                setAddFilterOpen(false);
+            if (!field?.key) {
+                return;
             }
+
+            // For select and multiselect types, show the options popover
+            if (field.type === 'select' || field.type === 'multiselect') {
+                setSelectedFieldKeyForOptions(field.key);
+
+                // When editing an existing filter (single-filter mode), pre-populate with its values
+                if (!allowMultiple && field.type === 'multiselect') {
+                    const existingFilter = filters.find(f => f.field === fieldKey);
+                    setTempSelectedValues(existingFilter ? existingFilter.values : []);
+                } else {
+                    setTempSelectedValues([]);
+                }
+
+                return;
+            }
+
+            // For other types, add filter directly
+            const defaultOperator = field.defaultOperator ||
+                (field.type === 'daterange' || field.type === 'numberrange' ? 'between' : 'is');
+            let defaultValues: unknown[] = [];
+
+            if (field.defaultValue !== undefined) {
+                defaultValues = [field.defaultValue] as unknown[];
+            } else if (['text', 'number', 'date', 'email', 'url', 'tel', 'time', 'datetime'].includes(field.type || '')) {
+                defaultValues = [''] as unknown[];
+            } else if (field.type === 'daterange') {
+                defaultValues = ['', ''] as unknown[];
+            } else if (field.type === 'numberrange') {
+                defaultValues = [field.min || 0, field.max || 100] as unknown[];
+            } else if (field.type === 'boolean') {
+                defaultValues = [false] as unknown[];
+            }
+
+            const newFilter = createFilter<T>(fieldKey, defaultOperator, defaultValues as T[]);
+            onChange([...filters, newFilter]);
+            closeFilterPopover();
         },
-        [fieldsMap, filters, onChange]
+        [allowMultiple, closeFilterPopover, fieldsMap, filters, onChange]
     );
 
     const addFilterWithOption = useCallback(
@@ -2104,57 +2271,33 @@ export function Filters<T = unknown>({
             if (!field.key) {
                 return;
             }
-            // Check if this filter already exists
-            const existingFilter = filters.find(f => f.field === field.key);
-            if (existingFilter) {
-                // Update existing filter
-                const updatedFilters = filters.map(f => (
-                    f.id === existingFilter.id
-                        ? {...f, values: values as T[]}
-                        : f
-                ));
-                onChange(updatedFilters);
 
-                // Always update tempSelectedValues to keep inline multiselect in sync
-                setTempSelectedValues(values as T[]);
+            // In single-filter mode, update the existing filter for this field if one exists
+            if (!allowMultiple) {
+                const existingFilter = filters.find(f => f.field === field.key);
+                if (existingFilter) {
+                    onChange(filters.map(f => (f.id === existingFilter.id ? {...f, values: values as T[]} : f)));
+                    setTempSelectedValues(values as T[]);
 
-                if (closePopover) {
-                    setAddFilterOpen(false);
-                    setSelectedFieldKeyForOptions(null);
+                    if (closePopover) {
+                        closeFilterPopover();
+                    }
+                    return;
                 }
-                return;
             }
 
+            // Create a new filter
             const defaultOperator = field.defaultOperator || (field.type === 'multiselect' ? 'is_any_of' : 'is');
-
-            // Check if there's already a filter for this field
-            const existingFilterIndex = filters.findIndex(f => f.field === field.key);
-
-            if (existingFilterIndex >= 0) {
-                // Update existing filter
-                const updatedFilters = [...filters];
-                updatedFilters[existingFilterIndex] = {
-                    ...updatedFilters[existingFilterIndex],
-                    values: values as T[]
-                };
-                onChange(updatedFilters);
-            } else {
-                // Create new filter
-                const newFilter = createFilter<T>(field.key, defaultOperator, values as T[]);
-                const newFilters = [...filters, newFilter];
-                onChange(newFilters);
-            }
+            const newFilter = createFilter<T>(field.key, defaultOperator, values as T[]);
+            onChange([...filters, newFilter]);
 
             if (closePopover) {
-                setAddFilterOpen(false);
-                setSelectedFieldKeyForOptions(null);
-                setTempSelectedValues([]);
+                closeFilterPopover();
             } else {
-                // For multiselect, keep popover open but update temp values
                 setTempSelectedValues(values as unknown[]);
             }
         },
-        [filters, onChange]
+        [allowMultiple, closeFilterPopover, filters, onChange]
     );
 
     const selectableFields = useMemo(() => {
@@ -2287,11 +2430,7 @@ export function Filters<T = unknown>({
                                         const shouldClosePopover = selectedFieldForOptions.type === 'select';
                                         addFilterWithOption(selectedFieldForOptions, values as unknown[], shouldClosePopover);
                                     }}
-                                    onClose={() => {
-                                        setAddFilterOpen(false);
-                                        setSelectedFieldKeyForOptions(null);
-                                        setTempSelectedValues([]);
-                                    }}
+                                    onClose={closeFilterPopover}
                                 />
                             ) : (
                                 // Show field selection - needs Command wrapper for search/list

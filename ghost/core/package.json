@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.24.0",
+  "version": "6.25.0-rc.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -41,10 +41,6 @@
     "test:integration": "yarn test:base './test/integration' --timeout=10000",
     "test:e2e": "yarn test:base ./test/e2e-* --timeout=15000",
     "test:legacy": "yarn test:base './test/legacy' --timeout=60000",
-    "test:browser": "NODE_ENV=testing-browser playwright test",
-    "test:browser:admin": "NODE_ENV=testing-browser  playwright test test/e2e-browser --project=admin",
-    "test:browser:portal": "NODE_ENV=testing-browser playwright test test/e2e-browser --project=portal",
-    "test:browser:setup": "npx playwright install",
     "test:ci:e2e": "c8 -c ./.c8rc.e2e.json -o coverage-e2e yarn test:e2e -b",
     "test:ci:legacy": "yarn test:legacy -b",
     "test:ci:integration": "c8 -c ./.c8rc.e2e.json -o coverage-integration --lines 52 --functions 47 --branches 73 --statements 52 yarn test:integration -b",
@@ -226,7 +222,6 @@
   },
   "devDependencies": {
     "@actions/core": "1.11.1",
-    "@playwright/test": "1.58.2",
     "@prettier/sync": "0.6.1",
     "@tryghost/express-test": "0.15.0",
     "@tryghost/webhook-mock-receiver": "0.2.17",
@@ -329,24 +324,6 @@
             ],
             "target": "build"
           }
-        ]
-      },
-      "test:browser": {
-        "dependsOn": [
-          "build:assets",
-          "@tryghost/admin:build"
-        ]
-      },
-      "test:browser:admin": {
-        "dependsOn": [
-          "build:assets",
-          "@tryghost/admin:build"
-        ]
-      },
-      "test:browser:portal": {
-        "dependsOn": [
-          "build:assets",
-          "@tryghost/admin:build"
         ]
       }
     }

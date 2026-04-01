@@ -151,7 +151,7 @@ export const useBrowseMembersInfinite = createInfiniteQuery<MembersInfiniteRespo
     path: '/members/',
     defaultSearchParams: {
         include: 'labels,tiers',
-        limit: '50',
+        limit: '100',
         order: 'created_at desc'
     },
     defaultNextPageParams: (lastPage, otherParams) => {
