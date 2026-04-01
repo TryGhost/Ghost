@@ -185,6 +185,11 @@ module.exports = function apiRoutes() {
     router.put('/labels/:id', mw.authAdminApi, http(api.labels.edit));
     router.del('/labels/:id', mw.authAdminApi, http(api.labels.destroy));
 
+    // ## Email Design Settings
+    router.get('/email_design_settings', mw.authAdminApi, http(api.emailDesignSettings.browse));
+    router.get('/email_design_settings/:id', mw.authAdminApi, http(api.emailDesignSettings.read));
+    router.put('/email_design_settings/:id', mw.authAdminApi, http(api.emailDesignSettings.edit));
+
     // ## Automated Emails
     router.get('/automated_emails', mw.authAdminApi, http(api.automatedEmails.browse));
     router.get('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.read));

@@ -16,12 +16,20 @@ const controller = {
             cacheInvalidate: false
         },
         options: [
+            'include',
             'filter',
             'fields',
             'limit',
             'order',
             'page'
         ],
+        validation: {
+            options: {
+                include: {
+                    values: ['email_design_setting']
+                }
+            }
+        },
         permissions: true,
         query(frame) {
             return models.AutomatedEmail.findPage(frame.options);
@@ -33,12 +41,20 @@ const controller = {
             cacheInvalidate: false
         },
         options: [
+            'include',
             'filter',
             'fields'
         ],
         data: [
             'id'
         ],
+        validation: {
+            options: {
+                include: {
+                    values: ['email_design_setting']
+                }
+            }
+        },
         permissions: true,
         async query(frame) {
             const model = await models.AutomatedEmail.findOne(frame.data, frame.options);

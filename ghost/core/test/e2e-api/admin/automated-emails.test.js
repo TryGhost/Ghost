@@ -10,6 +10,17 @@ const matchAutomatedEmail = {
     updated_at: anyISODateTime
 };
 
+const matchAutomatedEmailWithDesignSetting = {
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime,
+    email_design_setting: {
+        id: anyObjectId,
+        created_at: anyISODateTime,
+        updated_at: anyISODateTime
+    }
+};
+
 describe('Automated Emails API', function () {
     let agent;
 
@@ -65,6 +76,21 @@ describe('Automated Emails API', function () {
                     etag: anyEtag
                 });
         });
+
+        it('Can browse automated emails with email_design_setting included', async function () {
+            await createAutomatedEmail();
+
+            await agent
+                .get('automated_emails?include=email_design_setting')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    automated_emails: [matchAutomatedEmailWithDesignSetting]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
     });
 
     describe('Read', function () {
@@ -78,6 +104,23 @@ describe('Automated Emails API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot({
                     automated_emails: [matchAutomatedEmail]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Can read an automated email with email_design_setting included', async function () {
+            const automatedEmail = await createAutomatedEmail();
+
+            const id = automatedEmail.id;
+
+            await agent
+                .get(`automated_emails/${id}?include=email_design_setting`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    automated_emails: [matchAutomatedEmailWithDesignSetting]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,

@@ -20,7 +20,7 @@ const AutomatedEmail = ghostBookshelf.Model.extend({
     /**
      * @returns {import('bookshelf').Model}
      */
-    emailDesignSetting() {
+    email_design_setting: function emailDesignSetting() {
         return this.belongsTo('EmailDesignSetting', 'email_design_setting_id', 'id');
     },
 

@@ -9,6 +9,10 @@ module.exports = {
         return require('./automated_emails');
     },
 
+    get email_design_settings() {
+        return require('./email_design_settings');
+    },
+
     get password_reset() {
         return require('./password_reset');
     },
