@@ -1,4 +1,4 @@
-// UI components —  Basic building blocks (buttons, inputs, dialogs)
+// UI components — basic reusable controls
 export * from './components/ui/alert-dialog';
 export * from './components/ui/animated-number';
 export * from './components/ui/avatar';
@@ -48,60 +48,12 @@ export * from './components/ui/tooltip';
 
 export type {DropdownMenuCheckboxItemProps as DropdownMenuCheckboxItemProps} from '@radix-ui/react-dropdown-menu';
 
-// Layout components (headings, pages, view headers)
-export * from './components/layout/page';
-export {ErrorPage} from './components/layout/error-page';
-export * from './components/layout/heading';
-export * from './components/layout/header';
-export * from './components/layout/list-header';
-export * from './components/layout/view-header';
-
-// Feature components — Complete functional components (share modal, etc.)
-export {default as ColorPicker} from './components/features/color-picker/color-picker';
-export type {ColorPickerProps} from './components/features/color-picker/color-picker';
-export {default as PostShareModal} from './components/features/post-share-modal';
-export * from './components/features/table-filter-tabs/table-filter-tabs';
-export * from './components/features/utm-campaign-tabs/utm-campaign-tabs';
-export type {CampaignType, TabType} from './components/features/utm-campaign-tabs/utm-campaign-tabs';
-
-// Third party components
-export * as Recharts from 'recharts';
-export * as LucideIcon from 'lucide-react';
-
 export {IconComponents as Icon} from './components/ui/icon';
 
-// Assets
+// Visual assets
 export {ReactComponent as FacebookLogo} from './assets/images/facebook-logo.svg';
 export {ReactComponent as GhostLogo} from './assets/images/ghost-logo.svg';
 export {ReactComponent as GhostOrb} from './assets/images/ghost-orb.svg';
 export {ReactComponent as GoogleLogo} from './assets/images/google-logo.svg';
 export {ReactComponent as TwitterLogo} from './assets/images/twitter-logo.svg';
 export {ReactComponent as XLogo} from './assets/images/x-logo.svg';
-
-// Hooks
-export {default as useGlobalDirtyState} from './hooks/use-global-dirty-state';
-export {useSimplePagination} from './hooks/use-simple-pagination';
-
-// Utils
-export * from '@/lib/utils';
-export {cn, debounce, kebabToPascalCase, formatTimestamp, formatNumber, formatDuration, formatPercentage, formatDisplayDate, formatDisplayTime, getCountryFlag, stringToHslColor, abbreviateNumber} from '@/lib/utils';
-
-/**
- * @deprecated Import domain/transitional helpers from `@tryghost/shade/app`.
- */
-export {formatUrl, formatQueryDate, isValidDomain, getYRange, getYRangeWithMinPadding, getYRangeWithLargePadding, calculateYAxisWidth, getRangeDates, sanitizeChartData, formatDisplayDateWithRange, centsToDollars, getRangeForStartDate, formatMemberName, getMemberInitials} from '@/lib/utils';
-
-/**
- * @deprecated Import from `@tryghost/shade/app`.
- */
-export {default as ShadeApp} from './shade-app';
-
-/**
- * @deprecated Import from `@tryghost/shade/app`.
- */
-export type {ShadeAppProps} from './shade-app';
-
-/**
- * @deprecated Import from `@tryghost/shade/app`.
- */
-export {useFocusContext} from './providers/shade-provider';
