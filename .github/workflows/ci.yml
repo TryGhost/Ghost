@@ -922,6 +922,7 @@ jobs:
           echo "owner=$OWNER" >> $GITHUB_OUTPUT
           echo "image-core-name=$IMAGE_CORE_NAME" >> $GITHUB_OUTPUT
           echo "image-full-name=$IMAGE_FULL_NAME" >> $GITHUB_OUTPUT
+          echo "image-e2e-name=${IMAGE_FULL_NAME}-e2e" >> $GITHUB_OUTPUT
 
       - name: Upload admin artifact for CD
         id: upload-admin
@@ -1078,11 +1079,153 @@ jobs:
       image-tags: ${{ steps.meta-full.outputs.tags }}
       use-artifact: ${{ steps.strategy.outputs.use-artifact }}
       admin-artifact-id: ${{ steps.upload-admin.outputs.artifact-id }}
+      image-e2e-name: ${{ steps.strategy.outputs.image-e2e-name }}
+
+  job_build_e2e_public_apps:
+    name: Build E2E Public App Assets
+    needs: [job_setup]
+    if: needs.job_setup.outputs.is_tag != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Build public apps for E2E
+        run: yarn workspace @tryghost/e2e build:apps
+
+      - name: Pack public app artifacts
+        run: |
+          tar -czf e2e-public-apps.tar.gz \
+            apps/portal/umd \
+            apps/comments-ui/umd \
+            apps/sodo-search/umd \
+            apps/signup-form/umd \
+            apps/announcement-bar/umd
+          ls -lh e2e-public-apps.tar.gz
+
+      - name: Upload public app artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-public-apps
+          path: e2e-public-apps.tar.gz
+          retention-days: 1
+
+  job_build_e2e_image:
+    name: Build E2E Docker Image
+    needs: [job_setup, job_build_e2e_public_apps, job_build_artifacts]
+    if: needs.job_setup.outputs.is_tag != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download public app artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: e2e-public-apps
+
+      - name: Extract public app artifacts
+        run: tar -xzf e2e-public-apps.tar.gz
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Load base Ghost image
+        uses: ./.github/actions/load-docker-image
+        id: load-base
+        with:
+          use-artifact: ${{ needs.job_build_artifacts.outputs.use-artifact }}
+          image-tags: ${{ needs.job_build_artifacts.outputs.image-tags }}
+          artifact-name: docker-image-production
+
+      - name: Determine E2E image distribution strategy
+        id: strategy
+        run: |
+          USE_ARTIFACT="${{ needs.job_build_artifacts.outputs.use-artifact }}"
+          SHOULD_PUSH="true"
+          if [ "$USE_ARTIFACT" = "true" ]; then
+            SHOULD_PUSH="false"
+          fi
+
+          echo "use-artifact=$USE_ARTIFACT" >> $GITHUB_OUTPUT
+          echo "should-push=$SHOULD_PUSH" >> $GITHUB_OUTPUT
+
+      - name: Log in to GitHub Container Registry
+        if: steps.strategy.outputs.should-push == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta (e2e)
+        id: meta-e2e
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ needs.job_build_artifacts.outputs.image-e2e-name }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=Ghost E2E
+            org.opencontainers.image.description=Ghost production build with public E2E app bundles
+            org.opencontainers.image.vendor=TryGhost
+
+      - name: Build & push E2E image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: e2e/Dockerfile.e2e
+          build-args: |
+            GHOST_IMAGE=${{ steps.load-base.outputs.image-tag }}
+          push: ${{ steps.strategy.outputs.should-push }}
+          load: ${{ steps.strategy.outputs.use-artifact == 'true' }}
+          tags: ${{ steps.meta-e2e.outputs.tags }}
+          labels: ${{ steps.meta-e2e.outputs.labels }}
+          cache-from: type=registry,ref=${{ needs.job_build_artifacts.outputs.image-e2e-name }}:cache-main
+          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', needs.job_build_artifacts.outputs.image-e2e-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+
+      - name: Save E2E image as artifact
+        if: steps.strategy.outputs.use-artifact == 'true'
+        run: |
+          IMAGE_TAG=$(echo "${{ steps.meta-e2e.outputs.tags }}" | head -n1)
+          echo "Saving image: $IMAGE_TAG"
+          docker save "$IMAGE_TAG" | gzip > docker-image-e2e.tar.gz
+          echo "Image saved as docker-image-e2e.tar.gz"
+          ls -lh docker-image-e2e.tar.gz
+
+      - name: Upload E2E image artifact
+        if: steps.strategy.outputs.use-artifact == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-e2e
+          path: docker-image-e2e.tar.gz
+          retention-days: 1
+
+    outputs:
+      image-tags: ${{ steps.meta-e2e.outputs.tags }}
+      use-artifact: ${{ steps.strategy.outputs.use-artifact }}
 
   job_e2e_tests:
     name: E2E Tests (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
-    needs: [job_build_artifacts, job_setup]
+    needs: [job_build_e2e_image, job_setup]
     if: needs.job_setup.outputs.is_tag != 'true'
     strategy:
       fail-fast: true
@@ -1112,9 +1255,9 @@ jobs:
         uses: ./.github/actions/load-docker-image
         id: load
         with:
-          use-artifact: ${{ needs.job_build_artifacts.outputs.use-artifact }}
-          image-tags: ${{ needs.job_build_artifacts.outputs.image-tags }}
-          artifact-name: docker-image-production
+          use-artifact: ${{ needs.job_build_e2e_image.outputs.use-artifact }}
+          image-tags: ${{ needs.job_build_e2e_image.outputs.image-tags }}
+          artifact-name: docker-image-e2e
 
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
@@ -1130,14 +1273,15 @@ jobs:
 
       - name: Prepare E2E CI job
         env:
-          GHOST_E2E_BASE_IMAGE: ${{ steps.load.outputs.image-tag }}
+          GHOST_E2E_IMAGE: ${{ steps.load.outputs.image-tag }}
+          GHOST_E2E_SKIP_IMAGE_BUILD: 'true'
         run: bash ./e2e/scripts/prepare-ci-e2e-job.sh
 
       - name: Run e2e tests in Playwright container
         env:
           TEST_WORKERS_COUNT: 1
           GHOST_E2E_MODE: build
-          GHOST_E2E_IMAGE: ghost-e2e:local
+          GHOST_E2E_IMAGE: ${{ steps.load.outputs.image-tag }}
           E2E_SHARD_INDEX: ${{ matrix.shardIndex }}
           E2E_SHARD_TOTAL: ${{ matrix.shardTotal }}
           E2E_RETRIES: 2
@@ -1320,6 +1464,8 @@ jobs:
         job_comments_ui,
         job_signup_form,
         job_tinybird-tests,
+        job_build_e2e_public_apps,
+        job_build_e2e_image,
         job_e2e_tests
       ]
     if: always()
