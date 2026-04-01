@@ -52,14 +52,12 @@ To run tests in watch mode:
 yarn test
 ```
 
-### Ghost e2e browser tests
+### Ghost e2e tests
 
-Portal is primarily tested via Ghost's e2e browser tests, see [our Playwright docs](https://ghost.notion.site/Playwright-Tests-b49ccb6e2b4a40f1a4f8df5261391218) for more details.
-
-1. Run the Ghost e2e tests in the top-level of the monorepo, providing ENV variables for Stripe:
-   ```
-   STRIPE_ACCOUNT_ID=acct_xxx STRIPE_PUBLISHABLE_KEY=pk_test_xxx STRIPE_SECRET_KEY=sk_test_xxx yarn test:browser
-   ```
+Portal is primarily tested via Ghost's e2e Playwright tests in the `e2e/` directory. Run them from the monorepo root:
+```
+yarn test:e2e
+```
 
 ## Release
 
