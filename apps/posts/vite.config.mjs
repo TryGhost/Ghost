@@ -8,6 +8,7 @@ export default (function viteConfig() {
         entry: resolve(__dirname, 'src/index.tsx'),
         overrides: {
             test: {
+                setupFiles: ['./test/setup.ts'],
                 include: [
                     './test/unit/**/*',
                     './src/**/*.test.ts'

@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {escapeNqlString, getDayBoundsInUtc} from '@views/filters/filter-normalization';
+import {escapeNqlString, getDayBoundsInUtc} from '@src/views/filters/filter-normalization';
 
 describe('filter-normalization', () => {
     it('escapes single quotes for NQL strings', () => {

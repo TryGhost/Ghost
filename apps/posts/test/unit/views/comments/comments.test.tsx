@@ -25,23 +25,23 @@ vi.mock('@src/utils/get-site-timezone', () => ({
     getSiteTimezone: (settings: Array<{key: string; value: unknown}>) => getSiteTimezoneMock(settings)
 }));
 
-vi.mock('@views/comments/components/comments-layout', () => ({
+vi.mock('../../../../src/views/comments/components/comments-layout', () => ({
     default: ({children}: {children: React.ReactNode}) => <div>{children}</div>
 }));
 
-vi.mock('@views/comments/components/comments-header', () => ({
+vi.mock('../../../../src/views/comments/components/comments-header', () => ({
     default: ({children}: {children: React.ReactNode}) => <div>{children}</div>
 }));
 
-vi.mock('@views/comments/components/comments-content', () => ({
+vi.mock('../../../../src/views/comments/components/comments-content', () => ({
     default: ({children}: {children: React.ReactNode}) => <div>{children}</div>
 }));
 
-vi.mock('@views/comments/components/comments-list', () => ({
+vi.mock('../../../../src/views/comments/components/comments-list', () => ({
     default: () => <div data-testid="comments-list" />
 }));
 
-vi.mock('@views/comments/components/comments-filters', () => ({
+vi.mock('../../../../src/views/comments/components/comments-filters', () => ({
     default: ({onFiltersChange}: {onFiltersChange: (filters: Array<{id: string; field: string; operator: string; values: string[]}>) => void}) => (
         <button
             data-testid="apply-filter"
@@ -65,7 +65,7 @@ function LocationProbe() {
 }
 
 async function renderComments(initialEntry: string) {
-    const {default: Comments} = await import('@views/comments/comments');
+    const {default: Comments} = await import('../../../../src/views/comments/comments');
 
     return {
         Comments,

@@ -3,7 +3,7 @@
 import {MemoryRouter, useSearchParams} from 'react-router';
 import {act, renderHook} from '@testing-library/react';
 import {describe, expect, it} from 'vitest';
-import {shouldDelayCommentDateFilterHydration, useFilterState} from '@views/comments/hooks/use-filter-state';
+import {shouldDelayCommentDateFilterHydration, useFilterState} from '@src/views/comments/hooks/use-filter-state';
 import type {ReactNode} from 'react';
 
 function createWrapper(initialEntry: string) {
