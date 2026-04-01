@@ -1,5 +1,5 @@
 import {APIRequestContext, Browser, BrowserContext, Page} from '@playwright/test';
-import {Member, createMemberFactory, createPostFactory, createTierFactory, generateSlug} from '@/data-factory';
+import {Member, PostFactory, createMemberFactory, createPostFactory, createTierFactory, generateSlug} from '@/data-factory';
 import {PageEditorPage, PostEditorPage, PostsPage} from '@/admin-pages';
 import {PostPage} from '@/helpers/pages';
 import {expect, test} from '@/helpers/playwright';
@@ -558,5 +558,34 @@ test.describe('Ghost Admin - Deleting Posts', () => {
         await editor.settingsMenu.deletePost();
 
         await expect(editor.screenTitle).toContainText('Posts');
+    });
+});
+
+test.describe('Ghost Admin - Posts List', () => {
+    test('lists posts and reflects newly created posts', async ({page}) => {
+        const postFactory: PostFactory = createPostFactory(page.request);
+
+        const postsPage = new PostsPage(page);
+        await postsPage.goto();
+
+        await expect(postsPage.postsListItem).toHaveCount(1);
+
+        await postFactory.create({title: 'Test Post'});
+        await postsPage.refreshData();
+        await expect(postsPage.postsListItem).toHaveCount(2);
+    });
+
+    test('shows correct publish date format in post settings', async ({page}) => {
+        const postFactory: PostFactory = createPostFactory(page.request);
+        await postFactory.create({title: 'Test Post'});
+
+        const postsPage = new PostsPage(page);
+        await postsPage.goto();
+
+        await postsPage.getPostByTitle('Test Post').click();
+        const editPage = new PostEditorPage(page);
+        await editPage.settingsToggleButton.click();
+
+        await expect(editPage.settingsMenu.publishDateInput).toHaveValue(/^\d{4}-\d{2}-\d{2}$/);
     });
 });
