@@ -118,7 +118,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const hasFilters = filters.length > 0;
     const showIconOnlyTrigger = iconOnly && !hasFilters;
     const addFilterButtonClassName = cn(
-        'bg-white dark:bg-gray-950',
+        'border-input bg-white dark:bg-background',
         showIconOnlyTrigger && 'min-w-[34px] gap-0 px-2 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-sm !px-3'
     );
 
