@@ -39,6 +39,14 @@ export class MembersListPage extends AdminPage {
         return this.memberRows.filter({hasText: name});
     }
 
+    getMemberLinkByName(name: string): Locator {
+        return this.getMemberByName(name).getByRole('link', {name, exact: true});
+    }
+
+    async openMemberByName(name: string): Promise<void> {
+        await this.getMemberLinkByName(name).click();
+    }
+
     async openActionsMenu(): Promise<void> {
         await this.actionsButton.click();
     }

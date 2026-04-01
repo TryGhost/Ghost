@@ -67,7 +67,7 @@ test.describe('Ghost Admin - Members Virtual Window', () => {
 
         await mockLargeMembersList(page, members);
 
-        const membersPage = new MembersPage(page, {route: 'members-forward'});
+        const membersPage = new MembersPage(page, {route: 'members'});
         const memberDetailsPage = new MemberDetailsPage(page);
 
         await membersPage.goto();
@@ -77,7 +77,7 @@ test.describe('Ghost Admin - Members Virtual Window', () => {
 
         await expect.poll(async () => {
             const historyState = await page.evaluate(() => window.history.state);
-            return historyState?.ghostVirtualListWindow?.['/members-forward::'];
+            return historyState?.ghostVirtualListWindow?.['/members::'];
         }).toBe(2000);
 
         const maxRenderedIndex = await membersPage.scrollUntilMaxRenderedIndexAtLeast(1000);
@@ -94,12 +94,12 @@ test.describe('Ghost Admin - Members Virtual Window', () => {
 
         expect(targetRow.index).toBeGreaterThan(1000);
 
-        await targetRowLocator.click();
+        await targetRowLocator.getByRole('link').click();
 
         await expect(memberDetailsPage.nameInput).toBeVisible();
 
         await page.goBack();
-        await expect(page).toHaveURL(/\/ghost\/#\/members-forward$/);
+        await expect(page).toHaveURL(/\/ghost\/#\/members$/);
         await expect(membersPage.getMemberListItemByIndex(targetRow.index)).toContainText(targetRow.text ?? '');
 
         await expect.poll(async () => {

@@ -57,7 +57,7 @@ test.describe('Ghost Admin - Members List', () => {
         const membersPage = new MembersListPage(page);
         await membersPage.goto();
 
-        await membersPage.getMemberByName('Detail Test Member').click();
+        await membersPage.openMemberByName('Detail Test Member');
 
         await expect(page).toHaveURL(new RegExp(`/members/${member.id}`));
     });

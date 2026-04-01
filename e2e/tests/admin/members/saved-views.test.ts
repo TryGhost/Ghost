@@ -15,7 +15,7 @@ async function addFilter(page: Page, filterName: 'Name' | 'Email' | 'Label', val
         const existingFilter = params.get('filter');
 
         params.set('filter', existingFilter ? `${existingFilter}+${labelFilter}` : labelFilter);
-        await page.goto(`/ghost/#/members-forward?${params.toString()}`);
+        await page.goto(`/ghost/#/members?${params.toString()}`);
         return;
     }
 

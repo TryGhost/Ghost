@@ -44,7 +44,7 @@ test.describe('Ghost Admin - Members Search and Filter', () => {
         await membersPage.goto();
         await expect(membersPage.memberRows).toHaveCount(3);
 
-        await page.goto('/ghost/#/members-forward?filter=label:VIP');
+        await page.goto('/ghost/#/members?filter=label:VIP');
         await expect(membersPage.memberRows).toHaveCount(2);
         await expect(membersPage.getMemberByName('Labelled One')).toBeVisible();
         await expect(membersPage.getMemberByName('Labelled Two')).toBeVisible();
@@ -65,7 +65,7 @@ test.describe('Ghost Admin - Members Search and Filter', () => {
         await membersPage.addFilter('Name', 'Alice');
         await expect(membersPage.memberRows).toHaveCount(2);
 
-        await page.goto('/ghost/#/members-forward?filter=name:~%27Alice%27%2Blabel:Premium');
+        await page.goto('/ghost/#/members?filter=name:~%27Alice%27%2Blabel:Premium');
         await expect(membersPage.memberRows).toHaveCount(1);
         await expect(membersPage.getMemberByName('Alice Alpha')).toBeVisible();
 
@@ -81,14 +81,14 @@ test.describe('Ghost Admin - Members Search and Filter', () => {
             {name: 'No Label', email: 'nolabel@example.com'}
         ]);
 
-        const membersPage = new MembersForwardPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
         await expect(membersPage.memberRows).toHaveCount(4);
 
-        await page.goto('/ghost/#/members-forward?filter=label:VIP');
+        await page.goto('/ghost/#/members?filter=label:VIP');
         await expect(membersPage.memberRows).toHaveCount(2);
 
-        await page.goto('/ghost/#/members-forward?filter=label:VIP%2Blabel:Premium');
+        await page.goto('/ghost/#/members?filter=label:VIP%2Blabel:Premium');
         await expect(membersPage.memberRows).toHaveCount(1);
         await expect(membersPage.getMemberByName('Both Labels')).toBeVisible();
     });
