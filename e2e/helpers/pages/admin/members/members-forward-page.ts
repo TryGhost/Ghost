@@ -25,7 +25,7 @@ export class MembersForwardPage extends AdminPage {
 
         this.membersList = page.getByTestId('members-list');
         this.memberRows = page.getByTestId('members-list-item');
-        this.searchInput = page.getByLabel('Search members');
+        this.searchInput = page.getByLabel('Search members', {exact: true});
         this.actionsButton = page.getByTestId('members-actions');
         this.newMemberButton = page.getByRole('link', {name: 'New member'});
         this.filterButton = page.getByRole('button', {name: /^(Filter|Add filter)$/});

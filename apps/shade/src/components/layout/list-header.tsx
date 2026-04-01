@@ -8,6 +8,11 @@ type PropsWithChildrenAndClassName = React.PropsWithChildren & {
     className?: string;
 };
 
+type ListHeaderProps = PropsWithChildrenAndClassName & {
+    sticky?: boolean;
+    blurredBackground?: boolean;
+};
+
 function ListHeaderLeft({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
@@ -34,7 +39,7 @@ function ListHeaderTitle({className, children}: PropsWithChildrenAndClassName) {
     return (
         <H1
             className={cn(
-                'text-2xl leading-[1.2em] lg:text-3xl whitespace-nowrap',
+                'text-2xl leading-[1.2em] sidebar:text-[2.5rem] whitespace-nowrap',
                 className
             )}
             data-list-header='list-header-title'
@@ -58,7 +63,7 @@ function ListHeaderDescription({className, children}: PropsWithChildrenAndClassN
 function ListHeaderCount({className, children}: PropsWithChildrenAndClassName) {
     return (
         <span
-            className={cn('ml-2 lg:ml-3 font-normal text-[1.9rem] lg:text-[2.2rem] text-muted-foreground tabular-nums', className)}
+            className={cn('ml-2 lg:ml-3 font-normal text-[1.9rem] sidebar:text-[2.2rem] text-muted-foreground tabular-nums', className)}
             data-list-header='list-header-count'
         >
             {children}
@@ -228,7 +233,7 @@ function ListHeaderActions({className, children}: PropsWithChildrenAndClassName)
     );
 }
 
-type ListHeaderComponent = React.FC<PropsWithChildrenAndClassName> & {
+type ListHeaderComponent = React.FC<ListHeaderProps> & {
     Left: React.FC<PropsWithChildrenAndClassName>;
     Breadcrumb: React.FC<PropsWithChildrenAndClassName>;
     Title: React.FC<PropsWithChildrenAndClassName>;
@@ -239,11 +244,13 @@ type ListHeaderComponent = React.FC<PropsWithChildrenAndClassName> & {
 };
 
 const ListHeader: ListHeaderComponent = Object.assign(
-    function ListHeader({className, children}: PropsWithChildrenAndClassName) {
+    function ListHeader({className, children, sticky = true, blurredBackground = true}: ListHeaderProps) {
         return (
             <header
                 className={cn(
-                    'sticky top-0 z-50 -mb-4 flex items-start justify-between gap-4 bg-gradient-to-b from-background via-background/70 to-background/70 p-4 backdrop-blur-md lg:-mb-8 lg:p-8 dark:bg-black',
+                    'flex items-start justify-between gap-4 px-4 lg:px-8',
+                    sticky && 'sticky top-0 z-50 -mb-4 lg:-mb-4',
+                    blurredBackground && 'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black',
                     className
                 )}
                 data-list-header='list-header'
