@@ -2214,51 +2214,56 @@ export function Filters<T = unknown>({
         [filters, onChange]
     );
 
+    const closeFilterPopover = useCallback(() => {
+        setAddFilterOpen(false);
+        setSelectedFieldKeyForOptions(null);
+        setTempSelectedValues([]);
+    }, []);
+
     const addFilter = useCallback(
         (fieldKey: string) => {
             const field = fieldsMap[fieldKey];
-            if (field && field.key) {
-                // For select and multiselect types, show options directly
-                if (field.type === 'select' || field.type === 'multiselect') {
-                    setSelectedFieldKeyForOptions(field.key!);
-                    // For multiselect, check if there's already a filter and use its values
-                    const existingFilter = filters.find(f => f.field === fieldKey);
-                    const initialValues = field.type === 'multiselect' && existingFilter ? existingFilter.values : [];
-                    setTempSelectedValues(initialValues);
-                    return;
-                }
-
-                // For other types, add filter directly
-                const defaultOperator =
-            field.defaultOperator ||
-                (field.type === 'daterange'
-                    ? 'between'
-                    : field.type === 'numberrange'
-                        ? 'between'
-                        : field.type === 'boolean'
-                            ? 'is'
-                            : 'is');
-                let defaultValues: unknown[] = [];
-
-                if (field.defaultValue !== undefined) {
-                    defaultValues = [field.defaultValue] as unknown[];
-                } else if (['text', 'number', 'date', 'email', 'url', 'tel', 'time', 'datetime'].includes(field.type || '')) {
-                    defaultValues = [''] as unknown[];
-                } else if (field.type === 'daterange') {
-                    defaultValues = ['', ''] as unknown[];
-                } else if (field.type === 'numberrange') {
-                    defaultValues = [field.min || 0, field.max || 100] as unknown[];
-                } else if (field.type === 'boolean') {
-                    defaultValues = [false] as unknown[];
-                }
-
-                const newFilter = createFilter<T>(fieldKey, defaultOperator, defaultValues as T[]);
-                const newFilters = [...filters, newFilter];
-                onChange(newFilters);
-                setAddFilterOpen(false);
+            if (!field?.key) {
+                return;
             }
+
+            // For select and multiselect types, show the options popover
+            if (field.type === 'select' || field.type === 'multiselect') {
+                setSelectedFieldKeyForOptions(field.key);
+
+                // When editing an existing filter (single-filter mode), pre-populate with its values
+                if (!allowMultiple && field.type === 'multiselect') {
+                    const existingFilter = filters.find(f => f.field === fieldKey);
+                    setTempSelectedValues(existingFilter ? existingFilter.values : []);
+                } else {
+                    setTempSelectedValues([]);
+                }
+
+                return;
+            }
+
+            // For other types, add filter directly
+            const defaultOperator = field.defaultOperator ||
+                (field.type === 'daterange' || field.type === 'numberrange' ? 'between' : 'is');
+            let defaultValues: unknown[] = [];
+
+            if (field.defaultValue !== undefined) {
+                defaultValues = [field.defaultValue] as unknown[];
+            } else if (['text', 'number', 'date', 'email', 'url', 'tel', 'time', 'datetime'].includes(field.type || '')) {
+                defaultValues = [''] as unknown[];
+            } else if (field.type === 'daterange') {
+                defaultValues = ['', ''] as unknown[];
+            } else if (field.type === 'numberrange') {
+                defaultValues = [field.min || 0, field.max || 100] as unknown[];
+            } else if (field.type === 'boolean') {
+                defaultValues = [false] as unknown[];
+            }
+
+            const newFilter = createFilter<T>(fieldKey, defaultOperator, defaultValues as T[]);
+            onChange([...filters, newFilter]);
+            closeFilterPopover();
         },
-        [fieldsMap, filters, onChange]
+        [allowMultiple, closeFilterPopover, fieldsMap, filters, onChange]
     );
 
     const addFilterWithOption = useCallback(
@@ -2266,57 +2271,33 @@ export function Filters<T = unknown>({
             if (!field.key) {
                 return;
             }
-            // Check if this filter already exists
-            const existingFilter = filters.find(f => f.field === field.key);
-            if (existingFilter) {
-                // Update existing filter
-                const updatedFilters = filters.map(f => (
-                    f.id === existingFilter.id
-                        ? {...f, values: values as T[]}
-                        : f
-                ));
-                onChange(updatedFilters);
 
-                // Always update tempSelectedValues to keep inline multiselect in sync
-                setTempSelectedValues(values as T[]);
+            // In single-filter mode, update the existing filter for this field if one exists
+            if (!allowMultiple) {
+                const existingFilter = filters.find(f => f.field === field.key);
+                if (existingFilter) {
+                    onChange(filters.map(f => (f.id === existingFilter.id ? {...f, values: values as T[]} : f)));
+                    setTempSelectedValues(values as T[]);
 
-                if (closePopover) {
-                    setAddFilterOpen(false);
-                    setSelectedFieldKeyForOptions(null);
+                    if (closePopover) {
+                        closeFilterPopover();
+                    }
+                    return;
                 }
-                return;
             }
 
+            // Create a new filter
             const defaultOperator = field.defaultOperator || (field.type === 'multiselect' ? 'is_any_of' : 'is');
-
-            // Check if there's already a filter for this field
-            const existingFilterIndex = filters.findIndex(f => f.field === field.key);
-
-            if (existingFilterIndex >= 0) {
-                // Update existing filter
-                const updatedFilters = [...filters];
-                updatedFilters[existingFilterIndex] = {
-                    ...updatedFilters[existingFilterIndex],
-                    values: values as T[]
-                };
-                onChange(updatedFilters);
-            } else {
-                // Create new filter
-                const newFilter = createFilter<T>(field.key, defaultOperator, values as T[]);
-                const newFilters = [...filters, newFilter];
-                onChange(newFilters);
-            }
+            const newFilter = createFilter<T>(field.key, defaultOperator, values as T[]);
+            onChange([...filters, newFilter]);
 
             if (closePopover) {
-                setAddFilterOpen(false);
-                setSelectedFieldKeyForOptions(null);
-                setTempSelectedValues([]);
+                closeFilterPopover();
             } else {
-                // For multiselect, keep popover open but update temp values
                 setTempSelectedValues(values as unknown[]);
             }
         },
-        [filters, onChange]
+        [allowMultiple, closeFilterPopover, filters, onChange]
     );
 
     const selectableFields = useMemo(() => {
@@ -2449,11 +2430,7 @@ export function Filters<T = unknown>({
                                         const shouldClosePopover = selectedFieldForOptions.type === 'select';
                                         addFilterWithOption(selectedFieldForOptions, values as unknown[], shouldClosePopover);
                                     }}
-                                    onClose={() => {
-                                        setAddFilterOpen(false);
-                                        setSelectedFieldKeyForOptions(null);
-                                        setTempSelectedValues([]);
-                                    }}
+                                    onClose={closeFilterPopover}
                                 />
                             ) : (
                                 // Show field selection - needs Command wrapper for search/list

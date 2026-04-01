@@ -91,7 +91,7 @@ class WebhookTrigger {
                 error: `Request failed: ${err.code || 'unknown'}`
             });
 
-            logging.warn(`Request to ${webhook.get('target_url') || null} failed because of: ${err.code || ''}.`);
+            logging.error(`[WEBHOOK_DELIVERY_FAILURE] url=${webhook.get('target_url') || 'unknown'} status=${err.statusCode || 'none'} error_code=${err.code || 'unknown'} message=${err.message || ''}`, err);
         };
     }
 

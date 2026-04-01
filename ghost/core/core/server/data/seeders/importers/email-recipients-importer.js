@@ -111,7 +111,7 @@ class EmailRecipientsImporter extends TableImporter {
 
             if (!(memberSubscribeEvent.created_at instanceof Date)) {
                 // SQLite fix
-                memberSubscribeEvent.created_at = new Date(memberSubscribeEvent.created_at);
+                memberSubscribeEvent.created_at = dateToDatabaseString.parse(memberSubscribeEvent.created_at);
             }
             this.membersSubscribeEventsCreatedAtsByNewsletterId.get(memberSubscribeEvent.newsletter_id).push(memberSubscribeEvent.created_at.getTime());
         }
@@ -125,8 +125,8 @@ class EmailRecipientsImporter extends TableImporter {
         this.batchIndex = this.batch.index;
 
         // Shallow clone members list so we can shuffle and modify it
-        const earliestOpenTime = new Date(this.batch.updated_at);
-        const latestOpenTime = new Date(this.batch.updated_at);
+        const earliestOpenTime = dateToDatabaseString.parse(this.batch.updated_at);
+        const latestOpenTime = dateToDatabaseString.parse(this.batch.updated_at);
         latestOpenTime.setDate(latestOpenTime.getDate() + 14);
 
         // Get all members that were subscribed to this newsletter BEFORE the batch was sent
@@ -164,7 +164,7 @@ class EmailRecipientsImporter extends TableImporter {
         }
 
         // The events are generated for a different time, so we need to move them to the batch time
-        timestamp = new Date(timestamp.getTime() - this.eventStartTimeUsed.getTime() + new Date(this.batch.updated_at).getTime());
+        timestamp = new Date(timestamp.getTime() - this.eventStartTimeUsed.getTime() + dateToDatabaseString.parse(this.batch.updated_at).getTime());
 
         if (timestamp > new Date()) {
             timestamp = new Date();
@@ -187,9 +187,9 @@ class EmailRecipientsImporter extends TableImporter {
 
         let deliveredTime;
         if (status === emailStatus.opened) {
-            const startDate = this.batch.updated_at;
+            const startDate = dateToDatabaseString.parse(this.batch.updated_at);
             const endDate = timestamp;
-            deliveredTime = faker.date.between(startDate, endDate);
+            deliveredTime = dateToDatabaseString.randomBetween(startDate, endDate);
         }
 
         return {

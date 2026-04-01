@@ -47,7 +47,8 @@ class MembersCreatedEventsImporter extends TableImporter {
         };
 
         if (source === 'member' && luck(30)) {
-            const post = this.posts.find(p => p.visibility === 'public' && new Date(p.published_at) < new Date(this.model.created_at));
+            const memberCreatedAt = dateToDatabaseString.parse(this.model.created_at);
+            const post = this.posts.find(p => p.visibility === 'public' && dateToDatabaseString.parse(p.published_at) < memberCreatedAt);
             if (post) {
                 attribution = {
                     attribution_id: post.id,

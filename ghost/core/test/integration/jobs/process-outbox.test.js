@@ -14,10 +14,15 @@ const processOutbox = require('../../../core/server/services/outbox/jobs/lib/pro
 
 describe('Process Outbox Job', function () {
     let jobService;
+    let defaultEmailDesignSettingId;
 
     before(async function () {
         await testUtils.startGhost();
         jobService = require('../../../core/server/services/jobs/job-service');
+        defaultEmailDesignSettingId = await db.knex('email_design_settings')
+            .where('slug', 'default-automated-email')
+            .first('id')
+            .then(row => row.id);
     });
 
     afterEach(async function () {
@@ -61,6 +66,7 @@ describe('Process Outbox Job', function () {
 
             await db.knex('automated_emails').insert({
                 id: ObjectId().toHexString(),
+                email_design_setting_id: defaultEmailDesignSettingId,
                 status: 'active',
                 name: 'Free Member Welcome Email',
                 slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
