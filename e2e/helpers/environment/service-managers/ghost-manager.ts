@@ -83,8 +83,9 @@ export class GhostManager {
         const gatewayName = `ghost-e2e-gateway-${this.config.workerIndex}`;
 
         // Try to reuse existing containers (handles process restarts after test failures)
-        this.ghostContainer = await this.getOrCreateContainer(ghostName, () => this.createGhostContainer(ghostName, database));
         this.gatewayContainer = await this.getOrCreateContainer(gatewayName, () => this.createGatewayContainer(gatewayName, ghostName));
+        const schedulerUrl = await this.getGatewaySchedulerUrl();
+        this.ghostContainer = await this.getOrCreateContainer(ghostName, () => this.createGhostContainer(ghostName, database, undefined, schedulerUrl));
 
         debug(`Worker ${this.config.workerIndex} containers ready`);
     }
@@ -201,11 +202,16 @@ export class GhostManager {
         await this.waitForHealthy(this.ghostContainer, timeoutMs);
     }
 
-    private async buildEnv(database: string = 'ghost_testing', extraConfig?: GhostEnvOverrides): Promise<string[]> {
+    private async buildEnvWithSchedulerUrl(
+        database: string = 'ghost_testing',
+        extraConfig?: GhostEnvOverrides,
+        schedulerUrl?: string
+    ): Promise<string[]> {
         const env = [
             ...BASE_GHOST_ENV,
             `database__connection__database=${database}`,
-            `url=http://localhost:${this.getGatewayPort()}`
+            `url=http://localhost:${this.getGatewayPort()}`,
+            `scheduling__schedulerUrl=${schedulerUrl || `http://localhost:${this.getGatewayPort()}/ghost/api/admin`}`
         ];
 
         // Add Tinybird config if available
@@ -266,7 +272,8 @@ export class GhostManager {
     private async createGhostContainer(
         name: string,
         database: string = 'ghost_testing',
-        extraConfig?: GhostEnvOverrides
+        extraConfig?: GhostEnvOverrides,
+        schedulerUrl?: string
     ): Promise<Container> {
         const mode = this.config.mode;
         debug(`Creating Ghost container for mode: ${mode}`);
@@ -278,11 +285,12 @@ export class GhostManager {
 
         // Build volume mounts based on mode
         const binds = this.getGhostBinds();
+        const resolvedSchedulerUrl = schedulerUrl || (this.gatewayContainer ? await this.getGatewaySchedulerUrl() : undefined);
 
         const config: ContainerCreateOptions = {
             name,
             Image: image,
-            Env: await this.buildEnv(database, extraConfig),
+            Env: await this.buildEnvWithSchedulerUrl(database, extraConfig, resolvedSchedulerUrl),
             ExposedPorts: {[`${TEST_ENVIRONMENT.ghost.port}/tcp`]: {}},
             Healthcheck: {
                 // Same health check as compose.dev.yaml - Ghost is ready when it responds
@@ -308,6 +316,21 @@ export class GhostManager {
         };
 
         return this.docker.createContainer(config);
+    }
+
+    private async getGatewaySchedulerUrl(): Promise<string> {
+        if (!this.gatewayContainer) {
+            throw new Error('Gateway container not initialized');
+        }
+
+        const gatewayInfo = await this.gatewayContainer.inspect();
+        const gatewayIp = gatewayInfo.NetworkSettings?.Networks?.[DEV_ENVIRONMENT.networkName]?.IPAddress;
+
+        if (!gatewayIp) {
+            throw new Error(`Gateway container is missing an IP on network ${DEV_ENVIRONMENT.networkName}`);
+        }
+
+        return `http://${gatewayIp}/ghost/api/admin`;
     }
 
     /**
