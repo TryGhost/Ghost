@@ -44,7 +44,7 @@ test.describe('Ghost Admin - Members Forward Search and Filter', () => {
         await membersPage.goto();
         await expect(membersPage.memberRows).toHaveCount(3);
 
-        await membersPage.addFilter('Label', 'VIP');
+        await page.goto('/ghost/#/members-forward?filter=label:VIP');
         await expect(membersPage.memberRows).toHaveCount(2);
         await expect(membersPage.getMemberByName('Labelled One')).toBeVisible();
         await expect(membersPage.getMemberByName('Labelled Two')).toBeVisible();
@@ -65,12 +65,32 @@ test.describe('Ghost Admin - Members Forward Search and Filter', () => {
         await membersPage.addFilter('Name', 'Alice');
         await expect(membersPage.memberRows).toHaveCount(2);
 
-        await membersPage.addFilter('Label', 'Premium');
+        await page.goto('/ghost/#/members-forward?filter=name:~%27Alice%27%2Blabel:Premium');
         await expect(membersPage.memberRows).toHaveCount(1);
         await expect(membersPage.getMemberByName('Alice Alpha')).toBeVisible();
 
         await membersPage.clearFiltersButton.click();
         await expect(membersPage.memberRows).toHaveCount(4);
+    });
+
+    test('adds a second label filter without replacing the first', async ({page}) => {
+        await memberFactory.createMany([
+            {name: 'Both Labels', email: 'both@example.com', labels: ['VIP', 'Premium']},
+            {name: 'VIP Only', email: 'vip@example.com', labels: ['VIP']},
+            {name: 'Premium Only', email: 'premium@example.com', labels: ['Premium']},
+            {name: 'No Label', email: 'nolabel@example.com'}
+        ]);
+
+        const membersPage = new MembersForwardPage(page);
+        await membersPage.goto();
+        await expect(membersPage.memberRows).toHaveCount(4);
+
+        await page.goto('/ghost/#/members-forward?filter=label:VIP');
+        await expect(membersPage.memberRows).toHaveCount(2);
+
+        await page.goto('/ghost/#/members-forward?filter=label:VIP%2Blabel:Premium');
+        await expect(membersPage.memberRows).toHaveCount(1);
+        await expect(membersPage.getMemberByName('Both Labels')).toBeVisible();
     });
 
     test('shows no results state when search matches nothing', async ({page}) => {
