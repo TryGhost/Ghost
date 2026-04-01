@@ -10,25 +10,14 @@ interface SetFiltersOptions {
     replace?: boolean;
 }
 
-interface ClearFiltersOptions {
-    /** Whether to replace the current history entry (default: true) */
-    replace?: boolean;
-}
-
 interface UseFilterStateReturn {
     filters: Filter[];
     nql: string | undefined;
     setFilters: (action: SetFiltersAction, options?: SetFiltersOptions) => void;
-    clearFilters: (options?: ClearFiltersOptions) => void;
+    clearFilters: (options?: SetFiltersOptions) => void;
 }
 
-interface ToSearchParamsOptions {
-    baseSearchParams: URLSearchParams;
-    filters: Filter[];
-    timezone: string;
-}
-
-function toSearchParams({baseSearchParams, filters, timezone}: ToSearchParamsOptions): URLSearchParams {
+function toSearchParams(baseSearchParams: URLSearchParams, filters: Filter[], timezone: string): URLSearchParams {
     const params = new URLSearchParams(baseSearchParams);
     const filter = serializeCommentFilters(filters, timezone);
 
@@ -63,25 +52,19 @@ export function useFilterState(timezone: string): UseFilterStateReturn {
 
     const setFilters = useCallback((action: SetFiltersAction, options: SetFiltersOptions = {}) => {
         const newFilters = typeof action === 'function' ? action(filters) : action;
-        const newParams = toSearchParams({
-            baseSearchParams: searchParams,
-            filters: newFilters,
-            timezone
-        });
+        const newParams = toSearchParams(searchParams, newFilters, timezone);
         const replace = options.replace ?? true;
 
         setSearchParams(newParams, {replace});
     }, [filters, searchParams, setSearchParams, timezone]);
 
-    const clearFilters = useCallback(({replace = true}: ClearFiltersOptions = {}) => {
-        const newParams = toSearchParams({
-            baseSearchParams: searchParams,
-            filters: [],
-            timezone
-        });
+    const clearFilters = useCallback(({replace = true}: SetFiltersOptions = {}) => {
+        const newParams = new URLSearchParams(searchParams);
+
+        newParams.delete('filter');
 
         setSearchParams(newParams, {replace});
-    }, [searchParams, setSearchParams, timezone]);
+    }, [searchParams, setSearchParams]);
 
     return {filters, nql, setFilters, clearFilters};
 }

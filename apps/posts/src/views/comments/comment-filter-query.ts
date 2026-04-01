@@ -5,11 +5,6 @@ import {getDayBoundsInUtc} from '../filters/filter-normalization';
 import type {AstNode} from '../filters/filter-ast';
 import type {FilterPredicate, ParsedPredicate} from '../filters/filter-types';
 
-interface ExactDateMatchResult {
-    predicate: ParsedPredicate | null;
-    remainingChildren: AstNode[];
-}
-
 function extractCreatedAtComparator(node: AstNode): {operator: string; value: string} | null {
     const createdAt = node.created_at;
 
@@ -26,7 +21,7 @@ function extractCreatedAtComparator(node: AstNode): {operator: string; value: st
     return {operator, value};
 }
 
-function matchExactDateCompound(children: AstNode[], timezone: string): ExactDateMatchResult {
+function matchExactDateCompound(children: AstNode[], timezone: string): {predicate: ParsedPredicate | null; remainingChildren: AstNode[]} {
     for (let index = 0; index < children.length; index += 1) {
         const lowerBound = extractCreatedAtComparator(children[index]);
 

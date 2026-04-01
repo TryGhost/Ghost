@@ -41,6 +41,7 @@ interface RemoteValueSourceConfig<Item, T = string> {
     useBrowse: (query: string, options: ValueSourceHookOptions) => BrowseState<Item>;
     useHydrate?: (selectedValues: T[], options: ValueSourceHookOptions) => HydrateState<Item>;
     toOption: (item: Item) => FilterOption<T>;
+    getMissingSelectedOption?: (selectedValue: T) => FilterOption<T>;
     debounceMs?: number;
 }
 
@@ -88,6 +89,21 @@ export function createRemoteValueSource<Item, T = string>(
             const mergedOptions = useMemo(() => {
                 return mergeFilterOptions(hydratedOptions, visibleOptions);
             }, [hydratedOptions, visibleOptions]);
+            const fallbackOptions = useMemo(() => {
+                if (!config.getMissingSelectedOption) {
+                    return [];
+                }
+
+                return selectedValues.flatMap((selectedValue) => {
+                    const hasMatch = mergedOptions.some(option => option.value === selectedValue);
+
+                    if (hasMatch) {
+                        return [];
+                    }
+
+                    return [config.getMissingSelectedOption(selectedValue)];
+                });
+            }, [mergedOptions, selectedValues]);
 
             if (!enabled) {
                 return {
@@ -101,7 +117,7 @@ export function createRemoteValueSource<Item, T = string>(
             }
 
             return {
-                options: mergedOptions,
+                options: mergeFilterOptions(fallbackOptions, mergedOptions),
                 isInitialLoad: browse.isLoading && mergedOptions.length === 0,
                 isSearching: !browse.isLoading && browse.isRefreshing && !browse.isLoadingMore,
                 isLoadingMore: browse.isLoadingMore,

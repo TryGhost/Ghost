@@ -40,6 +40,10 @@ const usePublishedPostValueSource = createGhostBrowseValueSource<Post, PostsResp
     id: 'posts.published.remote',
     buildBrowseSearchParams: buildPublishedSearchParams,
     buildHydrateSearchParams,
+    getMissingSelectedOption: value => ({
+        value,
+        label: `ID: ${value}`
+    }),
     selectItems: data => data?.posts,
     useQuery: ({enabled, searchParams}) => {
         return useBrowsePostsInfinite({
@@ -55,6 +59,10 @@ const usePublishedPageValueSource = createGhostBrowseValueSource<Page, PagesResp
     id: 'pages.published.remote',
     buildBrowseSearchParams: buildPublishedSearchParams,
     buildHydrateSearchParams,
+    getMissingSelectedOption: value => ({
+        value,
+        label: `ID: ${value}`
+    }),
     selectItems: data => data?.pages,
     useQuery: ({enabled, searchParams}) => {
         return useBrowsePagesInfinite({
