@@ -605,7 +605,7 @@ function FilterInput<T = unknown>({
                 <input
                     aria-describedby={!isValid && validationMessage ? `${field?.key || 'input'}-error` : undefined}
                     aria-invalid={!isValid}
-                    className="w-full outline-hidden"
+                    className="w-full bg-transparent outline-hidden dark:!bg-transparent"
                     data-slot="filters-input"
                     onBlur={handleBlur}
                     onChange={handleChange}
