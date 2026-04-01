@@ -1,4 +1,5 @@
 import {
+    hasGiftSubscriptions,
     hasAvailablePrices,
     getAllProductsForSite,
     getAvailableProducts,
@@ -817,6 +818,24 @@ describe('Helpers - ', () => {
         it('returns the original date when month count is not an integer', () => {
             const date = '2024-03-15T00:00:00.000Z';
             expect(addMonths(date, 1.5)).toEqual(new Date(date));
+        });
+    });
+
+    describe('hasGiftSubscriptions', () => {
+        test('returns true when labs flag is enabled', () => {
+            expect(hasGiftSubscriptions({site: {labs: {giftSubscriptions: true}}})).toBe(true);
+        });
+
+        test('returns false when labs flag is disabled', () => {
+            expect(hasGiftSubscriptions({site: {labs: {giftSubscriptions: false}}})).toBe(false);
+        });
+
+        test('returns false when labs flag is missing', () => {
+            expect(hasGiftSubscriptions({site: {labs: {}}})).toBe(false);
+        });
+
+        test('returns false when labs is undefined', () => {
+            expect(hasGiftSubscriptions({site: {}})).toBe(false);
         });
     });
 
