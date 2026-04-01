@@ -300,6 +300,18 @@ describe('Acceptance: Members Test', function () {
             expect(find('[data-test-modal="delete-members"]')).to.not.exist;
         });
 
+        it('formats counts in members actions menu for filtered lists', async function () {
+            this.server.createList('member', 1000, {status: 'free'});
+
+            await visit('/members?filter=status%3Afree');
+            await click('[data-test-button="members-actions"]');
+
+            expect(find('[data-test-button="export-members"]')).to.have.text('Export selected members (1,000)');
+            expect(find('[data-test-button="add-label-selected"]')).to.have.text('Add label for selected members (1,000)');
+            expect(find('[data-test-button="remove-label-selected"]')).to.have.text('Remove label from selected members (1,000)');
+            expect(find('[data-test-button="delete-selected"]')).to.have.text('Delete selected members (1,000)');
+        });
+
         it('can delete a member (via list)', async function () {
             const newsletter = this.server.create('newsletter');
             const label = this.server.create('label');
