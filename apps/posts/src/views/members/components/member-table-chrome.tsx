@@ -19,13 +19,13 @@ export const MembersTableColGroup = ({
 }) => {
     return (
         <colgroup>
-            <col style={columnStyles.member} />
-            <col style={columnStyles.status} />
-            {showEmailOpenRate && <col style={columnStyles.openRate} />}
-            <col style={columnStyles.location} />
-            <col style={columnStyles.created} />
+            <col className="max-sm:!w-full max-sm:!min-w-0 sm:max-lg:!w-auto sm:max-lg:!min-w-0" style={columnStyles.member} />
+            <col className="hidden sm:table-column" style={columnStyles.status} />
+            {showEmailOpenRate && <col className="hidden lg:table-column" style={columnStyles.openRate} />}
+            <col className="hidden lg:table-column" style={columnStyles.location} />
+            <col className="hidden lg:table-column" style={columnStyles.created} />
             {activeColumns.map(col => (
-                <col key={col.key} style={columnStyles.dynamic} />
+                <col key={col.key} className="hidden lg:table-column" style={columnStyles.dynamic} />
             ))}
         </colgroup>
     );

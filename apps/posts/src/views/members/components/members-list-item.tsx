@@ -67,7 +67,7 @@ function openMemberInNewTab(memberId: string) {
 
 function MembersListItemName({item, onClick}: { item: Member; onClick?: (memberId: string) => void }) {
     return (
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
             <MemberAvatar
                 avatarImage={item.avatar_image}
                 className="size-10 min-w-10 md:size-10 md:min-w-10"
@@ -77,7 +77,7 @@ function MembersListItemName({item, onClick}: { item: Member; onClick?: (memberI
             />
             <div className="min-w-0">
                 <a
-                    className="cursor-pointer"
+                    className="block min-w-0 cursor-pointer"
                     href={`#/members/${item.id}`}
                     onClick={onClick ? (e) => {
                         if (isModifiedClick(e)) {
@@ -115,7 +115,7 @@ function MembersListItemStatus({
 }) {
     const tierNames = tiers?.map(t => t.name).join(', ');
     return (
-        <div className="flex min-w-0 justify-end lg:justify-start">
+        <div className="flex min-w-0 justify-start">
             <div className="min-w-0">
                 <div className="truncate text-sm">{getStatusLabel(status)}</div>
                 {tierNames && (
@@ -225,7 +225,6 @@ function MembersListItem({
 }: MembersListItemProps &
     Omit<React.HTMLAttributes<HTMLTableRowElement>, 'onClick'>) {
     const memberCellStyle = {
-        ...columnStyles.member,
         '--members-sticky-hover-bg': 'color-mix(in hsl, var(--muted) 50%, var(--background))'
     } as CSSProperties;
     const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
@@ -254,14 +253,14 @@ function MembersListItem({
             onClick={handleRowClick}
         >
             <TableCell className={cn(
-                'sticky left-0 z-20 bg-background px-4 py-3 group-hover:bg-[var(--members-sticky-hover-bg)]'
+                'min-w-0 bg-background px-4 py-3 group-hover:bg-[var(--members-sticky-hover-bg)] max-sm:!w-full max-sm:!min-w-0 lg:sticky lg:left-0 lg:z-20'
             )} style={memberCellStyle}>
                 <MembersListItemName item={item} onClick={onClick} />
                 {showPinnedEdge && (
                     <>
                         <div
                             aria-hidden="true"
-                            className="pointer-events-none absolute inset-y-px w-[24px] group-hover:opacity-0"
+                            className="pointer-events-none absolute inset-y-px hidden w-[24px] group-hover:opacity-0 lg:block"
                             style={{
                                 ...PINNED_EDGE_FADE_POSITION_STYLE,
                                 background: 'linear-gradient(to right, var(--background) 0px, color-mix(in hsl, var(--background) 78%, transparent) 6px, color-mix(in hsl, var(--background) 28%, transparent) 16px, transparent 24px)'
@@ -269,7 +268,7 @@ function MembersListItem({
                         />
                         <div
                             aria-hidden="true"
-                            className="pointer-events-none absolute inset-y-px w-[24px] opacity-0 group-hover:opacity-100"
+                            className="pointer-events-none absolute inset-y-px hidden w-[24px] opacity-0 group-hover:opacity-100 lg:block"
                             style={{
                                 ...PINNED_EDGE_FADE_POSITION_STYLE,
                                 background: 'linear-gradient(to right, var(--members-sticky-hover-bg) 0px, color-mix(in hsl, var(--members-sticky-hover-bg) 78%, transparent) 6px, color-mix(in hsl, var(--members-sticky-hover-bg) 28%, transparent) 16px, transparent 24px)'
@@ -278,7 +277,7 @@ function MembersListItem({
                     </>
                 )}
             </TableCell>
-            <TableCell className="px-4 py-3" style={columnStyles.status}>
+            <TableCell className="hidden px-4 py-3 sm:table-cell" style={columnStyles.status}>
                 <MembersListItemStatus status={item.status} tiers={item.tiers} />
             </TableCell>
             {showEmailOpenRate && (
