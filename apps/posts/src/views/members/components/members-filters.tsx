@@ -1,6 +1,6 @@
 import ManageViewPopover from './manage-view-popover';
 import React, {useCallback, useMemo} from 'react';
-import {Filter, Filters, LucideIcon} from '@tryghost/shade';
+import {Button, Filter, Filters, LucideIcon, cn} from '@tryghost/shade';
 import {
     buildOfferOptions,
     fromOfferFilterDisplayValues,
@@ -9,11 +9,13 @@ import {
 } from '../use-member-filter-fields';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
-import {useBrowseLabels} from '@tryghost/admin-x-framework/api/labels';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {useResourceSearch} from '../hooks/use-resource-search';
+import {useEmailPostValueSource} from '@src/hooks/filter-sources/use-email-post-value-source';
+import {useLabelValueSource} from '@src/hooks/filter-sources/use-label-value-source';
+import {usePostResourceValueSource} from '@src/hooks/filter-sources/use-post-resource-value-source';
+import {useTierValueSource} from '@src/hooks/filter-sources/use-tier-value-source';
 import type {MemberView} from '../hooks/use-member-views';
 
 interface MembersFiltersProps {
@@ -22,6 +24,7 @@ interface MembersFiltersProps {
     onFiltersChange: (filters: Filter[]) => void;
     savedViews?: MemberView[];
     activeView?: MemberView | null;
+    iconOnly?: boolean;
 }
 
 const EMPTY_OFFERS: typeof buildOfferOptions extends (offers: infer T) => unknown ? T : never = [];
@@ -47,9 +50,9 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     nql,
     onFiltersChange,
     savedViews = [],
-    activeView
+    activeView,
+    iconOnly = false
 }) => {
-    const {data: labelsData} = useBrowseLabels({searchParams: {limit: '100'}});
     const {data: tiersData} = useBrowseTiers({searchParams: {limit: '100'}});
     const {data: offersData} = useBrowseOffers({});
     const {data: newslettersData} = useBrowseNewsletters({searchParams: {limit: '100'}});
@@ -63,7 +66,6 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const emailTrackClicks = getSettingValue<boolean>(settings, 'email_track_clicks') === true;
     const siteTimezone = getSiteTimezone(settings);
 
-    const labels = labelsData?.labels || [];
     const tiers = tiersData?.tiers || [];
     const newsletters = newslettersData?.newsletters || [];
     const offers = useMemo(() => offersData?.offers ?? EMPTY_OFFERS, [offersData?.offers]);
@@ -91,8 +93,10 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         onFiltersChange(mapOfferRedemptionFilters(newFilters, values => fromOfferFilterDisplayValues(values, offersOptions)));
     }, [onFiltersChange, offersOptions]);
 
-    const postSearch = useResourceSearch('post');
-    const emailSearch = useResourceSearch('email');
+    const postValueSource = usePostResourceValueSource();
+    const emailValueSource = useEmailPostValueSource();
+    const labelValueSource = useLabelValueSource();
+    const tierValueSource = useTierValueSource(activePaidTiers.map(tier => ({value: tier.id, label: tier.name})));
 
     const filterFields = useMemberFilterFields({
         newsletters,
@@ -100,17 +104,11 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         hasMultipleTiers,
         paidMembersEnabled,
         emailFiltersEnabled,
-        labelsOptions: labels.map(label => ({value: label.slug, label: label.name})),
-        tiersOptions: activePaidTiers.map(tier => ({value: tier.id, label: tier.name})),
+        labelValueSource,
+        tierValueSource,
         offers,
-        postResourceOptions: postSearch.options,
-        onPostResourceSearchChange: postSearch.onSearchChange,
-        postResourceSearchValue: postSearch.searchValue,
-        postResourceLoading: postSearch.isLoading,
-        emailResourceOptions: emailSearch.options,
-        onEmailResourceSearchChange: emailSearch.onSearchChange,
-        emailResourceSearchValue: emailSearch.searchValue,
-        emailResourceLoading: emailSearch.isLoading,
+        postValueSource,
+        emailValueSource,
         membersTrackSources,
         emailTrackOpens,
         emailTrackClicks,
@@ -118,16 +116,23 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     });
 
     const hasFilters = filters.length > 0;
+    const showIconOnlyTrigger = iconOnly && !hasFilters;
+    const addFilterButtonClassName = cn(
+        'border-input bg-white dark:bg-background',
+        showIconOnlyTrigger && 'min-w-[34px] gap-0 px-2 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-sm !px-3'
+    );
+
     const clearAndSaveButtons = hasFilters ? (
-        <div className="flex shrink-0 items-center gap-2 sm:absolute sm:top-0 sm:right-0">
-            <button
-                className="flex items-center gap-1 text-sm font-normal text-muted-foreground hover:text-foreground"
+        <div className="flex shrink-0 items-center gap-4 sm:absolute sm:top-0 sm:right-0">
+            <Button
+                className="hidden items-center gap-1 !px-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground lg:inline-flex"
                 type="button"
+                variant="ghost"
                 onClick={() => onFiltersChange([])}
             >
                 <LucideIcon.X className="size-4" />
                 Clear
-            </button>
+            </Button>
             {nql && (
                 <ManageViewPopover
                     activeView={activeView}
@@ -141,6 +146,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 
     return (
         <Filters
+            addButtonClassName={addFilterButtonClassName}
             addButtonIcon={hasFilters ? <LucideIcon.FunnelPlus /> : <LucideIcon.Funnel />}
             addButtonText={hasFilters ? 'Add filter' : 'Filter'}
             allowMultiple={true}
@@ -150,7 +156,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
             filters={displayFilters}
             keyboardShortcut="f"
             popoverAlign={'start'}
-            popoverContentClassName='w-[280px] translate-x-[-32px] [&_[data-slot=command-list]]:max-h-[450px]'
+            popoverContentClassName='z-[80] w-[280px] [&_[data-slot=command-list]]:max-h-[450px]'
             showClearButton={hasFilters}
             showSearchInput={true}
             onChange={handleFiltersChange}
