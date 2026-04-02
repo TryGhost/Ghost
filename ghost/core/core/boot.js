@@ -339,9 +339,7 @@ async function initServices() {
     const statsService = require('./server/services/stats');
     const explorePingService = require('./server/services/explore-ping');
 
-    const config = require('./shared/config');
     const urlUtils = require('./shared/url-utils');
-    const schedulingApiUrl = config.get('scheduling').apiUrl || urlUtils.urlFor('api', {type: 'admin'}, true);
 
     // NOTE: Members service depends on these
     //       so they are initialized before it.
@@ -368,7 +366,7 @@ async function initServices() {
         emailAnalytics.init(),
         webhooks.listen(),
         scheduling.init({
-            apiUrl: schedulingApiUrl
+            apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true)
         }),
         comments.init(),
         linkTracking.init(),
