@@ -1,4 +1,4 @@
-import {FilterOption, ValueSource, ValueSourceParams, ValueSourceState} from '@tryghost/shade';
+import {FilterOption, ValueSource, ValueSourceParams, ValueSourceState} from '@tryghost/shade/components';
 import {mergeFilterOptions} from './utils';
 import {useDebounce} from 'use-debounce';
 import {useMemo} from 'react';

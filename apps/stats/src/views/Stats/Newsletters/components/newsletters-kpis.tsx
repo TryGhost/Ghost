@@ -1,6 +1,7 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {AvgsDataItem} from '../newsletters';
-import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, EmptyIndicator, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, LucideIcon, Recharts, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, EmptyIndicator, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Tabs, TabsList} from '@tryghost/shade/components';
+import {LucideIcon, Recharts, calculateYAxisWidth, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/global-data-provider';

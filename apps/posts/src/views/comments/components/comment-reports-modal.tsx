@@ -1,16 +1,7 @@
-import {
-    Button,
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    LoadingIndicator,
-    LucideIcon,
-    formatTimestamp
-} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, LoadingIndicator} from '@tryghost/shade/components';
 import {Comment, useBrowseCommentReports} from '@tryghost/admin-x-framework/api/comments';
 import {CommentAvatar} from './comment-avatar';
+import {LucideIcon, formatTimestamp} from '@tryghost/shade';
 
 interface CommentReportsModalProps {
     comment: Comment;

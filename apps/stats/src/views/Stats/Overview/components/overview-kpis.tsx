@@ -1,5 +1,6 @@
 import React from 'react';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, centsToDollars, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue} from '@tryghost/shade/components';
+import {LucideIcon, centsToDollars, formatNumber} from '@tryghost/shade';
 import {STATS_RANGES} from '@src/utils/constants';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/app';

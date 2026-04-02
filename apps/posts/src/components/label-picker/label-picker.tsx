@@ -1,18 +1,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {
-    Badge,
-    Button,
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandItem,
-    CommandList,
-    LucideIcon,
-    Popover,
-    PopoverContent,
-    PopoverTrigger
-} from '@tryghost/shade';
+import {Badge, Button, Command, CommandEmpty, CommandGroup, CommandItem, CommandList, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
+import {LucideIcon} from '@tryghost/shade';
 
 function useControlledSearch(controlledValue?: string, onControlledChange?: (value: string) => void) {
     const [localSearch, setLocalSearch] = useState('');

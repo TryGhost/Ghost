@@ -2,7 +2,7 @@ import React, {useCallback, useMemo, useRef, useEffect, createContext, useContex
 import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider, NavigateOptions as ReactRouterNavigateOptions, useNavigate as useReactRouterNavigate, useLocation, useParams, Navigate as ReactRouterNavigate} from 'react-router';
 import {useFramework} from './framework-provider';
 import {NavigationStackProvider} from './navigation-stack-provider';
-import {ErrorPage} from '@tryghost/shade';
+import {ErrorPage} from '@tryghost/shade/primitives';
 
 /**
  * This provider uses React Router to provide a router context to React apps

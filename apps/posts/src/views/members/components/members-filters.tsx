@@ -1,6 +1,7 @@
 import ManageViewPopover from './manage-view-popover';
 import React, {useCallback, useMemo} from 'react';
-import {Button, Filter, Filters, LucideIcon, cn} from '@tryghost/shade';
+import {Button, Filter, Filters} from '@tryghost/shade/components';
+import {LucideIcon, cn} from '@tryghost/shade';
 import {
     buildOfferOptions,
     fromOfferFilterDisplayValues,

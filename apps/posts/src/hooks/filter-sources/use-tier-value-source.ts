@@ -1,4 +1,4 @@
-import {FilterOption, ValueSource} from '@tryghost/shade';
+import {FilterOption, ValueSource} from '@tryghost/shade/components';
 import {createLocalValueSource} from './create-local-value-source';
 
 export function useTierValueSource(options: FilterOption<string>[] = []): ValueSource<string> {

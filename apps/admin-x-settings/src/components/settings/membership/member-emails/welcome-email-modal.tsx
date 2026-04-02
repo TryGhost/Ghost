@@ -15,10 +15,8 @@ import {useGlobalData} from '../../../../components/providers/global-data-provid
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 
-import {
-    Button,
-    cn
-} from '@tryghost/shade';
+import {Button} from '@tryghost/shade/components';
+import {cn} from '@tryghost/shade';
 
 interface EmailPreviewModalContentProps {
     title: string;

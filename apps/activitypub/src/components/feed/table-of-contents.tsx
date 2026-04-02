@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade';
+import {Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 
 export interface TOCItem {
     id: string;

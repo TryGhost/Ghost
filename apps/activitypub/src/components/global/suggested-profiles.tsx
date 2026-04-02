@@ -4,7 +4,7 @@ import FollowButton from './follow-button';
 import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-card';
 import React from 'react';
 import {type Account} from '../../api/activitypub';
-import {Skeleton} from '@tryghost/shade';
+import {Skeleton} from '@tryghost/shade/components';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 

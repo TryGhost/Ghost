@@ -1,12 +1,7 @@
 import React from "react"
 
-import {
-    LucideIcon,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarMenu,
-    SidebarMenuBadge
-} from "@tryghost/shade"
+import {SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuBadge} from "@tryghost/shade/components"
+import {LucideIcon} from "@tryghost/shade"
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { useBrowseSettings } from "@tryghost/admin-x-framework/api/settings";

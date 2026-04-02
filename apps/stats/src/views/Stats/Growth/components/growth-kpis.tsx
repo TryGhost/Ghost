@@ -1,7 +1,8 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Separator, Tabs, TabsList, centsToDollars, formatDisplayDateWithRange, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Separator, Tabs, TabsList} from '@tryghost/shade/components';
 import {DiffDirection} from '@hooks/use-growth-stats';
 import {STATS_RANGES} from '@src/utils/constants';
+import {centsToDollars, formatDisplayDateWithRange, formatNumber} from '@tryghost/shade';
 import {sanitizeChartData} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';

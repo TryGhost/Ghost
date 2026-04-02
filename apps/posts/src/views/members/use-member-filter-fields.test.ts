@@ -1,3 +1,4 @@
+import {ValueSource} from '@tryghost/shade/components';
 import {
     buildOfferOptions,
     fromOfferFilterDisplayValues,
@@ -7,7 +8,6 @@ import {
 import {describe, expect, it, vi} from 'vitest';
 import {memberFields} from './member-fields';
 import {renderHook} from '@testing-library/react';
-import type {ValueSource} from '@tryghost/shade';
 
 vi.mock('@tryghost/shade', () => ({
     LucideIcon: new Proxy({}, {

@@ -1,5 +1,6 @@
 import React from 'react';
-import {GhostOrb, cn} from '@tryghost/shade';
+import {GhostOrb} from '@tryghost/shade/components';
+import {cn} from '@tryghost/shade';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {resolveAllColors, resolveImageCorners} from './design-utils';
 import {useGlobalData} from '../../providers/global-data-provider';
