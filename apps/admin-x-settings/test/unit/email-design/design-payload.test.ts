@@ -1,4 +1,4 @@
-import * as assert from 'assert/strict';
+import assert from 'node:assert/strict';
 import {DEFAULT_EMAIL_DESIGN} from '@src/components/settings/email-design/types';
 import {buildAutomatedEmailDesignPayload, mapApiToDesignSettings} from '@src/components/settings/membership/member-emails/welcome-email-customize-modal';
 

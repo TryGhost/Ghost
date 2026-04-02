@@ -176,37 +176,49 @@ interface SidebarProps {
     errorMessage?: string;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({generalSettings, onGeneralChange, siteTitle, emailDomain, isLoading, errorMessage}) => (
-    <Tabs className="flex min-h-0 flex-1 flex-col" defaultValue="general" variant="underline">
-        <TabsList className='px-5'>
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="design">Design</TabsTrigger>
-        </TabsList>
-        {isLoading ? (
-            <div className="flex flex-1 items-center justify-center">
-                <LoadingIndicator size="md" />
-            </div>
-        ) : errorMessage ? (
-            <div className="flex flex-1 items-center justify-center px-6 text-center text-sm text-gray-700 dark:text-gray-300">
-                {errorMessage}
-            </div>
-        ) : (
-            <>
-                <TabsContent className='min-h-0 flex-1 overflow-y-auto px-5 pb-5' value="general">
-                    <GeneralTab
-                        emailDomain={emailDomain}
-                        generalSettings={generalSettings}
-                        siteTitle={siteTitle}
-                        onGeneralChange={onGeneralChange}
-                    />
-                </TabsContent>
-                <TabsContent className='min-h-0 flex-1 overflow-y-auto px-5 pb-5' value="design">
-                    <DesignTab />
-                </TabsContent>
-            </>
-        )}
-    </Tabs>
-);
+const Sidebar: React.FC<SidebarProps> = ({generalSettings, onGeneralChange, siteTitle, emailDomain, isLoading, errorMessage}) => {
+    let sidebarState: 'loading' | 'error' | 'content' = 'content';
+
+    if (isLoading) {
+        sidebarState = 'loading';
+    } else if (errorMessage) {
+        sidebarState = 'error';
+    }
+
+    return (
+        <Tabs className="flex min-h-0 flex-1 flex-col" defaultValue="general" variant="underline">
+            <TabsList className='px-5'>
+                <TabsTrigger value="general">General</TabsTrigger>
+                <TabsTrigger value="design">Design</TabsTrigger>
+            </TabsList>
+            {sidebarState === 'loading' && (
+                <div className="flex flex-1 items-center justify-center">
+                    <LoadingIndicator size="md" />
+                </div>
+            )}
+            {sidebarState === 'error' && (
+                <div className="flex flex-1 items-center justify-center px-6 text-center text-sm text-gray-700 dark:text-gray-300">
+                    {errorMessage}
+                </div>
+            )}
+            {sidebarState === 'content' && (
+                <>
+                    <TabsContent className='min-h-0 flex-1 overflow-y-auto px-5 pb-5' value="general">
+                        <GeneralTab
+                            emailDomain={emailDomain}
+                            generalSettings={generalSettings}
+                            siteTitle={siteTitle}
+                            onGeneralChange={onGeneralChange}
+                        />
+                    </TabsContent>
+                    <TabsContent className='min-h-0 flex-1 overflow-y-auto px-5 pb-5' value="design">
+                        <DesignTab />
+                    </TabsContent>
+                </>
+            )}
+        </Tabs>
+    );
+};
 
 /**
  * Maps API response fields to the frontend GeneralSettings shape.
@@ -351,7 +363,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
     }, [updateForm]);
 
     const handleClose = useCallback(() => {
-        void modal.hide();
+        modal.hide();
     }, [modal]);
 
     const emailDomain = (config?.emailDomain as string) || defaultEmailAddress?.split('@')[1] || '';
