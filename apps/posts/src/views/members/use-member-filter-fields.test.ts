@@ -1,4 +1,4 @@
-import {ValueSource} from '@tryghost/shade/components';
+import {ValueSource} from '@tryghost/shade/patterns';
 import {
     buildOfferOptions,
     fromOfferFilterDisplayValues,

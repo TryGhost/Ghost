@@ -1,4 +1,5 @@
 // Feature-level compositions and pattern contracts
+export * from './components/ui/filters';
 export {default as ColorPicker} from './components/features/color-picker/color-picker';
 export type {ColorPickerProps} from './components/features/color-picker/color-picker';
 export {default as PostShareModal} from './components/features/post-share-modal';

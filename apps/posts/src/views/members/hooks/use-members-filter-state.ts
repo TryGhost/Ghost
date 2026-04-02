@@ -1,4 +1,4 @@
-import {Filter} from '@tryghost/shade/components';
+import {Filter} from '@tryghost/shade/patterns';
 import {hasTimezoneSensitiveMemberFilter, parseMemberFilter, serializeMemberFilters} from '../member-filter-query';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useSearchParams} from 'react-router';

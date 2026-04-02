@@ -1,5 +1,5 @@
 import React, {useMemo} from 'react';
-import {Filter, FilterFieldConfig, Filters} from '@tryghost/shade/components';
+import {Filter, FilterFieldConfig, Filters} from '@tryghost/shade/patterns';
 import {LucideIcon, cn} from '@tryghost/shade';
 import {useMemberValueSource} from '@src/hooks/filter-sources/use-member-value-source';
 import {usePostResourceValueSource} from '@src/hooks/filter-sources/use-post-resource-value-source';

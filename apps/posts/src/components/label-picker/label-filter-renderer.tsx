@@ -1,6 +1,6 @@
 import LabelPicker from './label-picker';
 import React from 'react';
-import {CustomRendererProps, ValueSource} from '@tryghost/shade/components';
+import {CustomRendererProps, ValueSource} from '@tryghost/shade/patterns';
 import {useLabelPicker} from '@src/hooks/use-label-picker';
 
 const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, values, onChange}) => {

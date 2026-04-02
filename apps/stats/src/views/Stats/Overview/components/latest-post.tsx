@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, Skeleton} from '@tryghost/shade/components';
-import {LucideIcon, PostShareModal, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {LucideIcon, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {PostShareModal} from '@tryghost/shade/patterns';
 
 import {Post, getPostMetricsToDisplay} from '@tryghost/admin-x-framework';
 import {getPostDestination} from '@src/utils/url-helpers';

@@ -16,7 +16,6 @@ export * from './components/ui/dropdown-menu';
 export * from './components/ui/dropzone';
 export * from './components/ui/empty-indicator';
 export * from './components/ui/field';
-export * from './components/ui/filters';
 export * from './components/ui/flag';
 export * from './components/ui/form';
 export * from './components/ui/gh-chart';

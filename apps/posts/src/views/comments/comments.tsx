@@ -4,8 +4,9 @@ import CommentsHeader from './components/comments-header';
 import CommentsLayout from './components/comments-layout';
 import CommentsList from './components/comments-list';
 import React, {useCallback} from 'react';
-import {Button, EmptyIndicator, LoadingIndicator, createFilter} from '@tryghost/shade/components';
+import {Button, EmptyIndicator, LoadingIndicator} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade';
+import {createFilter} from '@tryghost/shade/patterns';
 import {useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
 import {useFilterState} from './hooks/use-filter-state';
 

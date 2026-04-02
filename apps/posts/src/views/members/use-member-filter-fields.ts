@@ -1,6 +1,6 @@
 import React, {useMemo} from 'react';
 import moment from 'moment-timezone';
-import {FilterFieldConfig, FilterFieldGroup, FilterOption, ValueSource} from '@tryghost/shade/components';
+import {FilterFieldConfig, FilterFieldGroup, FilterOption, ValueSource} from '@tryghost/shade/patterns';
 import {LabelFilterRenderer} from '@src/components/label-picker';
 import {LucideIcon} from '@tryghost/shade';
 import {memberFields} from './member-fields';
