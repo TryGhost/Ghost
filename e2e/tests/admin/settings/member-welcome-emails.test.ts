@@ -170,7 +170,7 @@ test.describe('Ghost Admin - Welcome Email Customize Button - flag enabled', () 
         await expect(welcomeEmailsSection.customizeModal).toBeHidden();
     });
 
-    test('saving design settings persists to the API', async ({page}) => {
+    test('save design settings - persists to api', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
         await welcomeEmailsSection.goto();
@@ -190,7 +190,7 @@ test.describe('Ghost Admin - Welcome Email Customize Button - flag enabled', () 
         expect(design.button_style).toBe('outline');
     });
 
-    test('saving general settings persists to the API', async ({page}) => {
+    test('save general settings - persists to api', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
         await welcomeEmailsSection.goto();
@@ -211,7 +211,7 @@ test.describe('Ghost Admin - Welcome Email Customize Button - flag enabled', () 
         expect(design.footer_content).toBe('Custom footer text');
     });
 
-    test('saved design settings load when modal is reopened', async ({page}) => {
+    test('saved design settings - loads when modal is reopened', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
         await welcomeEmailsSection.goto();
