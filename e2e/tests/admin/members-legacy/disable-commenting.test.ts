@@ -172,6 +172,8 @@ test.describe('Ghost Admin - Member Detail Disable Commenting', () => {
 });
 
 test.describe('Ghost Admin - Disable Commenting Cache Invalidation', () => {
+    test.use({labs: {membersForward: false}});
+
     let memberFactory: MemberFactory;
     let postFactory: PostFactory;
     let commentFactory: CommentFactory;

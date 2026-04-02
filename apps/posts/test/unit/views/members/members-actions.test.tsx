@@ -47,7 +47,8 @@ describe('MembersActions', () => {
     beforeEach(() => {
         importModalPropsRef.current = null;
         mockUseLocation.mockReturnValue({
-            pathname: '/members'
+            pathname: '/members',
+            search: ''
         });
         mockUseNavigate.mockReturnValue(vi.fn());
     });
@@ -74,7 +75,8 @@ describe('MembersActions', () => {
     it('navigates back to members when the import route modal closes', () => {
         const navigate = vi.fn();
         mockUseLocation.mockReturnValue({
-            pathname: '/members/import'
+            pathname: '/members/import',
+            search: '?filter=label%3AVIP&search=alice'
         });
         mockUseNavigate.mockReturnValue(navigate);
 
@@ -95,13 +97,14 @@ describe('MembersActions', () => {
 
         handleImportClose?.();
 
-        expect(navigate).toHaveBeenCalledWith('/members');
+        expect(navigate).toHaveBeenCalledWith('/members?filter=label%3AVIP&search=alice');
     });
 
     it('navigates to the imported label filter when the import route modal closes after a labeled import', () => {
         const navigate = vi.fn();
         mockUseLocation.mockReturnValue({
-            pathname: '/members/import'
+            pathname: '/members/import',
+            search: '?filter=label%3AVIP&search=alice'
         });
         mockUseNavigate.mockReturnValue(navigate);
 

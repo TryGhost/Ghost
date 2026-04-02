@@ -5,7 +5,8 @@ import {useFeatureFlag} from "./hooks/use-feature-flag";
 export function MembersRouteGate() {
     const membersForwardEnabled = useFeatureFlag("membersForward");
     const location = useLocation();
-    const isMembersListRoute = location.pathname === "/members";
+    const normalizedPath = location.pathname.replace(/\/+$/, "") || "/";
+    const isMembersListRoute = normalizedPath === "/members";
 
     if (!membersForwardEnabled && isMembersListRoute) {
         return <EmberFallback />;

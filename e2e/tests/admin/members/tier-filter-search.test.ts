@@ -1,12 +1,12 @@
 import {MemberFactory, TierFactory, createMemberFactory, createTierFactory} from '@/data-factory';
-import {MembersForwardPage} from '@/admin-pages';
+import {MembersListPage} from '@/admin-pages';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {expect, test} from '@/helpers/playwright';
 import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
 usePerTestIsolation();
 
-test.describe('Ghost Admin - Members Forward Tier Filter Search', () => {
+test.describe('Ghost Admin - Members Tier Filter Search', () => {
     test.use({labs: {membersForward: true}});
 
     let memberFactory: MemberFactory;
@@ -30,7 +30,7 @@ test.describe('Ghost Admin - Members Forward Tier Filter Search', () => {
             {name: 'Free Member', email: 'free@example.com'}
         ]);
 
-        const membersPage = new MembersForwardPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
         await page.reload({waitUntil: 'load'});
         await expect(membersPage.memberRows).toHaveCount(3);
