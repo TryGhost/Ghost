@@ -82,7 +82,7 @@ const Feedback: React.FC<FeedbackProps> = ({feedbackStats}) => {
                                             <Avatar className='size-7'>
                                                 {item.member?.avatar_image && <img className='absolute aspect-square size-full' src={item.member?.avatar_image} />}
                                                 <AvatarFallback className='text-white' style={{
-                                                    backgroundColor: `${stringToHslColor(formatMemberName(item.member), 75, 55)}`
+                                                    backgroundColor: `${stringToHslColor(formatMemberName(item.member), '75', '55')}`
                                                 }}>{getMemberInitials(item.member)}</AvatarFallback>
                                             </Avatar>
                                             {formatMemberName(item.member)}
