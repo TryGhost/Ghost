@@ -11930,6 +11930,17 @@ append-field@^1.0.0:
   resolved "https://registry.yarnpkg.com/append-field/-/append-field-1.0.0.tgz#1e3440e915f0b1203d23748e78edd7b9b5b43e56"
   integrity sha512-klpgFSWLW1ZEs8svjfb7g4qWY0YS5imI82dTg+QahUvJ8YqAY0P10Uk8tTyh9ZGuYEZEMaeJYCF5BFuX552hsw==
 
+applause@^2.0.0:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/applause/-/applause-2.0.4.tgz#0b771418fdd1bb326a225ad031d41ba0b20cd0f4"
+  integrity sha512-wFhNjSoflbAEgelX3psyKSXV2iQFjuYW31DEhcCOD/bQ98VdfltLclK4p1mI6E58Qp4Q7+5RCbBdr+Nc9b5QhA==
+  dependencies:
+    lodash "^4.17.21"
+    optional-require "^1.0.2"
+  optionalDependencies:
+    cson-parser "^4.0.8"
+    js-yaml "^4.0.0"
+
 aproba@^1.0.3, aproba@^1.1.1:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/aproba/-/aproba-1.2.0.tgz#6802e6264efd18c790a1b0d517f0f2627bf2c94a"
@@ -13816,7 +13827,7 @@ broccoli-file-creator@^2.1.1:
     broccoli-plugin "^1.1.0"
     mkdirp "^0.5.1"
 
-broccoli-filter@^1.2.2, broccoli-filter@^1.2.3:
+broccoli-filter@^1.2.2, broccoli-filter@^1.2.3, broccoli-filter@^1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/broccoli-filter/-/broccoli-filter-1.3.0.tgz#71e3a8e32a17f309e12261919c5b1006d6766de6"
   integrity sha512-VXJXw7eBfG82CFxaBDjYmyN7V72D4In2zwLVQJd/h3mBfF3CMdRTsv2L20lmRTtCv1sAHcB+LgMso90e/KYiLw==
@@ -14129,6 +14140,15 @@ broccoli-postcss@^6.0.1:
     minimist ">=1.2.5"
     object-assign "^4.1.1"
     postcss "^8.1.4"
+
+broccoli-replace@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/broccoli-replace/-/broccoli-replace-2.0.2.tgz#eb40046bb124a7f651486aece947ce28bbec30b1"
+  integrity sha512-1e8uyGUo8HqiKKB4oWz5nUX1rlLSRgShLxczuwSXJlmGljVWerDGF0oW5VshGAuKKYkAoDsI3Cc0TKEgo4SWTg==
+  dependencies:
+    applause "^2.0.0"
+    broccoli-filter "^1.3.0"
+    minimatch "^3.0.4"
 
 broccoli-rollup@^2.1.1:
   version "2.1.1"
@@ -15429,6 +15449,11 @@ codemirror@^6.0.0:
     "@codemirror/state" "^6.0.0"
     "@codemirror/view" "^6.0.0"
 
+coffeescript@1.12.7:
+  version "1.12.7"
+  resolved "https://registry.yarnpkg.com/coffeescript/-/coffeescript-1.12.7.tgz#e57ee4c4867cf7f606bfc4a0f2d550c0981ddd27"
+  integrity sha512-pLXHFxQMPklVoEekowk8b3erNynC+DVJzChxS/LCBBgR6/8AJkHivkm//zbowcfc7BTCAjryuhx6gPqPRfsFoA==
+
 collapse-white-space@^1.0.2:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/collapse-white-space/-/collapse-white-space-1.0.6.tgz#e63629c0016665792060dbbeb79c42239d2c5287"
@@ -16153,6 +16178,13 @@ crypto@0.0.3:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/crypto/-/crypto-0.0.3.tgz#470a81b86be4c5ee17acc8207a1f5315ae20dbb0"
   integrity sha512-Q6Ka98WcvWXXg+9cnqd3jHpTSIOaH6/q0m/bESMfQo/0uFxy6e/7EqVS4JdaWx9qLdqV56tDufy2b12dj7BHJg==
+
+cson-parser@^4.0.8:
+  version "4.0.9"
+  resolved "https://registry.yarnpkg.com/cson-parser/-/cson-parser-4.0.9.tgz#eef0cf77edd057f97861ef800300c8239224eedb"
+  integrity sha512-I79SAcCYquWnEfXYj8hBqOOWKj6eH6zX1hhX3yqmS4K3bYp7jME3UFpHPzu3rUew0oyfc0s8T6IlWGXRAheHag==
+  dependencies:
+    coffeescript "1.12.7"
 
 css-blank-pseudo@^3.0.3:
   version "3.0.3"
@@ -18852,10 +18884,10 @@ ember-style-modifier@^0.7.0:
     ember-cli-babel "^7.26.11"
     ember-modifier "^3.2.7"
 
-ember-svg-jar@2.4.9:
-  version "2.4.9"
-  resolved "https://registry.yarnpkg.com/ember-svg-jar/-/ember-svg-jar-2.4.9.tgz#6be24801005a433cbca0c930674659e6fdabdd36"
-  integrity sha512-d/8rdE2nDUt6xVMpTqbohE4kHAaoY+P/7jWCWow3UQGtaGhvURXfKgo8TG/UVK+TfTgJInN6JcU76XLg+MWEtw==
+ember-svg-jar@2.7.1:
+  version "2.7.1"
+  resolved "https://registry.yarnpkg.com/ember-svg-jar/-/ember-svg-jar-2.7.1.tgz#5c72fe6b262ec29981f0b754edfb30b06df40dd9"
+  integrity sha512-Y957CMG/IlpdrIu+Gl5KMYBZN6zL2Eyz2CQl2RRfpExFA3uJpv1+Br8vbtxLEs1OoPTlR+YYHcUXfgqS7dHaXw==
   dependencies:
     "@embroider/macros" "^1.12.2"
     broccoli-caching-writer "^3.0.3"
@@ -18864,9 +18896,9 @@ ember-svg-jar@2.4.9:
     broccoli-merge-trees "^4.2.0"
     broccoli-persistent-filter "^3.1.2"
     broccoli-plugin "^4.0.7"
-    broccoli-string-replace "^0.1.2"
+    broccoli-replace "^2.0.2"
     broccoli-svg-optimizer "^2.1.0"
-    cheerio "^1.0.0-rc.12"
+    cheerio "1.0.0"
     console-ui "^3.1.1"
     ember-cli-babel "^7.26.6"
     ember-cli-htmlbars "^5.7.1"
@@ -24324,6 +24356,13 @@ js-yaml@^3.10.0, js-yaml@^3.13.1, js-yaml@^3.14.0, js-yaml@^3.2.5, js-yaml@^3.2.
     argparse "^1.0.7"
     esprima "^4.0.0"
 
+js-yaml@^4.0.0:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-4.1.1.tgz#854c292467705b699476e1a2decc0c8a3458806b"
+  integrity sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==
+  dependencies:
+    argparse "^2.0.1"
+
 jsbn@~0.1.0:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
@@ -27953,6 +27992,13 @@ open@^8.0.4, open@^8.4.0:
     is-docker "^2.1.1"
     is-wsl "^2.2.0"
 
+optional-require@^1.0.2:
+  version "1.1.10"
+  resolved "https://registry.yarnpkg.com/optional-require/-/optional-require-1.1.10.tgz#35ea423c5442df157c084f8d5a9d5250bba1de47"
+  integrity sha512-0r3OB9EIQsP+a5HVATHq2ExIy2q/Vaffoo4IAikW1spCYswhLxqWQS0i3GwS3AdY/OIP4SWZHLGz8CMU558PGw==
+  dependencies:
+    require-at "^1.0.6"
+
 optionator@^0.9.3:
   version "0.9.3"
   resolved "https://registry.yarnpkg.com/optionator/-/optionator-0.9.3.tgz#007397d44ed1872fdc6ed31360190f81814e2c64"
@@ -31104,6 +31150,11 @@ reqresnext@^1.7.0:
     tough-cookie "~2.5.0"
     tunnel-agent "^0.6.0"
     uuid "^3.3.2"
+
+require-at@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/require-at/-/require-at-1.0.6.tgz#9eb7e3c5e00727f5a4744070a7f560d4de4f6e6a"
+  integrity sha512-7i1auJbMUrXEAZCOQ0VNJgmcT2VOKPRl2YGJwgpHpC9CE91Mv4/4UYIUm4chGJaI381ZDq1JUicFii64Hapd8g==
 
 require-directory@^2.1.1:
   version "2.1.1"
