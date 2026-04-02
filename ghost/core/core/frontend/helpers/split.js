@@ -1,4 +1,4 @@
-const {SafeString} = require('handlebars');
+const {SafeString} = require('../services/handlebars');
 
 function renderResult(result, options, data) {
     if (options && typeof options.fn === 'function') {
