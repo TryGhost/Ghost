@@ -1,5 +1,5 @@
-import * as assert from 'assert/strict';
 import WelcomeEmailPreviewContent from '@src/components/settings/email-design/welcome-email-preview-content';
+import assert from 'node:assert/strict';
 import {DEFAULT_EMAIL_DESIGN} from '@src/components/settings/email-design/types';
 import {DesignTab} from '@src/components/settings/membership/member-emails/welcome-email-customize-modal';
 import {EmailDesignProvider} from '@src/components/settings/email-design/email-design-context';
