@@ -1678,11 +1678,8 @@ jobs:
           elif [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
 
-            # DISABLED: deploy-to-staging label detection is disabled.
-            # The label workflow has fundamental problems — admin deploys are global
-            # (not per-site) and main merges overwrite the deployment immediately.
-            # See deploy-to-staging.yml for details.
-            echo "deploy=" >> $GITHUB_OUTPUT
+            DEPLOY=$(echo '${{ toJson(github.event.pull_request.labels.*.name) }}' | jq -r 'if any(. == "deploy-to-staging") then "true" else "" end')
+            echo "deploy=$DEPLOY" >> $GITHUB_OUTPUT
           else
             echo "skip=true" >> $GITHUB_OUTPUT
             exit 0
