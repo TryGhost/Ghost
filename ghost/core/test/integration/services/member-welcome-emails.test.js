@@ -431,5 +431,75 @@ describe('Member Welcome Emails Integration', function () {
             assert(!sendCall.args[0].html.includes('{uuid}'));
             assert(!sendCall.args[0].html.includes('%7Buuid%7D'));
         });
+
+        it('uses the latest design settings when sending cached welcome emails', async function () {
+            const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
+            memberWelcomeEmailService.init();
+            await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
+
+            await db.knex('email_design_settings')
+                .where('id', defaultEmailDesignSettingId)
+                .update({
+                    footer_content: '<p>Updated footer</p>',
+                    show_badge: true
+                });
+
+            await memberWelcomeEmailService.api.send({
+                member: {
+                    name: 'Cached Design Member',
+                    email: 'cached-design@example.com',
+                    uuid: '77777777-7777-4777-8777-777777777777'
+                },
+                memberStatus: 'free'
+            });
+
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            assert.ok(sendCall.args[0].html.includes('Updated footer</p>'));
+            assert.ok(sendCall.args[0].html.includes('https://ghost.org/?via=pbg-newsletter'));
+        });
+
+        it('uses the latest design settings when sending test welcome emails', async function () {
+            const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
+            memberWelcomeEmailService.init();
+
+            const automatedEmail = await db.knex('automated_emails')
+                .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
+                .first();
+
+            await db.knex('email_design_settings')
+                .where('id', defaultEmailDesignSettingId)
+                .update({
+                    footer_content: '<p>First footer</p>',
+                    show_badge: true
+                });
+
+            await memberWelcomeEmailService.api.sendTestEmail({
+                email: 'test-member@example.com',
+                subject: 'Welcome test',
+                lexical: automatedEmail.lexical,
+                automatedEmailId: automatedEmail.id
+            });
+
+            await db.knex('email_design_settings')
+                .where('id', defaultEmailDesignSettingId)
+                .update({
+                    footer_content: '<p>Second footer</p>',
+                    show_badge: false
+                });
+
+            await memberWelcomeEmailService.api.sendTestEmail({
+                email: 'test-member@example.com',
+                subject: 'Welcome test',
+                lexical: automatedEmail.lexical,
+                automatedEmailId: automatedEmail.id
+            });
+
+            sinon.assert.calledTwice(mailService.GhostMailer.prototype.send);
+            assert.ok(mailService.GhostMailer.prototype.send.firstCall.args[0].html.includes('First footer</p>'));
+            assert.ok(mailService.GhostMailer.prototype.send.firstCall.args[0].html.includes('https://ghost.org/?via=pbg-newsletter'));
+            assert.ok(mailService.GhostMailer.prototype.send.secondCall.args[0].html.includes('Second footer</p>'));
+            assert.ok(!mailService.GhostMailer.prototype.send.secondCall.args[0].html.includes('https://ghost.org/?via=pbg-newsletter'));
+        });
     });
 });

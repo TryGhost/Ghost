@@ -16,6 +16,9 @@ class MemberWelcomeEmailRenderer {
 
     constructor({t}) {
         this.Handlebars = require('handlebars').create();
+        this.Handlebars.registerHelper('or', (...args) => args.slice(0, -1).some(Boolean));
+        this.Handlebars.registerHelper('and', (...args) => args.slice(0, -1).every(Boolean));
+        this.Handlebars.registerHelper('not', value => !value);
         this.Handlebars.registerHelper('t', function (key, options) {
             let hash = options?.hash;
             return t(key, hash || options || {});
@@ -36,7 +39,7 @@ class MemberWelcomeEmailRenderer {
         this.Handlebars.registerPartial('contentStyles', contentStylesSource);
         this.Handlebars.registerPartial('cardStyles', cardStylesSource);
         this.Handlebars.registerPartial('styles',
-            '<style>\n{{>baseStyles}}\n{{>contentStyles}}\n{{>cardStyles}}\n</style>'
+            '<style>\n{{>baseStyles}}\n{{>contentStyles}}\n{{>cardStyles}}\n.header {\n    line-height: 1.4;\n    {{#if headerBackgroundColor}}\n    background-color: {{headerBackgroundColor}};\n    {{else}}\n    background-color: {{backgroundColor}};\n    {{/if}}\n}\n.header-image {\n    padding-top: 24px;\n    padding-bottom: 16px;\n}\n.site-info {\n    padding-top: 32px;\n}\n.site-url {\n    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};\n    font-size: 16px;\n    letter-spacing: -0.1px;\n    font-weight: 700;\n    text-transform: uppercase;\n    text-align: center;\n}\n.site-url-bottom-padding {\n    padding-bottom: 12px;\n}\n.site-title {\n    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};\n}\n.footer-powered {\n    text-align: center;\n    padding-top: 32px;\n    padding-bottom: 20px;\n}\n.gh-powered {\n    width: 142px;\n    height: 30px;\n}\n</style>'
         );
         const emailWrapperSource = fs.readFileSync(
             path.join(__dirname, '../email-rendering/partials/email-wrapper.hbs'),
@@ -109,24 +112,25 @@ class MemberWelcomeEmailRenderer {
      * @param {string} options.lexical - Lexical JSON string to render
      * @param {string} options.subject - Email subject (may contain template variables)
      * @param {Object} options.member - Member data (name, email)
+     * @param {Object} [options.designSettings] - Email design settings from the database
      * @param {Object} options.siteSettings - Site settings (title, url, accentColor)
      * @returns {Promise<{html: string, text: string, subject: string}>}
      */
-    async render({lexical, subject, member, siteSettings}) {
+    async render({lexical, subject, member, designSettings = {}, siteSettings}) {
         const design = getEmailDesign({
             accentColor: siteSettings.accentColor,
-            backgroundColor: '#ffffff',
-            buttonColor: 'accent',
-            buttonCorners: null,
-            buttonStyle: null,
-            dividerColor: null,
-            headerBackgroundColor: null,
-            imageCorners: null,
-            linkColor: 'accent',
-            linkStyle: null,
+            backgroundColor: designSettings.background_color,
+            buttonColor: designSettings.button_color,
+            buttonCorners: designSettings.button_corners,
+            buttonStyle: designSettings.button_style,
+            dividerColor: designSettings.divider_color,
+            headerBackgroundColor: designSettings.header_background_color,
+            imageCorners: designSettings.image_corners,
+            linkColor: designSettings.link_color,
+            linkStyle: designSettings.link_style,
             postTitleColor: null,
-            sectionTitleColor: null,
-            titleFontWeight: 'bold'
+            sectionTitleColor: designSettings.section_title_color,
+            titleFontWeight: designSettings.title_font_weight
         });
 
         let content;
@@ -162,6 +166,15 @@ class MemberWelcomeEmailRenderer {
         const html = this.#wrapperTemplate({
             content: contentWithAbsoluteLinks,
             emailTitle: subjectWithReplacements,
+            footerContent: designSettings.footer_content,
+            hasHeaderContent: Boolean(designSettings.header_image || designSettings.show_header_title),
+            headerImage: designSettings.header_image,
+            showBadge: designSettings.show_badge,
+            showHeaderTitle: designSettings.show_header_title,
+            site: {
+                title: siteSettings.title,
+                url: siteSettings.url
+            },
             subject: subjectWithReplacements,
             siteTitle: siteSettings.title,
             siteUrl: siteSettings.url,
