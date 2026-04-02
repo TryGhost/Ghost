@@ -15,11 +15,18 @@ vi.mock('@tryghost/admin-x-framework', () => ({
     getSymbol: vi.fn()
 }));
 
-vi.mock('@tryghost/shade', async () => {
-    const actual = await vi.importActual('@tryghost/shade');
+vi.mock('@tryghost/shade/utils', async () => {
+    const actual = await vi.importActual('@tryghost/shade/utils');
     return {
         ...actual,
-        formatPercentage: vi.fn(),
+        formatPercentage: vi.fn()
+    };
+});
+
+vi.mock('@tryghost/shade/app', async () => {
+    const actual = await vi.importActual('@tryghost/shade/app');
+    return {
+        ...actual,
         getRangeDates: vi.fn()
     };
 });

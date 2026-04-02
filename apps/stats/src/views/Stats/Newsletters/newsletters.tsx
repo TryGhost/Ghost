@@ -303,9 +303,10 @@ const Newsletters: React.FC = () => {
             const {startDate, endDate} = getRangeDates(range);
 
             const dailyData = [];
-            const currentDate = new Date(startDate);
+            const currentDate = startDate.clone().toDate();
+            const endDateObj = endDate.toDate();
 
-            while (currentDate <= endDate) {
+            while (currentDate <= endDateObj) {
                 dailyData.push({
                     date: currentDate.toISOString().split('T')[0],
                     value: 0

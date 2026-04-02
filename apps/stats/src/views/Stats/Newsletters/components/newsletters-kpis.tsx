@@ -24,7 +24,9 @@ const BarTooltipContent = ({active, payload}: BarTooltipProps) => {
     }
 
     const currentItem = payload[0].payload;
-    const sendDate = currentItem.send_date;
+    const sendDate = typeof currentItem.send_date === 'string'
+        ? currentItem.send_date
+        : currentItem.send_date.toISOString().split('T')[0];
 
     return (
         <div className="max-w-[240px] min-w-[220px] rounded-lg border bg-background px-3 py-2 shadow-lg">
