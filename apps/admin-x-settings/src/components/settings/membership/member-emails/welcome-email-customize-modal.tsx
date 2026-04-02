@@ -17,7 +17,8 @@ import {
     HeadingWeightField,
     ImageCornersField,
     LinkColorField,
-    LinkStyleField
+    LinkStyleField,
+    SectionTitleColorField
 } from '../../email-design/design-fields';
 import {DEFAULT_EMAIL_DESIGN, type EmailDesignSettings, type PersistedEmailDesignSettings} from '../../email-design/types';
 import {EmailDesignProvider} from '../../email-design/email-design-context';
@@ -113,7 +114,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange
     </div>
 );
 
-const DesignTab: React.FC = () => (
+export const DesignTab: React.FC = () => (
     <div className="flex flex-col gap-6 pt-6">
         <section>
             <h4 className="mb-4 font-semibold md:text-lg">Global</h4>
@@ -139,6 +140,7 @@ const DesignTab: React.FC = () => (
         <section>
             <h4 className="mb-4 font-semibold md:text-lg">Body</h4>
             <div className="flex flex-col gap-4">
+                <SectionTitleColorField />
                 <ButtonColorField />
                 <ButtonStyleField />
                 <ButtonCornersField />

@@ -42,7 +42,7 @@ const WelcomeEmailPreviewContent: React.FC = () => {
 
             <h3
                 className={titleFontClasses}
-                style={{color: colors.textColor}}
+                style={{color: colors.sectionTitleColor}}
             >
                 Your welcome email
             </h3>
@@ -81,7 +81,7 @@ const WelcomeEmailPreviewContent: React.FC = () => {
 
             <h3
                 className={titleFontClasses}
-                style={{color: colors.textColor}}
+                style={{color: colors.sectionTitleColor}}
             >
                 Need inspiration?
             </h3>
