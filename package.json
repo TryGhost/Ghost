@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@tryghost/errors": "2.2.1",
-    "lodash": "4.17.23",
+    "lodash": "4.18.1",
     "luxon": "3.7.2"
   }
 }
