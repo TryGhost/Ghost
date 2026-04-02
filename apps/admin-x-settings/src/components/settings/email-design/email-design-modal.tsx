@@ -65,15 +65,6 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
         setShowDirtyConfirm(true);
     };
 
-    const saveColor = okProps?.color || 'black';
-    const saveDisabled = okProps?.disabled || false;
-    const saveLabel = okProps?.label || 'Save';
-    const saveButtonClassName = saveColor === 'green'
-        ? 'bg-green text-white hover:bg-green/90'
-        : saveColor === 'red'
-            ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
-            : undefined;
-
     return (
         <>
             <Dialog open={open} onOpenChange={isOpen => !isOpen && handleClose()}>
@@ -97,8 +88,13 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
                                 <DialogTitle>{title}</DialogTitle>
                                 <div className="flex items-center gap-2">
                                     <Button variant="outline" onClick={handleClose}>Close</Button>
-                                    <Button className={saveButtonClassName} disabled={isLoading || saveDisabled} onClick={onSave}>
-                                        {saveLabel}
+                                    <Button
+                                        className={okProps?.color === 'green' ? 'bg-green text-white hover:bg-green/90' : undefined}
+                                        disabled={isLoading || okProps?.disabled}
+                                        variant={okProps?.color === 'red' ? 'destructive' : 'default'}
+                                        onClick={onSave}
+                                    >
+                                        {okProps?.label || 'Save'}
                                     </Button>
                                 </div>
                             </div>
