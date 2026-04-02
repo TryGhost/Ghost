@@ -55,7 +55,7 @@
     "html-minifier": "4.0.0",
     "jsdom": "29.0.1",
     "lexical": "0.13.1",
-    "lodash": "4.17.23",
+    "lodash": "4.18.1",
     "luxon": "3.7.2"
   }
 }

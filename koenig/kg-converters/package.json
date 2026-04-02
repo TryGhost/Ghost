@@ -42,6 +42,6 @@
     "typescript-eslint": "8.57.2"
   },
   "dependencies": {
-    "lodash": "4.17.23"
+    "lodash": "4.18.1"
   }
 }
