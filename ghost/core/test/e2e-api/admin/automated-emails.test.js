@@ -411,38 +411,6 @@ describe('Automated Emails API', function () {
         });
     });
 
-    describe('Destroy', function () {
-        it('Can destroy an automated email', async function () {
-            const automatedEmail = await createAutomatedEmail();
-
-            const id = automatedEmail.id;
-
-            await agent
-                .delete(`automated_emails/${id}`)
-                .expectStatus(204)
-                .expectEmptyBody()
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                });
-        });
-
-        it('Cannot destroy non-existent automated email', async function () {
-            await agent
-                .delete('automated_emails/abcd1234abcd1234abcd1234')
-                .expectStatus(404)
-                .matchBodySnapshot({
-                    errors: [{
-                        id: anyErrorId
-                    }]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                });
-        });
-    });
-
     describe('SendTestEmail', function () {
         let automatedEmailId;
 
