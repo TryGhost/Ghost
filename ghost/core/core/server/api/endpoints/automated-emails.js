@@ -92,27 +92,6 @@ const controller = {
         }
     },
 
-    destroy: {
-        statusCode: 204,
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'id'
-        ],
-        validation: {
-            options: {
-                id: {
-                    required: true
-                }
-            }
-        },
-        permissions: true,
-        query(frame) {
-            return models.AutomatedEmail.destroy({...frame.options, require: true});
-        }
-    },
-
     sendTestEmail: {
         statusCode: 204,
         headers: {
