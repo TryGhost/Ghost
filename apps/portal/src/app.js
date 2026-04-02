@@ -7,7 +7,7 @@ import Notification from './components/notification';
 import PopupModal from './components/popup-modal';
 import setupGhostApi from './utils/api';
 import AppContext from './app-context';
-import NotificationParser from './utils/notifications';
+import NotificationParser, {clearURLParams} from './utils/notifications';
 import * as Fixtures from './utils/fixtures';
 import {hasMode} from './utils/check-mode';
 import {transformPortalAnchorToRelative} from './utils/transform-portal-anchor-to-relative';
@@ -494,6 +494,21 @@ export default class App extends React.Component {
     /** Fetch state from Portal Links */
     fetchLinkData(site, member) {
         const qParams = new URLSearchParams(window.location.search);
+
+        if (qParams.get('stripe') === 'gift-purchase-success') {
+            const token = qParams.get('gift_token');
+            clearURLParams(['stripe', 'gift_token']);
+            if (token) {
+                return {
+                    showPopup: true,
+                    page: 'giftSuccess',
+                    pageData: {
+                        token
+                    }
+                };
+            }
+        }
+
         if (qParams.get('action') === 'unsubscribe') {
             // if the user is unsubscribing from a newsletter with an old unsubscribe link that we can't validate, push them to newsletter mgmt where they have to log in
             if (qParams.get('key') && qParams.get('uuid')) {
