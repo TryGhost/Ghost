@@ -14,7 +14,7 @@ async function seedMembersAndNavigate(
     memberFactory: MemberFactory,
     page: Page,
     members: Partial<Member>[]
-): Promise<MembersForwardPage> {
+): Promise<MembersListPage> {
     await memberFactory.createMany(members);
     const membersPage = new MembersListPage(page);
     await membersPage.goto();
