@@ -1072,7 +1072,8 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         payload: {type: 'text', maxlength: 65535, nullable: true},
         deleted: {type: 'boolean', nullable: false, defaultTo: false},
-        verified: {type: 'boolean', nullable: false, defaultTo: false}
+        verified: {type: 'boolean', nullable: false, defaultTo: false},
+        revalidation_failure_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
     },
     milestones: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

@@ -2,6 +2,8 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const Mention = require('./mention');
 
+const MAX_REVALIDATION_FAILURES = 3;
+
 /**
  * @template Model
  * @typedef {object} Page<Model>
@@ -210,12 +212,25 @@ module.exports = class MentionsAPI {
                         sourceFavicon: metadata.favicon,
                         sourceFeaturedImage: metadata.image
                     });
+                    mention.clearRevalidationFailures();
                 }
             } catch (err) {
                 if (!mention) {
                     throw err;
                 }
-                mention.delete();
+
+                if (err.transient) {
+                    logging.warn(`[Webmention Revalidation] Transient error fetching ${webmention.source.href}: ${err.message} (status: ${err.statusCode || 'N/A'})`);
+                    return mention;
+                }
+
+                const count = mention.recordRevalidationFailure();
+                logging.warn(`[Webmention Revalidation] Hard failure ${count}/${MAX_REVALIDATION_FAILURES} for ${webmention.source.href}: ${err.message} (status: ${err.statusCode || 'N/A'})`);
+
+                if (count >= MAX_REVALIDATION_FAILURES) {
+                    logging.warn(`[Webmention Revalidation] Deleting mention after ${count} consecutive failures: ${webmention.source.href}`);
+                    mention.delete();
+                }
             }
 
             if (!mention) {
