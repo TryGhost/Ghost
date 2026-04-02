@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, Dialog, DialogContent, DialogTitle} from '@tryghost/shade/components';
-import {cn} from '@tryghost/shade/utils';
 import {type OkProps} from '@tryghost/admin-x-framework/hooks';
+import {cn} from '@tryghost/shade/utils';
 
 interface EmailDesignModalProps {
     open: boolean;
