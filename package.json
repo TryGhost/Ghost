@@ -32,6 +32,6 @@
     "@tryghost/promise": "^2.0.3",
     "@tryghost/tpl": "^2.0.3",
     "@tryghost/validator": "^2.0.3",
-    "lodash": "4.17.23"
+    "lodash": "4.18.1"
   }
 }
