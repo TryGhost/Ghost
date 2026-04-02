@@ -1,7 +1,7 @@
 const {OUTBOX_LOG_KEY} = require('../jobs/lib/constants');
 const memberWelcomeEmailService = require('../../member-welcome-emails/service');
 const logging = require('@tryghost/logging');
-const {AutomatedEmail, AutomatedEmailRecipient} = require('../../../models');
+const {WelcomeEmailAutomation, AutomatedEmailRecipient} = require('../../../models');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../member-welcome-emails/constants');
 
 const LOG_KEY = `${OUTBOX_LOG_KEY}[MEMBER-WELCOME-EMAIL]`;
@@ -21,8 +21,8 @@ async function handle({payload}) {
             return;
         }
 
-        const automatedEmail = await AutomatedEmail.findOne({slug});
-        if (!automatedEmail) {
+        const automation = await WelcomeEmailAutomation.findOne({slug});
+        if (!automation) {
             logging.warn({
                 system: {
                     event: 'outbox.member_created.no_automated_email',
@@ -34,7 +34,7 @@ async function handle({payload}) {
 
         await AutomatedEmailRecipient.add({
             member_id: payload.memberId,
-            automated_email_id: automatedEmail.id,
+            automated_email_id: automation.get('first_welcome_email_automated_email_id'),
             member_uuid: payload.uuid,
             member_email: payload.email,
             member_name: payload.name
