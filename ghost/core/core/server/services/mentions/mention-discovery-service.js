@@ -18,7 +18,9 @@ module.exports = class MentionDiscoveryService {
                 throwHttpErrors: true,
                 followRedirect: true,
                 maxRedirects: 10,
-                timeout: 15000,
+                timeout: {
+                    request: 15000
+                },
                 retry: {
                     // Only retry on network issues, or specific HTTP status codes
                     limit: 3
