@@ -756,33 +756,25 @@ jobs:
           REPO="TryGhost/traffic-analytics-infra"
           WORKFLOW="tinybird.yml"
           BRANCH="main"
-          DISPATCHED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          DISPATCH_RESPONSE=$(gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            "repos/$REPO/actions/workflows/$WORKFLOW/dispatches" \
+            --input - <<EOF
+          {
+            "ref": "$BRANCH",
+            "return_run_details": true,
+            "inputs": {
+              "ghost_ref": "${{ github.sha }}",
+              "caller_run_id": "${{ github.run_id }}",
+              "run_local_tests": false
+            }
+          }
+          EOF
+          )
 
-          gh workflow run "$WORKFLOW" \
-            --repo "$REPO" \
-            --ref "$BRANCH" \
-            -f ghost_ref='${{ github.ref }}' \
-            -f run_local_tests='false'
-
-          RUN_ID=""
-          RUN_URL=""
-
-          for attempt in {1..30}; do
-            RUN_ID=$(gh run list \
-              --repo "$REPO" \
-              --workflow "$WORKFLOW" \
-              --branch "$BRANCH" \
-              --event workflow_dispatch \
-              --json databaseId,createdAt,url \
-              --jq 'map(select(.createdAt >= "'"$DISPATCHED_AT"'")) | sort_by(.createdAt) | last | .databaseId // empty')
-
-            if [ -n "$RUN_ID" ]; then
-              RUN_URL=$(gh run view "$RUN_ID" --repo "$REPO" --json url --jq '.url')
-              break
-            fi
-
-            sleep 5
-          done
+          RUN_ID=$(printf '%s' "$DISPATCH_RESPONSE" | jq -r '.workflow_run_id // empty')
+          RUN_URL=$(printf '%s' "$DISPATCH_RESPONSE" | jq -r '.html_url // .run_url // empty')
 
           if [ -z "$RUN_ID" ]; then
             echo "::error::Unable to find the triggered workflow run in $REPO"
