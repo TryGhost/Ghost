@@ -33,7 +33,7 @@ Scoping and dark mode:
 Wrap your surface with `ShadeApp` (includes provider and scoping):
 
 ```tsx
-import ShadeApp from '@tryghost/shade';
+import {ShadeApp} from '@tryghost/shade/app';
 
 <ShadeApp darkMode={false}>
     {/* your UI */}
