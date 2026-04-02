@@ -77,6 +77,52 @@ describe('MemberWelcomeEmailRenderer', function () {
             }});
         });
 
+        it('builds the email design from database-backed design settings', async function () {
+            const getEmailDesignStub = sinon.stub().returns({accentColor: '#123456'});
+            MemberWelcomeEmailRenderer.__set__('getEmailDesign', getEmailDesignStub);
+
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+            const designSettings = {
+                background_color: '#111111',
+                button_color: '#222222',
+                button_corners: 'pill',
+                button_style: 'outline',
+                divider_color: '#333333',
+                header_background_color: '#444444',
+                image_corners: 'rounded',
+                link_color: '#555555',
+                link_style: 'bold',
+                section_title_color: '#666666',
+                title_font_weight: 'medium'
+            };
+
+            await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                designSettings,
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            sinon.assert.calledOnceWithExactly(getEmailDesignStub, {
+                accentColor: '#ff0000',
+                backgroundColor: '#111111',
+                buttonColor: '#222222',
+                buttonCorners: 'pill',
+                buttonStyle: 'outline',
+                dividerColor: '#333333',
+                headerBackgroundColor: '#444444',
+                imageCorners: 'rounded',
+                linkColor: '#555555',
+                linkStyle: 'bold',
+                postTitleColor: null,
+                sectionTitleColor: '#666666',
+                titleFontWeight: 'medium'
+            });
+
+            sinon.assert.calledWith(lexicalRenderStub, '{}', {target: 'email', design: {accentColor: '#123456'}});
+        });
+
         it('substitutes member template variables', async function () {
             lexicalRenderStub.resolves('<p>Hello {name}, or {first_name}! Contact: {email}</p>');
             const renderer = new MemberWelcomeEmailRenderer({t: key => key});
@@ -279,6 +325,51 @@ describe('MemberWelcomeEmailRenderer', function () {
             assert(result.html.includes(`&copy; ${year}`));
             assert(result.html.includes('Manage your preferences'));
             assert(result.html.includes('https://example.com/#/portal/account'));
+        });
+
+        it('passes header and footer settings through to the wrapper template', async function () {
+            lexicalRenderStub.resolves('<p>Content</p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Test Subject',
+                designSettings: {
+                    footer_content: '<p>Custom footer</p>',
+                    header_image: 'https://example.com/header.png',
+                    show_badge: true,
+                    show_header_title: false
+                },
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert(result.html.includes('src="https://example.com/header.png"'));
+            assert(result.html.includes('Custom footer</p>'));
+            assert(result.html.includes('https://ghost.org/?via=pbg-newsletter'));
+        });
+
+        it('applies header image styles and preserves header background color', async function () {
+            lexicalRenderStub.resolves('<p>Content</p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Test Subject',
+                designSettings: {
+                    header_background_color: '#123456',
+                    header_image: 'https://example.com/header.png',
+                    show_badge: false,
+                    show_header_title: false
+                },
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert.match(result.html, /class="header"[^>]*background-color:\s*#123456/i);
+            assert.match(result.html, /class="header-main"[^>]*background-color:\s*#123456/i);
+            assert.match(result.html, /class="header-image"/i);
+            assert.match(result.html, /src="https:\/\/example\.com\/header\.png"/);
         });
 
         it('resolves relative portal links to absolute URLs', async function () {

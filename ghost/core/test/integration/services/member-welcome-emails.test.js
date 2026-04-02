@@ -444,5 +444,33 @@ describe('Member Welcome Emails Integration', function () {
             assert(!sendCall.args[0].html.includes('{uuid}'));
             assert(!sendCall.args[0].html.includes('%7Buuid%7D'));
         });
+
+        it('uses the latest email design settings after welcome emails are loaded', async function () {
+            const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
+            memberWelcomeEmailService.init();
+
+            await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
+
+            await db.knex('email_design_settings')
+                .where('id', defaultEmailDesignSettingId)
+                .update({
+                    footer_content: '<p>Fresh footer content</p>',
+                    show_badge: false
+                });
+
+            await memberWelcomeEmailService.api.send({
+                member: {
+                    email: 'fresh-design@example.com',
+                    name: 'Fresh Design',
+                    uuid: '77777777-7777-4777-8777-777777777777'
+                },
+                memberStatus: 'free'
+            });
+
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            assert.ok(sendCall.args[0].html.includes('Fresh footer content</p>'));
+            assert.equal(sendCall.args[0].html.includes('https://ghost.org/?via=pbg-newsletter'), false);
+        });
     });
 });

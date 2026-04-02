@@ -7,7 +7,7 @@ const settingsHelpers = require('../settings-helpers');
 const EmailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
 // @ts-expect-error type checker has trouble with the dynamic exporting in models
-const {AutomatedEmail, Newsletter} = require('../../models');
+const {AutomatedEmail, EmailDesignSetting, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
@@ -93,21 +93,39 @@ class MemberWelcomeEmailService {
         return this.#defaultNewsletterSenderOptions;
     }
 
+    async #getFreshDesignSettings(emailDesignSettingId, fallbackDesignSettings = null) {
+        if (!emailDesignSettingId) {
+            return fallbackDesignSettings;
+        }
+
+        const designSettings = await EmailDesignSetting.findOne({id: emailDesignSettingId});
+
+        if (!designSettings) {
+            return fallbackDesignSettings;
+        }
+
+        return designSettings.toJSON();
+    }
+
     async loadMemberWelcomeEmails() {
         this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
 
         for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
-            const row = await AutomatedEmail.findOne({slug});
+            const row = await AutomatedEmail.findOne({slug}, {withRelated: ['emailDesignSetting']});
 
             if (!row || !row.get('lexical')) {
                 this.#memberWelcomeEmails[memberStatus] = null;
                 continue;
             }
 
+            const designSettings = row.related('emailDesignSetting');
+
             this.#memberWelcomeEmails[memberStatus] = {
                 lexical: row.get('lexical'),
                 subject: row.get('subject'),
                 status: row.get('status'),
+                emailDesignSettingId: row.get('email_design_setting_id'),
+                designSettings: designSettings?.id ? designSettings.toJSON() : null,
                 senderName: row.get('sender_name'),
                 senderEmail: row.get('sender_email'),
                 senderReplyTo: row.get('sender_reply_to')
@@ -144,9 +162,15 @@ class MemberWelcomeEmailService {
             });
         }
 
+        const designSettings = await this.#getFreshDesignSettings(
+            memberWelcomeEmail.emailDesignSettingId,
+            memberWelcomeEmail.designSettings
+        );
+
         const {html, text, subject} = await this.#renderer.render({
             lexical: memberWelcomeEmail.lexical,
             subject: memberWelcomeEmail.subject,
+            designSettings,
             member: {
                 name: member.name,
                 email: member.email,
@@ -181,7 +205,7 @@ class MemberWelcomeEmailService {
 
     async sendTestEmail({email, subject, lexical, automatedEmailId}) {
         // Still validate the automated email exists (for permission purposes)
-        const automatedEmail = await AutomatedEmail.findOne({id: automatedEmailId});
+        const automatedEmail = await AutomatedEmail.findOne({id: automatedEmailId}, {withRelated: ['emailDesignSetting']});
 
         if (!automatedEmail) {
             throw new errors.NotFoundError({
@@ -207,9 +231,16 @@ class MemberWelcomeEmailService {
             uuid: '00000000-0000-4000-8000-000000000000'
         };
 
+        const fallbackDesignSettings = automatedEmail.related('emailDesignSetting');
+        const designSettings = await this.#getFreshDesignSettings(
+            automatedEmail.get('email_design_setting_id'),
+            fallbackDesignSettings?.id ? fallbackDesignSettings.toJSON() : null
+        );
+
         const {html, text, subject: renderedSubject} = await this.#renderer.render({
             lexical,
             subject,
+            designSettings,
             member: testMember,
             siteSettings: this.#getSiteSettings()
         });
