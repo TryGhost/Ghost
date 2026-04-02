@@ -14,6 +14,7 @@ if [[ "$GHOST_E2E_MODE" == "dev" ]]; then
   echo "E2E mode: dev (detected admin dev server at $LOCAL_ADMIN_DEV_SERVER_URL)"
 else
   echo "E2E mode: build (admin dev server not detected at $LOCAL_ADMIN_DEV_SERVER_URL)"
+  echo "  Tip: For local development, run 'yarn dev' first — dev mode is faster and doesn't require a pre-built Docker image."
 fi
 
 # Dev-mode E2E Ghost containers mount the local workspace package, which needs a

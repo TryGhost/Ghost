@@ -67,6 +67,55 @@ export class MembersForwardPage extends AdminPage {
         await this.page.getByRole('option', {name: optionName}).click();
     }
 
+    async addMultiselectFilter(fieldName: string, values: string[]): Promise<void> {
+        await this.filterButton.click();
+        await this.page.getByRole('option', {name: fieldName, exact: true}).click();
+
+        // First selection: happens inside the add-filter popover (inline options).
+        // Selecting an option creates the filter and closes the popover.
+        await this.page.getByRole('option', {name: values[0], exact: true}).click();
+
+        if (values.length > 1) {
+            // Subsequent selections: click the filter value button to open
+            // the filter's own combobox popover, then select additional options.
+            const filterItem = this.getFilterItem(fieldName);
+            await filterItem.getByRole('button', {name: values[0]}).click();
+
+            for (let i = 1; i < values.length; i++) {
+                await this.selectMultiselectOption(values[i]);
+            }
+
+            // Close the popover
+            await this.page.keyboard.press('Escape');
+        }
+    }
+
+    async selectMultiselectOption(value: string): Promise<void> {
+        // Options may contain additional text (e.g. edit buttons with aria-labels),
+        // so match by option role containing the value text rather than exact match.
+        const escaped = value.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+        await this.page.getByRole('option', {name: new RegExp(String.raw`^${escaped}\b`)}).click();
+    }
+
+    async searchMultiselectOptions(query: string): Promise<void> {
+        await this.page.locator('[cmdk-input]').fill(query);
+    }
+
+    get editLabelInput(): Locator {
+        return this.page.locator('[data-edit-row] input');
+    }
+
+    getFilterItem(fieldName: string): Locator {
+        return this.page.locator('[data-slot="filter-item"]').filter({hasText: fieldName});
+    }
+
+    async openFilterValue(fieldName: string): Promise<void> {
+        const filterItem = this.getFilterItem(fieldName);
+        // The filter item contains: field label, operator button, value button, remove button.
+        // The value button is the one that's not the operator dropdown and not the remove button.
+        await filterItem.locator('button:not([data-slot="filters-remove"])').last().click();
+    }
+
     async exportMembers(): Promise<ExportedFile> {
         const download = await this.exportMembersData();
         const suggestedFilename = download.suggestedFilename();

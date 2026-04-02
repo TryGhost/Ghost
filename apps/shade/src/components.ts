@@ -26,6 +26,7 @@ export * from './components/ui/input-group';
 export * from './components/ui/kbd';
 export * from './components/ui/label';
 export * from './components/ui/loading-indicator';
+export * from './components/ui/multi-select-combobox';
 export * from './components/ui/navbar';
 export * from './components/ui/no-value-label';
 export * from './components/ui/pagemenu';
