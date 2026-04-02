@@ -84,7 +84,7 @@ export class GhostManager {
 
         // Try to reuse existing containers (handles process restarts after test failures)
         this.gatewayContainer = await this.getOrCreateContainer(gatewayName, () => this.createGatewayContainer(gatewayName, ghostName));
-        this.ghostContainer = await this.getOrCreateContainer(ghostName, () => this.createGhostContainer(ghostName, database, undefined));
+        this.ghostContainer = await this.getOrCreateContainer(ghostName, () => this.createGhostContainer(ghostName, database));
 
         debug(`Worker ${this.config.workerIndex} containers ready`);
     }
@@ -272,8 +272,7 @@ export class GhostManager {
     private async createGhostContainer(
         name: string,
         database: string = 'ghost_testing',
-        extraConfig?: GhostEnvOverrides,
-        schedulerUrl?: string
+        extraConfig?: GhostEnvOverrides
     ): Promise<Container> {
         const mode = this.config.mode;
         debug(`Creating Ghost container for mode: ${mode}`);
@@ -285,12 +284,11 @@ export class GhostManager {
 
         // Build volume mounts based on mode
         const binds = this.getGhostBinds();
-        const resolvedSchedulerUrl = schedulerUrl || (this.gatewayContainer ? await this.getGatewaySchedulerUrl() : undefined);
 
         const config: ContainerCreateOptions = {
             name,
             Image: image,
-            Env: await this.buildEnvWithSchedulerUrl(database, extraConfig, resolvedSchedulerUrl),
+            Env: await this.buildEnvWithSchedulerUrl(database, extraConfig),
             ExposedPorts: {[`${TEST_ENVIRONMENT.ghost.port}/tcp`]: {}},
             Healthcheck: {
                 // Same health check as compose.dev.yaml - Ghost is ready when it responds
@@ -316,21 +314,6 @@ export class GhostManager {
         };
 
         return this.docker.createContainer(config);
-    }
-
-    private async getGatewaySchedulerUrl(): Promise<string> {
-        if (!this.gatewayContainer) {
-            throw new Error('Gateway container not initialized');
-        }
-
-        const gatewayInfo = await this.gatewayContainer.inspect();
-        const gatewayIp = gatewayInfo.NetworkSettings?.Networks?.[DEV_ENVIRONMENT.networkName]?.IPAddress;
-
-        if (!gatewayIp) {
-            throw new Error(`Gateway container is missing an IP on network ${DEV_ENVIRONMENT.networkName}`);
-        }
-
-        return `http://${gatewayIp}/ghost/api/admin`;
     }
 
     /**
