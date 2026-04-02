@@ -315,10 +315,15 @@ describe('EventRepository', function () {
                     }
                     if (relation === 'automatedEmail') {
                         return {
-                            toJSON: () => ({
-                                id: 'ae123',
-                                slug: 'member-welcome-email-free'
-                            })
+                            id: 'ae123',
+                            related: (rel) => {
+                                if (rel === 'welcomeEmailAutomation') {
+                                    return {
+                                        id: 'auto123',
+                                        get: key => (key === 'slug' ? 'member-welcome-email-free' : undefined)
+                                    };
+                                }
+                            }
                         };
                     }
                 },
@@ -351,7 +356,7 @@ describe('EventRepository', function () {
             });
 
             sinon.assert.calledOnceWithMatch(fake, {
-                withRelated: ['member', 'automatedEmail'],
+                withRelated: ['member', 'automatedEmail.welcomeEmailAutomation'],
                 filter: 'custom:true',
                 order: 'created_at desc, id desc'
             });
@@ -365,7 +370,7 @@ describe('EventRepository', function () {
             });
 
             sinon.assert.calledOnceWithMatch(fake, {
-                withRelated: ['member', 'automatedEmail'],
+                withRelated: ['member', 'automatedEmail.welcomeEmailAutomation'],
                 filter: 'custom:true',
                 order: 'created_at desc, id desc'
             });
@@ -380,7 +385,7 @@ describe('EventRepository', function () {
             });
 
             sinon.assert.calledOnceWithMatch(fake, {
-                withRelated: ['member', 'automatedEmail'],
+                withRelated: ['member', 'automatedEmail.welcomeEmailAutomation'],
                 filter: 'custom:true',
                 order: 'created_at desc, id desc'
             });
