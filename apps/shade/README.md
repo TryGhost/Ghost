@@ -9,7 +9,7 @@ Shade is consumed internally across Ghost apps. The package is currently private
 Example:
 
 ```tsx
-import {Button} from '@tryghost/shade';
+import {Button} from '@tryghost/shade/components';
 
 export function Example() {
     return <Button>Continue</Button>;

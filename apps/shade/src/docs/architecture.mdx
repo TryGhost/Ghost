@@ -19,7 +19,8 @@ import { Meta } from '@storybook/addon-docs/blocks';
 │   │   └── features/     # Feature-specific, higher-level components
 │   ├── hooks/            # Custom React hooks
 │   ├── providers/        # Context providers
-│   ├── lib/utils.ts      # Utilities
+│   ├── lib/ds-utils.ts   # DS-safe utilities
+│   ├── lib/app-utils.ts  # Transitional domain utilities
 │   └── docs/             # Documentation
 ├── .storybook/          # Storybook configuration
 ├── styles.css           # Tailwind imports + runtime variables
@@ -38,6 +39,8 @@ Shade now uses layered package entrypoints:
 - `@tryghost/shade/utils`
 
 The root `@tryghost/shade` entrypoint remains a compatibility lane during migration, but new code should import from a layer-specific subpath.
+The root entrypoint now keeps compatibility for DS layers only (`tokens`, `primitives`, `components`, `patterns`).
+`app` and `utils` are intentionally subpath-only.
 
 ## Layer Ownership Rules
 
