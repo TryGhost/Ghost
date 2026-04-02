@@ -167,14 +167,8 @@ export class MemberWelcomeEmailsSection extends BasePage {
         );
         await this.customizeModalSaveButton.click();
         await saveResponse;
-
-        try {
-            await this.customizeModal.waitFor({state: 'hidden', timeout: 2000});
-        } catch {
-            if (await this.customizeModal.isVisible()) {
-                await this.closeCustomizeModal();
-            }
-        }
+        await this.customizeModal.waitFor({state: 'visible'});
+        await this.customizeModalSaveButton.waitFor({state: 'visible'});
     }
 
     async closeCustomizeModal(): Promise<void> {

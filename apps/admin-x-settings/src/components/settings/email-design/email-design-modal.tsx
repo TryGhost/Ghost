@@ -1,6 +1,7 @@
-import React, {useEffect, useRef} from 'react';
-import {Button, Dialog, DialogContent, DialogTitle} from '@tryghost/shade/components';
+import React, {useEffect, useRef, useState} from 'react';
+import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, Dialog, DialogContent, DialogTitle} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
+import {type OkProps} from '@tryghost/admin-x-framework/hooks';
 
 interface EmailDesignModalProps {
     open: boolean;
@@ -8,9 +9,8 @@ interface EmailDesignModalProps {
     preview: React.ReactNode;
     sidebar: React.ReactNode;
     dirty?: boolean;
-    saveLabel?: string;
     isLoading?: boolean;
-    isSaving?: boolean;
+    okProps?: Pick<OkProps, 'color' | 'disabled' | 'label'>;
     onSave: () => void;
     onClose: () => void;
     afterClose?: () => void;
@@ -23,9 +23,8 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
     preview,
     sidebar,
     dirty = false,
-    saveLabel = 'Save',
     isLoading = false,
-    isSaving = false,
+    okProps,
     onSave,
     onClose,
     afterClose,
@@ -33,6 +32,7 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
 }) => {
     const onSaveRef = useRef(onSave);
     const prevOpenRef = useRef(open);
+    const [showDirtyConfirm, setShowDirtyConfirm] = useState(false);
     useEffect(() => {
         onSaveRef.current = onSave;
     }, [onSave]);
@@ -57,45 +57,80 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
     }, []);
 
     const handleClose = () => {
-        if (dirty) {
-            if (confirm('You have unsaved changes. Are you sure you want to close?')) {
-                onClose();
-            }
-        } else {
+        if (!dirty) {
             onClose();
+            return;
         }
+
+        setShowDirtyConfirm(true);
     };
 
-    return (
-        <Dialog open={open} onOpenChange={isOpen => !isOpen && handleClose()}>
-            <DialogContent
-                className={cn(
-                    'top-[50%] left-[50%] h-[calc(100vh-8vmin)] w-[calc(100vw-8vmin)] max-w-none translate-x-[-50%] translate-y-[-50%] gap-0 overflow-hidden p-0'
-                )}
-                data-testid={testId}
-            >
-                <div className="flex h-full min-h-0">
-                    {/* Left: Preview */}
-                    <div className="hidden min-h-0 flex-1 flex-col bg-gray-50 dark:bg-black [@media(min-width:801px)]:flex">
-                        <div className="flex min-h-0 flex-1 items-center justify-center p-8">
-                            {preview}
-                        </div>
-                    </div>
+    const saveColor = okProps?.color || 'black';
+    const saveDisabled = okProps?.disabled || false;
+    const saveLabel = okProps?.label || 'Save';
+    const saveButtonClassName = saveColor === 'green'
+        ? 'bg-green text-white hover:bg-green/90'
+        : saveColor === 'red'
+            ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+            : undefined;
 
-                    {/* Right: Sidebar */}
-                    <div className="flex min-h-0 w-full flex-col border-l border-gray-200 dark:border-gray-900 [@media(min-width:801px)]:w-[400px] [@media(min-width:801px)]:shrink-0">
-                        <div className="flex items-center justify-between px-6 py-5">
-                            <DialogTitle>{title}</DialogTitle>
-                            <div className="flex items-center gap-2">
-                                <Button variant="outline" onClick={handleClose}>Close</Button>
-                                <Button disabled={isLoading || isSaving} onClick={onSave}>{isSaving ? 'Saving...' : saveLabel}</Button>
+    return (
+        <>
+            <Dialog open={open} onOpenChange={isOpen => !isOpen && handleClose()}>
+                <DialogContent
+                    className={cn(
+                        'top-[50%] left-[50%] h-[calc(100vh-8vmin)] w-[calc(100vw-8vmin)] max-w-none translate-x-[-50%] translate-y-[-50%] gap-0 overflow-hidden p-0'
+                    )}
+                    data-testid={testId}
+                >
+                    <div className="flex h-full min-h-0">
+                        {/* Left: Preview */}
+                        <div className="hidden min-h-0 flex-1 flex-col bg-gray-50 dark:bg-black [@media(min-width:801px)]:flex">
+                            <div className="flex min-h-0 flex-1 items-center justify-center p-8">
+                                {preview}
                             </div>
                         </div>
-                        {sidebar}
+
+                        {/* Right: Sidebar */}
+                        <div className="flex min-h-0 w-full flex-col border-l border-gray-200 dark:border-gray-900 [@media(min-width:801px)]:w-[400px] [@media(min-width:801px)]:shrink-0">
+                            <div className="flex items-center justify-between px-6 py-5">
+                                <DialogTitle>{title}</DialogTitle>
+                                <div className="flex items-center gap-2">
+                                    <Button variant="outline" onClick={handleClose}>Close</Button>
+                                    <Button className={saveButtonClassName} disabled={isLoading || saveDisabled} onClick={onSave}>
+                                        {saveLabel}
+                                    </Button>
+                                </div>
+                            </div>
+                            {sidebar}
+                        </div>
                     </div>
-                </div>
-            </DialogContent>
-        </Dialog>
+                </DialogContent>
+            </Dialog>
+            <AlertDialog open={showDirtyConfirm} onOpenChange={setShowDirtyConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure you want to leave this page?</AlertDialogTitle>
+                        <AlertDialogDescription asChild>
+                            <div className="space-y-2">
+                                <p>{`Hey there! It looks like you didn't save the changes you made.`}</p>
+                                <p>Save before you go!</p>
+                            </div>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel asChild>
+                            <Button variant="outline">Stay</Button>
+                        </AlertDialogCancel>
+                        <AlertDialogAction asChild>
+                            <Button className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={onClose}>
+                                Leave
+                            </Button>
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </>
     );
 };
 

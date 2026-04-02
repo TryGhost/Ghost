@@ -180,6 +180,7 @@ test.describe('Ghost Admin - Welcome Email Customize Button - flag enabled', () 
         await welcomeEmailsSection.customizeModalButtonStyleOutline.click();
 
         await welcomeEmailsSection.saveCustomizeModal();
+        await expect(welcomeEmailsSection.customizeModal).toBeVisible();
 
         const response = await page.request.get('/ghost/api/admin/automated_emails/design/');
         expect(response.ok()).toBe(true);
@@ -199,6 +200,7 @@ test.describe('Ghost Admin - Welcome Email Customize Button - flag enabled', () 
         await welcomeEmailsSection.customizeModalFooterTextarea.fill('Custom footer text');
 
         await welcomeEmailsSection.saveCustomizeModal();
+        await expect(welcomeEmailsSection.customizeModal).toBeVisible();
 
         const response = await page.request.get('/ghost/api/admin/automated_emails/design/');
         expect(response.ok()).toBe(true);
@@ -216,6 +218,8 @@ test.describe('Ghost Admin - Welcome Email Customize Button - flag enabled', () 
         await welcomeEmailsSection.openCustomizeModal();
         await welcomeEmailsSection.customizeModalFooterTextarea.fill('Persisted footer');
         await welcomeEmailsSection.saveCustomizeModal();
+        await expect(welcomeEmailsSection.customizeModal).toBeVisible();
+        await welcomeEmailsSection.closeCustomizeModal();
 
         await page.reload();
         await welcomeEmailsSection.section.waitFor({state: 'visible'});
