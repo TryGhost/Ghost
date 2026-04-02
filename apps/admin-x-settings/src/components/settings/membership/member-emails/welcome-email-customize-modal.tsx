@@ -4,7 +4,7 @@ import HeaderImageField from '../../email-design/header-image-field';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import ShowBadgeField from '../../email-design/show-badge-field';
 import WelcomeEmailPreviewContent from '../../email-design/welcome-email-preview-content';
-import {type AutomatedEmailDesign, useEditAutomatedEmailDesign, useReadAutomatedEmailDesign} from '@tryghost/admin-x-framework/api/automated-email-design';
+import {type AutomatedEmailDesign, type EditAutomatedEmailDesign, useEditAutomatedEmailDesign, useReadAutomatedEmailDesign} from '@tryghost/admin-x-framework/api/automated-email-design';
 import {
     BackgroundColorField,
     BodyFontField,
@@ -222,26 +222,28 @@ function mapApiToGeneralSettings(
  * @param {PersistedEmailDesignSettings} apiData - The persisted design fields from the API response
  * @returns {EmailDesignSettings} Design settings populated from the API response, with local-only preview fields set to defaults
  */
-function mapApiToDesignSettings(
+export function mapApiToDesignSettings(
     apiData: PersistedEmailDesignSettings
 ): EmailDesignSettings {
     return {
-        background_color: apiData.background_color,
-        header_background_color: apiData.header_background_color,
-        title_font_category: apiData.title_font_category,
-        title_font_weight: apiData.title_font_weight,
-        body_font_category: apiData.body_font_category,
-        button_color: apiData.button_color,
-        button_style: apiData.button_style,
-        button_corners: apiData.button_corners,
-        link_color: apiData.link_color,
-        link_style: apiData.link_style,
-        image_corners: apiData.image_corners,
-        divider_color: apiData.divider_color,
-        section_title_color: apiData.section_title_color,
+        ...apiData,
         // Local-only fields not stored in the backend
         post_title_color: DEFAULT_EMAIL_DESIGN.post_title_color,
         title_alignment: DEFAULT_EMAIL_DESIGN.title_alignment
+    };
+}
+
+export function buildAutomatedEmailDesignPayload(state: WelcomeEmailCustomizeFormState): EditAutomatedEmailDesign {
+    const persistedDesign = Object.fromEntries(
+        Object.entries(state.designSettings).filter(([key]) => !['post_title_color', 'title_alignment'].includes(key))
+    );
+
+    return {
+        ...persistedDesign,
+        header_image: state.generalSettings.headerImage || null,
+        show_header_title: state.generalSettings.showPublicationTitle,
+        show_badge: state.generalSettings.showBadge,
+        footer_content: state.generalSettings.emailFooter || null
     };
 }
 
@@ -284,25 +286,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                 throw new Error('Unable to load email design settings');
             }
 
-            await editDesign({
-                background_color: state.designSettings.background_color,
-                header_background_color: state.designSettings.header_background_color,
-                title_font_category: state.designSettings.title_font_category,
-                title_font_weight: state.designSettings.title_font_weight,
-                body_font_category: state.designSettings.body_font_category,
-                button_color: state.designSettings.button_color,
-                button_style: state.designSettings.button_style,
-                button_corners: state.designSettings.button_corners,
-                link_color: state.designSettings.link_color,
-                link_style: state.designSettings.link_style,
-                image_corners: state.designSettings.image_corners,
-                divider_color: state.designSettings.divider_color,
-                section_title_color: state.designSettings.section_title_color,
-                header_image: state.generalSettings.headerImage || null,
-                show_header_title: state.generalSettings.showPublicationTitle,
-                show_badge: state.generalSettings.showBadge,
-                footer_content: state.generalSettings.emailFooter || null
-            });
+            await editDesign(buildAutomatedEmailDesignPayload(state));
             setHasSaveError(false);
             toast.dismiss(SAVE_ERROR_TOAST_ID);
         },
