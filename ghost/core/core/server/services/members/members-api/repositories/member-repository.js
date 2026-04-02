@@ -64,7 +64,7 @@ module.exports = class MemberRepository {
      * @param {any} deps.offersAPI
      * @param {ITokenService} deps.tokenService
      * @param {any} deps.newslettersService
-     * @param {any} deps.AutomatedEmail
+     * @param {any} deps.WelcomeEmailAutomation
      */
     constructor({
         Member,
@@ -84,7 +84,7 @@ module.exports = class MemberRepository {
         offersAPI,
         tokenService,
         newslettersService,
-        AutomatedEmail
+        WelcomeEmailAutomation
     }) {
         this._Member = Member;
         this._MemberNewsletter = MemberNewsletter;
@@ -103,7 +103,7 @@ module.exports = class MemberRepository {
         this._offersAPI = offersAPI;
         this.tokenService = tokenService;
         this._newslettersService = newslettersService;
-        this._AutomatedEmail = AutomatedEmail;
+        this._WelcomeEmailAutomation = WelcomeEmailAutomation;
 
         DomainEvents.subscribe(OfferRedemptionEvent, async function (event) {
             if (!event.data.offerId) {
@@ -359,9 +359,18 @@ module.exports = class MemberRepository {
         const shouldCheckFreeWelcomeEmail = WELCOME_EMAIL_SOURCES.includes(source) && isFreeSignup;
         let isFreeWelcomeEmailActive = false;
 
-        if (shouldCheckFreeWelcomeEmail) {
-            const freeWelcomeEmail = this._AutomatedEmail ? await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.free}) : null;
-            isFreeWelcomeEmailActive = freeWelcomeEmail && freeWelcomeEmail.get('lexical') && freeWelcomeEmail.get('status') === 'active';
+        if (shouldCheckFreeWelcomeEmail && this._WelcomeEmailAutomation) {
+            const freeWelcomeAutomation = await this._WelcomeEmailAutomation.findOne(
+                {slug: MEMBER_WELCOME_EMAIL_SLUGS.free},
+                {...options, withRelated: ['welcomeEmailAutomatedEmail']}
+            );
+            const freeWelcomeEmail = freeWelcomeAutomation?.related('welcomeEmailAutomatedEmail');
+            isFreeWelcomeEmailActive = Boolean(
+                freeWelcomeAutomation &&
+                freeWelcomeEmail &&
+                freeWelcomeEmail.get('lexical') &&
+                freeWelcomeAutomation.get('status') === 'active'
+            );
         }
 
         if (isFreeWelcomeEmailActive && isFreeSignup) {
@@ -1468,9 +1477,18 @@ module.exports = class MemberRepository {
             const source = this._resolveContextSource(context);
             const shouldSendPaidWelcomeEmail = WELCOME_EMAIL_SOURCES.includes(source);
             let isPaidWelcomeEmailActive = false;
-            if (shouldSendPaidWelcomeEmail && this._AutomatedEmail) {
-                const paidWelcomeEmail = await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.paid}, options);
-                isPaidWelcomeEmailActive = paidWelcomeEmail && paidWelcomeEmail.get('lexical') && paidWelcomeEmail.get('status') === 'active';
+            if (shouldSendPaidWelcomeEmail && this._WelcomeEmailAutomation) {
+                const paidWelcomeAutomation = await this._WelcomeEmailAutomation.findOne(
+                    {slug: MEMBER_WELCOME_EMAIL_SLUGS.paid},
+                    {...options, withRelated: ['welcomeEmailAutomatedEmail']}
+                );
+                const paidWelcomeEmail = paidWelcomeAutomation?.related('welcomeEmailAutomatedEmail');
+                isPaidWelcomeEmailActive = Boolean(
+                    paidWelcomeAutomation &&
+                    paidWelcomeEmail &&
+                    paidWelcomeEmail.get('lexical') &&
+                    paidWelcomeAutomation.get('status') === 'active'
+                );
             }
             // Send paid welcome email if:
             // 1. The paid welcome email is active
