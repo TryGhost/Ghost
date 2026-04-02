@@ -8,10 +8,6 @@ test.describe('Transistor integration settings', async () => {
             response: {
                 config: {
                     ...responseFixtures.config.config,
-                    labs: {
-                        ...responseFixtures.config.config.labs,
-                        transistor: true
-                    },
                     hostSettings: {
                         limits: {
                             customIntegrations: {
@@ -37,10 +33,6 @@ test.describe('Transistor integration settings', async () => {
             response: {
                 config: {
                     ...responseFixtures.config.config,
-                    labs: {
-                        ...responseFixtures.config.config.labs,
-                        transistor: true
-                    },
                     hostSettings: {
                         limits: {
                             customIntegrations: {

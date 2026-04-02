@@ -1,6 +1,5 @@
 import React, {type FocusEventHandler, useEffect, useState} from 'react';
 import TransistorSettings from './transistor-settings';
-import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import validator from 'validator';
 import {Form, TextField} from '@tryghost/admin-x-design-system';
 import {type Setting, type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -14,7 +13,6 @@ const AccountPage: React.FC<{
     setError: (key: string, error: string | undefined) => void
 }> = ({localSettings, updateSetting, errors, setError}) => {
     const {siteData, settings, config} = useGlobalData();
-    const hasTransistor = useFeatureFlag('transistor');
     const [membersSupportAddress, supportEmailAddress] = getSettingValues(settings, ['members_support_address', 'support_email_address']);
     const calculatedSupportAddress = supportEmailAddress?.toString() || fullEmailAddress(membersSupportAddress?.toString() || '', siteData!, config);
     const emailDomain = getEmailDomain(siteData!, config);
@@ -51,12 +49,10 @@ const AccountPage: React.FC<{
             onChange={e => setValue(e.target.value)}
         />
 
-        {hasTransistor && (
-            <TransistorSettings
-                localSettings={localSettings}
-                updateSetting={updateSetting}
-            />
-        )}
+        <TransistorSettings
+            localSettings={localSettings}
+            updateSetting={updateSetting}
+        />
     </Form></div>;
 };
 
