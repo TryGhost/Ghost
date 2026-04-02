@@ -49,7 +49,7 @@ test.describe('Ghost Admin - Members List', () => {
         const membersPage = new MembersListPage(page);
         await page.goto('/ghost/#/members-forward?filter=label:VIP');
 
-        await expect(page).toHaveURL(/\/members\?filter=label:VIP$/);
+        await expect(page).toHaveURL(/\/members\?filter=label%3A%5BVIP%5D$/);
         await expect(membersPage.memberRows).toHaveCount(1);
         await expect(membersPage.getMemberByName('VIP Member')).toBeVisible();
     });
