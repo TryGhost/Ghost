@@ -1,8 +1,10 @@
 import 'highlight.js/styles/atom-one-dark.css';
-import Highlight from 'react-highlight';
 import React from 'react';
+import ReactHighlight from 'react-highlight';
 import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+
+const Highlight = ReactHighlight.default || ReactHighlight;
 
 const SerializedStateTextarea = ({isOpen}) => {
     const [editor] = useLexicalComposerContext();
