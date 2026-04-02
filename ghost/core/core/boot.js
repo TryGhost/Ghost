@@ -341,7 +341,7 @@ async function initServices() {
 
     const config = require('./shared/config');
     const urlUtils = require('./shared/url-utils');
-    const schedulingApiUrl = config.get('scheduling').schedulerUrl || urlUtils.urlFor('api', {type: 'admin'}, true);
+    const schedulingApiUrl = config.get('scheduling').apiUrl || urlUtils.urlFor('api', {type: 'admin'}, true);
 
     // NOTE: Members service depends on these
     //       so they are initialized before it.

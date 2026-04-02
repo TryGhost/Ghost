@@ -214,7 +214,7 @@ export class GhostManager {
             ...BASE_GHOST_ENV,
             `database__connection__database=${database}`,
             `url=http://localhost:${this.getGatewayPort()}`,
-            `scheduling__schedulerUrl=${schedulerUrl || `http://localhost:${this.getGatewayPort()}/ghost/api/admin`}`
+            `scheduling__apiUrl=${schedulerUrl || `http://localhost:${this.getGatewayPort()}/ghost/api/admin`}`
         ];
 
         // Add Tinybird config if available
