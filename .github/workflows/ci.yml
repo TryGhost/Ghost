@@ -1141,6 +1141,12 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          # Fork/cross-repo PRs use artifact transfer (no GHCR push). The default
+          # docker-container driver runs in an isolated BuildKit container that
+          # cannot see locally loaded images, so we fall back to the docker driver
+          # which shares the host daemon's image store.
+          driver: ${{ needs.job_build_artifacts.outputs.use-artifact == 'true' && 'docker' || '' }}
 
       - name: Load base Ghost image
         uses: ./.github/actions/load-docker-image
@@ -1196,7 +1202,7 @@ jobs:
           load: ${{ steps.strategy.outputs.use-artifact == 'true' }}
           tags: ${{ steps.meta-e2e.outputs.tags }}
           labels: ${{ steps.meta-e2e.outputs.labels }}
-          cache-from: type=registry,ref=${{ needs.job_build_artifacts.outputs.image-e2e-name }}:cache-main
+          cache-from: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-main', needs.job_build_artifacts.outputs.image-e2e-name) || '' }}
           cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', needs.job_build_artifacts.outputs.image-e2e-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
       - name: Save E2E image as artifact
