@@ -1,26 +1,21 @@
 const ghostBookshelf = require('./base');
 const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
 const urlUtils = require('../../shared/url-utils');
 const lexicalLib = require('../lib/lexical');
-const {MEMBER_WELCOME_EMAIL_SLUGS, DEFAULT_EMAIL_DESIGN_SETTING_SLUG} = require('../services/member-welcome-emails/constants');
+const {DEFAULT_EMAIL_DESIGN_SETTING_SLUG} = require('../services/member-welcome-emails/constants');
 
-const MEMBER_WELCOME_EMAIL_SLUG_SET = new Set(Object.values(MEMBER_WELCOME_EMAIL_SLUGS));
-
-const AutomatedEmail = ghostBookshelf.Model.extend({
-    tableName: 'automated_emails',
-
-    defaults() {
-        return {
-            status: 'inactive'
-        };
-    },
+const WelcomeEmailAutomatedEmail = ghostBookshelf.Model.extend({
+    tableName: 'welcome_email_automated_emails',
 
     /**
      * @returns {import('bookshelf').Model}
      */
     emailDesignSetting() {
         return this.belongsTo('EmailDesignSetting', 'email_design_setting_id', 'id');
+    },
+
+    welcomeEmailAutomation() {
+        return this.belongsTo('WelcomeEmailAutomation', 'welcome_email_automation_id', 'id');
     },
 
     parse() {
@@ -63,39 +58,9 @@ const AutomatedEmail = ghostBookshelf.Model.extend({
         }
 
         return attrs;
-    },
-
-    onSaved(model) {
-        if (!model?.id) {
-            return;
-        }
-
-        const slug = model.get('slug');
-
-        if (!MEMBER_WELCOME_EMAIL_SLUG_SET.has(slug)) {
-            return;
-        }
-
-        const previousStatus = model.previous('status');
-        const currentStatus = model.get('status');
-        const isNewModel = previousStatus === undefined;
-        const isEnableTransition = currentStatus === 'active' && (isNewModel || previousStatus === 'inactive');
-        const isDisableTransition = previousStatus === 'active' && currentStatus === 'inactive';
-
-        if (!isEnableTransition && !isDisableTransition) {
-            return;
-        }
-
-        logging.info({
-            system: {
-                event: isEnableTransition ? 'welcome_email.enabled' : 'welcome_email.disabled',
-                automated_email_id: model.id,
-                slug
-            }
-        }, isEnableTransition ? 'Welcome email enabled' : 'Welcome email disabled');
     }
 });
 
 module.exports = {
-    AutomatedEmail: ghostBookshelf.model('AutomatedEmail', AutomatedEmail)
+    WelcomeEmailAutomatedEmail: ghostBookshelf.model('WelcomeEmailAutomatedEmail', WelcomeEmailAutomatedEmail)
 };

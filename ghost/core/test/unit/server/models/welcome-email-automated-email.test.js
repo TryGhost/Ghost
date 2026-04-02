@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 const config = require('../../../../core/shared/config');
 
-describe('Unit: models/automated-email', function () {
+describe('Unit: models/welcome-email-automated-email', function () {
     before(function () {
         models.init();
     });
@@ -12,27 +12,9 @@ describe('Unit: models/automated-email', function () {
         sinon.restore();
     });
 
-    describe('defaults', function () {
-        it('sets default status to inactive', function () {
-            const model = new models.AutomatedEmail();
-            const defaults = model.defaults();
-
-            assert.equal(defaults.status, 'inactive');
-        });
-
-        it('returns expected default values', function () {
-            const model = new models.AutomatedEmail();
-            const defaults = model.defaults();
-
-            assert.ok(defaults);
-            assert.equal(Object.keys(defaults).length, 1);
-            assert.equal(defaults.status, 'inactive');
-        });
-    });
-
     describe('parse', function () {
         it('transforms __GHOST_URL__ to absolute URL in lexical field', function () {
-            const model = models.AutomatedEmail.forge();
+            const model = models.WelcomeEmailAutomatedEmail.forge();
 
             const result = model.parse({
                 id: '123',
@@ -44,7 +26,7 @@ describe('Unit: models/automated-email', function () {
         });
 
         it('handles null lexical field', function () {
-            const model = models.AutomatedEmail.forge();
+            const model = models.WelcomeEmailAutomatedEmail.forge();
 
             const result = model.parse({
                 id: '123',
@@ -55,7 +37,7 @@ describe('Unit: models/automated-email', function () {
         });
 
         it('handles undefined lexical field', function () {
-            const model = models.AutomatedEmail.forge();
+            const model = models.WelcomeEmailAutomatedEmail.forge();
 
             const result = model.parse({
                 id: '123'
@@ -65,26 +47,22 @@ describe('Unit: models/automated-email', function () {
         });
 
         it('preserves other fields', function () {
-            const model = models.AutomatedEmail.forge();
+            const model = models.WelcomeEmailAutomatedEmail.forge();
 
             const result = model.parse({
                 id: '123',
-                name: 'welcome_email',
                 subject: 'Welcome!',
-                status: 'active',
                 lexical: '{"root":{"children":[]}}'
             });
 
             assert.equal(result.id, '123');
-            assert.equal(result.name, 'welcome_email');
             assert.equal(result.subject, 'Welcome!');
-            assert.equal(result.status, 'active');
         });
     });
 
     describe('formatOnWrite', function () {
         it('transforms absolute URLs to __GHOST_URL__ in lexical field', function () {
-            const model = models.AutomatedEmail.forge();
+            const model = models.WelcomeEmailAutomatedEmail.forge();
 
             const siteUrl = config.get('url');
             const result = model.formatOnWrite({
@@ -96,7 +74,7 @@ describe('Unit: models/automated-email', function () {
         });
 
         it('handles null lexical field', function () {
-            const model = models.AutomatedEmail.forge();
+            const model = models.WelcomeEmailAutomatedEmail.forge();
 
             const result = model.formatOnWrite({
                 lexical: null
@@ -106,38 +84,34 @@ describe('Unit: models/automated-email', function () {
         });
 
         it('handles undefined lexical field', function () {
-            const model = models.AutomatedEmail.forge();
+            const model = models.WelcomeEmailAutomatedEmail.forge();
 
             const result = model.formatOnWrite({
-                name: 'welcome_email'
+                subject: 'Welcome!'
             });
 
             assert.equal(result.lexical, undefined);
-            assert.equal(result.name, 'welcome_email');
+            assert.equal(result.subject, 'Welcome!');
         });
 
         it('preserves other fields', function () {
-            const model = models.AutomatedEmail.forge();
+            const model = models.WelcomeEmailAutomatedEmail.forge();
 
             const result = model.formatOnWrite({
                 id: '123',
-                name: 'welcome_email',
                 subject: 'Welcome!',
-                status: 'active',
                 lexical: '{"root":{"children":[]}}'
             });
 
             assert.equal(result.id, '123');
-            assert.equal(result.name, 'welcome_email');
             assert.equal(result.subject, 'Welcome!');
-            assert.equal(result.status, 'active');
         });
     });
 
     describe('onCreating', function () {
         it('assigns the default email design setting when not provided', async function () {
-            const model = models.AutomatedEmail.forge();
-            const baseOnCreating = sinon.stub(Object.getPrototypeOf(models.AutomatedEmail.prototype), 'onCreating').resolves();
+            const model = models.WelcomeEmailAutomatedEmail.forge();
+            const baseOnCreating = sinon.stub(Object.getPrototypeOf(models.WelcomeEmailAutomatedEmail.prototype), 'onCreating').resolves();
             const findOne = sinon.stub(models.EmailDesignSetting, 'findOne').resolves(models.EmailDesignSetting.forge({id: 'default-setting-id'}));
 
             await model.onCreating(model, {}, {});
@@ -148,8 +122,8 @@ describe('Unit: models/automated-email', function () {
         });
 
         it('assigns the default email design setting when null is provided', async function () {
-            const model = models.AutomatedEmail.forge({email_design_setting_id: null});
-            sinon.stub(Object.getPrototypeOf(models.AutomatedEmail.prototype), 'onCreating').resolves();
+            const model = models.WelcomeEmailAutomatedEmail.forge({email_design_setting_id: null});
+            sinon.stub(Object.getPrototypeOf(models.WelcomeEmailAutomatedEmail.prototype), 'onCreating').resolves();
             sinon.stub(models.EmailDesignSetting, 'findOne').resolves(models.EmailDesignSetting.forge({id: 'default-setting-id'}));
 
             await model.onCreating(model, {}, {});
@@ -158,8 +132,8 @@ describe('Unit: models/automated-email', function () {
         });
 
         it('keeps the provided email design setting id', async function () {
-            const model = models.AutomatedEmail.forge({email_design_setting_id: 'custom-setting-id'});
-            const baseOnCreating = sinon.stub(Object.getPrototypeOf(models.AutomatedEmail.prototype), 'onCreating').resolves();
+            const model = models.WelcomeEmailAutomatedEmail.forge({email_design_setting_id: 'custom-setting-id'});
+            const baseOnCreating = sinon.stub(Object.getPrototypeOf(models.WelcomeEmailAutomatedEmail.prototype), 'onCreating').resolves();
             const findOne = sinon.stub(models.EmailDesignSetting, 'findOne');
 
             await model.onCreating(model, {}, {});
@@ -170,8 +144,8 @@ describe('Unit: models/automated-email', function () {
         });
 
         it('throws when the default email design setting is missing', async function () {
-            const model = models.AutomatedEmail.forge();
-            sinon.stub(Object.getPrototypeOf(models.AutomatedEmail.prototype), 'onCreating').resolves();
+            const model = models.WelcomeEmailAutomatedEmail.forge();
+            sinon.stub(Object.getPrototypeOf(models.WelcomeEmailAutomatedEmail.prototype), 'onCreating').resolves();
             sinon.stub(models.EmailDesignSetting, 'findOne').resolves(null);
 
             await assert.rejects(
