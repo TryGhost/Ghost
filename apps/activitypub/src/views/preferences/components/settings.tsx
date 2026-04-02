@@ -4,7 +4,7 @@ import {Account} from '@src/api/activitypub';
 import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from '@tryghost/shade/components';
 import {H4} from '@tryghost/shade/primitives';
 import {Link} from '@tryghost/admin-x-framework';
-import {LucideIcon, cn} from '@tryghost/shade';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 interface SettingsProps {

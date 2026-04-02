@@ -8,7 +8,7 @@ import html2canvas from 'html2canvas-objectfit-fix';
 import {Account} from '@src/api/activitypub';
 import {Button, LoadingIndicator, Skeleton, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {H2} from '@tryghost/shade/primitives';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {imageUrlToDataUrl} from '@src/utils/image';
 import {toast} from 'sonner';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';

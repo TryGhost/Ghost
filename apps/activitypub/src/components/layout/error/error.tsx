@@ -2,7 +2,7 @@ import Layout from '@components/layout/layout';
 import {Button} from '@tryghost/shade/components';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/empty-view-indicator';
 import {H4} from '@tryghost/shade/primitives';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useRouteError} from 'react-router';
 

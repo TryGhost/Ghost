@@ -1,6 +1,6 @@
 import React from "react"
 import {Button, Kbd, SidebarHeader} from "@tryghost/shade/components"
-import {LucideIcon} from "@tryghost/shade"
+import {LucideIcon} from "@tryghost/shade/utils"
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { isContributorUser } from "@tryghost/admin-x-framework/api/users";

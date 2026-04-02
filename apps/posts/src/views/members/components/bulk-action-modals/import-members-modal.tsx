@@ -2,7 +2,7 @@ import {CompleteStep, ErrorStep, InitStep, MappingStep, ProcessingStep} from './
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@tryghost/shade/components';
 import {MembersFieldMapping, detectFieldTypes} from './import-members/mapping';
 import {buildImportResponse} from './import-members/upload';
-import {cn} from '@tryghost/shade';
+import {cn} from '@tryghost/shade/utils';
 import {createInitialImportState, importReducer} from './import-members/reducer';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {parseCSV} from './import-members/csv';

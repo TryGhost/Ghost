@@ -17,7 +17,7 @@ import tangleAvatar from '@assets/images/onboarding/avatar-tangle.png';
 import tangleCover from '@assets/images/onboarding/cover-tangle.png';
 import {Avatar, AvatarFallback, AvatarImage, Button, Separator} from '@tryghost/shade/components';
 import {H1} from '@tryghost/shade/primitives';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {useAccountForUser, useTopicsForUser} from '@src/hooks/use-activity-pub-queries';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useOnboardingStatus} from './onboarding';

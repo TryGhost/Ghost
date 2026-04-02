@@ -16,7 +16,7 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 
 import {Button} from '@tryghost/shade/components';
-import {cn} from '@tryghost/shade';
+import {cn} from '@tryghost/shade/utils';
 
 interface EmailPreviewModalContentProps {
     title: string;

@@ -1,6 +1,6 @@
 import React from 'react';
 import {H1} from '@tryghost/shade/primitives';
-import {LucideIcon, formatNumber} from '@tryghost/shade';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {Navbar, NavbarNavigation, PageMenu, PageMenuItem} from '@tryghost/shade/components';
 import {useActiveVisitors, useAppContext, useLocation, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/global-data-provider';

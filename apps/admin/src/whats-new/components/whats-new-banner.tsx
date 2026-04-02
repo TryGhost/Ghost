@@ -1,6 +1,6 @@
 import { useState } from "react";
 import {Banner} from "@tryghost/shade/components";
-import {LucideIcon} from "@tryghost/shade";
+import {LucideIcon} from "@tryghost/shade/utils";
 import { useWhatsNew, useDismissWhatsNew } from "@/whats-new/hooks/use-whats-new";
 import { useChangelog } from "@/whats-new/hooks/use-changelog";
 

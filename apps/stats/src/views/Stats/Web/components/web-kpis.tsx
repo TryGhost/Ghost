@@ -1,7 +1,8 @@
 import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Tabs, TabsList} from '@tryghost/shade/components';
 import {KPI_METRICS} from '../web';
 import {STATS_RANGES} from '@src/utils/constants';
-import {formatDuration, formatNumber, formatPercentage, getYRange} from '@tryghost/shade';
+import {formatDuration, formatNumber, formatPercentage} from '@tryghost/shade/utils';
+import {getYRange} from '@tryghost/shade/app';
 import {sanitizeChartData, truncateLeadingEmptyData} from '@src/utils/chart-helpers';
 import {useMemo, useState} from 'react';
 

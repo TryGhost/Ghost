@@ -6,7 +6,7 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Input, LoadingIndicator, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
 import {H4} from '@tryghost/shade/primitives';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {SuggestedProfiles} from '../global/suggested-profiles';
 import {useAccountForUser, useSearchForUser, useSuggestedProfilesForUser, useTopicsForUser} from '@hooks/use-activity-pub-queries';
 import {useDebounce} from 'use-debounce';

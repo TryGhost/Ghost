@@ -1,5 +1,5 @@
 import {Banner, Button, DialogFooter, Dropzone} from '@tryghost/shade/components';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 interface InitStepProps {
     fileError: string | null;

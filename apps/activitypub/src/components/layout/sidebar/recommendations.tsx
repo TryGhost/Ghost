@@ -4,7 +4,7 @@ import ActivityItem from '@components/activities/activity-item';
 import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-card';
 import {Button, Skeleton} from '@tryghost/shade/components';
 import {H4} from '@tryghost/shade/primitives';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {handleProfileClick} from '@utils/handle-profile-click';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useNavigationStack} from '@tryghost/admin-x-framework';

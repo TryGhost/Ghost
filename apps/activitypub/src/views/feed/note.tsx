@@ -10,7 +10,7 @@ import getUsername from '@src/utils/get-username';
 import {Activity} from '@tryghost/admin-x-framework/api/activitypub';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/empty-view-indicator';
 import {LoadingIndicator, Skeleton} from '@tryghost/shade/components';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {renderTimestamp} from '@src/utils/render-timestamp';

@@ -24,7 +24,8 @@ vi.mock('@tryghost/shade', async () => {
     };
 });
 
-import {formatPercentage, getRangeDates} from '@tryghost/shade';
+import {formatPercentage} from '@tryghost/shade/utils';
+import {getRangeDates} from '@tryghost/shade/app';
 import {getSymbol} from '@tryghost/admin-x-framework';
 import {useMemberCountHistory, useMrrHistory, useSubscriptionStats} from '@tryghost/admin-x-framework/api/stats';
 

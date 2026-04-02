@@ -1,6 +1,6 @@
 import React from 'react';
 import {InputGroup, InputGroupAddon, InputGroupInput} from '@tryghost/shade/components';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 interface MembersHeaderSearchProps {
     search: string;

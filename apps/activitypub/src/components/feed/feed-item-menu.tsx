@@ -1,5 +1,5 @@
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button, Popover, PopoverClose, PopoverContent, PopoverTrigger, buttonVariants} from '@tryghost/shade/components';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 interface FeedItemMenuProps {
     trigger: React.ReactNode;

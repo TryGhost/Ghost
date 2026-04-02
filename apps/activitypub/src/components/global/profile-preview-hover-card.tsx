@@ -5,7 +5,7 @@ import {Account} from '@src/api/activitypub';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Avatar, AvatarFallback, AvatarImage, Badge, HoverCard, HoverCardContent, HoverCardTrigger, Skeleton} from '@tryghost/shade/components';
 import {H3} from '@tryghost/shade/primitives';
-import {LucideIcon, abbreviateNumber} from '@tryghost/shade';
+import {LucideIcon, abbreviateNumber} from '@tryghost/shade/utils';
 import {openLinksInNewTab, sanitizeHtml, stripHtml} from '../../utils/content-formatters';
 import {useAccountForUser} from '../../hooks/use-activity-pub-queries';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';

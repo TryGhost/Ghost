@@ -1,7 +1,7 @@
 import React from "react"
 
 import {SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuBadge} from "@tryghost/shade/components"
-import {formatNumber, LucideIcon} from "@tryghost/shade"
+import {formatNumber, LucideIcon} from "@tryghost/shade/utils"
 import { useLocation } from "@tryghost/admin-x-framework";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";

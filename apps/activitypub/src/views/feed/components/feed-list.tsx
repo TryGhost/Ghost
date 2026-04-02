@@ -7,7 +7,7 @@ import {Activity} from '@src/api/activitypub';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LoadingIndicator, Separator} from '@tryghost/shade/components';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/empty-view-indicator';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {useEffect, useRef} from 'react';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';

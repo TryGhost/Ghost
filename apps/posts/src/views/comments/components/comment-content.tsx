@@ -1,6 +1,6 @@
 import {Button} from '@tryghost/shade/components';
 import {Comment} from '@tryghost/admin-x-framework/api/comments';
-import {LucideIcon, cn} from '@tryghost/shade';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {useEffect, useRef, useState} from 'react';
 
 function ExpandButton({onClick, expanded}: {onClick: () => void; expanded: boolean}) {

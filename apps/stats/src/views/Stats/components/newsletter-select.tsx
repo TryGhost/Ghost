@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo} from 'react';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {useGlobalData} from '@src/providers/global-data-provider';

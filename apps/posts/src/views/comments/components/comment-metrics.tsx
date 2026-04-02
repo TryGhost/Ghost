@@ -2,7 +2,7 @@ import CommentLikesModal from './comment-likes-modal';
 import CommentReportsModal from './comment-reports-modal';
 import {Comment} from '@tryghost/admin-x-framework/api/comments';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
-import {LucideIcon, cn, formatNumber} from '@tryghost/shade';
+import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {useState} from 'react';
 

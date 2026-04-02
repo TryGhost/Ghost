@@ -1,6 +1,7 @@
 import {Avatar, AvatarFallback, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {HTable} from '@tryghost/shade/primitives';
-import {LucideIcon, formatMemberName, formatPercentage, formatTimestamp, getMemberInitials, stringToHslColor, useSimplePagination} from '@tryghost/shade';
+import {LucideIcon, formatPercentage, formatTimestamp, stringToHslColor, useSimplePagination} from '@tryghost/shade/utils';
+import {formatMemberName, getMemberInitials} from '@tryghost/shade/app';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {usePostFeedback} from '@hooks/use-post-feedback';
 import {useState} from 'react';

@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {Banner} from '@tryghost/shade/components';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {useActiveThemeErrors} from './hooks/use-theme-errors';
 import ThemeErrorsDialog from './theme-errors-dialog';
 

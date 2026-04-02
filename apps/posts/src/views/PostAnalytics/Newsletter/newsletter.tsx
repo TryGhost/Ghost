@@ -4,7 +4,7 @@ import PostAnalyticsContent from '../components/post-analytics-content';
 import PostAnalyticsHeader from '../components/post-analytics-header';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Input, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable} from '@tryghost/shade/components';
 import {HTable} from '@tryghost/shade/primitives';
-import {LucideIcon, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
+import {LucideIcon, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade/utils';
 import {NewsletterRadialChart, NewsletterRadialChartData} from './components/newsletter-radial-chart';
 import {Post, useGlobalData} from '@src/providers/post-analytics-context';
 import {buildMembersUrl} from '../../members/member-route';

@@ -4,7 +4,7 @@ import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-ca
 import {Account} from '@src/api/activitypub';
 import {Button, Separator, Skeleton} from '@tryghost/shade/components';
 import {H4} from '@tryghost/shade/primitives';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {useEffect, useRef, useState} from 'react';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useSuggestedProfilesForUser} from '@src/hooks/use-activity-pub-queries';

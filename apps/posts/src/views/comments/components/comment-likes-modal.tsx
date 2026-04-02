@@ -1,7 +1,7 @@
 import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, LoadingIndicator} from '@tryghost/shade/components';
 import {Comment, useBrowseCommentLikes} from '@tryghost/admin-x-framework/api/comments';
 import {CommentAvatar} from './comment-avatar';
-import {LucideIcon, formatTimestamp} from '@tryghost/shade';
+import {LucideIcon, formatTimestamp} from '@tryghost/shade/utils';
 
 interface CommentLikesModalProps {
     comment: Comment;

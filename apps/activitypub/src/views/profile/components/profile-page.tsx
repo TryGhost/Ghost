@@ -8,7 +8,7 @@ import {Account} from '@src/api/activitypub';
 import {Badge, Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from '@tryghost/shade/components';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/empty-view-indicator';
 import {H2, H4} from '@tryghost/shade/primitives';
-import {LucideIcon, abbreviateNumber} from '@tryghost/shade';
+import {LucideIcon, abbreviateNumber} from '@tryghost/shade/utils';
 import {SettingAction} from '@src/views/preferences/components/settings';
 import {openLinksInNewTab, sanitizeHtml, stripHtml} from '@src/utils/content-formatters';
 import {toast} from 'sonner';

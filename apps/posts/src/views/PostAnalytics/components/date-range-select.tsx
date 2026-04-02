@@ -1,5 +1,5 @@
 import React from 'react';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {STATS_RANGES} from '@src/utils/constants';
 import {Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {useGlobalData} from '@src/providers/post-analytics-context';

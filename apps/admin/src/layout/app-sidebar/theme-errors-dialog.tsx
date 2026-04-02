@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@tryghost/shade/components';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 import type {ThemeProblem} from '@tryghost/admin-x-framework/api/themes';
 
 interface ThemeErrorsDialogProps {

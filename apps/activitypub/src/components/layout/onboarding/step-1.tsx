@@ -4,7 +4,7 @@ import apNodes from '@assets/images/onboarding/ap-nodes.png';
 import apNodesDark from '@assets/images/onboarding/ap-nodes-dark.png';
 import {Button, Skeleton} from '@tryghost/shade/components';
 import {H3} from '@tryghost/shade/primitives';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {sanitizeHtml} from '@src/utils/content-formatters';
 import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
 import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';

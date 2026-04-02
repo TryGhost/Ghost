@@ -1,5 +1,5 @@
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from '@tryghost/shade/components';
-import {Recharts, cn, formatPercentage} from '@tryghost/shade';
+import {Recharts, cn, formatPercentage} from '@tryghost/shade/utils';
 
 export type NewsletterRadialChartData = {
     datatype: string,

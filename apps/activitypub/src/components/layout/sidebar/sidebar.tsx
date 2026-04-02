@@ -6,7 +6,7 @@ import Search from '@src/components/modals/search';
 import SearchInput from '../header/search-input';
 import SidebarMenuLink from './sidebar-menu-link';
 import {Button, Dialog, DialogContent, DialogTrigger} from '@tryghost/shade/components';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {useAppBasePath} from '@src/hooks/use-app-base-path';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useFeatureFlags} from '@src/lib/feature-flags';

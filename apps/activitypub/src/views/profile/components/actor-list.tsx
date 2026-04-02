@@ -7,7 +7,7 @@ import getName from '@src/utils/get-name';
 import getUsername from '@src/utils/get-username';
 import {Actor} from '@src/api/activitypub';
 import {Button, LoadingIndicator, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';

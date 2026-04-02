@@ -6,7 +6,7 @@ import React, {useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {H2} from '@tryghost/shade/primitives';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {toast} from 'sonner';
 import {useBlockDomainMutationForUser, useBlockMutationForUser, useBlockedAccountsForUser, useBlockedDomainsForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@hooks/use-activity-pub-queries';

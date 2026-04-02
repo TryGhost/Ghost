@@ -1,6 +1,6 @@
 import React, {Suspense, useCallback, useMemo, useRef} from 'react';
 import {ErrorBoundary, type KoenigInstance, LoadingIndicator, loadKoenig, useDesignSystem} from '@tryghost/admin-x-design-system';
-import {cn} from '@tryghost/shade';
+import {cn} from '@tryghost/shade/utils';
 import {focusKoenigEditorOnBottomClick, useFramework} from '@tryghost/admin-x-framework';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {koenigFileUploadTypes, useKoenigFetchEmbed, useKoenigFileUpload, usePinturaConfig} from '@tryghost/admin-x-framework/hooks';

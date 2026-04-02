@@ -8,7 +8,7 @@ import MembersList from './components/members-list';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Button, EmptyIndicator, LoadingIndicator} from '@tryghost/shade/components';
 import {ListHeader} from '@tryghost/shade/primitives';
-import {LucideIcon, cn} from '@tryghost/shade';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {buildMemberListSearchParams, getMemberActiveColumns} from './member-query-params';
 import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
