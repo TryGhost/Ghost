@@ -84,8 +84,7 @@ export class GhostManager {
 
         // Try to reuse existing containers (handles process restarts after test failures)
         this.gatewayContainer = await this.getOrCreateContainer(gatewayName, () => this.createGatewayContainer(gatewayName, ghostName));
-        const schedulerUrl = await this.getGatewaySchedulerUrl();
-        this.ghostContainer = await this.getOrCreateContainer(ghostName, () => this.createGhostContainer(ghostName, database, undefined, schedulerUrl));
+        this.ghostContainer = await this.getOrCreateContainer(ghostName, () => this.createGhostContainer(ghostName, database, undefined));
 
         debug(`Worker ${this.config.workerIndex} containers ready`);
     }
@@ -207,14 +206,12 @@ export class GhostManager {
 
     private async buildEnvWithSchedulerUrl(
         database: string = 'ghost_testing',
-        extraConfig?: GhostEnvOverrides,
-        schedulerUrl?: string
+        extraConfig?: GhostEnvOverrides
     ): Promise<string[]> {
         const env = [
             ...BASE_GHOST_ENV,
             `database__connection__database=${database}`,
-            `url=http://localhost:${this.getGatewayPort()}`,
-            `scheduling__apiUrl=${schedulerUrl || `http://localhost:${this.getGatewayPort()}/ghost/api/admin`}`
+            `url=http://localhost:${this.getGatewayPort()}`
         ];
 
         // Add Tinybird config if available
