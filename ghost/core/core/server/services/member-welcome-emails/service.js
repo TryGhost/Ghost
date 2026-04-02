@@ -7,7 +7,7 @@ const settingsHelpers = require('../settings-helpers');
 const EmailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
 // @ts-expect-error type checker has trouble with the dynamic exporting in models
-const {AutomatedEmail, Newsletter} = require('../../models');
+const {WelcomeEmailAutomation, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
@@ -97,20 +97,27 @@ class MemberWelcomeEmailService {
         this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
 
         for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
-            const row = await AutomatedEmail.findOne({slug});
+            const row = await WelcomeEmailAutomation.findOne({slug}, {withRelated: ['welcomeEmailAutomatedEmail']});
 
-            if (!row || !row.get('lexical')) {
+            if (!row) {
+                this.#memberWelcomeEmails[memberStatus] = null;
+                continue;
+            }
+
+            const email = row.related('welcomeEmailAutomatedEmail');
+
+            if (!email || !email.get('lexical')) {
                 this.#memberWelcomeEmails[memberStatus] = null;
                 continue;
             }
 
             this.#memberWelcomeEmails[memberStatus] = {
-                lexical: row.get('lexical'),
-                subject: row.get('subject'),
+                lexical: email.get('lexical'),
+                subject: email.get('subject'),
                 status: row.get('status'),
-                senderName: row.get('sender_name'),
-                senderEmail: row.get('sender_email'),
-                senderReplyTo: row.get('sender_reply_to')
+                senderName: email.get('sender_name'),
+                senderEmail: email.get('sender_email'),
+                senderReplyTo: email.get('sender_reply_to')
             };
         }
     }
@@ -175,15 +182,19 @@ class MemberWelcomeEmailService {
             return false;
         }
 
-        const row = await AutomatedEmail.findOne({slug});
-        return Boolean(row && row.get('lexical') && row.get('status') === 'active');
+        const row = await WelcomeEmailAutomation.findOne({slug}, {withRelated: ['welcomeEmailAutomatedEmail']});
+        if (!row) {
+            return false;
+        }
+        const email = row.related('welcomeEmailAutomatedEmail');
+        return Boolean(email && email.get('lexical') && row.get('status') === 'active');
     }
 
     async sendTestEmail({email, subject, lexical, automatedEmailId}) {
         // Still validate the automated email exists (for permission purposes)
-        const automatedEmail = await AutomatedEmail.findOne({id: automatedEmailId});
+        const automation = await WelcomeEmailAutomation.findOne({id: automatedEmailId}, {withRelated: ['welcomeEmailAutomatedEmail']});
 
-        if (!automatedEmail) {
+        if (!automation || !automation.related('welcomeEmailAutomatedEmail').id) {
             throw new errors.NotFoundError({
                 message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
             });
