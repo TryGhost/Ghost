@@ -19,12 +19,45 @@ import { Meta } from '@storybook/addon-docs/blocks';
 │   │   └── features/     # Feature-specific, higher-level components
 │   ├── hooks/            # Custom React hooks
 │   ├── providers/        # Context providers
-│   ├── lib/utils.ts      # Utilities
+│   ├── lib/ds-utils.ts   # DS-safe utilities
+│   ├── lib/app-utils.ts  # Transitional domain utilities
 │   └── docs/             # Documentation
 ├── .storybook/          # Storybook configuration
 ├── styles.css           # Tailwind imports + runtime variables
 └── tailwind.theme.css   # CSS-first token definitions (@theme)
 ```
+
+## Export Entrypoints
+
+Shade now uses layered package entrypoints:
+
+- `@tryghost/shade/tokens` and `@tryghost/shade/tokens.css`
+- `@tryghost/shade/primitives`
+- `@tryghost/shade/components`
+- `@tryghost/shade/patterns`
+- `@tryghost/shade/app`
+- `@tryghost/shade/utils`
+
+The root `@tryghost/shade` entrypoint remains a compatibility lane during migration, but new code should import from a layer-specific subpath.
+The root entrypoint now keeps compatibility for DS layers only (`tokens`, `primitives`, `components`, `patterns`).
+`app` and `utils` are intentionally subpath-only.
+
+## Layer Ownership Rules
+
+- `tokens`: token contracts and token helpers only (CSS variables, token names, token lookup helpers).
+- `primitives`: structure/layout building blocks with no product/domain behavior.
+- `components`: reusable UI controls and visual assets/icons.
+- `patterns`: feature-level reusable compositions and interaction contracts.
+- `app`: app shell/provider/context APIs and transitional domain exports.
+- `utils`: DS-safe helpers, generic hooks, and third-party namespaces.
+
+Promotion guidance:
+
+- Keep code local first, then promote when it is reused across surfaces.
+- Promote to `primitives` when the abstraction is structural.
+- Promote to `components` when the abstraction is a reusable control.
+- Promote to `patterns` when repeated product workflows emerge.
+- Do not place domain/product helpers in `utils`; route them through `app` during migration and then toward app-local/pattern ownership.
 
 ## Component Types
 

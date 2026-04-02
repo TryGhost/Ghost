@@ -1,4 +1,4 @@
-import {formatDisplayDateWithRange} from '@tryghost/shade';
+import {formatDisplayDateWithRange} from '@tryghost/shade/app';
 
 interface TooltipPayload {
     value: number;

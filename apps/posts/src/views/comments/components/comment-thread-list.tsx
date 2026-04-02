@@ -1,12 +1,13 @@
 import CommentContent from './comment-content';
 import React from 'react';
-import {Button, LoadingIndicator, LucideIcon} from '@tryghost/shade';
+import {Button, LoadingIndicator} from '@tryghost/shade/components';
 import {Comment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
 import {CommentAvatar} from './comment-avatar';
 import {CommentHeader} from './comment-header';
 import {CommentMenu} from './comment-menu';
 import {CommentMetrics, buildThreadLink} from './comment-metrics';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 function RepliesLine({hasReplies}: {hasReplies: boolean}) {
     if (!hasReplies) {

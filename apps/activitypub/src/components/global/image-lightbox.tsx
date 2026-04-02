@@ -1,5 +1,6 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {Button, Dialog, DialogClose, DialogContent, LucideIcon} from '@tryghost/shade';
+import {Button, Dialog, DialogClose, DialogContent} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {getAttachment} from '@components/feed/feed-item';
 

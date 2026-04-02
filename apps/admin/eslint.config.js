@@ -74,6 +74,12 @@ export default tseslint.config([
     },
     rules: {
       'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
+      'no-restricted-imports': ['error', {
+        paths: [{
+          name: '@tryghost/shade',
+          message: 'Import from layered subpaths instead (components/primitives/patterns/utils/app/tokens).',
+        }],
+      }],
       'tailwindcss/classnames-order': 'error',
       'tailwindcss/no-contradicting-classname': 'error',
     },

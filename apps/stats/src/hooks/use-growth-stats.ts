@@ -1,6 +1,7 @@
 import moment from 'moment';
 import {MemberStatusItem, MrrHistoryItem, useMemberCountHistory, useMrrHistory, useSubscriptionStats} from '@tryghost/admin-x-framework/api/stats';
-import {formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {formatNumber, formatPercentage} from '@tryghost/shade/utils';
+import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getSymbol} from '@tryghost/admin-x-framework';
 import {useMemo} from 'react';
 

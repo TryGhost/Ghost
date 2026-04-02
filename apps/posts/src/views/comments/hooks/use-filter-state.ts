@@ -1,6 +1,6 @@
+import {Filter} from '@tryghost/shade/patterns';
 import {useCallback, useMemo} from 'react';
 import {useSearchParams} from '@tryghost/admin-x-framework';
-import type {Filter} from '@tryghost/shade';
 
 /**
  * Comment filter field keys - single source of truth for filter definitions

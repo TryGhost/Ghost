@@ -1,8 +1,6 @@
 import React from "react"
 
-import {
-    Sidebar
-} from "@tryghost/shade"
+import {Sidebar} from "@tryghost/shade/components"
 
 import AppSidebarHeader from "./app-sidebar-header";
 import AppSidebarFooter from "./app-sidebar-footer";

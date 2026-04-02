@@ -51,7 +51,7 @@ yarn add react react-dom tailwindcss
 ### Basic Usage
 
 ```tsx
-import { Button } from '@tryghost/shade';
+import {Button} from '@tryghost/shade/components';
 
 function MyComponent() {
     return (
@@ -79,8 +79,8 @@ Shade scopes all styles to a `.shade` container and toggles dark mode with a `.d
 Use `ShadeApp` to handle scoping and provide context:
 
 ```tsx
-import ShadeApp from '@tryghost/shade';
-import {Button} from '@tryghost/shade';
+import {ShadeApp} from '@tryghost/shade/app';
+import {Button} from '@tryghost/shade/components';
 
 export default function App() {
     // Toggle dark mode by switching the `darkMode` prop

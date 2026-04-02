@@ -1,5 +1,5 @@
 import {AlignCenter, AlignLeft} from 'lucide-react';
-import {ToggleGroup, ToggleGroupItem} from '@tryghost/shade';
+import {ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
 import {useEmailDesign} from '../email-design-context';
 
 export const TitleAlignmentField = () => {

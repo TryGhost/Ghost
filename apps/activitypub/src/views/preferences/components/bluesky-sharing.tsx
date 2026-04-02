@@ -2,25 +2,9 @@ import APAvatar from '@src/components/global/ap-avatar';
 import EditProfile from '@src/views/preferences/components/edit-profile';
 import Layout from '@src/components/layout';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    Button,
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    H2,
-    H3,
-    LoadingIndicator,
-    LucideIcon,
-    buttonVariants} from '@tryghost/shade';
+import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, LoadingIndicator, buttonVariants} from '@tryghost/shade/components';
+import {H2, H3} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
 import {useAccountForUser, useConfirmBlueskyHandleMutationForUser, useDisableBlueskyMutationForUser, useEnableBlueskyMutationForUser} from '@hooks/use-activity-pub-queries';
 

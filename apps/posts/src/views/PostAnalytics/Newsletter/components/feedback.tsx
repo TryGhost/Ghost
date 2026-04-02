@@ -1,4 +1,7 @@
-import {Avatar, AvatarFallback, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, HTable, LucideIcon, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, Tabs, TabsList, TabsTrigger, formatMemberName, formatPercentage, formatTimestamp, getMemberInitials, stringToHslColor, useSimplePagination} from '@tryghost/shade';
+import {Avatar, AvatarFallback, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {HTable} from '@tryghost/shade/primitives';
+import {LucideIcon, formatPercentage, formatTimestamp, stringToHslColor, useSimplePagination} from '@tryghost/shade/utils';
+import {formatMemberName, getMemberInitials} from '@tryghost/shade/app';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {usePostFeedback} from '@hooks/use-post-feedback';
 import {useState} from 'react';
@@ -79,7 +82,7 @@ const Feedback: React.FC<FeedbackProps> = ({feedbackStats}) => {
                                             <Avatar className='size-7'>
                                                 {item.member?.avatar_image && <img className='absolute aspect-square size-full' src={item.member?.avatar_image} />}
                                                 <AvatarFallback className='text-white' style={{
-                                                    backgroundColor: `${stringToHslColor(formatMemberName(item.member), 75, 55)}`
+                                                    backgroundColor: `${stringToHslColor(formatMemberName(item.member), '75', '55')}`
                                                 }}>{getMemberInitials(item.member)}</AvatarFallback>
                                             </Avatar>
                                             {formatMemberName(item.member)}

@@ -1,37 +1,9 @@
 import React, {useMemo, useState} from 'react';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-    Button,
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-    H1,
-    LucideIcon,
-    Navbar,
-    PageMenu,
-    PageMenuItem,
-    PostShareModal,
-    formatDisplayDate,
-    formatDisplayTime,
-    formatNumber
-} from '@tryghost/shade';
+import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Navbar, PageMenu, PageMenuItem} from '@tryghost/shade/components';
+import {H1} from '@tryghost/shade/primitives';
+import {LucideIcon, formatDisplayDate, formatDisplayTime, formatNumber} from '@tryghost/shade/utils';
 import {Post, useGlobalData} from '@src/providers/post-analytics-context';
+import {PostShareModal} from '@tryghost/shade/patterns';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/providers/posts-app-context';

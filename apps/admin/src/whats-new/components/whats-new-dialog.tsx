@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, LoadingIndicator } from "@tryghost/shade";
+import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, LoadingIndicator} from "@tryghost/shade/components";
 import { useChangelog } from "@/whats-new/hooks/use-changelog";
 import { useDismissWhatsNew } from "@/whats-new/hooks/use-whats-new";
 import ChangelogEntry from "@/whats-new/components/changelog-entry";

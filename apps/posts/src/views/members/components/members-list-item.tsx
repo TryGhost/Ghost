@@ -2,7 +2,8 @@ import moment from 'moment-timezone';
 
 import {Member} from '@tryghost/admin-x-framework/api/members';
 import {MemberAvatar} from '@components/member-avatar';
-import {TableCell, TableRow, cn} from '@tryghost/shade';
+import {TableCell, TableRow} from '@tryghost/shade/components';
+import {cn} from '@tryghost/shade/utils';
 import {getActiveColumnValue} from '../member-query-params';
 import type {ActiveColumn} from '../member-query-params';
 import type {CSSProperties} from 'react';

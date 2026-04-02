@@ -1,11 +1,4 @@
-import {
-    Button,
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle
-} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@tryghost/shade/components';
 import {useState} from 'react';
 
 interface DeleteModalProps {

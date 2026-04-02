@@ -109,6 +109,12 @@ module.exports = {
         'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
             memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']
         }],
+        'no-restricted-imports': ['error', {
+            paths: [{
+                name: '@tryghost/shade',
+                message: 'Import from layered subpaths instead (components/primitives/patterns/utils/app/tokens).'
+            }]
+        }],
 
         // Enforce kebab-case (lowercase with hyphens) for all filenames
         'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],

@@ -1,7 +1,9 @@
 import React, {useMemo} from 'react';
 import Sources from '../../Web/components/sources';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, Separator} from '@tryghost/shade/components';
 import {BaseSourceData, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {HTable} from '@tryghost/shade/primitives';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {useGlobalData} from '@src/providers/post-analytics-context';
 
 interface WebOverviewProps {

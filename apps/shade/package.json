@@ -7,6 +7,47 @@
     "private": true,
     "main": "es/index.js",
     "types": "types/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./types/index.d.ts",
+            "import": "./es/index.js",
+            "default": "./es/index.js"
+        },
+        "./tokens": {
+            "types": "./types/tokens.d.ts",
+            "import": "./es/tokens.js",
+            "default": "./es/tokens.js"
+        },
+        "./primitives": {
+            "types": "./types/primitives.d.ts",
+            "import": "./es/primitives.js",
+            "default": "./es/primitives.js"
+        },
+        "./components": {
+            "types": "./types/components.d.ts",
+            "import": "./es/components.js",
+            "default": "./es/components.js"
+        },
+        "./patterns": {
+            "types": "./types/patterns.d.ts",
+            "import": "./es/patterns.js",
+            "default": "./es/patterns.js"
+        },
+        "./app": {
+            "types": "./types/app.d.ts",
+            "import": "./es/app.js",
+            "default": "./es/app.js"
+        },
+        "./utils": {
+            "types": "./types/utils.d.ts",
+            "import": "./es/utils.js",
+            "default": "./es/utils.js"
+        },
+        "./styles.css": "./styles.css",
+        "./tailwind.theme.css": "./tailwind.theme.css",
+        "./tokens.css": "./tokens.css",
+        "./package.json": "./package.json"
+    },
     "sideEffects": false,
     "scripts": {
         "dev": "vite build --watch",
@@ -23,7 +64,12 @@
     },
     "files": [
         "es",
-        "types"
+        "types",
+        "styles.css",
+        "tailwind.theme.css",
+        "theme-variables.css",
+        "tokens.css",
+        "preflight.css"
     ],
     "devDependencies": {
         "@codemirror/lang-html": "6.4.11",

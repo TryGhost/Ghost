@@ -1,5 +1,6 @@
 import React from 'react';
-import {Button, Header, ToggleGroup, ToggleGroupItem} from '@tryghost/shade';
+import {Button, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
+import {Header} from '@tryghost/shade/primitives';
 import {Link} from '@tryghost/admin-x-framework';
 
 interface TagsHeaderProps {

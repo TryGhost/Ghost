@@ -1,15 +1,8 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {
-    Badge,
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandItem,
-    CommandList,
-    LucideIcon
-} from '@tryghost/shade';
+import {Badge, Command, CommandEmpty, CommandGroup, CommandItem, CommandList} from '@tryghost/shade/components';
 import {EditRow} from './edit-row';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 function useControlledSearch(controlledValue?: string, onControlledChange?: (value: string) => void) {
     const [localSearch, setLocalSearch] = useState('');

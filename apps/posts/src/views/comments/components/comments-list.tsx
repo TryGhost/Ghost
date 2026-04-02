@@ -1,13 +1,14 @@
 import CommentContent from './comment-content';
 import CommentThreadSidebar from './comment-thread-sidebar';
 import LoadMoreButton from '@components/virtual-table/load-more-button';
-import {Button, LucideIcon} from '@tryghost/shade';
+import {Button} from '@tryghost/shade/components';
 import {Comment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
 import {CommentAvatar} from './comment-avatar';
 import {CommentHeader} from './comment-header';
 import {CommentMenu} from './comment-menu';
 import {CommentMetrics, buildThreadLink} from './comment-metrics';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {forwardRef, useEffect, useRef, useState} from 'react';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';

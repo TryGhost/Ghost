@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Button} from '@tryghost/shade';
+import {Button} from '@tryghost/shade/components';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
 
 interface EditRowProps {

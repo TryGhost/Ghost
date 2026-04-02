@@ -1,5 +1,5 @@
 import React from 'react';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 export type NotificationType = 'like' | 'follow' | 'reply' | 'repost' | 'mention';
 export type NotificationIconSize = 'sm' | 'lg';

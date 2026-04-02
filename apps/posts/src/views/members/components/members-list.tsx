@@ -2,7 +2,7 @@ import LoadMoreButton from '@components/virtual-table/load-more-button';
 import MembersListItem from './members-list-item';
 import {Member} from '@tryghost/admin-x-framework/api/members';
 import {MembersTableColGroup, MembersTableHeader, PinnedMemberHeader} from './member-table-chrome';
-import {Table, TableBody, TableCell, TableRow} from '@tryghost/shade';
+import {Table, TableBody, TableCell, TableRow} from '@tryghost/shade/components';
 import {forwardRef, useEffect, useMemo, useRef, useState} from 'react';
 import {getMemberTableLayout, getMemberTableLayoutStyles} from './member-table-layout';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';

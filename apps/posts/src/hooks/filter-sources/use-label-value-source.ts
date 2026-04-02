@@ -1,6 +1,6 @@
 import {Label, LabelsResponseType, useBrowseLabelsInfinite} from '@tryghost/admin-x-framework/api/labels';
 import {RemoteProbeState, ValueSourceHookOptions} from './create-remote-value-source';
-import {ValueSource, ValueSourceParams, ValueSourceState} from '@tryghost/shade';
+import {ValueSource, ValueSourceParams, ValueSourceState} from '@tryghost/shade/patterns';
 import {buildQuotedListFilter, filterOptionsByQuery, mergeFilterOptions} from './utils';
 import {createGhostBrowseValueSource} from './create-ghost-browse-value-source';
 import {createHybridValueSource} from './create-hybrid-value-source';

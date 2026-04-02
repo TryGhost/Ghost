@@ -1,5 +1,5 @@
 import React from 'react';
-import {Header} from '@tryghost/shade';
+import {Header} from '@tryghost/shade/primitives';
 
 const CommentsHeader: React.FC<React.PropsWithChildren> = ({children}) => {
     return (

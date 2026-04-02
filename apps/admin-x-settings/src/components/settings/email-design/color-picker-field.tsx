@@ -1,10 +1,6 @@
 import React, {useState} from 'react';
-import {
-    ColorPicker,
-    Popover,
-    PopoverContent,
-    PopoverTrigger
-} from '@tryghost/shade';
+import {ColorPicker} from '@tryghost/shade/patterns';
+import {Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 
 interface ColorPickerFieldProps {
     title: string;

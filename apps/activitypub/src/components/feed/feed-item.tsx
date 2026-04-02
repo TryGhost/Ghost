@@ -1,7 +1,9 @@
 import FeedItemMenu from './feed-item-menu';
 import React, {useEffect, useRef, useState} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
+import {Button, Skeleton} from '@tryghost/shade/components';
+import {H4} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
 
 import APAvatar from '../global/ap-avatar';

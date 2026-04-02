@@ -1,10 +1,6 @@
 import React from "react";
-import {
-    Button,
-    LucideIcon,
-    SidebarTrigger,
-    useSidebar,
-} from "@tryghost/shade";
+import {Button, SidebarTrigger, useSidebar} from "@tryghost/shade/components";
+import {LucideIcon} from "@tryghost/shade/utils";
 import { useIsActiveLink } from "./use-is-active-link";
 import { useSidebarVisibility } from "@/ember-bridge/ember-bridge";
 

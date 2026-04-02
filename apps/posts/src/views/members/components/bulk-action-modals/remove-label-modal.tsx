@@ -1,11 +1,4 @@
-import {
-    Button,
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle
-} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@tryghost/shade/components';
 import {LabelPicker} from '@src/components/label-picker';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useCallback, useMemo, useState} from 'react';

@@ -1,11 +1,6 @@
 import React from 'react';
-import {
-    Button,
-    LucideIcon,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    useSidebar
-} from '@tryghost/shade';
+import {Button, SidebarMenuButton, SidebarMenuItem, useSidebar} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 import { useIsActiveLink } from './use-is-active-link';
 
 function NavMenuItem({ children, ...props }: React.ComponentProps<typeof SidebarMenuItem>) {

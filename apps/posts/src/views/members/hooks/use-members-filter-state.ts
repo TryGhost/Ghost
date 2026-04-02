@@ -1,7 +1,7 @@
+import {Filter} from '@tryghost/shade/patterns';
 import {hasTimezoneSensitiveMemberFilter, parseMemberFilter, serializeMemberFilters} from '../member-filter-query';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useSearchParams} from 'react-router';
-import type {Filter} from '@tryghost/shade';
 
 interface SetFiltersOptions {
     replace?: boolean;

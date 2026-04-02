@@ -1,11 +1,5 @@
 import {FONT_WEIGHT_OPTIONS, getValidWeight} from './font-constants';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from '@tryghost/shade';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {useEmailDesign} from '../email-design-context';
 
 export const HeadingWeightField = () => {

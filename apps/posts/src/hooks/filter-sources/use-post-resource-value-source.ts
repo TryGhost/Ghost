@@ -1,6 +1,6 @@
 import {Page, PagesResponseType, useBrowsePagesInfinite} from '@tryghost/admin-x-framework/api/pages';
 import {Post, PostsResponseType, useBrowsePostsInfinite} from '@tryghost/admin-x-framework/api/posts';
-import {ValueSource} from '@tryghost/shade';
+import {ValueSource} from '@tryghost/shade/patterns';
 import {createCombinedValueSource} from './create-combined-value-source';
 import {createGhostBrowseValueSource} from './create-ghost-browse-value-source';
 import {escapeNqlString} from '@src/views/filters/filter-normalization';

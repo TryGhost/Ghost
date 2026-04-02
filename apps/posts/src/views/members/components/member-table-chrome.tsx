@@ -1,4 +1,5 @@
-import {Table, TableHead, TableHeader, TableRow, cn} from '@tryghost/shade';
+import {Table, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
+import {cn} from '@tryghost/shade/utils';
 import type {ActiveColumn} from '../member-query-params';
 import type {CSSProperties, Ref} from 'react';
 import type {MemberTableColumnStyles} from './member-table-layout';

@@ -1,5 +1,5 @@
 import {Member, MembersInfiniteResponseType, useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
-import {ValueSource} from '@tryghost/shade';
+import {ValueSource} from '@tryghost/shade/patterns';
 import {createGhostBrowseValueSource} from './create-ghost-browse-value-source';
 
 function toMemberOption(member: Member) {

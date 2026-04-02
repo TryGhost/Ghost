@@ -1,14 +1,5 @@
-import {
-    Badge,
-    Button,
-    LucideIcon,
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-    cn,
-    formatTimestamp
-} from '@tryghost/shade';
+import {Badge, Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {LucideIcon, cn, formatTimestamp} from '@tryghost/shade/utils';
 
 function formatDate(dateString: string): string {
     const date = new Date(dateString);
