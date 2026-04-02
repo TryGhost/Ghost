@@ -35,7 +35,16 @@ describe('MembersRouteGate', () => {
         expect(screen.getByTestId('ember-fallback')).toBeInTheDocument();
     });
 
-    it('keeps /members/import on React even when the flag is disabled', () => {
+    it('delegates /members/import to Ember when the flag is disabled', () => {
+        mockUseLocation.mockReturnValue({pathname: '/members/import'});
+
+        render(<MembersRouteGate />);
+
+        expect(screen.getByTestId('ember-fallback')).toBeInTheDocument();
+    });
+
+    it('renders React routes when the flag is enabled', () => {
+        mockUseFeatureFlag.mockReturnValue(true);
         mockUseLocation.mockReturnValue({pathname: '/members/import'});
 
         render(<MembersRouteGate />);

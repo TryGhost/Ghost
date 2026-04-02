@@ -1,6 +1,7 @@
 import {Response} from 'miragejs';
 import {authenticateSession} from 'ember-simple-auth/test-support';
-import {click, currentURL, find, findAll} from '@ember/test-helpers';
+import {click, currentRouteName, currentURL, find, findAll} from '@ember/test-helpers';
+import {enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {fileUpload} from '../../helpers/file-upload';
 import {setupApplicationTest} from 'ember-mocha';
@@ -109,6 +110,15 @@ testemail@example.com,Test Email,This is a test template for importing your memb
             await click('[data-test-button="perform-import"]');
 
             expect(apiLabels).to.equal(label1.name);
+        });
+
+        it('opts out of the Ember import route when membersForward is enabled', async function () {
+            enableLabsFlag(this.server, 'membersForward');
+
+            await visit('/members/import');
+
+            expect(currentRouteName()).to.equal('react-fallback');
+            expect(find('[data-test-modal="import-members"]'), 'members import modal').to.not.exist;
         });
     });
     describe ('super editors functions', function () {
