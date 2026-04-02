@@ -29,6 +29,8 @@ export interface AutomatedEmailDesignResponseType {
     automated_email_design: AutomatedEmailDesign[];
 }
 
+export type EditAutomatedEmailDesign = Omit<Partial<AutomatedEmailDesign>, 'id'>;
+
 const dataType = 'AutomatedEmailDesignResponseType';
 
 export const useReadAutomatedEmailDesign = createQuery<AutomatedEmailDesignResponseType>({
@@ -36,7 +38,7 @@ export const useReadAutomatedEmailDesign = createQuery<AutomatedEmailDesignRespo
     path: '/automated_emails/design/'
 });
 
-export const useEditAutomatedEmailDesign = createMutation<AutomatedEmailDesignResponseType, Partial<AutomatedEmailDesign> & {id: string}>({
+export const useEditAutomatedEmailDesign = createMutation<AutomatedEmailDesignResponseType, EditAutomatedEmailDesign>({
     method: 'PUT',
     path: () => '/automated_emails/design/',
     body: design => ({automated_email_design: [design]}),
