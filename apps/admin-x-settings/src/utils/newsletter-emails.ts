@@ -26,3 +26,16 @@ export const renderReplyToEmail = (newsletter: Newsletter, config: Config, suppo
 
     return newsletter.sender_reply_to;
 };
+
+export const renderReplyToEmailPlaceholder = (newsletter: Newsletter, config: Config, supportEmailAddress: string|undefined, defaultEmailAddress: string|undefined) => {
+    const replyTo = renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress);
+    if (replyTo) {
+        return replyTo;
+    }
+
+    if (newsletter.sender_reply_to === 'newsletter') {
+        return renderSenderEmail(newsletter, config, defaultEmailAddress) || supportEmailAddress || defaultEmailAddress || '';
+    }
+
+    return supportEmailAddress || defaultEmailAddress || '';
+};
