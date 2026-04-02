@@ -15,7 +15,6 @@ const WelcomeEmailPreviewContent: React.FC = () => {
     const linkClasses = cn(
         'no-underline',
         settings.link_style === 'underline' && 'underline',
-        settings.link_style === 'regular' && 'italic',
         settings.link_style === 'bold' && 'font-bold'
     );
 
