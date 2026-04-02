@@ -349,6 +349,29 @@ describe('MemberWelcomeEmailRenderer', function () {
             assert(result.html.includes('https://ghost.org/?via=pbg-newsletter'));
         });
 
+        it('applies header image styles and preserves header background color', async function () {
+            lexicalRenderStub.resolves('<p>Content</p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Test Subject',
+                designSettings: {
+                    header_background_color: '#123456',
+                    header_image: 'https://example.com/header.png',
+                    show_badge: false,
+                    show_header_title: false
+                },
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert.match(result.html, /class="header"[^>]*background-color:\s*#123456/i);
+            assert.match(result.html, /class="header-main"[^>]*background-color:\s*#123456/i);
+            assert.match(result.html, /class="header-image"/i);
+            assert.match(result.html, /src="https:\/\/example\.com\/header\.png"/);
+        });
+
         it('resolves relative portal links to absolute URLs', async function () {
             lexicalRenderStub.resolves('<table class="kg-card kg-button-card"><tbody><tr><td><table class="btn"><tbody><tr><td align="center"><a href="#/portal/support">Support us</a></td></tr></tbody></table></td></tr></tbody></table>');
             const renderer = new MemberWelcomeEmailRenderer({t: key => key});

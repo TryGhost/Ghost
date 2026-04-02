@@ -66,6 +66,9 @@ class MemberWelcomeEmailRenderer {
 
             return false;
         });
+        this.Handlebars.registerHelper('eq', function (a, b) {
+            return a === b;
+        });
         this.Handlebars.registerHelper('t', function (key, options) {
             let hash = options?.hash;
             return t(key, hash || options || {});
@@ -82,12 +85,14 @@ class MemberWelcomeEmailRenderer {
             path.join(__dirname, '../email-rendering/partials/card-styles.hbs'),
             'utf8'
         );
+        const emailStylesSource = fs.readFileSync(
+            path.join(__dirname, '../email-service/email-templates/partials/styles.hbs'),
+            'utf8'
+        );
         this.Handlebars.registerPartial('baseStyles', baseStylesSource);
         this.Handlebars.registerPartial('contentStyles', contentStylesSource);
         this.Handlebars.registerPartial('cardStyles', cardStylesSource);
-        this.Handlebars.registerPartial('styles',
-            '<style>\n{{>baseStyles}}\n{{>contentStyles}}\n{{>cardStyles}}\n</style>'
-        );
+        this.Handlebars.registerPartial('styles', emailStylesSource);
         const emailWrapperSource = fs.readFileSync(
             path.join(__dirname, '../email-rendering/partials/email-wrapper.hbs'),
             'utf8'
@@ -237,6 +242,16 @@ class MemberWelcomeEmailRenderer {
             siteUrl: siteSettings.url,
             managePreferencesUrl,
             year,
+            ctaBgColors: [
+                'grey',
+                'blue',
+                'green',
+                'yellow',
+                'red',
+                'pink',
+                'purple',
+                'white'
+            ],
             ...design,
             classes: {
                 container: 'container'
