@@ -3,6 +3,31 @@ import {DEFAULT_EMAIL_DESIGN} from '@src/components/settings/email-design/types'
 import {buildAutomatedEmailDesignPayload, mapApiToDesignSettings} from '@src/components/settings/membership/member-emails/welcome-email-customize-modal';
 
 describe('Welcome email design payload helpers', function () {
+    it('does not hydrate immutable api metadata into design settings', function () {
+        const apiData = {
+            id: '1',
+            slug: 'default-automated-email',
+            created_at: '2026-04-02T00:00:00.000Z',
+            updated_at: '2026-04-02T00:00:00.000Z',
+            header_image: null,
+            show_header_title: true,
+            show_badge: true,
+            footer_content: null,
+            ...DEFAULT_EMAIL_DESIGN
+        };
+
+        const result = mapApiToDesignSettings(apiData as never) as typeof apiData;
+
+        assert.equal('id' in result, false);
+        assert.equal('slug' in result, false);
+        assert.equal('created_at' in result, false);
+        assert.equal('updated_at' in result, false);
+        assert.equal('header_image' in result, false);
+        assert.equal('show_header_title' in result, false);
+        assert.equal('show_badge' in result, false);
+        assert.equal('footer_content' in result, false);
+    });
+
     it('preserves unexpected persisted design fields when mapping api data', function () {
         const apiData = {
             ...DEFAULT_EMAIL_DESIGN,
@@ -20,6 +45,10 @@ describe('Welcome email design payload helpers', function () {
         const state = {
             designSettings: {
                 ...DEFAULT_EMAIL_DESIGN,
+                id: '1',
+                slug: 'default-automated-email',
+                created_at: '2026-04-02T00:00:00.000Z',
+                updated_at: '2026-04-02T00:00:00.000Z',
                 custom_future_field: '#abcdef'
             },
             generalSettings: {
@@ -40,6 +69,10 @@ describe('Welcome email design payload helpers', function () {
         };
 
         assert.equal(payload.custom_future_field, '#abcdef');
+        assert.equal('id' in payload, false);
+        assert.equal('slug' in payload, false);
+        assert.equal('created_at' in payload, false);
+        assert.equal('updated_at' in payload, false);
         assert.equal('post_title_color' in payload, false);
         assert.equal('title_alignment' in payload, false);
     });

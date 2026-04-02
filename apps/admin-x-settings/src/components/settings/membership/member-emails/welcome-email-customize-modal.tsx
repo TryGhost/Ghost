@@ -44,6 +44,20 @@ interface WelcomeEmailCustomizeFormState {
 }
 
 const SAVE_ERROR_TOAST_ID = 'welcome-email-design-save-error';
+const NON_DESIGN_FIELDS = new Set([
+    'id',
+    'slug',
+    'created_at',
+    'updated_at',
+    'header_image',
+    'show_header_title',
+    'show_badge',
+    'footer_content'
+]);
+const PREVIEW_ONLY_FIELDS = new Set([
+    'post_title_color',
+    'title_alignment'
+]);
 
 interface GeneralTabProps {
     generalSettings: GeneralSettings;
@@ -225,8 +239,12 @@ function mapApiToGeneralSettings(
 export function mapApiToDesignSettings(
     apiData: PersistedEmailDesignSettings
 ): EmailDesignSettings {
+    const persistedDesign = Object.fromEntries(
+        Object.entries(apiData).filter(([key]) => !NON_DESIGN_FIELDS.has(key))
+    ) as PersistedEmailDesignSettings;
+
     return {
-        ...apiData,
+        ...persistedDesign,
         // Local-only fields not stored in the backend
         post_title_color: DEFAULT_EMAIL_DESIGN.post_title_color,
         title_alignment: DEFAULT_EMAIL_DESIGN.title_alignment
@@ -235,7 +253,7 @@ export function mapApiToDesignSettings(
 
 export function buildAutomatedEmailDesignPayload(state: WelcomeEmailCustomizeFormState): EditAutomatedEmailDesign {
     const persistedDesign = Object.fromEntries(
-        Object.entries(state.designSettings).filter(([key]) => !['post_title_color', 'title_alignment'].includes(key))
+        Object.entries(state.designSettings).filter(([key]) => !PREVIEW_ONLY_FIELDS.has(key) && !NON_DESIGN_FIELDS.has(key))
     );
 
     return {
