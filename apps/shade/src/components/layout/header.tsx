@@ -8,9 +8,7 @@ type PropsWithChildrenAndClassName = React.PropsWithChildren & {
     className?: string;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface HeaderAboveProps extends PropsWithChildrenAndClassName {}
-function HeaderAbove({className, children}: HeaderAboveProps) {
+function HeaderAbove({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
             className={cn('flex items-center gap-2 [grid-area:above]', className)}
@@ -21,9 +19,7 @@ function HeaderAbove({className, children}: HeaderAboveProps) {
     );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface HeaderTitleProps extends PropsWithChildrenAndClassName {}
-function HeaderTitle({className, children}: HeaderTitleProps) {
+function HeaderTitle({className, children}: PropsWithChildrenAndClassName) {
     return (
         <H1
             className={cn(
@@ -37,9 +33,7 @@ function HeaderTitle({className, children}: HeaderTitleProps) {
     );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface HeaderMetaProps extends PropsWithChildrenAndClassName {}
-function HeaderMeta({className, children}: HeaderMetaProps) {
+function HeaderMeta({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
             className={cn('flex items-center justify-start text-muted-foreground [grid-area:meta] pb-4 pt-1', className)}
@@ -50,9 +44,7 @@ function HeaderMeta({className, children}: HeaderMetaProps) {
     );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface HeaderActionGroupProps extends PropsWithChildrenAndClassName {}
-function HeaderActionGroup({className, children}: HeaderActionGroupProps) {
+function HeaderActionGroup({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
             className={cn('flex items-center gap-2', className)}
@@ -63,9 +55,7 @@ function HeaderActionGroup({className, children}: HeaderActionGroupProps) {
     );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface HeaderActionsProps extends PropsWithChildrenAndClassName {}
-function HeaderActions({className, children}: HeaderActionsProps) {
+function HeaderActions({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
             className={cn('flex items-center gap-4 [grid-area:actions] sm:justify-self-end self-start', className)}
@@ -76,9 +66,7 @@ function HeaderActions({className, children}: HeaderActionsProps) {
     );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface HeaderNavProps extends PropsWithChildrenAndClassName {}
-function HeaderNav({className, children}: HeaderNavProps) {
+function HeaderNav({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
             className={cn('flex items-center gap-2 [grid-area:nav] self-start mt-2 lg:mt-0.5', className)}
@@ -89,11 +77,11 @@ function HeaderNav({className, children}: HeaderNavProps) {
     );
 }
 
-const headerVariants = cva(`via-background/70 to-background/70 sticky top-0 z-50 -mb-4 grid gap-x-4 bg-gradient-to-b from-background p-4 backdrop-blur-md [grid-template-areas:'above''title''meta''actions''nav'] sm:[grid-template-areas:'above_above''title_actions''meta_actions''nav_nav'] lg:-mb-8 lg:p-8 dark:bg-black`, {
+const headerVariants = cva(`sticky top-0 z-50 -mb-4 grid gap-x-4 bg-gradient-to-b from-background via-background/70 to-background/70 p-4 backdrop-blur-md [grid-template-areas:'above''title''meta''actions''nav'] sm:[grid-template-areas:'above_above''title_actions''meta_actions''nav_nav'] lg:-mb-8 lg:p-8 dark:bg-black`, {
     variants: {
         variant: {
             default: `lg:[grid-template-areas:'above_above''title_actions''meta_actions''nav_nav']`,
-            'inline-nav': `lg:[grid-template-areas:'above_above_above''title_nav_actions''meta_nav_actions'] lg:[grid-template-columns:1fr_auto_auto]`
+            'inline-nav': `lg:[grid-template-columns:1fr_auto_auto] lg:[grid-template-areas:'above_above_above''title_nav_actions''meta_nav_actions']`
         }
     },
     defaultVariants: {
@@ -102,22 +90,35 @@ const headerVariants = cva(`via-background/70 to-background/70 sticky top-0 z-50
 });
 
 interface HeaderProps extends PropsWithChildrenAndClassName, VariantProps<typeof headerVariants> {}
-function Header({className, children, variant}: HeaderProps) {
-    return (
-        <header
-            className={cn(headerVariants({variant, className}))}
-            data-header='header'
-        >
-            {children}
-        </header>
-    );
-}
+type HeaderComponent = React.ForwardRefExoticComponent<HeaderProps & React.RefAttributes<HTMLElement>> & {
+    Above: typeof HeaderAbove;
+    Title: typeof HeaderTitle;
+    Actions: typeof HeaderActions;
+    ActionGroup: typeof HeaderActionGroup;
+    Nav: typeof HeaderNav;
+    Meta: typeof HeaderMeta;
+};
 
-Header.Above = HeaderAbove;
-Header.Title = HeaderTitle;
-Header.Actions = HeaderActions;
-Header.ActionGroup = HeaderActionGroup;
-Header.Nav = HeaderNav;
-Header.Meta = HeaderMeta;
+const Header: HeaderComponent = Object.assign(
+    React.forwardRef<HTMLElement, HeaderProps>(function Header({className, children, variant}, ref) {
+        return (
+            <header
+                ref={ref}
+                className={cn(headerVariants({variant, className}))}
+                data-header='header'
+            >
+                {children}
+            </header>
+        );
+    }),
+    {
+        Above: HeaderAbove,
+        Title: HeaderTitle,
+        Actions: HeaderActions,
+        ActionGroup: HeaderActionGroup,
+        Nav: HeaderNav,
+        Meta: HeaderMeta
+    }
+);
 
 export {Header, HeaderActions, HeaderTitle, HeaderNav, HeaderMeta};

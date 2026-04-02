@@ -1,4 +1,6 @@
 import {
+    getActiveInterval,
+    hasGiftSubscriptions,
     hasAvailablePrices,
     getAllProductsForSite,
     getAvailableProducts,
@@ -27,7 +29,8 @@ import {
     getUpdatedOfferPrice,
     isComplimentaryMember,
     subscriptionHasFreeTrial,
-    addMonths
+    addMonths,
+    formatPrice
 } from '../../src/utils/helpers';
 import * as Fixtures from '../../src/utils/fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from './test-fixtures';
@@ -280,6 +283,25 @@ describe('Helpers - ', () => {
             });
 
             expect(updatedPrice).toBe('$4.79');
+        });
+    });
+
+    describe('formatPrice - ', () => {
+        test('returns whole numbers without decimal padding', () => {
+            expect(formatPrice(5)).toBe('5');
+        });
+
+        test('returns fractional numbers with two decimals', () => {
+            expect(formatPrice(5.4)).toBe('5.40');
+        });
+
+        test('returns fractional numbers with locale grouping', () => {
+            expect(formatPrice(1234.5, 'en-US')).toBe('1,234.50');
+        });
+
+        test('returns empty string for null/undefined input', () => {
+            expect(formatPrice(null)).toBe('');
+            expect(formatPrice(undefined)).toBe('');
         });
     });
 
@@ -797,6 +819,62 @@ describe('Helpers - ', () => {
         it('returns the original date when month count is not an integer', () => {
             const date = '2024-03-15T00:00:00.000Z';
             expect(addMonths(date, 1.5)).toEqual(new Date(date));
+        });
+    });
+
+    describe('hasGiftSubscriptions', () => {
+        test('returns true when labs flag is enabled', () => {
+            expect(hasGiftSubscriptions({site: {labs: {giftSubscriptions: true}}})).toBe(true);
+        });
+
+        test('returns false when labs flag is disabled', () => {
+            expect(hasGiftSubscriptions({site: {labs: {giftSubscriptions: false}}})).toBe(false);
+        });
+
+        test('returns false when labs flag is missing', () => {
+            expect(hasGiftSubscriptions({site: {labs: {}}})).toBe(false);
+        });
+
+        test('returns false when labs is undefined', () => {
+            expect(hasGiftSubscriptions({site: {}})).toBe(false);
+        });
+    });
+
+    describe('getActiveInterval', () => {
+        test('returns month when selectedInterval is month and monthly is available', () => {
+            expect(getActiveInterval({portalPlans: ['monthly', 'yearly'], portalDefaultPlan: 'yearly', selectedInterval: 'month'})).toBe('month');
+        });
+
+        test('returns year when selectedInterval is year and yearly is available', () => {
+            expect(getActiveInterval({portalPlans: ['monthly', 'yearly'], portalDefaultPlan: 'monthly', selectedInterval: 'year'})).toBe('year');
+        });
+
+        test('falls back to portalDefaultPlan when selectedInterval is null', () => {
+            expect(getActiveInterval({portalPlans: ['monthly', 'yearly'], portalDefaultPlan: 'monthly', selectedInterval: null})).toBe('month');
+        });
+
+        test('falls back to yearly when portalDefaultPlan is not monthly', () => {
+            expect(getActiveInterval({portalPlans: ['monthly', 'yearly'], portalDefaultPlan: 'yearly', selectedInterval: null})).toBe('year');
+        });
+
+        test('falls back to yearly when no default plan is set', () => {
+            expect(getActiveInterval({portalPlans: ['monthly', 'yearly'], portalDefaultPlan: null, selectedInterval: null})).toBe('year');
+        });
+
+        test('falls back to monthly when only monthly is available', () => {
+            expect(getActiveInterval({portalPlans: ['monthly'], portalDefaultPlan: null, selectedInterval: null})).toBe('month');
+        });
+
+        test('ignores selectedInterval month when monthly is not available', () => {
+            expect(getActiveInterval({portalPlans: ['yearly'], portalDefaultPlan: null, selectedInterval: 'month'})).toBe('year');
+        });
+
+        test('ignores selectedInterval year when yearly is not available', () => {
+            expect(getActiveInterval({portalPlans: ['monthly'], portalDefaultPlan: null, selectedInterval: 'year'})).toBe('month');
+        });
+
+        test('returns undefined when portalPlans is empty', () => {
+            expect(getActiveInterval({portalPlans: [], portalDefaultPlan: null, selectedInterval: null})).toBeUndefined();
         });
     });
 

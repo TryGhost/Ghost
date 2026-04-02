@@ -14,11 +14,26 @@ import {
 } from '@tryghost/shade';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
 
+function useControlledSearch(controlledValue?: string, onControlledChange?: (value: string) => void) {
+    const [localSearch, setLocalSearch] = useState('');
+    const search = controlledValue ?? localSearch;
+
+    const handleSearchChange = useCallback((value: string) => {
+        setLocalSearch(value);
+        onControlledChange?.(value);
+    }, [onControlledChange]);
+
+    return {search, handleSearchChange};
+}
+
 export interface LabelPickerProps {
     labels: Label[];
     selectedSlugs: string[];
+    resolvedSelectedLabels?: Label[];
     isLoading?: boolean;
     onToggle: (slug: string) => void;
+    searchValue?: string;
+    onSearchChange?: (search: string) => void;
     // Creation
     canCreateFromSearch?: (inputValue: string) => boolean;
     onCreate?: (name: string) => Promise<Label | undefined>;
@@ -108,7 +123,7 @@ const EditRow: React.FC<EditRowProps> = ({label, onSave, onCancel, onDelete, isD
         <div className="flex flex-col gap-2 py-1.5" data-edit-row>
             <input
                 ref={inputRef}
-                className="outline-hidden h-7 w-full rounded border border-border bg-background px-2 text-sm focus:ring-1 focus:ring-ring disabled:opacity-50"
+                className="h-7 w-full rounded border border-border bg-background px-2 text-sm outline-hidden focus:ring-1 focus:ring-ring disabled:opacity-50"
                 disabled={isBusy}
                 type="text"
                 value={name}
@@ -246,8 +261,10 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
     onSearchClear
 }) => {
     const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
-
-    const filteredLabels = labels.filter(l => l.name.toLowerCase().includes(search.toLowerCase()));
+    const normalizedSearch = search.trim().toLowerCase();
+    const visibleLabels = normalizedSearch
+        ? labels.filter(label => label.name.toLowerCase().includes(normalizedSearch))
+        : labels;
     const showCreate = !!onCreate && search.trim() && canCreateFromSearch?.(search);
     const showEdit = !!onEdit;
 
@@ -276,12 +293,12 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
 
     return (
         <>
-            {!showCreate && filteredLabels.length === 0 && (
+            {!showCreate && visibleLabels.length === 0 && (
                 <CommandEmpty>No labels found</CommandEmpty>
             )}
-            {filteredLabels.length > 0 && (
+            {visibleLabels.length > 0 && (
                 <CommandGroup className="[&_[cmdk-group-heading]]:hidden">
-                    {filteredLabels.map(label => (
+                    {visibleLabels.map(label => (
                         editingLabelId === label.id ? (
                             <EditRow
                                 key={label.id}
@@ -350,8 +367,11 @@ const SelectedPills: React.FC<SelectedPillsProps> = ({labels, onToggle}) => (
 const LabelPicker: React.FC<LabelPickerProps> = ({
     labels,
     selectedSlugs,
+    resolvedSelectedLabels,
     isLoading,
     onToggle,
+    searchValue,
+    onSearchChange,
     canCreateFromSearch,
     onCreate,
     isCreating,
@@ -361,7 +381,7 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
     inline = false,
     align = 'start'
 }) => {
-    const selectedLabels = selectedSlugs
+    const selectedLabels = resolvedSelectedLabels || selectedSlugs
         .map(slug => labels.find(l => l.slug === slug))
         .filter((l): l is Label => !!l);
 
@@ -375,11 +395,13 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
                 isDuplicateName={isDuplicateName}
                 isLoading={isLoading}
                 labels={labels}
+                searchValue={searchValue}
                 selectedLabels={selectedLabels}
                 selectedSlugs={selectedSlugs}
                 onCreate={onCreate}
                 onDelete={onDelete}
                 onEdit={onEdit}
+                onSearchChange={onSearchChange}
                 onToggle={onToggle}
             />
         );
@@ -393,11 +415,13 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
             isDuplicateName={isDuplicateName}
             isLoading={isLoading}
             labels={labels}
+            searchValue={searchValue}
             selectedLabels={selectedLabels}
             selectedSlugs={selectedSlugs}
             onCreate={onCreate}
             onDelete={onDelete}
             onEdit={onEdit}
+            onSearchChange={onSearchChange}
             onToggle={onToggle}
         />
     );
@@ -412,6 +436,8 @@ interface InlinePopoverProps {
     onToggle: (slug: string) => void;
     isLoading?: boolean;
     align?: 'start' | 'end';
+    searchValue?: string;
+    onSearchChange?: (search: string) => void;
     canCreateFromSearch?: (inputValue: string) => boolean;
     onCreate?: (name: string) => Promise<Label | undefined>;
     isCreating?: boolean;
@@ -427,6 +453,8 @@ const InlinePopover: React.FC<InlinePopoverProps> = ({
     onToggle,
     isLoading,
     align = 'start',
+    searchValue,
+    onSearchChange,
     canCreateFromSearch,
     onCreate,
     isCreating,
@@ -483,11 +511,13 @@ const InlinePopover: React.FC<InlinePopoverProps> = ({
                         isCreating={isCreating}
                         isDuplicateName={isDuplicateName}
                         labels={labels}
+                        searchValue={searchValue}
                         selectedLabels={selectedLabels}
                         selectedSlugs={selectedSlugs}
                         onCreate={onCreate}
                         onDelete={onDelete}
                         onEdit={onEdit}
+                        onSearchChange={onSearchChange}
                         onToggle={onToggle}
                     />
                 )}
@@ -502,7 +532,9 @@ interface InlineListProps {
     labels: Label[];
     selectedLabels: Label[];
     selectedSlugs: string[];
+    searchValue?: string;
     onToggle: (slug: string) => void;
+    onSearchChange?: (search: string) => void;
     canCreateFromSearch?: (inputValue: string) => boolean;
     onCreate?: (name: string) => Promise<Label | undefined>;
     isCreating?: boolean;
@@ -511,8 +543,8 @@ interface InlineListProps {
     isDuplicateName?: (name: string, excludeId?: string) => boolean;
 }
 
-const InlineList: React.FC<InlineListProps> = ({selectedLabels, ...rest}) => {
-    const [search, setSearch] = useState('');
+const InlineList: React.FC<InlineListProps> = ({selectedLabels, searchValue, onSearchChange, ...rest}) => {
+    const {search, handleSearchChange} = useControlledSearch(searchValue, onSearchChange);
 
     return (
         <Command shouldFilter={false}>
@@ -524,17 +556,17 @@ const InlineList: React.FC<InlineListProps> = ({selectedLabels, ...rest}) => {
             <div className="flex items-center border-b px-3">
                 <LucideIcon.Search className="mr-2 size-4 shrink-0 opacity-50" />
                 <input
-                    className="outline-hidden flex h-9 w-full bg-transparent py-3 text-sm placeholder:text-muted-foreground"
+                    className="flex h-9 w-full bg-transparent py-3 text-sm outline-hidden placeholder:text-muted-foreground"
                     placeholder="Search labels..."
                     value={search}
-                    onChange={e => setSearch(e.target.value)}
+                    onChange={e => handleSearchChange(e.target.value)}
                 />
             </div>
             <CommandList className="max-h-64 overflow-y-auto">
                 <LabelListItems
                     {...rest}
                     search={search}
-                    onSearchClear={() => setSearch('')}
+                    onSearchClear={() => handleSearchChange('')}
                 />
             </CommandList>
         </Command>
@@ -549,6 +581,8 @@ interface ComboboxPickerProps {
     selectedSlugs: string[];
     onToggle: (slug: string) => void;
     isLoading?: boolean;
+    searchValue?: string;
+    onSearchChange?: (search: string) => void;
     canCreateFromSearch?: (inputValue: string) => boolean;
     onCreate?: (name: string) => Promise<Label | undefined>;
     isCreating?: boolean;
@@ -563,6 +597,8 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     selectedSlugs,
     onToggle,
     isLoading,
+    searchValue,
+    onSearchChange,
     canCreateFromSearch,
     onCreate,
     isCreating,
@@ -571,7 +607,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     isDuplicateName
 }) => {
     const [open, setOpen] = useState(false);
-    const [search, setSearch] = useState('');
+    const {search, handleSearchChange} = useControlledSearch(searchValue, onSearchChange);
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -614,11 +650,11 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                 <SelectedPills labels={selectedLabels} onToggle={onToggle} />
                 <input
                     ref={inputRef}
-                    className="outline-hidden min-w-[80px] flex-1 bg-transparent text-sm placeholder:text-muted-foreground"
+                    className="min-w-[80px] flex-1 bg-transparent text-sm outline-hidden placeholder:text-muted-foreground"
                     placeholder={selectedLabels.length === 0 ? 'Search labels...' : ''}
                     value={search}
                     onChange={(e) => {
-                        setSearch(e.target.value);
+                        handleSearchChange(e.target.value);
                         if (!open) {
                             setOpen(true);
                         }
@@ -628,7 +664,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                 />
             </div>
             {open && (
-                <div className="absolute left-0 top-full z-50 mt-1 w-full rounded-md border bg-white shadow-md dark:bg-gray-950">
+                <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-md border bg-white shadow-md dark:bg-gray-950">
                     {isLoading ? (
                         <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                             Loading labels...
@@ -646,7 +682,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                                     onCreate={onCreate}
                                     onDelete={onDelete}
                                     onEdit={onEdit}
-                                    onSearchClear={() => setSearch('')}
+                                    onSearchClear={() => handleSearchChange('')}
                                     onToggle={onToggle}
                                 />
                             </CommandList>

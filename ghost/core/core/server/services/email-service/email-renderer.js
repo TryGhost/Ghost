@@ -1,24 +1,34 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable no-shadow */
 
 const logging = require('@tryghost/logging');
 const fs = require('fs').promises;
 const path = require('path');
 const clsx = require('clsx');
-const {isUnsplashImage} = require('@tryghost/kg-default-cards/lib/utils');
-const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
+/**
+ * @param {string} url
+ * @returns {boolean}
+ */
+function isUnsplashImage(url) {
+    return /images\.unsplash\.com/.test(url);
+}
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const EmailAddressParser = require('../email-address/email-address-parser');
+const {getEmailDesign} = require('../email-rendering/email-design');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
+/** @import {TemplateDelegate} from 'handlebars' */
 
 const DEFAULT_LOCALE = 'en-gb';
-const DEFAULT_ACCENT_COLOR = '#15212A';
-const VALID_HEX_REGEX = /#([0-9a-f]{3}){1,2}$/i;
 const CONTENT_IMAGES_PATH_WITHOUT_SIZE_REGEX = /\/content\/images\/(?!size\/)/;
 
-// Wrapper function so that i18next-parser can find these strings
+/**
+ * Wrapper function so that i18next-parser can find these strings.
+ *
+ * @template T
+ * @param {T} x
+ * @returns {T}
+ */
 const t = (x) => {
     return x;
 };
@@ -35,6 +45,10 @@ const messages = {
     }
 };
 
+/**
+ * @param {string} unsafe
+ * @returns {string}
+ */
 function escapeHtml(unsafe) {
     return unsafe
         .replace(/&/g, '&amp;')
@@ -44,6 +58,10 @@ function escapeHtml(unsafe) {
         .replace(/'/g, '&#039;');
 }
 
+/**
+ * @param {string} locale
+ * @returns {boolean}
+ */
 function isValidLocale(locale) {
     try {
         // Attempt to create a DateTimeFormat with the locale
@@ -54,6 +72,12 @@ function isValidLocale(locale) {
     }
 }
 
+/**
+ * @param {Readonly<Date>} date
+ * @param {string} timezone
+ * @param {string} [locale]
+ * @returns {string}
+ */
 function formatDateLong(date, timezone, locale = DEFAULT_LOCALE) {
     return DateTime.fromJSDate(date).setZone(timezone).setLocale(locale).toLocaleString({
         year: 'numeric',
@@ -62,11 +86,20 @@ function formatDateLong(date, timezone, locale = DEFAULT_LOCALE) {
     });
 }
 
+/**
+ * @param {string} string
+ * @returns {string}
+ */
 function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// This aids with lazyloading the cheerio dependency
+/**
+ * Wrap `cheerio.load` with lazy loading.
+ *
+ * @param {Parameters<typeof cheerio.load>[0]} html
+ * @return {ReturnType<typeof cheerio.load>}
+ */
 function cheerioLoad(html) {
     const cheerio = require('cheerio');
     return cheerio.load(html);
@@ -130,8 +163,6 @@ class EmailRenderer {
     #getPostUrl;
     #storageUtils;
 
-    #handlebars;
-    #renderTemplate;
     #linkReplacer;
     #linkTracking;
     #memberAttributionService;
@@ -142,12 +173,15 @@ class EmailRenderer {
     #models;
     #t;
 
+    /** @type {undefined | Promise<TemplateDelegate>} */
+    #compiledHandlebarsRendererPromise;
+
     /**
      * @param {object} dependencies
      * @param {object} dependencies.settingsCache
      * @param {{getNoReplyAddress(): string, getMembersSupportAddress(): string, getMembersValidationKey(): string, createUnsubscribeUrl(uuid: string, options: object): string}} dependencies.settingsHelpers
      * @param {object} dependencies.renderers
-     * @param {{render(object, options): string}} dependencies.renderers.lexical
+     * @param {{render(object, options): Promise<string>}} dependencies.renderers.lexical
      * @param {{render(object, options): string}} dependencies.renderers.mobiledoc
      * @param {{getCachedImageSizeFromUrl(url: string): Promise<{url: string, width: number, height: number} | null>}} dependencies.imageSize
      * @param {{urlFor(type: string, optionsOrAbsolute, absolute): string, isSiteUrl(url, context): boolean}} dependencies.urlUtils
@@ -324,43 +358,16 @@ class EmailRenderer {
     async renderPostBaseHtml(post, newsletter) {
         const postUrl = this.#getPostUrl(post);
 
-        const renderOptions = {
-            target: 'email',
-            postUrl
-        };
-
-        const accentColor = this.#getAccentColor();
-        const accentContrastColor = this.#getAccentContrastColor();
-
-        renderOptions.design = {
-            accentColor,
-            accentContrastColor,
-            backgroundColor: newsletter?.get('background_color'),
-            backgroundIsDark: this.#checkIfBackgroundIsDark(newsletter),
-            headerBackgroundColor: this.#getHeaderBackgroundColor(newsletter, accentColor),
-            buttonCorners: newsletter?.get('button_corners'),
-            buttonStyle: newsletter?.get('button_style'),
-            titleFontWeight: newsletter?.get('title_font_weight'),
-            linkStyle: newsletter?.get('link_style'),
-            imageCorners: newsletter?.get('image_corners'),
-            postTitleColor: this.#getPostTitleColor(newsletter, accentColor),
-            sectionTitleColor: newsletter?.get('section_title_color'),
-            linkColor: newsletter?.get('link_color'),
-            // TODO:
-            // if the other options above have default or calculated values we
-            // should follow the same pattern as the options below to avoid
-            //duplicating magic values or logic in renderers
-            dividerColor: this.#getDividerColor(newsletter),
-            buttonColor: this.#getButtonColor(newsletter, accentColor),
-            buttonTextColor: this.#getButtonTextColor(newsletter, accentColor)
-        };
-
         let html;
         if (post.get('lexical')) {
             // only lexical's renderer is async
             html = await this.#renderers.lexical.render(
                 post.get('lexical'),
-                renderOptions
+                {
+                    target: 'email',
+                    postUrl,
+                    design: this.#getEmailDesign(newsletter)
+                }
             );
         } else {
             html = this.#renderers.mobiledoc.render(
@@ -573,8 +580,6 @@ class EmailRenderer {
     }
 
     /**
-     * createUnsubscribeUrl
-     *
      * Takes a member and newsletter uuid. Returns the url that should be used to unsubscribe
      * In case of no member uuid, generates the preview unsubscribe url - `?preview=1`
      *
@@ -582,17 +587,16 @@ class EmailRenderer {
      * @param {Object} [options]
      * @param {string} [options.newsletterUuid] newsletter uuid
      * @param {boolean} [options.comments] Unsubscribe from comment emails
+     * @returns {string}
      */
     createUnsubscribeUrl(uuid, options = {}) {
         return this.#settingsHelpers.createUnsubscribeUrl(uuid, options);
     }
 
     /**
-     * createManageAccountUrl
-     *
-     * @param {string} [uuid] member uuid
+     * @returns {string}
      */
-    createManageAccountUrl(uuid) {
+    createManageAccountUrl() {
         const siteUrl = this.#urlUtils.urlFor('home', true);
         const url = new URL(siteUrl);
         url.hash = '#/portal/account';
@@ -602,6 +606,9 @@ class EmailRenderer {
 
     /**
      * Returns whether a paid member is trialing a subscription
+     *
+     * @param {Readonly<MemberLike>} member
+     * @returns {boolean}
      */
     isMemberTrialing(member) {
         // Do we have an active subscription?
@@ -624,7 +631,7 @@ class EmailRenderer {
     }
 
     /**
-     * @param {MemberLike} member
+     * @param {Readonly<MemberLike>} member
      * @returns {string}
      */
     getMemberStatusText(member) {
@@ -703,8 +710,8 @@ class EmailRenderer {
             },
             {
                 id: 'manage_account_url',
-                getValue: (member) => {
-                    return this.createManageAccountUrl(member.uuid);
+                getValue: () => {
+                    return this.createManageAccountUrl();
                 }
             },
             {
@@ -847,38 +854,95 @@ class EmailRenderer {
         return this.#labs;
     }
 
-    async renderTemplate(data) {
+    /** @returns {Promise<TemplateDelegate>} */
+    async #compileHandlebarsRenderer() {
         const labs = this.getLabs();
-        this.#handlebars = require('handlebars').create();
+        const handlebars = require('handlebars').create();
 
-        // Register helpers
-        registerHelpers(this.#handlebars, labs, this.#t);
+        registerHelpers(handlebars, labs, this.#t);
 
-        // Partials
-        const cssPartialSource = await fs.readFile(path.join(__dirname, './email-templates/partials/', `styles.hbs`), 'utf8');
-        this.#handlebars.registerPartial('styles', cssPartialSource);
+        const emailPartials = path.join(__dirname, '..', 'email-rendering', 'partials');
+        const emailTemplates = path.join(__dirname, 'email-templates');
 
-        const paywallPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `paywall.hbs`), 'utf8');
-        this.#handlebars.registerPartial('paywall', paywallPartial);
+        const [
+            baseStylesSource,
+            cardStylesSource,
+            contentStylesSource,
+            emailWrapperSource,
+            feedbackButtonPartial,
+            htmlTemplateSource,
+            latestPostsPartial,
+            paywallPartial,
+            stylesPartialSource
+        ] = await Promise.all([
+            fs.readFile(path.join(emailPartials, 'base-styles.hbs'), 'utf8'),
+            fs.readFile(path.join(emailPartials, 'card-styles.hbs'), 'utf8'),
+            fs.readFile(path.join(emailPartials, 'content-styles.hbs'), 'utf8'),
+            fs.readFile(path.join(emailPartials, 'email-wrapper.hbs'), 'utf8'),
+            fs.readFile(path.join(emailTemplates, 'partials', 'feedback-button.hbs'), 'utf8'),
+            fs.readFile(path.join(emailTemplates, 'template.hbs'), 'utf8'),
+            fs.readFile(path.join(emailTemplates, 'partials', 'latest-posts.hbs'), 'utf8'),
+            fs.readFile(path.join(emailTemplates, 'partials', 'paywall.hbs'), 'utf8'),
+            fs.readFile(path.join(emailTemplates, 'partials', 'styles.hbs'), 'utf8')
+        ]);
 
-        const feedbackButtonPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `feedback-button.hbs`), 'utf8');
-        this.#handlebars.registerPartial('feedbackButton', feedbackButtonPartial);
+        handlebars.registerPartial('baseStyles', baseStylesSource);
+        handlebars.registerPartial('cardStyles', cardStylesSource);
+        handlebars.registerPartial('contentStyles', contentStylesSource);
+        handlebars.registerPartial('emailWrapper', emailWrapperSource);
+        handlebars.registerPartial('feedbackButton', feedbackButtonPartial);
+        handlebars.registerPartial('latestPosts', latestPostsPartial);
+        handlebars.registerPartial('paywall', paywallPartial);
+        handlebars.registerPartial('styles', stylesPartialSource);
 
-        const latestPostsPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `latest-posts.hbs`), 'utf8');
-        this.#handlebars.registerPartial('latestPosts', latestPostsPartial);
+        return handlebars.compile(htmlTemplateSource);
+    }
 
-        // Actual template
-        let templateName = 'template.hbs';
-        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', templateName), 'utf8');
-        this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
+    /** @returns {Promise<TemplateDelegate>} */
+    #getCompiledHandlebarsRenderer() {
+        if (!this.#compiledHandlebarsRendererPromise) {
+            this.#compiledHandlebarsRendererPromise = this.#compileHandlebarsRenderer();
+        }
+        return this.#compiledHandlebarsRendererPromise;
+    }
 
-        return this.#renderTemplate(data);
+    /**
+     * @param {unknown} data
+     * @returns {Promise<string>}
+     */
+    async renderTemplate(data) {
+        const renderTemplate = await this.#getCompiledHandlebarsRenderer();
+        return renderTemplate(data);
+    }
+
+    /**
+     * @param {Newsletter} newsletter
+     * @returns {ReturnType<typeof getEmailDesign>}
+     */
+    #getEmailDesign(newsletter) {
+        return getEmailDesign({
+            accentColor: this.#settingsCache?.get('accent_color'),
+            backgroundColor: newsletter?.get('background_color'),
+            buttonColor: newsletter?.get('button_color'),
+            buttonCorners: newsletter?.get('button_corners'),
+            buttonStyle: newsletter?.get('button_style'),
+            dividerColor: newsletter?.get('divider_color'),
+            headerBackgroundColor: newsletter?.get('header_background_color'),
+            imageCorners: newsletter?.get('image_corners'),
+            linkColor: newsletter?.get('link_color'),
+            linkStyle: newsletter?.get('link_style'),
+            postTitleColor: newsletter?.get('post_title_color'),
+            sectionTitleColor: newsletter?.get('section_title_color'),
+            titleFontWeight: newsletter?.get('title_font_weight')
+        });
     }
 
     /**
      * Get email preheader text from post model
-     * @param {object} postModel
-     * @returns
+     * @param {Post} postModel
+     * @param {Segment} segment
+     * @param {string} html
+     * @returns {string}
      */
     #getEmailPreheader(postModel, segment, html) {
         let plaintext = postModel.get('plaintext');
@@ -909,11 +973,10 @@ class EmailRenderer {
     }
 
     /**
-     *
      * @param {*} text
      * @param {number} maxLength
      * @param {number} maxLengthMobile should be smaller than maxLength
-     * @returns
+     * @returns {string}
      */
     truncateHtml(text, maxLength, maxLengthMobile) {
         if (!maxLengthMobile || maxLength <= maxLengthMobile) {
@@ -934,215 +997,17 @@ class EmailRenderer {
         }
     }
 
-    #getAccentColor() {
-        let accentColor = this.#settingsCache?.get('accent_color') || DEFAULT_ACCENT_COLOR;
-
-        if (!VALID_HEX_REGEX.test(accentColor)) {
-            accentColor = DEFAULT_ACCENT_COLOR;
-        }
-
-        return accentColor;
-    }
-
-    #getAccentContrastColor() {
-        const accentColor = this.#getAccentColor();
-        return textColorForBackgroundColor(accentColor).hex();
-    }
-
-    #getBackgroundColor(newsletter) {
-        /** @type {'light' | string | null} */
-        const value = newsletter?.get('background_color');
-
-        if (VALID_HEX_REGEX.test(value)) {
-            return value;
-        }
-
-        // value === null, value is not valid hex
-        return '#ffffff';
-    }
-
-    #getPostTitleColor(newsletter, accentColor) {
-        /** @type {'accent' | string | null} */
-        const value = newsletter?.get('post_title_color');
-
-        if (VALID_HEX_REGEX.test(value)) {
-            return value;
-        }
-
-        if (value === 'accent') {
-            return accentColor;
-        }
-
-        // value === null, value is not valid hex
-        const backgroundColor = this.#getHeaderBackgroundColor(newsletter, accentColor) || this.#getBackgroundColor(newsletter);
-        return textColorForBackgroundColor(backgroundColor).hex();
-    }
-
-    #getSectionTitleColor(newsletter, accentColor) {
-        /** @type {'accent' | string | null} */
-        const value = newsletter.get('section_title_color');
-
-        if (VALID_HEX_REGEX.test(value)) {
-            return value;
-        }
-
-        if (value === 'accent') {
-            return accentColor;
-        }
-
-        return null;
-    }
-
-    #getTitleWeight(newsletter) {
-        const weights = {
-            normal: '400',
-            medium: '500',
-            semibold: '600',
-            bold: '700'
-        };
-
-        /** @type {'normal' | 'medium' | 'semibold' | 'bold' | string | null} */
-        const settingValue = newsletter.get('title_font_weight');
-
-        return weights[settingValue] || weights.bold;
-    }
-
-    #getTitleStrongWeight(titleWeight) {
-        const numericWeight = parseInt(titleWeight, 10);
-
-        if (isNaN(numericWeight)) {
-            return '800';
-        }
-
-        // when titleWeight has been set to less than bold,
-        // reduce boldness of strong to match our other strong text
-        if (numericWeight < 700) {
-            return '700';
-        } else {
-            return '800';
-        }
-    }
-
-    #getImageCorners(newsletter) {
-        const value = newsletter.get('image_corners');
-        if (value === 'rounded') {
-            return true;
-        }
-        return false;
-    }
-
-    #getDividerColor(newsletter) {
-        const value = newsletter?.get('divider_color');
-
-        if (value === 'accent') {
-            return this.#getAccentColor();
-        } else if (VALID_HEX_REGEX.test(value)) {
-            return value;
-        } else {
-            // value === 'light'/missing/invalid
-            return '#e0e7eb';
-        }
-    }
-
-    #getLinkColor(newsletter, accentColor) {
-        const value = newsletter.get('link_color');
-
-        if (value === 'accent') {
-            return accentColor;
-        }
-
-        if (value === null) {
-            return textColorForBackgroundColor(this.#getBackgroundColor(newsletter)).hex();
-        }
-
-        if (VALID_HEX_REGEX.test(value)) {
-            return value;
-        }
-
-        return accentColor; // default to accent color
-    }
-
-    #getButtonColor(newsletter, accentColor) {
-        /** @type {'accent' | string | null} */
-        const buttonColor = newsletter?.get('button_color');
-
-        if (buttonColor === 'accent') {
-            return accentColor;
-        }
-
-        if (buttonColor === null) {
-            const backgroundColor = this.#getBackgroundColor(newsletter);
-            return textColorForBackgroundColor(backgroundColor).hex();
-        }
-
-        if (VALID_HEX_REGEX.test(buttonColor)) {
-            return buttonColor;
-        }
-
-        return accentColor; // default to accent color
-    }
-
-    // white/black for dark/light button colors
-    // outline buttons use button color as text color but that's handled in styles
-    #getButtonTextColor(newsletter, accentColor) {
-        const buttonColor = this.#getButtonColor(newsletter, accentColor);
-        return textColorForBackgroundColor(buttonColor).hex();
-    }
-
-    #checkIfBackgroundIsDark(newsletter) {
-        const backgroundColor = this.#getBackgroundColor(newsletter);
-        return textColorForBackgroundColor(backgroundColor).hex().toLowerCase() === '#ffffff';
-    }
-
-    #getHeaderBackgroundColor(newsletter, accentColor) {
-        const value = newsletter?.get('header_background_color');
-
-        if (value === 'transparent') {
-            return null;
-        }
-
-        if (value === 'accent') {
-            return accentColor;
-        }
-
-        if (VALID_HEX_REGEX.test(value)) {
-            return value;
-        }
-
-        return null;
-    }
-
     /**
      * @private
+     * @param {object} options
+     * @param {Post} options.post
+     * @param {Newsletter} options.newsletter
+     * @param {string} options.html
+     * @param {boolean} options.addPaywall
+     * @param {string} options.segment
      */
     async getTemplateData({post, newsletter, html, addPaywall, segment}) {
-        const accentColor = this.#getAccentColor();
-        const accentContrastColor = this.#getAccentContrastColor();
-
-        // TODO: remove passthrough of accent color to getters
-        const backgroundColor = this.#getBackgroundColor(newsletter);
-        const backgroundIsDark = this.#checkIfBackgroundIsDark(newsletter);
-        const postTitleColor = this.#getPostTitleColor(newsletter, accentColor);
-        const titleWeight = this.#getTitleWeight(newsletter);
-        const titleStrongWeight = this.#getTitleStrongWeight(titleWeight);
-        const textColor = textColorForBackgroundColor(backgroundColor).hex(); // this is used by the header background color so keeping it separate from the content text color
-        const linkColor = this.#getLinkColor(newsletter, accentColor);
-        const hasRoundedImageCorners = this.#getImageCorners(newsletter);
-        const sectionTitleColor = this.#getSectionTitleColor(newsletter, accentColor);
-        const dividerColor = this.#getDividerColor(newsletter);
-        const buttonColor = this.#getButtonColor(newsletter, accentColor);
-        const buttonTextColor = this.#getButtonTextColor(newsletter, accentColor);
-        const headerBackgroundColor = this.#getHeaderBackgroundColor(newsletter, accentColor);
-        const headerBackgroundIsDark = textColorForBackgroundColor(headerBackgroundColor || backgroundColor).hex().toLowerCase() === '#ffffff';
-
-        let buttonBorderRadius = '6px';
-        if (newsletter.get('button_corners') === 'square') {
-            buttonBorderRadius = '0';
-        } else if (newsletter.get('button_corners') === 'pill') {
-            buttonBorderRadius = '9999px';
-        }
-
-        const hasOutlineButtons = newsletter.get('button_style') === 'outline';
+        const emailDesign = this.#getEmailDesign(newsletter);
 
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
         const {href: postFeatureImage, width: postFeatureImageWidth, height: postFeatureImageHeight} = await this.limitImageWidth(post.get('feature_image'));
@@ -1232,9 +1097,8 @@ class EmailRenderer {
         const titleAlignment = newsletter.get('title_alignment');
         const showFeatureImage = newsletter.get('show_feature_image') && !!postFeatureImage;
 
-        const linkStyle = newsletter.get('link_style') || 'underline';
-
         const data = {
+            emailTitle: post.get('title'),
             site: {
                 title: this.#settingsCache.get('title'),
                 url: this.#urlUtils.urlFor('home', true),
@@ -1282,35 +1146,17 @@ class EmailRenderer {
             latestPostsHasImages,
 
             //CSS
-            accentColor, // default to #15212A
-            accentContrastColor,
+            ...emailDesign,
             showBadge: newsletter.get('show_badge'),
-            backgroundColor,
-            backgroundIsDark,
-            postTitleColor,
-            titleWeight,
-            titleStrongWeight,
-            textColor,
-            linkColor,
-            hasRoundedImageCorners,
-            buttonBorderRadius,
-            sectionTitleColor,
             headerImage,
             headerImageWidth,
             showHeaderIcon: newsletter.get('show_header_icon') && this.#settingsCache.get('icon'),
-            dividerColor,
-            buttonColor,
-            buttonTextColor,
-            headerBackgroundColor,
-            headerBackgroundIsDark,
 
             // TODO: consider moving these to newsletter property
             showHeaderTitle: newsletter.get('show_header_title'),
             showHeaderName: newsletter.get('show_header_name'),
             showFeatureImage: showFeatureImage,
             footerContent: newsletter.get('footer_content'),
-            linkStyle,
-            hasOutlineButtons,
 
             // useful data
             ctaBgColors: [
@@ -1371,14 +1217,18 @@ class EmailRenderer {
     }
 
     /**
+     * Sets and limits the dimensions of an image.
+     *
      * @private
-     * Sets and limits the width of an image + returns the width
-     * @returns {Promise<{href: string, width: number, height: number | null}>}
+     * @param {undefined | null | string} href
+     * @param {number} [visibleWidth]
+     * @param {null | number} [visibleHeight]
+     * @returns {Promise<{href: null | string, width: number, height: number | null}>}
      */
     async limitImageWidth(href, visibleWidth = 600, visibleHeight = null) {
         if (!href) {
             return {
-                href,
+                href: null,
                 width: 0,
                 height: null
             };

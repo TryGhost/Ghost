@@ -81,4 +81,56 @@ describe('ContentFileImporter', function () {
         assert.equal(storageApi.save.args[0][0].name, 'best-memes.pdf');
         assert.equal(storageApi.save.args[0][0].newPath, '/content/files/best-memes.pdf');
     });
+
+    describe('doImport with CDN storage', function () {
+        it('stores CDN URL returned by save() in the result.stored field', async function () {
+            const images = [
+                {
+                    name: 'photo.png',
+                    path: '/tmp/photo.png',
+                    originalPath: 'images/photo.png',
+                    targetDir: '/test/content/images',
+                    newPath: '/content/images/photo.png'
+                }
+            ];
+            const storageApi = {
+                save: sinon.stub().resolves('https://storage.ghost.is/c/6f/a3/site/content/images/photo.png')
+            };
+            const imageImporter = new ContentFileImporter({
+                type: 'images',
+                store: storageApi
+            });
+
+            const result = await imageImporter.doImport(images);
+
+            sinon.assert.calledOnce(storageApi.save);
+            assert.equal(result[0].originalPath, 'images/photo.png');
+            assert.equal(result[0].newPath, '/content/images/photo.png');
+            assert.equal(result[0].stored, 'https://storage.ghost.is/c/6f/a3/site/content/images/photo.png');
+        });
+
+        it('stores relative path returned by save() in the result.stored field (local storage)', async function () {
+            const images = [
+                {
+                    name: 'photo.png',
+                    path: '/tmp/photo.png',
+                    originalPath: 'images/photo.png',
+                    targetDir: '/test/content/images',
+                    newPath: '/content/images/photo.png'
+                }
+            ];
+            const storageApi = {
+                save: sinon.stub().resolves('/content/images/photo.png')
+            };
+            const imageImporter = new ContentFileImporter({
+                type: 'images',
+                store: storageApi
+            });
+
+            const result = await imageImporter.doImport(images);
+
+            sinon.assert.calledOnce(storageApi.save);
+            assert.equal(result[0].stored, '/content/images/photo.png');
+        });
+    });
 });

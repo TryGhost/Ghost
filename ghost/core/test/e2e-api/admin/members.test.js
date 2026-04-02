@@ -4,12 +4,12 @@ const {queryStringToken} = regexes;
 const ObjectId = require('bson-objectid').default;
 
 const assert = require('node:assert/strict');
+const crypto = require('node:crypto');
 const {assertExists, assertArrayContainsDeep, assertObjectMatches, assertArrayMatchesWithoutOrder} = require('../../utils/assertions');
 const nock = require('nock');
 const sinon = require('sinon');
 
 const testUtils = require('../../utils');
-const configUtils = require('../../utils/config-utils');
 
 const Papa = require('papaparse');
 
@@ -23,6 +23,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
 const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
+const {setupEmailVerificationUtils, restoreEmailVerificationUtils} = require('../../utils/email-verification-utils');
 
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = await models[eventType].where('member_id', memberId).fetchAll();
@@ -166,6 +167,52 @@ const buildMemberMatcherShallowIncludesWithTiers = (tiersCount, newsletterCount)
     }
 
     return matcher;
+};
+
+/**
+ * @typedef {object} Member
+ * @property {string} name
+ * @property {string} email
+ * @property {string} [note]
+ * @property {Array<string>} [newsletters]
+ * @property {Array<string>} [labels]
+ */
+
+/**
+ *
+ * @param {object} options
+ * @param {string} [options.queryParam] - Optional query param to include in the request
+ * @param {Member} options.member - Data to create the member with
+ * @param {object} options.agent - The API agent to use for making the request
+ * @param {number} [options.tiersCount] - The number of tiers to expect in the response
+ * @param {number} [options.newsletterCount] - The number of newsletters to expect in the response
+ * @returns {Promise<object>} The created member
+ */
+const createMemberThroughApi = async (options) => {
+    const {
+        member,
+        agent,
+        tiersCount = 0,
+        newsletterCount = 0,
+        queryParam
+    } = options;
+
+    const endpoint = queryParam ? `/members/?${queryParam}` : '/members/';
+
+    const {body} = await agent
+        .post(endpoint)
+        .body({members: [member]})
+        .expectStatus(201)
+        .matchBodySnapshot({
+            members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(tiersCount, newsletterCount))
+        })
+        .matchHeaderSnapshot({
+            'content-version': anyContentVersion,
+            etag: anyEtag,
+            location: anyLocationFor('members')
+        });
+
+    return body.members[0];
 };
 
 let agent;
@@ -486,6 +533,7 @@ describe('Members API', function () {
     });
 
     afterEach(function () {
+        settingsCache.set('email_verification_required', {value: false});
         mockManager.restore();
     });
 
@@ -856,19 +904,7 @@ describe('Members API', function () {
             labels: ['test-label']
         };
 
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [member]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-        const newMember = body.members[0];
+        const newMember = await createMemberThroughApi({member, agent});
 
         // Cannot add same member twice
         const loggingStub = sinon.stub(logging, 'error');
@@ -890,71 +926,78 @@ describe('Members API', function () {
         });
     });
 
-    it('Can add a member and trigger host email verification limits', async function () {
-        configUtils.set('hostSettings:emailVerification', {
-            apiThreshold: 0,
-            adminThreshold: 1,
-            importThreshold: 0,
-            verified: false,
-            escalationAddress: 'test@example.com'
+    describe('Email verification trigger', function () {
+        beforeEach(async function () {
+            agent = await agentProvider.getAdminAPIAgent();
+            await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'comments', 'redirects', 'clicks');
+            await agent.loginAsOwner();
+
+            newsletters = await getNewsletters();
         });
 
-        assert.ok(!settingsCache.get('email_verification_required'), 'Email verification should NOT be required');
-
-        const member = {
-            name: 'pass verification',
-            email: 'memberPassVerifivation@test.com'
-        };
-
-        const {body: passBody} = await agent
-            .post(`/members/`)
-            .body({members: [member]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-        const memberPassVerification = passBody.members[0];
-
-        await DomainEvents.allSettled();
-        assert.ok(!settingsCache.get('email_verification_required'), 'Email verification should NOT be required');
-
-        const memberFailLimit = {
-            name: 'fail verification',
-            email: 'memberFailVerifivation@test.com'
-        };
-
-        const {body: failBody} = await agent
-            .post(`/members/`)
-            .body({members: [memberFailLimit]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-        const memberFailVerification = failBody.members[0];
-
-        await DomainEvents.allSettled();
-        assert.ok(settingsCache.get('email_verification_required'), 'Email verification should be required');
-
-        mockManager.assert.sentEmail({
-            subject: 'Email needs verification'
+        afterEach(async function () {
+            await restoreEmailVerificationUtils();
         });
 
-        // state cleanup
-        await agent.delete(`/members/${memberPassVerification.id}`);
-        await agent.delete(`/members/${memberFailVerification.id}`);
+        it('Can add a member and trigger host email verification limits', async function () {
+            const {webhookSecret, receivedWebhookRequests} = await setupEmailVerificationUtils({
+                adminThreshold: 1
+            });
 
-        await configUtils.restore();
-        settingsCache.set('email_verification_required', {value: false});
+            assert.equal(settingsCache.get('email_verification_required'), false, 'Before import: email verification should NOT be required');
+
+            const member = {
+                name: 'pass webhook verification',
+                email: 'memberPassWebhookVerification@test.com'
+            };
+
+            const passVerificationMember = await createMemberThroughApi({member, agent, tiersCount: 0, newsletterCount: 2});
+
+            await DomainEvents.allSettled();
+
+            assert.equal(settingsCache.get('email_verification_required'), false, 'After one import: Email verification should NOT be required');
+
+            const memberFailLimit = {
+                name: 'fail webhook verification',
+                email: 'memberFailWebhookVerification@test.com'
+            };
+
+            const triggerVerificationMember = await createMemberThroughApi({member: memberFailLimit, agent, tiersCount: 0, newsletterCount: 2});
+
+            await DomainEvents.allSettled();
+
+            assert.equal(settingsCache.get('email_verification_required'), true, 'After exceeding limit: Email verification should be required');
+
+            emailMockReceiver.assertSentEmailCount(0, 'No verification email to be sent when webhook verification is enabled');
+
+            const matchingRequests = receivedWebhookRequests.filter((request) => {
+                return request.body.type === 'mock_verification_event' &&
+                    request.body.siteId === '1' &&
+                    request.body.amountTriggered === 2 &&
+                    request.body.threshold === 1 &&
+                    request.body.method === 'admin';
+            });
+
+            assert.equal(matchingRequests.length, 1, 'Expected exactly one verification webhook to be sent');
+
+            const matchingRequest = matchingRequests[0];
+
+            const requestTimestamp = Array.isArray(matchingRequest.headers['x-ghost-request-timestamp']) ?
+                matchingRequest.headers['x-ghost-request-timestamp'][0] :
+                matchingRequest.headers['x-ghost-request-timestamp'];
+            const requestSignature = Array.isArray(matchingRequest.headers['x-ghost-signature']) ?
+                matchingRequest.headers['x-ghost-signature'][0] :
+                matchingRequest.headers['x-ghost-signature'];
+            const expectedSignature = crypto.createHmac('sha256', webhookSecret)
+                .update(`${requestTimestamp}:${matchingRequest.rawBody}`)
+                .digest('base64');
+
+            assert.ok(requestTimestamp, 'Expected the verification webhook request to include a timestamp header');
+            assert.equal(requestSignature, expectedSignature, 'Expected the verification webhook request to be signed');
+
+            await agent.delete(`/members/${passVerificationMember.id}`);
+            await agent.delete(`/members/${triggerVerificationMember.id}`);
+        });
     });
 
     it('Can add and send a signup confirmation email', async function () {
@@ -1230,20 +1273,12 @@ describe('Members API', function () {
             comped: true
         };
 
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [initialMember]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-
-        const newMember = body.members[0];
+        const newMember = await createMemberThroughApi({
+            member: initialMember,
+            agent,
+            tiersCount: 0,
+            newsletterCount: 1
+        });
 
         await agent
             .put(`/members/${newMember.id}/`)
@@ -1278,6 +1313,71 @@ describe('Members API', function () {
                 newsletter_id: newsletters[0].id
             }]
         });
+    });
+
+    it('Can create a comped member with labels via API', async function () {
+        const stripeService = require('../../../core/server/services/stripe');
+        const fakePrice = {
+            id: 'price_1',
+            product: '',
+            active: true,
+            nickname: 'Complimentary',
+            unit_amount: 0,
+            currency: 'usd',
+            type: 'recurring',
+            recurring: {
+                interval: 'year'
+            }
+        };
+        const fakeSubscription = {
+            id: 'sub_1',
+            customer: 'cus_1',
+            status: 'active',
+            cancel_at_period_end: false,
+            metadata: {},
+            current_period_end: Date.now() / 1000,
+            start_date: Date.now() / 1000,
+            plan: fakePrice,
+            items: {
+                data: [{
+                    price: fakePrice
+                }]
+            }
+        };
+        sinon.stub(stripeService.api, 'createCustomer').callsFake(async function (data) {
+            return {
+                id: 'cus_1',
+                email: data.email
+            };
+        });
+        sinon.stub(stripeService.api, 'createPrice').resolves(fakePrice);
+        sinon.stub(stripeService.api, 'createSubscription').resolves(fakeSubscription);
+        sinon.stub(stripeService.api, 'getSubscription').resolves(fakeSubscription);
+        sinon.stub(stripeService.api, 'getCustomer').resolves({
+            id: 'cus_1',
+            invoice_settings: {
+                default_payment_method: null
+            }
+        });
+
+        const newMember = {
+            name: 'Comped with Labels',
+            email: 'comped-with-labels@test.com',
+            comped: true,
+            labels: [{name: 'VIP'}, {name: 'Complimentary'}],
+            newsletters: [newsletters[0]]
+        };
+
+        const member = await createMemberThroughApi({
+            member: newMember,
+            agent,
+            tiersCount: 1,
+            newsletterCount: 1
+        });
+        assert.equal(member.status, 'comped', 'Member should have comped status');
+        assert.equal(member.labels.length, 2, 'Member should have 2 labels');
+        assert.ok(member.labels.find(l => l.name === 'VIP'), 'Member should have VIP label');
+        assert.ok(member.labels.find(l => l.name === 'Complimentary'), 'Member should have Complimentary label');
     });
 
     it('Can add complimentary subscription by assigning a product to a member', async function () {
@@ -1915,19 +2015,12 @@ describe('Members API', function () {
             newsletters: []
         };
 
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [memberToChange]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-        const newMember = body.members[0];
+        const newMember = await createMemberThroughApi({
+            member: memberToChange,
+            agent,
+            tiersCount: 0,
+            newsletterCount: 1
+        });
 
         await assertMemberEvents({
             eventType: 'MemberSubscribeEvent',
@@ -2046,19 +2139,12 @@ describe('Members API', function () {
             ]
         };
 
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [memberToChange]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-        const newMember = body.members[0];
+        const newMember = await createMemberThroughApi({
+            member: memberToChange,
+            agent,
+            tiersCount: 0,
+            newsletterCount: 1
+        });
         const before = new Date();
         before.setMilliseconds(0);
 
@@ -2180,20 +2266,12 @@ describe('Members API', function () {
             email: 'member2create@test.com'
         };
 
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [memberToCreate]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-
-        const newMember = body.members[0];
+        const newMember = await createMemberThroughApi({
+            member: memberToCreate,
+            agent,
+            tiersCount: 0,
+            newsletterCount: 2
+        });
         assert.equal(newMember.newsletters[0].id, filtered[0].id);
         assert.equal(newMember.newsletters[1].id, filtered[1].id);
 
@@ -2273,21 +2351,14 @@ describe('Members API', function () {
         };
 
         // Create member
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [memberToChange]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
+        const newMember = await createMemberThroughApi({
+            member: memberToChange,
+            agent,
+            tiersCount: 0,
+            newsletterCount: 0
+        });
 
         // Update email address
-        const newMember = body.members[0];
         await agent
             .put(`/members/${newMember.id}/`)
             .body({members: [memberChanged]})
@@ -2500,20 +2571,12 @@ describe('Members API', function () {
             email: 'memberTestDestroy@test.com'
         };
 
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [member]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-
-        const newMember = body.members[0];
+        const newMember = await createMemberThroughApi({
+            member,
+            agent,
+            tiersCount: 0,
+            newsletterCount: 2
+        });
 
         await agent
             .delete(`/members/${newMember.id}`)
@@ -2727,6 +2790,7 @@ describe('Members API', function () {
             .expectStatus(200)
             .matchBodySnapshot({
                 members: [
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
                     buildMemberMatcherShallowIncludesWithTiers(1, 1),
                     buildMemberMatcherShallowIncludesWithTiers(1, 1),
                     buildMemberMatcherShallowIncludesWithTiers(1, 1),

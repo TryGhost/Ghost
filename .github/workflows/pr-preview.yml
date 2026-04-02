@@ -1,0 +1,132 @@
+name: PR Preview
+
+on:
+  pull_request_target:
+    types: [labeled, unlabeled, closed]
+
+jobs:
+  deploy:
+    name: Deploy Preview
+    # Runs when the "preview" label is added — requires collaborator write access
+    if: >-
+      github.event.action == 'labeled'
+      && github.event.label.name == 'preview'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    env:
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Wait for CI build artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Waiting for CI to complete Docker build for $HEAD_SHA..."
+          TIMEOUT=1800  # 30 minutes
+          INTERVAL=30
+          START=$(date +%s)
+
+          while true; do
+            ELAPSED=$(( $(date +%s) - START ))
+            if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
+              echo "::error::Timed out waiting for CI (${TIMEOUT}s)"
+              exit 1
+            fi
+
+            # Find the CI run for this SHA
+            RUN=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=${HEAD_SHA}&per_page=1" \
+              --jq '.workflow_runs[0] | {id, status, conclusion}' 2>/dev/null || echo "")
+
+            if [ -z "$RUN" ] || [ "$RUN" = "null" ]; then
+              echo "  No CI run found yet, waiting ${INTERVAL}s... (${ELAPSED}s elapsed)"
+              sleep "$INTERVAL"
+              continue
+            fi
+
+            STATUS=$(echo "$RUN" | jq -r '.status')
+            CONCLUSION=$(echo "$RUN" | jq -r '.conclusion // empty')
+            RUN_ID=$(echo "$RUN" | jq -r '.id')
+
+            if [ "$STATUS" = "completed" ]; then
+              if [ "$CONCLUSION" = "success" ] || [ "$CONCLUSION" = "failure" ]; then
+                # Check if Docker build job specifically succeeded (paginate — CI has 30+ jobs)
+                BUILD_JOB=$(gh api --paginate "repos/${{ github.repository }}/actions/runs/${RUN_ID}/jobs?per_page=100" \
+                  --jq '.jobs[] | select(.name == "Build & Publish Artifacts") | .conclusion')
+                if [ -z "$BUILD_JOB" ]; then
+                  echo "::error::Build & Publish Artifacts job not found in CI run ${RUN_ID}"
+                  exit 1
+                elif [ "$BUILD_JOB" = "success" ]; then
+                  echo "Docker build ready (CI run $RUN_ID)"
+                  break
+                else
+                  echo "::error::Docker build job did not succeed (conclusion: $BUILD_JOB)"
+                  exit 1
+                fi
+              else
+                echo "::error::CI run failed (conclusion: $CONCLUSION)"
+                exit 1
+              fi
+            fi
+
+            echo "  CI still running ($STATUS), waiting ${INTERVAL}s... (${ELAPSED}s elapsed)"
+            sleep "$INTERVAL"
+          done
+
+      - name: Re-check PR eligibility
+        id: recheck
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" \
+            --jq '{state, labels: [.labels[].name]}')
+
+          STATE=$(echo "$PR" | jq -r '.state')
+          HAS_LABEL=$(echo "$PR" | jq '.labels | any(. == "preview")')
+
+          if [ "$STATE" != "open" ]; then
+            echo "::warning::PR is no longer open ($STATE), skipping dispatch"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          elif [ "$HAS_LABEL" != "true" ]; then
+            echo "::warning::preview label was removed, skipping dispatch"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "PR still eligible for preview deploy"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Dispatch deploy to Ghost-Moya
+        if: steps.recheck.outputs.skip != 'true'
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          repository: TryGhost/Ghost-Moya
+          event-type: preview-deploy
+          client-payload: >-
+            {
+              "pr_number": "${{ github.event.pull_request.number }}",
+              "action": "deploy",
+              "seed": "true"
+            }
+
+  destroy:
+    name: Destroy Preview
+    # Runs when "preview" label is removed, or the PR is closed/merged while labeled
+    if: >-
+      (github.event.action == 'unlabeled' && github.event.label.name == 'preview')
+      || (github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'preview'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Dispatch destroy to Ghost-Moya
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          repository: TryGhost/Ghost-Moya
+          event-type: preview-destroy
+          client-payload: >-
+            {
+              "pr_number": "${{ github.event.pull_request.number }}",
+              "action": "destroy"
+            }

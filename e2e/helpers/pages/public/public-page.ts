@@ -1,6 +1,5 @@
 import {BasePage, pageGotoOptions} from '@/helpers/pages';
 import {Locator, Page, Response, test} from '@playwright/test';
-import {expect} from '@/helpers/playwright';
 
 declare global {
     interface Window {
@@ -34,11 +33,19 @@ class PortalSection extends BasePage {
         await this.portalScript.waitFor({state: 'attached'});
         await this.portalRoot.waitFor({state: 'attached'});
 
-        // Use expect.toPass to retry click + popup check until Portal is ready
-        await expect(async () => {
+        // Retry until Portal finishes async init and can react to the click.
+        for (let attempt = 0; attempt < 5; attempt++) {
             await link.click();
-            await expect(this.portalIframe).toBeVisible();
-        }).toPass();
+
+            try {
+                await this.portalIframe.waitFor({state: 'visible', timeout: 1000});
+                return;
+            } catch {
+                // Keep retrying until Portal's hashchange listener is ready.
+            }
+        }
+
+        throw new Error('Portal popup did not open');
     }
 
     async isPortalOpen(): Promise<boolean> {
@@ -52,6 +59,9 @@ class PortalSection extends BasePage {
 
 export class PublicPage extends BasePage {
     public readonly portalRoot: Locator;
+    public readonly portalIframe: Locator;
+    public readonly portalPopupFrame: Locator;
+    public readonly portalScript: Locator;
     private readonly subscribeLink: Locator;
     private readonly signInLink: Locator;
 
@@ -62,6 +72,9 @@ export class PublicPage extends BasePage {
 
         this.portal = new PortalSection(page);
         this.portalRoot = this.portal.portalRoot;
+        this.portalIframe = page.locator('#ghost-portal-root div iframe');
+        this.portalPopupFrame = page.locator('[data-testid="portal-popup-frame"]');
+        this.portalScript = page.locator('script[data-ghost][data-key][data-api]');
         this.subscribeLink = page.locator('a[href="#/portal/signup"]').first();
         this.signInLink = page.locator('a[href="#/portal/signin"]').first();
     }
@@ -126,5 +139,17 @@ export class PublicPage extends BasePage {
     async openPortalViaSignInLink(): Promise<void> {
         await this.waitForMemberAttributionReady();
         await this.portal.clickLinkAndWaitForPopup(this.signInLink);
+    }
+
+    async gotoPortalSignup(options?: pageGotoOptions): Promise<null | Response> {
+        return await this.goto('/#/portal/signup', options);
+    }
+
+    async gotoPortalSupport(options?: pageGotoOptions): Promise<null | Response> {
+        return await this.goto('/#/portal/support', options);
+    }
+
+    async gotoOfferCode(code: string, options?: pageGotoOptions): Promise<null | Response> {
+        return await this.goto(`/${code}`, options);
     }
 }

@@ -1,13 +1,12 @@
 const fs = require('fs');
 const path = require('path');
-const htmlToPlaintext = require('@tryghost/html-to-plaintext');
-const juice = require('juice');
 const lexicalLib = require('../../lib/lexical');
+const {finalize} = require('../email-rendering/finalize');
 const errors = require('@tryghost/errors');
-const {textColorForBackgroundColor} = require('@tryghost/color-utils');
 const {MESSAGES} = require('./constants');
 const {wrapReplacementStrings} = require('../koenig/render-utils/replacement-strings');
 const linkReplacer = require('../lib/link-replacer');
+const {getEmailDesign} = require('../email-rendering/email-design');
 
 const REPLACEMENT_REGEX = /%%\{(\w+?)(?:,? *"(.*?)")?\}%%/g;
 const UNMATCHED_TOKEN_REGEX = /%%\{.*?\}%%/g;
@@ -21,11 +20,29 @@ class MemberWelcomeEmailRenderer {
             let hash = options?.hash;
             return t(key, hash || options || {});
         });
-        const cardStylesSource = fs.readFileSync(
-            path.join(__dirname, './email-templates/partials/card-styles.hbs'),
+        const baseStylesSource = fs.readFileSync(
+            path.join(__dirname, '../email-rendering/partials/base-styles.hbs'),
             'utf8'
         );
+        const contentStylesSource = fs.readFileSync(
+            path.join(__dirname, '../email-rendering/partials/content-styles.hbs'),
+            'utf8'
+        );
+        const cardStylesSource = fs.readFileSync(
+            path.join(__dirname, '../email-rendering/partials/card-styles.hbs'),
+            'utf8'
+        );
+        this.Handlebars.registerPartial('baseStyles', baseStylesSource);
+        this.Handlebars.registerPartial('contentStyles', contentStylesSource);
         this.Handlebars.registerPartial('cardStyles', cardStylesSource);
+        this.Handlebars.registerPartial('styles',
+            '<style>\n{{>baseStyles}}\n{{>contentStyles}}\n{{>cardStyles}}\n</style>'
+        );
+        const emailWrapperSource = fs.readFileSync(
+            path.join(__dirname, '../email-rendering/partials/email-wrapper.hbs'),
+            'utf8'
+        );
+        this.Handlebars.registerPartial('emailWrapper', emailWrapperSource);
         const wrapperSource = fs.readFileSync(
             path.join(__dirname, './email-templates/wrapper.hbs'),
             'utf8'
@@ -55,6 +72,7 @@ class MemberWelcomeEmailRenderer {
             }},
             {id: 'name', getValue: () => member.name},
             {id: 'email', getValue: () => member.email},
+            {id: 'uuid', getValue: () => member.uuid},
             {id: 'site_title', getValue: () => siteSettings.title},
             {id: 'site_url', getValue: () => siteSettings.url}
         ];
@@ -95,9 +113,25 @@ class MemberWelcomeEmailRenderer {
      * @returns {Promise<{html: string, text: string, subject: string}>}
      */
     async render({lexical, subject, member, siteSettings}) {
+        const design = getEmailDesign({
+            accentColor: siteSettings.accentColor,
+            backgroundColor: '#ffffff',
+            buttonColor: 'accent',
+            buttonCorners: null,
+            buttonStyle: null,
+            dividerColor: null,
+            headerBackgroundColor: null,
+            imageCorners: null,
+            linkColor: 'accent',
+            linkStyle: null,
+            postTitleColor: null,
+            sectionTitleColor: null,
+            titleFontWeight: 'bold'
+        });
+
         let content;
         try {
-            content = await lexicalLib.render(lexical, {target: 'email'});
+            content = await lexicalLib.render(lexical, {target: 'email', design});
         } catch (err) {
             throw new errors.IncorrectUsageError({
                 message: MESSAGES.INVALID_LEXICAL_STRUCTURE,
@@ -124,31 +158,22 @@ class MemberWelcomeEmailRenderer {
 
         const managePreferencesUrl = new URL('#/portal/account/newsletters', siteSettings.url).href;
         const year = new Date().getFullYear();
-        const accentColor = siteSettings.accentColor || '#15212A';
-        const accentContrastColor = textColorForBackgroundColor(accentColor).hex();
 
         const html = this.#wrapperTemplate({
             content: contentWithAbsoluteLinks,
+            emailTitle: subjectWithReplacements,
             subject: subjectWithReplacements,
             siteTitle: siteSettings.title,
             siteUrl: siteSettings.url,
-            accentColor,
-            accentContrastColor,
-            dividerColor: '#e0e7eb',
-            backgroundIsDark: false,
-            hasRoundedImageCorners: false,
-            sectionTitleColor: null,
-            titleWeight: '700',
-            hasOutlineButtons: false,
-            buttonColor: accentColor,
-            buttonTextColor: accentContrastColor,
-            buttonBorderRadius: '6px',
             managePreferencesUrl,
-            year
+            year,
+            ...design,
+            classes: {
+                container: 'container'
+            }
         });
 
-        const inlinedHtml = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
-        const text = htmlToPlaintext.email(inlinedHtml);
+        const {html: inlinedHtml, plaintext: text} = finalize(html);
 
         return {
             html: inlinedHtml,

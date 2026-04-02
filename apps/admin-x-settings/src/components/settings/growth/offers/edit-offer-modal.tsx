@@ -5,7 +5,7 @@ import {Button, ConfirmationModal, Form, PreviewModalContent, TextArea, TextFiel
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
-import {createRedemptionFilterUrl} from './offers-index';
+import {createOfferRedemptionFilterUrl} from './offer-helpers';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
 import {useEffect, useState} from 'react';
@@ -105,24 +105,24 @@ const Sidebar: React.FC<{
                         <section>
                             <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5 dark:border-grey-800'>
                                 <div className='flex flex-col gap-1.5'>
-                                    <span className='text-xs font-semibold leading-none text-grey-700'>Created on</span>
+                                    <span className='text-xs leading-none font-semibold text-grey-700'>Created on</span>
                                     <span>{formatTimestamp(offer?.created_at ? offer.created_at : '')}</span>
                                 </div>
                                 <div className='flex items-end justify-between'>
                                     <div className='flex flex-col gap-5'>
                                         <div className='flex flex-col gap-1.5'>
-                                            <span className='text-xs font-semibold leading-none text-grey-700'>Performance</span>
+                                            <span className='text-xs leading-none font-semibold text-grey-700'>Performance</span>
                                             <span>{offer?.redemption_count} {offer?.redemption_count === 1 ? 'redemption' : 'redemptions'}</span>
                                         </div>
                                         {offer?.redemption_count > 0 && offer?.last_redeemed ?
                                             <div className='flex flex-col gap-1.5'>
-                                                <span className='text-xs font-semibold leading-none text-grey-700'>Last redemption</span>
+                                                <span className='text-xs leading-none font-semibold text-grey-700'>Last redemption</span>
                                                 <span>{formatTimestamp(offer?.last_redeemed)}</span>
                                             </div> :
                                             null
                                         }
                                     </div>
-                                    {offer?.redemption_count > 0 ? <a className='font-semibold text-green' href={createRedemptionFilterUrl(offer?.id)}>See members →</a> : null}
+                                    {offer?.redemption_count > 0 ? <a className='font-semibold text-green' href={createOfferRedemptionFilterUrl(offer?.id)}>See members →</a> : null}
                                 </div>
                             </div>
                         </section>
@@ -147,7 +147,7 @@ const Sidebar: React.FC<{
                                     error={Boolean(errors.code)}
                                     hint={errors.code || (offer?.code !== '' ? <span className='truncate text-grey-700'>{homepageUrl}<span className='font-bold text-black dark:text-white'>{offer?.code}</span></span> : null)}
                                     placeholder='black-friday'
-                                    rightPlaceholder={offer?.code !== '' ? <Button className='mr-0.5 mt-1' color='green' label={isCopied ? 'Copied!' : 'Copy link'} size='sm' onClick={handleCopyClick} /> : null}
+                                    rightPlaceholder={offer?.code !== '' ? <Button className='mt-1 mr-0.5' color='green' label={isCopied ? 'Copied!' : 'Copy link'} size='sm' onClick={handleCopyClick} /> : null}
                                     title='Offer code'
                                     value={offer?.code}
                                     onChange={e => updateOffer({code: e.target.value})}
@@ -257,13 +257,7 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
     />;
 
     const goBack = () => {
-        if (sessionStorage.getItem('editOfferPageSource') === 'offers') {
-            sessionStorage.removeItem('editOfferPageSource');
-            updateRoute('offers');
-        } else {
-            sessionStorage.removeItem('editOfferPageSource');
-            updateRoute('offers/edit');
-        }
+        updateRoute('offers/edit');
     };
 
     return offerById ? <PreviewModalContent

@@ -1,3 +1,4 @@
+import LoadMoreButton from '@components/virtual-table/load-more-button';
 import {
     Button,
     LucideIcon,
@@ -12,6 +13,7 @@ import {
 import {Tag} from '@tryghost/admin-x-framework/api/tags';
 import {forwardRef, useRef} from 'react';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
+import {useVirtualListWindow} from '@components/virtual-table/virtual-list-window';
 
 const SpacerRow = ({height}: { height: number }) => (
     <tr aria-hidden="true" className="flex lg:table-row">
@@ -52,9 +54,10 @@ function TagsList({
     fetchNextPage: () => void;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
+    const {visibleItemCount, canLoadMore, loadMore} = useVirtualListWindow(totalItems);
     const {visibleItems, spaceBefore, spaceAfter} = useInfiniteVirtualScroll({
         items,
-        totalItems,
+        totalItems: visibleItemCount,
         hasNextPage,
         isFetchingNextPage,
         fetchNextPage,
@@ -67,7 +70,7 @@ function TagsList({
                 className="flex table-fixed flex-col lg:table"
                 data-testid="tags-list"
             >
-                <TableHeader className="lg:visible! lg:table-header-group! hidden">
+                <TableHeader className="hidden lg:visible! lg:table-header-group!">
                     <TableRow>
                         <TableHead className="w-auto px-4">
                             Tag
@@ -93,12 +96,12 @@ function TagsList({
                             <TableRow
                                 key={key}
                                 {...props}
-                                className="hover:bg-muted/50 grid w-full grid-cols-[1fr_5rem] items-center gap-x-4 p-2 md:grid-cols-[1fr_auto_5rem] lg:table-row lg:p-0 [&.group:hover_td]:bg-transparent"
+                                className="grid w-full grid-cols-[1fr_5rem] items-center gap-x-4 p-2 hover:bg-muted/50 md:grid-cols-[1fr_auto_5rem] lg:table-row lg:p-0 [&.group:hover_td]:bg-transparent"
                                 data-testid="tag-list-row"
                             >
                                 <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 md:relative lg:table-cell lg:w-1/2 lg:p-4 xl:w-3/5">
                                     <a
-                                        className="before:absolute before:left-0 before:top-0 before:z-10 before:h-full before:w-[100vw]"
+                                        className="before:absolute before:top-0 before:left-0 before:z-10 before:h-full before:w-[100vw]"
                                         href={`#/tags/${item.slug}`}
                                     >
                                         <span className="block truncate pb-1 text-lg font-medium">
@@ -145,6 +148,10 @@ function TagsList({
                     <SpacerRow height={spaceAfter} />
                 </TableBody>
             </Table>
+
+            {canLoadMore && (
+                <LoadMoreButton isLoading={isFetchingNextPage} onClick={loadMore} />
+            )}
         </div>
     );
 }

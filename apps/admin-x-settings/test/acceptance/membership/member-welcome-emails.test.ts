@@ -2,6 +2,17 @@ import {expect, test} from '@playwright/test';
 import {globalDataRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import type {Page} from '@playwright/test';
 
+/**
+ * Types a slash command into the Koenig editor and waits for the slash menu
+ * to appear before continuing. This prevents race conditions where
+ * pressing Enter before the menu renders can insert a newline instead of
+ * selecting the menu item.
+ */
+async function openSlashMenu(page: Page, command: string) {
+    await page.keyboard.type(`/${command}`, {delay: 50});
+    await expect(page.locator('[data-kg-slash-menu]')).toBeVisible({timeout: 5000});
+}
+
 const automatedEmailsFixture = {
     automated_emails: [{
         id: 'free-welcome-email-id',
@@ -23,21 +34,10 @@ const newslettersRequest = {
     browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: responseFixtures.newsletters}
 };
 
-const configWithWelcomeEmailEditorEnabled = {
+const configWithTenorEnabled = {
     ...responseFixtures.config,
     config: {
         ...responseFixtures.config.config,
-        labs: {
-            ...responseFixtures.config.config.labs,
-            welcomeEmailEditor: true
-        }
-    }
-};
-
-const configWithWelcomeEmailEditorAndTenorEnabled = {
-    ...configWithWelcomeEmailEditorEnabled,
-    config: {
-        ...configWithWelcomeEmailEditorEnabled.config,
         tenor: {
             googleApiKey: 'test-tenor-key',
             contentFilter: 'off'
@@ -238,7 +238,7 @@ test.describe('Member emails settings', async () => {
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailEditorEnabled},
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
                 fetchOembed: {
                     method: 'GET',
@@ -277,7 +277,7 @@ test.describe('Member emails settings', async () => {
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailEditorEnabled},
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
                 fetchOembed: {
                     method: 'GET',
@@ -310,7 +310,7 @@ test.describe('Member emails settings', async () => {
             await editor.click({timeout: 5000});
             await page.keyboard.press('ControlOrMeta+a');
             await page.keyboard.press('Backspace');
-            await page.keyboard.type('/bookmark');
+            await openSlashMenu(page, 'bookmark');
             await page.keyboard.press('Enter');
 
             const bookmarkUrlInput = modal.getByTestId('bookmark-url');
@@ -326,7 +326,7 @@ test.describe('Member emails settings', async () => {
             await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailEditorEnabled},
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
             }});
 
@@ -344,7 +344,7 @@ test.describe('Member emails settings', async () => {
             await editor.click({timeout: 5000});
             await page.keyboard.press('ControlOrMeta+a');
             await page.keyboard.press('Backspace');
-            await page.keyboard.type('/call-to-action');
+            await openSlashMenu(page, 'call-to-action');
             await page.keyboard.press('Enter');
 
             await expect(modal.locator('[data-kg-card="call-to-action"]')).toBeVisible();
@@ -354,7 +354,7 @@ test.describe('Member emails settings', async () => {
             await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailEditorEnabled},
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
             }});
 
@@ -372,8 +372,7 @@ test.describe('Member emails settings', async () => {
             await editor.click({timeout: 5000});
             await page.keyboard.press('ControlOrMeta+a');
             await page.keyboard.press('Backspace');
-            await page.keyboard.type('/product', {delay: 50});
-            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible({timeout: 5000});
+            await openSlashMenu(page, 'product');
             await page.keyboard.press('Enter');
 
             await expect(modal.locator('[data-kg-card="product"]')).toBeVisible();
@@ -396,7 +395,7 @@ test.describe('Member emails settings', async () => {
             await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailEditorEnabled},
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
             }});
 
@@ -415,9 +414,10 @@ test.describe('Member emails settings', async () => {
             await expect(editor).toBeFocused();
             await editor.press('ControlOrMeta+a');
             await editor.press('Backspace');
-            await editor.type('/gif');
-
+            await page.keyboard.type('/', {delay: 50});
             const slashMenu = page.locator('[data-kg-slash-menu]');
+            await expect(slashMenu).toBeVisible({timeout: 5000});
+            await expect(slashMenu.getByText('Image', {exact: true})).toBeVisible();
             await expect(slashMenu.getByText('GIF', {exact: true})).not.toBeVisible();
         });
 
@@ -438,7 +438,7 @@ test.describe('Member emails settings', async () => {
             await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailEditorAndTenorEnabled},
+                browseConfig: {method: 'GET', path: '/config/', response: configWithTenorEnabled},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
             }});
 
@@ -457,11 +457,8 @@ test.describe('Member emails settings', async () => {
             await expect(editor).toBeFocused();
             await editor.press('ControlOrMeta+a');
             await editor.press('Backspace');
-            await editor.type('/gif');
-
-            const slashMenu = page.locator('[data-kg-slash-menu]');
-            await expect(slashMenu).toBeVisible();
-            await expect(slashMenu.getByText('GIF', {exact: true})).toBeVisible();
+            await openSlashMenu(page, 'gif');
+            await expect(page.locator('[data-kg-slash-menu]').getByText('GIF', {exact: true})).toBeVisible();
         });
 
         test('uses automated email sender fields when populated, even if newsletter differs', async ({page}) => {

@@ -1,228 +1,164 @@
+import ManageViewPopover from './manage-view-popover';
 import React, {useCallback, useMemo} from 'react';
-import {Filter, FilterOption, Filters, LucideIcon} from '@tryghost/shade';
-import {Offer} from '@tryghost/admin-x-framework/api/offers';
+import {Button, Filter, Filters, LucideIcon, cn} from '@tryghost/shade';
+import {
+    buildOfferOptions,
+    fromOfferFilterDisplayValues,
+    toOfferFilterDisplayValues,
+    useMemberFilterFields
+} from '../use-member-filter-fields';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
-import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
-import {useBrowseLabels} from '@tryghost/admin-x-framework/api/labels';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {useMembersFilterConfig} from '../hooks/use-members-filter-config';
-import {useResourceSearch} from '../hooks/use-resource-search';
-
-/**
- * Build a map of synthetic retention IDs to their underlying real offer IDs.
- * e.g. 'retention:month' -> ['offer-id-1', 'offer-id-2']
- */
-function buildRetentionOfferIdMap(offers: Offer[]): Map<string, string[]> {
-    const map = new Map<string, string[]>();
-    const monthlyIds: string[] = [];
-    const yearlyIds: string[] = [];
-
-    for (const offer of offers) {
-        if (offer.redemption_type === 'retention') {
-            if (offer.cadence === 'month') {
-                monthlyIds.push(offer.id);
-            } else if (offer.cadence === 'year') {
-                yearlyIds.push(offer.id);
-            }
-        }
-    }
-
-    if (monthlyIds.length > 0) {
-        map.set('retention:month', monthlyIds);
-    }
-    if (yearlyIds.length > 0) {
-        map.set('retention:year', yearlyIds);
-    }
-
-    return map;
-}
-
-/**
- * Build offer filter options, grouping retention offers into
- * "Monthly Retention" / "Yearly Retention" when the labs flag is enabled.
- */
-function buildOfferOptions(offers: Offer[], retentionOffersEnabled: boolean, retentionMap: Map<string, string[]>): FilterOption[] {
-    const options: FilterOption[] = [];
-
-    for (const offer of offers) {
-        if (retentionOffersEnabled && offer.redemption_type === 'retention') {
-            continue;
-        }
-        options.push({value: offer.id, label: offer.name});
-    }
-
-    if (retentionOffersEnabled) {
-        if (retentionMap.has('retention:month')) {
-            options.push({value: 'retention:month', label: 'Monthly Retention'});
-        }
-        if (retentionMap.has('retention:year')) {
-            options.push({value: 'retention:year', label: 'Yearly Retention'});
-        }
-    }
-
-    return options;
-}
+import {useEmailPostValueSource} from '@src/hooks/filter-sources/use-email-post-value-source';
+import {useLabelValueSource} from '@src/hooks/filter-sources/use-label-value-source';
+import {usePostResourceValueSource} from '@src/hooks/filter-sources/use-post-resource-value-source';
+import {useTierValueSource} from '@src/hooks/filter-sources/use-tier-value-source';
+import type {MemberView} from '../hooks/use-member-views';
 
 interface MembersFiltersProps {
     filters: Filter[];
+    nql?: string;
     onFiltersChange: (filters: Filter[]) => void;
+    savedViews?: MemberView[];
+    activeView?: MemberView | null;
+    iconOnly?: boolean;
+}
+
+const EMPTY_OFFERS: typeof buildOfferOptions extends (offers: infer T) => unknown ? T : never = [];
+
+function mapOfferRedemptionFilters(
+    filters: Filter[],
+    mapValues: (values: string[]) => string[]
+) {
+    return filters.map((filter) => {
+        if (filter.field !== 'offer_redemptions') {
+            return filter;
+        }
+
+        return {
+            ...filter,
+            values: mapValues(filter.values as string[])
+        };
+    });
 }
 
 const MembersFilters: React.FC<MembersFiltersProps> = ({
     filters,
-    onFiltersChange
+    nql,
+    onFiltersChange,
+    savedViews = [],
+    activeView,
+    iconOnly = false
 }) => {
-    // Fetch required data for filters
-    const {data: labelsData} = useBrowseLabels({searchParams: {limit: '100'}});
     const {data: tiersData} = useBrowseTiers({searchParams: {limit: '100'}});
     const {data: offersData} = useBrowseOffers({});
     const {data: newslettersData} = useBrowseNewsletters({searchParams: {limit: '100'}});
     const {data: settingsData} = useBrowseSettings({});
-    const {data: configData} = useBrowseConfig({});
 
-    // Get settings
     const settings = settingsData?.settings || [];
     const paidMembersEnabled = getSettingValue<boolean>(settings, 'paid_members_enabled') === true;
-    const emailAnalyticsEnabled = configData?.config?.emailAnalytics === true;
+    const emailFiltersEnabled = getSettingValue<string>(settings, 'editor_default_email_recipients') !== 'disabled';
     const membersTrackSources = getSettingValue<boolean>(settings, 'members_track_sources') === true;
     const emailTrackOpens = getSettingValue<boolean>(settings, 'email_track_opens') === true;
     const emailTrackClicks = getSettingValue<boolean>(settings, 'email_track_clicks') === true;
-    const audienceFeedbackEnabled = configData?.config?.labs?.audienceFeedback === true;
-    const retentionOffersEnabled = configData?.config?.labs?.retentionOffers === true;
     const siteTimezone = getSiteTimezone(settings);
 
-    // Get data
-    const labels = labelsData?.labels || [];
     const tiers = tiersData?.tiers || [];
     const newsletters = newslettersData?.newsletters || [];
-    const offers = offersData?.offers || [];
-    const activePaidTiers = tiers.filter(t => t.type === 'paid' && t.active);
+    const offers = useMemo(() => offersData?.offers ?? EMPTY_OFFERS, [offersData?.offers]);
+    const activePaidTiers = tiers.filter(tier => tier.type === 'paid' && tier.active);
     const hasMultipleTiers = activePaidTiers.length > 1;
 
-    // Build offer options with retention grouping
-    const retentionMap = useMemo(() => {
-        return retentionOffersEnabled ? buildRetentionOfferIdMap(offers) : new Map<string, string[]>();
-    }, [offers, retentionOffersEnabled]);
-
     const offersOptions = useMemo(() => {
-        return buildOfferOptions(offers, retentionOffersEnabled, retentionMap);
-    }, [offers, retentionOffersEnabled, retentionMap]);
+        return buildOfferOptions(offers);
+    }, [offers]);
+    const hydratedNewsletterSlugs = useMemo(() => {
+        return [...new Set(
+            filters
+                .map(filter => filter.field)
+                .filter(field => field.startsWith('newsletters.'))
+                .map(field => field.slice('newsletters.'.length))
+                .filter(Boolean)
+        )];
+    }, [filters]);
 
-    // When retention grouping is active, translate between synthetic IDs (for display)
-    // and real offer IDs (stored in URL / sent to API)
     const displayFilters = useMemo(() => {
-        if (retentionMap.size === 0) {
-            return filters;
-        }
-        return filters.map((filter) => {
-            if (filter.field !== 'offer_redemptions') {
-                return filter;
-            }
-            const values = [...filter.values as string[]];
-            const collapsed: string[] = [];
-            const consumed = new Set<string>();
-
-            // Collapse real IDs into synthetic IDs where all IDs in the group are present
-            for (const [syntheticId, realIds] of retentionMap) {
-                if (realIds.length > 0 && realIds.every(id => values.includes(id))) {
-                    collapsed.push(syntheticId);
-                    realIds.forEach(id => consumed.add(id));
-                }
-            }
-
-            // Keep any remaining real IDs that weren't part of a complete group
-            for (const v of values) {
-                if (!consumed.has(v)) {
-                    collapsed.push(v);
-                }
-            }
-
-            return {...filter, values: collapsed};
-        });
-    }, [filters, retentionMap]);
+        return mapOfferRedemptionFilters(filters, values => toOfferFilterDisplayValues(values, offersOptions));
+    }, [filters, offersOptions]);
 
     const handleFiltersChange = useCallback((newFilters: Filter[]) => {
-        if (retentionMap.size === 0) {
-            onFiltersChange(newFilters);
-            return;
-        }
-        const expanded = newFilters.map((filter) => {
-            if (filter.field !== 'offer_redemptions') {
-                return filter;
-            }
-            const values: string[] = [];
-            for (const value of filter.values as string[]) {
-                const realIds = retentionMap.get(value as string);
-                if (realIds) {
-                    values.push(...realIds);
-                } else {
-                    values.push(value as string);
-                }
-            }
-            return {...filter, values: [...new Set(values)]};
-        });
-        onFiltersChange(expanded);
-    }, [onFiltersChange, retentionMap]);
+        onFiltersChange(mapOfferRedemptionFilters(newFilters, values => fromOfferFilterDisplayValues(values, offersOptions)));
+    }, [onFiltersChange, offersOptions]);
 
-    // Resource search hooks for post/page and email pickers
-    const postSearch = useResourceSearch('post');
-    const emailSearch = useResourceSearch('email');
+    const postValueSource = usePostResourceValueSource();
+    const emailValueSource = useEmailPostValueSource();
+    const labelValueSource = useLabelValueSource();
+    const tierValueSource = useTierValueSource(activePaidTiers.map(tier => ({value: tier.id, label: tier.name, detail: tier.slug})));
 
-    // Get filter configuration
-    const filterFields = useMembersFilterConfig({
-        labels,
-        tiers: activePaidTiers,
-        newsletters: newsletters.filter(n => n.status === 'active'),
+    const filterFields = useMemberFilterFields({
+        newsletters,
+        hydratedNewsletterSlugs,
         hasMultipleTiers,
         paidMembersEnabled,
-        emailAnalyticsEnabled,
-        labelsOptions: labels.map(l => ({value: l.slug, label: l.name})),
-        tiersOptions: activePaidTiers.map(t => ({value: t.id, label: t.name})),
-        offersOptions,
-        hasOffers: offers.length > 0,
-        postResourceOptions: postSearch.options,
-        onPostResourceSearchChange: postSearch.onSearchChange,
-        postResourceSearchValue: postSearch.searchValue,
-        postResourceLoading: postSearch.isLoading,
-        emailResourceOptions: emailSearch.options,
-        onEmailResourceSearchChange: emailSearch.onSearchChange,
-        emailResourceSearchValue: emailSearch.searchValue,
-        emailResourceLoading: emailSearch.isLoading,
+        emailFiltersEnabled,
+        labelValueSource,
+        tierValueSource,
+        offers,
+        postValueSource,
+        emailValueSource,
         membersTrackSources,
         emailTrackOpens,
         emailTrackClicks,
-        audienceFeedbackEnabled,
         siteTimezone
     });
 
     const hasFilters = filters.length > 0;
+    const showIconOnlyTrigger = iconOnly && !hasFilters;
+    const addFilterButtonClassName = cn(
+        'border-input bg-white dark:bg-background',
+        showIconOnlyTrigger && 'min-w-[34px] gap-0 px-2 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-sm !px-3'
+    );
+
+    const clearAndSaveButtons = hasFilters ? (
+        <div className="flex shrink-0 items-center gap-4 sm:absolute sm:top-0 sm:right-0">
+            <Button
+                className="hidden items-center gap-1 !px-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground lg:inline-flex"
+                type="button"
+                variant="ghost"
+                onClick={() => onFiltersChange([])}
+            >
+                <LucideIcon.X className="size-4" />
+                Clear
+            </Button>
+            {nql && (
+                <ManageViewPopover
+                    activeView={activeView}
+                    existingViews={savedViews}
+                    filter={nql}
+                    onDeleted={() => onFiltersChange([])}
+                />
+            )}
+        </div>
+    ) : undefined;
 
     return (
         <Filters
-            addButtonIcon={
-                hasFilters ? (
-                    <LucideIcon.FunnelPlus />
-                ) : (
-                    <LucideIcon.Funnel />
-                )
-            }
+            addButtonClassName={addFilterButtonClassName}
+            addButtonIcon={hasFilters ? <LucideIcon.FunnelPlus /> : <LucideIcon.Funnel />}
             addButtonText={hasFilters ? 'Add filter' : 'Filter'}
             allowMultiple={true}
-            className={`[&>button]:order-last ${
-                hasFilters ? '[&>button]:border-none' : 'w-auto'
-            }`}
-            clearButtonClassName="font-normal text-muted-foreground"
-            clearButtonIcon={<LucideIcon.X />}
-            clearButtonText="Clear"
+            className={`[&>button]:order-last ${hasFilters ? 'sm:!pr-40 [&>button]:border-none' : 'w-auto'}`}
+            clearButton={clearAndSaveButtons}
             fields={filterFields}
             filters={displayFilters}
             keyboardShortcut="f"
-            popoverAlign={hasFilters ? 'start' : 'end'}
+            popoverAlign={'start'}
+            popoverContentClassName='z-[80] w-[280px] [&_[data-slot=command-list]]:max-h-[450px]'
             showClearButton={hasFilters}
-            showSearchInput={false}
+            showSearchInput={true}
             onChange={handleFiltersChange}
         />
     );

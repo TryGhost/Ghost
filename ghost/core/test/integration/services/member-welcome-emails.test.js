@@ -12,10 +12,16 @@ const processOutbox = require('../../../core/server/services/outbox/jobs/lib/pro
 describe('Member Welcome Emails Integration', function () {
     let membersService;
     let defaultNewsletterSenderState = null;
+    let defaultEmailDesignSettingId;
 
     before(async function () {
         await testUtils.setup('default')();
         membersService = require('../../../core/server/services/members');
+        membersService.init();
+        defaultEmailDesignSettingId = await db.knex('email_design_settings')
+            .where('slug', 'default-automated-email')
+            .first('id')
+            .then(row => row.id);
     });
 
     beforeEach(async function () {
@@ -50,6 +56,7 @@ describe('Member Welcome Emails Integration', function () {
 
         await db.knex('automated_emails').insert({
             id: ObjectId().toHexString(),
+            email_design_setting_id: defaultEmailDesignSettingId,
             status: 'active',
             name: 'Free Member Welcome Email',
             slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
@@ -60,6 +67,7 @@ describe('Member Welcome Emails Integration', function () {
 
         await db.knex('automated_emails').insert({
             id: ObjectId().toHexString(),
+            email_design_setting_id: defaultEmailDesignSettingId,
             status: 'active',
             name: 'Paid Member Welcome Email',
             slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
@@ -104,7 +112,9 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(entry.get('status'), OUTBOX_STATUSES.PENDING);
 
             const payload = JSON.parse(entry.get('payload'));
+            const memberUuid = member.uuid || (typeof member.get === 'function' ? member.get('uuid') : undefined);
             assert.equal(payload.memberId, member.id);
+            assert.equal(payload.uuid, memberUuid);
             assert.equal(payload.email, 'welcome-test@example.com');
             assert.equal(payload.name, 'Welcome Test Member');
             assert.equal(payload.source, 'member');
@@ -200,6 +210,7 @@ describe('Member Welcome Emails Integration', function () {
                 event_type: 'MemberCreatedEvent',
                 payload: JSON.stringify({
                     memberId: 'member1',
+                    uuid: '11111111-1111-4111-8111-111111111111',
                     email: 'inactive@example.com',
                     name: 'Inactive Template Member',
                     status: 'free'
@@ -223,6 +234,7 @@ describe('Member Welcome Emails Integration', function () {
                 event_type: 'MemberCreatedEvent',
                 payload: JSON.stringify({
                     memberId: 'member1',
+                    uuid: '22222222-2222-4222-8222-222222222222',
                     email: 'notemplate@example.com',
                     name: 'No Template Member',
                     status: 'free'
@@ -248,6 +260,7 @@ describe('Member Welcome Emails Integration', function () {
                 event_type: 'MemberCreatedEvent',
                 payload: JSON.stringify({
                     memberId: 'paid_member_1',
+                    uuid: '33333333-3333-4333-8333-333333333333',
                     email: 'paid-inactive@example.com',
                     name: 'Paid Inactive Template Member',
                     status: 'paid'
@@ -271,6 +284,7 @@ describe('Member Welcome Emails Integration', function () {
                 event_type: 'MemberCreatedEvent',
                 payload: JSON.stringify({
                     memberId: 'paid_member_2',
+                    uuid: '44444444-4444-4444-8444-444444444444',
                     email: 'paid-notemplate@example.com',
                     name: 'Paid No Template Member',
                     status: 'paid'
@@ -333,6 +347,7 @@ describe('Member Welcome Emails Integration', function () {
                 event_type: 'MemberCreatedEvent',
                 payload: JSON.stringify({
                     memberId: ObjectId().toHexString(),
+                    uuid: '55555555-5555-4555-8555-555555555555',
                     email: memberEmail,
                     name: 'Real Member',
                     status: 'free'
@@ -365,6 +380,7 @@ describe('Member Welcome Emails Integration', function () {
                 event_type: 'MemberCreatedEvent',
                 payload: JSON.stringify({
                     memberId: ObjectId().toHexString(),
+                    uuid: '66666666-6666-4666-8666-666666666666',
                     email: 'sender-test@example.com',
                     name: 'Sender Test',
                     status: 'free'
@@ -378,6 +394,42 @@ describe('Member Welcome Emails Integration', function () {
             const sendCall = mailService.GhostMailer.prototype.send.firstCall;
             assert.equal(sendCall.args[0].replyTo, senderReplyTo);
             assert.ok(sendCall.args[0].from.includes(senderEmail));
+        });
+
+        it('uses mock member UUID when sending test welcome emails', async function () {
+            const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
+            memberWelcomeEmailService.init();
+
+            const automatedEmail = await db.knex('automated_emails')
+                .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
+                .first();
+
+            const lexical = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'paragraph',
+                        children: [{type: 'text', text: 'Your feed token is {uuid}'}]
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            await memberWelcomeEmailService.api.sendTestEmail({
+                email: 'test-member@example.com',
+                subject: 'Welcome test',
+                lexical,
+                automatedEmailId: automatedEmail.id
+            });
+
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            assert.ok(sendCall.args[0].html.includes('00000000-0000-4000-8000-000000000000'));
+            assert(!sendCall.args[0].html.includes('{uuid}'));
+            assert(!sendCall.args[0].html.includes('%7Buuid%7D'));
         });
     });
 });

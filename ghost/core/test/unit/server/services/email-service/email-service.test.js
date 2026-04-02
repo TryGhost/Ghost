@@ -120,6 +120,56 @@ describe('Email Service', function () {
             await assert.rejects(service.checkLimits(), /Email sending is temporarily disabled/);
         });
 
+        it('Throws with EMAIL_VERIFICATION_NEEDED code when verification is required', async function () {
+            verificicationRequired = true;
+            try {
+                await service.checkLimits();
+                assert.fail('Should have thrown');
+            } catch (e) {
+                assert.equal(e.code, 'EMAIL_VERIFICATION_NEEDED');
+            }
+        });
+
+        it('Uses custom message when config provides emailSendingDisabledMessage', async function () {
+            const customService = new EmailService({
+                emailSegmenter: {
+                    getMembersCount: () => Promise.resolve(memberCount)
+                },
+                limitService: {
+                    isLimited: () => false,
+                    errorIfIsOverLimit: () => {},
+                    errorIfWouldGoOverLimit: () => {}
+                },
+                verificationTrigger: {
+                    checkVerificationRequired: () => Promise.resolve(true)
+                },
+                models: {Email: createModelClass()},
+                batchSendingService: {scheduleEmail},
+                settingsCache,
+                emailRenderer,
+                membersRepository,
+                sendingService,
+                emailAnalyticsJobs: {scheduleRecurringJobs},
+                domainWarmingService,
+                config: {
+                    get(key) {
+                        if (key === 'hostSettings:emailVerification:emailSendingDisabledMessage') {
+                            return 'Custom: Email paused. Contact help@example.com';
+                        }
+                        return undefined;
+                    }
+                }
+            });
+
+            try {
+                await customService.checkLimits();
+                assert.fail('Should have thrown');
+            } catch (e) {
+                assert.equal(e.message, 'Custom: Email paused. Contact help@example.com');
+                assert.equal(e.code, 'EMAIL_VERIFICATION_NEEDED');
+            }
+        });
+
         it('Does not throw if limits are enabled', async function () {
             // Enable limits, but don't go over limit
             limited.members = false;

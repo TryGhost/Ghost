@@ -54,7 +54,7 @@ const ShowRepliesButton: React.FC<ShowRepliesButtonProps> = ({count, onClick, va
                 <div className='size-0.5 rounded-sm bg-gray-300'></div>
             </div>
             <Button
-                className='hover:text-blue-800 text-sm font-medium text-blue-600'
+                className='text-sm font-medium text-blue-600 hover:text-blue-800'
                 variant="ghost"
                 onClick={(e: React.MouseEvent<HTMLElement>) => {
                     e.preventDefault();

@@ -13,6 +13,7 @@ export * from './components/ui/command';
 export * from './components/ui/data-list';
 export * from './components/ui/dialog';
 export * from './components/ui/dropdown-menu';
+export * from './components/ui/dropzone';
 export * from './components/ui/empty-indicator';
 export * from './components/ui/field';
 export * from './components/ui/filters';
@@ -52,9 +53,12 @@ export * from './components/layout/page';
 export {ErrorPage} from './components/layout/error-page';
 export * from './components/layout/heading';
 export * from './components/layout/header';
+export * from './components/layout/list-header';
 export * from './components/layout/view-header';
 
 // Feature components — Complete functional components (share modal, etc.)
+export {default as ColorPicker} from './components/features/color-picker/color-picker';
+export type {ColorPickerProps} from './components/features/color-picker/color-picker';
 export {default as PostShareModal} from './components/features/post-share-modal';
 export * from './components/features/table-filter-tabs/table-filter-tabs';
 export * from './components/features/utm-campaign-tabs/utm-campaign-tabs';

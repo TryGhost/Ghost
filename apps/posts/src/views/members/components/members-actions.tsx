@@ -1,5 +1,5 @@
 import React, {useCallback, useState} from 'react';
-import {AddLabelModal, DeleteModal, RemoveLabelModal, UnsubscribeModal} from './bulk-action-modals';
+import {AddLabelModal, DeleteModal, ImportMembersModal, RemoveLabelModal, UnsubscribeModal} from './bulk-action-modals';
 import {
     Button,
     DropdownMenu,
@@ -10,32 +10,46 @@ import {
     LucideIcon
 } from '@tryghost/shade';
 import {blobDownloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
+import {buildMemberOperationParams} from '../member-query-params';
 import {toast} from 'sonner';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBulkDeleteMembers, useBulkEditMembers} from '@tryghost/admin-x-framework/api/members';
 
 interface MembersActionsProps {
-    isFiltered: boolean;
+    hasFilterOrSearch: boolean;
     memberCount: number;
     nql?: string;
+    search: string;
     canBulkDelete: boolean;
+    onImportComplete?: () => void;
 }
 
-async function exportMembers(filter?: string): Promise<void> {
+async function exportMembers(filter?: string, search?: string): Promise<void> {
     const params = new URLSearchParams({limit: 'all'});
     if (filter) {
         params.set('filter', filter);
+    }
+    if (search) {
+        params.set('search', search);
     }
     const datetime = new Date().toJSON().substring(0, 10);
     await blobDownloadFromEndpoint(`/members/upload/?${params}`, `members.${datetime}.csv`);
 }
 
 const MembersActions: React.FC<MembersActionsProps> = ({
-    isFiltered,
+    hasFilterOrSearch,
     memberCount,
     nql,
-    canBulkDelete
+    search,
+    canBulkDelete,
+    onImportComplete
 }) => {
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [showAddLabelModal, setShowAddLabelModal] = useState(false);
+    const [showRemoveLabelModal, setShowRemoveLabelModal] = useState(false);
+    const [showUnsubscribeModal, setShowUnsubscribeModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
     const {data: newslettersData, isLoading: isLoadingNewsletters} = useBrowseNewsletters({
         searchParams: {filter: 'status:-archived', limit: '50'}
     });
@@ -44,29 +58,23 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     const {mutateAsync: bulkEditAsync, isLoading: isBulkEditing} = useBulkEditMembers();
     const {mutate: bulkDelete, isLoading: isBulkDeleting} = useBulkDeleteMembers();
     const [isUnsubscribing, setIsUnsubscribing] = useState(false);
-
-    const [showAddLabelModal, setShowAddLabelModal] = useState(false);
-    const [showRemoveLabelModal, setShowRemoveLabelModal] = useState(false);
-    const [showUnsubscribeModal, setShowUnsubscribeModal] = useState(false);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-
+    const memberOperationParams = buildMemberOperationParams({nql, search});
     const handleExport = useCallback(async () => {
         try {
-            await exportMembers(nql);
+            await exportMembers(nql, search);
         } catch (e) {
             toast.error('Export failed', {
                 description: 'There was a problem downloading your member data. Please check your connection and try again.'
             });
             throw e;
         }
-    }, [nql]);
+    }, [nql, search]);
 
     const handleAddLabel = useCallback(async (labelIds: string[]) => {
         try {
             for (const labelId of labelIds) {
                 await bulkEditAsync({
-                    filter: nql || '',
-                    all: !nql,
+                    ...memberOperationParams,
                     action: {
                         type: 'addLabel',
                         meta: {label: {id: labelId}}
@@ -80,14 +88,13 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                 description: 'There was a problem applying this label. Please try again.'
             });
         }
-    }, [bulkEditAsync, nql]);
+    }, [bulkEditAsync, memberOperationParams]);
 
     const handleRemoveLabel = useCallback(async (labelIds: string[]) => {
         try {
             for (const labelId of labelIds) {
                 await bulkEditAsync({
-                    filter: nql || '',
-                    all: !nql,
+                    ...memberOperationParams,
                     action: {
                         type: 'removeLabel',
                         meta: {label: {id: labelId}}
@@ -101,13 +108,10 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                 description: 'There was a problem removing this label. Please try again.'
             });
         }
-    }, [bulkEditAsync, nql]);
+    }, [bulkEditAsync, memberOperationParams]);
 
     const handleUnsubscribe = useCallback(async (newsletterIds: string[] | null) => {
-        const baseParams = {
-            filter: nql || '',
-            all: !nql
-        };
+        const baseParams = memberOperationParams;
 
         if (newsletterIds === null) {
             try {
@@ -155,13 +159,10 @@ const MembersActions: React.FC<MembersActionsProps> = ({
         } finally {
             setIsUnsubscribing(false);
         }
-    }, [bulkEditAsync, nql]);
+    }, [bulkEditAsync, memberOperationParams]);
 
     const handleDelete = useCallback(() => {
-        bulkDelete({
-            filter: nql || '',
-            all: !nql
-        }, {
+        bulkDelete(memberOperationParams, {
             onSuccess: () => {
                 setShowDeleteModal(false);
                 toast.success('Members deleted successfully');
@@ -172,35 +173,41 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                 });
             }
         });
-    }, [bulkDelete, nql]);
+    }, [bulkDelete, memberOperationParams]);
 
     const handleExportBackup = useCallback(async () => {
         try {
-            await exportMembers(nql);
+            await exportMembers(nql, search);
         } catch (e) {
             toast.error('Export failed', {
                 description: 'There was a problem downloading your backup. Please check your connection and try again.'
             });
             throw e;
         }
-    }, [nql]);
+    }, [nql, search]);
 
     return (
         <>
             {/* Actions Dropdown */}
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline">
+                    <Button data-testid="members-actions" variant="outline">
                         <LucideIcon.MoreHorizontal className="size-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                    {/* Import */}
+                    <DropdownMenuItem onClick={() => setShowImportModal(true)}>
+                        <LucideIcon.Upload className="mr-2 size-4" />
+                        Import members
+                    </DropdownMenuItem>
+
                     {memberCount > 0 && (
                         <>
                             {/* Export */}
                             <DropdownMenuItem onClick={handleExport}>
                                 <LucideIcon.Download className="mr-2 size-4" />
-                                {isFiltered
+                                {hasFilterOrSearch
                                     ? `Export ${memberCount.toLocaleString()} members`
                                     : 'Export all members'}
                             </DropdownMenuItem>
@@ -237,12 +244,18 @@ const MembersActions: React.FC<MembersActionsProps> = ({
 
             {/* New Member Button - styled like Tags */}
             <Button asChild>
-                <a className="font-bold" href="#/members/new">
-                    New member
+                <a aria-label="New member" className="inline-flex items-center gap-2 font-bold" href="#/members/new">
+                    <LucideIcon.Plus className="size-4" />
+                    <span className="hidden sm:inline">New member</span>
                 </a>
             </Button>
 
             {/* Modals */}
+            <ImportMembersModal
+                open={showImportModal}
+                onComplete={onImportComplete}
+                onOpenChange={setShowImportModal}
+            />
             <AddLabelModal
                 isLoading={isBulkEditing}
                 memberCount={memberCount}
@@ -255,6 +268,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                 memberCount={memberCount}
                 nql={nql}
                 open={showRemoveLabelModal}
+                search={search}
                 onConfirm={handleRemoveLabel}
                 onOpenChange={setShowRemoveLabelModal}
             />

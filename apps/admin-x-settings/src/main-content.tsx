@@ -13,10 +13,10 @@ const EMPTY_KEYWORDS: string[] = [];
 
 const Page: React.FC<{children: ReactNode}> = ({children}) => {
     return <>
-        <div className='fixed right-0 top-2 z-50 flex justify-end bg-transparent p-8 tablet:fixed tablet:top-0 tablet:px-8' id="done-button-container">
+        <div className='fixed top-2 right-0 z-50 m-8 flex justify-end bg-transparent tablet:fixed tablet:top-0' id="done-button-container">
             <ExitSettingsButton />
         </div>
-        <div className="fixed left-0 top-0 flex size-full dark:bg-grey-975" id="admin-x-settings-content">
+        <div className="fixed top-0 left-0 flex size-full dark:bg-grey-975" id="admin-x-settings-content">
             {children}
         </div>
     </>;
@@ -80,7 +80,7 @@ const MainContent: React.FC = () => {
     return (
         <Page>
             {loadingModal && <div className={`fixed inset-0 z-40 h-[calc(100vh-55px)] w-[100vw] tablet:h-[100vh] ${topLevelBackdropClasses}`} />}
-            <div className="no-scrollbar fixed inset-x-0 top-0 z-[35] flex-1 basis-[320px] bg-white p-8 tablet:relative tablet:inset-x-auto tablet:top-auto tablet:h-full tablet:overflow-y-scroll tablet:bg-grey-50 tablet:py-0 dark:bg-grey-975 dark:tablet:bg-[#101114]" id="admin-x-settings-sidebar-scroller">
+            <div className="fixed inset-x-0 top-0 z-[35] max-w-[calc(100%-16px)] flex-1 basis-[320px] bg-white p-8 tablet:relative tablet:inset-x-auto tablet:top-auto tablet:h-full tablet:overflow-y-scroll tablet:bg-grey-50 tablet:py-0 dark:bg-grey-975 dark:tablet:bg-[#101114]" id="admin-x-settings-sidebar-scroller">
                 <div className="relative w-full">
                     <Sidebar />
                 </div>

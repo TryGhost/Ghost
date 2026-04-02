@@ -239,7 +239,7 @@ export const AsDialog: Story = {
             <>
                 <p className="text-sm text-muted-foreground">
                     Press{' '}
-                    <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                    <kbd className="pointer-events-none inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 select-none">
                         <span className="text-xs">⌘</span>K
                     </kbd>
                     {' '}or{' '}
@@ -431,7 +431,7 @@ export const LongList: Story = {
 
 export const CustomStyling: Story = {
     render: () => (
-        <Command className="to-secondary/20 w-[500px] rounded-xl border-2 border-primary bg-gradient-to-b from-background shadow-xl">
+        <Command className="w-[500px] rounded-xl border-2 border-primary bg-gradient-to-b from-background to-secondary/20 shadow-xl">
             <CommandInput
                 className="text-base"
                 placeholder="Type a command or search..."
@@ -442,14 +442,14 @@ export const CustomStyling: Story = {
                     <CommandItem className="py-3">
                         <Calendar className="mr-3 size-5" />
                         <span className="font-medium">Calendar</span>
-                        <CommandShortcut className="bg-primary/10 rounded px-2 py-1 text-xs">
+                        <CommandShortcut className="rounded bg-primary/10 px-2 py-1 text-xs">
                             ⌘C
                         </CommandShortcut>
                     </CommandItem>
                     <CommandItem className="py-3">
                         <Settings className="mr-3 size-5" />
                         <span className="font-medium">Settings</span>
-                        <CommandShortcut className="bg-primary/10 rounded px-2 py-1 text-xs">
+                        <CommandShortcut className="rounded bg-primary/10 px-2 py-1 text-xs">
                             ⌘S
                         </CommandShortcut>
                     </CommandItem>

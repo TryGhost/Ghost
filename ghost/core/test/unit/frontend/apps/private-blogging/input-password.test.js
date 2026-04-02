@@ -49,4 +49,21 @@ describe('{{input_password}} helper', function () {
 
         assert.equal(String(rendered), markup);
     });
+
+    it('returns the correct input when 1Password ignore is enabled', function () {
+        const markup = '<input class="private-login-password" type="password" name="password" autofocus="autofocus" placeholder="Test" data-1p-ignore />';
+
+        const options = {
+            hash: {
+                placeholder: 'Test',
+                'data-1p-ignore': 'true'
+            }
+        };
+
+        const rendered = input_password(options);
+
+        assertExists(rendered);
+
+        assert.equal(String(rendered), markup);
+    });
 });

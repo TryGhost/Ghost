@@ -3,10 +3,13 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+source "$SCRIPT_DIR/resolve-e2e-mode.sh"
 
 cd "$REPO_ROOT"
 
-MODE="${GHOST_E2E_MODE:-dev}"
+MODE="$(resolve_e2e_mode)"
+export GHOST_E2E_MODE="$MODE"
+
 if [[ "$MODE" != "build" ]]; then
   DEV_COMPOSE_PROJECT="${COMPOSE_PROJECT_NAME:-ghost-dev}"
   GHOST_DEV_IMAGE="${DEV_COMPOSE_PROJECT}-ghost-dev"

@@ -151,7 +151,7 @@ export const useBrowseMembersInfinite = createInfiniteQuery<MembersInfiniteRespo
     path: '/members/',
     defaultSearchParams: {
         include: 'labels,tiers',
-        limit: '50',
+        limit: '100',
         order: 'created_at desc'
     },
     defaultNextPageParams: (lastPage, otherParams) => {
@@ -196,9 +196,31 @@ export interface BulkOperationResponseType {
     };
 }
 
+function buildBulkMemberSearchParams({filter, search, all}: {filter?: string; search?: string; all?: boolean}) {
+    if (!all && !filter && !search) {
+        throw new Error('Bulk operation requires a filter, search, or all flag');
+    }
+
+    const params: Record<string, string> = {};
+
+    if (all) {
+        params.all = 'true';
+    }
+
+    if (filter) {
+        params.filter = filter;
+    }
+
+    if (search) {
+        params.search = search;
+    }
+
+    return params;
+}
+
 export const useBulkEditMembers = createMutation<
     BulkOperationResponseType,
-    {filter: string; all?: boolean; action: BulkEditAction}
+    {filter?: string; search?: string; all?: boolean; action: BulkEditAction}
 >({
     method: 'PUT',
     path: () => '/members/bulk/',
@@ -209,38 +231,16 @@ export const useBulkEditMembers = createMutation<
             newsletter: action.newsletter
         }
     }),
-    searchParams: ({filter, all}) => {
-        if (!all && !filter) {
-            throw new Error('Bulk edit requires either a filter or all flag');
-        }
-        const params: Record<string, string> = {};
-        if (all) {
-            params.all = 'true';
-        } else {
-            params.filter = filter;
-        }
-        return params;
-    },
+    searchParams: buildBulkMemberSearchParams,
     invalidateQueries: {dataType}
 });
 
 export const useBulkDeleteMembers = createMutation<
     BulkOperationResponseType,
-    {filter: string; all?: boolean}
+    {filter?: string; search?: string; all?: boolean}
 >({
     method: 'DELETE',
     path: () => '/members/',
-    searchParams: ({filter, all}) => {
-        if (!all && !filter) {
-            throw new Error('Bulk delete requires either a filter or all flag');
-        }
-        const params: Record<string, string> = {};
-        if (all) {
-            params.all = 'true';
-        } else {
-            params.filter = filter;
-        }
-        return params;
-    },
+    searchParams: buildBulkMemberSearchParams,
     invalidateQueries: {dataType}
 });

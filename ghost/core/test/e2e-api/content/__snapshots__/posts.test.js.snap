@@ -7017,7 +7017,7 @@ Object {
   "errors": Array [
     Object {
       "code": "ER_WRONG_VALUE",
-      "context": "Invalid value select count(distinct posts.id) as aggregate from \`posts\` where (\`posts\`.\`status\` = 'published' and (\`posts\`.\`published_at\` < '1715091791890' and \`posts\`.\`type\` = 'post')) - Incorrect DATETIME value: '1715091791890'",
+      "context": "Invalid value select count(*) as aggregate from \`posts\` where (\`posts\`.\`status\` = 'published' and (\`posts\`.\`published_at\` < '1715091791890' and \`posts\`.\`type\` = 'post')) - Incorrect DATETIME value: '1715091791890'",
       "details": null,
       "ghostErrorCode": null,
       "help": null,

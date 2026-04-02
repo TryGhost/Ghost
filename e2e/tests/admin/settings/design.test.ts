@@ -11,8 +11,7 @@ test.describe('Ghost Admin - Design & Branding', () => {
             await design.deleteCoverImage();
             await design.openUnsplashSelector();
 
-            const unsplashPhoto = page.locator('[data-kg-unsplash-gallery-img]');
-            await expect(unsplashPhoto.first()).toBeVisible({timeout: 10000});
+            await expect(design.unsplashPhotos.first()).toBeVisible({timeout: 10000});
         });
     });
 });

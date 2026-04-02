@@ -187,8 +187,10 @@ module.exports = function apiRoutes() {
 
     // ## Automated Emails
     router.get('/automated_emails', mw.authAdminApi, http(api.automatedEmails.browse));
+    router.get('/automated_emails/design', mw.authAdminApi, http(api.automatedEmailDesign.read));
     router.get('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.read));
     router.post('/automated_emails', mw.authAdminApi, http(api.automatedEmails.add));
+    router.put('/automated_emails/design', mw.authAdminApi, http(api.automatedEmailDesign.edit));
     router.put('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.edit));
     router.del('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.destroy));
     router.post('/automated_emails/:id/test', shared.middleware.brute.previewEmailLimiter, mw.authAdminApi, http(api.automatedEmails.sendTestEmail));
@@ -323,6 +325,7 @@ module.exports = function apiRoutes() {
     router.post('/files/upload',
         mw.authAdminApi,
         apiMw.upload.single('file'),
+        apiMw.upload.fileValidation({type: 'files'}),
         http(api.files.upload)
     );
 

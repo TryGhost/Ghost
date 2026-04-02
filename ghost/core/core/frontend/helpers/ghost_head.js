@@ -75,10 +75,7 @@ function getMembersHelper(data, frontendKey, excludeList) {
         membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
     }
     if (settingsCache.get('paid_members_enabled')) {
-        // disable fraud detection for e2e tests to reduce waiting time
-        const isFraudSignalsEnabled = process.env.NODE_ENV === 'testing-browser' ? '?advancedFraudSignals=false' : '';
-
-        membersHelper += `<script async src="https://js.stripe.com/v3/${isFraudSignalsEnabled}"></script>`;
+        membersHelper += `<script async src="https://js.stripe.com/v3/"></script>`;
     }
     return membersHelper;
 }
