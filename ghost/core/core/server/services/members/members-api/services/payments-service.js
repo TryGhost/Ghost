@@ -1,3 +1,4 @@
+const crypto = require('node:crypto');
 const logging = require('@tryghost/logging');
 const DomainEvents = require('@tryghost/domain-events');
 const TierCreatedEvent = require('../../../tiers/tier-created-event');
@@ -147,6 +148,58 @@ class PaymentsService {
         };
 
         const session = await this.stripeAPIService.createDonationCheckoutSession(data);
+        return session.url;
+    }
+
+    /**
+     * @param {object} params
+     * @param {import('../../../tiers/tier')} params.tier
+     * @param {'month'|'year'} params.cadence
+     * @param {string} params.email
+     * @param {string} params.successUrl
+     * @param {string} params.cancelUrl
+     * @param {object} params.metadata
+     * @param {object} [params.member]
+     * @param {boolean} params.isAuthenticated
+     *
+     * @returns {Promise<string>}
+     */
+    async getGiftPaymentLink({tier, cadence, email, metadata, successUrl, cancelUrl, member, isAuthenticated}) {
+        let customer = null;
+        if (member && isAuthenticated) {
+            customer = await this.getCustomerForMember(member);
+        }
+
+        const amount = tier.getPrice(cadence);
+        const currency = tier.currency.toLowerCase();
+
+        const token = crypto.randomUUID();
+
+        const successUrlObj = new URL(successUrl);
+        successUrlObj.searchParams.set('stripe', 'gift-purchase-success');
+        successUrlObj.searchParams.set('gift_token', token);
+
+        const data = {
+            amount,
+            currency,
+            tierName: tier.name,
+            cadence,
+            metadata: {
+                ...metadata,
+                ghost_gift: 'true',
+                gift_token: token,
+                tier_id: tier.id.toHexString(),
+                cadence,
+                purchaser_email: email
+            },
+            successUrl: successUrlObj.toString(),
+            cancelUrl,
+            customer,
+            customerEmail: !customer ? email : null
+        };
+
+        const session = await this.stripeAPIService.createGiftCheckoutSession(data);
+
         return session.url;
     }
 

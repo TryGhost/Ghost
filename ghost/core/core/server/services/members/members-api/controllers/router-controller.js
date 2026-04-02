@@ -29,6 +29,7 @@ const messages = {
     memberNotFound: 'No member exists with this e-mail address.',
     invalidType: 'Invalid checkout type.',
     notConfigured: 'This site is not accepting payments at the moment.',
+    giftSubscriptionsNotEnabled: 'Gift subscriptions are not enabled on this site.',
     invalidNewsletters: 'Cannot subscribe to invalid newsletters {newsletters}',
     archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}',
     otcNotSupported: 'OTC verification not supported.',
@@ -598,6 +599,39 @@ module.exports = class RouterController {
         }
     }
 
+    /**
+     * @param {object} options
+     * @param {object} options.tier
+     * @param {'month'|'year'} options.cadence
+     * @param {string} options.email
+     * @param {string} options.successUrl
+     * @param {string} options.cancelUrl
+     * @param {object} options.metadata
+     * @param {object} [options.member]
+     * @param {boolean} options.isAuthenticated
+     * @returns
+     */
+    async _createGiftCheckoutSession(options) {
+        if (!this._paymentsService.stripeAPIService.configured) {
+            throw new DisabledFeatureError({
+                message: tpl(messages.notConfigured)
+            });
+        }
+
+        try {
+            const paymentLink = await this._paymentsService.getGiftPaymentLink(options);
+
+            return {url: paymentLink};
+        } catch (err) {
+            logging.error(err);
+            this._sentry?.captureException?.(err);
+            throw new BadRequestError({
+                err,
+                message: tpl(messages.unableToCheckout)
+            });
+        }
+    }
+
     async createCheckoutSession(req, res) {
         const type = req.body.type ?? 'subscription';
         const metadata = req.body.metadata ?? {};
@@ -605,7 +639,7 @@ module.exports = class RouterController {
         const membersEnabled = true;
 
         // Check this checkout type is supported
-        if (typeof type !== 'string' || !['subscription', 'donation'].includes(type)) {
+        if (typeof type !== 'string' || !['subscription', 'donation', 'gift'].includes(type)) {
             throw new BadRequestError({
                 message: tpl(messages.invalidType)
             });
@@ -682,6 +716,41 @@ module.exports = class RouterController {
         } else if (type === 'donation') {
             options.personalNote = parsePersonalNote(req.body.personalNote);
             response = await this._createDonationCheckoutSession(options);
+        } else if (type === 'gift') {
+            if (!this.labsService.isSet('giftSubscriptions')) {
+                throw new BadRequestError({
+                    message: tpl(messages.giftSubscriptionsNotEnabled)
+                });
+            }
+
+            if (!membersEnabled) {
+                throw new BadRequestError({
+                    message: tpl(messages.badRequest)
+                });
+            }
+
+            if (typeof req.body.customerEmail !== 'string' || !isEmail(req.body.customerEmail)) {
+                throw new BadRequestError({
+                    message: tpl(messages.badRequest),
+                    context: 'A valid email address is required to purchase a gift subscription'
+                });
+            }
+
+            if (req.body.offerId) {
+                throw new BadRequestError({
+                    message: tpl(messages.badRequest),
+                    context: 'Offers cannot be applied to gift subscriptions'
+                });
+            }
+
+            const data = await this._getSubscriptionCheckoutData(req.body);
+
+            response = await this._createGiftCheckoutSession({
+                ...options,
+                ...data,
+                successUrl: this._urlUtils.getSiteUrl(),
+                cancelUrl: this._urlUtils.getSiteUrl()
+            });
         }
 
         res.writeHead(200, {
