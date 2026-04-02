@@ -39,7 +39,7 @@
     "sinon": "21.0.3",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.57.2"
+    "typescript-eslint": "8.58.0"
   },
   "dependencies": {
     "lodash": "4.18.1"
