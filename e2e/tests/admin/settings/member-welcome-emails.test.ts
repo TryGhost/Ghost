@@ -1,5 +1,8 @@
 import {MemberWelcomeEmailsSection} from '@/admin-pages';
 import {expect, test} from '@/helpers/playwright';
+import {usePerTestIsolation} from '@/helpers/playwright/isolation';
+
+usePerTestIsolation();
 
 interface AutomatedEmail {
     slug: string;
@@ -12,6 +15,32 @@ interface AutomatedEmail {
 
 interface AutomatedEmailsResponse {
     automated_emails: AutomatedEmail[];
+}
+
+interface AutomatedEmailDesign {
+    id: string;
+    slug: string;
+    background_color: string;
+    header_background_color: string;
+    header_image: string | null;
+    show_header_title: boolean;
+    footer_content: string | null;
+    button_color: string | null;
+    button_corners: string;
+    button_style: string;
+    link_color: string | null;
+    link_style: string;
+    body_font_category: string;
+    title_font_category: string;
+    title_font_weight: string;
+    image_corners: string;
+    divider_color: string | null;
+    section_title_color: string | null;
+    show_badge: boolean;
+}
+
+interface AutomatedEmailDesignResponse {
+    automated_email_design: AutomatedEmailDesign[];
 }
 
 test.describe('Ghost Admin - Member Welcome Emails', () => {
@@ -139,6 +168,61 @@ test.describe('Ghost Admin - Welcome Email Customize Button - flag enabled', () 
         await welcomeEmailsSection.customizeModal.getByRole('button', {name: 'Close'}).click();
 
         await expect(welcomeEmailsSection.customizeModal).toBeHidden();
+    });
+
+    test('saving design settings persists to the API', async ({page}) => {
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+
+        await welcomeEmailsSection.goto();
+        await welcomeEmailsSection.openCustomizeModal();
+
+        await welcomeEmailsSection.switchToDesignTab();
+        await welcomeEmailsSection.customizeModalButtonStyleOutline.click();
+
+        await welcomeEmailsSection.saveCustomizeModal();
+
+        const response = await page.request.get('/ghost/api/admin/automated_emails/design/');
+        expect(response.ok()).toBe(true);
+
+        const data = await response.json() as AutomatedEmailDesignResponse;
+        const design = data.automated_email_design[0];
+        expect(design.button_style).toBe('outline');
+    });
+
+    test('saving general settings persists to the API', async ({page}) => {
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+
+        await welcomeEmailsSection.goto();
+        await welcomeEmailsSection.openCustomizeModal();
+
+        await welcomeEmailsSection.customizeModalPublicationTitleToggle.click();
+        await welcomeEmailsSection.customizeModalFooterTextarea.fill('Custom footer text');
+
+        await welcomeEmailsSection.saveCustomizeModal();
+
+        const response = await page.request.get('/ghost/api/admin/automated_emails/design/');
+        expect(response.ok()).toBe(true);
+
+        const data = await response.json() as AutomatedEmailDesignResponse;
+        const design = data.automated_email_design[0];
+        expect(design.show_header_title).toBe(false);
+        expect(design.footer_content).toBe('Custom footer text');
+    });
+
+    test('saved design settings load when modal is reopened', async ({page}) => {
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+
+        await welcomeEmailsSection.goto();
+        await welcomeEmailsSection.openCustomizeModal();
+        await welcomeEmailsSection.customizeModalFooterTextarea.fill('Persisted footer');
+        await welcomeEmailsSection.saveCustomizeModal();
+
+        await page.reload();
+        await welcomeEmailsSection.section.waitFor({state: 'visible'});
+
+        await welcomeEmailsSection.openCustomizeModal();
+
+        await expect(welcomeEmailsSection.customizeModalFooterTextarea).toHaveValue('Persisted footer');
     });
 });
 

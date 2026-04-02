@@ -11,6 +11,20 @@ export class MemberWelcomeEmailsSection extends BasePage {
     // Customize button and modal
     readonly customizeButton: Locator;
     readonly customizeModal: Locator;
+    readonly customizeModalSaveButton: Locator;
+    readonly customizeModalCloseButton: Locator;
+    readonly customizeModalGeneralTab: Locator;
+    readonly customizeModalDesignTab: Locator;
+
+    // Customize modal — General tab locators
+    readonly customizeModalHeaderImageUpload: Locator;
+    readonly customizeModalPublicationTitleToggle: Locator;
+    readonly customizeModalFooterTextarea: Locator;
+    readonly customizeModalBadgeToggle: Locator;
+
+    // Customize modal — Design tab locators
+    readonly customizeModalButtonStyleFill: Locator;
+    readonly customizeModalButtonStyleOutline: Locator;
 
     // Modal locators
     readonly welcomeEmailModal: Locator;
@@ -31,6 +45,20 @@ export class MemberWelcomeEmailsSection extends BasePage {
         // Customize button and modal
         this.customizeButton = this.section.getByRole('button', {name: 'Customize'});
         this.customizeModal = page.getByTestId('welcome-email-customize-modal');
+        this.customizeModalSaveButton = this.customizeModal.getByRole('button', {name: 'Save'});
+        this.customizeModalCloseButton = this.customizeModal.getByRole('button', {name: 'Close'});
+        this.customizeModalGeneralTab = this.customizeModal.getByRole('tab', {name: 'General'});
+        this.customizeModalDesignTab = this.customizeModal.getByRole('tab', {name: 'Design'});
+
+        // Customize modal — General tab
+        this.customizeModalPublicationTitleToggle = this.customizeModal.getByText('Publication title').locator('..').getByRole('switch');
+        this.customizeModalFooterTextarea = this.customizeModal.getByLabel('Email footer');
+        this.customizeModalHeaderImageUpload = this.customizeModal.getByTestId('header-image-field');
+        this.customizeModalBadgeToggle = this.customizeModal.getByText('Show badge').locator('..').getByRole('switch');
+
+        // Customize modal — Design tab
+        this.customizeModalButtonStyleFill = this.customizeModal.getByLabel('Fill');
+        this.customizeModalButtonStyleOutline = this.customizeModal.getByLabel('Outline');
 
         // Modal locators
         this.welcomeEmailModal = page.getByTestId('welcome-email-modal');
@@ -120,5 +148,45 @@ export class MemberWelcomeEmailsSection extends BasePage {
         await editButton.click();
         await this.welcomeEmailModal.waitFor({state: 'visible'});
         await this.waitForWelcomeEmailEditor();
+    }
+
+    async openCustomizeModal(): Promise<void> {
+        await this.customizeButton.waitFor({state: 'visible'});
+        await this.customizeButton.click();
+        await this.customizeModal.waitFor({state: 'visible'});
+        await this.waitForCustomizeModalLoaded();
+    }
+
+    private async waitForCustomizeModalLoaded(): Promise<void> {
+        await this.customizeModalPublicationTitleToggle.waitFor({state: 'visible'});
+    }
+
+    async saveCustomizeModal(): Promise<void> {
+        const saveResponse = this.page.waitForResponse(
+            resp => resp.url().includes('/automated_emails/design') && resp.request().method() === 'PUT'
+        );
+        await this.customizeModalSaveButton.click();
+        await saveResponse;
+
+        try {
+            await this.customizeModal.waitFor({state: 'hidden', timeout: 2000});
+        } catch {
+            if (await this.customizeModal.isVisible()) {
+                await this.closeCustomizeModal();
+            }
+        }
+    }
+
+    async closeCustomizeModal(): Promise<void> {
+        await this.customizeModalCloseButton.click();
+        await this.customizeModal.waitFor({state: 'hidden'});
+    }
+
+    async switchToDesignTab(): Promise<void> {
+        await this.customizeModalDesignTab.click();
+    }
+
+    async switchToGeneralTab(): Promise<void> {
+        await this.customizeModalGeneralTab.click();
     }
 }

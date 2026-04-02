@@ -3,30 +3,47 @@ import {Button, Dialog, DialogContent, DialogTitle} from '@tryghost/shade/compon
 import {cn} from '@tryghost/shade/utils';
 
 interface EmailDesignModalProps {
+    open: boolean;
     title: string;
     preview: React.ReactNode;
     sidebar: React.ReactNode;
     dirty?: boolean;
     saveLabel?: string;
+    isLoading?: boolean;
+    isSaving?: boolean;
     onSave: () => void;
     onClose: () => void;
+    afterClose?: () => void;
     testId?: string;
 }
 
 const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
+    open,
     title,
     preview,
     sidebar,
     dirty = false,
     saveLabel = 'Save',
+    isLoading = false,
+    isSaving = false,
     onSave,
     onClose,
+    afterClose,
     testId
 }) => {
     const onSaveRef = useRef(onSave);
+    const prevOpenRef = useRef(open);
     useEffect(() => {
         onSaveRef.current = onSave;
     }, [onSave]);
+
+    useEffect(() => {
+        if (prevOpenRef.current && !open) {
+            afterClose?.();
+        }
+
+        prevOpenRef.current = open;
+    }, [afterClose, open]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -50,7 +67,7 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
     };
 
     return (
-        <Dialog open onOpenChange={handleClose}>
+        <Dialog open={open} onOpenChange={isOpen => !isOpen && handleClose()}>
             <DialogContent
                 className={cn(
                     'top-[50%] left-[50%] h-[calc(100vh-8vmin)] w-[calc(100vw-8vmin)] max-w-none translate-x-[-50%] translate-y-[-50%] gap-0 overflow-hidden p-0'
@@ -71,7 +88,7 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
                             <DialogTitle>{title}</DialogTitle>
                             <div className="flex items-center gap-2">
                                 <Button variant="outline" onClick={handleClose}>Close</Button>
-                                <Button onClick={onSave}>{saveLabel}</Button>
+                                <Button disabled={isLoading || isSaving} onClick={onSave}>{isSaving ? 'Saving...' : saveLabel}</Button>
                             </div>
                         </div>
                         {sidebar}
