@@ -1,5 +1,5 @@
 const {registerHelper, shouldCompileToExpected} = require('./utils/handlebars');
-const {SafeString} = require('handlebars');
+const {SafeString} = require('../../../../core/frontend/services/handlebars');
 
 describe('{{split}} helper in block mode', function () {
     before(function () {
