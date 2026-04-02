@@ -18,4 +18,4 @@ export {
     calculateYAxisWidth,
     formatMemberName,
     getMemberInitials
-} from './lib/utils';
+} from './lib/app-utils';

@@ -18,4 +18,4 @@ export {
     getCountryFlag,
     stringToHslColor,
     abbreviateNumber
-} from './lib/utils';
+} from './lib/ds-utils';

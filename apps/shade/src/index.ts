@@ -83,13 +83,12 @@ export {default as useGlobalDirtyState} from './hooks/use-global-dirty-state';
 export {useSimplePagination} from './hooks/use-simple-pagination';
 
 // Utils
-export * from '@/lib/utils';
-export {cn, debounce, kebabToPascalCase, formatTimestamp, formatNumber, formatDuration, formatPercentage, formatDisplayDate, formatDisplayTime, getCountryFlag, stringToHslColor, abbreviateNumber} from '@/lib/utils';
+export {cn, debounce, kebabToPascalCase, formatTimestamp, formatNumber, formatDuration, formatPercentage, formatDisplayDate, formatDisplayTime, getCountryFlag, stringToHslColor, abbreviateNumber} from '@/lib/ds-utils';
 
 /**
  * @deprecated Import domain/transitional helpers from `@tryghost/shade/app`.
  */
-export {formatUrl, formatQueryDate, isValidDomain, getYRange, getYRangeWithMinPadding, getYRangeWithLargePadding, calculateYAxisWidth, getRangeDates, sanitizeChartData, formatDisplayDateWithRange, centsToDollars, getRangeForStartDate, formatMemberName, getMemberInitials} from '@/lib/utils';
+export {formatUrl, formatQueryDate, isValidDomain, getYRange, getYRangeWithMinPadding, getYRangeWithLargePadding, calculateYAxisWidth, getRangeDates, sanitizeChartData, formatDisplayDateWithRange, centsToDollars, getRangeForStartDate, formatMemberName, getMemberInitials} from '@/lib/app-utils';
 
 /**
  * @deprecated Import from `@tryghost/shade/app`.
