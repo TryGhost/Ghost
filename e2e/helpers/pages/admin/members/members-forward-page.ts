@@ -60,6 +60,13 @@ export class MembersForwardPage extends AdminPage {
         }
     }
 
+    async addSearchableFilter(fieldName: string, searchText: string, optionName: string): Promise<void> {
+        await this.filterButton.click();
+        await this.page.getByRole('option', {name: fieldName, exact: true}).click();
+        await this.page.getByPlaceholder(`Search ${fieldName.toLowerCase()}...`).pressSequentially(searchText);
+        await this.page.getByRole('option', {name: optionName}).click();
+    }
+
     async exportMembers(): Promise<ExportedFile> {
         const download = await this.exportMembersData();
         const suggestedFilename = download.suggestedFilename();

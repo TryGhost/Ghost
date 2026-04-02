@@ -47,11 +47,12 @@ const PRIVATE_FEATURES = [
     'emailUniqueid',
     'themeTranslation',
     'indexnow',
-    'verificationFlow',
     'membersForward',
+    'dripSequences',
     'welcomeEmailsDesignCustomization',
     'pictureImageFormats',
-    'smarterCounts'
+    'smarterCounts',
+    'giftSubscriptions'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

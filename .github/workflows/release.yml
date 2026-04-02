@@ -38,20 +38,29 @@ jobs:
     runs-on: ubuntu-latest
     name: Prepare & Push Release
     steps:
+      - uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387 # v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
       - uses: actions/checkout@v6
         with:
-          # PAT is required so that the tag push triggers ci.yml
-          # (pushes made with GITHUB_TOKEN don't trigger downstream workflows)
-          token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          # Deploy key (via ssh-agent) is used for git push — it bypasses
+          # branch protection and triggers downstream workflows (unlike GITHUB_TOKEN)
           ref: ${{ inputs.branch || 'main' }}
           fetch-depth: 0
-          submodules: true
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+
+      # Fetch submodules separately via HTTPS — the deploy key is scoped to
+      # Ghost only and can't authenticate against Casper/Source over SSH
+      - run: git submodule update --init
 
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+
+      - run: yarn --ignore-scripts
 
       - name: Set up Git
         run: |
@@ -90,7 +99,7 @@ jobs:
           fi
           node scripts/release.js $ARGS
         env:
-          GITHUB_TOKEN: ${{ secrets.CANARY_DOCKER_BUILD }}
+          GITHUB_TOKEN: ${{ secrets.CANARY_DOCKER_BUILD }}  # PAT for GitHub API (check polling)
 
       - name: Notify on failure
         if: failure()

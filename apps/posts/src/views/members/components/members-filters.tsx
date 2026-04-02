@@ -96,7 +96,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const postValueSource = usePostResourceValueSource();
     const emailValueSource = useEmailPostValueSource();
     const labelValueSource = useLabelValueSource();
-    const tierValueSource = useTierValueSource(activePaidTiers.map(tier => ({value: tier.id, label: tier.name})));
+    const tierValueSource = useTierValueSource(activePaidTiers.map(tier => ({value: tier.id, label: tier.name, detail: tier.slug})));
 
     const filterFields = useMemberFilterFields({
         newsletters,

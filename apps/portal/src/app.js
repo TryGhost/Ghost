@@ -14,7 +14,7 @@ import {transformPortalAnchorToRelative} from './utils/transform-portal-anchor-t
 import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './app.css';
-import {hasRecommendations, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {hasRecommendations, hasGiftSubscriptions, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {validateHexColor} from './utils/sanitize-html';
 import {handleDataAttributes} from './data-attributes';
 
@@ -167,6 +167,11 @@ export default class App extends React.Component {
             const pagePath = (target && target.dataset.portal);
             const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath) || {};
             if (this.state.initStatus === 'success') {
+                if (page === 'gift' && !hasGiftSubscriptions({site: this.state.site})) {
+                    removePortalLinkFromUrl();
+
+                    return;
+                }
                 if (pageQuery && pageQuery !== 'free') {
                     this.handleSignupQuery({site: this.state.site, pageQuery});
                 } else {
@@ -577,6 +582,12 @@ export default class App extends React.Component {
                 };
             }
 
+            if (page === 'gift' && !hasGiftSubscriptions({site})) {
+                removePortalLinkFromUrl();
+
+                return {};
+            }
+
             const lastPage = ['accountPlan', 'accountProfile'].includes(page) ? 'accountHome' : null;
             const showPopup = (
                 ['monthly', 'yearly'].includes(pageQuery) ||
@@ -949,6 +960,10 @@ export default class App extends React.Component {
                 pageData: {
                     signup: false
                 }
+            };
+        } else if (path === 'gift') {
+            return {
+                page: 'gift'
             };
         } else if (path === 'account/newsletters/help') {
             return {

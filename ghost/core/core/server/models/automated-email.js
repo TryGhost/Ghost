@@ -3,10 +3,9 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../shared/url-utils');
 const lexicalLib = require('../lib/lexical');
-const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../services/member-welcome-emails/constants');
+const {MEMBER_WELCOME_EMAIL_SLUGS, DEFAULT_EMAIL_DESIGN_SETTING_SLUG} = require('../services/member-welcome-emails/constants');
 
 const MEMBER_WELCOME_EMAIL_SLUG_SET = new Set(Object.values(MEMBER_WELCOME_EMAIL_SLUGS));
-const DEFAULT_EMAIL_DESIGN_SETTING_SLUG = 'default-automated-email';
 
 const AutomatedEmail = ghostBookshelf.Model.extend({
     tableName: 'automated_emails',

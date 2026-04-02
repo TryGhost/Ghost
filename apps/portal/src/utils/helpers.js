@@ -252,6 +252,10 @@ export function hasRecommendations({site}) {
     return site?.recommendations_enabled === true;
 }
 
+export function hasGiftSubscriptions({site}) {
+    return site?.labs?.giftSubscriptions === true;
+}
+
 export function isSigninAllowed({site}) {
     return site?.members_signup_access !== 'none';
 }
@@ -995,6 +999,32 @@ export function isRecentMember({member}) {
     const diffHours = Math.round(diff / (1000 * 60 * 60));
 
     return diffHours < 24;
+}
+
+export function getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval}) {
+    if (selectedInterval === 'month' && portalPlans.includes('monthly')) {
+        return 'month';
+    }
+
+    if (selectedInterval === 'year' && portalPlans.includes('yearly')) {
+        return 'year';
+    }
+
+    if (portalDefaultPlan) {
+        if (portalDefaultPlan === 'monthly' && portalPlans.includes('monthly')) {
+            return 'month';
+        }
+    }
+
+    if (portalPlans.includes('yearly')) {
+        return 'year';
+    }
+
+    if (portalPlans.includes('monthly')) {
+        return 'month';
+    }
+
+    return undefined;
 }
 
 // Translate cadence to human readable string
