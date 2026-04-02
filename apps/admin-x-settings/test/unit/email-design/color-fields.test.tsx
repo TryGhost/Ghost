@@ -1,5 +1,4 @@
 import * as assert from 'assert/strict';
-import React from 'react';
 import {ButtonColorField} from '@src/components/settings/email-design/design-fields/button-color-field';
 import {DEFAULT_EMAIL_DESIGN} from '@src/components/settings/email-design/types';
 import {EmailDesignProvider} from '@src/components/settings/email-design/email-design-context';

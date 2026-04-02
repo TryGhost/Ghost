@@ -16,7 +16,7 @@ describe('Welcome email design payload helpers', function () {
             ...DEFAULT_EMAIL_DESIGN
         };
 
-        const result = mapApiToDesignSettings(apiData as never) as typeof apiData;
+        const result = mapApiToDesignSettings(apiData as never) as unknown as typeof apiData;
 
         assert.equal('id' in result, false);
         assert.equal('slug' in result, false);
@@ -36,7 +36,7 @@ describe('Welcome email design payload helpers', function () {
             custom_future_field: '#123456'
         };
 
-        const result = mapApiToDesignSettings(apiData as never) as typeof apiData;
+        const result = mapApiToDesignSettings(apiData as never) as unknown as typeof apiData;
 
         assert.equal(result.custom_future_field, '#123456');
     });
@@ -50,6 +50,12 @@ describe('Welcome email design payload helpers', function () {
                 created_at: '2026-04-02T00:00:00.000Z',
                 updated_at: '2026-04-02T00:00:00.000Z',
                 custom_future_field: '#abcdef'
+            } as unknown as typeof DEFAULT_EMAIL_DESIGN & {
+                id: string;
+                slug: string;
+                created_at: string;
+                updated_at: string;
+                custom_future_field: string;
             },
             generalSettings: {
                 senderName: 'Ghost',

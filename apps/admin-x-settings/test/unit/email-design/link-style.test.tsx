@@ -1,5 +1,4 @@
 import * as assert from 'assert/strict';
-import React from 'react';
 import WelcomeEmailPreviewContent from '@src/components/settings/email-design/welcome-email-preview-content';
 import {DEFAULT_EMAIL_DESIGN} from '@src/components/settings/email-design/types';
 import {EmailDesignProvider} from '@src/components/settings/email-design/email-design-context';
