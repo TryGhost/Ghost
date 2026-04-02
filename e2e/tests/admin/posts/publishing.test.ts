@@ -50,7 +50,37 @@ async function waitForScheduledSaveResponse(page: Page, resource: 'posts' | 'pag
         }
 
         const pathname = new URL(networkResponse.url()).pathname;
-        return new RegExp(`/ghost/api/admin/${resource}/[^/]+/?$`).test(pathname);
+        if (!new RegExp(`/ghost/api/admin/${resource}/[^/]+/?$`).test(pathname)) {
+            return false;
+        }
+
+        const postData = networkResponse.request().postData();
+        if (!postData) {
+            return false;
+        }
+
+        try {
+            const payload = JSON.parse(postData) as Record<string, unknown>;
+            const resources = payload[resource];
+
+            if (!Array.isArray(resources)) {
+                return false;
+            }
+
+            return resources.some((item) => {
+                if (!item || typeof item !== 'object') {
+                    return false;
+                }
+
+                const resourcePayload = item as Record<string, unknown>;
+                return resourcePayload.status === 'scheduled' ||
+                    (typeof resourcePayload.published_at === 'string' &&
+                        resourcePayload.status !== 'published' &&
+                        resourcePayload.status !== 'sent');
+            });
+        } catch {
+            return false;
+        }
     });
 
     expect(response.status()).toBe(200);
