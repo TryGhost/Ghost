@@ -1,5 +1,6 @@
 import React from 'react';
-import {LucideIcon, RightSidebarMenu, RightSidebarMenuLink} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {RightSidebarMenu, RightSidebarMenuLink} from '@tryghost/shade/components';
 import {useGlobalData} from '@src/providers/post-analytics-context';
 import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
 

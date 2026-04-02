@@ -1,5 +1,6 @@
 import React, {useEffect, useRef} from 'react';
-import {Button, Dialog, DialogContent, DialogTitle, cn} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogTitle} from '@tryghost/shade/components';
+import {cn} from '@tryghost/shade/utils';
 
 interface EmailDesignModalProps {
     title: string;

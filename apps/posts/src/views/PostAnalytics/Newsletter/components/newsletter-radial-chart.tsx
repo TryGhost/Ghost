@@ -1,4 +1,5 @@
-import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, cn, formatPercentage} from '@tryghost/shade';
+import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from '@tryghost/shade/components';
+import {Recharts, cn, formatPercentage} from '@tryghost/shade/utils';
 
 export type NewsletterRadialChartData = {
     datatype: string,
@@ -10,7 +11,7 @@ export type NewsletterRadialChartData = {
 export interface NewsletterRadialChartProps {
     data: NewsletterRadialChartData[],
     config: ChartConfig,
-    percentageValue?: number,
+    percentageValue?: string | number,
     percentageLabel?: string,
     className?: string,
     tooltip?: boolean,
@@ -26,6 +27,17 @@ export const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
     tooltip = true,
     size = 'responsive'
 }) => {
+    const normalizePercentageValue = (value: unknown): number => {
+        if (typeof value === 'number') {
+            return value;
+        }
+        if (typeof value === 'string') {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? parsed : 0;
+        }
+        return 0;
+    };
+
     // Responsive sizing configuration
     const getSizeConfig = () => {
         switch (size) {
@@ -168,7 +180,7 @@ export const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                                 <div className='flex items-center gap-1'>
                                     <div className='size-2 rounded-full opacity-50' style={{backgroundColor: props.payload?.color}}></div>
                                     <div className='text-xs text-muted-foreground'>{props.payload?.datatype}</div>
-                                    <div className='ml-3 font-mono text-xs'>{formatPercentage(value)}</div>
+                                    <div className='ml-3 font-mono text-xs'>{formatPercentage(normalizePercentageValue(value))}</div>
                                 </div>
                             );
                         }}

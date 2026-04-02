@@ -1,5 +1,5 @@
 import {type NewsletterStatsResponseType, useNewsletterBasicStats, useNewsletterClickStats, useNewsletterStats, useSubscriberCount} from '@tryghost/admin-x-framework/api/stats';
-import {formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useMemo} from 'react';
 

@@ -1,17 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {
-    AlertDialog,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-    Button,
-    H4,
-    LucideIcon
-} from '@tryghost/shade';
+import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button} from '@tryghost/shade/components';
+import {H4} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
 
 type DialogMode = 'idle' | 'dual' | 'userOnly' | 'domainOnly';

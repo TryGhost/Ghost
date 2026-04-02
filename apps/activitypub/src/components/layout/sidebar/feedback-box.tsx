@@ -1,5 +1,7 @@
 import React from 'react';
-import {Button, H4, LucideIcon} from '@tryghost/shade';
+import {Button} from '@tryghost/shade/components';
+import {H4} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 const FeedbackBox: React.FC = () => {

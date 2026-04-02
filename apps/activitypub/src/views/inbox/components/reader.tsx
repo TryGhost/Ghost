@@ -2,7 +2,7 @@ import Customizer, {COLOR_OPTIONS, type ColorOption, type FontSize, useCustomize
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import ShowRepliesButton from '@src/components/global/show-replies-button';
 import getUsername from '../../../utils/get-username';
-import {LoadingIndicator, Skeleton} from '@tryghost/shade';
+import {LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 
 import {renderTimestamp} from '../../../utils/render-timestamp';
 import {useReplyChainData} from '@hooks/use-reply-chain-data';

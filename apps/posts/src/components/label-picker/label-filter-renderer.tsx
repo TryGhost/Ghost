@@ -2,19 +2,18 @@ import React, {useCallback, useRef, useState} from 'react';
 import {
     Button,
     CommandItem,
-    CustomRendererProps,
     type FooterRenderProps,
-    LucideIcon,
     MultiSelectCombobox,
     Popover,
     PopoverContent,
     PopoverTrigger,
-    type RenderItemProps,
-    ValueSource
-} from '@tryghost/shade';
+    type RenderItemProps
+} from '@tryghost/shade/components';
 import {EditRow} from './edit-row';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {useLabelPicker} from '@src/hooks/use-label-picker';
+import type {CustomRendererProps, ValueSource} from '@tryghost/shade/patterns';
 
 const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, values, onChange}) => {
     const picker = useLabelPicker({

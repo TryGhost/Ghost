@@ -1,19 +1,28 @@
+import moment from 'moment';
 import {describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 
 import PaidMembersChangeChart from '@src/views/Stats/Growth/components/paid-subscription-change-chart';
 
-// Mock dependencies from @tryghost/shade
-vi.mock('@tryghost/shade', async () => {
-    const actual = await vi.importActual('@tryghost/shade');
+// Mock dependencies from @tryghost/shade/app
+vi.mock('@tryghost/shade/app', async () => {
+    const actual = await vi.importActual('@tryghost/shade/app');
     return {
         ...actual,
         formatDisplayDateWithRange: vi.fn((date: string) => `Formatted: ${date}`),
-        formatNumber: vi.fn((value: number) => value.toString()),
         getRangeDates: vi.fn(() => ({
-            startDate: '2024-01-01',
-            endDate: '2024-01-31'
+            startDate: moment('2024-01-01'),
+            endDate: moment('2024-01-31'),
+            timezone: 'UTC'
         }))
+    };
+});
+
+vi.mock('@tryghost/shade/utils', async () => {
+    const actual = await vi.importActual('@tryghost/shade/utils');
+    return {
+        ...actual,
+        formatNumber: vi.fn((value: number) => value.toString())
     };
 });
 

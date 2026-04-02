@@ -1,4 +1,4 @@
-import {Button} from '@tryghost/shade';
+import {Button} from '@tryghost/shade/components';
 
 interface LoadMoreButtonProps {
     isLoading?: boolean;

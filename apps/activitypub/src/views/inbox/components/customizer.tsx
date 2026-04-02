@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import {Button, Icon, LucideIcon, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade';
+import {Button, Icon, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 export const FONT_SIZES = ['1.5rem', '1.6rem', '1.7rem', '1.8rem', '2rem'] as const;
 export type FontSize = typeof FONT_SIZES[number];

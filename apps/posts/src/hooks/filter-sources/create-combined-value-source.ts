@@ -1,4 +1,4 @@
-import {ValueSource, ValueSourceParams, ValueSourceState} from '@tryghost/shade';
+import {ValueSource, ValueSourceParams, ValueSourceState} from '@tryghost/shade/patterns';
 import {ValueSourceHook, ValueSourceHookOptions} from './create-remote-value-source';
 import {mergeFilterOptions} from './utils';
 import {useCallback, useMemo} from 'react';

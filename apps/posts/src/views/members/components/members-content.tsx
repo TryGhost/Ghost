@@ -1,5 +1,5 @@
 import React from 'react';
-import {cn} from '@tryghost/shade';
+import {cn} from '@tryghost/shade/utils';
 
 const MembersContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (

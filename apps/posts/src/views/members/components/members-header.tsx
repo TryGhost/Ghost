@@ -1,5 +1,5 @@
 import React from 'react';
-import {ListHeader} from '@tryghost/shade';
+import {ListHeader} from '@tryghost/shade/primitives';
 
 interface MembersHeaderProps {
     children?: React.ReactNode;

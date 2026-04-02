@@ -20,16 +20,7 @@ import {
 } from '../../email-design/design-fields';
 import {DEFAULT_EMAIL_DESIGN, type EmailDesignSettings} from '../../email-design/types';
 import {EmailDesignProvider} from '../../email-design/email-design-context';
-import {
-    Input,
-    Separator,
-    Switch,
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-    Textarea
-} from '@tryghost/shade';
+import {Input, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useCallback, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';

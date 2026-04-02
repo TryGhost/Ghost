@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Button, Input, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade';
+import {Button, Input, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {type MemberView, useDeleteMemberView, useSaveMemberView} from '../hooks/use-member-views';
 
 interface ManageViewPopoverProps {
