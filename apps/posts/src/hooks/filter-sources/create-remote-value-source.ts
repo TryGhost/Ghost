@@ -53,6 +53,26 @@ export type RemoteValueSource<T = string, Item = unknown> = ValueSource<T> & {
 
 export type RemoteValueSourceHook<T = string, Item = unknown> = (options?: ValueSourceHookOptions) => RemoteValueSource<T, Item>;
 
+function buildFallbackOptions<T>(
+    selectedValues: T[],
+    mergedOptions: FilterOption<T>[],
+    getMissingSelectedOption?: (selectedValue: T) => FilterOption<T>
+): FilterOption<T>[] {
+    if (!getMissingSelectedOption) {
+        return [];
+    }
+
+    return selectedValues.flatMap((selectedValue) => {
+        const hasMatch = mergedOptions.some(option => option.value === selectedValue);
+
+        if (hasMatch) {
+            return [];
+        }
+
+        return [getMissingSelectedOption(selectedValue)];
+    });
+}
+
 export function createRemoteValueSource<Item, T = string>(
     config: RemoteValueSourceConfig<Item, T>
 ): RemoteValueSourceHook<T, Item> {
@@ -90,21 +110,11 @@ export function createRemoteValueSource<Item, T = string>(
                 return mergeFilterOptions(hydratedOptions, visibleOptions);
             }, [hydratedOptions, visibleOptions]);
             const fallbackOptions = useMemo(() => {
-                const getMissingSelectedOption = config.getMissingSelectedOption;
-
-                if (!getMissingSelectedOption) {
-                    return [];
-                }
-
-                return selectedValues.flatMap((selectedValue) => {
-                    const hasMatch = mergedOptions.some(option => option.value === selectedValue);
-
-                    if (hasMatch) {
-                        return [];
-                    }
-
-                    return [getMissingSelectedOption(selectedValue)];
-                });
+                return buildFallbackOptions(
+                    selectedValues,
+                    mergedOptions,
+                    config.getMissingSelectedOption
+                );
             }, [mergedOptions, selectedValues]);
 
             if (!enabled) {

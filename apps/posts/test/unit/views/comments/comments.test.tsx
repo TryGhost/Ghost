@@ -38,7 +38,18 @@ vi.mock('../../../../src/views/comments/components/comments-content', () => ({
 }));
 
 vi.mock('../../../../src/views/comments/components/comments-list', () => ({
-    default: () => <div data-testid="comments-list" />
+    default: ({onAddFilter}: {onAddFilter: (field: string, value: string, operator?: string) => void}) => (
+        <div>
+            <div data-testid="comments-list" />
+            <button
+                data-testid="add-author-filter"
+                type="button"
+                onClick={() => onAddFilter('author', 'member_456')}
+            >
+                Add author filter
+            </button>
+        </div>
+    )
 }));
 
 vi.mock('../../../../src/views/comments/components/comments-filters', () => ({
@@ -123,9 +134,34 @@ describe('Comments', () => {
     it('keeps thread state separate from canonical filter state updates', async () => {
         await renderComments('/?thread=is:comment_456');
 
+        expect(useBrowseCommentsMock).toHaveBeenCalledWith(expect.objectContaining({
+            searchParams: {
+                thread: 'is:comment_456'
+            }
+        }));
+
         fireEvent.click(screen.getByTestId('apply-filter'));
 
+        expect(useBrowseCommentsMock).toHaveBeenLastCalledWith(expect.objectContaining({
+            searchParams: {
+                filter: 'status:published',
+                thread: 'is:comment_456'
+            }
+        }));
         expect(screen.getByTestId('location-search')).toHaveTextContent('?thread=is%3Acomment_456&filter=status%3Apublished');
+    });
+
+    it('leaves single-comment mode when applying a row-level filter', async () => {
+        await renderComments('/?id=is:comment_123');
+
+        fireEvent.click(screen.getByTestId('add-author-filter'));
+
+        expect(useBrowseCommentsMock).toHaveBeenLastCalledWith(expect.objectContaining({
+            searchParams: {
+                filter: 'member_id:member_456'
+            }
+        }));
+        expect(screen.getByTestId('location-search')).toHaveTextContent('?filter=member_id%3Amember_456');
     });
 
     it('delays date-filter hydration until the site timezone is resolved', async () => {
