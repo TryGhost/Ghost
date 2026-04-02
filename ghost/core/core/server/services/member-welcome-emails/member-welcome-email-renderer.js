@@ -10,12 +10,62 @@ const {getEmailDesign} = require('../email-rendering/email-design');
 
 const REPLACEMENT_REGEX = /%%\{(\w+?)(?:,? *"(.*?)")?\}%%/g;
 const UNMATCHED_TOKEN_REGEX = /%%\{.*?\}%%/g;
+const DEFAULT_DESIGN_SETTINGS = {
+    background_color: '#ffffff',
+    button_color: 'accent',
+    button_corners: null,
+    button_style: null,
+    divider_color: null,
+    footer_content: null,
+    header_background_color: null,
+    header_image: null,
+    image_corners: null,
+    link_color: 'accent',
+    link_style: null,
+    section_title_color: null,
+    show_badge: true,
+    show_header_title: true,
+    title_font_weight: 'bold'
+};
 
 class MemberWelcomeEmailRenderer {
     #wrapperTemplate;
 
     constructor({t}) {
         this.Handlebars = require('handlebars').create();
+        this.Handlebars.registerHelper('and', function () {
+            const len = arguments.length - 1;
+
+            for (let i = 0; i < len; i++) {
+                if (!arguments[i]) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+        this.Handlebars.registerHelper('not', function () {
+            const len = arguments.length - 1;
+
+            for (let i = 0; i < len; i++) {
+                if (!arguments[i]) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+        this.Handlebars.registerHelper('or', function () {
+            const len = arguments.length - 1;
+
+            for (let i = 0; i < len; i++) {
+                if (arguments[i]) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
         this.Handlebars.registerHelper('t', function (key, options) {
             let hash = options?.hash;
             return t(key, hash || options || {});
@@ -108,25 +158,31 @@ class MemberWelcomeEmailRenderer {
      * @param {Object} options
      * @param {string} options.lexical - Lexical JSON string to render
      * @param {string} options.subject - Email subject (may contain template variables)
+     * @param {Object} [options.designSettings] - Email design settings loaded from the database
      * @param {Object} options.member - Member data (name, email)
      * @param {Object} options.siteSettings - Site settings (title, url, accentColor)
      * @returns {Promise<{html: string, text: string, subject: string}>}
      */
-    async render({lexical, subject, member, siteSettings}) {
+    async render({lexical, subject, designSettings = {}, member, siteSettings}) {
+        designSettings = {
+            ...DEFAULT_DESIGN_SETTINGS,
+            ...designSettings
+        };
+
         const design = getEmailDesign({
             accentColor: siteSettings.accentColor,
-            backgroundColor: '#ffffff',
-            buttonColor: 'accent',
-            buttonCorners: null,
-            buttonStyle: null,
-            dividerColor: null,
-            headerBackgroundColor: null,
-            imageCorners: null,
-            linkColor: 'accent',
-            linkStyle: null,
+            backgroundColor: designSettings.background_color,
+            buttonColor: designSettings.button_color,
+            buttonCorners: designSettings.button_corners,
+            buttonStyle: designSettings.button_style,
+            dividerColor: designSettings.divider_color,
+            headerBackgroundColor: designSettings.header_background_color,
+            imageCorners: designSettings.image_corners,
+            linkColor: designSettings.link_color,
+            linkStyle: designSettings.link_style,
             postTitleColor: null,
-            sectionTitleColor: null,
-            titleFontWeight: 'bold'
+            sectionTitleColor: designSettings.section_title_color,
+            titleFontWeight: designSettings.title_font_weight
         });
 
         let content;
@@ -158,11 +214,25 @@ class MemberWelcomeEmailRenderer {
 
         const managePreferencesUrl = new URL('#/portal/account/newsletters', siteSettings.url).href;
         const year = new Date().getFullYear();
+        const headerImage = designSettings.header_image || null;
+        const showHeaderTitle = designSettings.show_header_title !== false;
+        const showBadge = designSettings.show_badge !== false;
 
         const html = this.#wrapperTemplate({
             content: contentWithAbsoluteLinks,
             emailTitle: subjectWithReplacements,
             subject: subjectWithReplacements,
+            footerContent: designSettings.footer_content,
+            hasHeaderContent: Boolean(headerImage || showHeaderTitle),
+            headerImage,
+            showBadge,
+            showHeaderIcon: false,
+            showHeaderName: false,
+            showHeaderTitle,
+            site: {
+                title: siteSettings.title,
+                url: siteSettings.url
+            },
             siteTitle: siteSettings.title,
             siteUrl: siteSettings.url,
             managePreferencesUrl,
