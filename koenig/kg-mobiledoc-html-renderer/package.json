@@ -33,7 +33,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@tryghost/kg-utils": "1.0.44",
+    "@tryghost/kg-utils": "*",
     "mobiledoc-dom-renderer": "0.7.2",
     "simple-dom": "1.4.0"
   },

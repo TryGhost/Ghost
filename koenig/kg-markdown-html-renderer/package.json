@@ -49,7 +49,7 @@
     "typescript-eslint": "8.57.2"
   },
   "dependencies": {
-    "@tryghost/kg-utils": "1.0.44",
+    "@tryghost/kg-utils": "*",
     "markdown-it": "14.1.1",
     "markdown-it-footnote": "4.0.0",
     "markdown-it-image-lazy-loading": "2.0.1",

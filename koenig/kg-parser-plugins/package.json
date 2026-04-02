@@ -51,6 +51,6 @@
     "typescript-eslint": "8.57.2"
   },
   "dependencies": {
-    "@tryghost/kg-clean-basic-html": "4.2.23"
+    "@tryghost/kg-clean-basic-html": "*"
   }
 }

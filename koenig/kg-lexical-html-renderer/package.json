@@ -40,8 +40,8 @@
     "@lexical/link": "0.13.1",
     "@lexical/list": "0.13.1",
     "@lexical/rich-text": "0.13.1",
-    "@tryghost/kg-default-nodes": "2.0.20",
-    "@tryghost/kg-default-transforms": "1.2.43",
+    "@tryghost/kg-default-nodes": "*",
+    "@tryghost/kg-default-transforms": "*",
     "jsdom": "29.0.1",
     "lexical": "0.13.1"
   }

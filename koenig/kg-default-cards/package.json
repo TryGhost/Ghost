@@ -50,8 +50,8 @@
     "typescript-eslint": "8.57.2"
   },
   "dependencies": {
-    "@tryghost/kg-markdown-html-renderer": "7.1.9",
-    "@tryghost/kg-utils": "1.0.41",
+    "@tryghost/kg-markdown-html-renderer": "*",
+    "@tryghost/kg-utils": "*",
     "@tryghost/string": "0.3.2",
     "@tryghost/url-utils": "5.2.2",
     "handlebars": "4.7.9",
