@@ -107,7 +107,6 @@ describe('Member Welcome Emails Integration', function () {
         await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
         await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
     });
-
     describe('Member creation with welcome emails', function () {
         it('creates outbox entry when member source is "member"', async function () {
             const member = await membersService.api.members.create({

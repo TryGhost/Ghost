@@ -41,6 +41,9 @@ describe('MemberWelcomeEmailService', function () {
         serviceModule.__set__('AutomatedEmail', {findOne: automatedEmailFindOneStub});
         serviceModule.__set__('EmailDesignSetting', {findOne: emailDesignSettingFindOneStub});
         serviceModule.__set__('Newsletter', {getDefaultNewsletter: sinon.stub().resolves(null)});
+        serviceModule.__set__('labs', {
+            isSet: sinon.stub().withArgs('welcomeEmailsDesignCustomization').returns(true)
+        });
         serviceModule.__set__('settingsCache', {
             get: sinon.stub().callsFake((key) => {
                 if (key === 'title') {
@@ -165,5 +168,48 @@ describe('MemberWelcomeEmailService', function () {
         });
 
         assert.equal(mailSendStub.firstCall.args[0].subject, '[Test] Rendered subject');
+    });
+
+    it('skips design settings lookups when the labs flag is off', async function () {
+        serviceModule.__set__('labs', {
+            isSet: sinon.stub().withArgs('welcomeEmailsDesignCustomization').returns(false)
+        });
+        MemberWelcomeEmailService = serviceModule.__get__('MemberWelcomeEmailService');
+        service = new MemberWelcomeEmailService({t: key => key});
+
+        automatedEmailFindOneStub
+            .onFirstCall()
+            .resolves(createModel({
+                id: 'welcome-free',
+                lexical: '{}',
+                subject: 'Welcome!',
+                status: 'active',
+                email_design_setting_id: 'design-1'
+            }))
+            .onSecondCall()
+            .resolves(null);
+
+        await service.loadMemberWelcomeEmails();
+        await service.send({
+            member: {
+                name: 'Jamie',
+                email: 'jamie@example.com',
+                uuid: 'member-uuid'
+            },
+            memberStatus: 'free'
+        });
+
+        sinon.assert.calledWithExactly(
+            automatedEmailFindOneStub.firstCall,
+            {slug: MEMBER_WELCOME_EMAIL_SLUGS.free}
+        );
+        sinon.assert.calledWithExactly(
+            automatedEmailFindOneStub.secondCall,
+            {slug: MEMBER_WELCOME_EMAIL_SLUGS.paid}
+        );
+        sinon.assert.notCalled(emailDesignSettingFindOneStub);
+        sinon.assert.calledWithMatch(rendererRenderStub, {
+            designSettings: null
+        });
     });
 });

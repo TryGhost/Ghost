@@ -4,6 +4,7 @@ const testUtils = require('../../utils');
 const {assertMatchSnapshot} = require('../../utils/assertions');
 const labs = require('../../../core/shared/labs');
 const MemberWelcomeEmailRenderer = require('../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');
+const configUtils = require('../../utils/config-utils');
 
 describe('Member Welcome Email Renderer Snapshots', function () {
     let renderer;
@@ -11,6 +12,7 @@ describe('Member Welcome Email Renderer Snapshots', function () {
 
     before(async function () {
         await testUtils.setup('default')();
+        configUtils.set('labs:welcomeEmailsDesignCustomization', true);
     });
 
     beforeEach(function () {
@@ -31,6 +33,10 @@ describe('Member Welcome Email Renderer Snapshots', function () {
 
     afterEach(function () {
         sinon.restore();
+    });
+
+    after(async function () {
+        await configUtils.restore();
     });
 
     function makeLexical(children) {

@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const lexicalLib = require('../../lib/lexical');
+const labs = require('../../../shared/labs');
 const {finalize} = require('../email-rendering/finalize');
 const errors = require('@tryghost/errors');
 const {MESSAGES} = require('./constants');
@@ -169,10 +170,12 @@ class MemberWelcomeEmailRenderer {
      * @returns {Promise<{html: string, text: string, subject: string}>}
      */
     async render({lexical, subject, designSettings = {}, member, siteSettings}) {
-        designSettings = {
+        const useDesignCustomization = labs.isSet('welcomeEmailsDesignCustomization');
+
+        designSettings = useDesignCustomization ? {
             ...DEFAULT_DESIGN_SETTINGS,
             ...designSettings
-        };
+        } : DEFAULT_DESIGN_SETTINGS;
 
         const design = getEmailDesign({
             accentColor: siteSettings.accentColor,
@@ -219,15 +222,15 @@ class MemberWelcomeEmailRenderer {
 
         const managePreferencesUrl = new URL('#/portal/account/newsletters', siteSettings.url).href;
         const year = new Date().getFullYear();
-        const headerImage = designSettings.header_image || null;
-        const showHeaderTitle = designSettings.show_header_title !== false;
-        const showBadge = designSettings.show_badge !== false;
+        const headerImage = useDesignCustomization ? (designSettings.header_image || null) : null;
+        const showHeaderTitle = useDesignCustomization ? designSettings.show_header_title !== false : false;
+        const showBadge = useDesignCustomization ? designSettings.show_badge !== false : false;
 
         const html = this.#wrapperTemplate({
             content: contentWithAbsoluteLinks,
             emailTitle: subjectWithReplacements,
             subject: subjectWithReplacements,
-            footerContent: designSettings.footer_content,
+            footerContent: useDesignCustomization ? designSettings.footer_content : null,
             hasHeaderContent: Boolean(headerImage || showHeaderTitle),
             headerImage,
             showBadge,

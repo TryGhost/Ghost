@@ -1,5 +1,6 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
+const labs = require('../../../shared/labs');
 const urlUtils = require('../../../shared/url-utils');
 const settingsCache = require('../../../shared/settings-cache');
 const emailAddressService = require('../email-address');
@@ -93,7 +94,15 @@ class MemberWelcomeEmailService {
         return this.#defaultNewsletterSenderOptions;
     }
 
+    #useDesignCustomization() {
+        return labs.isSet('welcomeEmailsDesignCustomization');
+    }
+
     async #getFreshDesignSettings(emailDesignSettingId, fallbackDesignSettings = null) {
+        if (!this.#useDesignCustomization()) {
+            return null;
+        }
+
         if (!emailDesignSettingId) {
             return fallbackDesignSettings;
         }
@@ -111,14 +120,16 @@ class MemberWelcomeEmailService {
         this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
 
         for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
-            const row = await AutomatedEmail.findOne({slug}, {withRelated: ['emailDesignSetting']});
+            const row = this.#useDesignCustomization()
+                ? await AutomatedEmail.findOne({slug}, {withRelated: ['emailDesignSetting']})
+                : await AutomatedEmail.findOne({slug});
 
             if (!row || !row.get('lexical')) {
                 this.#memberWelcomeEmails[memberStatus] = null;
                 continue;
             }
 
-            const designSettings = row.related('emailDesignSetting');
+            const designSettings = this.#useDesignCustomization() ? row.related('emailDesignSetting') : null;
 
             this.#memberWelcomeEmails[memberStatus] = {
                 lexical: row.get('lexical'),
@@ -205,7 +216,9 @@ class MemberWelcomeEmailService {
 
     async sendTestEmail({email, subject, lexical, automatedEmailId}) {
         // Still validate the automated email exists (for permission purposes)
-        const automatedEmail = await AutomatedEmail.findOne({id: automatedEmailId}, {withRelated: ['emailDesignSetting']});
+        const automatedEmail = this.#useDesignCustomization()
+            ? await AutomatedEmail.findOne({id: automatedEmailId}, {withRelated: ['emailDesignSetting']})
+            : await AutomatedEmail.findOne({id: automatedEmailId});
 
         if (!automatedEmail) {
             throw new errors.NotFoundError({
@@ -231,7 +244,7 @@ class MemberWelcomeEmailService {
             uuid: '00000000-0000-4000-8000-000000000000'
         };
 
-        const fallbackDesignSettings = automatedEmail.related('emailDesignSetting');
+        const fallbackDesignSettings = this.#useDesignCustomization() ? automatedEmail.related('emailDesignSetting') : null;
         const designSettings = await this.#getFreshDesignSettings(
             automatedEmail.get('email_design_setting_id'),
             fallbackDesignSettings?.id ? fallbackDesignSettings.toJSON() : null
