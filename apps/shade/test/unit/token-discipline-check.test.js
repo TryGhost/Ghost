@@ -2,6 +2,7 @@ import assert from 'assert/strict';
 import {mkdirSync, mkdtempSync, rmSync, writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
+import process from 'node:process';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 
@@ -9,6 +10,7 @@ const TEST_FILE = fileURLToPath(import.meta.url);
 const TEST_DIR = path.dirname(TEST_FILE);
 const REPO_ROOT = path.resolve(TEST_DIR, '../../../..');
 const SCRIPT_PATH = path.join(REPO_ROOT, 'apps/shade/scripts/token-discipline-check.mjs');
+const NODE_BINARY = process.execPath;
 
 const tempDirs = [];
 
@@ -45,7 +47,7 @@ function createFixtureRepo({sourceContent, baseline, allowlist}) {
 }
 
 function runChecker(fixture, mode = 'ci') {
-    const result = spawnSync('node', [
+    const result = spawnSync(NODE_BINARY, [
         SCRIPT_PATH,
         '--mode', mode,
         '--json',
