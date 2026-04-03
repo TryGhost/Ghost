@@ -1,5 +1,7 @@
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Tabs, TabsList, TabsTrigger, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {CONTENT_TYPES, ContentType, getContentDescription, getContentTitle} from '@src/utils/content-helpers';
+import {LucideIcon, formatNumber, formatPercentage} from '@tryghost/shade/utils';
+import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceQueryParam} from '@src/utils/audience';
 import {getClickHandler} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -147,7 +149,7 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, audience, 
 
     return (
         <Card className='group/datalist' data-testid='top-content-card'>
-            <div className='flex items-center justify-between gap-6 px-6 pb-5 pt-6'>
+            <div className='flex items-center justify-between gap-6 px-6 pt-6 pb-5'>
                 <CardHeader className='p-0'>
                     <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
                     <CardDescription>{getContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
@@ -164,7 +166,7 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, audience, 
                             <TabsTrigger value={CONTENT_TYPES.PAGES}>Pages</TabsTrigger>
                         </TabsList>
                     </Tabs>
-                    <div className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>Visitors</div>
+                    <div className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>Visitors</div>
                 </div>
                 <Separator />
                 {isLoading ?
@@ -194,7 +196,7 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, audience, 
                         <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                     </SheetTrigger>
                     <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                        <SheetHeader className='bg-background/60 sticky top-0 z-40 -mx-6 p-6 backdrop-blur'>
+                        <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
                             <SheetTitle>Top content</SheetTitle>
                             <SheetDescription>{getContentDescription(selectedContentType, range, getPeriodText)}</SheetDescription>
                         </SheetHeader>

@@ -2,7 +2,8 @@ import React, {useMemo, useState} from 'react';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, Flag, Icon, LucideIcon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, SkeletonTable, cn, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, Flag, Icon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, SkeletonTable} from '@tryghost/shade/components';
+import {LucideIcon, cn, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade/utils';
 import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -226,7 +227,7 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range, on
                                                 return (
                                                     <DataListRow
                                                         key={row.location || 'unknown'}
-                                                        className={isClickable ? 'hover:bg-accent/50 cursor-pointer transition-colors' : ''}
+                                                        className={isClickable ? 'cursor-pointer transition-colors hover:bg-accent/50' : ''}
                                                         data-testid={`location-row-${row.location || 'unknown'}`}
                                                         onClick={isClickable ? () => handleRowClick(row.location) : undefined}
                                                     >

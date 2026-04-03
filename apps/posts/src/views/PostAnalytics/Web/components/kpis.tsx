@@ -1,6 +1,8 @@
 import React, {useState} from 'react';
-import {Card, CardContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, sanitizeChartData} from '@tryghost/shade';
+import {Card, CardContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Tabs, TabsList} from '@tryghost/shade/components';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
+import {formatDuration, formatNumber, formatPercentage} from '@tryghost/shade/utils';
+import {sanitizeChartData} from '@tryghost/shade/app';
 import {useSearchParams} from '@tryghost/admin-x-framework';
 
 export type KpiMetric = {
@@ -65,7 +67,7 @@ const Kpis:React.FC<KpisProps> = ({data, range}) => {
         <Card>
             <CardContent>
                 <Tabs defaultValue={currentTab} variant='kpis'>
-                    <TabsList className="md:visible! md:grid! -mx-6 hidden grid-cols-2">
+                    <TabsList className="-mx-6 hidden grid-cols-2 md:visible! md:grid!">
                         <KpiTabTrigger value="visits" onClick={() => {
                             setCurrentTab('visits');
                         }}>

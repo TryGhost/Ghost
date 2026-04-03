@@ -9,22 +9,21 @@ Shade is consumed internally across Ghost apps. The package is currently private
 Example:
 
 ```tsx
-import {Button} from '@tryghost/shade';
+import {Button} from '@tryghost/shade/components';
 
 export function Example() {
     return <Button>Continue</Button>;
 }
 ```
 
-Tailwind preset:
+CSS-first styling contract:
 
-```js
-// tailwind.config.cjs
-module.exports = {
-    presets: [require('@tryghost/shade/tailwind')],
-    // your overrides...
-};
+```css
+/* app entry CSS */
+@import "@tryghost/shade/styles.css";
 ```
+
+No Tailwind preset/config import is required for Shade runtime styling.
 
 Scoping and dark mode:
 
@@ -34,7 +33,7 @@ Scoping and dark mode:
 Wrap your surface with `ShadeApp` (includes provider and scoping):
 
 ```tsx
-import ShadeApp from '@tryghost/shade';
+import {ShadeApp} from '@tryghost/shade/app';
 
 <ShadeApp darkMode={false}>
     {/* your UI */}

@@ -18,8 +18,10 @@ export {
 } from './builders';
 export type {
     RecordedStripeCheckoutSession,
+    StripeCoupon,
     StripeProduct,
     StripeCustomer,
+    StripeDiscount,
     StripeSubscription,
     StripePrice,
     StripePaymentMethod,

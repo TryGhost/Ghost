@@ -15,16 +15,24 @@ vi.mock('@tryghost/admin-x-framework', () => ({
     getSymbol: vi.fn()
 }));
 
-vi.mock('@tryghost/shade', async () => {
-    const actual = await vi.importActual('@tryghost/shade');
+vi.mock('@tryghost/shade/utils', async () => {
+    const actual = await vi.importActual('@tryghost/shade/utils');
     return {
         ...actual,
-        formatPercentage: vi.fn(),
+        formatPercentage: vi.fn()
+    };
+});
+
+vi.mock('@tryghost/shade/app', async () => {
+    const actual = await vi.importActual('@tryghost/shade/app');
+    return {
+        ...actual,
         getRangeDates: vi.fn()
     };
 });
 
-import {formatPercentage, getRangeDates} from '@tryghost/shade';
+import {formatPercentage} from '@tryghost/shade/utils';
+import {getRangeDates} from '@tryghost/shade/app';
 import {getSymbol} from '@tryghost/admin-x-framework';
 import {useMemberCountHistory, useMrrHistory, useSubscriptionStats} from '@tryghost/admin-x-framework/api/stats';
 

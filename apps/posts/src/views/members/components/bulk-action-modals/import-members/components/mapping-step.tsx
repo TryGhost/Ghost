@@ -1,6 +1,7 @@
-import {Button, DialogFooter, LoadingIndicator, LucideIcon, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn} from '@tryghost/shade';
+import {Button, DialogFooter, LoadingIndicator, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {FIELD_MAPPINGS, MembersFieldMapping} from '../mapping';
 import {LabelPicker} from '@src/components/label-picker';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {UseLabelPickerResult} from '@src/hooks/use-label-picker';
 
 interface MappingPreviewRow {
@@ -108,7 +109,7 @@ export function MappingStep({
                                         {currentlyDisplayedData.length > 0 ? (
                                             currentlyDisplayedData.map(row => (
                                                 <TableRow key={row.key} className={cn(!row.mapTo && 'bg-muted')}>
-                                                    <TableCell className="break-all text-sm font-medium">{row.key}</TableCell>
+                                                    <TableCell className="text-sm font-medium break-all">{row.key}</TableCell>
                                                     <TableCell className={cn('break-all text-sm', !row.value && 'text-muted-foreground')}>
                                                         {row.value || '\u00A0'}
                                                     </TableCell>
@@ -165,10 +166,13 @@ export function MappingStep({
                                 isDuplicateName={labelPicker.isDuplicateName}
                                 isLoading={labelPicker.isLoading}
                                 labels={labelPicker.labels}
+                                resolvedSelectedLabels={labelPicker.resolvedSelectedLabels}
+                                searchValue={labelPicker.searchValue}
                                 selectedSlugs={labelPicker.selectedSlugs}
                                 onCreate={labelPicker.createLabel}
                                 onDelete={labelPicker.deleteLabel}
                                 onEdit={labelPicker.editLabel}
+                                onSearchChange={labelPicker.onSearchChange}
                                 onToggle={labelPicker.toggleLabel}
                             />
                         </div>

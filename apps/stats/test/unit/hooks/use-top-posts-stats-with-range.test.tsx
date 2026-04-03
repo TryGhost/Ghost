@@ -1,3 +1,4 @@
+import moment from 'moment';
 import {TestWrapper} from '@tryghost/admin-x-framework/test/test-utils';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {getExpectedDateRange, setupDateMocking, setupStatsAppMocks} from '../../utils/test-helpers';
@@ -6,13 +7,13 @@ import {useTopPostsStatsWithRange} from '@hooks/use-top-posts-stats-with-range';
 
 vi.mock('@tryghost/admin-x-framework/api/stats');
 vi.mock('@src/providers/global-data-provider');
-vi.mock('@tryghost/shade', () => ({
+vi.mock('@tryghost/shade/app', () => ({
     formatQueryDate: vi.fn(),
     getRangeDates: vi.fn()
 }));
 
 const mockUseTopPostsStats = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).useTopPostsStats;
-const {formatQueryDate, getRangeDates} = await import('@tryghost/shade');
+const {formatQueryDate, getRangeDates} = await import('@tryghost/shade/app');
 const mockFormatQueryDate = vi.mocked(formatQueryDate);
 const mockGetRangeDates = vi.mocked(getRangeDates);
 
@@ -29,13 +30,13 @@ describe('useTopPostsStatsWithRange', () => {
         mockGetRangeDates.mockImplementation((range: number) => {
             const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(range);
             return {
-                startDate: new Date(expectedDateFrom + 'T00:00:00.000Z'),
-                endDate: new Date(expectedDateTo + 'T23:59:59.999Z'),
+                startDate: moment.utc(expectedDateFrom).startOf('day'),
+                endDate: moment.utc(expectedDateTo).startOf('day'),
                 timezone: 'UTC'
             };
         });
 
-        mockFormatQueryDate.mockImplementation((date: Date) => date.toISOString().split('T')[0]);
+        mockFormatQueryDate.mockImplementation(date => date.format('YYYY-MM-DD'));
 
         // Apply the mocks to the actual imported modules
         mockUseTopPostsStats.mockImplementation(mocks.mockUseTopPostsStats);

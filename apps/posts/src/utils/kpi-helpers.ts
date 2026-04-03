@@ -1,4 +1,4 @@
-import {formatDuration, formatNumber, formatPercentage} from '@tryghost/shade';
+import {formatDuration, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 
 export type KpiDataItem = {
     visits: number | string;

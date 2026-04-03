@@ -1,16 +1,22 @@
-import {Label, useBrowseLabels, useCreateLabel, useDeleteLabel, useEditLabel} from '@tryghost/admin-x-framework/api/labels';
-import {useCallback, useMemo, useRef} from 'react';
+import {Label, useCreateLabel, useDeleteLabel, useEditLabel} from '@tryghost/admin-x-framework/api/labels';
+import {ValueSource} from '@tryghost/shade/patterns';
+import {useCallback, useMemo, useRef, useState} from 'react';
+import {useLabelValueSource} from './filter-sources/use-label-value-source';
 
 export interface UseLabelPickerOptions {
     selectedSlugs: string[];
     onSelectionChange: (slugs: string[]) => void;
+    valueSource?: ValueSource<string>;
 }
 
 export interface UseLabelPickerResult {
     labels: Label[];
     selectedSlugs: string[];
+    resolvedSelectedLabels: Label[];
 
     isLoading: boolean;
+    searchValue: string;
+    onSearchChange: (search: string) => void;
     toggleLabel: (slug: string) => void;
     createLabel: (name: string) => Promise<Label | undefined>;
     editLabel: (id: string, name: string) => Promise<void>;
@@ -22,10 +28,31 @@ export interface UseLabelPickerResult {
 
 export function useLabelPicker({
     selectedSlugs,
-    onSelectionChange
+    onSelectionChange,
+    valueSource
 }: UseLabelPickerOptions): UseLabelPickerResult {
-    const {data: labelsData, isLoading} = useBrowseLabels({searchParams: {limit: '100'}});
-    const labels = useMemo(() => labelsData?.labels || [], [labelsData]);
+    const defaultLabelValueSource = useLabelValueSource();
+    const labelValueSource = valueSource ?? defaultLabelValueSource;
+    const [searchValue, setSearchValue] = useState('');
+    const labelSourceState = labelValueSource.useOptions({
+        query: searchValue,
+        selectedValues: selectedSlugs
+    });
+    const labels = useMemo(() => {
+        return labelSourceState.options.flatMap((option) => {
+            if (!option.metadata?.id) {
+                return [];
+            }
+
+            return [{
+                id: String(option.metadata.id),
+                name: option.label,
+                slug: String(option.value),
+                created_at: '',
+                updated_at: ''
+            }];
+        });
+    }, [labelSourceState.options]);
 
     const {mutateAsync: createLabelMutation, isLoading: isCreating} = useCreateLabel();
     const {mutateAsync: editLabelMutation} = useEditLabel();
@@ -99,7 +126,14 @@ export function useLabelPicker({
     return {
         labels,
         selectedSlugs,
-        isLoading,
+        resolvedSelectedLabels: selectedSlugs
+            .map(slug => labels.find(label => label.slug === slug))
+            .filter((label): label is Label => !!label),
+        // Keep the current picker content visible during background refreshes
+        // after create/edit/delete; only block the UI on the initial empty load.
+        isLoading: labelSourceState.isInitialLoad,
+        searchValue,
+        onSearchChange: setSearchValue,
         toggleLabel,
         createLabel,
         editLabel,

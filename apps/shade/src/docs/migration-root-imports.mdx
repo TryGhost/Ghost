@@ -1,0 +1,45 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Migration/Root Imports" />
+
+<div className="sb-doc">
+
+# Root Import Migration (MS-1)
+
+Use layer-specific subpaths instead of the root `@tryghost/shade` entrypoint.
+
+## Cutoff
+
+MS-1 cutoff: **April 2, 2026**.
+
+- Root `@tryghost/shade` is a compatibility lane for DS layers only.
+- `app` and `utils` lanes are no longer exported from root.
+- Consumer apps block new root imports with lint rules.
+
+## Old → New Mapping
+
+| Old import | New import |
+| --- | --- |
+| `@tryghost/shade` (UI controls/assets) | `@tryghost/shade/components` |
+| `@tryghost/shade` (layout/structure) | `@tryghost/shade/primitives` |
+| `@tryghost/shade` (feature contracts/compositions) | `@tryghost/shade/patterns` |
+| `@tryghost/shade` (DS-safe helpers + `LucideIcon` + `Recharts`) | `@tryghost/shade/utils` |
+| `@tryghost/shade` (app shell + domain/transitional helpers) | `@tryghost/shade/app` |
+| `@tryghost/shade` token helpers | `@tryghost/shade/tokens` |
+| token CSS usage | `@tryghost/shade/tokens.css` |
+
+## Typical Rewrites
+
+```ts
+// Before
+import {Button, H1, createFilter, cn, formatQueryDate, ShadeApp} from '@tryghost/shade';
+
+// After
+import {Button} from '@tryghost/shade/components';
+import {H1} from '@tryghost/shade/primitives';
+import {createFilter} from '@tryghost/shade/patterns';
+import {cn} from '@tryghost/shade/utils';
+import {formatQueryDate, ShadeApp} from '@tryghost/shade/app';
+```
+
+</div>

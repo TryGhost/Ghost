@@ -1,7 +1,8 @@
 import React, {Suspense, useCallback, useMemo, useRef} from 'react';
 import {ErrorBoundary, type KoenigInstance, LoadingIndicator, loadKoenig, useDesignSystem} from '@tryghost/admin-x-design-system';
-import {cn} from '@tryghost/shade';
+import {cn} from '@tryghost/shade/utils';
 import {focusKoenigEditorOnBottomClick, useFramework} from '@tryghost/admin-x-framework';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {koenigFileUploadTypes, useKoenigFetchEmbed, useKoenigFileUpload, usePinturaConfig} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useWelcomeEmailLinkSuggestions} from '../../../../hooks/use-welcome-email-link-suggestions';
@@ -96,12 +97,13 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     const initialEditorState = useRef(value);
     const {unsplashConfig} = useFramework();
     const pinturaConfig = usePinturaConfig();
-    const {config} = useGlobalData();
+    const {config, settings} = useGlobalData();
     const {fetchAutocompleteLinks, searchLinks} = useWelcomeEmailLinkSuggestions();
     const fetchEmbed = useKoenigFetchEmbed();
     const tenorConfig = config.tenor?.googleApiKey ? config.tenor : null;
     const {fetchKoenigLexical, darkMode} = useDesignSystem();
     const editorResource = useMemo(() => loadKoenig(fetchKoenigLexical), [fetchKoenigLexical]);
+    const [transistorEnabled] = getSettingValues<boolean>(settings, ['transistor']);
 
     const cardConfig = useMemo(() => ({
         unsplash: unsplashConfig,
@@ -109,8 +111,12 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         tenor: tenorConfig,
         fetchEmbed,
         fetchAutocompleteLinks,
-        searchLinks
-    }), [unsplashConfig, pinturaConfig, tenorConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks]);
+        searchLinks,
+        feature: {
+            transistor: transistorEnabled
+        },
+        visibilitySettings: 'none'
+    }), [unsplashConfig, pinturaConfig, tenorConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks, transistorEnabled]);
 
     const registerEditorAPI = useCallback((API: KoenigInstance | null) => {
         editorAPIRef.current = API;

@@ -1,7 +1,9 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Separator, Tabs, TabsList, centsToDollars, formatDisplayDateWithRange, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Separator, Tabs, TabsList} from '@tryghost/shade/components';
 import {DiffDirection} from '@hooks/use-growth-stats';
 import {STATS_RANGES} from '@src/utils/constants';
+import {centsToDollars, formatDisplayDateWithRange} from '@tryghost/shade/app';
+import {formatNumber} from '@tryghost/shade/utils';
 import {sanitizeChartData} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
@@ -240,7 +242,7 @@ const GrowthKPIs: React.FC<{
 
     return (
         <Tabs defaultValue={validatedInitialTab} variant='kpis'>
-            <TabsList className={`-mx-6 ${appSettings?.paidMembersEnabled ? 'lg:visible! lg:grid! hidden grid-cols-4' : 'grid grid-cols-4'}`}>
+            <TabsList className={`-mx-6 ${appSettings?.paidMembersEnabled ? 'hidden grid-cols-4 lg:visible! lg:grid!' : 'grid grid-cols-4'}`}>
                 <KpiTabTrigger className={!appSettings?.paidMembersEnabled ? 'cursor-auto after:hidden' : ''} value="total-members" onClick={() => {
                     if (appSettings?.paidMembersEnabled) {
                         handleTabChange('total-members');

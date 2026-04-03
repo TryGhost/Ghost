@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 const postsSchema = require('../../../../../../../core/server/data/schema').tables.posts;
 
-const mobiledocLib = require('@tryghost/html-to-mobiledoc');
+const mobiledocLib = require('../../../../../../../core/server/lib/mobiledoc');
 
 describe('Unit: endpoints/utils/serializers/input/posts', function () {
     afterEach(function () {
@@ -328,7 +328,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
             it('transforms html when html is present in data and source options', function () {
                 // JSDOM require is sometimes very slow on CI causing random timeouts
-                this.timeout(4000);
+                this.timeout(10000);
 
                 const apiConfig = {};
                 const lexical = '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
@@ -360,7 +360,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
             it('preserves html cards in transformed html', function () {
                 // JSDOM require is sometimes very slow on CI causing random timeouts
-                this.timeout(4000);
+                this.timeout(10000);
 
                 const apiConfig = {};
                 const frame = {
@@ -385,7 +385,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
             it('throws error when HTML conversion fails', function () {
                 // JSDOM require is sometimes very slow on CI causing random timeouts
-                this.timeout(4000);
+                this.timeout(10000);
 
                 const frame = {
                     options: {
@@ -401,7 +401,9 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                     }
                 };
 
-                sinon.stub(mobiledocLib, 'toMobiledoc').throws(new Error('Some error'));
+                sinon.stub(mobiledocLib, 'htmlToMobiledocConverter').get(() => () => {
+                    throw new Error('Some error');
+                });
 
                 assert.throws(() => {
                     serializers.input.posts.edit({}, frame);

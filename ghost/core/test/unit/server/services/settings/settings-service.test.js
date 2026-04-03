@@ -3,6 +3,8 @@ const assert = require('node:assert/strict');
 const configUtils = require('../../../../utils/config-utils');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const logging = require('@tryghost/logging');
+const models = require('../../../../../core/server/models');
+const adapterManager = require('../../../../../core/server/services/adapter-manager');
 
 describe('UNIT: Settings Service', function () {
     let settingsService;
@@ -13,6 +15,7 @@ describe('UNIT: Settings Service', function () {
 
     beforeEach(async function () {
         await configUtils.restore();
+        models.init();
         settingsCacheStub = sinon.stub();
         settingsCache.get = settingsCacheStub;
         loggingStub = sinon.stub();
@@ -85,6 +88,53 @@ describe('UNIT: Settings Service', function () {
                 assert.equal(error.constructor.name, 'IncorrectUsageError');
                 assert.equal(error.message, 'Site UUID configuration does not match database value');
             }
+        });
+    });
+
+    describe('init', function () {
+        it('merges host settings overrides with transistor disabled when custom integrations are limited', async function () {
+            const settingsCollection = {};
+            const cacheStore = {};
+
+            configUtils.set('hostSettings:settingsOverrides', {
+                title: 'Custom title',
+                transistor: true
+            });
+            configUtils.set('hostSettings:limits:customIntegrations:disabled', true);
+
+            sinon.stub(adapterManager, 'getAdapter').withArgs('cache:settings').returns(cacheStore);
+            sinon.stub(models.Settings, 'populateDefaults').resolves(settingsCollection);
+            const initStub = sinon.stub(settingsCache, 'init');
+
+            await settingsService.init();
+
+            sinon.assert.calledOnce(initStub);
+            assert.deepEqual(initStub.firstCall.args[4], {
+                title: 'Custom title',
+                transistor: false
+            });
+        });
+
+        it('keeps configured settings overrides unchanged when custom integrations are not limited', async function () {
+            const settingsCollection = {};
+            const cacheStore = {};
+
+            configUtils.set('hostSettings:settingsOverrides', {
+                title: 'Custom title',
+                transistor: true
+            });
+
+            sinon.stub(adapterManager, 'getAdapter').withArgs('cache:settings').returns(cacheStore);
+            sinon.stub(models.Settings, 'populateDefaults').resolves(settingsCollection);
+            const initStub = sinon.stub(settingsCache, 'init');
+
+            await settingsService.init();
+
+            sinon.assert.calledOnce(initStub);
+            assert.deepEqual(initStub.firstCall.args[4], {
+                title: 'Custom title',
+                transistor: true
+            });
         });
     });
 });

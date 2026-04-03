@@ -7,14 +7,14 @@ import Notification from './components/notification';
 import PopupModal from './components/popup-modal';
 import setupGhostApi from './utils/api';
 import AppContext from './app-context';
-import NotificationParser from './utils/notifications';
+import NotificationParser, {clearURLParams} from './utils/notifications';
 import * as Fixtures from './utils/fixtures';
 import {hasMode} from './utils/check-mode';
 import {transformPortalAnchorToRelative} from './utils/transform-portal-anchor-to-relative';
 import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './app.css';
-import {hasRecommendations, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {hasRecommendations, hasGiftSubscriptions, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {validateHexColor} from './utils/sanitize-html';
 import {handleDataAttributes} from './data-attributes';
 
@@ -167,6 +167,11 @@ export default class App extends React.Component {
             const pagePath = (target && target.dataset.portal);
             const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath) || {};
             if (this.state.initStatus === 'success') {
+                if (page === 'gift' && !hasGiftSubscriptions({site: this.state.site})) {
+                    removePortalLinkFromUrl();
+
+                    return;
+                }
                 if (pageQuery && pageQuery !== 'free') {
                     this.handleSignupQuery({site: this.state.site, pageQuery});
                 } else {
@@ -489,6 +494,21 @@ export default class App extends React.Component {
     /** Fetch state from Portal Links */
     fetchLinkData(site, member) {
         const qParams = new URLSearchParams(window.location.search);
+
+        if (qParams.get('stripe') === 'gift-purchase-success') {
+            const token = qParams.get('gift_token');
+            clearURLParams(['stripe', 'gift_token']);
+            if (token) {
+                return {
+                    showPopup: true,
+                    page: 'giftSuccess',
+                    pageData: {
+                        token
+                    }
+                };
+            }
+        }
+
         if (qParams.get('action') === 'unsubscribe') {
             // if the user is unsubscribing from a newsletter with an old unsubscribe link that we can't validate, push them to newsletter mgmt where they have to log in
             if (qParams.get('key') && qParams.get('uuid')) {
@@ -575,6 +595,12 @@ export default class App extends React.Component {
                         redirect: site.url + `#/portal/${pagePath}/`
                     }
                 };
+            }
+
+            if (page === 'gift' && !hasGiftSubscriptions({site})) {
+                removePortalLinkFromUrl();
+
+                return {};
             }
 
             const lastPage = ['accountPlan', 'accountProfile'].includes(page) ? 'accountHome' : null;
@@ -949,6 +975,10 @@ export default class App extends React.Component {
                 pageData: {
                     signup: false
                 }
+            };
+        } else if (path === 'gift') {
+            return {
+                page: 'gift'
             };
         } else if (path === 'account/newsletters/help') {
             return {

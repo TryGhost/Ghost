@@ -1,7 +1,9 @@
 import React from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, HTable, Icon, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, Icon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from '@tryghost/shade/components';
+import {HTable} from '@tryghost/shade/primitives';
+import {LucideIcon, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 
 countries.registerLocale(enLocale);
@@ -124,7 +126,7 @@ const Locations:React.FC<LocationsProps> = ({data, isLoading, onLocationClick}) 
                                     <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                                 </SheetTrigger>
                                 <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                                    <SheetHeader className='bg-background/60 sticky top-0 z-40 -mx-6 p-6 backdrop-blur'>
+                                    <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
                                         <SheetTitle>Top locations</SheetTitle>
                                         <SheetDescription>Where are the readers of this post</SheetDescription>
                                     </SheetHeader>

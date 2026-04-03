@@ -1,11 +1,4 @@
-import {
-    Button,
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle
-} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@tryghost/shade/components';
 import {LabelPicker} from '@src/components/label-picker';
 import {useCallback, useState} from 'react';
 import {useLabelPicker} from '@src/hooks/use-label-picker';
@@ -63,10 +56,13 @@ export function AddLabelModal({
                     isDuplicateName={picker.isDuplicateName}
                     isLoading={picker.isLoading}
                     labels={picker.labels}
-                    selectedSlugs={picker.selectedSlugs}
+                    resolvedSelectedLabels={picker.resolvedSelectedLabels}
+                    searchValue={picker.searchValue}
+                    selectedSlugs={selectedSlugs}
                     onCreate={picker.createLabel}
                     onDelete={picker.deleteLabel}
                     onEdit={picker.editLabel}
+                    onSearchChange={picker.onSearchChange}
                     onToggle={picker.toggleLabel}
                 />
 

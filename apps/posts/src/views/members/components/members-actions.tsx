@@ -1,14 +1,7 @@
 import React, {useCallback, useState} from 'react';
 import {AddLabelModal, DeleteModal, ImportMembersModal, RemoveLabelModal, UnsubscribeModal} from './bulk-action-modals';
-import {
-    Button,
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-    LucideIcon
-} from '@tryghost/shade';
+import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {blobDownloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
 import {buildMemberOperationParams} from '../member-query-params';
 import {toast} from 'sonner';
@@ -244,8 +237,9 @@ const MembersActions: React.FC<MembersActionsProps> = ({
 
             {/* New Member Button - styled like Tags */}
             <Button asChild>
-                <a className="font-bold" href="#/members/new">
-                    New member
+                <a aria-label="New member" className="inline-flex items-center gap-2 font-bold" href="#/members/new">
+                    <LucideIcon.Plus className="size-4" />
+                    <span className="hidden sm:inline">New member</span>
                 </a>
             </Button>
 

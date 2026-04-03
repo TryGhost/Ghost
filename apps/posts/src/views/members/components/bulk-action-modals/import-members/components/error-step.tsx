@@ -1,4 +1,5 @@
-import {Button, DialogFooter, LucideIcon} from '@tryghost/shade';
+import {Button, DialogFooter} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 interface ErrorStepProps {
     errorMessage: string | null;

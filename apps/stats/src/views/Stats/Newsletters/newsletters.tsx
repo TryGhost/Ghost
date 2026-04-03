@@ -7,9 +7,11 @@ import SortButton from '../components/sort-button';
 import StatsHeader from '../layout/stats-header';
 import StatsLayout from '../layout/stats-layout';
 import StatsView from '../layout/stats-view';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, NavbarActions, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage, getRangeDates} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, NavbarActions, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
+import {LucideIcon, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {Navigate, useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
+import {getRangeDates} from '@tryghost/shade/app';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useGlobalData} from '@src/providers/global-data-provider';
 import {useNewsletterStatsWithRangeSplit, useSubscriberCountWithRange} from '@hooks/use-newsletter-stats-with-range';
@@ -76,7 +78,7 @@ const NewsletterTableRows: React.FC<{
                             <TableCell className="font-medium">
                                 <div className='group/link inline-flex items-center gap-2'>
                                     {post.post_id ?
-                                        <Button className='hover:underline! h-auto whitespace-normal p-0 text-left' title="View post analytics" variant='link' onClick={() => {
+                                        <Button className='h-auto p-0 text-left whitespace-normal hover:underline!' title="View post analytics" variant='link' onClick={() => {
                                             navigate(`/posts/analytics/${post.post_id}/`, {crossApp: true});
                                         }}>
                                             {post.post_title}
@@ -88,7 +90,7 @@ const NewsletterTableRows: React.FC<{
                                     }
                                 </div>
                             </TableCell>
-                            <TableCell className="whitespace-nowrap text-sm">
+                            <TableCell className="text-sm whitespace-nowrap">
                                 {formatDisplayDate(post.send_date, siteTimezone)}
                             </TableCell>
                             <TableCell className='text-right font-mono text-sm'>
@@ -97,7 +99,7 @@ const NewsletterTableRows: React.FC<{
                             {emailTrackOpensEnabled &&
                         <TableCell className='text-right font-mono text-sm'>
                             <span className="group-hover:hidden">{formatPercentage(post.open_rate)}</span>
-                            <span className="group-hover:visible! group-hover:block! hidden">{formatNumber(post.total_opens)}</span>
+                            <span className="hidden group-hover:visible! group-hover:block!">{formatNumber(post.total_opens)}</span>
                         </TableCell>
                             }
 
@@ -108,7 +110,7 @@ const NewsletterTableRows: React.FC<{
                             ) : (
                                 <>
                                     <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
-                                    <span className="group-hover:visible! group-hover:block! hidden">{formatNumber(post.total_clicks)}</span>
+                                    <span className="hidden group-hover:visible! group-hover:block!">{formatNumber(post.total_clicks)}</span>
                                 </>
                             )}
                         </TableCell>
@@ -118,7 +120,7 @@ const NewsletterTableRows: React.FC<{
                 </>
                 :
                 <TableRow className='border-none hover:bg-transparent'>
-                    <TableCell className='group-hover:bg-transparent! text-center' colSpan={colSpan}>
+                    <TableCell className='text-center group-hover:bg-transparent!' colSpan={colSpan}>
                         <EmptyIndicator
                             className='size-full py-20'
                             title={`No newsletters ${getPeriodText(range)}`}
@@ -301,9 +303,10 @@ const Newsletters: React.FC = () => {
             const {startDate, endDate} = getRangeDates(range);
 
             const dailyData = [];
-            const currentDate = new Date(startDate);
+            const currentDate = startDate.clone().toDate();
+            const endDateObj = endDate.toDate();
 
-            while (currentDate <= endDate) {
+            while (currentDate <= endDateObj) {
                 dailyData.push({
                     date: currentDate.toISOString().split('T')[0],
                     value: 0

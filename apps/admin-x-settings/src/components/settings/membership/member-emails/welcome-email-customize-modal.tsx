@@ -4,6 +4,7 @@ import HeaderImageField from '../../email-design/header-image-field';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import ShowBadgeField from '../../email-design/show-badge-field';
 import WelcomeEmailPreviewContent from '../../email-design/welcome-email-preview-content';
+import {type AutomatedEmailDesign, type EditAutomatedEmailDesign, useEditAutomatedEmailDesign, useReadAutomatedEmailDesign} from '@tryghost/admin-x-framework/api/automated-email-design';
 import {
     BackgroundColorField,
     BodyFontField,
@@ -16,22 +17,16 @@ import {
     HeadingWeightField,
     ImageCornersField,
     LinkColorField,
-    LinkStyleField
+    LinkStyleField,
+    SectionTitleColorField
 } from '../../email-design/design-fields';
-import {DEFAULT_EMAIL_DESIGN, type EmailDesignSettings} from '../../email-design/types';
+import {DEFAULT_EMAIL_DESIGN, type EmailDesignSettings, type PersistedEmailDesignSettings} from '../../email-design/types';
 import {EmailDesignProvider} from '../../email-design/email-design-context';
-import {
-    Input,
-    Separator,
-    Switch,
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-    Textarea
-} from '@tryghost/shade';
+import {Input, LoadingIndicator, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {useCallback, useState} from 'react';
+import {toast} from 'sonner';
+import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '../../../providers/global-data-provider';
 
 interface GeneralSettings {
@@ -43,6 +38,27 @@ interface GeneralSettings {
     emailFooter: string;
 }
 
+interface WelcomeEmailCustomizeFormState {
+    designSettings: EmailDesignSettings;
+    generalSettings: GeneralSettings;
+}
+
+const SAVE_ERROR_TOAST_ID = 'welcome-email-design-save-error';
+const NON_DESIGN_FIELDS = new Set([
+    'id',
+    'slug',
+    'created_at',
+    'updated_at',
+    'header_image',
+    'show_header_title',
+    'show_badge',
+    'footer_content'
+]);
+const PREVIEW_ONLY_FIELDS = new Set([
+    'post_title_color',
+    'title_alignment'
+]);
+
 interface GeneralTabProps {
     generalSettings: GeneralSettings;
     onGeneralChange: (updates: Partial<GeneralSettings>) => void;
@@ -53,19 +69,21 @@ interface GeneralTabProps {
 const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange, siteTitle, emailDomain}) => (
     <div className="flex flex-col gap-6 pt-6">
         <section>
-            <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Email info</h4>
+            <h4 className="mb-4 font-semibold md:text-lg">Email info</h4>
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
-                    <label className="text-sm">Sender name</label>
+                    <label className="text-sm font-medium" htmlFor="welcome-email-sender-name">Sender name</label>
                     <Input
+                        id="welcome-email-sender-name"
                         placeholder={siteTitle || 'Your site name'}
                         value={generalSettings.senderName}
                         onChange={e => onGeneralChange({senderName: e.target.value})}
                     />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                    <label className="text-sm">Reply-to email</label>
+                    <label className="text-sm font-medium" htmlFor="welcome-email-reply-to-email">Reply-to email</label>
                     <Input
+                        id="welcome-email-reply-to-email"
                         placeholder={`noreply@${emailDomain}`}
                         value={generalSettings.replyToEmail}
                         onChange={e => onGeneralChange({replyToEmail: e.target.value})}
@@ -77,22 +95,24 @@ const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange
         <Separator />
 
         <section>
-            <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Content</h4>
+            <h4 className="mb-4 font-semibold md:text-lg">Content</h4>
             <div className="flex flex-col gap-4">
                 <HeaderImageField
                     value={generalSettings.headerImage}
                     onChange={url => onGeneralChange({headerImage: url})}
                 />
                 <div className="flex items-center justify-between">
-                    <span className="text-sm">Publication title</span>
+                    <span className="text-sm font-medium">Publication title</span>
                     <Switch
                         checked={generalSettings.showPublicationTitle}
+                        size='sm'
                         onCheckedChange={checked => onGeneralChange({showPublicationTitle: checked})}
                     />
                 </div>
-                <div className="flex flex-col gap-1.5">
-                    <label className="text-sm">Email footer</label>
+                <div className="mt-2 flex flex-col gap-1.5">
+                    <label className="text-sm font-medium" htmlFor="welcome-email-footer">Email footer</label>
                     <Textarea
+                        id="welcome-email-footer"
                         placeholder="Any extra information or legal text"
                         rows={3}
                         value={generalSettings.emailFooter}
@@ -108,10 +128,10 @@ const GeneralTab: React.FC<GeneralTabProps> = ({generalSettings, onGeneralChange
     </div>
 );
 
-const DesignTab: React.FC = () => (
+export const DesignTab: React.FC = () => (
     <div className="flex flex-col gap-6 pt-6">
         <section>
-            <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Global</h4>
+            <h4 className="mb-4 font-semibold md:text-lg">Global</h4>
             <div className="flex flex-col gap-4">
                 <BackgroundColorField />
                 <HeadingFontField />
@@ -123,7 +143,7 @@ const DesignTab: React.FC = () => (
         <Separator />
 
         <section>
-            <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Header</h4>
+            <h4 className="mb-4 font-semibold md:text-lg">Header</h4>
             <div className="flex flex-col gap-4">
                 <HeaderBackgroundField />
             </div>
@@ -132,8 +152,9 @@ const DesignTab: React.FC = () => (
         <Separator />
 
         <section>
-            <h4 className="text-gray-500 mb-4 text-xs font-semibold uppercase tracking-wide">Body</h4>
+            <h4 className="mb-4 font-semibold md:text-lg">Body</h4>
             <div className="flex flex-col gap-4">
+                <SectionTitleColorField />
                 <ButtonColorField />
                 <ButtonStyleField />
                 <ButtonCornersField />
@@ -151,26 +172,115 @@ interface SidebarProps {
     onGeneralChange: (updates: Partial<GeneralSettings>) => void;
     siteTitle: string | undefined;
     emailDomain: string;
+    isLoading: boolean;
+    errorMessage?: string;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({generalSettings, onGeneralChange, siteTitle, emailDomain}) => (
-    <Tabs defaultValue="general" variant="underline">
-        <TabsList>
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="design">Design</TabsTrigger>
-        </TabsList>
-        <TabsContent value="general">
-            <GeneralTab
-                emailDomain={emailDomain}
-                generalSettings={generalSettings}
-                siteTitle={siteTitle}
-                onGeneralChange={onGeneralChange}
-            />
-        </TabsContent>
-        <TabsContent value="design">
-            <DesignTab />
-        </TabsContent>
-    </Tabs>
+const Sidebar: React.FC<SidebarProps> = ({generalSettings, onGeneralChange, siteTitle, emailDomain, isLoading, errorMessage}) => {
+    let sidebarState: 'loading' | 'error' | 'content' = 'content';
+
+    if (isLoading) {
+        sidebarState = 'loading';
+    } else if (errorMessage) {
+        sidebarState = 'error';
+    }
+
+    return (
+        <Tabs className="flex min-h-0 flex-1 flex-col" defaultValue="general" variant="underline">
+            <TabsList className='px-5'>
+                <TabsTrigger value="general">General</TabsTrigger>
+                <TabsTrigger value="design">Design</TabsTrigger>
+            </TabsList>
+            {sidebarState === 'loading' && (
+                <div className="flex flex-1 items-center justify-center">
+                    <LoadingIndicator size="md" />
+                </div>
+            )}
+            {sidebarState === 'error' && (
+                <div className="flex flex-1 items-center justify-center px-6 text-center text-sm text-gray-700 dark:text-gray-300">
+                    {errorMessage}
+                </div>
+            )}
+            {sidebarState === 'content' && (
+                <>
+                    <TabsContent className='min-h-0 flex-1 overflow-y-auto px-5 pb-5' value="general">
+                        <GeneralTab
+                            emailDomain={emailDomain}
+                            generalSettings={generalSettings}
+                            siteTitle={siteTitle}
+                            onGeneralChange={onGeneralChange}
+                        />
+                    </TabsContent>
+                    <TabsContent className='min-h-0 flex-1 overflow-y-auto px-5 pb-5' value="design">
+                        <DesignTab />
+                    </TabsContent>
+                </>
+            )}
+        </Tabs>
+    );
+};
+
+/**
+ * Maps API response fields to the frontend GeneralSettings shape.
+ * Note: senderName and replyToEmail come from site-level settings, not the design endpoint.
+ *
+ * @param {Pick<AutomatedEmailDesign, 'header_image' | 'show_header_title' | 'show_badge' | 'footer_content'>} apiData - Subset of design fields used for general settings
+ * @param {GeneralSettings} defaults - Carries forward senderName and replyToEmail, which are not part of the design API
+ * @returns {GeneralSettings} General settings populated from the API response
+ */
+function mapApiToGeneralSettings(
+    apiData: Pick<AutomatedEmailDesign, 'header_image' | 'show_header_title' | 'show_badge' | 'footer_content'>,
+    defaults: GeneralSettings
+): GeneralSettings {
+    return {
+        senderName: defaults.senderName,
+        replyToEmail: defaults.replyToEmail,
+        headerImage: apiData.header_image || '',
+        showPublicationTitle: apiData.show_header_title,
+        showBadge: apiData.show_badge,
+        emailFooter: apiData.footer_content || ''
+    };
+}
+
+/**
+ * Maps API response fields to the frontend EmailDesignSettings shape.
+ *
+ * @param {PersistedEmailDesignSettings} apiData - The persisted design fields from the API response
+ * @returns {EmailDesignSettings} Design settings populated from the API response, with local-only preview fields set to defaults
+ */
+export function mapApiToDesignSettings(
+    apiData: PersistedEmailDesignSettings
+): EmailDesignSettings {
+    const persistedDesign = Object.fromEntries(
+        Object.entries(apiData).filter(([key]) => !NON_DESIGN_FIELDS.has(key))
+    ) as PersistedEmailDesignSettings;
+
+    return {
+        ...persistedDesign,
+        // Local-only fields not stored in the backend
+        post_title_color: DEFAULT_EMAIL_DESIGN.post_title_color,
+        title_alignment: DEFAULT_EMAIL_DESIGN.title_alignment
+    };
+}
+
+export function buildAutomatedEmailDesignPayload(state: WelcomeEmailCustomizeFormState): EditAutomatedEmailDesign {
+    const persistedDesign = Object.fromEntries(
+        Object.entries(state.designSettings).filter(([key]) => !PREVIEW_ONLY_FIELDS.has(key) && !NON_DESIGN_FIELDS.has(key))
+    );
+
+    return {
+        ...persistedDesign,
+        header_image: state.generalSettings.headerImage || null,
+        show_header_title: state.generalSettings.showPublicationTitle,
+        show_badge: state.generalSettings.showBadge,
+        footer_content: state.generalSettings.emailFooter || null
+    };
+}
+
+const ErrorState: React.FC<{message: string}> = ({message}) => (
+    <div className="flex h-full items-center justify-center px-6 text-center text-sm text-gray-700 dark:text-gray-300">
+        {message}
+    </div>
 );
 
 const WelcomeEmailCustomizeModal = NiceModal.create(() => {
@@ -178,39 +288,106 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
     const {siteData, settings: globalSettings, config} = useGlobalData();
     const [siteTitle, defaultEmailAddress, supportEmailAddress] = getSettingValues<string>(globalSettings, ['title', 'default_email_address', 'support_email_address']);
 
-    const [designSettings, setDesignSettings] = useState<EmailDesignSettings>({...DEFAULT_EMAIL_DESIGN});
-    const [generalSettings, setGeneralSettings] = useState<GeneralSettings>({
+    const handleError = useHandleError();
+    const {data: designData, isLoading, isError} = useReadAutomatedEmailDesign();
+    const {mutateAsync: editDesign} = useEditAutomatedEmailDesign();
+    const [hasSaveError, setHasSaveError] = useState(false);
+
+    const defaultGeneralSettings = useMemo<GeneralSettings>(() => ({
         senderName: siteTitle || '',
         replyToEmail: supportEmailAddress || defaultEmailAddress || '',
         headerImage: '',
         showPublicationTitle: true,
         showBadge: true,
         emailFooter: ''
+    }), [defaultEmailAddress, siteTitle, supportEmailAddress]);
+    const {formState, saveState, updateForm, setFormState, handleSave, okProps} = useForm<WelcomeEmailCustomizeFormState>({
+        initialState: {
+            designSettings: {...DEFAULT_EMAIL_DESIGN},
+            generalSettings: defaultGeneralSettings
+        },
+        savingDelay: 500,
+        onSave: async (state) => {
+            if (!design) {
+                toast.error('Unable to load email design settings. Please try again.', {
+                    id: SAVE_ERROR_TOAST_ID
+                });
+                setHasSaveError(true);
+                throw new Error('Unable to load email design settings');
+            }
+
+            await editDesign(buildAutomatedEmailDesignPayload(state));
+            setHasSaveError(false);
+            toast.dismiss(SAVE_ERROR_TOAST_ID);
+        },
+        onSaveError: (error) => {
+            handleError(error, {withToast: false});
+            toast.error('Unable to save email design settings. Please try again.', {
+                id: SAVE_ERROR_TOAST_ID
+            });
+            setHasSaveError(true);
+        }
     });
+    const [hydratedDesignVersion, setHydratedDesignVersion] = useState<string | null>(null);
+    const design = designData?.automated_email_design?.[0];
+    const designVersion = design ? `${design.id}:${design.updated_at ?? 'initial'}` : null;
+    const {designSettings, generalSettings} = formState;
+
+    // Hydrate local state from API data on initial load only
+    useEffect(() => {
+        if (design && hydratedDesignVersion === null) {
+            setFormState(() => ({
+                designSettings: mapApiToDesignSettings(design),
+                generalSettings: mapApiToGeneralSettings(design, defaultGeneralSettings)
+            }));
+            setHydratedDesignVersion(designVersion);
+        }
+    }, [defaultGeneralSettings, design, designVersion, hydratedDesignVersion, setFormState]);
 
     const handleDesignChange = useCallback((updates: Partial<EmailDesignSettings>) => {
-        setDesignSettings(prev => ({...prev, ...updates}));
-    }, []);
+        setHasSaveError(false);
+        toast.dismiss(SAVE_ERROR_TOAST_ID);
+        updateForm(state => ({
+            ...state,
+            designSettings: {...state.designSettings, ...updates}
+        }));
+    }, [updateForm]);
 
     const handleGeneralChange = useCallback((updates: Partial<GeneralSettings>) => {
-        setGeneralSettings(prev => ({...prev, ...updates}));
-    }, []);
-
-    const handleSave = useCallback(() => {
-        // TODO: persist to backend when design columns are added
-        modal.remove();
-    }, [modal]);
+        setHasSaveError(false);
+        toast.dismiss(SAVE_ERROR_TOAST_ID);
+        updateForm(state => ({
+            ...state,
+            generalSettings: {...state.generalSettings, ...updates}
+        }));
+    }, [updateForm]);
 
     const handleClose = useCallback(() => {
-        modal.remove();
+        modal.hide();
     }, [modal]);
 
     const emailDomain = (config?.emailDomain as string) || defaultEmailAddress?.split('@')[1] || '';
+    const fetchErrorMessage = 'Unable to load email design settings. Please try again.';
+    const modalOkProps = hasSaveError ? {
+        ...okProps,
+        color: 'red' as const,
+        label: 'Retry'
+    } : okProps;
 
     return (
         <EmailDesignProvider accentColor={siteData.accent_color} settings={designSettings} onSettingsChange={handleDesignChange}>
             <EmailDesignModal
-                preview={
+                afterClose={() => {
+                    modal.resolveHide();
+                    modal.remove();
+                }}
+                dirty={saveState === 'unsaved'}
+                isLoading={isLoading || isError}
+                okProps={modalOkProps}
+                open={modal.visible}
+                preview={isError ? (
+                    <ErrorState message={fetchErrorMessage} />
+                ) : (
                     <EmailPreview
                         emailFooter={generalSettings.emailFooter}
                         footerLinkText="Manage your preferences"
@@ -224,11 +401,13 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                     >
                         <WelcomeEmailPreviewContent />
                     </EmailPreview>
-                }
+                )}
                 sidebar={
                     <Sidebar
                         emailDomain={emailDomain}
+                        errorMessage={isError ? fetchErrorMessage : undefined}
                         generalSettings={generalSettings}
+                        isLoading={isLoading}
                         siteTitle={siteTitle}
                         onGeneralChange={handleGeneralChange}
                     />
@@ -236,7 +415,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                 testId="welcome-email-customize-modal"
                 title="Welcome emails"
                 onClose={handleClose}
-                onSave={handleSave}
+                onSave={() => handleSave({fakeWhenUnchanged: true})}
             />
         </EmailDesignProvider>
     );

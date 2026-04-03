@@ -1,7 +1,8 @@
 import React from 'react';
-import {GhostOrb, cn} from '@tryghost/shade';
+import {GhostOrb} from '@tryghost/shade/components';
+import {cn} from '@tryghost/shade/utils';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {resolveAllColors} from './design-utils';
+import {resolveAllColors, resolveImageCorners} from './design-utils';
 import {useGlobalData} from '../../providers/global-data-provider';
 import type {EmailDesignSettings} from './types';
 
@@ -18,25 +19,6 @@ interface EmailPreviewProps {
     children?: React.ReactNode;
 }
 
-// --- Helper functions ---
-
-export function resolveFontFamily(category: string | undefined) {
-    return category === 'serif' ? 'Georgia, serif' : '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-}
-
-export function resolveButtonCorners(corners: string | undefined): string {
-    switch (corners) {
-    case 'square': return 'rounded-none';
-    case 'pill': return 'rounded-full';
-    case 'rounded':
-    default: return 'rounded-[6px]';
-    }
-}
-
-export function resolveImageCorners(corners: string | undefined): string {
-    return corners === 'rounded' ? 'rounded-md' : '';
-}
-
 // --- Sub-components ---
 
 const EnvelopeHeader: React.FC<{senderName?: string; senderEmail?: string; subject?: string}> = ({senderName, senderEmail, subject}) => {
@@ -45,7 +27,7 @@ const EnvelopeHeader: React.FC<{senderName?: string; senderEmail?: string; subje
     }
 
     return (
-        <div className="flex-column flex min-h-[77px] justify-center border-b border-grey-200 bg-white px-6 text-sm text-grey-700">
+        <div className="flex flex-col justify-center gap-1 border-b border-grey-200 bg-white p-6 text-sm text-grey-700">
             {senderName && (
                 <div className="flex gap-2">
                     <span className="font-semibold text-grey-900">{senderName}</span>
@@ -58,7 +40,7 @@ const EnvelopeHeader: React.FC<{senderName?: string; senderEmail?: string; subje
                 </div>
             )}
             {subject && (
-                <div className="mt-1 text-grey-900">{subject}</div>
+                <div className="text-base font-medium text-grey-900">{subject}</div>
             )}
         </div>
     );
@@ -69,8 +51,7 @@ const PublicationHeader: React.FC<{
     siteTitle?: string;
     backgroundColor?: string;
     textColor: string;
-    fontFamily: string;
-}> = ({showTitle, siteTitle, backgroundColor, textColor, fontFamily}) => {
+}> = ({showTitle, siteTitle, backgroundColor, textColor}) => {
     if (!showTitle || !siteTitle) {
         return null;
     }
@@ -81,8 +62,8 @@ const PublicationHeader: React.FC<{
             style={{backgroundColor: backgroundColor === 'transparent' ? undefined : backgroundColor}}
         >
             <h4
-                className="mb-1 text-[1.6rem] font-bold uppercase leading-tight tracking-tight"
-                style={{color: textColor, fontFamily}}
+                className="mb-1 text-[1.6rem] leading-tight font-bold tracking-tight uppercase"
+                style={{color: textColor}}
             >
                 {siteTitle}
             </h4>
@@ -94,18 +75,18 @@ const Footer: React.FC<{siteTitle?: string; footerLinkText?: string; emailFooter
     <div className="flex flex-col items-center pt-10">
         {emailFooter && (
             <div
-                className="whitespace-pre-line break-words px-8 py-3 text-center text-[1.3rem] leading-base"
+                className="px-8 py-3 text-center text-[1.3rem] leading-base break-words whitespace-pre-line"
                 style={{color}}
             >
                 {emailFooter}
             </div>
         )}
-        <div className="px-8 pb-14 pt-3 text-center text-[1.3rem]">
+        <div className="px-8 pt-3 pb-14 text-center text-[1.3rem]">
             <span style={{color}}>{siteTitle || 'Your publication'} &copy; {new Date().getFullYear()} &mdash; </span>
             <span className="underline" style={{color}}>{footerLinkText}</span>
         </div>
         {showBadge && (
-            <div className="flex flex-col items-center pb-[40px] pt-[10px]">
+            <div className="flex flex-col items-center pt-[10px] pb-[40px]">
                 <span className="inline-flex items-center px-2 py-1 text-[1.25rem] font-semibold tracking-tight" style={{color: textColor}}>
                     <GhostOrb className="mr-[6px] size-4" />
                     <span>Powered by Ghost</span>
@@ -123,15 +104,14 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
     const accentColor = siteData.accent_color;
 
     const colors = resolveAllColors(settings, accentColor);
-    const titleFont = resolveFontFamily(settings.title_font_category);
     const imageCornerClass = resolveImageCorners(settings.image_corners);
 
     return (
-        <div className="mx-auto w-full max-w-[700px] overflow-hidden rounded-[4px] text-black shadow-sm">
+        <div className="mx-auto flex max-h-full min-h-0 w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-sm">
             <EnvelopeHeader senderEmail={senderEmail} senderName={senderName} subject={subject} />
 
             <div
-                className="w-full overflow-y-auto text-sm"
+                className="min-h-0 w-full flex-1 overflow-y-auto text-sm"
                 style={{backgroundColor: colors.backgroundColor}}
             >
                 <div className="px-[7rem]" style={{backgroundColor: colors.headerBackgroundColor === 'transparent' ? undefined : colors.headerBackgroundColor}}>
@@ -143,7 +123,6 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
 
                     <PublicationHeader
                         backgroundColor="transparent"
-                        fontFamily={titleFont}
                         showTitle={showPublicationTitle}
                         siteTitle={siteTitle}
                         textColor={colors.headerTextColor}

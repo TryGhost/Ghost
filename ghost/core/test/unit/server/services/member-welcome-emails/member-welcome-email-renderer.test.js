@@ -39,7 +39,31 @@ describe('MemberWelcomeEmailRenderer', function () {
             });
 
             sinon.assert.calledOnce(lexicalRenderStub);
-            sinon.assert.calledWith(lexicalRenderStub, lexicalJson, {target: 'email'});
+            sinon.assert.calledWith(lexicalRenderStub, lexicalJson, {target: 'email', design: {
+                accentColor: '#ff0000',
+                accentContrastColor: '#FFFFFF',
+                backgroundColor: '#ffffff',
+                backgroundIsDark: false,
+                buttonBorderRadius: '6px',
+                buttonColor: '#ff0000',
+                buttonCorners: null,
+                buttonStyle: null,
+                buttonTextColor: '#FFFFFF',
+                dividerColor: '#e0e7eb',
+                hasOutlineButtons: false,
+                hasRoundedImageCorners: false,
+                headerBackgroundColor: null,
+                headerBackgroundIsDark: false,
+                imageCorners: null,
+                linkColor: '#ff0000',
+                linkStyle: 'underline',
+                postTitleColor: '#000000',
+                sectionTitleColor: null,
+                textColor: '#000000',
+                titleFontWeight: 'bold',
+                titleStrongWeight: '800',
+                titleWeight: '700'
+            }});
         });
 
         it('substitutes member template variables', async function () {
@@ -71,6 +95,24 @@ describe('MemberWelcomeEmailRenderer', function () {
 
             assert(result.html.includes('Welcome to Test Site'));
             assert(result.html.includes('at https://example.com'));
+        });
+
+        it('substitutes uuid replacement token', async function () {
+            lexicalRenderStub.resolves('<p><a href="https://partner.transistor.fm/ghost/%%{uuid}%%">Listen</a></p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com', uuid: 'abc-123-def'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert(result.html.includes('abc-123-def'), 'should contain member uuid in rendered HTML');
+            assert(!result.html.includes('%%{uuid}%%'), 'should not contain raw uuid token');
+            assert(!result.html.includes('%%%%'), 'should not contain token wrapping');
+            assert(!result.html.includes('%7Buuid%7D'), 'should not contain URL-encoded uuid placeholder');
+            assert.match(result.html, /href="https:\/\/partner\.transistor\.fm\/ghost\/abc-123-def"/);
         });
 
         it('inlines accentColor into link styles', async function () {
@@ -441,6 +483,39 @@ describe('MemberWelcomeEmailRenderer', function () {
             assert(result.html.includes('padding: 24px'));
             assert(result.html.includes('table class="btn"'));
             assert(result.html.includes('background-color: #ff0000'));
+        });
+
+        it('applies transistor card styles in welcome emails', async function () {
+            lexicalRenderStub.resolves(`
+                <table class="kg-card kg-transistor-card" cellspacing="0" cellpadding="0" border="0" width="100%">
+                    <tr>
+                        <td style="padding: 24px; text-align: center;">
+                            <a href="https://partner.transistor.fm/ghost/%%{uuid}%%" class="kg-transistor-title">
+                                Listen to your podcasts
+                            </a>
+                            <a href="https://partner.transistor.fm/ghost/%%{uuid}%%" class="kg-transistor-description">
+                                Subscribe and listen to your personal podcast feed in your favorite app.
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            `);
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com', uuid: 'abc-123-def'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert.match(result.html, /class="kg-card kg-transistor-card"[^>]*style="[^"]*border-radius: 10px/);
+            assert.match(result.html, /class="kg-card kg-transistor-card"[^>]*style="[^"]*border: 1px solid rgba\(0, 0, 0, 0.12\)/);
+            assert.match(result.html, /class="kg-transistor-title"[^>]*style="[^"]*display: block/);
+            assert.match(result.html, /class="kg-transistor-title"[^>]*style="[^"]*text-decoration: none/);
+            assert.match(result.html, /class="kg-transistor-description"[^>]*style="[^"]*max-width: 400px/);
+            assert.match(result.html, /href="https:\/\/partner\.transistor\.fm\/ghost\/abc-123-def"/);
+            assert(!result.html.includes('%%abc-123-def%%'));
         });
 
         it('applies bookmark and YouTube embed card styles', async function () {

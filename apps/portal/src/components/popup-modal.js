@@ -185,6 +185,11 @@ class PopupContent extends React.Component {
             }
         }
 
+        if (page === 'gift') {
+            pageClass += ' full-size';
+            popupSize = 'full';
+        }
+
         const freeProduct = hasFreeProductPrice({site});
         if ((freeProduct && noOfProducts > 2) || (!freeProduct && noOfProducts > 1)) {
             if (page === 'accountPlan') {

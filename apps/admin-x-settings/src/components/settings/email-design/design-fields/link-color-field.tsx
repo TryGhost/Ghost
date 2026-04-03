@@ -5,6 +5,7 @@ export const LinkColorField = () => {
     const {settings, onSettingsChange, accentColor} = useEmailDesign();
     return (
         <ColorPickerField
+            accentColor={accentColor}
             title="Link color"
             value={settings.link_color || accentColor}
             onChange={color => onSettingsChange({link_color: color})}

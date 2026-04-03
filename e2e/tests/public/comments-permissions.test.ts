@@ -1,21 +1,20 @@
-import {MemberFactory, PostFactory, createMemberFactory, createPostFactory} from '@/data-factory';
+import {MemberFactory, PostFactory, TierFactory, createMemberFactory, createPostFactory, createTierFactory} from '@/data-factory';
 import {PostPage} from '@/public-pages';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
-import {TiersService} from '@/helpers/services/tiers/tiers-service';
 import {expect, test} from '@/helpers/playwright';
 import {signInAsMember} from '@/helpers/playwright/flows/sign-in';
 
 test.describe('Ghost Public - Comments - Permission', () => {
     let postFactory: PostFactory;
     let memberFactory: MemberFactory;
+    let tierFactory: TierFactory;
     let settingsService: SettingsService;
-    let tiersService: TiersService;
 
     test.beforeEach(async ({page}) => {
         postFactory = createPostFactory(page.request);
         memberFactory = createMemberFactory(page.request);
+        tierFactory = createTierFactory(page.request);
         settingsService = new SettingsService(page.request);
-        tiersService = new TiersService(page.request);
     });
 
     test.describe('comments enabled for all members', () => {
@@ -60,7 +59,7 @@ test.describe('Ghost Public - Comments - Permission', () => {
 
         test('paid member - can add a comment', async ({page}) => {
             const post = await postFactory.create({status: 'published'});
-            const paidTier = await tiersService.getFirstPaidTier();
+            const paidTier = await tierFactory.getFirstPaidTier();
             const paidMember = await memberFactory.create({status: 'comped', tiers: [{id: paidTier.id}]});
             const commentText = 'This is a test comment from a paid member';
 
@@ -101,7 +100,7 @@ test.describe('Ghost Public - Comments - Permission', () => {
 
         test('paid member - can add a comment', async ({page}) => {
             const post = await postFactory.create({status: 'published'});
-            const paidTier = await tiersService.getFirstPaidTier();
+            const paidTier = await tierFactory.getFirstPaidTier();
             const member = await memberFactory.create({status: 'comped', tiers: [{id: paidTier.id}]});
             const commentText = 'This is a test comment from a paid member';
 

@@ -1,6 +1,8 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {AvgsDataItem} from '../newsletters';
-import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, EmptyIndicator, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, LucideIcon, Recharts, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, EmptyIndicator, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Tabs, TabsList} from '@tryghost/shade/components';
+import {LucideIcon, Recharts, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade/utils';
+import {calculateYAxisWidth} from '@tryghost/shade/app';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/global-data-provider';
@@ -22,12 +24,14 @@ const BarTooltipContent = ({active, payload}: BarTooltipProps) => {
     }
 
     const currentItem = payload[0].payload;
-    const sendDate = currentItem.send_date;
+    const sendDate = typeof currentItem.send_date === 'string'
+        ? currentItem.send_date
+        : currentItem.send_date.toISOString().split('T')[0];
 
     return (
-        <div className="min-w-[220px] max-w-[240px] rounded-lg border bg-background px-3 py-2 shadow-lg">
+        <div className="max-w-[240px] min-w-[220px] rounded-lg border bg-background px-3 py-2 shadow-lg">
             <div className="mb-2 flex w-full flex-col border-b pb-2">
-                <span className="text-sm font-semibold leading-tight">{currentItem.post_title}</span>
+                <span className="text-sm leading-tight font-semibold">{currentItem.post_title}</span>
                 <span className="text-sm text-muted-foreground">Sent on {formatDisplayDate(sendDate)}</span>
             </div>
 
@@ -234,7 +238,7 @@ const NewsletterKPIs: React.FC<{
 
     return (
         <Tabs defaultValue={initialTab} variant='kpis'>
-            <TabsList className={`md:visible! md:grid! -mx-6 hidden grid-cols-3 ${gridClass}`}>
+            <TabsList className={`-mx-6 hidden grid-cols-3 md:visible! md:grid! ${gridClass}`}>
                 <KpiTabTrigger className={`${!emailTrackOpensEnabled && !emailTrackClicksEnabled && 'cursor-auto after:hidden'}`} value="total-subscribers" onClick={() => {
                     handleTabChange('total-subscribers');
                 }}>

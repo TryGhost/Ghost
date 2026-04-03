@@ -1,4 +1,4 @@
-import {DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@tryghost/shade';
+import {DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@tryghost/shade/components';
 
 const ShareModal = () => {
     return (

@@ -3,7 +3,8 @@ import TagsContent from './components/tags-content';
 import TagsHeader from './components/tags-header';
 import TagsLayout from './components/tags-layout';
 import TagsList from './components/tags-list';
-import {Button, EmptyIndicator, LoadingIndicator, LucideIcon} from '@tryghost/shade';
+import {Button, EmptyIndicator, LoadingIndicator} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {useBrowseTags} from '@tryghost/admin-x-framework/api/tags';
 import {useLocation} from '@tryghost/admin-x-framework';
 

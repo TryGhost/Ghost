@@ -3,7 +3,9 @@ import React, {useEffect, useState} from 'react';
 import getUsername from '../../utils/get-username';
 import {Account} from '@src/api/activitypub';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Avatar, AvatarFallback, AvatarImage, Badge, H3, HoverCard, HoverCardContent, HoverCardTrigger, LucideIcon, Skeleton, abbreviateNumber} from '@tryghost/shade';
+import {Avatar, AvatarFallback, AvatarImage, Badge, HoverCard, HoverCardContent, HoverCardTrigger, Skeleton} from '@tryghost/shade/components';
+import {H3} from '@tryghost/shade/primitives';
+import {LucideIcon, abbreviateNumber} from '@tryghost/shade/utils';
 import {openLinksInNewTab, sanitizeHtml, stripHtml} from '../../utils/content-formatters';
 import {useAccountForUser} from '../../hooks/use-activity-pub-queries';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
@@ -109,7 +111,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
             </HoverCardTrigger>
             <HoverCardContent
                 align={align}
-                className='outline-hidden w-[320px] cursor-default rounded-2xl border-0 p-5 text-left text-gray-900 shadow-[0_5px_24px_0px_rgba(0,0,0,0.02),0px_2px_5px_0px_rgba(0,0,0,0.07),0px_0px_1px_0px_rgba(0,0,0,0.25)] dark:bg-[#101114] dark:shadow-none'
+                className='w-[320px] cursor-default rounded-2xl border-0 p-5 text-left text-gray-900 shadow-[0_5px_24px_0px_rgba(0,0,0,0.02),0px_2px_5px_0px_rgba(0,0,0,0.07),0px_0px_1px_0px_rgba(0,0,0,0.25)] outline-hidden dark:bg-[#101114] dark:shadow-none'
                 side={side}
                 sideOffset={12}
                 onClick={e => e.stopPropagation()}
@@ -170,7 +172,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
                     {isLoading ? (
                         <Skeleton className='h-4 w-48' />
                     ) : !hasLoadingError && bio ? (
-                        <div dangerouslySetInnerHTML={{__html: sanitizeHtml(bio)}} className='leading-tight dark:text-gray-300 [&_.invisible]:hidden [&_a:hover]:underline [&_a]:text-[#00a4eb]' />
+                        <div dangerouslySetInnerHTML={{__html: sanitizeHtml(bio)}} className='leading-tight dark:text-gray-300 [&_.invisible]:hidden [&_a]:text-[#00a4eb] [&_a:hover]:underline' />
                     ) : null}
                 </div>
             </HoverCardContent>

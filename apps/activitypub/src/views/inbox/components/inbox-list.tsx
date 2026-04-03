@@ -3,7 +3,8 @@ import Layout from '@src/components/layout';
 import Reader from './reader';
 import TopicFilter, {Topic} from '@src/components/topic-filter';
 import {Activity} from '@src/api/activitypub';
-import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, EmptyIndicator, LoadingIndicator, LucideIcon, Separator} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, EmptyIndicator, LoadingIndicator, Separator} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {useEffect, useRef, useState} from 'react';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
@@ -173,7 +174,7 @@ const InboxList:React.FC<InboxListProps> = ({
                     setIsReaderOpen(open);
                 }}
             >
-                <DialogContent className='animate-none! focus:outline-hidden inset-y-3 h-[calc(100vh-24px)] w-screen max-w-[calc(100vw-24px)] p-0 dark:bg-gray-950'>
+                <DialogContent className='inset-y-3 h-[calc(100vh-24px)] w-screen max-w-[calc(100vw-24px)] animate-none! p-0 focus:outline-hidden dark:bg-gray-950'>
                     <DialogHeader className='hidden'>
                         <DialogTitle>Reader</DialogTitle>
                         <DialogDescription>Ghost reader for long form articles</DialogDescription>
