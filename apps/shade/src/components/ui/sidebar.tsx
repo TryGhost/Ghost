@@ -640,7 +640,7 @@ const SidebarMenuBadge = React.forwardRef<
     <div
         ref={ref}
         className={cn(
-            'absolute right-2 flex h-5 min-w-5 items-center justify-center rounded-md px-1 text-sm font-medium tabular-nums text-gray-600 select-none pointer-events-none',
+            'absolute right-2 flex h-5 min-w-5 items-center justify-center rounded-md px-1 text-sm font-medium tabular-nums text-text-secondary select-none pointer-events-none',
             'peer-hover/menu-button: peer-data-[active=true]/menu-button:text-sidebar-accent-foreground',
             'peer-data-[size=sm]/menu-button:top-1.5',
             'peer-data-[size=default]/menu-button:top-2',

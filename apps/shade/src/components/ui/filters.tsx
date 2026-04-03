@@ -122,7 +122,7 @@ export const DEFAULT_I18N: FilterI18nConfig = {
     selectedCount: 'selected',
     percent: '%',
     defaultCurrency: '$',
-    defaultColor: '#000000',
+    defaultColor: 'currentColor',
     addFilterTitle: '',
 
     // Operators

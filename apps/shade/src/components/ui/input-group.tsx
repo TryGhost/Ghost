@@ -10,7 +10,7 @@ function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
     return (
         <div
             className={cn(
-                'group/input-group dark:bg-input/30 border-transparent bg-gray-150 dark:bg-gray-900 relative flex w-full items-center rounded-md border outline-hidden transition-[color,box-shadow]',
+                'group/input-group border-border-default bg-surface-elevated relative flex w-full items-center rounded-md border outline-hidden transition-[color,box-shadow]',
                 'h-9 has-[>textarea]:h-auto',
 
                 // Variants based on alignment.

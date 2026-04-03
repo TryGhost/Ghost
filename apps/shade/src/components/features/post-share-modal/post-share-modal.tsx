@@ -64,7 +64,7 @@ const PostShareModal: React.FC<PostShareModalProps> = (
                 </div>
                 <DialogHeader className='relative -mt-5'>
                     <DialogTitle className='text-3xl leading-[1.15em] font-bold'>
-                        <span className='text-green-500'>{primaryTitle}</span><br />
+                        <span className='text-state-success'>{primaryTitle}</span><br />
                         <span>{secondaryTitle}</span>
                     </DialogTitle>
                     {description &&
