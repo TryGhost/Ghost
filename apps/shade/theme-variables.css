@@ -37,13 +37,13 @@
     --border-strong: hsl(210 13% 79%);
     --focus-ring: var(--ring);
     --state-info: hsl(198 100% 51%);
-    --state-info-foreground: hsl(0 0% 100%);
+    --state-info-foreground: hsl(216 11% 9%);
     --state-success: hsl(144 100% 39%);
-    --state-success-foreground: hsl(0 0% 100%);
+    --state-success-foreground: hsl(216 11% 9%);
     --state-warning: hsl(47 100% 50%);
     --state-warning-foreground: hsl(216 11% 9%);
     --state-danger: var(--destructive);
-    --state-danger-foreground: var(--destructive-foreground);
+    --state-danger-foreground: hsl(216 11% 5%);
     --control-height: 34px;
     --input-group-radius: 9px;
     --chart-1: hsl(201 100% 50%);
@@ -117,7 +117,7 @@
     --state-warning: hsl(47 100% 65%);
     --state-warning-foreground: hsl(216 11% 9%);
     --state-danger: hsl(354 81% 54%);
-    --state-danger-foreground: hsl(216 11% 9%);
+    --state-danger-foreground: hsl(216 11% 5%);
     --chart-1: hsl(201 100% 50%);
     --chart-2: hsl(201 88% 70%);
     --chart-3: hsl(201 85% 80%);
