@@ -45,13 +45,13 @@ const ToasterPortal = () => {
                     icons={{
                         error: <Icon.ErrorFill className='text-red' />,
                         success: <Icon.SuccessFill className='text-green' />,
-                        info: <Icon.InfoFill className='text-gray-500' />
+                        info: <Icon.InfoFill className='text-text-tertiary' />
                     }}
                     position='bottom-left'
                     toastOptions={{
                         classNames: {
                             title: 'mt-[-1px]! text-md! font-semibold! leading-tighter! tracking-[0.1px]!',
-                            description: 'text-gray-900! dark:text-gray-300! text-sm! mt-px!',
+                            description: 'text-text-primary! text-sm! mt-px!',
                             icon: 'ml-0!'
                         },
                         style: {

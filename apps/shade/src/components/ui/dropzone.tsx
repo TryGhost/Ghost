@@ -71,11 +71,11 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(({
         tabIndex: disabled ? -1 : 0,
         'aria-disabled': disabled,
         className: cn(
-            'flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed p-10 transition-colors outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+            'flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed p-10 transition-colors outline-hidden focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
             disabled && 'cursor-not-allowed opacity-60 pointer-events-none',
-            isDragReject && 'border-red-500 bg-red-50 dark:bg-red-950/20',
-            isDragActive && !isDragReject && !disabled && 'border-green-500 bg-green-50 dark:bg-green-950/20',
-            !isDragActive && (disabled ? 'border-grey-300' : 'border-grey-300 hover:border-grey-400'),
+            isDragReject && 'border-state-danger bg-state-danger/10',
+            isDragActive && !isDragReject && !disabled && 'border-state-success bg-state-success/10',
+            !isDragActive && (disabled ? 'border-border-default' : 'border-border-default hover:border-border-strong'),
             className
         )
     }) as React.HTMLAttributes<HTMLDivElement> & {ref?: React.Ref<HTMLDivElement>};
