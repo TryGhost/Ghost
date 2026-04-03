@@ -213,4 +213,25 @@ describe('token-discipline-check script', function () {
         assert.equal(report.strict_violations.raw_hex.length, 0);
         assert.equal(report.allowlisted_count, 1);
     });
+
+    it('handles malformed allowlist entries without throwing', function () {
+        const fixture = createFixtureRepo({
+            sourceContent: 'export const Fixture = () => <div className="text-gray-700">x</div>;\n',
+            baseline: {
+                findings: {
+                    raw_hex: [],
+                    palette_class: [],
+                    arbitrary_utility: []
+                }
+            },
+            allowlist: {
+                entries: [null]
+            }
+        });
+
+        const {result, report} = runChecker(fixture);
+
+        assert.equal(result.status, 1);
+        assert.ok(report.configuration_errors.some(error => error.includes('Allowlist entry is malformed')));
+    });
 });

@@ -147,21 +147,26 @@ function validateAllowlist(allowlist) {
     }
 
     for (const entry of allowlist.entries) {
+        if (typeof entry !== 'object' || entry === null) {
+            errors.push(`Allowlist entry is malformed: ${String(entry)}`);
+            continue;
+        }
+
         for (const field of REQUIRED_ALLOWLIST_FIELDS) {
             if (!(field in entry)) {
                 errors.push(`Allowlist entry is missing required field: ${field}`);
             }
         }
 
-        if (entry && !Object.keys(RULES).includes(entry.rule)) {
+        if (!Object.keys(RULES).includes(entry.rule)) {
             errors.push(`Allowlist entry has unknown rule: ${String(entry.rule)}`);
         }
 
-        if (entry && (!Number.isInteger(entry.line) || entry.line <= 0)) {
+        if (!Number.isInteger(entry.line) || entry.line <= 0) {
             errors.push(`Allowlist entry has invalid line for ${entry.file || '<unknown>'}`);
         }
 
-        if (entry && !Array.isArray(entry.matches)) {
+        if (!Array.isArray(entry.matches)) {
             errors.push(`Allowlist entry has invalid matches for ${entry.file || '<unknown>'}`);
         }
     }
@@ -173,6 +178,18 @@ function buildAllowlistIndex(allowlist) {
     const index = new Map();
 
     for (const entry of allowlist.entries) {
+        if (typeof entry !== 'object' || entry === null) {
+            continue;
+        }
+
+        if (!Object.keys(RULES).includes(entry.rule)) {
+            continue;
+        }
+
+        if (typeof entry.file !== 'string' || !Number.isInteger(entry.line)) {
+            continue;
+        }
+
         const key = findingKey(entry.rule, entry.file, entry.line);
         if (!index.has(key)) {
             index.set(key, []);
