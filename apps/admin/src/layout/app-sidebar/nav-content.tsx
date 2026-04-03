@@ -28,7 +28,7 @@ function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
             </NavMenuItem.Link>
             <a href="#/editor/post"
                 aria-label="Create new post"
-                className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 text-gray-700 transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                className="absolute top-0 right-0 hidden size-8 items-center justify-center rounded-full p-0 text-gray-700 transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             >
                 <LucideIcon.Plus
                     size={20}
@@ -60,7 +60,7 @@ function MembersNavItemContent({
                 <NavMenuItem.Label>Members</NavMenuItem.Label>
             </NavMenuItem.Link>
             {count != null && (
-                <SidebarMenuBadge>{(formatNumber as (value: number) => string)(count)}</SidebarMenuBadge>
+                <SidebarMenuBadge className="hidden">{(formatNumber as (value: number) => string)(count)}</SidebarMenuBadge>
             )}
         </>
     );

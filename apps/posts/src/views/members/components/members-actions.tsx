@@ -184,7 +184,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
             {/* Actions Dropdown */}
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button data-testid="members-actions" variant="outline">
+                    <Button data-testid="members-actions" size="icon" variant="secondary">
                         <LucideIcon.MoreHorizontal className="size-4" />
                     </Button>
                 </DropdownMenuTrigger>

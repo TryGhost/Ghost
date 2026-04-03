@@ -171,7 +171,7 @@ const ManageViewPopover: React.FC<ManageViewPopoverProps> = ({filter, existingVi
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="outline">
+                <Button size="sm" variant="shadow">
                     {activeView ? 'Edit view' : 'Save view'}
                 </Button>
             </PopoverTrigger>

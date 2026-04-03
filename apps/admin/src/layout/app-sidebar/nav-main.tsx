@@ -53,7 +53,12 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         </NavMenuItem>
                     )}
                     <NavMenuItem className="group/viewsite relative">
-                        <NavMenuItem.Link to="site">
+                        {/* <NavMenuItem.Link to="site"> */}
+                        <NavMenuItem.Link
+                            to={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
                             <LucideIcon.AppWindow />
                             <NavMenuItem.Label>View site</NavMenuItem.Label>
                         </NavMenuItem.Link>

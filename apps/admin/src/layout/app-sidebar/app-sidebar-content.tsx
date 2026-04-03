@@ -24,11 +24,11 @@ function AppSidebarContent() {
             <div className="flex flex-col gap-2 sidebar:gap-4">
                 <NavMain />
                 <NavContent />
-                <NavGhostPro />
+                <NavGhostPro className="hidden" />
             </div>
             <div className={`flex flex-col gap-2 sidebar:gap-4 ${bannerContainerClassName}`}>
                 <AppSidebarBanner banner={banner} />
-                <NavSettings className="pb-0" />
+                <NavSettings className="hidden pb-0" />
             </div>
         </SidebarContent>
     )

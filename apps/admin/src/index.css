@@ -95,11 +95,9 @@
 
 /* Base layout - grid structure for alerts and main content */
 body.react-admin {
-    height: 100svh;
     display: grid;
     grid-template-rows: auto 1fr;
     grid-template-columns: 100%;
-    overflow: hidden; /* Prevent body scroll */
 }
 
 /* Alerts show at the top and push content down */
@@ -119,7 +117,9 @@ body.react-admin #root .shade.shade-admin {
     grid-row: 2;
     grid-column: 1;
     min-height: 0;
-    overflow: hidden;
+    max-width: 1480px;
+    margin-inline: auto;
+    width: 100%;
 }
 
 /* iOS safe area handling for mobile navbar */

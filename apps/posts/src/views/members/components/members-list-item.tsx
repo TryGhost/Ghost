@@ -71,7 +71,7 @@ function MembersListItemName({item, onClick}: { item: Member; onClick?: (memberI
         <div className="flex min-w-0 items-center gap-3">
             <MemberAvatar
                 avatarImage={item.avatar_image}
-                className="size-10 min-w-10 md:size-10 md:min-w-10"
+                className="size-8 min-w-8"
                 memberEmail={item.email}
                 memberId={item.id}
                 memberName={item.name}
@@ -90,7 +90,7 @@ function MembersListItemName({item, onClick}: { item: Member; onClick?: (memberI
                         onClick(item.id);
                     } : undefined}
                 >
-                    <span className="block truncate font-medium">
+                    <span className="block truncate font-semibold">
                         {item.name || item.email || 'Anonymous'}
                     </span>
                 </a>

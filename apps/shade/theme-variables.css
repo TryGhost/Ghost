@@ -6,8 +6,8 @@
     --muted-foreground: hsl(210 13% 55%);
     --popover: hsl(0 0% 100%);
     --popover-foreground: hsl(216 11% 9%);
-    --border: hsl(204 15% 91%);
-    --input: hsl(204 14% 93%);
+    --border: hsl(204 14% 93%);
+    --input: hsl(207 13% 83%);
     --card: hsl(0 0% 100%);
     --card-foreground: hsl(216 11% 9%);
     --primary: hsl(216 11% 9%);
@@ -44,7 +44,7 @@
     --state-warning-foreground: hsl(216 11% 9%);
     --state-danger: var(--destructive);
     --state-danger-foreground: hsl(216 11% 5%);
-    --control-height: 34px;
+    --control-height: 32px;
     --input-group-radius: 9px;
     --chart-1: hsl(201 100% 50%);
     --chart-2: hsl(201 88% 70%);
@@ -62,13 +62,13 @@
     --chart-blue: hsl(198 100% 51%);
     --chart-darkblue: hsl(226 91% 61%);
     --chart-purple: hsl(273 100% 64%);
-    --sidebar-background: hsl(240 11% 98%);
+    --sidebar-background: hsl(0 0% 100%);
     --sidebar-foreground: hsl(216 11% 9%);
     --sidebar-primary: hsl(216 11% 9%);
     --sidebar-primary-foreground: hsl(0 0% 100%);
-    --sidebar-accent: hsl(204 14% 93%);
+    --sidebar-accent: hsl(210 10% 96%);
     --sidebar-accent-foreground: hsl(216 11% 9%);
-    --sidebar-border: hsl(200 12% 96%);
+    --sidebar-border: hsl(0 0% 100%);
     --sidebar-ring: hsl(215 13% 63%);
     --mobile-navbar-height: 64px;
 }

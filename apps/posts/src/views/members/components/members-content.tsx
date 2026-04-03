@@ -3,7 +3,7 @@ import {cn} from '@tryghost/shade/utils';
 
 const MembersContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (
-        <section className={cn('size-full grow min-w-0 flex flex-col gap-6 p-4 lg:p-8', className)} {...props}>
+        <section className={cn('size-full grow min-w-0 flex flex-col gap-6 py-4 lg:py-8', className)} {...props}>
             {children}
         </section>
     );

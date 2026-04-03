@@ -110,7 +110,7 @@ function UserMenu(props: UserMenuProps) {
                     </div>
                     <div className="grid flex-1 text-left text-base leading-tight">
                         <span className="truncate font-semibold">{currentUser.data?.name}</span>
-                        <span className="-mt-px truncate text-xs text-muted-foreground">
+                        <span className="-mt-px truncate text-sm text-muted-foreground">
                             {currentUser.data?.email}
                         </span>
                     </div>

@@ -11,7 +11,7 @@ const Table = React.forwardRef<
     <div className="relative w-full">
         <table
             ref={ref}
-            className={cn('w-full caption-bottom text-sm', className)}
+            className={cn('w-full caption-bottom', className)}
             {...props}
         />
     </div>
@@ -60,7 +60,7 @@ const TableRow = React.forwardRef<
     <tr
         ref={ref}
         className={cn(
-            'group relative border-b data-[state=selected]:bg-muted',
+            'group relative data-[state=selected]:bg-muted',
             className
         )}
         {...props}
@@ -73,7 +73,7 @@ const headVariants = cva(
     {
         variants: {
             variant: {
-                default: 'h-10 px-2 text-left text-xs font-medium tracking-wide text-text-secondary uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+                default: 'h-[52px] px-2 text-left text-sm font-medium tracking-wide text-text-secondary [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
                 cardhead: 'text-base font-normal [&>div]:px-0'
             }
         },
@@ -102,7 +102,7 @@ type TableHeadButtonProps = React.ComponentProps<typeof Button>;
 
 const TableHeadButton: React.FC<TableHeadButtonProps> = ({className, children, ...props}) => {
     const buttonClassName = cn(
-        'text-xs uppercase tracking-wide leading-4 text-right text-text-secondary hover:bg-transparent px-0 [&_svg]:size-4 gap-1',
+        'text-sm tracking-wide leading-4 text-right text-text-secondary hover:bg-transparent px-0 [&_svg]:size-4 gap-1',
         className
     );
     return (

@@ -120,8 +120,8 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const hasFilters = filters.length > 0;
     const showIconOnlyTrigger = iconOnly && !hasFilters;
     const addFilterButtonClassName = cn(
-        'border-input bg-white dark:bg-background',
-        showIconOnlyTrigger && 'min-w-[34px] gap-0 px-2 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-sm !px-3'
+        hasFilters ? 'h-7 font-semibold bg-background shadow-xs hover:shadow-sm rounded-full' : 'h-[var(--control-height)] bg-secondary border-none rounded-full dark:bg-background font-semibold',
+        showIconOnlyTrigger && 'w-[32px] gap-0 px-2 text-[0px] lg:w-auto lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-sm !px-3'
     );
 
     const clearAndSaveButtons = hasFilters ? (

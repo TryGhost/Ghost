@@ -15,7 +15,7 @@ export function UserMenuHeader({ name, email, children }: UserMenuHeaderProps) {
                     <span className="truncate text-base font-semibold text-foreground">
                         {name}
                     </span>
-                    <span className="text-foreground-muted -mt-px truncate text-xs">
+                    <span className="text-foreground-muted -mt-px truncate text-sm">
                         {email}
                     </span>
                 </div>
