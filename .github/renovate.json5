@@ -2,8 +2,6 @@
     "extends": [
         "github>tryghost/renovate-config"
     ],
-    // This reduces PR churn when managing lots of dependencies
-    "rebaseWhen": "never",
     // We have to disable platform based automerge (forcing renovate to do it manually)
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,
