@@ -19,7 +19,7 @@ const buttonVariants = cva(
                 dropdown: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground'
             },
             size: {
-                default: 'h-[34px] px-3 py-2',
+                default: 'h-(--control-height) px-3 py-2',
                 sm: 'h-7 rounded-md px-3 text-xs [&_svg]:size-3',
                 lg: 'h-11 rounded-md px-8 text-md font-semibold',
                 icon: 'size-9'

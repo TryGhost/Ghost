@@ -279,6 +279,7 @@ export const SHADE_TOKEN_NAMES = [
     'semantic-border-default',
     'semantic-border-strong',
     'semantic-border-subtle',
+    'control-height',
     'semantic-focus-ring',
     'semantic-font-body',
     'semantic-font-code',

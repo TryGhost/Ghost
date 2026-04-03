@@ -52,6 +52,7 @@
     --semantic-text-body-lg: var(--text-lg);
     --semantic-leading-body: var(--leading-base);
     --semantic-leading-heading: var(--leading-tight);
+    --control-height: 34px;
     --semantic-radius-control: var(--radius-md);
     --semantic-radius-surface: var(--radius-lg);
     --semantic-radius-badge: var(--radius-full);
