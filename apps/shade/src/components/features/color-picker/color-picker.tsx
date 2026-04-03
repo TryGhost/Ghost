@@ -62,7 +62,7 @@ export type ColorPickerProps = Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> 
 
 export const ColorPickerRoot = ({
     value,
-    defaultValue = '#000000',
+    defaultValue = 'rgb(0 0 0)',
     onChange,
     className,
     ...props
@@ -245,10 +245,10 @@ export const ColorPickerHue = ({
             onValueChange={([value]) => setHue(value)}
             {...props}
         >
-            <Slider.Track className="relative my-0.5 h-3 w-full grow rounded-full bg-[linear-gradient(90deg,#FF0000,#FFFF00,#00FF00,#00FFFF,#0000FF,#FF00FF,#FF0000)]">
+            <Slider.Track className="relative my-0.5 h-3 w-full grow rounded-full bg-[linear-gradient(90deg,red,yellow,lime,aqua,blue,magenta,red)]">
                 <Slider.Range className="absolute h-full" />
             </Slider.Track>
-            <Slider.Thumb className="block size-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50" />
+            <Slider.Thumb className="block size-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50" />
         </Slider.Root>
     );
 };
@@ -274,7 +274,7 @@ export const ColorPickerAlpha = ({
                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent to-black/50 dark:to-white/50" />
                 <Slider.Range className="absolute h-full rounded-full bg-transparent" />
             </Slider.Track>
-            <Slider.Thumb className="block size-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50" />
+            <Slider.Thumb className="block size-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50" />
         </Slider.Root>
     );
 };

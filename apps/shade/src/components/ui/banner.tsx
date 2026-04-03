@@ -9,19 +9,19 @@ const bannerVariants = cva(
     {
         variants: {
             variant: {
-                default: 'border border-border bg-background shadow-sm hover:shadow-md dark:border-gray-900 dark:bg-gray-925',
+                default: 'border border-border-default bg-surface-panel shadow-sm hover:shadow-md',
                 gradient: [
-                    'cursor-pointer border border-gray-100 bg-white dark:border-gray-950 dark:bg-black',
+                    'cursor-pointer border border-border-subtle bg-surface-elevated',
                     'shadow-[-7px_-6px_42px_8px_rgb(75_225_226_/_28%),7px_6px_42px_8px_rgb(202_103_255_/_32%)]',
                     'dark:shadow-[-7px_-6px_42px_8px_rgb(75_225_226_/_36%),7px_6px_42px_8px_rgb(202_103_255_/_38%)]',
                     'hover:shadow-[-7px_-4px_42px_10px_rgb(75_225_226_/_38%),7px_8px_42px_10px_rgb(202_103_255_/_42%)]',
                     'dark:hover:shadow-[-7px_-4px_42px_10px_rgb(75_225_226_/_50%),7px_8px_42px_10px_rgb(202_103_255_/_52%)]',
                     'hover:translate-y-[-2px] hover:scale-[1.01]'
                 ],
-                info: 'border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30',
-                success: 'border border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30',
-                warning: 'border border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/30',
-                destructive: 'bg-white shadow-sm dark:bg-gray-950'
+                info: 'border border-state-info/40 bg-state-info/10',
+                success: 'border border-state-success/40 bg-state-success/10',
+                warning: 'border border-state-warning/40 bg-state-warning/10',
+                destructive: 'bg-surface-panel shadow-sm'
             },
             size: {
                 sm: 'p-2 text-sm',
@@ -87,7 +87,7 @@ const Banner = React.forwardRef<HTMLDivElement, BannerProps>(
                 {dismissible && (
                     <Button
                         aria-label="Dismiss notification"
-                        className="absolute top-1 right-1 size-8 text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                        className="absolute top-1 right-1 size-8 text-text-secondary hover:text-text-primary"
                         size="icon"
                         variant="ghost"
                         onClick={handleDismiss}

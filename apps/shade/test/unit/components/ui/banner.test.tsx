@@ -22,14 +22,14 @@ describe('Banner Component', () => {
         const banner = screen.getByRole('status');
 
         assert.ok(banner, 'Banner should be rendered with default role');
-        assert.ok(banner.className.includes('bg-background'), 'Should have default variant class');
+        assert.ok(banner.className.includes('bg-surface-panel'), 'Should have default variant class');
     });
 
     it.each([
-        {variant: 'info' as const, expectedClass: 'bg-blue-50'},
-        {variant: 'success' as const, expectedClass: 'bg-green-50'},
-        {variant: 'warning' as const, expectedClass: 'bg-yellow-50'},
-        {variant: 'destructive' as const, expectedClass: 'bg-white'}
+        {variant: 'info' as const, expectedClass: 'bg-state-info/10'},
+        {variant: 'success' as const, expectedClass: 'bg-state-success/10'},
+        {variant: 'warning' as const, expectedClass: 'bg-state-warning/10'},
+        {variant: 'destructive' as const, expectedClass: 'bg-surface-panel'}
     ])('applies $variant variant correctly', ({variant, expectedClass}) => {
         render(<Banner variant={variant}>Content</Banner>);
         const banner = screen.getByRole('status');
@@ -41,7 +41,7 @@ describe('Banner Component', () => {
         render(<Banner variant="gradient">Content</Banner>);
         const banner = screen.getByRole('status');
 
-        assert.ok(banner.className.includes('bg-white'), 'Should have gradient variant class');
+        assert.ok(banner.className.includes('bg-surface-elevated'), 'Should have gradient variant class');
         assert.ok(banner.className.includes('cursor-pointer'), 'Gradient variant should be clickable');
     });
 
