@@ -55,12 +55,17 @@ const forTag = (id, attrs, options) => {
         attrs.url = urlService.getUrlByResourceId(id, {absolute: true});
     }
 
-    return attrs;
-};
-
-const forImage = (path) => {
     return urlUtils.urlFor('image', {image: path}, true);
 };
+
+const forActivityPub = (resource) => {
+    return urlUtils.urlFor('activitypub', resource, true);
+};
+
+module.exports.forPost = forPost;
+module.exports.forUser = forUser;
+module.exports.forTag = forTag;
+module.exports.forActivityPub = forActivityPub;
 
 module.exports.forPost = forPost;
 module.exports.forUser = forUser;
