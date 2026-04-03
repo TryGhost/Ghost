@@ -56,13 +56,9 @@
         "level": "info",
         "useLocalTime": false,
         "rotation": {
-            "enabled": true,
+            "enabled": false,
             "period": "1d",
-            "count": 10,
-            "rotateExisting": true,
-            "threshold": "10m",
-            "totalSize": "20m",
-            "gzip": true
+            "count": 10
         },
         "transports": [
             "stdout"
