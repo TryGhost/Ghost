@@ -30,7 +30,11 @@ function toPosixPath(value) {
     return value.split(path.sep).join('/');
 }
 
-function findingKey(rule, file, line) {
+function findingKey(rule, file, line, discriminator) {
+    if (discriminator !== undefined && discriminator !== null && String(discriminator).length > 0) {
+        return `${rule}|${file}|${line}|${String(discriminator)}`;
+    }
+
     return `${rule}|${file}|${line}`;
 }
 
@@ -231,7 +235,32 @@ function buildBaselineIndex(baseline) {
         const rows = Array.isArray(baselineFindings[rule]) ? baselineFindings[rule] : [];
         for (const row of rows) {
             if (row && typeof row.file === 'string' && Number.isInteger(row.line)) {
-                result[rule].add(findingKey(rule, row.file, row.line));
+                let hasSpecificDiscriminator = false;
+
+                if (Number.isInteger(row.column) && row.column > 0) {
+                    result[rule].add(findingKey(rule, row.file, row.line, `column:${row.column}`));
+                    hasSpecificDiscriminator = true;
+                }
+
+                if (typeof row.token === 'string' && row.token.length > 0) {
+                    result[rule].add(findingKey(rule, row.file, row.line, `token:${row.token}`));
+                    hasSpecificDiscriminator = true;
+                }
+
+                if (Array.isArray(row.matches) && row.matches.length > 0) {
+                    for (const match of row.matches) {
+                        if (typeof match !== 'string' || match.length === 0) {
+                            continue;
+                        }
+
+                        result[rule].add(findingKey(rule, row.file, row.line, `token:${match}`));
+                        hasSpecificDiscriminator = true;
+                    }
+                }
+
+                if (!hasSpecificDiscriminator) {
+                    result[rule].add(findingKey(rule, row.file, row.line));
+                }
             }
         }
     }
@@ -455,8 +484,26 @@ export async function runTokenDisciplineCheck(customOptions = {}) {
     if (options.mode === MODE_NO_NEW) {
         for (const rule of Object.keys(regressions)) {
             for (const finding of activeFindings[rule]) {
-                const key = findingKey(rule, finding.file, finding.line);
-                if (!baselineIndex[rule].has(key)) {
+                const lineKey = findingKey(rule, finding.file, finding.line);
+                const tokens = (Array.isArray(finding.matches) ? finding.matches : [])
+                    .filter(value => typeof value === 'string' && value.length > 0);
+
+                if (tokens.length > 0) {
+                    const missingTokens = tokens.filter((token) => {
+                        const tokenKey = findingKey(rule, finding.file, finding.line, `token:${token}`);
+                        return !baselineIndex[rule].has(tokenKey) && !baselineIndex[rule].has(lineKey);
+                    });
+
+                    if (missingTokens.length > 0) {
+                        regressions[rule].push({
+                            ...finding,
+                            matches: missingTokens
+                        });
+                    }
+                    continue;
+                }
+
+                if (!baselineIndex[rule].has(lineKey)) {
                     regressions[rule].push(finding);
                 }
             }

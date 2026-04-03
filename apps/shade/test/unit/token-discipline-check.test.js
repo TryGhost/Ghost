@@ -122,6 +122,56 @@ describe('token-discipline-check script', function () {
         assert.equal(report.configuration_errors.length, 0);
     });
 
+    it('fails CI mode when a new token is added on an already-baselined line', function () {
+        const fixture = createFixtureRepo({
+            sourceContent: 'export const Fixture = () => <div className="text-gray-700 bg-gray-700">x</div>;\n',
+            baseline: {
+                findings: {
+                    raw_hex: [],
+                    palette_class: [
+                        {
+                            file: 'apps/shade/src/components/fixture.tsx',
+                            line: 1,
+                            matches: ['text-gray-700']
+                        }
+                    ],
+                    arbitrary_utility: []
+                }
+            },
+            allowlist: {entries: []}
+        });
+
+        const {result, report} = runChecker(fixture);
+
+        assert.equal(result.status, 1);
+        assert.equal(report.regressions.palette_class.length, 1);
+        assert.deepEqual(report.regressions.palette_class[0].matches, ['bg-gray-700']);
+    });
+
+    it('passes CI mode with legacy line-only baseline entries', function () {
+        const fixture = createFixtureRepo({
+            sourceContent: 'export const Fixture = () => <div className="text-gray-700 bg-gray-700">x</div>;\n',
+            baseline: {
+                findings: {
+                    raw_hex: [],
+                    palette_class: [
+                        {
+                            file: 'apps/shade/src/components/fixture.tsx',
+                            line: 1
+                        }
+                    ],
+                    arbitrary_utility: []
+                }
+            },
+            allowlist: {entries: []}
+        });
+
+        const {result, report} = runChecker(fixture);
+
+        assert.equal(result.status, 0);
+        assert.equal(report.regressions.palette_class.length, 0);
+    });
+
     it('fails when allowlist entries are missing required reason metadata', function () {
         const fixture = createFixtureRepo({
             sourceContent: 'export const Fixture = () => <div style={{color: "#ffffff"}}>x</div>;\n',
