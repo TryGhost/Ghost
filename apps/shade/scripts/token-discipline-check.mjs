@@ -12,6 +12,11 @@ const DEFAULT_REPO_ROOT = path.resolve(DEFAULT_PACKAGE_ROOT, '..', '..');
 const DEFAULT_INCLUDE = ['src/components', 'src/providers'];
 const DEFAULT_BASELINE = 'token-discipline/baseline.json';
 const DEFAULT_ALLOWLIST = 'token-discipline/allowlist.json';
+const MODE_REPORT = 'report';
+const MODE_NO_NEW = 'no-new';
+const MODE_STRICT = 'strict';
+const LEGACY_MODE_CI = 'ci';
+const VALID_MODES = new Set([MODE_REPORT, MODE_NO_NEW, MODE_STRICT, LEGACY_MODE_CI]);
 
 const RULES = {
     raw_hex: /#[0-9a-fA-F]{3,8}\b/g,
@@ -19,7 +24,7 @@ const RULES = {
     arbitrary_utility: /\b[a-z-]+-\[[^\]]+\]/g
 };
 
-const REQUIRED_ALLOWLIST_FIELDS = ['id', 'rule', 'category', 'file', 'line', 'matches', 'reason', 'review_by_milestone'];
+const REQUIRED_ALLOWLIST_FIELDS = ['id', 'rule', 'category', 'owner', 'file', 'line', 'matches', 'reason', 'review_by_milestone'];
 
 function toPosixPath(value) {
     return value.split(path.sep).join('/');
@@ -233,9 +238,23 @@ async function parseJsonFile(filePath) {
     return JSON.parse(content);
 }
 
+function normalizeMode(mode) {
+    if (mode === LEGACY_MODE_CI) {
+        return MODE_NO_NEW;
+    }
+
+    return mode;
+}
+
+function validateMode(mode) {
+    if (!VALID_MODES.has(mode)) {
+        throw new Error(`Invalid mode "${mode}". Supported modes: report, no-new, strict.`);
+    }
+}
+
 function parseArgs(argv) {
     const options = {
-        mode: 'report',
+        mode: MODE_REPORT,
         outputJson: false,
         include: [],
         repoRoot: DEFAULT_REPO_ROOT,
@@ -280,6 +299,9 @@ function parseArgs(argv) {
         options.include = DEFAULT_INCLUDE.map(value => path.resolve(options.packageRoot, value));
     }
 
+    validateMode(options.mode);
+    options.mode = normalizeMode(options.mode);
+
     return options;
 }
 
@@ -296,15 +318,35 @@ function printHumanReport(report) {
     // eslint-disable-next-line no-console
     console.log(`  arbitrary_utility: ${summary.arbitrary_utility}`);
 
-    if (report.mode === 'ci') {
+    if (report.mode === MODE_NO_NEW) {
         // eslint-disable-next-line no-console
-        console.log('CI gate:');
+        console.log('No-new gate:');
         // eslint-disable-next-line no-console
         console.log(`  regressions raw_hex: ${report.regressions.raw_hex.length}`);
         // eslint-disable-next-line no-console
         console.log(`  regressions palette_class: ${report.regressions.palette_class.length}`);
         // eslint-disable-next-line no-console
         console.log(`  regressions arbitrary_utility: ${report.regressions.arbitrary_utility.length}`);
+        // eslint-disable-next-line no-console
+        console.log(`  allowlisted findings: ${report.allowlisted_count}`);
+
+        if (report.configuration_errors.length > 0) {
+            // eslint-disable-next-line no-console
+            console.log('Configuration errors:');
+            for (const error of report.configuration_errors) {
+                // eslint-disable-next-line no-console
+                console.log(`  - ${error}`);
+            }
+        }
+    } else if (report.mode === MODE_STRICT) {
+        // eslint-disable-next-line no-console
+        console.log('Strict gate:');
+        // eslint-disable-next-line no-console
+        console.log(`  violations raw_hex: ${report.strict_violations.raw_hex.length}`);
+        // eslint-disable-next-line no-console
+        console.log(`  violations palette_class: ${report.strict_violations.palette_class.length}`);
+        // eslint-disable-next-line no-console
+        console.log(`  violations arbitrary_utility: ${report.strict_violations.arbitrary_utility.length}`);
         // eslint-disable-next-line no-console
         console.log(`  allowlisted findings: ${report.allowlisted_count}`);
 
@@ -339,6 +381,8 @@ export async function runTokenDisciplineCheck(customOptions = {}) {
         ...parseArgs([]),
         ...customOptions
     };
+    validateMode(options.mode);
+    options.mode = normalizeMode(options.mode);
 
     const scan = await scanScope({
         repoRoot: options.repoRoot,
@@ -358,7 +402,7 @@ export async function runTokenDisciplineCheck(customOptions = {}) {
     const allowlistErrors = validateAllowlist(allowlist);
     configurationErrors.push(...allowlistErrors);
 
-    if (options.mode === 'ci') {
+    if (options.mode === MODE_NO_NEW) {
         try {
             baseline = await parseJsonFile(options.baselinePath);
         } catch (error) {
@@ -391,7 +435,7 @@ export async function runTokenDisciplineCheck(customOptions = {}) {
         arbitrary_utility: []
     };
 
-    if (options.mode === 'ci') {
+    if (options.mode === MODE_NO_NEW) {
         for (const rule of Object.keys(regressions)) {
             for (const finding of activeFindings[rule]) {
                 const key = findingKey(rule, finding.file, finding.line);
@@ -399,6 +443,18 @@ export async function runTokenDisciplineCheck(customOptions = {}) {
                     regressions[rule].push(finding);
                 }
             }
+        }
+    }
+
+    const strictViolations = {
+        raw_hex: [],
+        palette_class: [],
+        arbitrary_utility: []
+    };
+
+    if (options.mode === MODE_STRICT) {
+        for (const rule of Object.keys(strictViolations)) {
+            strictViolations[rule] = activeFindings[rule];
         }
     }
 
@@ -412,6 +468,7 @@ export async function runTokenDisciplineCheck(customOptions = {}) {
         },
         active_findings: activeFindings,
         regressions,
+        strict_violations: strictViolations,
         allowlisted_count: allowlistedCount,
         configuration_errors: configurationErrors,
         baseline_path: options.baselinePath,
@@ -419,8 +476,10 @@ export async function runTokenDisciplineCheck(customOptions = {}) {
     };
 
     const hasRegression = Object.values(regressions).some(rows => rows.length > 0);
+    const hasStrictViolations = Object.values(strictViolations).some(rows => rows.length > 0);
     const hasConfigErrors = configurationErrors.length > 0;
-    const failed = options.mode === 'ci' && (hasRegression || hasConfigErrors);
+    const failed = (options.mode === MODE_NO_NEW && (hasRegression || hasConfigErrors))
+        || (options.mode === MODE_STRICT && (hasStrictViolations || hasConfigErrors));
 
     return {
         report,

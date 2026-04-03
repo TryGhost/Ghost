@@ -18,6 +18,7 @@
       "id": "ms2-social-icon-threads",
       "rule": "raw_hex",
       "category": "static_brand_asset",
+      "owner": "shade-design-system",
       "file": "apps/shade/src/components/features/post-share-modal/post-share-modal.tsx",
       "line": 111,
       "matches": [
@@ -31,6 +32,7 @@
       "id": "ms2-social-icon-facebook",
       "rule": "raw_hex",
       "category": "static_brand_asset",
+      "owner": "shade-design-system",
       "file": "apps/shade/src/components/features/post-share-modal/post-share-modal.tsx",
       "line": 114,
       "matches": [
@@ -44,6 +46,7 @@
       "id": "ms2-social-icon-linkedin",
       "rule": "raw_hex",
       "category": "static_brand_asset",
+      "owner": "shade-design-system",
       "file": "apps/shade/src/components/features/post-share-modal/post-share-modal.tsx",
       "line": 117,
       "matches": [
@@ -57,6 +60,7 @@
       "id": "ms2-recharts-selector-literals",
       "rule": "raw_hex",
       "category": "third_party_required_selector",
+      "owner": "shade-design-system",
       "file": "apps/shade/src/components/ui/chart.tsx",
       "line": 52,
       "matches": [

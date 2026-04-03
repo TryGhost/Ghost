@@ -136,6 +136,7 @@ describe('token-discipline-check script', function () {
                         id: 'invalid-entry',
                         rule: 'raw_hex',
                         category: 'static_brand_asset',
+                        owner: 'shade-test',
                         file: 'apps/shade/src/components/fixture.tsx',
                         line: 1,
                         matches: ['#ffffff'],
@@ -149,5 +150,65 @@ describe('token-discipline-check script', function () {
 
         assert.equal(result.status, 1);
         assert.ok(report.configuration_errors.some(error => error.includes('missing required field: reason')));
+    });
+
+    it('fails strict mode even when findings exist in baseline', function () {
+        const fixture = createFixtureRepo({
+            sourceContent: 'export const Fixture = () => <div className="text-gray-700">x</div>;\n',
+            baseline: {
+                findings: {
+                    raw_hex: [],
+                    palette_class: [
+                        {
+                            file: 'apps/shade/src/components/fixture.tsx',
+                            line: 1,
+                            matches: ['text-gray-700']
+                        }
+                    ],
+                    arbitrary_utility: []
+                }
+            },
+            allowlist: {entries: []}
+        });
+
+        const {result, report} = runChecker(fixture, 'strict');
+
+        assert.equal(result.status, 1);
+        assert.equal(report.regressions.palette_class.length, 0);
+        assert.equal(report.strict_violations.palette_class.length, 1);
+    });
+
+    it('passes strict mode when findings are allowlisted exemptions', function () {
+        const fixture = createFixtureRepo({
+            sourceContent: 'export const Fixture = () => <div style={{color: "#ffffff"}}>x</div>;\n',
+            baseline: {
+                findings: {
+                    raw_hex: [],
+                    palette_class: [],
+                    arbitrary_utility: []
+                }
+            },
+            allowlist: {
+                entries: [
+                    {
+                        id: 'allowlisted-raw-hex',
+                        rule: 'raw_hex',
+                        category: 'static_brand_asset',
+                        owner: 'shade-test',
+                        file: 'apps/shade/src/components/fixture.tsx',
+                        line: 1,
+                        matches: ['#ffffff'],
+                        reason: 'Required fixture-level brand hex exemption.',
+                        review_by_milestone: 'ms-3'
+                    }
+                ]
+            }
+        });
+
+        const {result, report} = runChecker(fixture, 'strict');
+
+        assert.equal(result.status, 0);
+        assert.equal(report.strict_violations.raw_hex.length, 0);
+        assert.equal(report.allowlisted_count, 1);
     });
 });

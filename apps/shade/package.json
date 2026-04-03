@@ -60,7 +60,9 @@
         "lint": "yarn lint:code && yarn lint:test && yarn token-discipline:check",
         "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache",
         "token-discipline:report": "node ./scripts/token-discipline-check.mjs --mode report",
-        "token-discipline:check": "node ./scripts/token-discipline-check.mjs --mode ci",
+        "token-discipline:check": "node ./scripts/token-discipline-check.mjs --mode no-new",
+        "token-discipline:check:no-new": "node ./scripts/token-discipline-check.mjs --mode no-new",
+        "token-discipline:check:strict": "node ./scripts/token-discipline-check.mjs --mode strict",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build"
     },
