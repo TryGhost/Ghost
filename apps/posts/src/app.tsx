@@ -3,7 +3,7 @@ import PostsErrorBoundary from '@components/errors/posts-error-boundary';
 import React from 'react';
 import {APP_ROUTE_PREFIX, routes} from '@src/routes';
 import {BaseAppProps, FrameworkProvider, Outlet, RouterProvider} from '@tryghost/admin-x-framework';
-import {ShadeApp} from '@tryghost/shade';
+import {ShadeApp} from '@tryghost/shade/app';
 
 interface AppProps extends BaseAppProps {
     fromAnalytics?: boolean;

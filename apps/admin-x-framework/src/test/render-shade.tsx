@@ -1,4 +1,4 @@
-import {ShadeAppProps} from '@tryghost/shade';
+import {ShadeAppProps} from '@tryghost/shade/app';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {TopLevelFrameworkProps} from '../providers/framework-provider';

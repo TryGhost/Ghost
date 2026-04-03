@@ -1,10 +1,11 @@
+import moment from 'moment';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {mockError, mockLoading, mockSuccess} from '@tryghost/admin-x-framework/test/hook-testing-utils';
 import {renderHook} from '@testing-library/react';
 import {useTopSourcesGrowth} from '@hooks/use-top-sources-growth';
 
 // Mock external dependencies
-vi.mock('@tryghost/shade', () => ({
+vi.mock('@tryghost/shade/app', () => ({
     formatQueryDate: vi.fn(),
     getRangeDates: vi.fn()
 }));
@@ -17,18 +18,20 @@ vi.mock('@src/utils/audience', () => ({
     getAudienceQueryParam: vi.fn()
 }));
 
-const mockFormatQueryDate = vi.mocked(await import('@tryghost/shade')).formatQueryDate;
-const mockGetRangeDates = vi.mocked(await import('@tryghost/shade')).getRangeDates;
+const mockFormatQueryDate = vi.mocked(await import('@tryghost/shade/app')).formatQueryDate;
+const mockGetRangeDates = vi.mocked(await import('@tryghost/shade/app')).getRangeDates;
 const mockUseTopSourcesGrowthAPI = vi.mocked(await import('@tryghost/admin-x-framework/api/referrers')).useTopSourcesGrowth;
 const mockGetAudienceQueryParam = vi.mocked(await import('@src/utils/audience')).getAudienceQueryParam;
 
 describe('useTopSourcesGrowth', () => {
-    const mockStartDate = new Date('2024-01-01');
-    const mockEndDate = new Date('2024-01-31');
+    let mockStartDate: moment.Moment;
+    let mockEndDate: moment.Moment;
     const mockTimezone = 'UTC';
 
     beforeEach(() => {
         vi.clearAllMocks();
+        mockStartDate = moment('2024-01-01');
+        mockEndDate = moment('2024-01-31');
 
         // Default mock implementations
         mockGetRangeDates.mockReturnValue({
@@ -37,7 +40,7 @@ describe('useTopSourcesGrowth', () => {
             timezone: mockTimezone
         });
 
-        mockFormatQueryDate.mockImplementation((date: Date) => date.toISOString().split('T')[0]);
+        mockFormatQueryDate.mockImplementation((date: moment.Moment) => date.format('YYYY-MM-DD'));
 
         mockGetAudienceQueryParam.mockReturnValue('all');
 
@@ -117,8 +120,8 @@ describe('useTopSourcesGrowth', () => {
     });
 
     it('correctly formats query dates', () => {
-        const customStartDate = new Date('2024-06-15');
-        const customEndDate = new Date('2024-07-15');
+        const customStartDate = moment('2024-06-15');
+        const customEndDate = moment('2024-07-15');
 
         mockGetRangeDates.mockReturnValue({
             startDate: customStartDate,

@@ -1,22 +1,7 @@
 import React, {useState} from 'react';
 import UnblockDialog from './unblock-dialog';
 import {Account} from '@src/api/activitypub';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    Button,
-    Popover,
-    PopoverClose,
-    PopoverContent,
-    PopoverTrigger,
-    buttonVariants
-} from '@tryghost/shade';
+import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, Popover, PopoverClose, PopoverContent, PopoverTrigger, buttonVariants} from '@tryghost/shade/components';
 
 interface ProfileMenuProps {
     account?: Account,

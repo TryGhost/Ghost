@@ -1,7 +1,8 @@
 import NewNoteModal from '@components/modals/new-note-modal';
 import React, {useEffect, useRef, useState} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {AnimatedNumber, Button, LucideIcon, formatNumber} from '@tryghost/shade';
+import {AnimatedNumber, Button} from '@tryghost/shade/components';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {useDerepostMutationForUser, useLikeMutationForUser, useRepostMutationForUser, useUnlikeMutationForUser} from '@hooks/use-activity-pub-queries';
 import {useKeyboardShortcuts} from '@hooks/use-keyboard-shortcuts';
 

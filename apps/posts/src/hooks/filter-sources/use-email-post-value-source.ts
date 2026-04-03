@@ -1,5 +1,5 @@
 import {Post, PostsResponseType, useBrowsePostsInfinite} from '@tryghost/admin-x-framework/api/posts';
-import {ValueSource} from '@tryghost/shade';
+import {ValueSource} from '@tryghost/shade/patterns';
 import {createGhostBrowseValueSource} from './create-ghost-browse-value-source';
 import {escapeNqlString} from '@src/views/filters/filter-normalization';
 

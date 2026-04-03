@@ -5,7 +5,9 @@ import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-ca
 import React, {useEffect} from 'react';
 import TopicFilter, {type Topic} from '@src/components/topic-filter';
 import {type Account, type ExploreAccount} from '@src/api/activitypub';
-import {Button, H4, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
+import {Button, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
+import {H4} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {openLinksInNewTab, sanitizeHtml, stripHtml} from '@src/utils/content-formatters';
 import {useAccountForUser, useExploreProfilesForUserByTopic} from '@hooks/use-activity-pub-queries';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';

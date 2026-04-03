@@ -1,7 +1,8 @@
 import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {Account} from '@src/api/activitypub';
-import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, LoadingIndicator, LucideIcon, Textarea} from '@tryghost/shade';
+import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, LoadingIndicator, Textarea} from '@tryghost/shade/components';
 import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE, SQUARE_IMAGE_ERROR_MESSAGE, isSquareImage} from '@utils/image';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
 import {uploadFile} from '@hooks/use-activity-pub-queries';
 import {useForm} from 'react-hook-form';

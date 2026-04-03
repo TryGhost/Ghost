@@ -1,6 +1,6 @@
 import React from 'react';
 import {Heart} from 'lucide-react';
-import {Switch} from '@tryghost/shade';
+import {Switch} from '@tryghost/shade/components';
 
 interface ShowBadgeFieldProps {
     value: boolean;

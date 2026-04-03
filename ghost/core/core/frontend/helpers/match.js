@@ -1,3 +1,5 @@
+// Use the shared frontend Handlebars runtime so SafeString instanceof checks
+// keep working even when multiple handlebars copies are installed.
 const {SafeString} = require('../services/handlebars');
 
 const logging = require('@tryghost/logging');

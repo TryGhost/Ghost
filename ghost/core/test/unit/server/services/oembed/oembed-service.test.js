@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const nock = require('nock');
-const got = require('got');
+const got = require('got').default;
 const sinon = require('sinon');
 
 const OembedService = require('../../../../../core/server/services/oembed/oembed-service');
@@ -369,7 +369,9 @@ describe('oembed-service', function () {
 
             const externalRequest = got.extend({
                 retry: {limit: 0, calculateDelay: () => 0},
-                timeout: 5000,
+                timeout: {
+                    request: 5000
+                },
                 hooks: {
                     init: [],
                     beforeRequest: [beforeRequestHook],

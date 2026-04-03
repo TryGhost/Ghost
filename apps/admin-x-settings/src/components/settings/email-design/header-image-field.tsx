@@ -1,5 +1,5 @@
 import React from 'react';
-import {Dropzone} from '@tryghost/shade';
+import {Dropzone} from '@tryghost/shade/components';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 
 interface HeaderImageFieldProps {
@@ -16,8 +16,8 @@ const HeaderImageField: React.FC<HeaderImageFieldProps> = ({value, onChange}) =>
     };
 
     return (
-        <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium">Header image</label>
+        <div className="flex flex-col gap-1.5" data-testid="header-image-field">
+            <label className="text-sm font-medium" htmlFor="welcome-email-header-image">Header image</label>
             {value ? (
                 <div className="relative overflow-hidden rounded-md border border-gray-200 dark:border-gray-800">
                     <img
@@ -38,6 +38,7 @@ const HeaderImageField: React.FC<HeaderImageFieldProps> = ({value, onChange}) =>
                     <Dropzone
                         accept={{'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']}}
                         className="flex h-24 items-center justify-center p-0 text-sm"
+                        id="welcome-email-header-image"
                         onDropAccepted={files => files[0] && handleUpload(files[0])}
                     >
                         <span className="text-gray-700">Upload header image</span>

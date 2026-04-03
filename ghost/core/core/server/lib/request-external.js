@@ -3,7 +3,7 @@
  * @typedef {import('got').ExtendOptions} ExtendOptions
  */
 
-const got = /** @type {Got} */ (/** @type {unknown} */ (require('got')));
+const got = /** @type {Got} */ (/** @type {unknown} */ (require('got').default));
 const dns = require('dns');
 const net = require('net');
 const dnsPromises = require('dns').promises;
@@ -208,7 +208,9 @@ async function disableRetries(options) {
         limit: 0,
         calculateDelay: () => 0
     };
-    options.timeout = 5000;
+    options.timeout = {
+        request: 5000
+    };
 }
 
 /**
@@ -275,7 +277,9 @@ const gotOpts = {
     headers: {
         'user-agent': 'Ghost(https://github.com/TryGhost/Ghost)'
     },
-    timeout: 10000, // default is no timeout
+    timeout: {
+        request: 10000
+    }, // default is no timeout
     hooks: {
         init: process.env.NODE_ENV?.startsWith('test') ? [disableRetries] : [],
         beforeRequest: [errorIfInvalidUrl, errorIfHostnameResolvesToPrivateIp, installSafeDnsLookup],

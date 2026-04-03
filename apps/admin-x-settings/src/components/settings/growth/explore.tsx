@@ -5,7 +5,7 @@ import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {Button, Icon, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
-import {abbreviateNumber} from '@tryghost/shade';
+import {abbreviateNumber} from '@tryghost/shade/utils';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';

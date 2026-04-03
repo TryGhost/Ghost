@@ -1,18 +1,5 @@
-import {
-    Badge,
-    Button,
-    Command,
-    CommandCheck,
-    CommandEmpty,
-    CommandItem,
-    CommandList,
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    LucideIcon
-} from '@tryghost/shade';
+import {Badge, Button, Command, CommandCheck, CommandEmpty, CommandItem, CommandList, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {useCallback, useEffect, useRef, useState} from 'react';
 
