@@ -23,6 +23,7 @@ const RULES = {
     palette_class: /\b(?:bg|text|border|fill|stroke)-[a-z]+-[0-9]{2,3}\b/g,
     arbitrary_utility: /\b[a-z-]+-\[[^\]]+\]/g
 };
+const LITERAL_CONCAT_REGEX = /(['"`])((?:\\.|(?!\1).)*)\1\s*\+\s*(['"`])((?:\\.|(?!\3).)*)\3/g;
 
 const REQUIRED_ALLOWLIST_FIELDS = ['id', 'rule', 'category', 'owner', 'file', 'line', 'matches', 'reason', 'review_by_milestone'];
 
@@ -47,6 +48,21 @@ function shouldSkipFile(filePath) {
     }
 
     return fileName.includes('.stories.') || fileName.includes('.test.') || fileName.endsWith('.mdx');
+}
+
+function collapseStringLiteralConcats(value) {
+    let normalized = value;
+
+    // Resolve simple literal concatenations like "text-" + "gray-700" so rule regexes can still match.
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+        const next = normalized.replace(LITERAL_CONCAT_REGEX, (_, __leftQuote, left, __rightQuote, right) => `${left}${right}`);
+        if (next === normalized) {
+            break;
+        }
+        normalized = next;
+    }
+
+    return normalized;
 }
 
 async function walkFiles(rootDir) {
@@ -114,10 +130,14 @@ async function scanScope({repoRoot, includePaths}) {
             for (let index = 0; index < lines.length; index += 1) {
                 const lineNumber = index + 1;
                 const line = lines[index] || '';
+                const normalizedLine = collapseStringLiteralConcats(line);
 
                 for (const [ruleName, regex] of Object.entries(RULES)) {
                     regex.lastIndex = 0;
-                    const matches = Array.from(new Set(line.match(regex) || [])).sort();
+                    const matches = Array.from(new Set([
+                        ...(line.match(regex) || []),
+                        ...(normalizedLine.match(regex) || [])
+                    ])).sort();
 
                     if (matches.length > 0) {
                         findings[ruleName].push({
@@ -172,6 +192,10 @@ function validateAllowlist(allowlist) {
 
         if (!Array.isArray(entry.matches)) {
             errors.push(`Allowlist entry has invalid matches for ${entry.file || '<unknown>'}`);
+        } else if (entry.matches.length === 0) {
+            errors.push(`Allowlist entry has empty matches for ${entry.file || '<unknown>'}`);
+        } else if (entry.matches.some(match => typeof match !== 'string' || match.length === 0)) {
+            errors.push(`Allowlist entry has invalid match values for ${entry.file || '<unknown>'}`);
         }
     }
 
@@ -191,6 +215,10 @@ function buildAllowlistIndex(allowlist) {
         }
 
         if (typeof entry.file !== 'string' || !Number.isInteger(entry.line)) {
+            continue;
+        }
+
+        if (!Array.isArray(entry.matches) || entry.matches.length === 0) {
             continue;
         }
 
@@ -214,10 +242,14 @@ function isAllowlisted(rule, finding, allowlistIndex) {
 
     return candidates.some((entry) => {
         if (!Array.isArray(entry.matches) || entry.matches.length === 0) {
-            return true;
+            return false;
         }
 
-        const allowedMatches = new Set(entry.matches);
+        const allowedMatches = new Set(entry.matches.filter(value => typeof value === 'string' && value.length > 0));
+        if (allowedMatches.size === 0) {
+            return false;
+        }
+
         return finding.matches.every(value => allowedMatches.has(value));
     });
 }

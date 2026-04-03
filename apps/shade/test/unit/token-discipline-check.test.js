@@ -204,6 +204,40 @@ describe('token-discipline-check script', function () {
         assert.ok(report.configuration_errors.some(error => error.includes('missing required field: reason')));
     });
 
+    it('fails when allowlist entries use empty matches arrays', function () {
+        const fixture = createFixtureRepo({
+            sourceContent: 'export const Fixture = () => <div style={{color: "#ffffff"}}>x</div>;\n',
+            baseline: {
+                findings: {
+                    raw_hex: [],
+                    palette_class: [],
+                    arbitrary_utility: []
+                }
+            },
+            allowlist: {
+                entries: [
+                    {
+                        id: 'invalid-empty-matches',
+                        rule: 'raw_hex',
+                        category: 'static_brand_asset',
+                        owner: 'shade-test',
+                        file: 'apps/shade/src/components/fixture.tsx',
+                        line: 1,
+                        matches: [],
+                        reason: 'Invalid wildcard attempt.',
+                        review_by_milestone: 'ms-3'
+                    }
+                ]
+            }
+        });
+
+        const {result, report} = runChecker(fixture);
+
+        assert.equal(result.status, 1);
+        assert.ok(report.configuration_errors.some(error => error.includes('empty matches')));
+        assert.equal(report.active_findings.raw_hex.length, 1);
+    });
+
     it('fails strict mode even when findings exist in baseline', function () {
         const fixture = createFixtureRepo({
             sourceContent: 'export const Fixture = () => <div className="text-gray-700">x</div>;\n',
@@ -283,5 +317,45 @@ describe('token-discipline-check script', function () {
 
         assert.equal(result.status, 1);
         assert.ok(report.configuration_errors.some(error => error.includes('Allowlist entry is malformed')));
+    });
+
+    it('detects palette classes assembled through literal concatenation', function () {
+        const fixture = createFixtureRepo({
+            sourceContent: 'export const Fixture = () => <div className={\'text-\' + \'gray-700\'}>x</div>;\n',
+            baseline: {
+                findings: {
+                    raw_hex: [],
+                    palette_class: [],
+                    arbitrary_utility: []
+                }
+            },
+            allowlist: {entries: []}
+        });
+
+        const {result, report} = runChecker(fixture);
+
+        assert.equal(result.status, 1);
+        assert.equal(report.regressions.palette_class.length, 1);
+        assert.deepEqual(report.regressions.palette_class[0].matches, ['text-gray-700']);
+    });
+
+    it('detects raw hex values assembled through literal concatenation', function () {
+        const fixture = createFixtureRepo({
+            sourceContent: 'export const Fixture = () => <div style={{color: \'#\' + \'ffffff\'}}>x</div>;\n',
+            baseline: {
+                findings: {
+                    raw_hex: [],
+                    palette_class: [],
+                    arbitrary_utility: []
+                }
+            },
+            allowlist: {entries: []}
+        });
+
+        const {result, report} = runChecker(fixture);
+
+        assert.equal(result.status, 1);
+        assert.equal(report.regressions.raw_hex.length, 1);
+        assert.deepEqual(report.regressions.raw_hex[0].matches, ['#ffffff']);
     });
 });
