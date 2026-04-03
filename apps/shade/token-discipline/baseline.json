@@ -1,0 +1,2659 @@
+{
+  "version": 1,
+  "generated_at_utc": "2026-04-02T15:08:40Z",
+  "metric_basis": "line-level occurrences per rule",
+  "scope": {
+    "include_paths": [
+      "apps/shade/src/components",
+      "apps/shade/src/providers"
+    ],
+    "exclude_rules": [
+      "**/*.stories.*",
+      "**/*.test.*",
+      "**/*.mdx",
+      "**/docs/**"
+    ]
+  },
+  "summary": {
+    "files_scanned": 62,
+    "raw_hex": 9,
+    "palette_class": 52,
+    "arbitrary_utility": 218,
+    "total_violations": 279
+  },
+  "counts_by_file": {
+    "raw_hex": [
+      {
+        "file": "apps/shade/src/components/features/post-share-modal/post-share-modal.tsx",
+        "count": 3
+      },
+      {
+        "file": "apps/shade/src/components/features/color-picker/color-picker.tsx",
+        "count": 2
+      },
+      {
+        "file": "apps/shade/src/components/ui/chart.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/data-list.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/dialog.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "count": 1
+      }
+    ],
+    "palette_class": [
+      {
+        "file": "apps/shade/src/components/ui/indicator.tsx",
+        "count": 8
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "count": 8
+      },
+      {
+        "file": "apps/shade/src/components/ui/banner.tsx",
+        "count": 7
+      },
+      {
+        "file": "apps/shade/src/components/ui/card.tsx",
+        "count": 3
+      },
+      {
+        "file": "apps/shade/src/components/ui/dropzone.tsx",
+        "count": 3
+      },
+      {
+        "file": "apps/shade/src/components/ui/gh-chart.tsx",
+        "count": 2
+      },
+      {
+        "file": "apps/shade/src/components/ui/no-value-label.tsx",
+        "count": 2
+      },
+      {
+        "file": "apps/shade/src/components/ui/pagemenu.tsx",
+        "count": 2
+      },
+      {
+        "file": "apps/shade/src/components/ui/right-sidebar.tsx",
+        "count": 2
+      },
+      {
+        "file": "apps/shade/src/components/ui/table.tsx",
+        "count": 2
+      },
+      {
+        "file": "apps/shade/src/providers/shade-provider.tsx",
+        "count": 2
+      },
+      {
+        "file": "apps/shade/src/components/features/post-share-modal/post-share-modal.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/layout/view-header.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/button.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/form.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/input.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/popover.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/textarea.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/toggle-group.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/toggle.tsx",
+        "count": 1
+      }
+    ],
+    "arbitrary_utility": [
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "count": 37
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "count": 33
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "count": 19
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "count": 17
+      },
+      {
+        "file": "apps/shade/src/components/ui/field.tsx",
+        "count": 13
+      },
+      {
+        "file": "apps/shade/src/components/ui/dropdown-menu.tsx",
+        "count": 7
+      },
+      {
+        "file": "apps/shade/src/components/ui/sheet.tsx",
+        "count": 7
+      },
+      {
+        "file": "apps/shade/src/components/features/post-share-modal/post-share-modal.tsx",
+        "count": 6
+      },
+      {
+        "file": "apps/shade/src/components/ui/card.tsx",
+        "count": 6
+      },
+      {
+        "file": "apps/shade/src/components/ui/banner.tsx",
+        "count": 5
+      },
+      {
+        "file": "apps/shade/src/components/ui/chart.tsx",
+        "count": 5
+      },
+      {
+        "file": "apps/shade/src/components/ui/select.tsx",
+        "count": 5
+      },
+      {
+        "file": "apps/shade/src/components/ui/loading-indicator.tsx",
+        "count": 4
+      },
+      {
+        "file": "apps/shade/src/components/ui/switch.tsx",
+        "count": 4
+      },
+      {
+        "file": "apps/shade/src/components/layout/list-header.tsx",
+        "count": 3
+      },
+      {
+        "file": "apps/shade/src/components/ui/button.tsx",
+        "count": 3
+      },
+      {
+        "file": "apps/shade/src/components/ui/command.tsx",
+        "count": 3
+      },
+      {
+        "file": "apps/shade/src/components/ui/data-list.tsx",
+        "count": 3
+      },
+      {
+        "file": "apps/shade/src/components/ui/flag.tsx",
+        "count": 3
+      },
+      {
+        "file": "apps/shade/src/components/ui/pagemenu.tsx",
+        "count": 3
+      },
+      {
+        "file": "apps/shade/src/components/ui/table.tsx",
+        "count": 3
+      },
+      {
+        "file": "apps/shade/src/components/ui/toggle.tsx",
+        "count": 3
+      },
+      {
+        "file": "apps/shade/src/components/features/color-picker/color-picker.tsx",
+        "count": 2
+      },
+      {
+        "file": "apps/shade/src/components/ui/alert-dialog.tsx",
+        "count": 2
+      },
+      {
+        "file": "apps/shade/src/components/ui/dialog.tsx",
+        "count": 2
+      },
+      {
+        "file": "apps/shade/src/components/ui/skeleton.tsx",
+        "count": 2
+      },
+      {
+        "file": "apps/shade/src/components/layout/header.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/layout/heading.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/layout/view-header.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/accordion.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/breadcrumb.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/checkbox.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/empty-indicator.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/gh-chart.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/hover-card.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/input.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/navbar.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/no-value-label.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/popover.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/right-sidebar.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/separator.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/textarea.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/components/ui/tooltip.tsx",
+        "count": 1
+      },
+      {
+        "file": "apps/shade/src/providers/shade-provider.tsx",
+        "count": 1
+      }
+    ]
+  },
+  "hotspots": [
+    {
+      "file": "apps/shade/src/components/ui/filters.tsx",
+      "violations": 38
+    },
+    {
+      "file": "apps/shade/src/components/ui/sidebar.tsx",
+      "violations": 34
+    },
+    {
+      "file": "apps/shade/src/components/ui/tabs.tsx",
+      "violations": 27
+    },
+    {
+      "file": "apps/shade/src/components/ui/input-group.tsx",
+      "violations": 18
+    },
+    {
+      "file": "apps/shade/src/components/ui/field.tsx",
+      "violations": 13
+    },
+    {
+      "file": "apps/shade/src/components/ui/banner.tsx",
+      "violations": 12
+    },
+    {
+      "file": "apps/shade/src/components/features/post-share-modal/post-share-modal.tsx",
+      "violations": 10
+    },
+    {
+      "file": "apps/shade/src/components/ui/card.tsx",
+      "violations": 9
+    },
+    {
+      "file": "apps/shade/src/components/ui/indicator.tsx",
+      "violations": 8
+    },
+    {
+      "file": "apps/shade/src/components/ui/dropdown-menu.tsx",
+      "violations": 7
+    },
+    {
+      "file": "apps/shade/src/components/ui/sheet.tsx",
+      "violations": 7
+    },
+    {
+      "file": "apps/shade/src/components/ui/chart.tsx",
+      "violations": 6
+    },
+    {
+      "file": "apps/shade/src/components/ui/pagemenu.tsx",
+      "violations": 5
+    },
+    {
+      "file": "apps/shade/src/components/ui/select.tsx",
+      "violations": 5
+    },
+    {
+      "file": "apps/shade/src/components/ui/table.tsx",
+      "violations": 5
+    },
+    {
+      "file": "apps/shade/src/components/features/color-picker/color-picker.tsx",
+      "violations": 4
+    },
+    {
+      "file": "apps/shade/src/components/ui/button.tsx",
+      "violations": 4
+    },
+    {
+      "file": "apps/shade/src/components/ui/data-list.tsx",
+      "violations": 4
+    },
+    {
+      "file": "apps/shade/src/components/ui/loading-indicator.tsx",
+      "violations": 4
+    },
+    {
+      "file": "apps/shade/src/components/ui/switch.tsx",
+      "violations": 4
+    },
+    {
+      "file": "apps/shade/src/components/ui/toggle.tsx",
+      "violations": 4
+    },
+    {
+      "file": "apps/shade/src/components/layout/list-header.tsx",
+      "violations": 3
+    },
+    {
+      "file": "apps/shade/src/components/ui/command.tsx",
+      "violations": 3
+    },
+    {
+      "file": "apps/shade/src/components/ui/dialog.tsx",
+      "violations": 3
+    },
+    {
+      "file": "apps/shade/src/components/ui/dropzone.tsx",
+      "violations": 3
+    },
+    {
+      "file": "apps/shade/src/components/ui/flag.tsx",
+      "violations": 3
+    },
+    {
+      "file": "apps/shade/src/components/ui/gh-chart.tsx",
+      "violations": 3
+    },
+    {
+      "file": "apps/shade/src/components/ui/no-value-label.tsx",
+      "violations": 3
+    },
+    {
+      "file": "apps/shade/src/components/ui/right-sidebar.tsx",
+      "violations": 3
+    },
+    {
+      "file": "apps/shade/src/providers/shade-provider.tsx",
+      "violations": 3
+    },
+    {
+      "file": "apps/shade/src/components/layout/view-header.tsx",
+      "violations": 2
+    },
+    {
+      "file": "apps/shade/src/components/ui/alert-dialog.tsx",
+      "violations": 2
+    },
+    {
+      "file": "apps/shade/src/components/ui/input.tsx",
+      "violations": 2
+    },
+    {
+      "file": "apps/shade/src/components/ui/popover.tsx",
+      "violations": 2
+    },
+    {
+      "file": "apps/shade/src/components/ui/skeleton.tsx",
+      "violations": 2
+    },
+    {
+      "file": "apps/shade/src/components/ui/textarea.tsx",
+      "violations": 2
+    },
+    {
+      "file": "apps/shade/src/components/layout/header.tsx",
+      "violations": 1
+    },
+    {
+      "file": "apps/shade/src/components/layout/heading.tsx",
+      "violations": 1
+    },
+    {
+      "file": "apps/shade/src/components/ui/accordion.tsx",
+      "violations": 1
+    },
+    {
+      "file": "apps/shade/src/components/ui/breadcrumb.tsx",
+      "violations": 1
+    },
+    {
+      "file": "apps/shade/src/components/ui/checkbox.tsx",
+      "violations": 1
+    },
+    {
+      "file": "apps/shade/src/components/ui/empty-indicator.tsx",
+      "violations": 1
+    },
+    {
+      "file": "apps/shade/src/components/ui/form.tsx",
+      "violations": 1
+    },
+    {
+      "file": "apps/shade/src/components/ui/hover-card.tsx",
+      "violations": 1
+    },
+    {
+      "file": "apps/shade/src/components/ui/navbar.tsx",
+      "violations": 1
+    },
+    {
+      "file": "apps/shade/src/components/ui/separator.tsx",
+      "violations": 1
+    },
+    {
+      "file": "apps/shade/src/components/ui/toggle-group.tsx",
+      "violations": 1
+    },
+    {
+      "file": "apps/shade/src/components/ui/tooltip.tsx",
+      "violations": 1
+    }
+  ],
+  "findings": {
+    "raw_hex": [
+      {
+        "file": "apps/shade/src/components/features/color-picker/color-picker.tsx",
+        "line": 65,
+        "matches": [
+          "#000000"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/features/color-picker/color-picker.tsx",
+        "line": 248,
+        "matches": [
+          "#0000FF",
+          "#00FF00",
+          "#00FFFF",
+          "#FF0000",
+          "#FF00FF",
+          "#FFFF00"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/features/post-share-modal/post-share-modal.tsx",
+        "line": 111,
+        "matches": [
+          "#000",
+          "#fff"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/features/post-share-modal/post-share-modal.tsx",
+        "line": 114,
+        "matches": [
+          "#1977f3",
+          "#fff"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/features/post-share-modal/post-share-modal.tsx",
+        "line": 117,
+        "matches": [
+          "#007ebb",
+          "#fff"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/chart.tsx",
+        "line": 52,
+        "matches": [
+          "#ccc",
+          "#fff"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/data-list.tsx",
+        "line": 120,
+        "matches": [
+          "#202B36",
+          "#213F5E",
+          "#BDE1FF",
+          "#EFF5FB"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/dialog.tsx",
+        "line": 40,
+        "matches": [
+          "#101114"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 125,
+        "matches": [
+          "#000000"
+        ]
+      }
+    ],
+    "palette_class": [
+      {
+        "file": "apps/shade/src/components/features/post-share-modal/post-share-modal.tsx",
+        "line": 67,
+        "matches": [
+          "text-green-500"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/layout/view-header.tsx",
+        "line": 24,
+        "matches": [
+          "border-gray-200",
+          "border-gray-950"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/banner.tsx",
+        "line": 12,
+        "matches": [
+          "bg-gray-925",
+          "border-gray-900"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/banner.tsx",
+        "line": 14,
+        "matches": [
+          "border-gray-100",
+          "border-gray-950"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/banner.tsx",
+        "line": 21,
+        "matches": [
+          "bg-blue-50",
+          "bg-blue-950",
+          "border-blue-200",
+          "border-blue-800"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/banner.tsx",
+        "line": 22,
+        "matches": [
+          "bg-green-50",
+          "bg-green-950",
+          "border-green-200",
+          "border-green-800"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/banner.tsx",
+        "line": 23,
+        "matches": [
+          "bg-yellow-50",
+          "bg-yellow-950",
+          "border-yellow-200",
+          "border-yellow-800"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/banner.tsx",
+        "line": 24,
+        "matches": [
+          "bg-gray-950"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/banner.tsx",
+        "line": 90,
+        "matches": [
+          "text-gray-300",
+          "text-gray-500",
+          "text-gray-600"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/button.tsx",
+        "line": 16,
+        "matches": [
+          "bg-gray-900",
+          "bg-gray-925"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/card.tsx",
+        "line": 188,
+        "matches": [
+          "text-green-600"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/card.tsx",
+        "line": 189,
+        "matches": [
+          "text-red-600"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/card.tsx",
+        "line": 190,
+        "matches": [
+          "text-gray-700"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/dropzone.tsx",
+        "line": 76,
+        "matches": [
+          "bg-red-50",
+          "bg-red-950",
+          "border-red-500"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/dropzone.tsx",
+        "line": 77,
+        "matches": [
+          "bg-green-50",
+          "bg-green-950",
+          "border-green-500"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/dropzone.tsx",
+        "line": 78,
+        "matches": [
+          "border-grey-300",
+          "border-grey-400"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/form.tsx",
+        "line": 137,
+        "matches": [
+          "text-gray-700"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/gh-chart.tsx",
+        "line": 47,
+        "matches": [
+          "text-red-600"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/gh-chart.tsx",
+        "line": 53,
+        "matches": [
+          "text-green-600"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/indicator.tsx",
+        "line": 16,
+        "matches": [
+          "bg-blue-500"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/indicator.tsx",
+        "line": 17,
+        "matches": [
+          "bg-green-500"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/indicator.tsx",
+        "line": 18,
+        "matches": [
+          "bg-red-500"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/indicator.tsx",
+        "line": 19,
+        "matches": [
+          "bg-yellow-500"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/indicator.tsx",
+        "line": 42,
+        "matches": [
+          "border-blue-500"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/indicator.tsx",
+        "line": 47,
+        "matches": [
+          "border-green-500"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/indicator.tsx",
+        "line": 52,
+        "matches": [
+          "border-red-500"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/indicator.tsx",
+        "line": 57,
+        "matches": [
+          "border-yellow-500"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "line": 13,
+        "matches": [
+          "bg-gray-150",
+          "bg-gray-900"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input.tsx",
+        "line": 11,
+        "matches": [
+          "bg-gray-150",
+          "bg-gray-900"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/no-value-label.tsx",
+        "line": 11,
+        "matches": [
+          "text-grey-600"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/no-value-label.tsx",
+        "line": 24,
+        "matches": [
+          "text-grey-500"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/pagemenu.tsx",
+        "line": 211,
+        "matches": [
+          "text-gray-800"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/pagemenu.tsx",
+        "line": 212,
+        "matches": [
+          "text-gray-500"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/popover.tsx",
+        "line": 25,
+        "matches": [
+          "bg-gray-950"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/right-sidebar.tsx",
+        "line": 13,
+        "matches": [
+          "bg-gray-925",
+          "text-gray-500",
+          "text-gray-800"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/right-sidebar.tsx",
+        "line": 14,
+        "matches": [
+          "bg-gray-100",
+          "bg-gray-925"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 643,
+        "matches": [
+          "text-gray-600"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/table.tsx",
+        "line": 76,
+        "matches": [
+          "text-gray-700"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/table.tsx",
+        "line": 105,
+        "matches": [
+          "text-gray-700"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 59,
+        "matches": [
+          "border-gray-950"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 94,
+        "matches": [
+          "text-gray-800"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 95,
+        "matches": [
+          "text-gray-700"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 97,
+        "matches": [
+          "text-gray-500",
+          "text-gray-800"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 129,
+        "matches": [
+          "bg-gray-200",
+          "bg-gray-900",
+          "text-gray-300",
+          "text-gray-800"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 207,
+        "matches": [
+          "text-green-600"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 208,
+        "matches": [
+          "text-red-600"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 209,
+        "matches": [
+          "text-gray-700"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/textarea.tsx",
+        "line": 13,
+        "matches": [
+          "bg-gray-150",
+          "bg-gray-900"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/toggle-group.tsx",
+        "line": 22,
+        "matches": [
+          "bg-gray-100",
+          "bg-gray-925"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/toggle.tsx",
+        "line": 10,
+        "matches": [
+          "bg-gray-200",
+          "text-gray-700"
+        ]
+      },
+      {
+        "file": "apps/shade/src/providers/shade-provider.tsx",
+        "line": 48,
+        "matches": [
+          "text-gray-500"
+        ]
+      },
+      {
+        "file": "apps/shade/src/providers/shade-provider.tsx",
+        "line": 54,
+        "matches": [
+          "text-gray-300",
+          "text-gray-900"
+        ]
+      }
+    ],
+    "arbitrary_utility": [
+      {
+        "file": "apps/shade/src/components/features/color-picker/color-picker.tsx",
+        "line": 248,
+        "matches": [
+          "bg-[linear-gradient(90deg,#FF0000,#FFFF00,#00FF00,#00FFFF,#0000FF,#FF00FF,#FF0000)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/features/color-picker/color-picker.tsx",
+        "line": 273,
+        "matches": [
+          "bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAALklEQVR4nGP8+vWrCAMewM3N/QafPBM+SWLAqAGDwQBGQgoIpZOB98KoAVQwAADxzQcSVIRCfQAAAABJRU5ErkJggg==')]",
+          "bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4T2NkYGAQYcAP3uCTZhw1gGGYhAGBZIA/nYDCgBDAm9BGDWAAJyRCgLaBCAAgXwixzAS0pgAAAABJRU5ErkJggg==')]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/features/post-share-modal/post-share-modal.tsx",
+        "line": 61,
+        "matches": [
+          "max-h-[calc(100vh-16vmin)]",
+          "max-w-[540px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/features/post-share-modal/post-share-modal.tsx",
+        "line": 66,
+        "matches": [
+          "leading-[1.15em]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/features/post-share-modal/post-share-modal.tsx",
+        "line": 107,
+        "matches": [
+          "h-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/features/post-share-modal/post-share-modal.tsx",
+        "line": 110,
+        "matches": [
+          "h-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/features/post-share-modal/post-share-modal.tsx",
+        "line": 113,
+        "matches": [
+          "h-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/features/post-share-modal/post-share-modal.tsx",
+        "line": 116,
+        "matches": [
+          "h-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/layout/header.tsx",
+        "line": 26,
+        "matches": [
+          "leading-[1.2em]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/layout/heading.tsx",
+        "line": 12,
+        "matches": [
+          "leading-[1.1em]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/layout/list-header.tsx",
+        "line": 19,
+        "matches": [
+          "min-h-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/layout/list-header.tsx",
+        "line": 42,
+        "matches": [
+          "leading-[1.2em]",
+          "text-[2.5rem]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/layout/list-header.tsx",
+        "line": 66,
+        "matches": [
+          "text-[1.9rem]",
+          "text-[2.2rem]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/layout/view-header.tsx",
+        "line": 24,
+        "matches": [
+          "content-[\"\"]",
+          "min-h-[102px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/accordion.tsx",
+        "line": 47,
+        "matches": [
+          "data-[state=closed]",
+          "data-[state=open]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/alert-dialog.tsx",
+        "line": 20,
+        "matches": [
+          "backdrop-blur-[3px]",
+          "data-[state=closed]",
+          "data-[state=open]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/alert-dialog.tsx",
+        "line": 39,
+        "matches": [
+          "data-[state=closed]",
+          "data-[state=open]",
+          "left-[50%]",
+          "slide-in-from-top-[18%]",
+          "slide-out-to-top-[18%]",
+          "top-[20%]",
+          "translate-x-[-50%]",
+          "translate-y-[-20%]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/banner.tsx",
+        "line": 15,
+        "matches": [
+          "shadow-[-7px_-6px_42px_8px_rgb(75_225_226_/_28%),7px_6px_42px_8px_rgb(202_103_255_/_32%)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/banner.tsx",
+        "line": 16,
+        "matches": [
+          "shadow-[-7px_-6px_42px_8px_rgb(75_225_226_/_36%),7px_6px_42px_8px_rgb(202_103_255_/_38%)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/banner.tsx",
+        "line": 17,
+        "matches": [
+          "shadow-[-7px_-4px_42px_10px_rgb(75_225_226_/_38%),7px_8px_42px_10px_rgb(202_103_255_/_42%)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/banner.tsx",
+        "line": 18,
+        "matches": [
+          "shadow-[-7px_-4px_42px_10px_rgb(75_225_226_/_50%),7px_8px_42px_10px_rgb(202_103_255_/_52%)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/banner.tsx",
+        "line": 19,
+        "matches": [
+          "scale-[1.01]",
+          "translate-y-[-2px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/breadcrumb.tsx",
+        "line": 22,
+        "matches": [
+          "h-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/button.tsx",
+        "line": 9,
+        "matches": [
+          "stroke-[1.5px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/button.tsx",
+        "line": 22,
+        "matches": [
+          "h-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/button.tsx",
+        "line": 47,
+        "matches": [
+          "stroke-[2px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/card.tsx",
+        "line": 171,
+        "matches": [
+          "h-[22px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/card.tsx",
+        "line": 187,
+        "matches": [
+          "h-[22px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/card.tsx",
+        "line": 194,
+        "matches": [
+          "text-[2.2rem]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/card.tsx",
+        "line": 202,
+        "matches": [
+          "size-[12px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/card.tsx",
+        "line": 205,
+        "matches": [
+          "size-[12px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/card.tsx",
+        "line": 208,
+        "matches": [
+          "max-w-[240px]",
+          "translate-y-[calc(-100%-8px)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/chart.tsx",
+        "line": 180,
+        "matches": [
+          "min-w-[8rem]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/chart.tsx",
+        "line": 209,
+        "matches": [
+          "rounded-[2px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/chart.tsx",
+        "line": 213,
+        "matches": [
+          "border-[1.5px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/chart.tsx",
+        "line": 408,
+        "matches": [
+          "min-w-[120px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/chart.tsx",
+        "line": 411,
+        "matches": [
+          "rounded-[2px]",
+          "size-[9px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/checkbox.tsx",
+        "line": 14,
+        "matches": [
+          "data-[state=checked]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/command.tsx",
+        "line": 55,
+        "matches": [
+          "max-h-[300px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/command.tsx",
+        "line": 93,
+        "matches": [
+          "data-[disabled=true]",
+          "data-[selected=true]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/command.tsx",
+        "line": 94,
+        "matches": [
+          "stroke-[1.5px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/data-list.tsx",
+        "line": 99,
+        "matches": [
+          "rounded-[6px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/data-list.tsx",
+        "line": 120,
+        "matches": [
+          "bg-[#202B36]",
+          "bg-[#213F5E]",
+          "bg-[#BDE1FF]",
+          "bg-[#EFF5FB]",
+          "rounded-[4px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/data-list.tsx",
+        "line": 141,
+        "matches": [
+          "max-w-[calc(100%-100px)]",
+          "max-w-[calc(100%-32px)]",
+          "transition-[max-width]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/dialog.tsx",
+        "line": 22,
+        "matches": [
+          "backdrop-blur-[3px]",
+          "data-[state=closed]",
+          "data-[state=open]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/dialog.tsx",
+        "line": 40,
+        "matches": [
+          "bg-[#101114]",
+          "data-[state=closed]",
+          "data-[state=open]",
+          "left-[50%]",
+          "top-[8vmin]",
+          "translate-x-[-50%]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/dropdown-menu.tsx",
+        "line": 29,
+        "matches": [
+          "data-[state=open]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/dropdown-menu.tsx",
+        "line": 50,
+        "matches": [
+          "data-[side=bottom]",
+          "data-[side=left]",
+          "data-[side=right]",
+          "data-[side=top]",
+          "data-[state=closed]",
+          "data-[state=open]",
+          "min-w-[8rem]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/dropdown-menu.tsx",
+        "line": 69,
+        "matches": [
+          "min-w-[8rem]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/dropdown-menu.tsx",
+        "line": 70,
+        "matches": [
+          "data-[side=bottom]",
+          "data-[side=left]",
+          "data-[side=right]",
+          "data-[side=top]",
+          "data-[state=closed]",
+          "data-[state=open]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/dropdown-menu.tsx",
+        "line": 90,
+        "matches": [
+          "data-[disabled]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/dropdown-menu.tsx",
+        "line": 107,
+        "matches": [
+          "data-[disabled]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/dropdown-menu.tsx",
+        "line": 130,
+        "matches": [
+          "data-[disabled]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/empty-indicator.tsx",
+        "line": 39,
+        "matches": [
+          "max-w-[320px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/field.tsx",
+        "line": 13,
+        "matches": [
+          "has-[>[data-slot=checkbox-group]",
+          "has-[>[data-slot=radio-group]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/field.tsx",
+        "line": 31,
+        "matches": [
+          "data-[variant=legend]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/field.tsx",
+        "line": 32,
+        "matches": [
+          "data-[variant=label]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/field.tsx",
+        "line": 46,
+        "matches": [
+          "data-[slot=checkbox-group]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/field.tsx",
+        "line": 56,
+        "matches": [
+          "data-[invalid=true]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/field.tsx",
+        "line": 64,
+        "matches": [
+          "has-[>[data-slot=field-content]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/field.tsx",
+        "line": 69,
+        "matches": [
+          "has-[>[data-slot=field-content]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/field.tsx",
+        "line": 115,
+        "matches": [
+          "group-data-[disabled=true]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/field.tsx",
+        "line": 116,
+        "matches": [
+          "has-[>[data-slot=field]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/field.tsx",
+        "line": 117,
+        "matches": [
+          "has-data-[state=checked]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/field.tsx",
+        "line": 130,
+        "matches": [
+          "group-data-[disabled=true]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/field.tsx",
+        "line": 143,
+        "matches": [
+          "group-has-[[data-orientation=horizontal]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/field.tsx",
+        "line": 164,
+        "matches": [
+          "group-data-[variant=outline]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 224,
+        "matches": [
+          "has-[[data-slot=filters-input]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 225,
+        "matches": [
+          "has-[[data-slot=filters-input]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 226,
+        "matches": [
+          "has-[[data-slot=filters-input]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 227,
+        "matches": [
+          "has-[[data-slot=filters-input]",
+          "ring-[3px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 228,
+        "matches": [
+          "has-[[data-slot=filters-input]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 229,
+        "matches": [
+          "has-[[data-slot=filters-input]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 230,
+        "matches": [
+          "has-[[data-slot=filters-input]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 231,
+        "matches": [
+          "has-[[data-slot=filters-input]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 232,
+        "matches": [
+          "has-[[data-slot=filters-input]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 233,
+        "matches": [
+          "has-[[data-slot=filters-input]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 234,
+        "matches": [
+          "has-[[data-slot=filters-input]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 243,
+        "matches": [
+          "has-[[data-slot=filters-prefix]",
+          "has-[[data-slot=filters-suffix]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 244,
+        "matches": [
+          "h-[34px]",
+          "has-[[data-slot=filters-prefix]",
+          "has-[[data-slot=filters-suffix]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 245,
+        "matches": [
+          "has-[[data-slot=filters-prefix]",
+          "has-[[data-slot=filters-suffix]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 274,
+        "matches": [
+          "size-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 298,
+        "matches": [
+          "stroke-[1.5px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 309,
+        "matches": [
+          "h-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 331,
+        "matches": [
+          "data-[state=open]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 338,
+        "matches": [
+          "data-[state=open]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 342,
+        "matches": [
+          "h-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 371,
+        "matches": [
+          "h-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 395,
+        "matches": [
+          "has-[[data-slot=switch]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 399,
+        "matches": [
+          "h-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 403,
+        "matches": [
+          "has-[[data-slot=switch]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 423,
+        "matches": [
+          "h-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 441,
+        "matches": [
+          "h-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 469,
+        "matches": [
+          "max-w-[calc(100vw-32px)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 987,
+        "matches": [
+          "border-r-[0px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 1364,
+        "matches": [
+          "max-w-[240px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 1390,
+        "matches": [
+          "data-[state=closed]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 1391,
+        "matches": [
+          "w-[200px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 1396,
+        "matches": [
+          "h-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 1885,
+        "matches": [
+          "data-[state=closed]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 1889,
+        "matches": [
+          "h-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 2420,
+        "matches": [
+          "data-[state=closed]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 2421,
+        "matches": [
+          "w-[220px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/filters.tsx",
+        "line": 2442,
+        "matches": [
+          "h-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/flag.tsx",
+        "line": 26,
+        "matches": [
+          "rounded-[2px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/flag.tsx",
+        "line": 28,
+        "matches": [
+          "rounded-[2px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/flag.tsx",
+        "line": 30,
+        "matches": [
+          "h-[14px]",
+          "rounded-[2px]",
+          "w-[22px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/gh-chart.tsx",
+        "line": 37,
+        "matches": [
+          "min-w-[120px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/hover-card.tsx",
+        "line": 21,
+        "matches": [
+          "data-[side=bottom]",
+          "data-[side=left]",
+          "data-[side=right]",
+          "data-[side=top]",
+          "data-[state=closed]",
+          "data-[state=open]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "line": 13,
+        "matches": [
+          "transition-[color,box-shadow]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "line": 14,
+        "matches": [
+          "has-[>textarea]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "line": 17,
+        "matches": [
+          "has-[>[data-align=inline-start]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "line": 18,
+        "matches": [
+          "has-[>[data-align=inline-end]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "line": 19,
+        "matches": [
+          "has-[>[data-align=block-start]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "line": 20,
+        "matches": [
+          "has-[>[data-align=block-end]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "line": 23,
+        "matches": [
+          "has-[[data-slot=input-group-control]",
+          "shadow-[0_0_0_2px_rgba(48,207,67,.25)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "line": 26,
+        "matches": [
+          "has-[[data-slot]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "line": 38,
+        "matches": [
+          "group-data-[disabled=true]",
+          "rounded-[calc(var(--input-group-radius)-5px)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "line": 42,
+        "matches": [
+          "has-[>button]",
+          "has-[>kbd]",
+          "ml-[-0.35rem]",
+          "ml-[-0.45rem]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "line": 43,
+        "matches": [
+          "has-[>button]",
+          "has-[>kbd]",
+          "mr-[-0.35rem]",
+          "mr-[-0.4rem]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "line": 44,
+        "matches": [
+          "group-has-[>input]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "line": 45,
+        "matches": [
+          "group-has-[>input]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "line": 84,
+        "matches": [
+          "has-[>svg]",
+          "rounded-[calc(var(--input-group-radius)-5px)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "line": 85,
+        "matches": [
+          "has-[>svg]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "line": 86,
+        "matches": [
+          "has-[>svg]",
+          "rounded-[calc(var(--input-group-radius)-5px)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input-group.tsx",
+        "line": 87,
+        "matches": [
+          "has-[>svg]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/input.tsx",
+        "line": 11,
+        "matches": [
+          "shadow-[0_0_0_2px_rgba(48,207,67,.25)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/loading-indicator.tsx",
+        "line": 14,
+        "matches": [
+          "content-['']",
+          "my-[-0.5]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/loading-indicator.tsx",
+        "line": 18,
+        "matches": [
+          "h-[16px]",
+          "h-[3px]",
+          "mt-[10px]",
+          "w-[16px]",
+          "w-[3px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/loading-indicator.tsx",
+        "line": 21,
+        "matches": [
+          "h-[20px]",
+          "h-[3px]",
+          "mt-[13px]",
+          "w-[20px]",
+          "w-[3px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/loading-indicator.tsx",
+        "line": 25,
+        "matches": [
+          "h-[50px]",
+          "h-[7px]",
+          "mt-[7px]",
+          "w-[50px]",
+          "w-[7px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/navbar.tsx",
+        "line": 53,
+        "matches": [
+          "grid-cols-[1fr]",
+          "grid-cols-[1fr_auto]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/no-value-label.tsx",
+        "line": 24,
+        "matches": [
+          "stroke-[1px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/pagemenu.tsx",
+        "line": 156,
+        "matches": [
+          "h-[30px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/pagemenu.tsx",
+        "line": 162,
+        "matches": [
+          "max-w-[100px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/pagemenu.tsx",
+        "line": 212,
+        "matches": [
+          "data-[state=active]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/popover.tsx",
+        "line": 25,
+        "matches": [
+          "data-[side=bottom]",
+          "data-[side=left]",
+          "data-[side=right]",
+          "data-[side=top]",
+          "data-[state=closed]",
+          "data-[state=open]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/right-sidebar.tsx",
+        "line": 13,
+        "matches": [
+          "size-[18px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/select.tsx",
+        "line": 21,
+        "matches": [
+          "data-[placeholder]",
+          "h-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/select.tsx",
+        "line": 77,
+        "matches": [
+          "data-[side=bottom]",
+          "data-[side=left]",
+          "data-[side=right]",
+          "data-[side=top]",
+          "data-[state=closed]",
+          "data-[state=open]",
+          "min-w-[8rem]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/select.tsx",
+        "line": 78,
+        "matches": [
+          "data-[side=bottom]",
+          "data-[side=left]",
+          "data-[side=right]",
+          "data-[side=top]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/select.tsx",
+        "line": 89,
+        "matches": [
+          "h-[var(--radix-select-trigger-height)]",
+          "min-w-[var(--radix-select-trigger-width)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/select.tsx",
+        "line": 120,
+        "matches": [
+          "data-[disabled]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/separator.tsx",
+        "line": 18,
+        "matches": [
+          "h-[1px]",
+          "w-[1px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sheet.tsx",
+        "line": 26,
+        "matches": [
+          "data-[state=closed]",
+          "data-[state=open]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sheet.tsx",
+        "line": 36,
+        "matches": [
+          "data-[state=closed]",
+          "data-[state=open]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sheet.tsx",
+        "line": 40,
+        "matches": [
+          "data-[state=closed]",
+          "data-[state=open]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sheet.tsx",
+        "line": 42,
+        "matches": [
+          "data-[state=closed]",
+          "data-[state=open]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sheet.tsx",
+        "line": 43,
+        "matches": [
+          "data-[state=closed]",
+          "data-[state=open]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sheet.tsx",
+        "line": 45,
+        "matches": [
+          "data-[state=closed]",
+          "data-[state=open]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sheet.tsx",
+        "line": 70,
+        "matches": [
+          "data-[state=open]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 137,
+        "matches": [
+          "has-[[data-variant=inset]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 230,
+        "matches": [
+          "group-data-[collapsible=offcanvas]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 231,
+        "matches": [
+          "group-data-[side=right]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 233,
+        "matches": [
+          "group-data-[collapsible=icon]",
+          "w-[calc(var(--sidebar-width-icon)_+_1.6rem)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 234,
+        "matches": [
+          "group-data-[collapsible=icon]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 241,
+        "matches": [
+          "group-data-[collapsible=offcanvas]",
+          "left-[calc(var(--sidebar-width)*-1)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 242,
+        "matches": [
+          "group-data-[collapsible=offcanvas]",
+          "right-[calc(var(--sidebar-width)*-1)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 245,
+        "matches": [
+          "group-data-[collapsible=icon]",
+          "w-[calc(var(--sidebar-width-icon)_+_1.6rem_+2px)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 246,
+        "matches": [
+          "group-data-[collapsible=icon]",
+          "group-data-[side=left]",
+          "group-data-[side=right]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 252,
+        "matches": [
+          "group-data-[variant=floating]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 306,
+        "matches": [
+          "group-data-[side=left]",
+          "group-data-[side=right]",
+          "w-[2px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 309,
+        "matches": [
+          "group-data-[collapsible=offcanvas]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 334,
+        "matches": [
+          "peer-data-[state=collapsed]",
+          "peer-data-[variant=inset]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 415,
+        "matches": [
+          "group-data-[collapsible=icon]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 450,
+        "matches": [
+          "transition-[margin,opa]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 451,
+        "matches": [
+          "group-data-[collapsible=icon]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 475,
+        "matches": [
+          "group-data-[collapsible=icon]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 525,
+        "matches": [
+          "data-[active=true]",
+          "data-[state=open]",
+          "group-data-[collapsible=icon]",
+          "group-has-[[data-sidebar=menu-action]",
+          "transition-[width,height,padding]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 531,
+        "matches": [
+          "shadow-[0_0_0_1px_var(--sidebar-accent)]",
+          "shadow-[0_0_0_1px_var(--sidebar-border)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 536,
+        "matches": [
+          "group-data-[collapsible=icon]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 621,
+        "matches": [
+          "peer-data-[size=sm]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 622,
+        "matches": [
+          "peer-data-[size=default]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 623,
+        "matches": [
+          "peer-data-[size=lg]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 624,
+        "matches": [
+          "group-data-[collapsible=icon]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 626,
+        "matches": [
+          "data-[state=open]",
+          "peer-data-[active=true]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 644,
+        "matches": [
+          "peer-data-[active=true]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 645,
+        "matches": [
+          "peer-data-[size=sm]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 646,
+        "matches": [
+          "peer-data-[size=default]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 647,
+        "matches": [
+          "peer-data-[size=lg]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 648,
+        "matches": [
+          "group-data-[collapsible=icon]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 703,
+        "matches": [
+          "group-data-[collapsible=icon]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 733,
+        "matches": [
+          "data-[active=true]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/sidebar.tsx",
+        "line": 736,
+        "matches": [
+          "group-data-[collapsible=icon]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/skeleton.tsx",
+        "line": 46,
+        "matches": [
+          "rounded-[2px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/skeleton.tsx",
+        "line": 95,
+        "matches": [
+          "w-[60px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/switch.tsx",
+        "line": 8,
+        "matches": [
+          "data-[state=checked]",
+          "data-[state=unchecked]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/switch.tsx",
+        "line": 23,
+        "matches": [
+          "data-[state=unchecked]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/switch.tsx",
+        "line": 27,
+        "matches": [
+          "data-[state=checked]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/switch.tsx",
+        "line": 28,
+        "matches": [
+          "data-[state=checked]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/table.tsx",
+        "line": 63,
+        "matches": [
+          "data-[state=selected]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/table.tsx",
+        "line": 76,
+        "matches": [
+          "translate-y-[2px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/table.tsx",
+        "line": 123,
+        "matches": [
+          "translate-y-[2px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 55,
+        "matches": [
+          "h-[34px]",
+          "px-[3px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 56,
+        "matches": [
+          "px-[3px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 60,
+        "matches": [
+          "h-[52px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 61,
+        "matches": [
+          "h-[30px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 87,
+        "matches": [
+          "data-[state=active]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 91,
+        "matches": [
+          "data-[state=active]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 92,
+        "matches": [
+          "data-[state=active]",
+          "h-[26px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 93,
+        "matches": [
+          "data-[state=active]",
+          "h-[34px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 94,
+        "matches": [
+          "data-[state=active]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 95,
+        "matches": [
+          "bottom-[-1px]",
+          "content-[\"\"]",
+          "data-[state=active]",
+          "h-[36px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 96,
+        "matches": [
+          "content-[\"\"]",
+          "data-[state=active]",
+          "h-[52px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 97,
+        "matches": [
+          "data-[state=active]",
+          "h-[30px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 98,
+        "matches": [
+          "content-[\"\"]",
+          "data-[state=active]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 129,
+        "matches": [
+          "leading-[21px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 206,
+        "matches": [
+          "h-[22px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 213,
+        "matches": [
+          "h-[22px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 219,
+        "matches": [
+          "text-[2.3rem]",
+          "text-[2.6rem]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 227,
+        "matches": [
+          "size-[12px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tabs.tsx",
+        "line": 230,
+        "matches": [
+          "size-[12px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/textarea.tsx",
+        "line": 13,
+        "matches": [
+          "min-h-[80px]",
+          "shadow-[0_0_0_2px_rgba(48,207,67,.25)]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/toggle.tsx",
+        "line": 10,
+        "matches": [
+          "data-[state=on]",
+          "stroke-[1.5px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/toggle.tsx",
+        "line": 17,
+        "matches": [
+          "h-[26px]",
+          "min-w-[26px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/toggle.tsx",
+        "line": 18,
+        "matches": [
+          "h-[32px]",
+          "min-w-[32px]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/components/ui/tooltip.tsx",
+        "line": 22,
+        "matches": [
+          "data-[side=bottom]",
+          "data-[side=left]",
+          "data-[side=right]",
+          "data-[side=top]",
+          "data-[state=closed]"
+        ]
+      },
+      {
+        "file": "apps/shade/src/providers/shade-provider.tsx",
+        "line": 53,
+        "matches": [
+          "mt-[-1px]",
+          "tracking-[0.1px]"
+        ]
+      }
+    ]
+  }
+}
