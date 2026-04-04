@@ -102,7 +102,7 @@
         "typescript": "5.8.3",
         "vite": "5.4.20",
         "vite-plugin-svgr": "3.3.0",
-        "vitest": "1.6.1"
+        "vitest": "4.1.2"
     },
     "dependencies": {
         "@dnd-kit/core": "6.3.1",
