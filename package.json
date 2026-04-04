@@ -74,7 +74,7 @@
     "chalk": "4.1.2",
     "chokidar": "3.6.0",
     "concurrently": "8.2.2",
-    "eslint": "8.57.1",
+    "eslint": "10.1.0",
     "eslint-plugin-ghost": "3.5.0",
     "eslint-plugin-react": "7.37.5",
     "husky": "8.0.3",
