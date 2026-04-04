@@ -2,17 +2,17 @@
 :root {
     --background: hsl(240 20% 99%);
     --foreground: hsl(216 11% 9%);
-    --muted: hsl(204 14% 94%);
+    --muted: hsl(200 12% 94%);
     --muted-foreground: hsl(210 13% 55%);
     --popover: hsl(0 0% 100%);
     --popover-foreground: hsl(216 11% 9%);
-    --border: hsl(204 14% 94%);
+    --border: hsl(200 12% 94%);
     --input: hsl(207 13% 83%);
     --card: hsl(0 0% 100%);
     --card-foreground: hsl(216 11% 9%);
     --primary: hsl(216 11% 9%);
     --primary-foreground: hsl(0 0% 100%);
-    --secondary: hsl(204 14% 94%);
+    --secondary: hsl(200 12% 94%);
     --secondary-foreground: hsl(216 11% 9%);
     --accent: hsl(200 12% 96%);
     --accent-foreground: hsl(216 11% 9%);
@@ -66,9 +66,9 @@
     --sidebar-foreground: hsl(210 11% 34%);
     --sidebar-primary: hsl(216 11% 9%);
     --sidebar-primary-foreground: hsl(0 0% 100%);
-    --sidebar-accent: hsl(204 14% 94%);
+    --sidebar-accent: hsl(200 12% 94%);
     --sidebar-accent-foreground: hsl(216 11% 9%);
-    --sidebar-border: hsl(0 0% 100%);
+    --sidebar-border: transparent;
     --sidebar-ring: hsl(215 13% 63%);
     --mobile-navbar-height: 64px;
 }
@@ -130,6 +130,6 @@
     --sidebar-primary-foreground: hsl(0 0% 100%);
     --sidebar-accent: hsl(210 11% 17%);
     --sidebar-accent-foreground: hsl(200 12% 96%);
-    --sidebar-border: hsl(216 11% 9%);
+    --sidebar-border: transparent;
     --sidebar-ring: hsl(210 13% 55%);
 }

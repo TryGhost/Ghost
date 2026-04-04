@@ -95,7 +95,7 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
         setShowMobileSearch(true);
     };
 
-    const filtersClassName = 'flex flex-col gap-4 px-3 lg:flex-row lg:items-center sidebar:gap-6 lg:gap-6 h-[48px] bg-muted rounded-lg';
+    const filtersClassName = 'flex flex-col gap-4 px-3 py-3 lg:flex-row lg:items-center sidebar:gap-6 lg:gap-6 min-h-[48px] bg-muted rounded-lg';
 
     return (
         <MembersLayout>
