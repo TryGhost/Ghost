@@ -1,5 +1,8 @@
 const {agentProvider, fixtureManager, matchers, dbUtils} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyObjectId, anyISODateTime, anyErrorId, anyEtag, anyLocationFor} = matchers;
+const sinon = require('sinon');
+const logging = require('@tryghost/logging');
+const mailService = require('../../../core/server/services/mail');
 
 const matchAutomatedEmail = {
     id: anyObjectId,
@@ -32,6 +35,7 @@ describe('Automated Emails API', function () {
     });
 
     beforeEach(async function () {
+        await dbUtils.truncate('brute');
         await dbUtils.truncate('automated_emails');
     });
 
@@ -166,6 +170,61 @@ describe('Automated Emails API', function () {
                     etag: anyEtag
                 });
         });
+
+        describe('Structured logging', function () {
+            let infoStub;
+
+            beforeEach(function () {
+                infoStub = sinon.stub(logging, 'info');
+            });
+
+            afterEach(function () {
+                sinon.restore();
+            });
+
+            it('Logs when a welcome email is created as active', async function () {
+                const {body} = await agent
+                    .post('automated_emails')
+                    .body({automated_emails: [{
+                        name: 'Welcome Email (Free)',
+                        slug: 'member-welcome-email-free',
+                        status: 'active',
+                        subject: 'Welcome to the site!',
+                        lexical: JSON.stringify({root: {children: []}})
+                    }]})
+                    .expectStatus(201);
+
+                const automatedEmail = body.automated_emails[0];
+
+                sinon.assert.calledWithMatch(infoStub, {
+                    system: {
+                        event: 'welcome_email.enabled',
+                        automated_email_id: automatedEmail.id,
+                        slug: 'member-welcome-email-free'
+                    }
+                }, 'Welcome email enabled');
+            });
+
+            it('Does not log when a welcome email is created as inactive', async function () {
+                await agent
+                    .post('automated_emails')
+                    .body({automated_emails: [{
+                        name: 'Welcome Email (Free)',
+                        slug: 'member-welcome-email-free',
+                        status: 'inactive',
+                        subject: 'Welcome to the site!',
+                        lexical: JSON.stringify({root: {children: []}})
+                    }]})
+                    .expectStatus(201);
+
+                sinon.assert.neverCalledWithMatch(infoStub, {
+                    system: {
+                        event: 'welcome_email.enabled',
+                        slug: 'member-welcome-email-free'
+                    }
+                }, sinon.match.any);
+            });
+        });
     });
 
     describe('Edit', function () {
@@ -280,16 +339,129 @@ describe('Automated Emails API', function () {
                     etag: anyEtag
                 });
         });
+
+        describe('Structured logging', function () {
+            let infoStub;
+
+            beforeEach(function () {
+                infoStub = sinon.stub(logging, 'info');
+            });
+
+            afterEach(function () {
+                sinon.restore();
+            });
+
+            it('Logs when a welcome email is enabled', async function () {
+                const automatedEmail = await createAutomatedEmail({status: 'inactive'});
+
+                await agent
+                    .put(`automated_emails/${automatedEmail.id}`)
+                    .body({automated_emails: [{
+                        name: 'Welcome Email (Free)',
+                        status: 'active'
+                    }]})
+                    .expectStatus(200);
+
+                sinon.assert.calledWithMatch(infoStub, {
+                    system: {
+                        event: 'welcome_email.enabled',
+                        automated_email_id: automatedEmail.id,
+                        slug: 'member-welcome-email-free'
+                    }
+                }, 'Welcome email enabled');
+            });
+
+            it('Logs when a welcome email is disabled', async function () {
+                const automatedEmail = await createAutomatedEmail({status: 'active'});
+
+                await agent
+                    .put(`automated_emails/${automatedEmail.id}`)
+                    .body({automated_emails: [{
+                        name: 'Welcome Email (Free)',
+                        status: 'inactive'
+                    }]})
+                    .expectStatus(200);
+
+                sinon.assert.calledWithMatch(infoStub, {
+                    system: {
+                        event: 'welcome_email.disabled',
+                        automated_email_id: automatedEmail.id,
+                        slug: 'member-welcome-email-free'
+                    }
+                }, 'Welcome email disabled');
+            });
+
+            it('Does not log when status does not change', async function () {
+                const automatedEmail = await createAutomatedEmail({status: 'inactive'});
+
+                await agent
+                    .put(`automated_emails/${automatedEmail.id}`)
+                    .body({automated_emails: [{
+                        name: 'Welcome Email (Free)',
+                        subject: 'Updated subject only'
+                    }]})
+                    .expectStatus(200);
+
+                sinon.assert.neverCalledWithMatch(infoStub, {
+                    system: {
+                        event: sinon.match(/^welcome_email\.(enabled|disabled)$/)
+                    }
+                }, sinon.match.any);
+            });
+        });
     });
 
-    describe('Destroy', function () {
-        it('Can destroy an automated email', async function () {
-            const automatedEmail = await createAutomatedEmail();
+    describe('SendTestEmail', function () {
+        let automatedEmailId;
 
-            const id = automatedEmail.id;
+        const validLexical = JSON.stringify({
+            root: {
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        detail: 0,
+                        format: 0,
+                        mode: 'normal',
+                        style: '',
+                        text: 'Welcome!',
+                        type: 'text',
+                        version: 1
+                    }],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    version: 1
+                }],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        });
 
+        beforeEach(async function () {
+            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
+            await agent.loginAsOwner();
+            const automatedEmail = await createAutomatedEmail({
+                status: 'active',
+                lexical: validLexical
+            });
+            automatedEmailId = automatedEmail.id;
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('Can send test email', async function () {
             await agent
-                .delete(`automated_emails/${id}`)
+                .post(`automated_emails/${automatedEmailId}/test/`)
+                .body({
+                    email: 'test@ghost.org',
+                    subject: 'Test Subject',
+                    lexical: validLexical
+                })
                 .expectStatus(204)
                 .expectEmptyBody()
                 .matchHeaderSnapshot({
@@ -298,10 +470,119 @@ describe('Automated Emails API', function () {
                 });
         });
 
-        it('Cannot destroy non-existent automated email', async function () {
+        it('Uses configured sender and reply-to for test email', async function () {
+            const senderEmail = 'editor@example.com';
+            const senderReplyTo = 'reply@example.com';
+            const {body: newslettersBody} = await agent.get('newsletters/?limit=1').expectStatus(200);
+            const defaultNewsletterId = newslettersBody.newsletters[0].id;
+
             await agent
-                .delete('automated_emails/abcd1234abcd1234abcd1234')
+                .put(`newsletters/${defaultNewsletterId}`)
+                .body({newsletters: [{
+                    sender_email: senderEmail,
+                    sender_reply_to: senderReplyTo
+                }]})
+                .expectStatus(200);
+
+            await agent
+                .post(`automated_emails/${automatedEmailId}/test/`)
+                .body({
+                    email: 'test@ghost.org',
+                    subject: 'Test Subject',
+                    lexical: validLexical
+                })
+                .expectStatus(204);
+
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            sinon.assert.calledWithMatch(mailService.GhostMailer.prototype.send, {
+                from: sinon.match(new RegExp(senderEmail)),
+                replyTo: senderReplyTo
+            });
+        });
+
+        it('Cannot send test email for non-existent automated email', async function () {
+            await agent
+                .post('automated_emails/abcd1234abcd1234abcd1234/test/')
+                .body({
+                    email: 'test@ghost.org',
+                    subject: 'Test Subject',
+                    lexical: validLexical
+                })
                 .expectStatus(404)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Cannot send test email without email in body', async function () {
+            await agent
+                .post(`automated_emails/${automatedEmailId}/test/`)
+                .body({})
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Cannot send test email with invalid email format', async function () {
+            await agent
+                .post(`automated_emails/${automatedEmailId}/test/`)
+                .body({
+                    email: 'not-a-valid-email',
+                    subject: 'Test Subject',
+                    lexical: validLexical
+                })
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Cannot send test email without subject', async function () {
+            await agent
+                .post(`automated_emails/${automatedEmailId}/test/`)
+                .body({
+                    email: 'test@ghost.org',
+                    lexical: validLexical
+                })
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Cannot send test email without lexical', async function () {
+            await agent
+                .post(`automated_emails/${automatedEmailId}/test/`)
+                .body({
+                    email: 'test@ghost.org',
+                    subject: 'Test Subject'
+                })
+                .expectStatus(422)
                 .matchBodySnapshot({
                     errors: [{
                         id: anyErrorId

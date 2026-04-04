@@ -1,7 +1,7 @@
 import EmptyStatView from './empty-stat-view';
 import React from 'react';
 import StatsContent from './stats-content';
-import {BarChartLoadingIndicator} from '@tryghost/shade';
+import {BarChartLoadingIndicator} from '@tryghost/shade/components';
 
 interface StatsViewProps<T> {
     isLoading: boolean;

@@ -1,4 +1,4 @@
-import {Filter} from '@tryghost/shade';
+import {Filter} from '@tryghost/shade/patterns';
 import {useCallback, useEffect, useMemo, useRef} from 'react';
 import {useSearchParams} from '@tryghost/admin-x-framework';
 

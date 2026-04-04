@@ -11,13 +11,14 @@ const WhatsNewPreferencesSchema = z.looseObject({
 });
 
 export const DEFAULT_NAVIGATION_PREFERENCES = {
-    expanded: { posts: true },
+    expanded: { posts: true, members: true },
     menu: { visible: true },
 } as const;
 
 export const NavigationPreferencesSchema = z.looseObject({
     expanded: z.object({
         posts: z.boolean(),
+        members: z.boolean().default(true),
     }),
     menu: z.object({
         visible: z.boolean(),
@@ -55,6 +56,7 @@ export function useUserPreferences<TData = Preferences>(
             return PreferencesSchema.parse(parsed);
         },
         enabled: !!user,
+        keepPreviousData: true,
         staleTime: Infinity,
         // Query key includes user?.accessibility to automatically react to changes from ANY source
         // (our mutation, other code calling editUser, external updates, etc.). When accessibility

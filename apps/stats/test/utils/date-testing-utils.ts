@@ -1,3 +1,4 @@
+import moment from 'moment';
 import {MockInstance, vi} from 'vitest';
 
 /**
@@ -34,7 +35,7 @@ export const restoreSystemDate = () => {
 export const getExpectedDateRange = (days: number, baseDate: Date = FIXED_DATE) => {
     const startDate = new Date(baseDate);
     startDate.setDate(startDate.getDate() - (days - 1));
-    
+
     return {
         expectedDateFrom: startDate.toISOString().split('T')[0], // YYYY-MM-DD format
         expectedDateTo: baseDate.toISOString().split('T')[0]
@@ -47,10 +48,10 @@ export const getExpectedDateRange = (days: number, baseDate: Date = FIXED_DATE) 
 export const createDateRange = (startDaysAgo: number, endDaysAgo: number = 0, baseDate: Date = FIXED_DATE) => {
     const startDate = new Date(baseDate);
     const endDate = new Date(baseDate);
-    
+
     startDate.setDate(startDate.getDate() - startDaysAgo);
     endDate.setDate(endDate.getDate() - endDaysAgo);
-    
+
     return {
         startDate,
         endDate,
@@ -60,26 +61,26 @@ export const createDateRange = (startDaysAgo: number, endDaysAgo: number = 0, ba
 };
 
 /**
- * Mock the getRangeDates function from @tryghost/shade
+ * Mock the getRangeDates function from @tryghost/shade/app
  * Provides consistent date ranges for testing
  */
 export const mockGetRangeDates = () => {
     return (range: number) => {
         const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(range);
         return {
-            startDate: new Date(expectedDateFrom + 'T00:00:00.000Z'),
-            endDate: new Date(expectedDateTo + 'T23:59:59.999Z'),
+            startDate: moment.utc(expectedDateFrom).startOf('day'),
+            endDate: moment.utc(expectedDateTo).startOf('day'),
             timezone: 'UTC'
         };
     };
 };
 
 /**
- * Mock the formatQueryDate function from @tryghost/shade
+ * Mock the formatQueryDate function from @tryghost/shade/app
  * Provides consistent date formatting
  */
 export const mockFormatQueryDate = () => {
-    return (date: Date) => date.toISOString().split('T')[0];
+    return (date: moment.Moment) => date.format('YYYY-MM-DD');
 };
 
 /**
@@ -89,7 +90,7 @@ export const DATE_TEST_SCENARIOS = {
     today: {range: 1, description: 'today'},
     lastWeek: {range: 7, description: 'last 7 days'},
     lastMonth: {range: 30, description: 'last 30 days'},
-    last3Months: {range: 90, description: 'last 3 months'},
+    last3Months: {range: 90, description: 'Last 90 days'},
     yearToDate: {range: -1, description: 'year to date'}
 } as const;
 
@@ -99,17 +100,17 @@ export const DATE_TEST_SCENARIOS = {
  */
 export const setupDateMocking = () => {
     const mockDate = mockSystemDate();
-    
+
     // Mock external date functions
-    vi.mock('@tryghost/shade', async () => {
-        const actual = await vi.importActual('@tryghost/shade') as Record<string, unknown>;
+    vi.mock('@tryghost/shade/app', async () => {
+        const actual = await vi.importActual('@tryghost/shade/app') as Record<string, unknown>;
         return {
             ...actual,
             getRangeDates: vi.fn().mockImplementation(mockGetRangeDates()),
             formatQueryDate: vi.fn().mockImplementation(mockFormatQueryDate())
         };
     });
-    
+
     return {
         mockDate,
         cleanup: restoreSystemDate
@@ -126,7 +127,7 @@ export const expectApiCallWithDateRange = (
     additionalParams: Record<string, unknown> = {}
 ) => {
     const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(range);
-    
+
     expect(mockApiCall).toHaveBeenCalledWith({
         searchParams: {
             date_from: expectedDateFrom,

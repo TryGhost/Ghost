@@ -167,11 +167,13 @@ export interface GetBlockedDomainsResponse {
     next: string | null;
 }
 
-export enum PostType {
-    Note = 0,
-    Article = 1,
-    Tombstone = 2
-}
+export const PostType = {
+    Note: 0,
+    Article: 1,
+    Tombstone: 2
+} as const;
+
+export type PostType = (typeof PostType)[keyof typeof PostType];
 
 export interface Post {
     id: string;
@@ -242,19 +244,29 @@ export const isApiError = (error: unknown): error is ApiError => {
 };
 
 export class ActivityPubAPI {
+    private readonly apiUrl: URL;
+    private readonly authApiUrl: URL;
+    private readonly handle: string;
+    private readonly fetch: (resource: URL, init?: RequestInit) => Promise<Response>;
+
     constructor(
-        private readonly apiUrl: URL,
-        private readonly authApiUrl: URL,
-        private readonly handle: string,
-        private readonly fetch: (resource: URL, init?: RequestInit) => Promise<Response> = window.fetch.bind(window)
-    ) {}
+        apiUrl: URL,
+        authApiUrl: URL,
+        handle: string,
+        fetch: (resource: URL, init?: RequestInit) => Promise<Response> = window.fetch.bind(window)
+    ) {
+        this.apiUrl = apiUrl;
+        this.authApiUrl = authApiUrl;
+        this.handle = handle;
+        this.fetch = fetch;
+    }
 
     private async getToken(): Promise<string | null> {
         try {
             const response = await this.fetch(this.authApiUrl);
             const json = await response.json();
             return json?.identities?.[0]?.token || null;
-        } catch (err) {
+        } catch {
             // TODO: Ping sentry?
             return null;
         }

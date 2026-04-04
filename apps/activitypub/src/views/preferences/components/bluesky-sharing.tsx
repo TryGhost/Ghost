@@ -2,25 +2,9 @@ import APAvatar from '@src/components/global/ap-avatar';
 import EditProfile from '@src/views/preferences/components/edit-profile';
 import Layout from '@src/components/layout';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    Button,
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    H2,
-    H3,
-    LoadingIndicator,
-    LucideIcon,
-    buttonVariants} from '@tryghost/shade';
+import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, LoadingIndicator, buttonVariants} from '@tryghost/shade/components';
+import {H2, H3} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
 import {useAccountForUser, useConfirmBlueskyHandleMutationForUser, useDisableBlueskyMutationForUser, useEnableBlueskyMutationForUser} from '@hooks/use-activity-pub-queries';
 
@@ -52,7 +36,7 @@ const BlueskySharing: React.FC = () => {
             setLoading(true);
             try {
                 await enableBlueskyMutation.mutateAsync();
-            } catch (error) {
+            } catch {
                 setLoading(false);
                 toast.error('Something went wrong, please try again.');
             }
@@ -148,19 +132,19 @@ const BlueskySharing: React.FC = () => {
             <div className='mx-auto max-w-[620px] py-[min(4vh,48px)]'>
                 <div className='flex items-center justify-between gap-8'>
                     <H2>Bluesky sharing</H2>
-                    {showAsEnabled && <Button className='group w-24 translate-y-1 px-2 hover:!bg-red/5 hover:text-red' size='default' variant='outline' onClick={() => setShowConfirm(true)}>
+                    {showAsEnabled && <Button className='group w-24 translate-y-1 px-2 hover:bg-red/5! hover:text-red' size='default' variant='outline' onClick={() => setShowConfirm(true)}>
                         <span className='size-2 rounded-full bg-green group-hover:hidden'></span>
                         <span className='group-hover:hidden'>Enabled</span>
-                        <span className='hidden group-hover:!visible group-hover:!inline'>Disable</span>
+                        <span className='hidden group-hover:visible! group-hover:inline!'>Disable</span>
                     </Button>}
                 </div>
                 {!showAsEnabled ?
                     <div className='mt-3 flex flex-col gap-5'>
                         <p className='text-base'>{!account?.avatarUrl ?
                             'Add a profile image to connect to Bluesky. Profile pictures help prevent spam.' :
-                            'Connect your account to Bluesky to share your content directly to your Bluesky profile. When enabled, new posts you create can be automatically shared to your Bluesky account, expanding your reach across platforms.'
+                            <>Connect your account to <a className="text-purple hover:text-purple-600" href="https://fed.brid.gy" rel="noreferrer" target="_blank">Bridgy Fed</a> to share content directly to a dedicated Bluesky profile and increase your reach across the social web.</>
                         }</p>
-                        <p className='-mt-2 text-base'>Username changes aren&apos;t supported. Make sure you&apos;re happy with your social web handle before connecting.</p>
+                        <p className='-mt-2 text-base'>You can&apos;t change your Bluesky username, so make sure you&apos;re happy with your current social web handle before connecting.</p>
                         {!account?.avatarUrl ? (
                             <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
                                 <DialogTrigger>
@@ -208,7 +192,7 @@ const BlueskySharing: React.FC = () => {
                                         }
                                         size='md'
                                     />
-                                    <div className='absolute bottom-0 right-0 z-10 flex size-6 items-center justify-center rounded-full bg-white shadow-xs'>
+                                    <div className='absolute right-0 bottom-0 z-10 flex size-6 items-center justify-center rounded-full bg-white shadow-xs'>
                                         <svg height="14" role="img" viewBox="0 0 24 24" width="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 10.8c-1.087 -2.114 -4.046 -6.053 -6.798 -7.995C2.566 0.944 1.561 1.266 0.902 1.565 0.139 1.908 0 3.08 0 3.768c0 0.69 0.378 5.65 0.624 6.479 0.815 2.736 3.713 3.66 6.383 3.364 0.136 -0.02 0.275 -0.039 0.415 -0.056 -0.138 0.022 -0.276 0.04 -0.415 0.056 -3.912 0.58 -7.387 2.005 -2.83 7.078 5.013 5.19 6.87 -1.113 7.823 -4.308 0.953 3.195 2.05 9.271 7.733 4.308 4.267 -4.308 1.172 -6.498 -2.74 -7.078a8.741 8.741 0 0 1 -0.415 -0.056c0.14 0.017 0.279 0.036 0.415 0.056 2.67 0.297 5.568 -0.628 6.383 -3.364 0.246 -0.828 0.624 -5.79 0.624 -6.478 0 -0.69 -0.139 -1.861 -0.902 -2.206 -0.659 -0.298 -1.664 -0.62 -4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z" fill="#0385FF" strokeWidth="1"></path></svg>
                                     </div>
                                 </div>

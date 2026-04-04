@@ -1,11 +1,11 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const cheerio = require('cheerio');
 const sinon = require('sinon');
 const config = require('../../../core/shared/config');
 const moment = require('moment');
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
-const urlUtilsHelper = require('../../utils/urlUtils');
+const urlUtilsHelper = require('../../utils/url-utils');
 
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {anyArray, anyContentVersion, anyErrorId, anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
@@ -79,23 +79,25 @@ describe('Posts Content API', function () {
         // kitchen sink
         assert.equal(res.body.posts[11].slug, fixtureManager.get('posts', 1).slug);
 
+        const configUrl = new URL(config.get('url'));
         let urlParts = new URL(res.body.posts[11].feature_image);
-        assert.equal(urlParts.protocol, 'http:');
-        assert.equal(urlParts.host, '127.0.0.1:2369');
+        assert.equal(urlParts.protocol, configUrl.protocol);
+        assert.equal(urlParts.host, configUrl.host);
 
         urlParts = new URL(res.body.posts[11].url);
-        assert.equal(urlParts.protocol, 'http:');
-        assert.equal(urlParts.host, '127.0.0.1:2369');
+        assert.equal(urlParts.protocol, configUrl.protocol);
+        assert.equal(urlParts.host, configUrl.host);
 
         const $ = cheerio.load(res.body.posts[11].html);
         urlParts = new URL($('img').attr('src'));
-        assert.equal(urlParts.protocol, 'http:');
-        assert.equal(urlParts.host, '127.0.0.1:2369');
+        assert.equal(urlParts.protocol, configUrl.protocol);
+        assert.equal(urlParts.host, configUrl.host);
 
+        const escapedUrl = config.get('url').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         assert.equal(res.body.posts[9].slug, 'not-so-short-bit-complex');
-        assert.match(res.body.posts[9].html, /<a href="http:\/\/127.0.0.1:2369\/about#nowhere" title="Relative URL/);
+        assert.match(res.body.posts[9].html, new RegExp(`<a href="${escapedUrl}/about#nowhere" title="Relative URL`));
         assert.equal(res.body.posts[11].slug, 'ghostly-kitchen-sink');
-        assert.match(res.body.posts[11].html, /<img src="http:\/\/127.0.0.1:2369\/content\/images\/lol.jpg"/);
+        assert.match(res.body.posts[11].html, new RegExp(`<img src="${escapedUrl}/content/images/lol.jpg"`));
     });
 
     it('Cannot request mobiledoc or lexical formats', async function () {
@@ -319,7 +321,7 @@ describe('Posts Content API', function () {
             .get(`posts/${publicPost.id}/?include=tiers`)
             .expectStatus(200);
         const publicPostData = publicPostRes.body.posts[0];
-        publicPostData.tiers.length.should.eql(2);
+        assert.equal(publicPostData.tiers.length, 2);
     });
 
     it('Can include free and paid tiers for members only post', async function () {
@@ -334,7 +336,7 @@ describe('Posts Content API', function () {
             .get(`posts/${membersPost.id}/?include=tiers`)
             .expectStatus(200);
         const membersPostData = membersPostRes.body.posts[0];
-        membersPostData.tiers.length.should.eql(2);
+        assert.equal(membersPostData.tiers.length, 2);
     });
 
     it('Can include only paid tier for paid post', async function () {
@@ -349,7 +351,7 @@ describe('Posts Content API', function () {
             .get(`posts/${paidPost.id}/?include=tiers`)
             .expectStatus(200);
         const paidPostData = paidPostRes.body.posts[0];
-        paidPostData.tiers.length.should.eql(1);
+        assert.equal(paidPostData.tiers.length, 1);
     });
 
     it('Can include specific tier for post with tiers visibility', async function () {
@@ -376,7 +378,7 @@ describe('Posts Content API', function () {
 
         const tiersPostData = tiersPostRes.body.posts[0];
 
-        tiersPostData.tiers.length.should.eql(1);
+        assert.equal(tiersPostData.tiers.length, 1);
     });
 
     it('Can use post excerpt as field', async function () {
@@ -418,19 +420,22 @@ describe('Posts Content API', function () {
         let queries = await trackDb(() => agent.get('posts/?limit=all').expectStatus(200), this.skip.bind(this));
         let postsRelatedQueries = queries.filter(q => q.sql.includes('`posts`'));
         for (const query of postsRelatedQueries) {
-            assert(!query.sql.includes('*'), 'Query should not select *');
+            const sqlWithoutCount = query.sql.replace(/count\(\*\)/g, '');
+            assert(!sqlWithoutCount.includes('*'), 'Query should not select *');
         }
 
         queries = await trackDb(() => agent.get('posts/?limit=3').expectStatus(200), this.skip.bind(this));
         postsRelatedQueries = queries.filter(q => q.sql.includes('`posts`'));
         for (const query of postsRelatedQueries) {
-            assert(!query.sql.includes('*'), 'Query should not select *');
+            const sqlWithoutCount = query.sql.replace(/count\(\*\)/g, '');
+            assert(!sqlWithoutCount.includes('*'), 'Query should not select *');
         }
 
         queries = await trackDb(() => agent.get('posts/?include=tags,authors').expectStatus(200), this.skip.bind(this));
         postsRelatedQueries = queries.filter(q => q.sql.includes('`posts`'));
         for (const query of postsRelatedQueries) {
-            assert(!query.sql.includes('*'), 'Query should not select *');
+            const sqlWithoutCount = query.sql.replace(/count\(\*\)/g, '');
+            assert(!sqlWithoutCount.includes('*'), 'Query should not select *');
         }
     });
 
@@ -530,9 +535,9 @@ describe('Posts Content API', function () {
             assert(!post.html.includes('__GHOST_URL__'));
         });
 
-        it('Can read Mobiledoc post with CDN URLs for media/files when configured', async function () {
+        it('Can read Mobiledoc post with CDN URLs when configured', async function () {
             urlUtilsHelper.stubUrlUtilsWithCdn({
-                assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+                assetBaseUrls: {image: cdnUrl, media: cdnUrl, files: cdnUrl}
             }, sinon);
 
             const res = await agent
@@ -541,25 +546,28 @@ describe('Posts Content API', function () {
 
             const post = res.body.posts[0];
 
-            // Images stay on site URL
-            assert.equal(post.feature_image, `${siteUrl}/content/images/feature.jpg`);
-            assert(post.html.includes(`${siteUrl}/content/images/inline.jpg`));
-            // Media/files use CDN URL
+            // All assets use CDN URL
+            assert.equal(post.feature_image, `${cdnUrl}/content/images/feature.jpg`);
+            assert(post.html.includes(`${cdnUrl}/content/images/inline.jpg`));
             assert(post.html.includes(`${cdnUrl}/content/files/document.pdf`));
             assert(post.html.includes(`${cdnUrl}/content/media/video.mp4`));
             assert(post.html.includes(`${cdnUrl}/content/media/audio.mp3`));
-            // Inserted snippet images stay on site URL
-            assert(post.html.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
-            // Inserted snippet media/files use CDN URL
+            // Video/audio thumbnails use CDN URL
+            assert(post.html.includes(`${cdnUrl}/content/images/video-thumb.jpg`));
+            // Gallery images use CDN URL
+            assert(post.html.includes(`${cdnUrl}/content/images/gallery-1.jpg`));
+            assert(post.html.includes(`${cdnUrl}/content/images/gallery-2.jpg`));
+            // Inserted snippet use CDN URL
+            assert(post.html.includes(`${cdnUrl}/content/images/snippet-inline.jpg`));
             assert(post.html.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
             assert(post.html.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
             assert(post.html.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
             assert(!post.html.includes('__GHOST_URL__'));
         });
 
-        it('Can read Lexical post with CDN URLs for media/files when configured', async function () {
+        it('Can read Lexical post with CDN URLs when configured', async function () {
             urlUtilsHelper.stubUrlUtilsWithCdn({
-                assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+                assetBaseUrls: {media: cdnUrl, files: cdnUrl, image: cdnUrl}
             }, sinon);
 
             const res = await agent
@@ -568,15 +576,21 @@ describe('Posts Content API', function () {
 
             const post = res.body.posts[0];
 
-            // Images stay on site URL
-            assert.equal(post.feature_image, `${siteUrl}/content/images/feature.jpg`);
-            assert(post.html.includes(`${siteUrl}/content/images/inline.jpg`));
+            // Images use CDN URL
+            assert.equal(post.feature_image, `${cdnUrl}/content/images/feature.jpg`);
+            assert(post.html.includes(`${cdnUrl}/content/images/inline.jpg`));
+            // Video/audio thumbnails use CDN URL
+            assert(post.html.includes(`${cdnUrl}/content/images/video-thumb.jpg`));
+            assert(post.html.includes(`${cdnUrl}/content/images/audio-thumb.jpg`));
+            // Gallery images use CDN URL
+            assert(post.html.includes(`${cdnUrl}/content/images/gallery-1.jpg`));
+            assert(post.html.includes(`${cdnUrl}/content/images/gallery-2.jpg`));
             // Media/files use CDN URL
             assert(post.html.includes(`${cdnUrl}/content/files/document.pdf`));
             assert(post.html.includes(`${cdnUrl}/content/media/video.mp4`));
             assert(post.html.includes(`${cdnUrl}/content/media/audio.mp3`));
-            // Inserted snippet images stay on site URL
-            assert(post.html.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+            // Inserted snippet images use CDN URL
+            assert(post.html.includes(`${cdnUrl}/content/images/snippet-inline.jpg`));
             // Inserted snippet media/files use CDN URL
             assert(post.html.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
             assert(post.html.includes(`${cdnUrl}/content/media/snippet-video.mp4`));

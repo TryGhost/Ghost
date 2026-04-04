@@ -1,7 +1,39 @@
-import {hasAvailablePrices, getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getDefaultNewsletterSender, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnly, isPaidMember, isPaidMembersOnly, isSameCurrency, transformApiTiersData, isSigninAllowed, isSignupAllowed, getCompExpiry, isInThePast, hasNewsletterSendingEnabled} from '../../src/utils/helpers';
+import {
+    getActiveInterval,
+    hasGiftSubscriptions,
+    hasAvailablePrices,
+    getAllProductsForSite,
+    getAvailableProducts,
+    getCurrencySymbol,
+    getFreeProduct,
+    getMemberName,
+    getMemberSubscription,
+    getPriceFromSubscription,
+    getPriceIdFromPageQuery,
+    getSupportAddress,
+    getDefaultNewsletterSender,
+    getUrlHistory,
+    hasMultipleProducts,
+    isActiveOffer,
+    isRetentionOffer,
+    isInviteOnly,
+    isPaidMember,
+    isPaidMembersOnly,
+    isSameCurrency,
+    transformApiTiersData,
+    isSigninAllowed,
+    isSignupAllowed,
+    getCompExpiry,
+    isInThePast,
+    hasNewsletterSendingEnabled,
+    getUpdatedOfferPrice,
+    isComplimentaryMember,
+    subscriptionHasFreeTrial,
+    addMonths,
+    formatPrice
+} from '../../src/utils/helpers';
 import * as Fixtures from '../../src/utils/fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from './test-fixtures';
-import {isComplimentaryMember} from '../../src/utils/helpers';
 
 describe('Helpers - ', () => {
     describe('isComplimentaryMember -', () => {
@@ -116,6 +148,49 @@ describe('Helpers - ', () => {
             const value = isActiveOffer({offer: FixtureOffer, site: FixturesSite.singleTier.onlyFreePlan});
             expect(value).toBe(false);
         });
+
+        test('returns true for active retention offer', () => {
+            const nullTierOffer = {
+                ...FixtureOffer,
+                tier: null,
+                redemption_type: 'retention'
+            };
+            const value = isActiveOffer({offer: nullTierOffer, site: FixturesSite.singleTier.basic});
+            expect(value).toBe(true);
+        });
+
+        test('returns false for active null-tier non-retention offer', () => {
+            const nullTierSignupOffer = {
+                ...FixtureOffer,
+                tier: null,
+                redemption_type: 'signup'
+            };
+            const value = isActiveOffer({offer: nullTierSignupOffer, site: FixturesSite.singleTier.basic});
+            expect(value).toBe(false);
+        });
+
+        test('returns false for archived null-tier offer', () => {
+            const archivedNullTierOffer = {
+                ...FixtureOffer,
+                tier: null,
+                redemption_type: 'retention',
+                status: 'archived'
+            };
+            const value = isActiveOffer({offer: archivedNullTierOffer, site: FixturesSite.singleTier.basic});
+            expect(value).toBe(false);
+        });
+    });
+
+    describe('isRetentionOffer -', () => {
+        test('returns false for signup offers', () => {
+            const result = isRetentionOffer({offer: {...FixtureOffer, redemption_type: 'signup'}});
+            expect(result).toBe(false);
+        });
+
+        test('returns true for retention offers', () => {
+            const result = isRetentionOffer({offer: {...FixtureOffer, redemption_type: 'retention'}});
+            expect(result).toBe(true);
+        });
     });
 
     describe('isSameCurrency - ', () => {
@@ -133,6 +208,100 @@ describe('Helpers - ', () => {
             let currency1 = 'eur';
             let currency2 = 'usd';
             expect(isSameCurrency(currency1, currency2)).toBe(false);
+        });
+    });
+
+    describe('getUpdatedOfferPrice - ', () => {
+        test('rounds 20% off $5.99 to $4.79', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'percent', amount: 20},
+                price: {amount: 599, currency: 'usd'}
+            });
+
+            expect(updatedPrice).toBe(4.79);
+        });
+
+        test('rounds 33% off $9.99 to $6.69', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'percent', amount: 33},
+                price: {amount: 999, currency: 'usd'}
+            });
+
+            expect(updatedPrice).toBe(6.69);
+        });
+
+        // Edge-case: Stripe applies the rounding per invoice line item, i.e. on the discount line, not on the final invoice amount
+        //
+        // Example:
+        // - Original amount: 101 ($1.01)
+        // - Percent amount: 50 (50%)
+        // - Discount amount should be rounded: 101 * 50/100 = 50.5 -> Rounded to 51 ($0.51)
+        // - Final amount: 101 - 51 = $0.50
+        //
+        // Instead, if we apply rounding to the final amount, we end up with a 1-cent drift: 101 - (101 * 50/100) = 101 - 50.5 = 50.5 -> Rounded to 51 ($0.51)
+        test('rounds 50% off $1.01 to $0.50', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'percent', amount: 50},
+                price: {amount: 101, currency: 'usd'}
+            });
+
+            expect(updatedPrice).toBe(0.50);
+        });
+
+        test('returns exact discounted amount when no rounding is needed', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'percent', amount: 50},
+                price: {amount: 1000, currency: 'usd'}
+            });
+
+            expect(updatedPrice).toBe(5);
+        });
+
+        test('rounds 15% off $3.33 to $2.83', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'percent', amount: 15},
+                price: {amount: 333, currency: 'usd'}
+            });
+
+            expect(updatedPrice).toBe(2.83);
+        });
+
+        test('returns expected amount for fixed offers', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'fixed', amount: 100, currency: 'usd'},
+                price: {amount: 599, currency: 'usd'}
+            });
+
+            expect(updatedPrice).toBe(4.99);
+        });
+
+        test('returns formatted price when useFormatted is true', () => {
+            const updatedPrice = getUpdatedOfferPrice({
+                offer: {type: 'percent', amount: 20},
+                price: {amount: 599, currency: 'usd'},
+                useFormatted: true
+            });
+
+            expect(updatedPrice).toBe('$4.79');
+        });
+    });
+
+    describe('formatPrice - ', () => {
+        test('returns whole numbers without decimal padding', () => {
+            expect(formatPrice(5)).toBe('5');
+        });
+
+        test('returns fractional numbers with two decimals', () => {
+            expect(formatPrice(5.4)).toBe('5.40');
+        });
+
+        test('returns fractional numbers with locale grouping', () => {
+            expect(formatPrice(1234.5, 'en-US')).toBe('1,234.50');
+        });
+
+        test('returns empty string for null/undefined input', () => {
+            expect(formatPrice(null)).toBe('');
+            expect(formatPrice(undefined)).toBe('');
         });
     });
 
@@ -537,6 +706,175 @@ describe('Helpers - ', () => {
 
             expect(isInThePast(pastDate)).toEqual(true);
             expect(isInThePast(futureDate)).toEqual(false);
+        });
+    });
+
+    describe('subscriptionHasFreeTrial', () => {
+        it('returns true for active trial subscriptions', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: null,
+                trial_end_at: futureDate.toISOString()
+            };
+
+            expect(subscriptionHasFreeTrial({sub})).toBe(true);
+        });
+
+        it('returns true for active trial offers', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: {type: 'trial'},
+                trial_end_at: futureDate.toISOString()
+            };
+
+            expect(subscriptionHasFreeTrial({sub})).toBe(true);
+        });
+
+        it('returns false for free months (percent/100/repeating) offers', () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 3);
+            const sub = {
+                offer: {type: 'percent', amount: 100, duration: 'repeating', redemption_type: 'retention'},
+                next_payment: {discount: {end: futureDate.toISOString()}}
+            };
+
+            expect(subscriptionHasFreeTrial({sub})).toBe(false);
+        });
+    });
+
+    describe('addMonths', () => {
+        it('adds one month by default', () => {
+            const date = new Date(Date.UTC(2024, 0, 15));
+            const result = addMonths(date);
+            expect(result).toEqual(new Date(Date.UTC(2024, 1, 15)));
+        });
+
+        it('adds multiple months', () => {
+            const date = new Date(Date.UTC(2024, 0, 10));
+            const result = addMonths(date, 3);
+            expect(result).toEqual(new Date(Date.UTC(2024, 3, 10)));
+        });
+
+        it('wraps around to the next year', () => {
+            const date = new Date(Date.UTC(2024, 10, 5));
+            const result = addMonths(date, 3);
+            expect(result).toEqual(new Date(Date.UTC(2025, 1, 5)));
+        });
+
+        it('clamps to the last day of a shorter month (Jan 31 + 1 month)', () => {
+            const date = new Date(Date.UTC(2024, 0, 31));
+            const result = addMonths(date, 1);
+            expect(result).toEqual(new Date(Date.UTC(2024, 1, 29)));
+        });
+
+        it('clamps to 28 Feb in non-leap year', () => {
+            const date = new Date(Date.UTC(2023, 0, 31));
+            const result = addMonths(date, 1);
+            expect(result).toEqual(new Date(Date.UTC(2023, 1, 28)));
+        });
+
+        it('handles adding 12 months (full year)', () => {
+            const date = new Date(Date.UTC(2024, 5, 15));
+            const result = addMonths(date, 12);
+            expect(result).toEqual(new Date(Date.UTC(2025, 5, 15)));
+        });
+
+        it('handles adding more than 12 months', () => {
+            const date = new Date(Date.UTC(2024, 0, 1));
+            const result = addMonths(date, 25);
+            expect(result).toEqual(new Date(Date.UTC(2026, 1, 1)));
+        });
+
+        it('preserves UTC time when adding months', () => {
+            const result = addMonths('2099-04-03T18:30:45.123Z', 1);
+            expect(result).toEqual(new Date('2099-05-03T18:30:45.123Z'));
+        });
+
+        it('accepts a date string', () => {
+            const result = addMonths('2024-03-15T00:00:00.000Z', 2);
+            expect(result).toEqual(new Date(Date.UTC(2024, 4, 15)));
+        });
+
+        it('accepts a timestamp number', () => {
+            const ts = Date.UTC(2024, 0, 10);
+            const result = addMonths(ts, 1);
+            expect(result).toEqual(new Date(Date.UTC(2024, 1, 10)));
+        });
+
+        it('returns null for an invalid date', () => {
+            expect(addMonths('not-a-date', 1)).toBeNull();
+        });
+
+        it('returns null for undefined', () => {
+            expect(addMonths(undefined, 1)).toBeNull();
+        });
+
+        it('returns the original date when month count is less than 1', () => {
+            const date = '2024-03-15T00:00:00.000Z';
+            expect(addMonths(date, 0)).toEqual(new Date(date));
+        });
+
+        it('returns the original date when month count is not an integer', () => {
+            const date = '2024-03-15T00:00:00.000Z';
+            expect(addMonths(date, 1.5)).toEqual(new Date(date));
+        });
+    });
+
+    describe('hasGiftSubscriptions', () => {
+        test('returns true when labs flag is enabled', () => {
+            expect(hasGiftSubscriptions({site: {labs: {giftSubscriptions: true}}})).toBe(true);
+        });
+
+        test('returns false when labs flag is disabled', () => {
+            expect(hasGiftSubscriptions({site: {labs: {giftSubscriptions: false}}})).toBe(false);
+        });
+
+        test('returns false when labs flag is missing', () => {
+            expect(hasGiftSubscriptions({site: {labs: {}}})).toBe(false);
+        });
+
+        test('returns false when labs is undefined', () => {
+            expect(hasGiftSubscriptions({site: {}})).toBe(false);
+        });
+    });
+
+    describe('getActiveInterval', () => {
+        test('returns month when selectedInterval is month and monthly is available', () => {
+            expect(getActiveInterval({portalPlans: ['monthly', 'yearly'], portalDefaultPlan: 'yearly', selectedInterval: 'month'})).toBe('month');
+        });
+
+        test('returns year when selectedInterval is year and yearly is available', () => {
+            expect(getActiveInterval({portalPlans: ['monthly', 'yearly'], portalDefaultPlan: 'monthly', selectedInterval: 'year'})).toBe('year');
+        });
+
+        test('falls back to portalDefaultPlan when selectedInterval is null', () => {
+            expect(getActiveInterval({portalPlans: ['monthly', 'yearly'], portalDefaultPlan: 'monthly', selectedInterval: null})).toBe('month');
+        });
+
+        test('falls back to yearly when portalDefaultPlan is not monthly', () => {
+            expect(getActiveInterval({portalPlans: ['monthly', 'yearly'], portalDefaultPlan: 'yearly', selectedInterval: null})).toBe('year');
+        });
+
+        test('falls back to yearly when no default plan is set', () => {
+            expect(getActiveInterval({portalPlans: ['monthly', 'yearly'], portalDefaultPlan: null, selectedInterval: null})).toBe('year');
+        });
+
+        test('falls back to monthly when only monthly is available', () => {
+            expect(getActiveInterval({portalPlans: ['monthly'], portalDefaultPlan: null, selectedInterval: null})).toBe('month');
+        });
+
+        test('ignores selectedInterval month when monthly is not available', () => {
+            expect(getActiveInterval({portalPlans: ['yearly'], portalDefaultPlan: null, selectedInterval: 'month'})).toBe('year');
+        });
+
+        test('ignores selectedInterval year when yearly is not available', () => {
+            expect(getActiveInterval({portalPlans: ['monthly'], portalDefaultPlan: null, selectedInterval: 'year'})).toBe('month');
+        });
+
+        test('returns undefined when portalPlans is empty', () => {
+            expect(getActiveInterval({portalPlans: [], portalDefaultPlan: null, selectedInterval: null})).toBeUndefined();
         });
     });
 

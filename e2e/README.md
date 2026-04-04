@@ -19,6 +19,62 @@ yarn
 yarn test
 ```
 
+### Dev Environment Mode (Recommended for Development)
+
+If `GHOST_E2E_MODE` is unset, the e2e shell entrypoints auto-select:
+- `dev` when the local admin dev server is reachable on `http://127.0.0.1:5174`
+- `build` otherwise
+
+To use dev mode, start `yarn dev` before running tests:
+
+```bash
+# Terminal 1: Start dev environment (from repository root)
+yarn dev
+
+# Terminal 2: Run e2e tests (from e2e folder)
+yarn test
+```
+
+If infra is already running, `yarn workspace @tryghost/e2e infra:up` is safe to run again.
+For dev-mode test runs, `infra:up` also ensures required local Ghost/gateway dev images exist.
+If you want to force a mode, set `GHOST_E2E_MODE=dev` or `GHOST_E2E_MODE=build` explicitly.
+
+### Analytics Development Flow
+
+When working on analytics locally, use:
+
+```bash
+# Terminal 1 (repo root)
+yarn dev:analytics
+
+# Terminal 2
+yarn workspace @tryghost/e2e test:analytics
+```
+
+E2E test scripts automatically sync Tinybird tokens when Tinybird is running.
+
+### Build Mode (Prebuilt Image)
+
+Use build mode when you don’t want to run dev servers. It uses a prebuilt Ghost image and serves public assets from `/content/files`.
+
+```bash
+# From repository root
+yarn build
+yarn workspace @tryghost/e2e build:apps
+GHOST_E2E_BASE_IMAGE=<ghost-image> yarn workspace @tryghost/e2e build:docker
+GHOST_E2E_MODE=build yarn workspace @tryghost/e2e infra:up
+
+# Run tests
+GHOST_E2E_MODE=build GHOST_E2E_IMAGE=ghost-e2e:local yarn workspace @tryghost/e2e test
+```
+
+For a CI-like local preflight (pulls Playwright + gateway images and starts infra), run:
+
+```bash
+yarn workspace @tryghost/e2e preflight:build
+```
+
+
 ### Running Specific Tests
 
 ```bash
@@ -31,18 +87,6 @@ yarn test --grep "homepage"
 # With browser visible (for debugging)
 yarn test --debug
 ```
-
-### Testing with React Admin Shell
-
-To run e2e tests against the new React admin shell instead of the Ember admin:
-
-From the repository root:
-
-```bash
-USE_REACT_SHELL=true yarn test
-```
-
-This builds the React admin (`apps/admin`) and configures Ghost to serve it at `/ghost/` instead of the Ember admin.
 
 ## Tests Development
 
@@ -142,24 +186,58 @@ Tests use [Project Dependencies](https://playwright.dev/docs/test-global-setup-t
 ### Playwright Fixtures
 
 [Playwright Fixtures](https://playwright.dev/docs/test-fixtures) are defined in `helpers/playwright/fixture.ts` and provide reusable test setup/teardown logic.
-For example, a `ghostInstance` fixture creates a new Ghost instance with its own database for each test, to ensure isolation between tests.
+The fixture resolves isolation mode per test file:
+- Default: per-file isolation (one Ghost environment cycle per file)
+- Opt-in per-test: call `usePerTestIsolation()` from `@/helpers/playwright/isolation` at the root of the file
+- Forced per-test: any run with `fullyParallel: true`
 
-### Test Isolation 
+### Test Isolation
 
-Test isolation is extremely important to avoid flaky tests that are hard to debug. For the most part, you shouldn't have to worry about this when writing tests, because each test gets a fresh Ghost instance with its own database:
+Test isolation is still automatic, but no longer always per-test.
 
-- Global setup (`tests/global.setup.ts`):
-    - Starts shared services (MySQL, Tinybird, etc.)
-    - Runs Ghost migrations to create a template database
-    - Saves a snapshot of the template database using `mysqldump`
-- Before each test (`helpers/playwright/fixture.ts`):
-    - Creates a new database by restoring from the template snapshot
-    - Starts a new Ghost container connected to the new database
-- After each test (`helpers/playwright/fixture.ts`):
-    - Stops and removes the Ghost container
-    - Drops the test database
-- Global teardown (`tests/global.teardown.ts`):
-    - Stops and removes shared services
+Infrastructure (MySQL, Redis, Mailpit, Tinybird) must already be running before tests start. Use `yarn dev` or `yarn workspace @tryghost/e2e infra:up`.
+
+Global setup (`tests/global.setup.ts`) does:
+- Cleans up e2e containers and test databases
+- Creates a base database, starts Ghost, waits for health, snapshots the DB
+
+Per-file mode (`helpers/playwright/fixture.ts`) does:
+- Clones a new database from snapshot at file boundary
+- Restarts Ghost with the new database and waits for readiness
+- Reuses that environment for tests in the file
+
+Per-test mode (`helpers/playwright/fixture.ts`) does:
+- Clones a new database from snapshot for each test
+- Restarts Ghost with the new database and waits for readiness
+
+Environment identity for per-file reuse:
+- `config` participates in the environment identity.
+- `labs` participates in the environment identity.
+- If either changes between tests in the same file, the shared per-file Ghost environment is recycled before reuse.
+- `stripeEnabled` does not participate in per-file reuse. It always forces per-test isolation because Ghost must boot against a per-test fake Stripe server.
+
+Fixture option behavior:
+- `config`: use for boot-time Ghost config that should get a fresh environment when it changes.
+- `labs`: use for labs flags that should get a fresh environment when they change.
+- `stripeEnabled`: use for Stripe-backed tests; this always runs each test with a fully isolated Ghost environment.
+
+Escape hatch:
+- `resetEnvironment()` is supported only in `beforeEach` hooks for per-file tests.
+- Use it only before resolving stateful fixtures such as `baseURL`, `page`, `pageWithAuthenticatedUser`, or `ghostAccountOwner`.
+- Safe hook pattern: `test.beforeEach(async ({resetEnvironment}) => { ... })`
+- Unsupported pattern: calling `resetEnvironment()` after `page` or an authenticated session has already been created.
+- ESLint catches the obvious misuse cases, but the runtime guard in the fixture remains the hard safety check.
+
+Opting into per-test isolation:
+- Use `usePerTestIsolation()` from `@/helpers/playwright/isolation` at the root of the file.
+- This configures both Playwright parallel mode and the fixture isolation in one call.
+
+Global teardown (`tests/global.teardown.ts`) does:
+- Cleans up e2e containers and test databases (infra services stay running)
+
+Modes:
+- Dev mode: Ghost mounts source code and proxies assets to host dev servers
+- Build mode: Ghost uses a prebuilt image and serves assets from `/content/files`
 
 ### Best Practices
 
@@ -176,13 +254,12 @@ Tests run automatically in GitHub Actions on every PR and commit to `main`.
 
 ### CI Process
 
-1. **Setup**: Ubuntu runner with Node.js and MySQL
-2. **Docker Build & Push**: Build Ghost image and push to GitHub Container Registry
-3. **Pull Images**: Pull Ghost, MySQL, Tinybird, etc. images
-4. **Test Execution**:
-   - Wait for Ghost to be ready
-   - Run Playwright tests
-   - Upload test artifacts
+1. **Setup**: Ubuntu runner with Node.js and Docker
+2. **Build Assets**: Build server/admin assets and public app UMD bundles
+3. **Build E2E Image**: `yarn workspace @tryghost/e2e build:docker` (layers public apps into `/content/files`)
+4. **Prepare E2E Runtime**: Pull Playwright/gateway images in parallel, start infra, and sync Tinybird state (`yarn workspace @tryghost/e2e preflight:build`)
+5. **Test Execution**: Run Playwright E2E tests inside the official Playwright container
+6. **Artifacts**: Upload Playwright traces and reports on failure
 
 ## Available Scripts
 
@@ -191,6 +268,13 @@ Within the e2e directory:
 ```bash
 # Run all tests
 yarn test
+
+# Start/stop test infra (MySQL/Redis/Mailpit/Tinybird)
+yarn infra:up
+yarn infra:down
+
+# CI-like preflight for build mode (pulls images + starts infra)
+yarn preflight:build
 
 # Debug failed tests (keeps containers)
 PRESERVE_ENV=true yarn test

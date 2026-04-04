@@ -5,7 +5,7 @@ const settingsCache = require('../../../../shared/settings-cache');
 const models = require('../../../models');
 const urlUtils = require('../../../../shared/url-utils');
 
-const SessionStore = require('./SessionStore');
+const SessionStore = require('./session-store');
 const sessionStore = new SessionStore(models.Session);
 
 let unoExpressSessionMiddleware;

@@ -1,18 +1,13 @@
 import React from "react"
 
-import {
-    LucideIcon,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarMenu,
-    SidebarMenuBadge
-} from "@tryghost/shade"
+import {SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuBadge} from "@tryghost/shade/components"
+import {LucideIcon} from "@tryghost/shade/utils"
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { useBrowseSettings } from "@tryghost/admin-x-framework/api/settings";
 import { getSettingValue } from "@tryghost/admin-x-framework/api/settings";
 import { hasAdminAccess } from "@tryghost/admin-x-framework/api/users";
-import { useNotificationsCountForUser } from "@tryghost/activitypub/src/hooks/use-activity-pub-queries";
+import { useNotificationsCountForUser } from "@tryghost/activitypub/src/index";
 import NetworkIcon from "./icons/network-icon";
 import { NavMenuItem } from "./nav-menu-item";
 import { useIsActiveLink } from "./use-is-active-link";
@@ -57,7 +52,7 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             )}
                         </NavMenuItem>
                     )}
-                    <NavMenuItem className="relative group/viewsite">
+                    <NavMenuItem className="group/viewsite relative">
                         <NavMenuItem.Link to="site">
                             <LucideIcon.AppWindow />
                             <NavMenuItem.Label>View site</NavMenuItem.Label>
@@ -67,7 +62,7 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             target="_blank"
                             aria-label="View site in new tab"
                             rel="noopener noreferrer"
-                            className="absolute opacity-0 group-hover/viewsite:opacity-100 right-0 top-0 size-8 hover:bg-sidebar-accent flex items-center justify-center rounded-full text-gray-700 hover:text-sidebar-accent-foreground transition-all">
+                            className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full text-gray-700 opacity-0 transition-all group-hover/viewsite:opacity-100 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
                                 <LucideIcon.ExternalLink size={16} />
                         </a>
                     </NavMenuItem>

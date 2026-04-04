@@ -64,7 +64,7 @@ function notifyServerReady(error) {
   * @param {object} options.config
   */
 async function initDatabase({config}) {
-    const DatabaseStateManager = require('./server/data/db/DatabaseStateManager');
+    const DatabaseStateManager = require('./server/data/db/database-state-manager');
     const dbStateManager = new DatabaseStateManager({knexMigratorFilePath: config.get('paths:appRoot')});
     await dbStateManager.makeReady();
 
@@ -315,7 +315,7 @@ async function initServices() {
     const members = require('./server/services/members');
     const tiers = require('./server/services/tiers');
     const permissions = require('./server/services/permissions');
-    const xmlrpc = require('./server/services/xmlrpc');
+    const indexnow = require('./server/services/indexnow');
     const slack = require('./server/services/slack');
     const webhooks = require('./server/services/webhooks');
     const scheduling = require('./server/adapters/scheduling');
@@ -329,7 +329,6 @@ async function initServices() {
     const emailService = require('./server/services/email-service');
     const emailAnalytics = require('./server/services/email-analytics');
     const mentionsService = require('./server/services/mentions');
-    const mentionsEmailReport = require('./server/services/mentions-email-report');
     const tagsPublic = require('./server/services/tags-public');
     const postsPublic = require('./server/services/posts-public');
     const slackNotifications = require('./server/services/slack-notifications');
@@ -353,7 +352,6 @@ async function initServices() {
         identityTokens.init(),
         memberAttribution.init(),
         mentionsService.init(),
-        mentionsEmailReport.init(),
         staffService.init(),
         members.init(),
         tiers.init(),
@@ -361,7 +359,7 @@ async function initServices() {
         postsPublic.init(),
         membersEvents.init(),
         permissions.init(),
-        xmlrpc.listen(),
+        indexnow.listen(),
         slack.listen(),
         audienceFeedback.init(),
         emailService.init(),
@@ -421,7 +419,7 @@ async function initBackgroundServices({config}) {
 
     const outboxService = require('./server/services/outbox');
     outboxService.init();
-    
+
     debug('End: initBackgroundServices');
 }
 
@@ -498,7 +496,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         const rootApp = require('./app')();
 
         if (server) {
-            const GhostServer = require('./server/GhostServer');
+            const GhostServer = require('./server/ghost-server');
             ghostServer = new GhostServer({url: config.getSiteUrl(), env: config.get('env'), serverConfig: config.get('server')});
             await ghostServer.start(rootApp);
             bootLogger.log('server started');

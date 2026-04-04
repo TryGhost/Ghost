@@ -8,7 +8,7 @@ interface NoValueLabelProps {
 
 const NoValueLabel: React.FC<NoValueLabelProps> = ({className = '', children}) => {
     return (
-        <div className={`my-10 flex flex-col items-center gap-1 text-sm text-grey-600 ${className}`}>
+        <div className={`my-10 flex flex-col items-center gap-1 text-sm text-text-secondary ${className}`}>
             {children}
         </div>
     );
@@ -21,7 +21,7 @@ interface NoValueLabelIconProps {
 
 const NoValueLabelIcon: React.FC<NoValueLabelIconProps> = ({className = '', children}) => {
     return (
-        <div className={`text-grey-500 [&>svg]:size-8 [&>svg]:stroke-[1px] ${className}`}>
+        <div className={`text-text-tertiary [&>svg]:size-8 [&>svg]:stroke-[1px] ${className}`}>
             {children}
         </div>
     );

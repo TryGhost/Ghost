@@ -44,9 +44,7 @@ Two categories of apps:
 ```bash
 yarn                           # Install dependencies
 yarn setup                     # First-time setup (installs deps + submodules)
-yarn dev                       # Local dev (no Docker)
-yarn dev:debug                 # yarn dev with DEBUG=@tryghost*,ghost:* enabled
-yarn dev:forward               # Run Ghost backend with deps in Docker + frontend dev servers
+yarn dev                       # Start development (Docker backend + host frontend dev servers)
 ```
 
 ### Building
@@ -65,7 +63,6 @@ cd ghost/core
 yarn test:unit                 # Unit tests only
 yarn test:integration          # Integration tests
 yarn test:e2e                  # E2E API tests (not browser)
-yarn test:browser              # Playwright browser tests for core
 yarn test:all                  # All test types
 
 # E2E browser tests (from root)
@@ -86,23 +83,20 @@ cd ghost/admin && yarn lint    # Lint Ember admin
 ### Database
 ```bash
 yarn knex-migrator migrate     # Run database migrations
-yarn reset:data                # Reset database with test data (1000 members, 100 posts)
-yarn reset:data:empty          # Reset database with no data
+yarn reset:data                # Reset database with test data (1000 members, 100 posts) (requires yarn dev running)
+yarn reset:data:empty          # Reset database with no data (requires yarn dev running)
 ```
 
 ### Docker
 ```bash
-yarn docker:build              # Build Docker images and delete ephemeral volumes
-yarn docker:dev                # Start Ghost in Docker with hot reload
-yarn docker:shell              # Open shell in Ghost container
-yarn docker:mysql              # Open MySQL CLI
-yarn docker:test:unit          # Run unit tests in Docker
-yarn docker:reset              # Reset all Docker volumes (including database) and restart
+yarn docker:build              # Build Docker images
+yarn docker:clean              # Stop containers, remove volumes and local images
+yarn docker:down               # Stop containers
 ```
 
-### Local development in Docker
+### How yarn dev works
 
-The `yarn dev:forward` command uses a **hybrid Docker + host development** setup:
+The `yarn dev` command uses a **hybrid Docker + host development** setup:
 
 **What runs in Docker:**
 - Ghost Core backend (with hot-reload via mounted source)
@@ -116,7 +110,7 @@ The `yarn dev:forward` command uses a **hybrid Docker + host development** setup
 **Setup:**
 ```bash
 # Start everything (Docker + frontend dev servers)
-yarn dev:forward
+yarn dev
 
 # With optional services (uses Docker Compose file composition)
 yarn dev:analytics             # Include Tinybird analytics
@@ -169,6 +163,45 @@ Critical build order (Nx handles automatically):
 4. `ghost/admin` builds (depends on #3, copies via asset-delivery)
 5. `ghost/core` serves admin build
 
+## CSS Architecture
+
+### TailwindCSS v4 Setup
+
+Ghost Admin uses **TailwindCSS v4** via the `@tailwindcss/vite` plugin. CSS processing is centralized — only `apps/admin/vite.config.ts` loads the `@tailwindcss/vite` plugin. All embedded React apps (posts, stats, activitypub, admin-x-settings, admin-x-design-system) are scanned from this single entry point.
+
+### Entry Point
+
+`apps/admin/src/index.css` is the main CSS entry point. It contains:
+- `@source` directives that scan class usage in shade, posts, stats, activitypub, admin-x-settings, admin-x-design-system, and kg-unsplash-selector
+- `@import "@tryghost/shade/styles.css"` which loads the Shade design system styles
+
+### Shade Styles
+
+`apps/shade/styles.css` uses **unlayered** Tailwind imports:
+```css
+@import "tailwindcss/theme.css";
+@import "./preflight.css";
+@import "tailwindcss/utilities.css";
+@import "tw-animate-css";
+@import "./tailwind.theme.css";
+```
+
+**Why unlayered:** Ember's legacy CSS (`.flex`, `.hidden`, etc.) is unlayered. If Tailwind utilities were in a `@layer`, they would lose to Ember's unlayered CSS in the cascade. Keeping both unlayered means source order determines specificity.
+
+Theme tokens/variants/animations are defined in CSS (`apps/shade/tailwind.theme.css` + runtime vars in `styles.css`), so there is no JS `@config` bridge in the Admin runtime lane. `tw-animate-css` is the v4 replacement for `tailwindcss-animate`.
+
+### Critical Rule: Embedded Apps Must NOT Import Shade Independently
+
+Apps consumed via `@source` (posts, stats, activitypub) must **NOT** import `@tryghost/shade/styles.css` in their own CSS. Doing so causes duplicate Tailwind utilities and cascade conflicts. All Tailwind CSS is generated once via the admin entry point.
+
+### Public Apps
+
+Public-facing apps (`comments-ui`, `signup-form`, `sodo-search`, `portal`, `announcement-bar`) remain on **TailwindCSS v3**. They are built as UMD bundles for CDN distribution and are independent of the admin CSS pipeline.
+
+### Legacy Apps
+
+`admin-x-design-system` and `admin-x-settings` are consumed via `@source` in admin's centralized v4 pipeline for production, and both packages build with CSS-first Tailwind v4 setup.
+
 ## Code Guidelines
 
 ### Commit Messages
@@ -217,7 +250,7 @@ Users requested ability to switch themes for better accessibility
 - **Legacy:** `admin-x-design-system` (being phased out, avoid for new work)
 
 ### Analytics (Tinybird)
-- **Local development:** `yarn docker:dev:analytics` (starts Tinybird + MySQL)
+- **Local development:** `yarn dev:analytics` (starts Tinybird + MySQL)
 - **Config:** Add Tinybird config to `ghost/core/config.development.json`
 - **Scripts:** `ghost/core/core/server/data/tinybird/scripts/`
 - **Datafiles:** `ghost/core/core/server/data/tinybird/`

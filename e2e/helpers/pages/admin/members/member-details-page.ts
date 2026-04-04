@@ -7,6 +7,8 @@ class SettingsSection extends BasePage {
 
     readonly impersonateButton: Locator;
     readonly signOutOfAllDevices: Locator;
+    readonly disableCommentingButton: Locator;
+    readonly enableCommentingButton: Locator;
     readonly deleteButton: Locator;
     readonly confirmDeleteButton: Locator;
     readonly cancelDeleteButton: Locator;
@@ -17,6 +19,8 @@ class SettingsSection extends BasePage {
 
         this.impersonateButton = page.getByRole('button', {name: 'Impersonate'});
         this.signOutOfAllDevices = page.getByRole('button', {name: 'Sign out of all devices'});
+        this.disableCommentingButton = page.getByRole('button', {name: 'Disable commenting'});
+        this.enableCommentingButton = page.getByRole('button', {name: 'Enable commenting'});
 
         this.deleteButton = page.getByRole('button', {name: 'Delete member'});
         this.confirmDeleteButton = page.getByTestId('confirm-delete-member');
@@ -42,6 +46,15 @@ export class MemberDetailsPage extends AdminPage {
     readonly confirmLeaveButton: Locator;
     readonly settingsSection: SettingsSection;
 
+    readonly activityHeading: Locator;
+
+    readonly disableCommentingModal: Locator;
+    readonly disableCommentingConfirmButton: Locator;
+    readonly disableCommentingCancelButton: Locator;
+    readonly hideCommentsCheckbox: Locator;
+    readonly commentingDisabledIndicator: Locator;
+    readonly enableCommentingLink: Locator;
+
     constructor(page: Page) {
         super(page);
         this.pageUrl = '/ghost/#/members/';
@@ -60,6 +73,15 @@ export class MemberDetailsPage extends AdminPage {
         this.magicLinkInput = page.getByTestId('member-signin-url').last();
         this.confirmLeaveButton = page.getByRole('button', {name: 'Leave'});
         this.settingsSection = new SettingsSection(page);
+
+        this.activityHeading = page.getByRole('heading', {name: 'Activity', level: 4});
+
+        this.disableCommentingModal = page.getByRole('dialog');
+        this.disableCommentingConfirmButton = this.disableCommentingModal.getByRole('button', {name: 'Disable commenting'});
+        this.disableCommentingCancelButton = this.disableCommentingModal.getByRole('button', {name: 'Cancel'});
+        this.hideCommentsCheckbox = this.disableCommentingModal.getByText('Hide all previous comments');
+        this.commentingDisabledIndicator = page.getByText('Comments disabled');
+        this.enableCommentingLink = page.getByRole('button', {name: 'Enable', exact: true});
     }
 
     async clickNewsletterSubscriptionToggle(index: number = 0) {
@@ -100,5 +122,9 @@ export class MemberDetailsPage extends AdminPage {
     async save(): Promise<void> {
         await this.saveButton.click();
         await this.savedButton.waitFor({state: 'visible'});
+    }
+
+    getActivityEventByText(text: string | RegExp): Locator {
+        return this.activityHeading.locator('..').getByText(text);
     }
 }

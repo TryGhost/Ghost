@@ -4,6 +4,7 @@ import svgr from 'vite-plugin-svgr';
 import {SUPPORTED_LOCALES} from '@tryghost/i18n';
 import {defineConfig} from 'vitest/config';
 import {resolve} from 'path';
+import {stripFingerprintingPlugin} from './vite-plugin-strip-fingerprinting';
 
 const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
 
@@ -12,6 +13,7 @@ export default (function viteConfig() {
     return defineConfig({
         logLevel: process.env.CI ? 'info' : 'warn',
         plugins: [
+            stripFingerprintingPlugin(),
             svgr(),
             react()
         ],
@@ -60,7 +62,7 @@ export default (function viteConfig() {
             globals: true, // required for @testing-library/jest-dom extensions
             environment: 'jsdom',
             setupFiles: './src/setup-tests.ts',
-            include: ['src/**/*.test.jsx', 'src/**/*.test.js', 'src/**/*.test.ts', 'src/**/*.test.tsx'],
+            include: ['test/unit/**/*.test.{js,jsx,ts,tsx}'],
             testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
             ...(process.env.CI && { // https://github.com/vitest-dev/vitest/issues/1674
                 minThreads: 1,

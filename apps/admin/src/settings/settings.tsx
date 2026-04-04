@@ -2,7 +2,7 @@ import { App } from "@tryghost/admin-x-settings/src/app";
 import { createPortal } from "react-dom";
 import { fetchKoenigLexical } from "@/utils/fetch-koenig-lexical";
 
-export function Settings() {
+export default function Settings() {
     return createPortal(
         <div
             className="shade shade-admin"

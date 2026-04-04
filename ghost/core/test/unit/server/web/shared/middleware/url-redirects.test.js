@@ -1,7 +1,6 @@
-const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const configUtils = require('../../../../../utils/configUtils');
+const configUtils = require('../../../../../utils/config-utils');
 const urlRedirects = rewire('../../../../../../core/server/web/shared/middleware/url-redirects');
 const {frontendSSLRedirect, adminSSLAndHostRedirect} = urlRedirects;
 const getAdminRedirectUrl = urlRedirects.__get__('_private.getAdminRedirectUrl');
@@ -47,7 +46,7 @@ describe('UNIT: url redirects', function () {
 
             frontendSSLRedirect(req, res, next);
 
-            redirectSpy.calledWith(req, res, next, getFrontendRedirectUrl).should.eql(true);
+            sinon.assert.calledWith(redirectSpy, req, res, next, getFrontendRedirectUrl);
         });
 
         it('adminSSLAndHostRedirect passes getAdminRedirectUrl', function () {
@@ -55,7 +54,7 @@ describe('UNIT: url redirects', function () {
 
             adminSSLAndHostRedirect(req, res, next);
 
-            redirectSpy.calledWith(req, res, next, getAdminRedirectUrl).should.eql(true);
+            sinon.assert.calledWith(redirectSpy, req, res, next, getAdminRedirectUrl);
         });
     });
 
@@ -69,10 +68,10 @@ describe('UNIT: url redirects', function () {
 
             req.originalUrl = '/';
             redirect(req, res, next, getFrontendRedirectUrl);
-            next.called.should.be.false();
-            res.redirect.called.should.be.true();
-            res.redirect.calledWith(301, 'https://default.com:2368/').should.be.true();
-            res.set.called.should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.called(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, 'https://default.com:2368/');
+            sinon.assert.called(res.set);
             done();
         });
 
@@ -84,10 +83,10 @@ describe('UNIT: url redirects', function () {
 
             req.originalUrl = '/';
             redirect(req, res, next, getFrontendRedirectUrl);
-            next.called.should.be.false();
-            res.redirect.called.should.be.true();
-            res.redirect.calledWith(301, 'https://localhost:2368/').should.be.true();
-            res.set.called.should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.called(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, 'https://localhost:2368/');
+            sinon.assert.called(res.set);
             done();
         });
 
@@ -104,9 +103,9 @@ describe('UNIT: url redirects', function () {
 
                 req.originalUrl = '/ghost';
                 redirect(req, res, next, getAdminRedirectUrl);
-                next.called.should.be.false();
-                res.redirect.calledWith(301, 'https://default.com:2368/ghost/').should.be.true();
-                res.set.called.should.be.true();
+                sinon.assert.notCalled(next);
+                sinon.assert.calledWith(res.redirect, 301, 'https://default.com:2368/ghost/');
+                sinon.assert.called(res.set);
                 done();
             });
 
@@ -122,9 +121,9 @@ describe('UNIT: url redirects', function () {
 
                 req.originalUrl = '/ghost';
                 redirect(req, res, next, getAdminRedirectUrl);
-                next.called.should.be.false();
-                res.redirect.calledWith(301, 'https://admin.default.com:2368/ghost/').should.be.true();
-                res.set.called.should.be.true();
+                sinon.assert.notCalled(next);
+                sinon.assert.calledWith(res.redirect, 301, 'https://admin.default.com:2368/ghost/');
+                sinon.assert.called(res.set);
                 done();
             });
 
@@ -140,16 +139,16 @@ describe('UNIT: url redirects', function () {
 
                 req.originalUrl = '/blog/ghost';
                 redirect(req, res, next, getAdminRedirectUrl);
-                next.called.should.be.false();
-                res.redirect.calledWith(301, 'https://admin.default.com:2368/blog/ghost/').should.be.true();
-                res.set.called.should.be.true();
+                sinon.assert.notCalled(next);
+                sinon.assert.calledWith(res.redirect, 301, 'https://admin.default.com:2368/blog/ghost/');
+                sinon.assert.called(res.set);
 
                 req.secure = true;
                 host = 'admin.default.com:2368';
                 redirect(req, res, next, getAdminRedirectUrl);
-                next.called.should.be.true();
-                res.redirect.calledOnce.should.be.true();
-                res.set.calledOnce.should.be.true();
+                sinon.assert.called(next);
+                sinon.assert.calledOnce(res.redirect);
+                sinon.assert.calledOnce(res.set);
                 done();
             });
 
@@ -169,9 +168,9 @@ describe('UNIT: url redirects', function () {
                 };
 
                 redirect(req, res, next, getAdminRedirectUrl);
-                next.called.should.be.false();
-                res.redirect.calledWith(301, 'https://admin.default.com:2368/ghost/?test=true').should.be.true();
-                res.set.called.should.be.true();
+                sinon.assert.notCalled(next);
+                sinon.assert.calledWith(res.redirect, 301, 'https://admin.default.com:2368/ghost/?test=true');
+                sinon.assert.called(res.set);
                 done();
             });
 
@@ -191,9 +190,9 @@ describe('UNIT: url redirects', function () {
                 };
 
                 redirect(req, res, next, getAdminRedirectUrl);
-                next.called.should.be.false();
-                res.redirect.calledWith(301, 'https://admin.default.com:2368/ghost/something/?a=b').should.be.true();
-                res.set.called.should.be.true();
+                sinon.assert.notCalled(next);
+                sinon.assert.calledWith(res.redirect, 301, 'https://admin.default.com:2368/ghost/something/?a=b');
+                sinon.assert.called(res.set);
                 done();
             });
 
@@ -210,17 +209,17 @@ describe('UNIT: url redirects', function () {
                 req.originalUrl = '/ghost';
                 redirect(req, res, next, getAdminRedirectUrl);
 
-                next.called.should.be.false();
-                res.redirect.calledWith(301, 'https://default.com:2368/ghost/').should.be.true();
-                res.set.called.should.be.true();
+                sinon.assert.notCalled(next);
+                sinon.assert.calledWith(res.redirect, 301, 'https://default.com:2368/ghost/');
+                sinon.assert.called(res.set);
 
                 res.redirect.resetHistory();
 
                 req.secure = true;
                 redirect(req, res, next, getAdminRedirectUrl);
-                res.redirect.called.should.be.false();
-                res.set.calledOnce.should.be.true();
-                next.called.should.be.true();
+                sinon.assert.notCalled(res.redirect);
+                sinon.assert.calledOnce(res.set);
+                sinon.assert.called(next);
                 done();
             });
         });
@@ -236,10 +235,10 @@ describe('UNIT: url redirects', function () {
 
             req.originalUrl = '/';
             redirect(req, res, next, getFrontendRedirectUrl);
-            next.called.should.be.true();
-            res.redirect.called.should.be.false();
-            res.set.called.should.be.false();
-            next.calledWith().should.be.true();
+            sinon.assert.called(next);
+            sinon.assert.notCalled(res.redirect);
+            sinon.assert.notCalled(res.set);
+            sinon.assert.calledWith(next);
             done();
         });
 
@@ -253,9 +252,9 @@ describe('UNIT: url redirects', function () {
             req.originalUrl = '/';
             req.secure = true;
             redirect(req, res, next, getFrontendRedirectUrl);
-            next.called.should.be.true();
-            res.redirect.called.should.be.false();
-            res.set.called.should.be.false();
+            sinon.assert.called(next);
+            sinon.assert.notCalled(res.redirect);
+            sinon.assert.notCalled(res.set);
             done();
         });
 
@@ -269,9 +268,9 @@ describe('UNIT: url redirects', function () {
             req.originalUrl = '/';
             req.secure = true;
             redirect(req, res, next, getFrontendRedirectUrl);
-            next.called.should.be.true();
-            res.redirect.called.should.be.false();
-            res.set.called.should.be.false();
+            sinon.assert.called(next);
+            sinon.assert.notCalled(res.redirect);
+            sinon.assert.notCalled(res.set);
             done();
         });
 
@@ -285,10 +284,10 @@ describe('UNIT: url redirects', function () {
             req.originalUrl = '/';
             req.secure = true;
             redirect(req, res, next, getFrontendRedirectUrl);
-            next.called.should.be.true();
-            res.redirect.called.should.be.false();
-            res.set.called.should.be.false();
-            next.calledWith().should.be.true();
+            sinon.assert.called(next);
+            sinon.assert.calledWith(next);
+            sinon.assert.notCalled(res.redirect);
+            sinon.assert.notCalled(res.set);
             done();
         });
 
@@ -302,9 +301,9 @@ describe('UNIT: url redirects', function () {
             req.originalUrl = '/';
             req.secure = true;
             redirect(req, res, next, getFrontendRedirectUrl);
-            next.called.should.be.true();
-            res.redirect.called.should.be.false();
-            res.set.called.should.be.false();
+            sinon.assert.called(next);
+            sinon.assert.notCalled(res.redirect);
+            sinon.assert.notCalled(res.set);
             done();
         });
 
@@ -318,9 +317,9 @@ describe('UNIT: url redirects', function () {
 
                 req.originalUrl = '/ghost';
                 redirect(req, res, next, getAdminRedirectUrl);
-                next.called.should.be.true();
-                res.redirect.called.should.be.false();
-                res.set.called.should.be.false();
+                sinon.assert.called(next);
+                sinon.assert.notCalled(res.redirect);
+                sinon.assert.notCalled(res.set);
                 done();
             });
 
@@ -333,9 +332,9 @@ describe('UNIT: url redirects', function () {
 
                 req.originalUrl = '/ghost';
                 redirect(req, res, next, getAdminRedirectUrl);
-                next.called.should.be.true();
-                res.redirect.called.should.be.false();
-                res.set.called.should.be.false();
+                sinon.assert.called(next);
+                sinon.assert.notCalled(res.redirect);
+                sinon.assert.notCalled(res.set);
                 done();
             });
 
@@ -352,9 +351,9 @@ describe('UNIT: url redirects', function () {
 
                 req.originalUrl = '/ghost';
                 redirect(req, res, next, getAdminRedirectUrl);
-                res.redirect.called.should.be.false();
-                res.set.called.should.be.false();
-                next.called.should.be.true();
+                sinon.assert.notCalled(res.redirect);
+                sinon.assert.notCalled(res.set);
+                sinon.assert.called(next);
                 done();
             });
 
@@ -372,9 +371,9 @@ describe('UNIT: url redirects', function () {
                 req.originalUrl = '/ghost';
                 redirect(req, res, next, getAdminRedirectUrl);
 
-                res.redirect.called.should.be.false();
-                res.set.called.should.be.false();
-                next.called.should.be.true();
+                sinon.assert.notCalled(res.redirect);
+                sinon.assert.notCalled(res.set);
+                sinon.assert.called(next);
                 done();
             });
 
@@ -392,9 +391,9 @@ describe('UNIT: url redirects', function () {
                 req.originalUrl = '/ghost';
                 redirect(req, res, next, getAdminRedirectUrl);
 
-                res.redirect.called.should.be.false();
-                res.set.called.should.be.false();
-                next.called.should.be.true();
+                sinon.assert.notCalled(res.redirect);
+                sinon.assert.notCalled(res.set);
+                sinon.assert.called(next);
 
                 done();
             });

@@ -1,14 +1,15 @@
 import EditForm from './forms/edit-form';
 import LikeButton from './buttons/like-button';
+import LikeCount from './buttons/like-count';
 import MoreButton from './buttons/more-button';
+import React, {useCallback} from 'react';
 import Replies, {RepliesProps} from './replies';
 import ReplyButton from './buttons/reply-button';
 import ReplyForm from './forms/reply-form';
 import {Avatar, BlankAvatar} from './avatar';
 import {Comment, OpenCommentForm, useAppContext} from '../../app-context';
 import {Transition} from '@headlessui/react';
-import {findCommentById, formatExplicitTime, getCommentInReplyToSnippet, getMemberNameFromComment} from '../../utils/helpers';
-import {useCallback} from 'react';
+import {buildCommentPermalink, findCommentById, formatExplicitTime, getCommentInReplyToSnippet, getMemberNameFromComment} from '../../utils/helpers';
 import {useRelativeTime} from '../../utils/hooks';
 
 type AnimatedCommentProps = {
@@ -18,6 +19,7 @@ type AnimatedCommentProps = {
 
 const AnimatedComment: React.FC<AnimatedCommentProps> = ({comment, parent}) => {
     const {commentsIsLoading} = useAppContext();
+
     return (
         <Transition
             className={`${commentsIsLoading ? 'animate-pulse' : ''}`}
@@ -38,8 +40,8 @@ const AnimatedComment: React.FC<AnimatedCommentProps> = ({comment, parent}) => {
 };
 
 export const CommentComponent: React.FC<CommentProps> = ({comment, parent}) => {
-    const {dispatchAction, admin} = useAppContext();
-    const {showDeletedMessage, showHiddenMessage, showCommentContent} = useCommentVisibility(comment, admin);
+    const {dispatchAction, isAdmin} = useAppContext();
+    const {showDeletedMessage, showHiddenMessage, showCommentContent} = useCommentVisibility(comment, isAdmin);
 
     const openEditMode = useCallback(() => {
         const newForm: OpenCommentForm = {
@@ -81,10 +83,10 @@ type PublishedCommentProps = CommentProps & {
     openEditMode: () => void;
 }
 const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, openEditMode}) => {
-    const {dispatchAction, openCommentForms, admin, commentIdToHighlight} = useAppContext();
+    const {dispatchAction, openCommentForms, isAdmin, commentIdToHighlight} = useAppContext();
 
     // Determine if the comment should be displayed with reduced opacity
-    const isHidden = admin && comment.status === 'hidden';
+    const isHidden = isAdmin && comment.status === 'hidden';
     const hiddenClass = isHidden ? 'opacity-30' : '';
 
     // Check if this comment is being edited
@@ -158,9 +160,9 @@ type UnpublishedCommentProps = {
     openEditMode: () => void;
 }
 const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEditMode}) => {
-    const {admin, openCommentForms, t} = useAppContext();
+    const {isAdmin, openCommentForms, t} = useAppContext();
 
-    const avatar = (admin && comment.status !== 'deleted')
+    const avatar = (isAdmin && comment.status !== 'deleted')
         ? <Avatar member={comment.member} />
         : <BlankAvatar />;
     const hasReplies = comment.replies && comment.replies.length > 0;
@@ -178,7 +180,7 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
     const displayReplyForm = openForm && (!openForm.parent_id || openForm.parent_id === comment.id);
 
     // Only show MoreButton for hidden (not deleted) comments when admin
-    const showMoreButton = admin && comment.status === 'hidden';
+    const showMoreButton = isAdmin && comment.status === 'hidden';
 
     return (
         <CommentLayout avatar={avatar} hasReplies={hasReplies}>
@@ -267,22 +269,8 @@ const AuthorName: React.FC<{comment: Comment}> = ({comment}) => {
 };
 
 export const RepliedToSnippet: React.FC<{comment: Comment}> = ({comment}) => {
-    const {comments, dispatchAction, t} = useAppContext();
+    const {comments, t, pageUrl} = useAppContext();
     const inReplyToComment = findCommentById(comments, comment.in_reply_to_id);
-
-    const scrollRepliedToCommentIntoView = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        e.preventDefault();
-
-        if (!e.target) {
-            return;
-        }
-
-        const element = (e.target as HTMLElement).ownerDocument.getElementById(comment.in_reply_to_id);
-        if (element) {
-            dispatchAction('highlightComment', {commentId: comment.in_reply_to_id});
-            element.scrollIntoView({behavior: 'smooth', block: 'center'});
-        }
-    };
 
     let inReplyToSnippet = comment.in_reply_to_snippet;
     // For public API requests hidden/deleted comments won't exist in the comments array
@@ -292,13 +280,15 @@ export const RepliedToSnippet: React.FC<{comment: Comment}> = ({comment}) => {
     }
 
     const linkToReply = inReplyToComment && inReplyToComment.status === 'published';
-
     const className = 'font-medium text-neutral-900/60 break-all transition-colors dark:text-white/70';
+    const linkClassName = `${className} hover:text-neutral-900/75 dark:hover:text-white/85`;
+
+    if (!linkToReply) {
+        return <span className={className} data-testid="comment-in-reply-to">{inReplyToSnippet}</span>;
+    }
 
     return (
-        linkToReply
-            ? <a className={`${className} hover:text-neutral-900/75 dark:hover:text-white/85`} data-testid="comment-in-reply-to" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>{inReplyToSnippet}</a>
-            : <span className={className} data-testid="comment-in-reply-to">{inReplyToSnippet}</span>
+        <a className={linkClassName} data-testid="comment-in-reply-to" href={buildCommentPermalink(pageUrl, comment.in_reply_to_id)} target="_parent">{inReplyToSnippet}</a>
     );
 };
 
@@ -308,10 +298,21 @@ type CommentHeaderProps = {
 }
 
 const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) => {
-    const {member, t} = useAppContext();
+    const {member, t, pageUrl} = useAppContext();
     const createdAtRelative = useRelativeTime(comment.created_at);
     const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
     const isReplyToReply = comment.in_reply_to_id && comment.in_reply_to_snippet;
+
+    const timestampElement = (
+        <a
+            className="hover:underline"
+            href={buildCommentPermalink(pageUrl, comment.id)}
+            target="_parent"
+            title={formatExplicitTime(comment.created_at)}
+        >
+            <span className="mx-[0.3em]">·</span>{createdAtRelative}
+        </a>
+    );
 
     return (
         <>
@@ -320,7 +321,7 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
                 <div className="flex items-baseline pr-4 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60">
                     <span>
                         <MemberExpertise comment={comment}/>
-                        <span title={formatExplicitTime(comment.created_at)}><span className="mx-[0.3em]">·</span>{createdAtRelative}</span>
+                        {timestampElement}
                         <EditedInfo comment={comment} />
                     </span>
                 </div>
@@ -368,7 +369,7 @@ const CommentBody: React.FC<CommentBodyProps> = ({html, className = '', isHighli
 
     return (
         <div className={`mt mb-2 flex flex-row items-center gap-4 pr-4 ${className}`}>
-            <p dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content text-md -mx-1 text-pretty rounded-md px-1 font-sans leading-normal text-neutral-900 [overflow-wrap:anywhere] sm:text-lg dark:text-white/85" data-testid="comment-content"/>
+            <div dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content text-md -mx-1 text-pretty rounded-md px-1 font-sans leading-normal text-neutral-900 [overflow-wrap:anywhere] sm:text-lg dark:text-white/85" data-testid="comment-content"/>
         </div>
     );
 };
@@ -378,28 +379,40 @@ type CommentMenuProps = {
     openReplyForm: () => void;
     highlightReplyButton: boolean;
     openEditMode: () => void;
-    parent?: Comment;
     className?: string;
 };
 const CommentMenu: React.FC<CommentMenuProps> = ({comment, openReplyForm, highlightReplyButton, openEditMode, className = ''}) => {
-    const {admin, t} = useAppContext();
+    const {member, t, isMember, isAdmin, isCommentingDisabled} = useAppContext();
 
-    if (admin && comment.status === 'hidden') {
+    const isPublished = comment.status === 'published';
+    const isOwnComment = member && comment.member?.uuid === member?.uuid;
+
+    // Visibility decisions
+    const showLikeButton = !isCommentingDisabled;
+    const showReplyButton = !isCommentingDisabled;
+    const shouldShowMoreButton = isAdmin || (isMember && isPublished);
+    const shouldHideMoreButton = isCommentingDisabled && isOwnComment;
+    const showMoreButton = shouldShowMoreButton && !shouldHideMoreButton;
+
+    if (isAdmin && comment.status === 'hidden') {
         return (
             <div className={`flex items-center gap-4 ${className}`}>
                 <span className="font-sans text-base leading-snug text-red-600 sm:text-sm">{t('Hidden for members')}</span>
-                {<MoreButton comment={comment} toggleEdit={openEditMode} />}
-            </div>
-        );
-    } else {
-        return (
-            <div className={`flex items-center gap-4 ${className}`}>
-                {<LikeButton comment={comment} />}
-                {<ReplyButton isReplying={highlightReplyButton} openReplyForm={openReplyForm} />}
-                {<MoreButton comment={comment} toggleEdit={openEditMode} />}
+                <MoreButton comment={comment} toggleEdit={openEditMode} />
             </div>
         );
     }
+
+    return (
+        <div className={`flex items-center gap-4 ${className}`}>
+            {showLikeButton
+                ? <LikeButton comment={comment} />
+                : <LikeCount count={comment.count.likes} liked={comment.liked} />
+            }
+            {showReplyButton && <ReplyButton isReplying={highlightReplyButton} openReplyForm={openReplyForm} />}
+            {showMoreButton && <MoreButton comment={comment} toggleEdit={openEditMode} />}
+        </div>
+    );
 };
 
 //

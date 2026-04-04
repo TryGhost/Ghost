@@ -2,7 +2,8 @@ import DisabledSourcesIndicator from '../../components/disabled-sources-indicato
 import React from 'react';
 import SourceIcon from '../../components/source-icon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
+import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import {useAppContext} from '@src/providers/posts-app-context';
 
 // Default source icon URL - apps can override this
@@ -67,7 +68,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({headerStyle = 'table', child
                                 {appSettings?.paidMembersEnabled &&
                                 <>
                                     <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.paid_members || 0)}</TableCell>
-                                    <TableCell className='text-right font-mono text-sm'>+${centsToDollars(row.mrr || 0)}</TableCell>
+                                    <TableCell className='text-right font-mono text-sm'>+${formatNumber(centsToDollars(row.mrr || 0))}</TableCell>
                                 </>
                                 }
                             </TableRow>

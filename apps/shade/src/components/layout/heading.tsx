@@ -1,8 +1,8 @@
 import {cn} from '@/lib/utils';
 import * as React from 'react';
 
-export interface HeadingProps
-    extends React.HTMLAttributes<HTMLHeadingElement> {}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {}
 
 const H1 = React.forwardRef<HTMLHeadingElement, HeadingProps>(
     ({className, ...props}, ref) => {

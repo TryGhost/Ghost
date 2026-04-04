@@ -9,17 +9,19 @@ const bannerVariants = cva(
     {
         variants: {
             variant: {
-                default: 'border border-border bg-background shadow-sm hover:shadow-md',
+                default: 'border border-border-default bg-surface-panel shadow-sm hover:shadow-md',
                 gradient: [
-                    'cursor-pointer border border-gray-100 bg-white',
-                    'shadow-[rgb(75_225_226_/_28%)_-7px_-6px_42px_8px,rgb(202_103_255_/_32%)_7px_6px_42px_8px]',
-                    'hover:shadow-[rgb(75_225_226_/_38%)_-7px_-4px_42px_10px,rgb(202_103_255_/_42%)_7px_8px_42px_10px]',
+                    'cursor-pointer border border-border-subtle bg-surface-elevated',
+                    'shadow-[-7px_-6px_42px_8px_rgb(75_225_226_/_28%),7px_6px_42px_8px_rgb(202_103_255_/_32%)]',
+                    'dark:shadow-[-7px_-6px_42px_8px_rgb(75_225_226_/_36%),7px_6px_42px_8px_rgb(202_103_255_/_38%)]',
+                    'hover:shadow-[-7px_-4px_42px_10px_rgb(75_225_226_/_38%),7px_8px_42px_10px_rgb(202_103_255_/_42%)]',
+                    'dark:hover:shadow-[-7px_-4px_42px_10px_rgb(75_225_226_/_50%),7px_8px_42px_10px_rgb(202_103_255_/_52%)]',
                     'hover:translate-y-[-2px] hover:scale-[1.01]'
                 ],
-                info: 'bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800 border',
-                success: 'bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-800 border',
-                warning: 'bg-yellow-50 border-yellow-200 dark:bg-yellow-950/30 dark:border-yellow-800 border',
-                destructive: 'bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-800 border'
+                info: 'border border-state-info/40 bg-state-info/10',
+                success: 'border border-state-success/40 bg-state-success/10',
+                warning: 'border border-state-warning/40 bg-state-warning/10',
+                destructive: 'bg-surface-panel shadow-sm'
             },
             size: {
                 sm: 'p-2 text-sm',
@@ -85,7 +87,7 @@ const Banner = React.forwardRef<HTMLDivElement, BannerProps>(
                 {dismissible && (
                     <Button
                         aria-label="Dismiss notification"
-                        className="absolute right-1 top-1 size-8 text-gray-600"
+                        className="absolute top-1 right-1 size-8 text-text-secondary hover:text-text-primary"
                         size="icon"
                         variant="ghost"
                         onClick={handleDismiss}

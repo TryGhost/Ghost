@@ -1,4 +1,4 @@
-import isEmail from 'validator/es/lib/isEmail';
+import isEmail from 'validator/es/lib/isEmail.js';
 
 export const formatUrl = (value: string, baseUrl?: string, nullable?: boolean) => {
     if (nullable && !value) {
@@ -45,7 +45,7 @@ export const formatUrl = (value: string, baseUrl?: string, nullable?: boolean) =
 
     try {
         parsedUrl = new URL(url, baseUrl);
-    } catch (e) {
+    } catch {
         return {save: url, display: url};
     }
 

@@ -3,10 +3,11 @@ import APAvatar from '@components/global/ap-avatar';
 import FeedItem from '@components/feed/feed-item';
 import getUsername from '@utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 import {ChangeEvent, useCallback, useEffect, useRef, useState} from 'react';
 import {ComponentPropsWithoutRef, ReactNode} from 'react';
 import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE} from '@utils/image';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
 import {uploadFile, useAccountForUser, useNoteMutationForUser, useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
@@ -93,7 +94,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                 onOpenChange(false);
             }
             toast.success(replyTo ? 'Reply posted' : 'Note posted');
-        } catch (error) {
+        } catch {
             if (replyTo) {
                 onReplyError?.();
             }
@@ -328,14 +329,14 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                         <div className='-mt-0.5 flex w-full flex-col gap-0.5'>
                             {isLoadingAccount ?
                                 <Skeleton className='w-10' /> :
-                                <span className='min-w-0 truncate whitespace-nowrap font-semibold text-black break-anywhere dark:text-white'>{account?.name}</span>
+                                <span className='break-anywhere min-w-0 truncate font-semibold whitespace-nowrap text-black dark:text-white'>{account?.name}</span>
                             }
                             <FormPrimitive.Field name='content' asChild>
                                 <FormPrimitive.Control asChild>
                                     <textarea
                                         ref={textareaRef}
                                         autoFocus={true}
-                                        className='ap-textarea w-full resize-none bg-transparent text-[1.5rem] break-anywhere'
+                                        className='ap-textarea break-anywhere w-full resize-none bg-transparent text-[1.5rem]'
                                         data-testid="note-textarea"
                                         placeholder={placeholder}
                                         rows={1}
@@ -367,7 +368,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                                 <LoadingIndicator size='md' />
                             </div>
                         }
-                        <Button className='absolute right-3 top-3 size-8 bg-black/60 text-white opacity-0 hover:bg-black/80 group-hover:opacity-100' onClick={handleClearImage}><LucideIcon.Trash2 /></Button>
+                        <Button className='absolute top-3 right-3 size-8 bg-black/60 text-white opacity-0 group-hover:opacity-100 hover:bg-black/80' onClick={handleClearImage}><LucideIcon.Trash2 /></Button>
                         {!isImageUploading && <Button className={`absolute bottom-3 left-3 h-6 px-2 py-0 text-white ${!showAltInput ? 'bg-black/60 hover:bg-black/80' : 'bg-green-500 hover:bg-green-500'}`} onClick={handleToggleAltInput}>Alt</Button>}
                     </div>
                 }
@@ -384,8 +385,8 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                     </div>
                 }
                 <DialogFooter className={`${isSticky ? 'sticky' : 'static'} bottom-0 flex-row bg-background py-6 dark:bg-[#101114]`}>
-                    <Button className='mr-auto w-[34px] !min-w-0' variant='outline' onClick={() => imageInputRef.current?.click()}><LucideIcon.Image /></Button>
-                    <div className='flex items-center space-x-3'>
+                    <Button className='mr-auto w-[34px] min-w-0!' variant='outline' onClick={() => imageInputRef.current?.click()}><LucideIcon.Image /></Button>
+                    <div className='flex items-center gap-3'>
                         <div className={`text-sm ${content.length >= MAX_CONTENT_LENGTH ? 'text-red-500' : content.length >= MAX_CONTENT_LENGTH * 0.9 ? 'text-yellow-600' : 'text-gray-500'}`}>
                             {content.length}/{MAX_CONTENT_LENGTH}
                         </div>

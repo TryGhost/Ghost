@@ -1,7 +1,7 @@
 const crypto = require('crypto');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
+const {assertArrayContainsDeep, assertObjectMatches} = require('../../utils/assertions');
 const nock = require('nock');
-const should = require('should');
 const stripe = require('stripe');
 const {Product} = require('../../../core/server/models/product');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
@@ -32,10 +32,16 @@ async function getMember(memberId) {
     // eslint-disable-next-line dot-notation
     return await models['Member'].where('id', memberId).fetch({require: true});
 }
+async function getOfferByStripeCoupon(stripeCouponId) {
+    // eslint-disable-next-line dot-notation
+    return await models['Offer'].findOne({stripe_coupon_id: stripeCouponId});
+}
 
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = (await models[eventType].where('member_id', memberId).fetchAll()).toJSON();
-    events.should.match(asserts);
+    for (let i = 0; i < asserts.length; i++) {
+        assertObjectMatches(events[i], asserts[i]);
+    }
     assert.equal(events.length, asserts.length, `Only ${asserts.length} ${eventType} should have been added.`);
 }
 
@@ -43,7 +49,8 @@ async function assertSubscription(subscriptionId, asserts) {
     const subscription = await getSubscription(subscriptionId);
 
     // We use the native toJSON to prevent calling the overriden serialize method
-    models.Base.Model.prototype.serialize.call(subscription).should.match(asserts);
+    const serialized = models.Base.Model.prototype.serialize.call(subscription);
+    assertObjectMatches(serialized, asserts);
 }
 
 // Helper methods to update the customer and subscription
@@ -56,7 +63,6 @@ function set(object, newValues) {
 
 describe('Members API', function () {
     // @todo: Test what happens when a complimentary subscription ends (should create comped -> free event)
-    // @todo: Test what happens when a complimentary subscription starts a paid subscription
 
     // We create some shared stripe resources, so we don't have to have nocks in every test case
     const subscription = {};
@@ -64,6 +70,9 @@ describe('Members API', function () {
     const paymentMethod = {};
     const setupIntent = {};
     const coupon = {};
+
+    // Additional subscriptions that tests can register for multi-subscription scenarios
+    const subscriptionOverrides = {};
 
     beforeEach(function () {
         nock('https://api.stripe.com')
@@ -88,6 +97,9 @@ describe('Members API', function () {
                 }
 
                 if (resource === 'subscriptions') {
+                    if (subscriptionOverrides[id]) {
+                        return [200, subscriptionOverrides[id]];
+                    }
                     if (subscription.id !== id) {
                         return [404];
                     }
@@ -146,11 +158,39 @@ describe('Members API', function () {
                 return [500];
             });
 
+        nock('https://api.stripe.com')
+            .persist()
+            .delete(/v1\/.*/)
+            .reply((uri) => {
+                const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
+
+                if (!match) {
+                    return [500];
+                }
+
+                if (resource === 'subscriptions') {
+                    const sub = subscriptionOverrides[id] || (subscription.id === id ? subscription : null);
+                    if (!sub) {
+                        return [404];
+                    }
+                    const canceled = {...sub, status: 'canceled'};
+                    // Update the override so subsequent GETs return the canceled version
+                    subscriptionOverrides[id] = canceled;
+                    return [200, canceled];
+                }
+
+                return [500];
+            });
+
         sinon.stub(settingsHelpers, 'createUnsubscribeUrl').returns('http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme');
     });
 
     afterEach(function () {
         mockManager.restore();
+        // Clear subscription overrides between tests
+        for (const key of Object.keys(subscriptionOverrides)) {
+            delete subscriptionOverrides[key];
+        }
     });
 
     describe('/webhooks/stripe/', function () {
@@ -287,12 +327,11 @@ describe('Members API', function () {
             // And all the subscriptions are setup correctly
             const initialMember = await createMemberFromStripe();
             assert.equal(initialMember.status, 'paid', 'The member initial status should be paid');
+            assert.equal(initialMember.attribution.referrer_medium, 'Ghost Admin', 'The member should have been created via Ghost Admin');
             assert.equal(initialMember.tiers.length, 1, 'The member should have one tier');
-            should(initialMember.subscriptions).match([
-                {
-                    status: 'active'
-                }
-            ]);
+            assertObjectMatches(initialMember.subscriptions[0], {
+                status: 'active'
+            });
 
             // Check whether MRR and status has been set
             await assertSubscription(initialMember.subscriptions[0].id, {
@@ -337,13 +376,11 @@ describe('Members API', function () {
             const {body: body2} = await adminAgent.get('/members/' + initialMember.id + '/');
             assert.equal(body2.members.length, 1, 'The member does not exist');
             const updatedMember = body2.members[0];
-            should(updatedMember.subscriptions).match([
-                {
-                    status: 'active',
-                    cancel_at_period_end: true,
-                    cancellation_reason: 'I want to break free'
-                }
-            ]);
+            assertObjectMatches(updatedMember.subscriptions[0], {
+                status: 'active',
+                cancel_at_period_end: true,
+                cancellation_reason: 'I want to break free'
+            });
 
             // Check whether MRR and cancel_at_period_end has been set
             await assertSubscription(initialMember.subscriptions[0].id, {
@@ -374,11 +411,6 @@ describe('Members API', function () {
 
             // Check that the staff notifications has been sent
             await DomainEvents.allSettled();
-
-            mockManager.assert.sentEmail({
-                subject: /Paid subscription started: Cancel me at the end of the billing cycle/,
-                to: 'jbloggs@example.com'
-            });
 
             mockManager.assert.sentEmail({
                 subject: /Cancellation: Cancel me at the end of the billing cycle/,
@@ -433,12 +465,11 @@ describe('Members API', function () {
             // And all the subscriptions are setup correctly
             const initialMember = await createMemberFromStripe();
             assert.equal(initialMember.status, 'paid', 'The member initial status should be paid');
+            assert.equal(initialMember.attribution.referrer_medium, 'Ghost Admin', 'The member should have been created via Ghost Admin');
             assert.equal(initialMember.tiers.length, 1, 'The member should have one tier');
-            should(initialMember.subscriptions).match([
-                {
-                    status: 'active'
-                }
-            ]);
+            assertObjectMatches(initialMember.subscriptions[0], {
+                status: 'active'
+            });
 
             // Check whether MRR and status has been set
             await assertSubscription(initialMember.subscriptions[0].id, {
@@ -485,12 +516,10 @@ describe('Members API', function () {
             const updatedMember = body2.members[0];
             assert.equal(updatedMember.status, 'free');
             assert.equal(updatedMember.tiers.length, 0, 'The member should have no products');
-            should(updatedMember.subscriptions).match([
-                {
-                    status: 'canceled',
-                    cancellation_reason: 'Payment failed'
-                }
-            ]);
+            assertObjectMatches(updatedMember.subscriptions[0], {
+                status: 'canceled',
+                cancellation_reason: 'Payment failed'
+            });
 
             // Check whether MRR and status has been set
             await assertSubscription(initialMember.subscriptions[0].id, {
@@ -542,11 +571,6 @@ describe('Members API', function () {
             await DomainEvents.allSettled();
 
             mockManager.assert.sentEmail({
-                subject: /Paid subscription started: Cancel me now/,
-                to: 'jbloggs@example.com'
-            });
-
-            mockManager.assert.sentEmail({
                 subject: /Cancellation: Cancel me now/,
                 to: 'jbloggs@example.com'
             });
@@ -574,15 +598,9 @@ describe('Members API', function () {
             const updatedMember = body.members[0];
             assert.equal(updatedMember.status, 'comped', 'A comped member should have the comped status');
             assert.equal(updatedMember.tiers.length, 1, 'The member should have one tier');
-            should(updatedMember.subscriptions).match([
-                {
-                    status: 'canceled'
-                },
-                {
-                    status: 'active'
-                }
-            ]);
             assert.equal(updatedMember.subscriptions.length, 2, 'The member should have two subscriptions');
+            assertObjectMatches(updatedMember.subscriptions[0], {status: 'canceled'});
+            assertObjectMatches(updatedMember.subscriptions[1], {status: 'active'});
 
             // Check the status events for this newly created member (should be NULL -> paid only)
             await assertMemberEvents({
@@ -673,11 +691,9 @@ describe('Members API', function () {
             const initialMember = await createMemberFromStripe();
             assert.equal(initialMember.status, 'comped', 'The member initial status should be comped');
             assert.equal(initialMember.tiers.length, 1, 'The member should have one tier');
-            should(initialMember.subscriptions).match([
-                {
-                    status: 'active'
-                }
-            ]);
+            assertObjectMatches(initialMember.subscriptions[0], {
+                status: 'active'
+            });
 
             // Cancel the previously created subscription in Stripe
             set(subscription, {
@@ -709,11 +725,9 @@ describe('Members API', function () {
             const updatedMember = body2.members[0];
             assert.equal(updatedMember.status, 'free');
             assert.equal(updatedMember.tiers.length, 0, 'The member should have no products');
-            should(updatedMember.subscriptions).match([
-                {
-                    status: 'canceled'
-                }
-            ]);
+            assertObjectMatches(updatedMember.subscriptions[0], {
+                status: 'canceled'
+            });
 
             // Check the status events for this newly created member (should be NULL -> paid only)
             await assertMemberEvents({
@@ -1055,6 +1069,716 @@ describe('Members API', function () {
                 .header('stripe-signature', webhookSignature)
                 .expectStatus(200);
         });
+
+        it('Cancels Stripe-backed complimentary subscription when comped member completes a paid checkout', async function () {
+            const compCustomerId = createStripeID('cust');
+            const compSubscriptionId = createStripeID('sub');
+            const paidSubscriptionId = createStripeID('sub');
+
+            const compPrice = {
+                id: 'price_comp',
+                product: 'product_123',
+                active: true,
+                nickname: 'Complimentary',
+                currency: 'usd',
+                recurring: {
+                    interval: 'month'
+                },
+                unit_amount: 0,
+                type: 'recurring'
+            };
+
+            // Set up the complimentary subscription
+            set(subscription, {
+                id: compSubscriptionId,
+                customer: compCustomerId,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_comp',
+                        price: compPrice
+                    }]
+                },
+                plan: compPrice,
+                start_date: Date.now() / 1000,
+                current_period_end: Date.now() / 1000 + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false
+            });
+
+            set(customer, {
+                id: compCustomerId,
+                name: 'Test Stripe Comp Member',
+                email: 'stripe-comp-test@email.com',
+                subscriptions: {
+                    type: 'list',
+                    data: [subscription]
+                }
+            });
+
+            // Create a comped member with a Stripe subscription
+            const {body: createBody} = await adminAgent
+                .post('/members/')
+                .body({members: [{
+                    name: customer.name,
+                    email: customer.email,
+                    subscribed: true,
+                    stripe_customer_id: customer.id
+                }]})
+                .expectStatus(201);
+
+            const initialMember = createBody.members[0];
+            assert.equal(initialMember.status, 'comped', 'The member initial status should be comped');
+            assert.equal(initialMember.tiers.length, 1, 'The member should have one tier');
+            assert.equal(initialMember.subscriptions.length, 1, 'The member should have one Stripe subscription');
+
+            // Define the paid subscription
+            const paidPrice = {
+                id: 'price_123',
+                product: 'product_123',
+                active: true,
+                nickname: 'Monthly',
+                currency: 'usd',
+                recurring: {
+                    interval: 'month'
+                },
+                unit_amount: 500,
+                type: 'recurring'
+            };
+
+            const paidSubscription = {
+                id: paidSubscriptionId,
+                customer: compCustomerId,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_paid',
+                        price: paidPrice
+                    }]
+                },
+                start_date: beforeNow / 1000,
+                current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false
+            };
+
+            // Register the comp subscription in overrides so the DELETE and GET handlers can find it
+            subscriptionOverrides[compSubscriptionId] = {
+                id: compSubscriptionId,
+                customer: compCustomerId,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_comp',
+                        price: compPrice
+                    }]
+                },
+                plan: compPrice,
+                start_date: Date.now() / 1000,
+                current_period_end: Date.now() / 1000 + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false
+            };
+
+            // Update shared objects for the paid subscription
+            set(subscription, paidSubscription);
+
+            set(customer, {
+                id: compCustomerId,
+                name: 'Test Stripe Comp Member',
+                email: 'stripe-comp-test@email.com',
+                subscriptions: {
+                    type: 'list',
+                    data: [paidSubscription]
+                }
+            });
+
+            // Send checkout.session.completed webhook
+            const webhookPayload = JSON.stringify({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        mode: 'subscription',
+                        customer: compCustomerId,
+                        subscription: paidSubscriptionId,
+                        metadata: {}
+                    }
+                }
+            });
+
+            const webhookSignature = stripe.webhooks.generateTestHeaderString({
+                payload: webhookPayload,
+                secret: process.env.WEBHOOK_SECRET
+            });
+
+            await membersAgent.post('/webhooks/stripe/')
+                .body(webhookPayload)
+                .header('content-type', 'application/json')
+                .header('stripe-signature', webhookSignature)
+                .expectStatus(200);
+
+            await DomainEvents.allSettled();
+
+            // Verify member state
+            const {body} = await adminAgent.get('/members/' + initialMember.id + '/');
+            const updatedMember = body.members[0];
+
+            assert.equal(updatedMember.status, 'paid', 'The member should now be paid');
+            assert.equal(updatedMember.tiers.length, 1, 'The member should have one tier');
+            assert.equal(updatedMember.subscriptions.length, 2, 'The member should have two subscriptions');
+
+            const compSub = updatedMember.subscriptions.find(s => s.id === compSubscriptionId);
+            const paidSub = updatedMember.subscriptions.find(s => s.id === paidSubscriptionId);
+
+            assert.equal(compSub.status, 'canceled', 'The complimentary subscription should be canceled');
+            assert.equal(paidSub.status, 'active', 'The paid subscription should be active');
+        });
+
+        it('Removes Ghost-only comp tier when comped member completes a paid checkout', async function () {
+            // Create a separate product for the comp tier (different from the paid subscription product)
+            const compProduct = await Product.add({
+                name: 'Comp Tier',
+                slug: 'comp-tier-test',
+                type: 'paid'
+            });
+
+            const compCustomerId = createStripeID('cust');
+            const paidSubscriptionId = createStripeID('sub');
+
+            // Create a free member
+            const {body: createBody} = await adminAgent
+                .post('/members/')
+                .body({members: [{
+                    name: 'Ghost Comp Test Member',
+                    email: 'ghost-comp-test@email.com',
+                    subscribed: true
+                }]})
+                .expectStatus(201);
+
+            const memberId = createBody.members[0].id;
+            assert.equal(createBody.members[0].status, 'free', 'The member should start as free');
+
+            // Comp the member by assigning a different tier than the paid subscription product
+            const {body: compBody} = await adminAgent
+                .put(`/members/${memberId}/`)
+                .body({members: [{
+                    id: memberId,
+                    tiers: [{id: compProduct.id}]
+                }]})
+                .expectStatus(200);
+
+            assert.equal(compBody.members[0].status, 'comped', 'The member should be comped');
+            assert.equal(compBody.members[0].tiers.length, 1, 'The member should have one tier');
+
+            // Set up Stripe customer and paid subscription
+            const paidPrice = {
+                id: 'price_123',
+                product: 'product_123',
+                active: true,
+                nickname: 'Monthly',
+                currency: 'usd',
+                recurring: {
+                    interval: 'month'
+                },
+                unit_amount: 500,
+                type: 'recurring'
+            };
+
+            const paidSubscription = {
+                id: paidSubscriptionId,
+                customer: compCustomerId,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_paid',
+                        price: paidPrice
+                    }]
+                },
+                start_date: beforeNow / 1000,
+                current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false
+            };
+
+            set(subscription, paidSubscription);
+
+            set(customer, {
+                id: compCustomerId,
+                name: 'Ghost Comp Test Member',
+                email: 'ghost-comp-test@email.com',
+                subscriptions: {
+                    type: 'list',
+                    data: [paidSubscription]
+                }
+            });
+
+            // Send checkout.session.completed webhook
+            const webhookPayload = JSON.stringify({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        mode: 'subscription',
+                        customer: compCustomerId,
+                        subscription: paidSubscriptionId,
+                        metadata: {}
+                    }
+                }
+            });
+
+            const webhookSignature = stripe.webhooks.generateTestHeaderString({
+                payload: webhookPayload,
+                secret: process.env.WEBHOOK_SECRET
+            });
+
+            await membersAgent.post('/webhooks/stripe/')
+                .body(webhookPayload)
+                .header('content-type', 'application/json')
+                .header('stripe-signature', webhookSignature)
+                .expectStatus(200);
+
+            await DomainEvents.allSettled();
+
+            // Verify member state - comp tier should be removed
+            const {body} = await adminAgent.get('/members/' + memberId + '/');
+            const updatedMember = body.members[0];
+
+            assert.equal(updatedMember.status, 'paid', 'The member should now be paid');
+            assert.equal(updatedMember.tiers.length, 1, 'The member should have one tier (the paid one)');
+            assert.equal(updatedMember.subscriptions.length, 1, 'The member should have one subscription');
+            assert.equal(updatedMember.subscriptions[0].status, 'active', 'The paid subscription should be active');
+        });
+
+        it('Member becomes free (not comped) when paid subscription is cancelled after upgrading from comp', async function () {
+            // Create a separate product for the comp tier (different from the paid subscription product)
+            const compProduct = await Product.add({
+                name: 'Comp Tier Cancel',
+                slug: 'comp-tier-cancel-test',
+                type: 'paid'
+            });
+
+            const compCustomerId = createStripeID('cust');
+            const paidSubscriptionId = createStripeID('sub');
+
+            // Create a free member
+            const {body: createBody} = await adminAgent
+                .post('/members/')
+                .body({members: [{
+                    name: 'Comp Cancel Test Member',
+                    email: 'comp-cancel-test@email.com',
+                    subscribed: true
+                }]})
+                .expectStatus(201);
+
+            const memberId = createBody.members[0].id;
+
+            // Comp the member by assigning a different tier than the paid subscription product
+            await adminAgent
+                .put(`/members/${memberId}/`)
+                .body({members: [{
+                    id: memberId,
+                    tiers: [{id: compProduct.id}]
+                }]})
+                .expectStatus(200);
+
+            // Set up Stripe customer and paid subscription
+            const paidPrice = {
+                id: 'price_123',
+                product: 'product_123',
+                active: true,
+                nickname: 'Monthly',
+                currency: 'usd',
+                recurring: {
+                    interval: 'month'
+                },
+                unit_amount: 500,
+                type: 'recurring'
+            };
+
+            const paidSubscription = {
+                id: paidSubscriptionId,
+                customer: compCustomerId,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_paid',
+                        price: paidPrice
+                    }]
+                },
+                start_date: beforeNow / 1000,
+                current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false
+            };
+
+            set(subscription, paidSubscription);
+
+            set(customer, {
+                id: compCustomerId,
+                name: 'Comp Cancel Test Member',
+                email: 'comp-cancel-test@email.com',
+                subscriptions: {
+                    type: 'list',
+                    data: [paidSubscription]
+                }
+            });
+
+            // Send checkout.session.completed webhook to upgrade to paid
+            let webhookPayload = JSON.stringify({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        mode: 'subscription',
+                        customer: compCustomerId,
+                        subscription: paidSubscriptionId,
+                        metadata: {}
+                    }
+                }
+            });
+
+            let webhookSignature = stripe.webhooks.generateTestHeaderString({
+                payload: webhookPayload,
+                secret: process.env.WEBHOOK_SECRET
+            });
+
+            await membersAgent.post('/webhooks/stripe/')
+                .body(webhookPayload)
+                .header('content-type', 'application/json')
+                .header('stripe-signature', webhookSignature)
+                .expectStatus(200);
+
+            await DomainEvents.allSettled();
+
+            // Verify the member is now paid
+            const {body: paidBody} = await adminAgent.get('/members/' + memberId + '/');
+            assert.equal(paidBody.members[0].status, 'paid', 'The member should be paid after checkout');
+
+            // Now cancel the paid subscription
+            set(subscription, {
+                ...paidSubscription,
+                status: 'canceled',
+                canceled_at: Date.now() / 1000,
+                cancellation_details: {
+                    reason: 'cancellation_requested'
+                }
+            });
+
+            webhookPayload = JSON.stringify({
+                type: 'customer.subscription.deleted',
+                data: {
+                    object: subscription
+                }
+            });
+
+            webhookSignature = stripe.webhooks.generateTestHeaderString({
+                payload: webhookPayload,
+                secret: process.env.WEBHOOK_SECRET
+            });
+
+            await membersAgent.post('/webhooks/stripe/')
+                .body(webhookPayload)
+                .header('content-type', 'application/json')
+                .header('stripe-signature', webhookSignature)
+                .expectStatus(200);
+
+            await DomainEvents.allSettled();
+
+            // Verify the member is now free, not comped
+            const {body: cancelBody} = await adminAgent.get('/members/' + memberId + '/');
+            const cancelledMember = cancelBody.members[0];
+
+            assert.equal(cancelledMember.status, 'free', 'The member should be free after cancellation, not comped');
+            assert.equal(cancelledMember.tiers.length, 0, 'The member should have no tiers');
+            assert.equal(cancelledMember.subscriptions.length, 1, 'The member should have one subscription');
+            assert.equal(cancelledMember.subscriptions[0].status, 'canceled', 'The subscription should be canceled');
+        });
+    });
+
+    describe('customer.subscription.created - complimentary removal', function () {
+        before(async function () {
+            const agents = await agentProvider.getAgentsForMembers();
+            membersAgent = agents.membersAgent;
+            adminAgent = agents.adminAgent;
+
+            await fixtureManager.init('members');
+            await adminAgent.loginAsOwner();
+        });
+
+        beforeEach(function () {
+            mockManager.mockMail();
+        });
+
+        afterEach(function () {
+            mockManager.restore();
+        });
+
+        it('Cancels Stripe-backed complimentary subscription when a paid subscription is created', async function () {
+            const compCustomerId = createStripeID('cust');
+            const compSubscriptionId = createStripeID('sub');
+            const paidSubscriptionId = createStripeID('sub');
+
+            const compPrice = {
+                id: 'price_comp',
+                product: 'product_123',
+                active: true,
+                nickname: 'Complimentary',
+                currency: 'usd',
+                recurring: {
+                    interval: 'month'
+                },
+                unit_amount: 0,
+                type: 'recurring'
+            };
+
+            // Set up the complimentary subscription
+            set(subscription, {
+                id: compSubscriptionId,
+                customer: compCustomerId,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_comp',
+                        price: compPrice
+                    }]
+                },
+                plan: compPrice,
+                start_date: Date.now() / 1000,
+                current_period_end: Date.now() / 1000 + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false
+            });
+
+            set(customer, {
+                id: compCustomerId,
+                name: 'Comp Sub Event Test',
+                email: 'comp-sub-event-test@email.com',
+                subscriptions: {
+                    type: 'list',
+                    data: [subscription]
+                }
+            });
+
+            // Create a comped member with a Stripe complimentary subscription
+            const {body: createBody} = await adminAgent
+                .post('/members/')
+                .body({members: [{
+                    name: customer.name,
+                    email: customer.email,
+                    subscribed: true,
+                    stripe_customer_id: customer.id
+                }]})
+                .expectStatus(201);
+
+            const memberId = createBody.members[0].id;
+            assert.equal(createBody.members[0].status, 'comped');
+            assert.equal(createBody.members[0].subscriptions.length, 1);
+
+            // Register the comp subscription in overrides so DELETE can find it
+            subscriptionOverrides[compSubscriptionId] = {
+                id: compSubscriptionId,
+                customer: compCustomerId,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_comp',
+                        price: compPrice
+                    }]
+                },
+                plan: compPrice,
+                start_date: Date.now() / 1000,
+                current_period_end: Date.now() / 1000 + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false
+            };
+
+            // Define the paid subscription
+            const paidPrice = {
+                id: 'price_123',
+                product: 'product_123',
+                active: true,
+                nickname: 'Monthly',
+                currency: 'usd',
+                recurring: {
+                    interval: 'month'
+                },
+                unit_amount: 500,
+                type: 'recurring'
+            };
+
+            const paidSubscription = {
+                id: paidSubscriptionId,
+                customer: compCustomerId,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_paid',
+                        price: paidPrice
+                    }]
+                },
+                start_date: Date.now() / 1000,
+                current_period_end: Date.now() / 1000 + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false
+            };
+
+            // Register it so GET can find it
+            subscriptionOverrides[paidSubscriptionId] = paidSubscription;
+
+            // Send customer.subscription.created webhook for the paid subscription
+            const webhookPayload = JSON.stringify({
+                type: 'customer.subscription.created',
+                data: {
+                    object: paidSubscription
+                }
+            });
+
+            const webhookSignature = stripe.webhooks.generateTestHeaderString({
+                payload: webhookPayload,
+                secret: process.env.WEBHOOK_SECRET
+            });
+
+            await membersAgent.post('/webhooks/stripe/')
+                .body(webhookPayload)
+                .header('content-type', 'application/json')
+                .header('stripe-signature', webhookSignature)
+                .expectStatus(200);
+
+            await DomainEvents.allSettled();
+
+            // Verify: member should be paid, comp subscription cancelled
+            const {body} = await adminAgent.get('/members/' + memberId + '/');
+            const updatedMember = body.members[0];
+
+            assert.equal(updatedMember.status, 'paid');
+            assert.equal(updatedMember.tiers.length, 1);
+            assert.equal(updatedMember.subscriptions.length, 2);
+
+            const compSub = updatedMember.subscriptions.find(s => s.id === compSubscriptionId);
+            const paidSub = updatedMember.subscriptions.find(s => s.id === paidSubscriptionId);
+
+            assert.equal(compSub.status, 'canceled', 'Complimentary subscription should be canceled');
+            assert.equal(paidSub.status, 'active', 'Paid subscription should be active');
+        });
+
+        it('Removes Ghost-only comp tier when a paid subscription is created', async function () {
+            // Create a separate product for the comp tier
+            const compProduct = await Product.add({
+                name: 'Comp Tier Sub Event',
+                slug: 'comp-tier-sub-event',
+                type: 'paid'
+            });
+
+            const paidCustomerId = createStripeID('cust');
+            const paidSubscriptionId = createStripeID('sub');
+
+            // Create a free member
+            const {body: createBody} = await adminAgent
+                .post('/members/')
+                .body({members: [{
+                    name: 'Ghost Comp Sub Event Test',
+                    email: 'ghost-comp-sub-event@email.com',
+                    subscribed: true
+                }]})
+                .expectStatus(201);
+
+            const memberId = createBody.members[0].id;
+            assert.equal(createBody.members[0].status, 'free');
+
+            // Comp the member with the separate product
+            const {body: compBody} = await adminAgent
+                .put(`/members/${memberId}/`)
+                .body({members: [{
+                    id: memberId,
+                    tiers: [{id: compProduct.id}]
+                }]})
+                .expectStatus(200);
+
+            assert.equal(compBody.members[0].status, 'comped');
+            assert.equal(compBody.members[0].tiers.length, 1);
+
+            // Define the paid subscription
+            const paidPrice = {
+                id: 'price_123',
+                product: 'product_123',
+                active: true,
+                nickname: 'Monthly',
+                currency: 'usd',
+                recurring: {
+                    interval: 'month'
+                },
+                unit_amount: 500,
+                type: 'recurring'
+            };
+
+            const paidSubscription = {
+                id: paidSubscriptionId,
+                customer: paidCustomerId,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_paid',
+                        price: paidPrice
+                    }]
+                },
+                start_date: Date.now() / 1000,
+                current_period_end: Date.now() / 1000 + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false
+            };
+
+            // Set up shared mocks
+            set(subscription, paidSubscription);
+            set(customer, {
+                id: paidCustomerId,
+                name: 'Ghost Comp Sub Event Test',
+                email: 'ghost-comp-sub-event@email.com',
+                subscriptions: {
+                    type: 'list',
+                    data: [paidSubscription]
+                }
+            });
+
+            // Register the subscription in overrides
+            subscriptionOverrides[paidSubscriptionId] = paidSubscription;
+
+            // First link the customer to the member via a checkout webhook
+            // (subscription events alone don't create the stripe customer link)
+            const checkoutPayload = JSON.stringify({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        mode: 'subscription',
+                        customer: paidCustomerId,
+                        subscription: paidSubscriptionId,
+                        metadata: {}
+                    }
+                }
+            });
+
+            const checkoutSignature = stripe.webhooks.generateTestHeaderString({
+                payload: checkoutPayload,
+                secret: process.env.WEBHOOK_SECRET
+            });
+
+            await membersAgent.post('/webhooks/stripe/')
+                .body(checkoutPayload)
+                .header('content-type', 'application/json')
+                .header('stripe-signature', checkoutSignature)
+                .expectStatus(200);
+
+            await DomainEvents.allSettled();
+
+            // Verify: member should be paid, Ghost-only comp tier removed
+            const {body} = await adminAgent.get('/members/' + memberId + '/');
+            const updatedMember = body.members[0];
+
+            assert.equal(updatedMember.status, 'paid');
+            assert.equal(updatedMember.tiers.length, 1, 'Only the paid tier should remain');
+            assert.equal(updatedMember.subscriptions.length, 1);
+            assert.equal(updatedMember.subscriptions[0].status, 'active');
+
+            // The remaining tier should be the one from the paid subscription, not the comp tier
+            assert.notEqual(updatedMember.tiers[0].id, compProduct.id, 'Comp tier should be removed');
+        });
     });
 
     describe('Discounts', function () {
@@ -1204,11 +1928,7 @@ describe('Members API', function () {
             });
 
             // Check whether the offer attribute is passed correctly in the response when fetching a single member
-            member.subscriptions[0].should.match({
-                offer: {
-                    id: offer_id
-                }
-            });
+            assert.equal(member.subscriptions[0].offer?.id, offer_id);
 
             await assertMemberEvents({
                 eventType: 'MemberPaidSubscriptionEvent',
@@ -1251,14 +1971,12 @@ describe('Members API', function () {
             const updatedMember = body2.members[0];
             assert.equal(updatedMember.status, 'free');
             assert.equal(updatedMember.tiers.length, 0, 'The member should have no products');
-            should(updatedMember.subscriptions).match([
-                {
-                    status: 'canceled',
-                    offer: {
-                        id: offer_id
-                    }
+            assertObjectMatches(updatedMember.subscriptions[0], {
+                status: 'canceled',
+                offer: {
+                    id: offer_id
                 }
-            ]);
+            });
 
             // Check whether MRR and status has been set
             await assertSubscription(member.subscriptions[0].id, {
@@ -1602,7 +2320,7 @@ describe('Members API', function () {
             });
 
             // Check whether the offer attribute is passed correctly in the response when fetching a single member
-            member.subscriptions[0].should.match({
+            assertObjectMatches(member.subscriptions[0], {
                 offer: null
             });
 
@@ -1658,11 +2376,7 @@ describe('Members API', function () {
             });
 
             // Check whether the offer attribute is passed correctly in the response when fetching a single member
-            updatedMember.subscriptions[0].should.match({
-                offer: {
-                    id: offer.id
-                }
-            });
+            assert.equal(updatedMember.subscriptions[0].offer?.id, offer.id);
 
             await assertMemberEvents({
                 eventType: 'MemberPaidSubscriptionEvent',
@@ -1680,17 +2394,22 @@ describe('Members API', function () {
             });
         });
 
-        it('Silently ignores an invalid offer id in metadata', async function () {
+        it('Supports creating an offer from a Stripe coupon', async function () {
             const interval = 'month';
             const unit_amount = 500;
             const mrr_with = 400;
+
+            const stripeCouponId = 'stripe-coupon-id';
+
+            const existingOffer = await getOfferByStripeCoupon(stripeCouponId);
+            assert.equal(existingOffer, null, `No offer should exist with coupon ID: ${stripeCouponId}`);
 
             const discount = {
                 id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
                 object: 'discount',
                 checkout_session: null,
                 coupon: {
-                    id: 'unknownCoupon', // this one is unknown in Ghost
+                    id: stripeCouponId,
                     object: 'coupon',
                     amount_off: null,
                     created: 1649774041,
@@ -1786,6 +2505,13 @@ describe('Members API', function () {
             assert.equal(member.status, 'paid', 'The member should be "paid"');
             assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
 
+            // Offer should now exist and have expected name, code and status
+            const createdOffer = await getOfferByStripeCoupon(stripeCouponId);
+            assert.notEqual(createdOffer, null, `An offer should now have been created with coupon ID: ${stripeCouponId}`);
+            assert.equal(createdOffer.get('code'), stripeCouponId, 'Offer code should match Stripe coupon ID');
+            assert.equal(createdOffer.get('active'), false, 'Imported offer should be archived (not active)');
+            assert.equal(createdOffer.get('name'), '20% off forever (stripe-coupon-id)', 'Offer name should be auto-generated from coupon');
+
             // Check whether MRR and status has been set
             await assertSubscription(member.subscriptions[0].id, {
                 subscription_id: subscription.id,
@@ -1796,13 +2522,11 @@ describe('Members API', function () {
                 plan_currency: 'usd',
                 current_period_end: new Date(Math.floor(beforeNow / 1000) * 1000 + (60 * 60 * 24 * 31 * 1000)),
                 mrr: mrr_with,
-                offer_id: null
+                offer_id: createdOffer.id
             });
 
             // Check whether the offer attribute is passed correctly in the response when fetching a single member
-            member.subscriptions[0].should.match({
-                offer: null
-            });
+            assert.equal(member.subscriptions[0].offer?.id, createdOffer.id);
 
             await assertMemberEvents({
                 eventType: 'MemberPaidSubscriptionEvent',
@@ -2020,8 +2744,8 @@ describe('Members API', function () {
                     etag: anyEtag
                 })
                 .expect(({body: body3}) => {
-                    should(body3.members[0].attribution).eql(attributionResource);
-                    should(body3.members[0].subscriptions[0].attribution).eql(attributionResource);
+                    assert.deepEqual(body3.members[0].attribution, attributionResource);
+                    assert.deepEqual(body3.members[0].subscriptions[0].attribution, attributionResource);
                     subscriptionAttributions.push(body3.members[0].subscriptions[0].attribution);
                 });
 
@@ -2304,7 +3028,7 @@ describe('Members API', function () {
                 subscribed: false,
                 stripe_customer_id: customer_id
             };
-    
+
             // create our free member
             const res = await adminAgent
                 .post(`/members/`)
@@ -2469,8 +3193,8 @@ describe('Members API', function () {
                     etag: anyEtag
                 })
                 .expect(({body}) => {
-                    should(body.events.find(e => e.type !== 'subscription_event')).be.undefined();
-                    should(body.events.map(e => e.data.attribution)).containDeep(subscriptionAttributions);
+                    assert.equal(body.events.find(e => e.type !== 'subscription_event'), undefined);
+                    assertArrayContainsDeep(body.events.map(e => e.data.attribution), subscriptionAttributions);
                 });
         });
     });

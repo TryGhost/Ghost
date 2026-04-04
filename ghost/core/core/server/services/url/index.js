@@ -1,6 +1,6 @@
 const config = require('../../../shared/config');
-const LocalFileCache = require('./LocalFileCache');
-const UrlService = require('./UrlService');
+const LocalFileCache = require('./local-file-cache');
+const UrlService = require('./url-service');
 
 // NOTE: instead of a path we could give UrlService a "data-resolver" of some sort
 //       so it doesn't have to contain the logic to read data at all. This would be

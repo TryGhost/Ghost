@@ -1,8 +1,6 @@
+import {NAV_ITEMS, SidebarPage} from '@/admin-pages';
 import {Page} from '@playwright/test';
-import {SidebarPage} from '@/admin-pages';
 import {expect, test} from '@/helpers/playwright/fixture';
-
-type UserRole = 'Administrator' | 'Editor' | 'Author' | 'Contributor';
 
 // TODO: Remove this when the ActivityPub backend has been integrated with the E2E tests
 async function mockNotificationCount(page: Page, count: number) {
@@ -15,35 +13,18 @@ async function mockNotificationCount(page: Page, count: number) {
     });
 }
 
-interface NavItem {
-    name: string;
-    path: RegExp;
-    roles: UserRole[];
-}
-
-const NAV_ITEMS: NavItem[] = [
-    {name: 'Analytics', path: /\/ghost\/#\/analytics\/?$/, roles: ['Administrator']},
-    {name: 'Network', path: /\/ghost\/#\/(network|activitypub)\/?/, roles: ['Administrator']},
-    {name: 'View site', path: /\/ghost\/#\/site\/?$/, roles: ['Administrator', 'Editor']},
-    {name: 'Posts', path: /\/ghost\/#\/posts\/?$/, roles: ['Administrator', 'Editor', 'Author', 'Contributor']},
-    {name: 'Pages', path: /\/ghost\/#\/pages\/?$/, roles: ['Administrator', 'Editor']},
-    {name: 'Tags', path: /\/ghost\/#\/tags\/?$/, roles: ['Administrator', 'Editor']},
-    {name: 'Members', path: /\/ghost\/#\/members\/?$/, roles: ['Administrator', 'Editor']}
-];
-
 test.describe('Ghost Admin - Sidebar Navigation', () => {
     test.describe('main navigation', () => {
-        NAV_ITEMS.forEach(({name, path}) => {
-            test(`clicking ${name} - navigates and shows active state`, async ({page}) => {
-                const sidebar = new SidebarPage(page);
+        test('clicking each nav item navigates and shows active state', async ({page}) => {
+            const sidebar = new SidebarPage(page);
 
+            for (const {name, path} of NAV_ITEMS) {
                 await sidebar.goto('/ghost');
-
                 await sidebar.getNavLink(name).click();
 
                 await expect(page).toHaveURL(path);
                 await expect(sidebar.getNavLink(name)).toHaveAttribute('aria-current', 'page');
-            });
+            }
         });
     });
 

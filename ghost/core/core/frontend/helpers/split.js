@@ -1,4 +1,6 @@
-const {SafeString} = require('handlebars');
+// Use the shared frontend Handlebars runtime so SafeString values stay
+// compatible with helpers that check them with instanceof.
+const {SafeString} = require('../services/handlebars');
 
 function renderResult(result, options, data) {
     if (options && typeof options.fn === 'function') {

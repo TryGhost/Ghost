@@ -1,11 +1,8 @@
 import React from "react";
-import {
-    Button,
-    LucideIcon,
-    SidebarTrigger,
-    useSidebar,
-} from "@tryghost/shade";
+import {Button, SidebarTrigger, useSidebar} from "@tryghost/shade/components";
+import {LucideIcon} from "@tryghost/shade/utils";
 import { useIsActiveLink } from "./use-is-active-link";
+import { useSidebarVisibility } from "@/ember-bridge/ember-bridge";
 
 const ICON_STROKE_WIDTH = 1.5;
 
@@ -20,7 +17,7 @@ function MobileNavBarButton({ to, activeOnSubpath = false, children, ...props }:
     return (
         <Button
             asChild
-            className={`rounded-full w-full max-w-16 min-w-9 hover:bg-gray-200 ${isActive ? 'bg-gray-200' : 'bg-transparent'}`} {...props}
+            className={`w-full max-w-16 min-w-9 rounded-full hover:bg-gray-200 ${isActive ? 'bg-gray-200' : 'bg-transparent'}`} {...props}
             variant="ghost"
             size="icon"
             data-active={isActive}
@@ -34,14 +31,16 @@ function MobileNavBarButton({ to, activeOnSubpath = false, children, ...props }:
 
 export function MobileNavBar() {
     const { isMobile } = useSidebar();
+    const sidebarVisible = useSidebarVisibility();
 
-    if (!isMobile) {
+
+    if (!isMobile || !sidebarVisible) {
         return <></>
     }
 
     return (
-        <div className="fixed sidebar:hidden bottom-0 left-0 right-0 h-[var(--mobile-navbar-height)] bg-sidebar/80 backdrop-blur-md border-t border-sidebar-border z-50 safe-area-inset-bottom">
-            <div className="grid grid-cols-4 items-center w-full justify-items-center max-w-[300px] h-full mx-auto px-5">
+        <div className="safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-50 h-[var(--mobile-navbar-height)] border-t border-sidebar-border bg-sidebar/80 backdrop-blur-md sidebar:hidden">
+            <div className="mx-auto grid h-full w-full max-w-[300px] grid-cols-4 items-center justify-items-center px-5">
                 <MobileNavBarButton
                     activeOnSubpath
                     to="analytics"
@@ -63,7 +62,7 @@ export function MobileNavBar() {
                     <LucideIcon.Users strokeWidth={ICON_STROKE_WIDTH} />
                     <span className="sr-only">Members</span>
                 </MobileNavBarButton>
-                <SidebarTrigger className="rounded-full px-8 h-9 hover:bg-transparent">
+                <SidebarTrigger className="h-9 rounded-full px-8 hover:bg-transparent">
                     <LucideIcon.Ellipsis strokeWidth={ICON_STROKE_WIDTH} />
                     <span className="sr-only">Toggle Sidebar</span>
                 </SidebarTrigger>

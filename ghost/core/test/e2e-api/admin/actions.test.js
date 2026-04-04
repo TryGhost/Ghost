@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
@@ -22,7 +22,7 @@ describe('Actions API', function () {
     it('Can request actions for resource', async function () {
         let postUpdatedAt;
 
-        const clock = sinon.useFakeTimers();
+        const clock = sinon.useFakeTimers(Date.now());
 
         const res = await request
             .post(localUtils.API.getApiQuery('posts/'))
@@ -49,16 +49,16 @@ describe('Actions API', function () {
         localUtils.API.checkResponse(res2.body, 'actions');
         localUtils.API.checkResponse(res2.body.actions[0], 'action');
 
-        res2.body.actions.length.should.eql(1);
+        assert.equal(res2.body.actions.length, 1);
 
-        res2.body.actions[0].resource_type.should.eql('post');
-        res2.body.actions[0].actor_type.should.eql('user');
-        res2.body.actions[0].event.should.eql('added');
-        Object.keys(res2.body.actions[0].actor).length.should.eql(4);
-        res2.body.actions[0].actor.id.should.eql(testUtils.DataGenerator.Content.users[0].id);
-        res2.body.actions[0].actor.image.should.eql(testUtils.DataGenerator.Content.users[0].profile_image);
-        res2.body.actions[0].actor.name.should.eql(testUtils.DataGenerator.Content.users[0].name);
-        res2.body.actions[0].actor.slug.should.eql(testUtils.DataGenerator.Content.users[0].slug);
+        assert.equal(res2.body.actions[0].resource_type, 'post');
+        assert.equal(res2.body.actions[0].actor_type, 'user');
+        assert.equal(res2.body.actions[0].event, 'added');
+        assert.equal(Object.keys(res2.body.actions[0].actor).length, 4);
+        assert.equal(res2.body.actions[0].actor.id, testUtils.DataGenerator.Content.users[0].id);
+        assert.equal(res2.body.actions[0].actor.image, testUtils.DataGenerator.Content.users[0].profile_image);
+        assert.equal(res2.body.actions[0].actor.name, testUtils.DataGenerator.Content.users[0].name);
+        assert.equal(res2.body.actions[0].actor.slug, testUtils.DataGenerator.Content.users[0].slug);
 
         clock.tick(1000);
 
@@ -87,16 +87,16 @@ describe('Actions API', function () {
         localUtils.API.checkResponse(res4.body, 'actions');
         localUtils.API.checkResponse(res4.body.actions[0], 'action');
 
-        res4.body.actions.length.should.eql(2);
+        assert.equal(res4.body.actions.length, 2);
 
-        res4.body.actions[0].resource_type.should.eql('post');
-        res4.body.actions[0].actor_type.should.eql('user');
-        res4.body.actions[0].event.should.eql('edited');
-        Object.keys(res4.body.actions[0].actor).length.should.eql(4);
-        res4.body.actions[0].actor.id.should.eql(testUtils.DataGenerator.Content.users[0].id);
-        res4.body.actions[0].actor.image.should.eql(testUtils.DataGenerator.Content.users[0].profile_image);
-        res4.body.actions[0].actor.name.should.eql(testUtils.DataGenerator.Content.users[0].name);
-        res4.body.actions[0].actor.slug.should.eql(testUtils.DataGenerator.Content.users[0].slug);
+        assert.equal(res4.body.actions[0].resource_type, 'post');
+        assert.equal(res4.body.actions[0].actor_type, 'user');
+        assert.equal(res4.body.actions[0].event, 'edited');
+        assert.equal(Object.keys(res4.body.actions[0].actor).length, 4);
+        assert.equal(res4.body.actions[0].actor.id, testUtils.DataGenerator.Content.users[0].id);
+        assert.equal(res4.body.actions[0].actor.image, testUtils.DataGenerator.Content.users[0].profile_image);
+        assert.equal(res4.body.actions[0].actor.name, testUtils.DataGenerator.Content.users[0].name);
+        assert.equal(res4.body.actions[0].actor.slug, testUtils.DataGenerator.Content.users[0].slug);
 
         clock.tick(1000);
 
@@ -125,15 +125,15 @@ describe('Actions API', function () {
         localUtils.API.checkResponse(res5.body, 'actions');
         localUtils.API.checkResponse(res5.body.actions[0], 'action');
 
-        res5.body.actions.length.should.eql(3);
+        assert.equal(res5.body.actions.length, 3);
 
-        res5.body.actions[0].resource_type.should.eql('post');
-        res5.body.actions[0].actor_type.should.eql('integration');
-        res5.body.actions[0].event.should.eql('edited');
-        Object.keys(res5.body.actions[0].actor).length.should.eql(4);
-        res5.body.actions[0].actor.id.should.eql(testUtils.DataGenerator.Content.integrations[0].id);
-        should.equal(res5.body.actions[0].actor.image, null);
-        res5.body.actions[0].actor.name.should.eql(testUtils.DataGenerator.Content.integrations[0].name);
-        res5.body.actions[0].actor.slug.should.eql(testUtils.DataGenerator.Content.integrations[0].slug);
+        assert.equal(res5.body.actions[0].resource_type, 'post');
+        assert.equal(res5.body.actions[0].actor_type, 'integration');
+        assert.equal(res5.body.actions[0].event, 'edited');
+        assert.equal(Object.keys(res5.body.actions[0].actor).length, 4);
+        assert.equal(res5.body.actions[0].actor.id, testUtils.DataGenerator.Content.integrations[0].id);
+        assert.equal(res5.body.actions[0].actor.image, null);
+        assert.equal(res5.body.actions[0].actor.name, testUtils.DataGenerator.Content.integrations[0].name);
+        assert.equal(res5.body.actions[0].actor.slug, testUtils.DataGenerator.Content.integrations[0].slug);
     });
 });

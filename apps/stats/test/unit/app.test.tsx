@@ -3,7 +3,7 @@ import React from 'react';
 import '@testing-library/jest-dom';
 import {render, screen} from '@testing-library/react';
 import {TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
-import {ShadeAppProps} from '@tryghost/shade';
+import {ShadeAppProps} from '@tryghost/shade/app';
 import App from '@src/app';
 import {vi} from 'vitest';
 
@@ -18,15 +18,12 @@ vi.mock('@tryghost/admin-x-framework', () => ({
     FrameworkProvider: ({children}: {children: React.ReactNode}) => <div data-testid="framework-provider">{children}</div>,
     RouterProvider: ({children}: {children: React.ReactNode}) => <div data-testid="router-provider">{children}</div>,
     AppProvider: ({children}: {children: React.ReactNode}) => <div data-testid="app-provider">{children}</div>,
-    Outlet: () => <div data-testid="outlet">Outlet content</div>
+    Outlet: () => <div data-testid="outlet">Outlet content</div>,
+    lazyComponent: (fn: () => Promise<{default: React.ComponentType}>) => fn().then(({default: Component}) => ({Component}))
 }));
 
-vi.mock('@tryghost/shade', () => ({
-    ShadeApp: ({children}: {children: React.ReactNode}) => <div data-testid="shade-app">{children}</div>,
-    formatNumber: (value: number) => `${value}`,
-    formatDisplayDate: (date: string) => date,
-    formatPercentage: (value: number) => `${Math.round(value * 100)}%`,
-    formatDuration: (seconds: number) => `${seconds}s`
+vi.mock('@tryghost/shade/app', () => ({
+    ShadeApp: ({children}: {children: React.ReactNode}) => <div data-testid="shade-app">{children}</div>
 }));
 
 vi.mock('../../src/providers/global-data-provider', () => ({

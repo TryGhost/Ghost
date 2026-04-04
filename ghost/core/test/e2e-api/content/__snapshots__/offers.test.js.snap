@@ -14,6 +14,7 @@ Object {
       "duration_in_months": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Black Friday",
+      "redemption_type": "signup",
       "status": "active",
       "tier": Object {
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -29,7 +30,7 @@ exports[`Offers Content API Can read offer details from id 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "public, max-age=0",
-  "content-length": "331",
+  "content-length": "358",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

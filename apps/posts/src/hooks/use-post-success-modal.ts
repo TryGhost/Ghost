@@ -163,7 +163,7 @@ export const usePostSuccessModal = () => {
                     // Clean up localStorage
                     localStorage.removeItem('ghost-last-published-post');
                 }
-            } catch (error) {
+            } catch {
                 // Ignore localStorage errors
             }
         };

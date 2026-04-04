@@ -1,14 +1,12 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const validate = require('../../../../../core/server/services/route-settings/validate');
-
-should.equal(true, true);
 
 describe('UNIT: services/settings/validate', function () {
     it('no type definitions / empty yaml file', function () {
         const object = validate({});
 
-        object.should.eql({collections: {}, routes: {}, taxonomies: {}});
+        assert.deepEqual(object, {collections: {}, routes: {}, taxonomies: {}});
     });
 
     it('throws error when using :\w+ notiation in collection', function () {
@@ -24,7 +22,7 @@ describe('UNIT: services/settings/validate', function () {
                 }
             });
         } catch (err) {
-            (err instanceof errors.ValidationError).should.be.true();
+            assert.equal((err instanceof errors.ValidationError), true);
             return;
         }
 
@@ -39,7 +37,7 @@ describe('UNIT: services/settings/validate', function () {
                 }
             });
         } catch (err) {
-            (err instanceof errors.ValidationError).should.be.true();
+            assert.equal((err instanceof errors.ValidationError), true);
             return;
         }
 
@@ -54,7 +52,7 @@ describe('UNIT: services/settings/validate', function () {
                 }
             });
         } catch (err) {
-            (err instanceof errors.ValidationError).should.be.true();
+            assert.equal((err instanceof errors.ValidationError), true);
             return;
         }
 
@@ -69,7 +67,7 @@ describe('UNIT: services/settings/validate', function () {
                 }
             });
         } catch (err) {
-            (err instanceof errors.ValidationError).should.be.true();
+            assert.equal((err instanceof errors.ValidationError), true);
             return;
         }
 
@@ -84,7 +82,7 @@ describe('UNIT: services/settings/validate', function () {
                 }
             });
         } catch (err) {
-            (err instanceof errors.ValidationError).should.be.true();
+            assert.equal((err instanceof errors.ValidationError), true);
             return;
         }
 
@@ -99,7 +97,7 @@ describe('UNIT: services/settings/validate', function () {
                 }
             });
         } catch (err) {
-            (err instanceof errors.ValidationError).should.be.true();
+            assert.equal((err instanceof errors.ValidationError), true);
             return;
         }
 
@@ -114,7 +112,7 @@ describe('UNIT: services/settings/validate', function () {
                 }
             });
         } catch (err) {
-            (err instanceof errors.ValidationError).should.be.true();
+            assert.equal((err instanceof errors.ValidationError), true);
             return;
         }
 
@@ -131,7 +129,7 @@ describe('UNIT: services/settings/validate', function () {
                 }
             });
         } catch (err) {
-            (err instanceof errors.ValidationError).should.be.true();
+            assert.equal((err instanceof errors.ValidationError), true);
             return;
         }
 
@@ -148,7 +146,7 @@ describe('UNIT: services/settings/validate', function () {
                 }
             });
         } catch (err) {
-            (err instanceof errors.ValidationError).should.be.true();
+            assert.equal((err instanceof errors.ValidationError), true);
             return;
         }
 
@@ -165,7 +163,7 @@ describe('UNIT: services/settings/validate', function () {
                 }
             });
         } catch (err) {
-            (err instanceof errors.ValidationError).should.be.true();
+            assert.equal((err instanceof errors.ValidationError), true);
             return;
         }
 
@@ -182,7 +180,7 @@ describe('UNIT: services/settings/validate', function () {
                 }
             });
         } catch (err) {
-            (err instanceof errors.ValidationError).should.be.true();
+            assert.equal((err instanceof errors.ValidationError), true);
             return;
         }
 
@@ -199,7 +197,7 @@ describe('UNIT: services/settings/validate', function () {
                 }
             });
         } catch (err) {
-            (err instanceof errors.ValidationError).should.be.true();
+            assert.equal((err instanceof errors.ValidationError), true);
             return;
         }
 
@@ -240,7 +238,7 @@ describe('UNIT: services/settings/validate', function () {
             }
         });
 
-        object.should.eql({
+        assert.deepEqual(object, {
             routes: {},
             taxonomies: {
                 tag: '/tags/:slug/',
@@ -276,7 +274,7 @@ describe('UNIT: services/settings/validate', function () {
                 }
             });
 
-            object.should.eql({
+            assert.deepEqual(object, {
                 taxonomies: {},
                 routes: {
                     '/about/': {
@@ -311,7 +309,7 @@ describe('UNIT: services/settings/validate', function () {
                 }
             });
 
-            object.should.eql({
+            assert.deepEqual(object, {
                 taxonomies: {},
                 routes: {
                     '/about/': {
@@ -374,7 +372,7 @@ describe('UNIT: services/settings/validate', function () {
                 }
             });
 
-            object.should.eql({
+            assert.deepEqual(object, {
                 taxonomies: {},
                 routes: {
                     '/food/': {
@@ -590,7 +588,7 @@ describe('UNIT: services/settings/validate', function () {
                 }
             });
 
-            object.should.eql({
+            assert.deepEqual(object, {
                 taxonomies: {},
                 routes: {
                     '/food/': {
@@ -682,7 +680,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof errors.ValidationError).should.be.true();
+                assert.equal((err instanceof errors.ValidationError), true);
                 return;
             }
 
@@ -702,7 +700,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof errors.ValidationError).should.be.true();
+                assert.equal((err instanceof errors.ValidationError), true);
                 return;
             }
 
@@ -722,7 +720,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof errors.ValidationError).should.be.true();
+                assert.equal((err instanceof errors.ValidationError), true);
                 return;
             }
 
@@ -744,7 +742,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof errors.ValidationError).should.be.true();
+                assert.equal((err instanceof errors.ValidationError), true);
                 return;
             }
 
@@ -764,7 +762,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof errors.ValidationError).should.be.true();
+                assert.equal((err instanceof errors.ValidationError), true);
                 return;
             }
 

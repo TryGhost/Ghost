@@ -1,11 +1,7 @@
 import React from "react"
 
-import {
-    LucideIcon,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarMenu
-} from "@tryghost/shade"
+import {SidebarGroup, SidebarGroupContent, SidebarMenu} from "@tryghost/shade/components"
+import {LucideIcon} from "@tryghost/shade/utils"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { canAccessSettings } from "@tryghost/admin-x-framework/api/users";
 import { NavMenuItem } from "./nav-menu-item";

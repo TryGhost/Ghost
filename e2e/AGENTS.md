@@ -11,8 +11,23 @@ E2E testing guidance for AI assistants (Claude, Codex, etc.) working with Ghost 
 4. **Never use CSS/XPath selectors** - only semantic locators or data-testid
 5. **Prefer less comments and giving things clear names**
 
-## Essential Commands
+## Running E2E Tests
+
+**`yarn dev` must be running before you run E2E tests.** The E2E test runner auto-detects
+whether the admin dev server is reachable at `http://127.0.0.1:5174`. If it is, tests run
+in **dev mode** (fast, no pre-built Docker image required). If not, tests fall back to
+**build mode** which requires a `ghost-e2e:local` Docker image that is only built in CI.
+
+**If you see the error `Build image not found: ghost-e2e:local`, it means `yarn dev` is
+not running.** Start it first, wait for the admin dev server to be ready, then re-run tests.
+
 ```bash
+# Terminal 1 (or background): Start dev environment from the repo root
+yarn dev
+
+# Wait for the admin dev server to be reachable (http://127.0.0.1:5174)
+
+# Terminal 2: Run e2e tests from the e2e/ directory
 yarn test                                       # Run all tests
 yarn test tests/path/to/test.ts                 # Run specific test
 yarn lint                                       # Required after writing tests
@@ -97,15 +112,21 @@ const post = await postFactory.create({userId: user.id});
 ## Best Practices
 
 ### DO ✅
-- Each test gets fresh Ghost instance (automatic isolation)
+- Use `usePerTestIsolation()` from `@/helpers/playwright/isolation` if a file needs per-test isolation
+- Treat `config` and `labs` as environment-identity inputs: changing them should be an intentional part of test setup
+- Use `resetEnvironment()` only in `beforeEach` hooks when you need a forced recycle inside per-file mode
+- Keep `stripeEnabled` tests in per-test mode; the fixture forces this automatically
 - Use factories for all test data
 - Use Playwright's auto-waiting
 - Run tests multiple times to ensure stability
 - Use `test.only()` for debugging single tests
 
 ### DON'T ❌
+- Use `test.describe.parallel(...)` or `test.describe.serial(...)` in e2e tests
+- Use nested `test.describe.configure({mode: ...})` (mode toggles are root-level only)
+- Call `resetEnvironment()` after resolving `baseURL`, `page`, `pageWithAuthenticatedUser`, or `ghostAccountOwner`
 - Hard-coded waits (`waitForTimeout`)
-- networkidle in waits** (`networkidle`) 
+- networkidle in waits (`networkidle`)
 - Test dependencies (Test B needs Test A)
 - Direct database manipulation
 - Multiple scenarios in one test

@@ -32,30 +32,45 @@ const features: Feature[] = [{
     description: 'Enables the new Tags UI',
     flag: 'tagsX'
 }, {
-    title: 'UTM tracking',
-    description: 'Enables UTM tracking for web traffic and member attribution',
-    flag: 'utmTracking'
-}, {
     title: 'Email Unique ID',
     description: 'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid'
 }, {
-    title: 'Welcome Emails',
-    description: 'Enables features related to sending welcome emails to new members',
-    flag: 'welcomeEmails'
-}, {
-    title: 'New Admin Experience',
-    description: 'Preview the next version of the admin interface',
-    flag: 'adminForward'
-}, {
-    title: 'Domain Warmup',
-    description: 'Enable custom sending domain warmup for gradual email volume increases',
-    flag: 'domainWarmup'
-},
-{
     title: 'Updated theme translation (beta)',
     description: 'Enable theme translation using i18next instead of the old translation package.',
     flag: 'themeTranslation'
+}, {
+    title: 'IndexNow',
+    description: 'Automatically notify search engines when content is published or updated for faster indexing.',
+    flag: 'indexnow'
+}, {
+    title: 'Featurebase Feedback',
+    description: 'Display a Feedback menu item in the admin sidebar. Requires the new admin experience.',
+    flag: 'featurebaseFeedback'
+}, {
+    title: 'Members Forward',
+    description: 'Use the new React-based members list instead of the Ember implementation',
+    flag: 'membersForward'
+}, {
+    title: 'Drip Sequences',
+    description: 'Enable welcome email drip sequences',
+    flag: 'dripSequences'
+}, {
+    title: 'Welcome Emails Design Customization',
+    description: 'Enable design customization options for welcome emails',
+    flag: 'welcomeEmailsDesignCustomization'
+}, {
+    title: 'Picture Element',
+    description: 'Use the HTML picture element to serve modern image formats (AVIF, WebP) with automatic fallbacks',
+    flag: 'pictureImageFormats'
+}, {
+    title: 'Smarter Counts',
+    description: 'Use optimized COUNT queries for API pagination when safe',
+    flag: 'smarterCounts'
+}, {
+    title: 'Gift Subscriptions',
+    description: 'Allow site visitors to purchase gift subscriptions for others',
+    flag: 'giftSubscriptions'
 }];
 
 const AlphaFeatures: React.FC = () => {
@@ -89,6 +104,7 @@ const AlphaFeatures: React.FC = () => {
         <List titleSeparator={false}>
             {allowedFeatures.map(feature => (
                 <LabItem
+                    key={feature.flag}
                     action={<FeatureToggle flag={feature.flag} label={feature.title} />}
                     detail={feature.description}
                     title={feature.title} />

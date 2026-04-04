@@ -104,6 +104,10 @@ export default class ParseMemberEventHelper extends Helper {
             icon = 'sent-email';
         }
 
+        if (event.type === 'automated_email_sent_event') {
+            icon = 'sent-email';
+        }
+
         if (event.type === 'email_delivered_event') {
             icon = 'received-email';
         }
@@ -195,6 +199,12 @@ export default class ParseMemberEventHelper extends Helper {
 
         if (event.type === 'email_sent_event') {
             return 'sent email';
+        }
+
+        if (event.type === 'automated_email_sent_event') {
+            const slug = event.data.automatedEmail?.slug || '';
+            const emailType = slug.includes('paid') ? 'Paid' : 'Free';
+            return `received welcome email (${emailType})`;
         }
 
         if (event.type === 'email_delivered_event') {
@@ -364,20 +374,14 @@ export default class ParseMemberEventHelper extends Helper {
      */
     getRoute(event) {
         if (['click_event', 'feedback_event'].includes(event.type)) {
-            if (event.data.post) {
-                return {
-                    name: 'posts-x',
-                    model: event.data.post.id
-                };
+            if (event.data.post?.id) {
+                return `#/posts/analytics/${event.data.post.id}`;
             }
         }
 
         if (['signup_event', 'subscription_event'].includes(event.type)) {
-            if (event.data.attribution_type === 'post') {
-                return {
-                    name: 'posts-x',
-                    model: event.data.attribution_id
-                };
+            if (event.data.attribution_type === 'post' && event.data.attribution_id) {
+                return `#/posts/analytics/${event.data.attribution_id}`;
             }
         }
         return;

@@ -3,7 +3,9 @@ import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardMoreButton, KpiCardValue} 
 import PostAnalyticsContent from '../components/post-analytics-content';
 import PostAnalyticsHeader from '../components/post-analytics-header';
 import React from 'react';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Skeleton, SkeletonTable, formatNumber} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, Separator, Skeleton, SkeletonTable} from '@tryghost/shade/components';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
+import {buildMembersUrl} from '../../members/member-route';
 import {useAppContext} from '@src/providers/posts-app-context';
 import {useGlobalData} from '@src/providers/post-analytics-context';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -13,6 +15,7 @@ export const centsToDollars = (value : number) => {
     return Math.round(value / 100);
 };
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface postAnalyticsProps {}
 
 const Growth: React.FC<postAnalyticsProps> = () => {
@@ -21,6 +24,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
     const {stats: postReferrers, totals, isLoading, currencySymbol} = usePostReferrers(postId || '');
     const {appSettings} = useAppContext();
     const navigate = useNavigate();
+    const navigateToMembers = (filter: string) => navigate(buildMembersUrl({filter}), {crossApp: true});
 
     // Get site URL and icon from global data
     const siteUrl = globalData?.url as string | undefined;
@@ -72,14 +76,12 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                 <div className={`flex flex-col md:grid md:items-stretch ${appSettings?.paidMembersEnabled ? 'md:grid-cols-3' : 'md:grid-cols-1'}`}>
                                     <KpiCard className='grow'>
                                         <KpiCardMoreButton onClick={() => {
-                                            const filterParam = encodeURIComponent(`signup:'${postId}'+conversion:-'${postId}'`);
-                                            navigate(`/members?filterParam=${filterParam}`, {crossApp: true});
+                                            navigateToMembers(`signup:'${postId}'+conversion:-'${postId}'`);
                                         }}>
                                             View members &rarr;
                                         </KpiCardMoreButton>
                                         <KpiCardLabel onClick={() => {
-                                            const filterParam = encodeURIComponent(`signup:'${postId}'+conversion:-'${postId}'`);
-                                            navigate(`/members?filterParam=${filterParam}`, {crossApp: true});
+                                            navigateToMembers(`signup:'${postId}'+conversion:-'${postId}'`);
                                         }}>
                                             <LucideIcon.User strokeWidth={1.5} />
                                             Free members
@@ -92,14 +94,12 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                     <>
                                         <KpiCard className='grow'>
                                             <KpiCardMoreButton onClick={() => {
-                                                const filterParam = encodeURIComponent(`conversion:'${postId}'`);
-                                                navigate(`/members?filterParam=${filterParam}`, {crossApp: true});
+                                                navigateToMembers(`conversion:'${postId}'`);
                                             }}>
                                                 View members &rarr;
                                             </KpiCardMoreButton>
                                             <KpiCardLabel onClick={() => {
-                                                const filterParam = encodeURIComponent(`conversion:'${postId}'`);
-                                                navigate(`/members?filterParam=${filterParam}`, {crossApp: true});
+                                                navigateToMembers(`conversion:'${postId}'`);
                                             }}>
                                                 <LucideIcon.WalletCards strokeWidth={1.5} />
                                                 Paid members

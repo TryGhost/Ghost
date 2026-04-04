@@ -1,4 +1,5 @@
 import {getDateString} from './date-time';
+import {t} from './i18n';
 
 export function removePortalLinkFromUrl() {
     const [path] = window.location.hash.substr(1).split('?');
@@ -88,10 +89,6 @@ export function getNewsletterFromUuid({site, uuid}) {
 
 export function hasNewsletterSendingEnabled({site}) {
     return site?.editor_default_email_recipients !== 'disabled';
-}
-
-export function allowCompMemberUpgrade({member}) {
-    return member?.subscriptions?.[0]?.tier?.expiry_at !== undefined;
 }
 
 export function getCompExpiry({member}) {
@@ -253,6 +250,10 @@ export function hasAvailablePrices({site = {}, pageQuery = ''}) {
 
 export function hasRecommendations({site}) {
     return site?.recommendations_enabled === true;
+}
+
+export function hasGiftSubscriptions({site}) {
+    return site?.labs?.giftSubscriptions === true;
 }
 
 export function isSigninAllowed({site}) {
@@ -538,10 +539,17 @@ export function getSubFreeTrialDaysLeft({sub} = {}) {
 }
 
 export function subscriptionHasFreeTrial({sub} = {}) {
-    if (sub?.trial_end_at && !isInThePast(new Date(sub?.trial_end_at))) {
-        return true;
-    }
-    return false;
+    const isTrial = !sub?.offer || sub?.offer?.type === 'trial';
+    const isTrialActive = isTrial && sub?.trial_end_at && !isInThePast(new Date(sub?.trial_end_at));
+
+    return isTrialActive;
+}
+
+export function isFreeMonthsOffer(offer) {
+    return offer?.type === 'percent'
+        && offer?.amount === 100
+        && offer?.duration === 'repeating'
+        && offer?.redemption_type === 'retention';
 }
 
 export function isInThePast(date) {
@@ -756,6 +764,23 @@ export const formatNumber = (amount) => {
     return amount.toLocaleString();
 };
 
+export const formatPrice = (amount, locale) => {
+    if (amount === undefined || amount === null) {
+        return '';
+    }
+
+    const normalizedAmount = Number(amount);
+    if (Number.isNaN(normalizedAmount)) {
+        return '';
+    }
+
+    const options = Number.isInteger(normalizedAmount)
+        ? undefined
+        : {minimumFractionDigits: 2, maximumFractionDigits: 2};
+
+    return normalizedAmount.toLocaleString(locale, options);
+};
+
 export const createPopupNotification = ({type, status, autoHide, duration = 2600, closeable, state, message, meta = {}}) => {
     let count = 0;
     if (state && state.popupNotification) {
@@ -793,8 +818,15 @@ export function getPriceIdFromPageQuery({site, pageQuery}) {
 }
 
 export const getOfferOffAmount = ({offer}) => {
-    if (offer.type === 'fixed') {
-        return `${getCurrencySymbol(offer.currency)}${offer.amount / 100}`;
+    if (isFreeMonthsOffer(offer)) {
+        const months = offer.duration_in_months;
+        if (months === 1) {
+            return t('1 month');
+        }
+
+        return t('{months} months', {months});
+    } else if (offer.type === 'fixed') {
+        return `${getCurrencySymbol(offer.currency)}${formatPrice(offer.amount / 100)}`;
     } else if (offer.type === 'percent') {
         return `${offer.amount}%`;
     }
@@ -802,25 +834,37 @@ export const getOfferOffAmount = ({offer}) => {
 };
 
 export const getUpdatedOfferPrice = ({offer, price, useFormatted = false}) => {
-    const originalAmount = price.amount;
-    let updatedAmount;
+    const originalAmountInCents = price.amount;
+    let updatedAmountInCents = originalAmountInCents;
+
     if (offer.type === 'fixed' && isSameCurrency(offer.currency, price.currency)) {
-        updatedAmount = ((originalAmount - offer.amount)) / 100;
-        updatedAmount = updatedAmount > 0 ? updatedAmount : 0;
+        updatedAmountInCents = Math.max(0, (originalAmountInCents - offer.amount));
     } else if (offer.type === 'percent') {
-        updatedAmount = (originalAmount - ((originalAmount * offer.amount) / 100)) / 100;
-    } else {
-        updatedAmount = originalAmount / 100;
+        const discountInCents = Math.round(originalAmountInCents * (offer.amount / 100));
+        updatedAmountInCents = Math.max(0, (originalAmountInCents - discountInCents));
     }
+
+    const updatedAmount = updatedAmountInCents / 100;
+
     if (useFormatted) {
         return Intl.NumberFormat('en', {currency: price?.currency, style: 'currency'}).format(updatedAmount);
     }
+
     return updatedAmount;
+};
+
+export const isRetentionOffer = ({offer}) => {
+    return offer.redemption_type === 'retention';
 };
 
 export const isActiveOffer = ({site, offer}) => {
     if (offer?.status !== 'active') {
         return false;
+    }
+
+    // Null-tier offers are only valid for retention
+    if (!offer.tier) {
+        return isRetentionOffer({offer});
     }
 
     // Check if the corresponding tier has been archived
@@ -907,9 +951,40 @@ export function getUrlHistory() {
         // Failed to access sessionStorage or something related to that.
         // Log a warning, as this shouldn't happen on a modern browser.
 
-        /* eslint-disable no-console */
         console.warn(`[Portal] Failed to load member URL history:`, error);
     }
+}
+
+export function addMonths(date, numberOfMonths = 1) {
+    const originalDate = new Date(date);
+
+    if (isNaN(originalDate.getTime())) {
+        return null;
+    }
+
+    if (!Number.isInteger(numberOfMonths) || numberOfMonths < 1) {
+        return originalDate;
+    }
+
+    const originalDay = originalDate.getUTCDate();
+    const originalHours = originalDate.getUTCHours();
+    const originalMinutes = originalDate.getUTCMinutes();
+    const originalSeconds = originalDate.getUTCSeconds();
+    const originalMilliseconds = originalDate.getUTCMilliseconds();
+    let targetMonth = originalDate.getUTCMonth() + numberOfMonths;
+    let targetYear = originalDate.getUTCFullYear() + Math.floor(targetMonth / 12);
+    targetMonth = targetMonth % 12;
+    const daysInTargetMonth = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate();
+
+    return new Date(Date.UTC(
+        targetYear,
+        targetMonth,
+        Math.min(originalDay, daysInTargetMonth),
+        originalHours,
+        originalMinutes,
+        originalSeconds,
+        originalMilliseconds
+    ));
 }
 
 // Check if member is a recent member, i.e. created in last 24 hours
@@ -924,4 +999,40 @@ export function isRecentMember({member}) {
     const diffHours = Math.round(diff / (1000 * 60 * 60));
 
     return diffHours < 24;
+}
+
+export function getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval}) {
+    if (selectedInterval === 'month' && portalPlans.includes('monthly')) {
+        return 'month';
+    }
+
+    if (selectedInterval === 'year' && portalPlans.includes('yearly')) {
+        return 'year';
+    }
+
+    if (portalDefaultPlan) {
+        if (portalDefaultPlan === 'monthly' && portalPlans.includes('monthly')) {
+            return 'month';
+        }
+    }
+
+    if (portalPlans.includes('yearly')) {
+        return 'year';
+    }
+
+    if (portalPlans.includes('monthly')) {
+        return 'month';
+    }
+
+    return undefined;
+}
+
+// Translate cadence to human readable string
+export function translateCadence(cadence) {
+    if (cadence === 'month') {
+        return t('month');
+    } else if (cadence === 'year') {
+        return t('year');
+    }
+    return cadence;
 }

@@ -8,7 +8,7 @@ const errors = require('@tryghost/errors');
 
 const validate = require('./validate');
 const list = require('./list');
-const ThemeStorage = require('./ThemeStorage');
+const ThemeStorage = require('./theme-storage');
 const themeLoader = require('./loader');
 const activator = require('./activation-bridge');
 const toJSON = require('./to-json');

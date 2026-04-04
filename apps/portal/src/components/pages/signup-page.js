@@ -10,6 +10,7 @@ import {ValidateInputForm} from '../../utils/form';
 import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 import {interceptAnchorClicks} from '../../utils/links';
+import {sanitizeHtml} from '../../utils/sanitize-html';
 import {t} from '../../utils/i18n';
 
 export const SignupPageStyles = `
@@ -93,7 +94,7 @@ html[dir="rtl"] .gh-portal-back-sitetitle {
     justify-content: center;
     color: var(--grey4);
     font-size: 1.5rem;
-    margin: 16px 0 0;
+    margin: 4px 0 0;
 }
 
 .gh-portal-signup-message,
@@ -136,6 +137,17 @@ footer.gh-portal-signin-footer {
     position: relative;
     padding-top: 24px;
     height: unset;
+    gap: 12px;
+}
+
+footer.gh-portal-signin-footer.gh-button-row {
+    flex-direction: row-reverse;
+}
+
+@media (max-width: 480px) {
+    footer.gh-portal-signin-footer.gh-button-row {
+        flex-direction: column;
+    }
 }
 
 .gh-portal-content.signup,
@@ -557,7 +569,7 @@ class SignupPage extends React.Component {
 
         const termsText = (
             <div className="gh-portal-signup-terms-content"
-                dangerouslySetInnerHTML={{__html: site.portal_signup_terms_html}}
+                dangerouslySetInnerHTML={{__html: sanitizeHtml(site.portal_signup_terms_html)}}
             ></div>
         );
 

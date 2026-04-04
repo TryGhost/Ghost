@@ -1,8 +1,10 @@
 import React from 'react';
 import ActionButton from '../common/action-button';
 import CloseButton from '../common/close-button';
+import InboxLinkButton from '../common/inbox-link-button';
 import AppContext from '../../app-context';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
+import {isIos} from '../../utils/is-ios';
 import {t} from '../../utils/i18n';
 
 export const MagicLinkStyles = `
@@ -95,8 +97,8 @@ export default class MagicLinkPage extends React.Component {
     getDescriptionConfig(submittedEmailOrInbox) {
         return {
             signin: {
-                withOTC: t('An email has been sent to {submittedEmailOrInbox}. Click the link inside or enter your code below.', {submittedEmailOrInbox}),
-                withoutOTC: t('A login link has been sent to your inbox. If it doesn\'t arrive in 3 minutes, be sure to check your spam folder.')
+                withOTC: t('If you have an account, an email has been sent to {submittedEmailOrInbox}. Click the link inside or enter your code below.', {submittedEmailOrInbox}),
+                withoutOTC: t('If you have an account, a login link has been sent to your inbox. If it doesn\'t arrive in 3 minutes, be sure to check your spam folder.')
             },
             signup: t('To complete signup, click the confirmation link in your inbox. If it doesn\'t arrive within 3 minutes, check your spam folder!')
         };
@@ -161,15 +163,19 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderCloseButton() {
-        const label = t('Close');
-        return (
-            <ActionButton
-                style={{width: '100%'}}
-                onClick={e => this.handleClose(e)}
-                brandColor={this.context.brandColor}
-                label={label}
-            />
-        );
+        const {inboxLinks} = this.context;
+        if (inboxLinks && !isIos(navigator)) {
+            return <InboxLinkButton inboxLinks={inboxLinks} />;
+        } else {
+            return (
+                <ActionButton
+                    style={{width: '100%'}}
+                    onClick={e => this.handleClose(e)}
+                    brandColor={this.context.brandColor}
+                    label={t('Close')}
+                />
+            );
+        }
     }
 
     handleSubmit(e) {
@@ -227,7 +233,7 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderOTCForm() {
-        const {action, actionErrorMessage, otcRef} = this.context;
+        const {action, actionErrorMessage, otcRef, inboxLinks} = this.context;
         const errors = this.state.errors || {};
 
         if (!otcRef) {
@@ -270,16 +276,20 @@ export default class MagicLinkPage extends React.Component {
                     }
                 </section>
 
-                <footer className='gh-portal-signin-footer'>
-                    <ActionButton
-                        style={{width: '100%'}}
-                        onClick={e => this.handleSubmit(e)}
-                        brandColor={this.context.brandColor}
-                        label={isRunning ? t('Verifying...') : t('Continue')}
-                        isRunning={isRunning}
-                        retry={isError}
-                        disabled={isRunning}
-                    />
+                <footer className='gh-portal-signin-footer gh-button-row'>
+                    {inboxLinks && !isIos(navigator) && !this.state.otc ? (
+                        <InboxLinkButton inboxLinks={inboxLinks} />
+                    ) : (
+                        <ActionButton
+                            style={{width: '100%'}}
+                            onClick={e => this.handleSubmit(e)}
+                            brandColor={this.context.brandColor}
+                            label={isRunning ? t('Verifying...') : t('Continue')}
+                            isRunning={isRunning}
+                            retry={isError}
+                            disabled={isRunning}
+                        />
+                    )}
                 </footer>
             </form>
         );

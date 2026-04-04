@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 const getKeywords = require('../../../../core/frontend/meta/keywords');
@@ -22,7 +22,7 @@ describe('getKeywords', function () {
                 ]
             }
         });
-        should.deepEqual(keywords, ['one', 'two', 'three']);
+        assert.deepEqual(keywords, ['one', 'two', 'three']);
     });
 
     it('should only return visible tags', function () {
@@ -36,7 +36,7 @@ describe('getKeywords', function () {
                 ]
             }
         });
-        should.deepEqual(keywords, ['one', 'three']);
+        assert.deepEqual(keywords, ['one', 'three']);
     });
 
     it('should return null if post has tags is empty array', function () {
@@ -45,20 +45,20 @@ describe('getKeywords', function () {
                 tags: []
             }
         });
-        should.equal(keywords, null);
+        assert.equal(keywords, null);
     });
 
     it('should return null if post has no tags', function () {
         const keywords = getKeywords({
             post: {}
         });
-        should.equal(keywords, null);
+        assert.equal(keywords, null);
     });
 
     it('should return null if not a post', function () {
         const keywords = getKeywords({
             author: {}
         });
-        should.equal(keywords, null);
+        assert.equal(keywords, null);
     });
 });

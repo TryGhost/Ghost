@@ -1,3 +1,5 @@
+import {AppSettings} from '@tryghost/admin-x-framework';
+
 /**
  * Generate a frontend URL from an attribution path and site URL
  * @param attributionUrl - The path from attribution data (e.g., '/', '/tag/slug/', '/author/slug/')
@@ -12,13 +14,13 @@ export function getFrontendUrl(attributionUrl: string, siteUrl: string): string 
     try {
         const baseUrl = new URL(siteUrl);
         const subdir = baseUrl.pathname.endsWith('/') ? baseUrl.pathname : `${baseUrl.pathname}/`;
-        
+
         // Remove leading slash from attribution URL to avoid double slashes
         const cleanPath = attributionUrl.replace(/^\//, '');
         const fullPath = `${subdir}${cleanPath}`;
 
         return `${baseUrl.origin}${fullPath}`;
-    } catch (error) {
+    } catch {
         // Silently handle URL construction errors
         return '';
     }
@@ -34,7 +36,7 @@ export function generateTitleFromPath(path: string): string {
     if (!path) {
         return 'Unknown';
     }
-    
+
     // Handle common Ghost paths
     if (path === '/') {
         return 'Homepage';
@@ -50,12 +52,12 @@ export function generateTitleFromPath(path: string): string {
     if (path.startsWith('/author/')) {
         const segments = path.split('/');
         return segments.length > 2 && segments[2] ? `author/${segments[2]}` : 'author/unknown';
-    }  
+    }
     if (path.startsWith('/authors/')) {
         const segments = path.split('/');
         return segments.length > 2 && segments[2] ? `author/${segments[2]}` : 'author/unknown';
     }
-    
+
     // For other paths, just return the path itself
     return path;
 }
@@ -103,7 +105,7 @@ export function getClickHandler(
             navigate(`/posts/analytics/${postId}`, {crossApp: true});
             return;
         }
-        
+
         // For all other cases (pages, system pages), open frontend URL in new tab
         if (attributionUrl && siteUrl) {
             const frontendUrl = getFrontendUrl(attributionUrl, siteUrl);
@@ -112,4 +114,24 @@ export function getClickHandler(
             }
         }
     };
-} 
+}
+
+type GetPostDestinationParams = {
+    postId?: string;
+    hasEmailData: boolean;
+    analytics?: Pick<AppSettings['analytics'], 'webAnalytics' | 'membersTrackSources'>;
+};
+
+export const getPostDestination = ({postId, hasEmailData, analytics}: GetPostDestinationParams) => {
+    if (!postId) {
+        return `/posts/analytics`;
+    }
+
+    const analyticsDisabled = !analytics?.webAnalytics && !analytics?.membersTrackSources;
+
+    if (analyticsDisabled && !hasEmailData) {
+        return `/editor/post/${postId}`;
+    }
+
+    return `/posts/analytics/${postId}`;
+};

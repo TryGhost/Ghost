@@ -4,7 +4,7 @@ import FollowButton from './follow-button';
 import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-card';
 import React from 'react';
 import {type Account} from '../../api/activitypub';
-import {Skeleton} from '@tryghost/shade';
+import {Skeleton} from '@tryghost/shade/components';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
@@ -50,7 +50,7 @@ export const SuggestedProfile: React.FC<SuggestedProfileProps & {
                             handle: profile.handle
                         }
                     } onClick={() => onOpenChange?.(false)} />
-                    <div className='flex grow flex-col break-anywhere'>
+                    <div className='break-anywhere flex grow flex-col'>
                         <span className='line-clamp-1 font-semibold text-black dark:text-white'>{!isLoading ? profile.name : <Skeleton className='w-full max-w-64' />}</span>
                         <span className='line-clamp-1 text-sm text-gray-700 dark:text-gray-600'>{!isLoading ? profile.handle : <Skeleton className='w-24' />}</span>
                     </div>

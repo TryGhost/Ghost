@@ -1,6 +1,7 @@
 import moment from 'moment';
 import {MemberStatusItem, MrrHistoryItem, useMemberCountHistory, useMrrHistory, useSubscriptionStats} from '@tryghost/admin-x-framework/api/stats';
-import {formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {formatNumber, formatPercentage} from '@tryghost/shade/utils';
+import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getSymbol} from '@tryghost/admin-x-framework';
 import {useMemo} from 'react';
 
@@ -294,6 +295,14 @@ export const useGrowthStats = (range: number) => {
                 if (mostRecentBeforeRange) {
                     result.unshift({
                         ...mostRecentBeforeRange,
+                        date: dateFromMoment.format('YYYY-MM-DD')
+                    });
+                } else if (result.length > 0) {
+                    // No data before range, use the earliest data point in the range
+                    // to fill in the start date (representing MRR at range start)
+                    const earliestInRange = [...result].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+                    result.unshift({
+                        ...earliestInRange,
                         date: dateFromMoment.format('YYYY-MM-DD')
                     });
                 }

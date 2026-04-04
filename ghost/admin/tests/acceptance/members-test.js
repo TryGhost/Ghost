@@ -26,8 +26,6 @@ describe('Acceptance: Members Test', function () {
         await visit('/members');
 
         expect(currentURL()).to.equal('/site');
-        expect(find('[data-test-nav="members"]'), 'sidebar link')
-            .to.not.exist;
     });
 
     describe('as owner', function () {
@@ -53,12 +51,6 @@ describe('Acceptance: Members Test', function () {
             expect(findAll('[data-test-list="members-list-item"]').length, 'members list count')
                 .to.equal(2);
 
-            // it highlights active state in nav menu
-            expect(
-                find('[data-test-nav="members"]'),
-                'highlights nav menu item'
-            ).to.have.class('active');
-
             let member = find('[data-test-list="members-list-item"]');
             expect(member.querySelector('.gh-members-list-name').textContent, 'member list item title')
                 .to.equal(member1.name);
@@ -75,12 +67,6 @@ describe('Acceptance: Members Test', function () {
 
             expect(find('[data-test-input="member-email"]').value, 'loads correct email into form')
                 .to.equal(member1.email);
-
-            // it maintains active state in nav menu
-            expect(
-                find('[data-test-nav="members"]'),
-                'highlights nav menu item'
-            ).to.have.class('active');
 
             // trigger save
             await fillIn('[data-test-input="member-name"]', 'New Name');
@@ -145,12 +131,6 @@ describe('Acceptance: Members Test', function () {
             // it displays the new member form
             expect(find('.gh-canvas-header h2').textContent, 'settings pane title')
                 .to.contain('New');
-
-            // it highlights active state in nav menu
-            expect(
-                find('[data-test-nav="members"]'),
-                'highlights nav menu item'
-            ).to.have.class('active');
 
             // all fields start blank
             findAll('.gh-member-settings-primary .gh-input').forEach(function (elem) {
@@ -320,6 +300,18 @@ describe('Acceptance: Members Test', function () {
             expect(find('[data-test-modal="delete-members"]')).to.not.exist;
         });
 
+        it('formats counts in members actions menu for filtered lists', async function () {
+            this.server.createList('member', 1000, {status: 'free'});
+
+            await visit('/members?filter=status%3Afree');
+            await click('[data-test-button="members-actions"]');
+
+            expect(find('[data-test-button="export-members"] span')).to.have.text('Export selected members (1,000)');
+            expect(find('[data-test-button="add-label-selected"] span')).to.have.text('Add label for selected members (1,000)');
+            expect(find('[data-test-button="remove-label-selected"] span')).to.have.text('Remove label from selected members (1,000)');
+            expect(find('[data-test-button="delete-selected"] span')).to.have.text('Delete selected members (1,000)');
+        });
+
         it('can delete a member (via list)', async function () {
             const newsletter = this.server.create('newsletter');
             const label = this.server.create('label');
@@ -401,12 +393,6 @@ describe('Acceptance: Members Test', function () {
             expect(findAll('[data-test-list="members-list-item"]').length, 'members list count')
                 .to.equal(2);
 
-            // it highlights active state in nav menu
-            expect(
-                find('[data-test-nav="members"]'),
-                'highlights nav menu item'
-            ).to.have.class('active');
-
             let member = find('[data-test-list="members-list-item"]');
             expect(member.querySelector('.gh-members-list-name').textContent, 'member list item title')
                 .to.equal(member1.name);
@@ -423,12 +409,6 @@ describe('Acceptance: Members Test', function () {
 
             expect(find('[data-test-input="member-email"]').value, 'loads correct email into form')
                 .to.equal(member1.email);
-
-            // it maintains active state in nav menu
-            expect(
-                find('[data-test-nav="members"]'),
-                'highlights nav menu item'
-            ).to.have.class('active');
 
             // trigger save
             await fillIn('[data-test-input="member-name"]', 'New Name');
@@ -462,12 +442,6 @@ describe('Acceptance: Members Test', function () {
             // it displays the new member form
             expect(find('.gh-canvas-header h2').textContent, 'settings pane title')
                 .to.contain('New');
-
-            // it highlights active state in nav menu
-            expect(
-                find('[data-test-nav="members"]'),
-                'highlights nav menu item'
-            ).to.have.class('active');
 
             // all fields start blank
             findAll('.gh-member-settings-primary .gh-input').forEach(function (elem) {

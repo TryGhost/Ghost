@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const StripeService = require('./StripeService');
+const StripeService = require('./stripe-service');
 const logging = require('@tryghost/logging');
 const membersService = require('../members');
 const config = require('../../../shared/config');
@@ -12,12 +12,12 @@ const settingsHelpers = require('../settings-helpers');
 const donationService = require('../donations');
 const staffService = require('../staff');
 const labs = require('../../../shared/labs');
+const settingsCache = require('../../../shared/settings-cache');
 
 async function configureApi() {
     const cfg = getConfig({settingsHelpers, config, urlUtils});
     if (cfg) {
-        // @NOTE: to not start test mode when running playwright suite
-        cfg.testEnv = process.env.NODE_ENV.startsWith('test') && process.env.NODE_ENV !== 'testing-browser';
+        cfg.testEnv = process.env.NODE_ENV.startsWith('test');
         await module.exports.configure(cfg);
         return true;
     }
@@ -60,7 +60,8 @@ module.exports = new StripeService({
         }
     },
     donationService,
-    staffService
+    staffService,
+    settingsCache
 });
 
 function stripeSettingsChanged(model) {
