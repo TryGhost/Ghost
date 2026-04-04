@@ -237,7 +237,7 @@ const filterInputVariants = cva(
         variants: {
             variant: {
                 solid: 'border-0 bg-secondary',
-                outline: 'border border-border bg-background'
+                outline: 'border border-border bg-surface-elevated'
             },
             size: {
                 lg: 'h-10 px-2.5 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
@@ -267,7 +267,7 @@ const filterRemoveButtonVariants = cva(
         variants: {
             variant: {
                 solid: 'bg-secondary',
-                outline: 'border border-s-0 border-border bg-background hover:bg-secondary'
+                outline: 'border border-s-0 border-border bg-surface-elevated hover:bg-secondary'
             },
             size: {
                 lg: 'size-10 [&_svg:not([class*=size-])]:size-4',
@@ -335,7 +335,7 @@ const filterOperatorVariants = cva(
         variants: {
             variant: {
                 solid: 'bg-secondary',
-                outline: 'border border-e-0 border-border bg-background hover:bg-secondary data-[state=open]:bg-secondary [&+[data-slot=filters-remove]]:border-s'
+                outline: 'border border-e-0 border-border bg-surface-elevated hover:bg-secondary data-[state=open]:bg-secondary [&+[data-slot=filters-remove]]:border-s'
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm',
@@ -364,7 +364,7 @@ const filterFieldLabelVariants = cva(
         variants: {
             variant: {
                 solid: 'bg-secondary',
-                outline: 'border border-e-0 border-border bg-background'
+                outline: 'border border-e-0 border-border bg-surface-elevated'
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
@@ -392,7 +392,7 @@ const filterFieldValueVariants = cva(
         variants: {
             variant: {
                 solid: 'bg-secondary',
-                outline: 'border border-border bg-background hover:bg-secondary has-[[data-slot=switch]]:hover:bg-transparent'
+                outline: 'border border-border bg-surface-elevated hover:bg-secondary has-[[data-slot=switch]]:hover:bg-transparent'
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
@@ -434,7 +434,7 @@ const filterFieldBetweenVariants = cva('flex shrink-0 items-center text-muted-fo
     variants: {
         variant: {
             solid: 'bg-secondary',
-            outline: 'border border-x-0 border-border bg-background'
+            outline: 'border border-x-0 border-border bg-surface-elevated'
         },
         size: {
             lg: 'h-10 px-4 text-sm',

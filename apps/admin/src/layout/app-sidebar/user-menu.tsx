@@ -26,6 +26,17 @@ function UserMenuProfile() {
     );
 }
 
+function UserMenuSettings() {
+    return (
+        <UserMenuItem>
+            <Link to='/settings/'>
+                <LucideIcon.Settings />
+                <UserMenuItem.Label>Settings</UserMenuItem.Label>
+            </Link>
+        </UserMenuItem>
+    );
+}
+
 function UserMenuDarkMode() {
     const {data: preferences} = useUserPreferences();
     const {mutateAsync: editPreferences, isLoading: isEditingPreferences} = useEditUserPreferences();
@@ -126,7 +137,7 @@ function UserMenu(props: UserMenuProps) {
                     name={currentUser.data?.name}
                     email={currentUser.data?.email}
                 >
-                    <UserMenuAvatar />
+                    <UserMenuAvatar className="size-12" />
                 </UserMenuHeader>
                 <DropdownMenuSeparator />
                 <UserMenuItem
@@ -150,7 +161,18 @@ function UserMenu(props: UserMenuProps) {
                     )}
                 </UserMenuItem>
                 <UserMenuProfile />
+                <UserMenuSettings />
                 <DropdownMenuSeparator />
+                <UserMenuItem>
+                    <a
+                        href="https://ghost.org/help?utm_source=admin&utm_campaign=resources"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <LucideIcon.HelpCircle />
+                        <UserMenuItem.Label>Help</UserMenuItem.Label>
+                    </a>
+                </UserMenuItem>
                 <UserMenuItem>
                     <a
                         href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources"
