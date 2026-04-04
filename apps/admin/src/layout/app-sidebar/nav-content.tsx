@@ -163,7 +163,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     </NavMenuItem>
 
                     {showTags && (
-                        <NavMenuItem>
+                        <NavMenuItem className="hidden">
                             <NavMenuItem.Link
                                 to="tags"
                                 activeOnSubpath

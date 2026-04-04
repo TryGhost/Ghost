@@ -66,7 +66,7 @@ function NavMenuCollapsibleItem({ariaLabel, children}: NavMenuCollapsibleItemPro
                 aria-label={ariaLabel}
                 variant="ghost"
                 size="icon"
-                className="hover:text-gray-black absolute top-0 left-3 h-[34px]! w-auto p-0 text-sidebar-accent-foreground transition-all group-hover/menu-item:opacity-100 hover:bg-transparent focus-visible:opacity-100 sidebar:opacity-0"
+                className="hover:text-gray-black absolute top-0.5 left-3 w-auto p-0 text-sidebar-accent-foreground transition-all group-hover/menu-item:opacity-100 hover:bg-transparent focus-visible:opacity-100 sidebar:opacity-0"
                 onClick={() => void onExpandedChange(!expanded)}
             >
                 <LucideIcon.ChevronRight

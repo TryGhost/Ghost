@@ -52,7 +52,7 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             )}
                         </NavMenuItem>
                     )}
-                    <NavMenuItem className="group/viewsite relative">
+                    <NavMenuItem className="group/viewsite relative hidden">
                         {/* <NavMenuItem.Link to="site"> */}
                         <NavMenuItem.Link
                             to={url}

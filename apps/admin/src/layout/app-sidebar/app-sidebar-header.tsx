@@ -26,23 +26,30 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
     const title = site.data?.site.title ?? "";
     const siteIcon = site.data?.site.icon ?? "https://static.ghost.org/v4.0.0/images/ghost-orb-1.png";
     const showSearch = currentUser && !isContributorUser(currentUser);
+    const url = site.data?.site.url;
 
     return (
         <SidebarHeader {...props}>
             <div className="flex flex-col items-stretch gap-6">
-                <div className="flex items-center justify-between">
-                    <div className="flex min-w-0 items-center gap-3">
-                        <div className="h-8 w-8 flex-shrink-0 rounded-md border-0 bg-transparent">
-                            <img
-                                src={siteIcon}
-                                alt="Site icon"
-                                className="h-full w-full rounded-md object-cover"
-                                />
-                        </div>
-                        <div className="flex-1 overflow-hidden text-[15px] font-semibold text-ellipsis whitespace-nowrap text-foreground">
-                            {title}
-                        </div>
+                <div className="group/viewsite flex min-w-0 items-center justify-between gap-3">
+                    <div className="h-8 w-8 flex-shrink-0 rounded-md border-0 bg-transparent">
+                        <img
+                            src={siteIcon}
+                            alt="Site icon"
+                            className="h-full w-full rounded-md object-cover"
+                            />
                     </div>
+                    <div className="flex-1 overflow-hidden text-[15px] font-semibold text-ellipsis whitespace-nowrap text-foreground">
+                        {title}
+                    </div>
+                    <a
+                        href={url}
+                        target="_blank"
+                        aria-label="View site in new tab"
+                        rel="noopener noreferrer"
+                        className="flex size-8 items-center justify-center rounded-full opacity-0 transition-all group-hover/viewsite:opacity-100 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                            <LucideIcon.ExternalLink size={16} />
+                    </a>
                 </div>
                 {showSearch && (
                     <Button
