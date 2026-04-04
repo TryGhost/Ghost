@@ -225,6 +225,7 @@ function MembersListItem({
     ...props
 }: MembersListItemProps &
     Omit<React.HTMLAttributes<HTMLTableRowElement>, 'onClick'>) {
+    const hasDynamicColumns = activeColumns.length > 0;
     const memberCellStyle = {
         '--members-sticky-hover-bg': 'color-mix(in hsl, var(--muted) 100%, var(--background))'
     } as CSSProperties;
@@ -254,7 +255,7 @@ function MembersListItem({
             onClick={handleRowClick}
         >
             <TableCell className={cn(
-                'min-w-0 bg-background px-4 py-3 group-hover:bg-[var(--members-sticky-hover-bg)] max-sm:!w-full max-sm:!min-w-0 lg:sticky lg:left-0 lg:z-20'
+                'min-w-0 bg-background px-4 py-3 group-hover:bg-[var(--members-sticky-hover-bg)] max-sm:!w-full max-sm:!min-w-0 max-sm:rounded-lg sm:rounded-l-lg lg:sticky lg:left-0 lg:z-20'
             )} style={memberCellStyle}>
                 <MembersListItemName item={item} onClick={onClick} />
                 {showPinnedEdge && (
@@ -278,7 +279,7 @@ function MembersListItem({
                     </>
                 )}
             </TableCell>
-            <TableCell className="hidden px-4 py-3 sm:table-cell" style={columnStyles.status}>
+            <TableCell className="hidden px-4 py-3 sm:table-cell sm:max-lg:rounded-r-lg" style={columnStyles.status}>
                 <MembersListItemStatus status={item.status} tiers={item.tiers} />
             </TableCell>
             {showEmailOpenRate && (
@@ -289,11 +290,15 @@ function MembersListItem({
             <TableCell className="hidden px-4 py-3 lg:table-cell" style={columnStyles.location}>
                 <MembersListItemLocation geolocation={item.geolocation} />
             </TableCell>
-            <TableCell className="hidden px-4 py-3 lg:table-cell" style={columnStyles.created}>
+            <TableCell className={cn('hidden px-4 py-3 lg:table-cell', !hasDynamicColumns && 'lg:rounded-r-lg')} style={columnStyles.created}>
                 <MembersListItemCreated createdAt={item.created_at} />
             </TableCell>
-            {activeColumns.map(col => (
-                <TableCell key={col.key} className="hidden px-4 py-3 lg:table-cell" style={columnStyles.dynamic}>
+            {activeColumns.map((col, index) => (
+                <TableCell
+                    key={col.key}
+                    className={cn('hidden px-4 py-3 lg:table-cell', index === activeColumns.length - 1 && 'lg:rounded-r-lg')}
+                    style={columnStyles.dynamic}
+                >
                     <MembersListItemDynamicColumn
                         column={col}
                         member={item}
