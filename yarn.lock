@@ -3791,10 +3791,10 @@
     ember-compatibility-helpers "^1.2.1"
     ember-raf-scheduler "^0.3.0"
 
-"@html-validate/stylish@^4.1.0":
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/@html-validate/stylish/-/stylish-4.2.0.tgz#75620160c073c907ab575433c0cc36ff10c70cab"
-  integrity sha512-Nl8HCv0hGRSLQ+n1OD4Hk3a+Urwk9HH0vQkAzzCarT4KlA7bRl+6xEiS5PZVwOmjtC7XiH/oNe3as9Fxcr2A1w==
+"@html-validate/stylish@^5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@html-validate/stylish/-/stylish-5.0.0.tgz#e3c2d514e5d1057151f7ae83c4bca46f7a6fbac5"
+  integrity sha512-xjhRV9k1mWfgsOcpYlwsjUOFy3w3EnCDrqUrEw+DWdvOStMK59ts2H7GLKWZtmLI5m6Npp3qMSNReafQy9K2sA==
   dependencies:
     kleur "^4.0.0"
 
@@ -6489,10 +6489,10 @@
   dependencies:
     "@sentry/types" "7.120.4"
 
-"@sidvind/better-ajv-errors@3.0.1":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@sidvind/better-ajv-errors/-/better-ajv-errors-3.0.1.tgz#7655d645bd32f30c4ac7756518fb9db7a609c99f"
-  integrity sha512-++1mEYIeozfnwWI9P1ECvOPoacy+CgDASrmGvXPMCcqgx0YUzB01vZ78uHdQ443V6sTY+e9MzHqmN9DOls02aw==
+"@sidvind/better-ajv-errors@4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@sidvind/better-ajv-errors/-/better-ajv-errors-4.0.1.tgz#57de7f4ff5579db2f9e42980dec286641c4a9cc8"
+  integrity sha512-6arF1ssKxItxgitPYXafUoLmsVBA6K7m9+ZGj6hLDoBl7nWpJ33EInwQUdHTle2METeWGxgQiqSex20KZRykew==
   dependencies:
     kleur "^4.1.0"
 
@@ -21548,7 +21548,7 @@ glob-to-regexp@^0.4.1:
   resolved "https://registry.yarnpkg.com/glob-to-regexp/-/glob-to-regexp-0.4.1.tgz#c75297087c851b9a578bd217dd59a92f59fe546e"
   integrity sha512-lkX1HJXwyMcprw/5YUZc2s7DrpAiHB21/V+E1rHUrVNokkvB6bqMzT0VfV6/86ZNabt1k14YOIaT7nDvOX3Iiw==
 
-glob@13.0.6, glob@^13.0.1:
+glob@13.0.6, glob@^13.0.0, glob@^13.0.1:
   version "13.0.6"
   resolved "https://registry.yarnpkg.com/glob/-/glob-13.0.6.tgz#078666566a425147ccacfbd2e332deb66a2be71d"
   integrity sha512-Wjlyrolmm8uDpm/ogGyXZXb1Z+Ca2B8NbJwqBVg0axK9GbBeoS7yGV6vjXnYdGm6X53iehEuxxbyiKp8QmN4Vw==
@@ -22231,15 +22231,15 @@ html-to-text@8.2.1:
     minimist "^1.2.6"
     selderee "^0.6.0"
 
-html-validate@8.29.0:
-  version "8.29.0"
-  resolved "https://registry.yarnpkg.com/html-validate/-/html-validate-8.29.0.tgz#3c2b92a51ebb6c6b567adcc893276f28f4373751"
-  integrity sha512-RFfFIWaUB9SN8iETL2GoPvjWEX1gcbz0+m+vao7xkPl0cnlgMDu9RcjdQz6T3n6LgT/LENPkvxHzVkqY/Qs3Tg==
+html-validate@10.11.2:
+  version "10.11.2"
+  resolved "https://registry.yarnpkg.com/html-validate/-/html-validate-10.11.2.tgz#37b5d6d35d55450a07936edba32e744abfdd0933"
+  integrity sha512-ZT4812sBvF77WrfTNWcaaml7xSOMDsGvw3plP4zrgcPw5RWESsRgprsVVYnaQD2lSNfD0WObZ0Ur22+xXj0TXA==
   dependencies:
-    "@html-validate/stylish" "^4.1.0"
-    "@sidvind/better-ajv-errors" "3.0.1"
+    "@html-validate/stylish" "^5.0.0"
+    "@sidvind/better-ajv-errors" "4.0.1"
     ajv "^8.0.0"
-    glob "^10.0.0"
+    glob "^13.0.0"
     kleur "^4.1.0"
     minimist "^1.2.0"
     prompts "^2.0.0"
