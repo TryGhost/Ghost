@@ -105,7 +105,7 @@ function UserMenu(props: UserMenuProps) {
             <DropdownMenuTrigger asChild className="focus-visible:ring-0">
                 <SidebarMenuButton
                     size="lg"
-                    className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                    className={adminUiRedesign ? "p-2 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground" : "data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"}
                     aria-label="User menu"
                 >
                     <div className="relative">

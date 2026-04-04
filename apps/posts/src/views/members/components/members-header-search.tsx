@@ -19,7 +19,7 @@ const MembersHeaderSearch: React.FC<MembersHeaderSearchProps> = ({
     const adminUiRedesign = useAdminUiRedesign();
 
     return (
-        <InputGroup className={adminUiRedesign ? 'h-(--control-height) min-w-0 basis-full lg:w-[180px] lg:basis-auto xl:w-[240px]' : 'h-[34px] min-w-0 basis-full lg:w-[180px] lg:basis-auto xl:w-[240px]'}>
+        <InputGroup className={adminUiRedesign ? 'h-(--control-height) min-w-0 basis-full rounded-full bg-surface-elevated focus:bg-surface-elevated has-[[data-slot=input-group-control]:focus-visible]:bg-surface-elevated lg:w-[180px] lg:basis-auto xl:w-[240px]' : 'h-[34px] min-w-0 basis-full lg:w-[180px] lg:basis-auto xl:w-[240px]'}>
             <InputGroupAddon>
                 <LucideIcon.Search className="size-4" strokeWidth={1.75} />
             </InputGroupAddon>
