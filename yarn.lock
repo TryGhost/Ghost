@@ -24765,10 +24765,10 @@ knex@2.4.2:
     tarn "^3.0.2"
     tildify "2.0.0"
 
-knex@3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-3.1.0.tgz#b6ddd5b5ad26a6315234a5b09ec38dc4a370bd8c"
-  integrity sha512-GLoII6hR0c4ti243gMs5/1Rb3B+AjwMOfjYm97pu0FOQa7JH56hgBxYf5WK2525ceSbBY1cjeZ9yk99GPMB6Kw==
+knex@3.2.8:
+  version "3.2.8"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-3.2.8.tgz#1bfb9caa8419db2c65512259a83a7896912db42e"
+  integrity sha512-ElXXxu9Nq+5hWYdBUddYIWIT5yKKs5KNCsmKGbJSHPyaMpAABp3xs4L55GgdQoAs6QQ7dv72ai3M4pxYQ8utEg==
   dependencies:
     colorette "2.0.19"
     commander "^10.0.0"
