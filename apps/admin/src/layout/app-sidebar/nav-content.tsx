@@ -16,7 +16,7 @@ import { useCustomSidebarViews } from "./use-custom-sidebar-views";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
-function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
+function PostsNavItemContent({adminUiRedesign, isActive, to}: {adminUiRedesign: boolean; isActive: boolean; to: string}) {
     return (
         <>
             <NavMenuItem.Link
@@ -28,7 +28,7 @@ function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
             </NavMenuItem.Link>
             <a href="#/editor/post"
                 aria-label="Create new post"
-                className="absolute top-0 right-0 hidden size-8 items-center justify-center rounded-full p-0 text-gray-700 transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                className={`absolute top-0 right-0 size-8 items-center justify-center rounded-full p-0 text-gray-700 transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${adminUiRedesign ? 'hidden' : 'flex'}`}
             >
                 <LucideIcon.Plus
                     size={20}
@@ -40,11 +40,13 @@ function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
 }
 
 function MembersNavItemContent({
+    adminUiRedesign,
     collapsible,
     count,
     isActive,
     to
 }: {
+    adminUiRedesign: boolean;
     collapsible: boolean;
     count: number | null | undefined;
     isActive: boolean;
@@ -60,7 +62,7 @@ function MembersNavItemContent({
                 <NavMenuItem.Label>Members</NavMenuItem.Label>
             </NavMenuItem.Link>
             {count != null && (
-                <SidebarMenuBadge className="hidden">{(formatNumber as (value: number) => string)(count)}</SidebarMenuBadge>
+                <SidebarMenuBadge className={adminUiRedesign ? 'hidden' : undefined}>{(formatNumber as (value: number) => string)(count)}</SidebarMenuBadge>
             )}
         </>
     );
@@ -78,6 +80,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const routing = useEmberRouting();
     const commentModerationEnabled = useFeatureFlag('commentModeration');
     const membersForwardEnabled = useFeatureFlag('membersForward');
+    const adminUiRedesign = useFeatureFlag('adminUiRedesign');
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
@@ -112,6 +115,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     >
                         <NavMenuItem.CollapsibleItem ariaLabel="Toggle post views">
                             <PostsNavItemContent
+                                adminUiRedesign={adminUiRedesign}
                                 isActive={postsNavActive}
                                 to={postsRoute}
                             />
@@ -163,7 +167,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     </NavMenuItem>
 
                     {showTags && (
-                        <NavMenuItem className="hidden">
+                        <NavMenuItem className={adminUiRedesign ? 'hidden' : undefined}>
                             <NavMenuItem.Link
                                 to="tags"
                                 activeOnSubpath
@@ -184,6 +188,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 >
                                     <NavMenuItem.CollapsibleItem ariaLabel="Toggle member views">
                                         <MembersNavItemContent
+                                            adminUiRedesign={adminUiRedesign}
                                             collapsible={true}
                                             count={memberCount}
                                             isActive={membersNavActive}
@@ -198,6 +203,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             ) : (
                                 <NavMenuItem>
                                     <MembersNavItemContent
+                                        adminUiRedesign={adminUiRedesign}
                                         collapsible={false}
                                         count={memberCount}
                                         isActive={membersNavActive}

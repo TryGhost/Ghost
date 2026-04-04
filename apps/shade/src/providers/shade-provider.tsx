@@ -11,13 +11,15 @@ interface ShadeContextType {
     setFocusState: (value: boolean) => void;
     // fetchKoenigLexical: FetchKoenigLexical;
     darkMode: boolean;
+    adminUiRedesign: boolean;
 }
 
 const ShadeContext = createContext<ShadeContextType>({
     isAnyTextFieldFocused: false,
     setFocusState: () => {},
     // fetchKoenigLexical: async () => {},
-    darkMode: false
+    darkMode: false,
+    adminUiRedesign: false
 });
 
 export const useShade = () => useContext(ShadeContext);
@@ -69,10 +71,11 @@ const ToasterPortal = () => {
 interface ShadeProviderProps {
     // fetchKoenigLexical: FetchKoenigLexical;
     darkMode: boolean;
+    adminUiRedesign: boolean;
     children: React.ReactNode;
 }
 
-const ShadeProvider: React.FC<ShadeProviderProps> = ({darkMode, children}) => {
+const ShadeProvider: React.FC<ShadeProviderProps> = ({darkMode, adminUiRedesign, children}) => {
     const [isAnyTextFieldFocused, setIsAnyTextFieldFocused] = useState(false);
 
     const setFocusState = (value: boolean) => {
@@ -80,7 +83,7 @@ const ShadeProvider: React.FC<ShadeProviderProps> = ({darkMode, children}) => {
     };
 
     return (
-        <ShadeContext.Provider value={{isAnyTextFieldFocused, setFocusState, darkMode}}>
+        <ShadeContext.Provider value={{isAnyTextFieldFocused, setFocusState, darkMode, adminUiRedesign}}>
             <GlobalDirtyStateProvider>
                 {children}
                 <ToasterPortal />

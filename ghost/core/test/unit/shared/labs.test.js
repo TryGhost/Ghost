@@ -129,6 +129,10 @@ describe('Labs Service', function () {
 });
 
 describe('Labs Service - Flag Integrity', function () {
+    it('includes adminUiRedesign in writable keys', function () {
+        assert.equal(labs.WRITABLE_KEYS_ALLOWLIST.includes('adminUiRedesign'), true);
+    });
+
     it('should have no duplicate flags across categories', function () {
         const allFlags = labs.getAllFlags();
 

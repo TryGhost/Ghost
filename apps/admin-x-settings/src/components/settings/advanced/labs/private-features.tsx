@@ -52,6 +52,10 @@ const features: Feature[] = [{
     description: 'Use the new React-based members list instead of the Ember implementation',
     flag: 'membersForward'
 }, {
+    title: 'Admin UI Redesign',
+    description: 'Enable the redesigned Admin shell and members UI experience',
+    flag: 'adminUiRedesign'
+}, {
     title: 'Drip Sequences',
     description: 'Enable welcome email drip sequences',
     flag: 'dripSequences'

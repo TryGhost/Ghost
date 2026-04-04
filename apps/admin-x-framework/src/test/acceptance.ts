@@ -83,7 +83,8 @@ export const responseFixtures = {
 const defaultLabFlags = {
     collections: false,
     outboundLinkTagging: false,
-    members: false
+    members: false,
+    adminUiRedesign: false
 };
 
 // Inject defaultLabFlags into responseFixtures.settings and config

@@ -1,6 +1,7 @@
 import React from 'react';
 import {Button, SidebarMenuButton, SidebarMenuItem, useSidebar} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
+import { useFeatureFlag } from '@/hooks/use-feature-flag';
 import { useIsActiveLink } from './use-is-active-link';
 
 function NavMenuItem({ children, ...props }: React.ComponentProps<typeof SidebarMenuItem>) {
@@ -57,6 +58,7 @@ interface NavMenuCollapsibleItemProps {
 
 function NavMenuCollapsibleItem({ariaLabel, children}: NavMenuCollapsibleItemProps) {
     const {expanded, id, onExpandedChange} = useNavMenuCollapsibleContext();
+    const adminUiRedesign = useFeatureFlag('adminUiRedesign');
 
     return (
         <NavMenuItem>
@@ -66,7 +68,7 @@ function NavMenuCollapsibleItem({ariaLabel, children}: NavMenuCollapsibleItemPro
                 aria-label={ariaLabel}
                 variant="ghost"
                 size="icon"
-                className="hover:text-gray-black absolute top-0.5 left-3 w-auto p-0 text-sidebar-accent-foreground transition-all group-hover/menu-item:opacity-100 hover:bg-transparent focus-visible:opacity-100 sidebar:opacity-0"
+                className={adminUiRedesign ? "hover:text-gray-black absolute top-0 left-3 w-auto p-0 text-sidebar-accent-foreground transition-all group-hover/menu-item:opacity-100 hover:bg-transparent focus-visible:opacity-100 sidebar:opacity-0" : "hover:text-gray-black absolute top-0 left-3 h-[34px]! w-auto p-0 text-sidebar-accent-foreground transition-all group-hover/menu-item:opacity-100 hover:bg-transparent focus-visible:opacity-100 sidebar:opacity-0"}
                 onClick={() => void onExpandedChange(!expanded)}
             >
                 <LucideIcon.ChevronRight

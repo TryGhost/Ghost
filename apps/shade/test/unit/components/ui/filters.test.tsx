@@ -2,6 +2,7 @@ import {useMemo, useState} from 'react';
 import {act, fireEvent, render, screen, waitFor} from '../../utils/test-utils';
 import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 import {createFilter, FilterFieldConfig, Filters, ValueSource} from '../../../../src/components/ui/filters';
+import ShadeProvider from '../../../../src/providers/shade-provider';
 
 type TestOption = {
     value: string;
@@ -68,6 +69,31 @@ function createMatchingValueSource() {
     }));
 
     return {id: 'status', useOptions};
+}
+
+function renderBasicFiltersWithOptionalRedesign(adminUiRedesign = false) {
+    const content = (
+        <Filters
+            fields={[{
+                key: 'status',
+                label: 'Status',
+                type: 'select',
+                operators: [{value: 'is', label: 'is'}],
+                options: ALL_OPTIONS
+            }]}
+            filters={[createFilter('status', 'is', ['published'])]}
+            showSearchInput={false}
+            onChange={() => {}}
+        />
+    );
+
+    return adminUiRedesign
+        ? render(
+            <ShadeProvider adminUiRedesign={true} darkMode={false}>
+                {content}
+            </ShadeProvider>
+        )
+        : render(content);
 }
 
 describe('Filters ValueSource', () => {
@@ -207,5 +233,20 @@ describe('Filters ValueSource', () => {
         rerender(<StaticLoadingFilters isLoading={true} options={ALL_OPTIONS} />);
         expect(await screen.findByPlaceholderText('Search status...')).toBeDefined();
         expect(document.querySelector('.animate-spin')).toBeTruthy();
+    });
+
+    it('keeps legacy control sizing by default when redesign is disabled', () => {
+        renderBasicFiltersWithOptionalRedesign(false);
+
+        const fieldLabel = screen.getByText('Status').closest('div');
+        expect(fieldLabel?.className.includes('h-(--control-height)')).toBe(true);
+    });
+
+    it('uses redesigned compact sizing when redesign is enabled', () => {
+        renderBasicFiltersWithOptionalRedesign(true);
+
+        const fieldLabel = screen.getByText('Status').closest('div');
+        expect(fieldLabel?.className.includes('h-7')).toBe(true);
+        expect(fieldLabel?.className.includes('bg-surface-elevated')).toBe(true);
     });
 });

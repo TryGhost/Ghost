@@ -11,6 +11,7 @@ import { useNotificationsCountForUser } from "@tryghost/activitypub/src/index";
 import NetworkIcon from "./icons/network-icon";
 import { NavMenuItem } from "./nav-menu-item";
 import { useIsActiveLink } from "./use-is-active-link";
+import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
 function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
@@ -18,6 +19,7 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const networkEnabled = getSettingValue<boolean>(settings?.settings, 'social_web_enabled') ?? false;
     const site = useBrowseSite();
     const url = site.data?.site.url;
+    const adminUiRedesign = useFeatureFlag('adminUiRedesign');
 
 
     // The network app has its own notification state, so we don't want to show
@@ -52,12 +54,11 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             )}
                         </NavMenuItem>
                     )}
-                    <NavMenuItem className="group/viewsite relative hidden">
-                        {/* <NavMenuItem.Link to="site"> */}
+                    <NavMenuItem className={`group/viewsite relative ${adminUiRedesign ? 'hidden' : ''}`}>
                         <NavMenuItem.Link
-                            to={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            to={adminUiRedesign ? url : 'site'}
+                            target={adminUiRedesign ? '_blank' : undefined}
+                            rel={adminUiRedesign ? 'noopener noreferrer' : undefined}
                         >
                             <LucideIcon.AppWindow />
                             <NavMenuItem.Label>View site</NavMenuItem.Label>

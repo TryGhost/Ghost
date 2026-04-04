@@ -1,5 +1,6 @@
 import {Table, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
+import {useAdminUiRedesign} from '@src/hooks/use-admin-ui-redesign';
 import type {ActiveColumn} from '../member-query-params';
 import type {CSSProperties, Ref} from 'react';
 import type {MemberTableColumnStyles} from './member-table-layout';
@@ -47,6 +48,8 @@ export const MembersTableHeader = ({
     memberHeaderRef?: Ref<HTMLTableCellElement>;
     showEmailOpenRate: boolean;
 }) => {
+    const adminUiRedesign = useAdminUiRedesign();
+
     return (
         <TableHeader
             ref={headerRef}
@@ -55,27 +58,27 @@ export const MembersTableHeader = ({
             <TableRow>
                 <TableHead
                     ref={memberHeaderRef}
-                    className="sticky left-0 z-[70] bg-transparent px-4 [--members-sticky-fade-base:var(--background)]"
+                    className={adminUiRedesign ? 'sticky left-0 z-[70] bg-transparent px-4 [--members-sticky-fade-base:var(--background)]' : 'sticky left-0 z-[70] bg-transparent px-4 py-3 [--members-sticky-fade-base:var(--background)]'}
                     style={columnStyles.member}
                 >
                     Member
                 </TableHead>
-                <TableHead className="bg-transparent px-4" style={columnStyles.status}>
+                <TableHead className={adminUiRedesign ? 'bg-transparent px-4' : 'bg-transparent px-4 py-3'} style={columnStyles.status}>
                     Status
                 </TableHead>
                 {showEmailOpenRate && (
-                    <TableHead className="bg-transparent px-4" style={columnStyles.openRate}>
+                    <TableHead className={adminUiRedesign ? 'bg-transparent px-4' : 'bg-transparent px-4 py-3'} style={columnStyles.openRate}>
                         Open rate
                     </TableHead>
                 )}
-                <TableHead className="bg-transparent px-4" style={columnStyles.location}>
+                <TableHead className={adminUiRedesign ? 'bg-transparent px-4' : 'bg-transparent px-4 py-3'} style={columnStyles.location}>
                     Location
                 </TableHead>
-                <TableHead className="bg-transparent px-4" style={columnStyles.created}>
+                <TableHead className={adminUiRedesign ? 'bg-transparent px-4' : 'bg-transparent px-4 py-3'} style={columnStyles.created}>
                     Created
                 </TableHead>
                 {activeColumns.map(col => (
-                    <TableHead key={col.key} className="bg-transparent px-4" style={columnStyles.dynamic}>
+                    <TableHead key={col.key} className={adminUiRedesign ? 'bg-transparent px-4' : 'bg-transparent px-4 py-3'} style={columnStyles.dynamic}>
                         {col.label}
                     </TableHead>
                 ))}
@@ -91,6 +94,8 @@ export const PinnedMemberHeader = ({
     columnStyle: CSSProperties;
     showPinnedEdge: boolean;
 }) => {
+    const adminUiRedesign = useAdminUiRedesign();
+
     return (
         <div
             className="pointer-events-none absolute inset-y-0 left-0 z-[70] overflow-visible bg-transparent [--members-sticky-fade-base:var(--background)]"
@@ -102,7 +107,7 @@ export const PinnedMemberHeader = ({
                 </colgroup>
                 <TableHeader className="bg-transparent lg:table-header-group [&_th]:whitespace-nowrap">
                     <TableRow>
-                        <TableHead className="bg-transparent pl-0">
+                        <TableHead className={adminUiRedesign ? 'bg-transparent pl-0' : 'bg-transparent px-4 py-3'}>
                             Member
                         </TableHead>
                     </TableRow>

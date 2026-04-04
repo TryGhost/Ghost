@@ -193,7 +193,7 @@
     --tracking-wider: .025em;
     --tracking-widest: .5em;
     --shadow: 0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08);
-    --shadow-xs: 0 0 1px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.05), 0 8px 10px -12px rgba(0,0,0,.1);
+    --shadow-xs: 0 0 1px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03), 0 8px 10px -12px rgba(0,0,0,.1);
     --shadow-sm: 0 0 1px rgba(0,0,0,.12), 0 1px 6px rgba(0,0,0,0.03), 0 8px 10px -8px rgba(0,0,0,.1);
     --shadow-md: 0 0 1px rgba(0,0,0,0.12), 0 1px 6px rgba(0,0,0,0.03), 0 8px 10px -8px rgba(0,0,0,0.05), 0px 24px 37px -21px rgba(0, 0, 0, 0.05);
     --shadow-md-heavy: 0 0 1px rgba(0,0,0,0.22), 0 1px 6px rgba(0,0,0,0.15), 0 8px 10px -8px rgba(0,0,0,0.16), 0px 24px 37px -21px rgba(0, 0, 0, 0.46);
@@ -234,9 +234,9 @@
     --radius-badge: var(--radius-full);
     --radius-pill: var(--radius-full);
     --text-2xs: 1.0rem;
-    --text-base: 1.3rem;
-    --text-xs: 1.1rem;
-    --text-sm: 1.2rem;
+    --text-base: 1.4rem;
+    --text-xs: 1.2rem;
+    --text-sm: 1.3rem;
     --text-md: 1.4rem;
     --text-lg: 1.5rem;
     --text-xl: 1.7rem;
@@ -324,6 +324,15 @@
     100% {
         opacity: 0;
     }
+}
+
+.shade[data-admin-ui-redesign='true'],
+:root[data-admin-ui-redesign='true'],
+body[data-admin-ui-redesign='true'] {
+    --shadow-xs: 0 0 1px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.05), 0 8px 10px -12px rgba(0,0,0,.1);
+    --text-base: 1.3rem;
+    --text-xs: 1.1rem;
+    --text-sm: 1.2rem;
 }
 
 @keyframes fadeIn {

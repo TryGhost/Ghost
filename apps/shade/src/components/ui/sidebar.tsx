@@ -16,6 +16,7 @@ import {
     TooltipProvider,
     TooltipTrigger
 } from '@/components/ui/tooltip';
+import {useShade} from '@/providers/shade-provider';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar:state';
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -23,7 +24,7 @@ const SIDEBAR_WIDTH = '30rem';
 const SIDEBAR_WIDTH_MOBILE = '28rem';
 const SIDEBAR_WIDTH_ICON = '4rem';
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b';
-const SIDEBAR_MENU_HEIGHT = '36px';
+const SIDEBAR_MENU_HEIGHT = '(--control-height)';
 
 type SidebarContext = {
     state: 'expanded' | 'collapsed'
@@ -66,6 +67,7 @@ React.ComponentProps<'div'> & {
             },
             ref
         ) => {
+            const {adminUiRedesign} = useShade();
             const isMobile = useIsMobile();
             const [openMobile, setOpenMobile] = React.useState(false);
 
@@ -134,7 +136,9 @@ React.ComponentProps<'div'> & {
                         <div
                             ref={ref}
                             className={cn(
-                                'group/sidebar-wrapper relative flex has-[[data-variant=inset]]:bg-sidebar',
+                                adminUiRedesign
+                                    ? 'group/sidebar-wrapper relative flex min-h-screen w-full has-[[data-variant=inset]]:bg-sidebar'
+                                    : 'group/sidebar-wrapper relative flex h-full w-full has-[[data-variant=inset]]:bg-sidebar',
                                 className
                             )}
                             style={
@@ -174,6 +178,7 @@ const Sidebar = React.forwardRef<
         },
         ref
     ) => {
+        const {adminUiRedesign} = useShade();
         const {isMobile, state, openMobile, setOpenMobile} = useSidebar();
 
         if (collapsible === 'none') {
@@ -216,7 +221,9 @@ const Sidebar = React.forwardRef<
         return (
             <div
                 ref={ref}
-                className="group peer sticky top-0 hidden h-screen text-sidebar-foreground md:block"
+                className={cn(
+                    adminUiRedesign ? 'group peer sticky top-0 hidden h-screen text-sidebar-foreground md:block' : 'group peer hidden text-sidebar-foreground md:block'
+                )}
                 data-collapsible={state === 'collapsed' ? collapsible : ''}
                 data-side={side}
                 data-state={state}
@@ -326,11 +333,13 @@ const SidebarInset = React.forwardRef<
     HTMLDivElement,
     React.ComponentProps<'main'>
 >(({className, ...props}, ref) => {
+    const {adminUiRedesign} = useShade();
+
     return (
         <main
             ref={ref}
             className={cn(
-                'relative flex flex-1 flex-col bg-background px-5',
+                adminUiRedesign ? 'relative flex min-h-screen flex-1 flex-col bg-background px-5' : 'relative flex h-full flex-1 flex-col bg-background',
                 'md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow',
                 className
             )}
@@ -344,12 +353,14 @@ const SidebarInput = React.forwardRef<
     React.ElementRef<typeof Input>,
     React.ComponentProps<typeof Input>
 >(({className, ...props}, ref) => {
+    const {adminUiRedesign} = useShade();
+
     return (
         <Input
             ref={ref}
             className={cn(
                 'w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring',
-                `h-${SIDEBAR_MENU_HEIGHT}`,
+                adminUiRedesign ? 'h-9' : `h-${SIDEBAR_MENU_HEIGHT}`,
                 className
             )}
             data-sidebar="input"
@@ -363,10 +374,12 @@ const SidebarHeader = React.forwardRef<
     HTMLDivElement,
     React.ComponentProps<'div'>
 >(({className, ...props}, ref) => {
+    const {adminUiRedesign} = useShade();
+
     return (
         <div
             ref={ref}
-            className={cn('flex flex-col gap-2', className)}
+            className={cn(adminUiRedesign ? 'flex flex-col gap-2' : 'flex flex-col gap-2 p-2', className)}
             data-sidebar="header"
             {...props}
         />
@@ -378,10 +391,12 @@ const SidebarFooter = React.forwardRef<
     HTMLDivElement,
     React.ComponentProps<'div'>
 >(({className, ...props}, ref) => {
+    const {adminUiRedesign} = useShade();
+
     return (
         <div
             ref={ref}
-            className={cn('flex flex-col gap-2 py-2', className)}
+            className={cn(adminUiRedesign ? 'flex flex-col gap-2 py-2' : 'flex flex-col gap-2 p-2', className)}
             data-sidebar="footer"
             {...props}
         />
@@ -426,10 +441,12 @@ const SidebarGroup = React.forwardRef<
     HTMLDivElement,
     React.ComponentProps<'div'>
 >(({className, ...props}, ref) => {
+    const {adminUiRedesign} = useShade();
+
     return (
         <div
             ref={ref}
-            className={cn('relative flex w-full min-w-0 flex-col px-2', className)}
+            className={cn(adminUiRedesign ? 'relative flex w-full min-w-0 flex-col px-2' : 'relative flex w-full min-w-0 flex-col p-2', className)}
             data-sidebar="group"
             {...props}
         />
@@ -441,6 +458,7 @@ const SidebarGroupLabel = React.forwardRef<
     HTMLDivElement,
     React.ComponentProps<'div'> & { asChild?: boolean }
 >(({className, asChild = false, ...props}, ref) => {
+    const {adminUiRedesign} = useShade();
     const Comp = asChild ? Slot : 'div';
 
     return (
@@ -449,7 +467,7 @@ const SidebarGroupLabel = React.forwardRef<
             className={cn(
                 'duration-200 flex shrink-0 items-center rounded-md px-3 text-xs font-medium text-sidebar-foreground/70 outline-hidden ring-sidebar-ring transition-all ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
                 'group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0',
-                `h-${SIDEBAR_MENU_HEIGHT}`,
+                adminUiRedesign ? 'h-9' : `h-${SIDEBAR_MENU_HEIGHT}`,
                 className
             )}
             data-sidebar="group-label"
@@ -498,14 +516,18 @@ SidebarGroupContent.displayName = 'SidebarGroupContent';
 const SidebarMenu = React.forwardRef<
     HTMLUListElement,
     React.ComponentProps<'ul'>
->(({className, ...props}, ref) => (
-    <ul
-        ref={ref}
-        className={cn('flex w-full min-w-0 flex-col gap-px', className)}
-        data-sidebar="menu"
-        {...props}
-    />
-));
+>(({className, ...props}, ref) => {
+    const {adminUiRedesign} = useShade();
+
+    return (
+        <ul
+            ref={ref}
+            className={cn(adminUiRedesign ? 'flex w-full min-w-0 flex-col gap-px' : 'flex w-full min-w-0 flex-col gap-0.5', className)}
+            data-sidebar="menu"
+            {...props}
+        />
+    );
+});
 SidebarMenu.displayName = 'SidebarMenu';
 
 const SidebarMenuItem = React.forwardRef<
@@ -522,7 +544,7 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = 'SidebarMenuItem';
 
 const sidebarMenuButtonVariants = cva(
-    'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-full px-3 py-2 text-left font-medium text-sidebar-foreground ring-sidebar-ring outline-hidden transition-all group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-semibold data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
+    'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md px-3 py-2 text-left text-md font-medium text-sidebar-foreground ring-sidebar-ring outline-hidden transition-all group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
     {
         variants: {
             variant: {
@@ -531,7 +553,7 @@ const sidebarMenuButtonVariants = cva(
         'border border-sidebar-border bg-background hover:border-sidebar-accent hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
             },
             size: {
-                default: `h-${SIDEBAR_MENU_HEIGHT} text-base`,
+                default: `h-${SIDEBAR_MENU_HEIGHT} text-md`,
                 sm: 'h-7 text-xs',
                 lg: 'h-12 text-sm group-data-[collapsible=icon]:p-0!'
             }
@@ -563,13 +585,19 @@ React.ComponentProps<'button'> & {
         },
         ref
     ) => {
+        const {adminUiRedesign} = useShade();
         const Comp = asChild ? Slot : 'button';
         const {isMobile, state} = useSidebar();
 
         const button = (
             <Comp
                 ref={ref}
-                className={cn(sidebarMenuButtonVariants({variant, size}), className)}
+                className={cn(
+                    sidebarMenuButtonVariants({variant, size}),
+                    adminUiRedesign && 'rounded-full data-[active=true]:font-semibold',
+                    adminUiRedesign && size === 'default' && 'h-9 text-base',
+                    className
+                )}
                 data-active={isActive}
                 data-sidebar="menu-button"
                 data-size={size}
@@ -660,7 +688,8 @@ const SidebarMenuSkeleton = React.forwardRef<
         showIcon?: boolean
     }
 >(({className, showIcon = false, ...props}, ref) => {
-// Random width between 50 to 90%.
+    const {adminUiRedesign} = useShade();
+    // Random width between 50 to 90%.
     const width = React.useMemo(() => {
         return `${Math.floor(Math.random() * 40) + 50}%`;
     }, []);
@@ -668,7 +697,7 @@ const SidebarMenuSkeleton = React.forwardRef<
     return (
         <div
             ref={ref}
-            className={cn('rounded-md flex gap-2 px-3 items-center', `h-${SIDEBAR_MENU_HEIGHT}`, className)}
+            className={cn('rounded-md flex gap-2 px-3 items-center', adminUiRedesign ? 'h-9' : `h-${SIDEBAR_MENU_HEIGHT}`, className)}
             data-sidebar="menu-skeleton"
             {...props}
         >

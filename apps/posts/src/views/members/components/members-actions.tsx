@@ -5,6 +5,7 @@ import {LucideIcon} from '@tryghost/shade/utils';
 import {blobDownloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
 import {buildMemberOperationParams} from '../member-query-params';
 import {toast} from 'sonner';
+import {useAdminUiRedesign} from '@src/hooks/use-admin-ui-redesign';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBulkDeleteMembers, useBulkEditMembers} from '@tryghost/admin-x-framework/api/members';
 
@@ -37,6 +38,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     canBulkDelete,
     onImportComplete
 }) => {
+    const adminUiRedesign = useAdminUiRedesign();
     const [showImportModal, setShowImportModal] = useState(false);
     const [showAddLabelModal, setShowAddLabelModal] = useState(false);
     const [showRemoveLabelModal, setShowRemoveLabelModal] = useState(false);
@@ -184,7 +186,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
             {/* Actions Dropdown */}
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button data-testid="members-actions" size="icon" variant="secondary">
+                    <Button data-testid="members-actions" size={adminUiRedesign ? 'icon' : undefined} variant={adminUiRedesign ? 'secondary' : 'outline'}>
                         <LucideIcon.MoreHorizontal className="size-4" />
                     </Button>
                 </DropdownMenuTrigger>

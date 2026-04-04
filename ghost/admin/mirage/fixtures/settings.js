@@ -107,6 +107,7 @@ export default [
     // LABS
     setting('labs', 'labs', JSON.stringify({
         // Keep the GA flags that are not yet cleaned up in frontend code here
+        adminUiRedesign: false
     })),
 
     // SLACK

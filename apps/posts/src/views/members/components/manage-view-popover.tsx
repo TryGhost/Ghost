@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {Button, Input, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {type MemberView, useDeleteMemberView, useSaveMemberView} from '../hooks/use-member-views';
+import {useAdminUiRedesign} from '@src/hooks/use-admin-ui-redesign';
 
 interface ManageViewPopoverProps {
     filter: string;
@@ -166,12 +167,13 @@ const ManageViewPopoverContent: React.FC<ManageViewPopoverContentProps> = ({filt
 
 const ManageViewPopover: React.FC<ManageViewPopoverProps> = ({filter, existingViews, activeView, onDeleted}) => {
     const [open, setOpen] = useState(false);
+    const adminUiRedesign = useAdminUiRedesign();
     const contentKey = activeView ? `edit:${activeView.name}:${activeView.filter.filter}` : `save:${filter}`;
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button size="sm" variant="shadow">
+                <Button size={adminUiRedesign ? 'sm' : undefined} variant={adminUiRedesign ? 'shadow' : 'outline'}>
                     {activeView ? 'Edit view' : 'Save view'}
                 </Button>
             </PopoverTrigger>

@@ -4,26 +4,27 @@ import {cva, type VariantProps} from 'class-variance-authority';
 import {ChevronDown} from 'lucide-react';
 
 import {cn} from '@/lib/utils';
+import {useShade} from '@/providers/shade-provider';
 
 const buttonVariants = cva(
-    'inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold whitespace-nowrap transition-colors focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]',
+    'inline-flex items-center justify-center gap-2 rounded-md text-sm whitespace-nowrap transition-colors focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]',
     {
         variants: {
             variant: {
-                default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-                destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-                outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
-                shadow: 'bg-background shadow-xs hover:bg-accent hover:bg-background hover:text-accent-foreground hover:shadow-sm',
-                secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-                ghost: 'hover:bg-accent hover:text-accent-foreground',
-                link: 'text-primary underline-offset-4 hover:underline',
+                default: 'bg-primary font-medium text-primary-foreground hover:bg-primary/90',
+                destructive: 'bg-destructive font-medium text-destructive-foreground hover:bg-destructive/90',
+                outline: 'border border-input bg-background font-medium hover:bg-accent hover:text-accent-foreground',
+                shadow: 'hover:bg-elevated bg-surface-elevated shadow-xs hover:bg-surface-elevated hover:text-accent-foreground hover:shadow-sm',
+                secondary: 'bg-secondary font-medium text-secondary-foreground hover:bg-secondary/80',
+                ghost: 'font-medium hover:bg-accent hover:text-accent-foreground',
+                link: 'font-medium text-primary underline-offset-4 hover:underline',
                 dropdown: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground'
             },
             size: {
                 default: 'h-(--control-height) px-3 py-2',
-                sm: 'h-7 px-3 text-sm [&_svg]:size-3',
-                lg: 'h-11 px-8 text-md font-semibold',
-                icon: 'size-(--control-height)'
+                sm: 'h-7 rounded-md px-3 text-xs [&_svg]:size-3',
+                lg: 'h-11 rounded-md px-8 text-md font-semibold',
+                icon: 'size-9'
             }
         },
         defaultVariants: {
@@ -41,6 +42,7 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ({className, variant, size, asChild = false, children, ...props}, ref) => {
+        const {adminUiRedesign} = useShade();
         const Comp = asChild ? Slot : 'button';
         const content = variant === 'dropdown' ? (
             <>
@@ -52,7 +54,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         return (
             <Comp
                 ref={ref}
-                className={cn(buttonVariants({variant, size, className}))}
+                className={cn(
+                    buttonVariants({variant, size, className}),
+                    adminUiRedesign && 'rounded-full font-semibold',
+                    adminUiRedesign && size === 'sm' && 'text-sm',
+                    adminUiRedesign && size === 'icon' && 'size-(--control-height)'
+                )}
                 {...props}
             >
                 {content}

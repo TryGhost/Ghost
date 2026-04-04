@@ -2,6 +2,7 @@ import assert from 'assert/strict';
 import {describe, it, vi} from 'vitest';
 import {fireEvent, screen} from '@testing-library/react';
 import {Button} from '../../../../src/components/ui/button';
+import ShadeProvider from '../../../../src/providers/shade-provider';
 import {render} from '../../utils/test-utils';
 
 describe('Button Component', () => {
@@ -25,6 +26,19 @@ describe('Button Component', () => {
         const button = screen.getByRole('button', {name: /small/i});
         
         assert.ok(button.className.includes('h-7'), 'Should have small size class');
+    });
+
+    it('applies redesign defaults only when adminUiRedesign is enabled', () => {
+        render(
+            <ShadeProvider adminUiRedesign={true} darkMode={false}>
+                <Button size="icon">Icon</Button>
+            </ShadeProvider>
+        );
+
+        const button = screen.getByRole('button', {name: /icon/i});
+
+        assert.ok(button.className.includes('rounded-full'), 'Should use redesign rounded style');
+        assert.ok(button.className.includes('size-(--control-height)'), 'Should use redesign icon sizing');
     });
 
     it('handles click events', () => {

@@ -6,9 +6,11 @@ import NavContent from "./nav-content";
 import NavGhostPro from "./nav-ghost-pro";
 import NavSettings from "./nav-settings";
 import { useSidebarBannerState } from "./hooks/use-sidebar-banner-state";
+import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
 function AppSidebarContent() {
     const {banner, bannerType} = useSidebarBannerState();
+    const adminUiRedesign = useFeatureFlag('adminUiRedesign');
     let bannerContainerClassName = '';
 
     if (bannerType === 'theme-errors') {
@@ -21,14 +23,14 @@ function AppSidebarContent() {
 
     return (
         <SidebarContent className="justify-between px-3 pt-4">
-            <div className="flex flex-col">
+            <div className={adminUiRedesign ? "flex flex-col" : "flex flex-col gap-2 sidebar:gap-4"}>
                 <NavMain />
                 <NavContent />
-                <NavGhostPro className="hidden" />
+                <NavGhostPro className={adminUiRedesign ? "hidden" : undefined} />
             </div>
             <div className={`flex flex-col gap-2 sidebar:gap-4 ${bannerContainerClassName}`}>
                 <AppSidebarBanner banner={banner} />
-                <NavSettings className="hidden pb-0" />
+                <NavSettings className={adminUiRedesign ? "hidden pb-0" : "pb-0"} />
             </div>
         </SidebarContent>
     )
