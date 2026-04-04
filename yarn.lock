@@ -13541,7 +13541,7 @@ body-parser@1.20.3, body-parser@^1.19.0, body-parser@^1.20.1:
     type-is "~1.6.18"
     unpipe "1.0.0"
 
-body-parser@^2.2.1:
+body-parser@2.2.2, body-parser@^2.2.1:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/body-parser/-/body-parser-2.2.2.tgz#1a32cdb966beaf68de50a9dfbe5b58f83cb8890c"
   integrity sha512-oP5VkATKlNwcgvxi0vM0p/D3n2C3EReYVX+DNYs5TjZFn/oQt2j+4sVJtSMr18pdRr8wjTcBl6LoV+FUwzPmNA==
