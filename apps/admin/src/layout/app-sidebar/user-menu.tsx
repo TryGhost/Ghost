@@ -127,7 +127,9 @@ function UserMenu(props: UserMenuProps) {
                             {currentUser.data?.email}
                         </span>
                     </div>
-                    <LucideIcon.ChevronsUpDown className="ml-auto size-4 text-grey-700" data-test-nav="arrow-down" />
+                    {!adminUiRedesign &&
+                        <LucideIcon.ChevronsUpDown className="ml-auto size-4 text-grey-700" data-test-nav="arrow-down" />
+                    }
                 </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
