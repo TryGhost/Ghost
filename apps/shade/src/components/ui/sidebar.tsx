@@ -23,7 +23,7 @@ const SIDEBAR_WIDTH = '30rem';
 const SIDEBAR_WIDTH_MOBILE = '28rem';
 const SIDEBAR_WIDTH_ICON = '4rem';
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b';
-const SIDEBAR_MENU_HEIGHT = '[34px]';
+const SIDEBAR_MENU_HEIGHT = '(--control-height)';
 
 type SidebarContext = {
     state: 'expanded' | 'collapsed'
@@ -447,7 +447,7 @@ const SidebarGroupLabel = React.forwardRef<
         <Comp
             ref={ref}
             className={cn(
-                'duration-200 flex shrink-0 items-center rounded-md px-3 text-xs font-medium text-sidebar-foreground/70 outline-hidden ring-sidebar-ring transition-[margin,opa] ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
+                'duration-200 flex shrink-0 items-center rounded-md px-3 text-xs font-medium text-sidebar-foreground/70 outline-hidden ring-sidebar-ring transition-all ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
                 'group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0',
                 `h-${SIDEBAR_MENU_HEIGHT}`,
                 className
@@ -522,13 +522,13 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = 'SidebarMenuItem';
 
 const sidebarMenuButtonVariants = cva(
-    'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md px-3 py-2 text-left text-md font-medium text-sidebar-foreground ring-sidebar-ring outline-hidden transition-[width,height,padding] group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
+    'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md px-3 py-2 text-left text-md font-medium text-sidebar-foreground ring-sidebar-ring outline-hidden transition-all group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
     {
         variants: {
             variant: {
                 default: 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
                 outline:
-        'bg-background shadow-[0_0_0_1px_var(--sidebar-border)] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_var(--sidebar-accent)]'
+        'border border-sidebar-border bg-background hover:border-sidebar-accent hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
             },
             size: {
                 default: `h-${SIDEBAR_MENU_HEIGHT} text-md`,
@@ -640,7 +640,7 @@ const SidebarMenuBadge = React.forwardRef<
     <div
         ref={ref}
         className={cn(
-            'absolute right-2 flex h-5 min-w-5 items-center justify-center rounded-md px-1 text-sm font-medium tabular-nums text-gray-600 select-none pointer-events-none',
+            'absolute right-2 flex h-5 min-w-5 items-center justify-center rounded-md px-1 text-sm font-medium tabular-nums text-text-secondary select-none pointer-events-none',
             'peer-hover/menu-button: peer-data-[active=true]/menu-button:text-sidebar-accent-foreground',
             'peer-data-[size=sm]/menu-button:top-1.5',
             'peer-data-[size=default]/menu-button:top-2',
