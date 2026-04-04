@@ -84,7 +84,7 @@
     "nx": "22.0.4",
     "rimraf": "5.0.10",
     "semver": "7.7.3",
-    "typescript": "5.8.3"
+    "typescript": "5.9.3"
   },
   "dependencies": {},
   "nx": {

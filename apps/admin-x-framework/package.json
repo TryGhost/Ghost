@@ -84,7 +84,7 @@
         "eslint-plugin-react-refresh": "0.4.24",
         "jsdom": "28.1.0",
         "sinon": "18.0.1",
-        "typescript": "5.8.3",
+        "typescript": "5.9.3",
         "vite": "5.4.20",
         "vite-plugin-css-injected-by-js": "3.5.2",
         "vite-plugin-svgr": "3.3.0",
