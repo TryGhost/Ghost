@@ -200,7 +200,7 @@
     "multer": "2.0.2",
     "mysql2": "3.18.1",
     "nconf": "0.13.0",
-    "node-fetch": "2.7.0",
+    "node-fetch": "3.3.2",
     "node-jose": "2.2.0",
     "nodemailer": "6.10.1",
     "otplib": "12.0.1",
