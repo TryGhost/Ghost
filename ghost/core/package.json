@@ -71,7 +71,7 @@
     "@extractus/oembed-extractor": "3.2.1",
     "@faker-js/faker": "7.6.0",
     "@isaacs/ttlcache": "1.4.1",
-    "@sentry/node": "7.120.4",
+    "@sentry/node": "10.47.0",
     "@slack/webhook": "7.0.6",
     "@tryghost/adapter-base-cache": "0.1.17",
     "@tryghost/admin-api-schema": "4.5.10",
