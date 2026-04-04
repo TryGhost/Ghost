@@ -95,11 +95,11 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
         setShowMobileSearch(true);
     };
 
-    const filtersClassName = 'flex flex-col gap-4 px-3 lg:flex-row lg:items-center sidebar:gap-6 lg:gap-6 h-[56px] bg-gray-100 rounded-lg';
+    const filtersClassName = 'flex flex-col gap-4 px-3 lg:flex-row lg:items-center sidebar:gap-6 lg:gap-6 h-[48px] bg-gray-100 rounded-lg';
 
     return (
         <MembersLayout>
-            <div ref={headerRef} className='sticky top-0 z-50 flex flex-col bg-gradient-to-b from-background via-background/70 to-background/70 pt-4 backdrop-blur-md sidebar:pt-3 lg:border-b dark:bg-black'>
+            <div ref={headerRef} className='sticky top-0 z-50 flex flex-col bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md lg:border-b dark:bg-black'>
                 <div>
                     <MembersHeader
                         className={hasFilters ? 'border-none' : ''}

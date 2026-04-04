@@ -226,7 +226,7 @@ function MembersListItem({
 }: MembersListItemProps &
     Omit<React.HTMLAttributes<HTMLTableRowElement>, 'onClick'>) {
     const memberCellStyle = {
-        '--members-sticky-hover-bg': 'color-mix(in hsl, var(--muted) 50%, var(--background))'
+        '--members-sticky-hover-bg': 'color-mix(in hsl, var(--muted) 100%, var(--background))'
     } as CSSProperties;
     const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
         if (isModifiedClick(event)) {

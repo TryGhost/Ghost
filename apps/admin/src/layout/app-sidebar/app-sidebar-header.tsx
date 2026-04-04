@@ -30,8 +30,8 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
 
     return (
         <SidebarHeader {...props}>
-            <div className="flex flex-col items-stretch gap-6">
-                <div className="group/viewsite flex min-w-0 items-center justify-between gap-3">
+            <div className="flex flex-col items-stretch">
+                <div className="group/viewsite flex min-w-0 items-center justify-between gap-3 p-5">
                     <div className="h-8 w-8 flex-shrink-0 rounded-md border-0 bg-transparent">
                         <img
                             src={siteIcon}
@@ -51,19 +51,21 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
                             <LucideIcon.ExternalLink size={16} />
                     </a>
                 </div>
-                {showSearch && (
-                    <Button
+                <div className="flex h-[48px] w-full items-center justify-stretch px-5">
+                    {showSearch && (
+                        <Button
                         variant="outline"
-                        className="flex h-[32px] items-center justify-between pr-2 text-base font-normal text-muted-foreground hover:border-gray-300 hover:bg-background hover:text-gray-700 dark:bg-gray-950 dark:hover:border-gray-800 [&_svg]:stroke-2"
+                        className="flex h-[32px] w-full items-center justify-between pr-2 text-base font-normal text-muted-foreground hover:border-gray-300 hover:bg-background hover:text-gray-700 dark:bg-gray-950 dark:hover:border-gray-800 [&_svg]:stroke-2"
                         onClick={openSearchModal}
-                    >
-                        <div className="flex items-center gap-2">
-                            <LucideIcon.Search className="text-muted-foreground" />
-                            Search site
-                        </div>
-                        <Kbd className="bg-transparent text-gray-500 shadow-none dark:text-gray-800" style={{textShadow: 'none'}}>{searchShortcut}</Kbd>
-                    </Button>
-                )}
+                        >
+                            <div className="flex items-center gap-2">
+                                <LucideIcon.Search className="text-muted-foreground" />
+                                Search site
+                            </div>
+                            <Kbd className="bg-transparent text-gray-500 shadow-none dark:text-gray-800" style={{textShadow: 'none'}}>{searchShortcut}</Kbd>
+                        </Button>
+                    )}
+                </div>
             </div>
         </SidebarHeader>
     );

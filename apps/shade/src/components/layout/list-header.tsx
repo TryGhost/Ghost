@@ -248,7 +248,7 @@ const ListHeader: ListHeaderComponent = Object.assign(
         return (
             <header
                 className={cn(
-                    'flex items-start justify-between gap-4 border-b min-h-[56px] py-3',
+                    'flex items-start justify-between gap-4 border-b h-[72px] py-5',
                     sticky && 'sticky top-0 z-50 -mb-4 lg:-mb-4',
                     blurredBackground && 'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black',
                     className

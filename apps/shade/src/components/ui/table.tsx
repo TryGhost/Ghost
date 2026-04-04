@@ -73,7 +73,7 @@ const headVariants = cva(
     {
         variants: {
             variant: {
-                default: 'h-[52px] px-2 text-left text-sm font-medium tracking-wide text-text-secondary [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+                default: 'h-[48px] px-2 text-left text-sm font-medium tracking-wide text-text-secondary [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
                 cardhead: 'text-base font-normal [&>div]:px-0'
             }
         },
@@ -120,7 +120,7 @@ const TableCell = React.forwardRef<
     <td
         ref={ref}
         className={cn(
-            'relative p-2.5 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] group-hover:bg-muted/50',
+            'relative p-2.5 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] group-hover:bg-muted',
             className
         )}
         {...props}
