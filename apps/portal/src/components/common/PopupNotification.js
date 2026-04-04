@@ -124,7 +124,7 @@ const NotificationText = ({message, site, t}) => {
         <p>
             <Interpolate
                 syntax={SYNTAX_I18NEXT}
-                string={t('An unexpected error occured. Please try again or <a>contact support</a> if the error persists.')}
+                string={t('An unexpected error occurred. Please try again or <a>contact support</a> if the error persists.')}
                 mapping={{
                     a: <a href={supportAddressMail} onClick={() => {
                         supportAddressMail && window.open(supportAddressMail);
