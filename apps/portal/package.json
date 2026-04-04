@@ -115,7 +115,7 @@
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "12.1.5",
     "@tryghost/i18n": "0.0.0",
-    "@vitejs/plugin-react": "4.7.0",
+    "@vitejs/plugin-react": "6.0.1",
     "@vitest/coverage-v8": "3.2.4",
     "@vitest/ui": "3.2.4",
     "concurrently": "8.2.2",
@@ -126,8 +126,8 @@
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "vite": "5.4.20",
-    "vite-plugin-css-injected-by-js": "3.5.2",
-    "vite-plugin-svgr": "3.3.0",
+    "vite-plugin-css-injected-by-js": "4.0.1",
+    "vite-plugin-svgr": "5.0.0",
     "vitest": "3.2.4"
   }
 }
