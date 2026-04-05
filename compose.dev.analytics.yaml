@@ -5,7 +5,7 @@
 
 services:
   analytics:
-    image: ghost/traffic-analytics:1.0.116
+    image: ghost/traffic-analytics:1.0.171@sha256:9c797eb89877f1fca0fe0d3ad44db047716f5e9a58b75f8b428836970d28f43d
     container_name: ghost-dev-analytics
     platform: linux/amd64
     command: ["node", "--enable-source-maps", "dist/server.js"]
