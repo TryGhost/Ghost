@@ -174,7 +174,7 @@
     "image-size": "1.2.1",
     "intl": "1.2.5",
     "intl-messageformat": "5.4.3",
-    "js-yaml": "4.1.0",
+    "js-yaml": "4.1.1",
     "jsonc-parser": "3.3.1",
     "jsonwebtoken": "8.5.1",
     "juice": "9.1.0",
@@ -216,7 +216,7 @@
     "stripe": "8.222.0",
     "superagent": "5.3.1",
     "superagent-throttle": "1.0.1",
-    "terser": "5.44.0",
+    "terser": "5.46.1",
     "tiny-glob": "0.2.9",
     "ua-parser-js": "1.0.41",
     "xml": "1.0.1"
@@ -256,7 +256,7 @@
     "mocha-slow-test-reporter": "0.1.2",
     "mock-knex": "TryGhost/mock-knex#68948e11b0ea4fe63456098dfdc169bea7f62009",
     "nock": "13.5.6",
-    "nodemon": "3.1.11",
+    "nodemon": "3.1.14",
     "papaparse": "5.5.3",
     "parse-prometheus-text-format": "1.1.1",
     "postcss": "8.5.6",
@@ -266,7 +266,7 @@
     "supertest": "6.3.4",
     "tmp": "0.2.5",
     "toml": "3.0.0",
-    "tsx": "4.20.6",
+    "tsx": "4.21.0",
     "typescript": "5.8.3"
   },
   "resolutions": {
