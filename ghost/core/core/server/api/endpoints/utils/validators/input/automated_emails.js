@@ -73,7 +73,7 @@ module.exports = {
         const subject = frame.data.subject;
         const lexical = frame.data.lexical;
 
-        if (typeof email !== 'string' || !validator.isEmail(email)) {
+        if (typeof email !== 'string' || !validator.isEmail(email, {legacy: false})) {
             throw new ValidationError({
                 message: tpl(messages.invalidEmailReceived)
             });

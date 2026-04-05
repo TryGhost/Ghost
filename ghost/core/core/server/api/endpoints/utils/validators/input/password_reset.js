@@ -30,7 +30,7 @@ module.exports = {
 
         const email = frame.data.password_reset?.[0]?.email;
 
-        if (typeof email !== 'string' || !validator.isEmail(email)) {
+        if (typeof email !== 'string' || !validator.isEmail(email, {legacy: false})) {
             throw new errors.BadRequestError({
                 message: tpl(messages.invalidEmailReceived)
             });
