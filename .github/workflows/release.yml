@@ -54,7 +54,7 @@ jobs:
       # Ghost only and can't authenticate against Casper/Source over SSH
       - run: git submodule update --init
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
