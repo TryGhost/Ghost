@@ -101,7 +101,7 @@ jobs:
               - added: 'ghost/**/package.json'
 
       - name: Determine changed packages
-        uses: AurorNZ/paths-filter@v4.0.0
+        uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
         id: changed
         with:
           filters: |
