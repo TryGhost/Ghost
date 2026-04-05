@@ -164,7 +164,7 @@
   "resolutions": {
     "ember-basic-dropdown": "6.0.2",
     "ember-in-viewport": "4.1.0",
-    "moment": "2.24.0",
+    "moment": "2.29.4",
     "moment-timezone": "0.5.45"
   },
   "ember": {
