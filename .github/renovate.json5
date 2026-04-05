@@ -7,6 +7,9 @@
     // The shared preset disables rate limiting, but Ghost's monorepo is
     // large enough that unlimited branches cause timeouts during rebasing.
     "branchConcurrentLimit": 10,
+    // Don't recreate PRs that have been manually closed. Updates can still
+    // be triggered on-demand via the Dependency Dashboard checkboxes.
+    "recreateClosed": false,
     // We have to disable platform based automerge (forcing renovate to do it manually)
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,
