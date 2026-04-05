@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1-labs
+# syntax=docker/dockerfile:1-labs@sha256:4c116b618ed48404d579b5467127b20986f2a6b29e4b9be2fee841f632db6a86
 
 # Production Dockerfile for Ghost
 # Two targets:

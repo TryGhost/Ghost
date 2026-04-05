@@ -6,7 +6,7 @@
 
 services:
   minio:
-    image: minio/minio:RELEASE.2024-12-13T22-19-12Z
+    image: minio/minio:RELEASE.2024-12-13T22-19-12Z@sha256:149fdd73108553247ceee85fc65466f51034bd6e145d6e0c0e415167f5f1274f
     container_name: ghost-dev-minio
     command: server /data --console-address ':9001'
     ports:
@@ -23,7 +23,7 @@ services:
       retries: 120
 
   minio-setup:
-    image: minio/mc
+    image: minio/mc@sha256:a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727
     container_name: ghost-dev-minio-setup
     entrypoint: ["/bin/sh", "/setup.sh"]
     environment:
