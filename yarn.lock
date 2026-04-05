@@ -22411,10 +22411,10 @@ human-interval@^2.0.0:
   dependencies:
     numbered "^1.1.0"
 
-human-number@2.0.7:
-  version "2.0.7"
-  resolved "https://registry.yarnpkg.com/human-number/-/human-number-2.0.7.tgz#140454fdd71a4367c71ef302c082e12b98b1e7ae"
-  integrity sha512-oRlIx8WSLqpGutVzCq72WipnfH1+OaSoxiPc5l2eMxjqgGow3K4jzCxAHkS93nPxFDa0vXUKaDrmdIAKLwBlHQ==
+human-number@2.0.8:
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/human-number/-/human-number-2.0.8.tgz#b19658cde210226862d1a7dc3bcec805b32b9eaf"
+  integrity sha512-0OikVKOKQR86Plj4Oyszl4TNYu4a9dsKeZKaZw6uHw+7zCDXZ3E3ldG/3ZRddwRajYljdZsMKFcvrNNXHR6wVg==
   dependencies:
     round-to "~5.0.0"
 
