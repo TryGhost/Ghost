@@ -1,131 +1,78 @@
 {
-    "extends": [
-        "github>tryghost/renovate-config"
+    extends: [
+        'github>tryghost/renovate-config',
     ],
-    // Limit concurrent branches to keep Renovate runs within the 30-minute
-    // Mend timeout and avoid overwhelming CI with dozens of queued jobs.
-    // The shared preset disables rate limiting, but Ghost's monorepo is
-    // large enough that unlimited branches cause timeouts during rebasing.
-    "branchConcurrentLimit": 10,
-    // We have to disable platform based automerge (forcing renovate to do it manually)
-    // as otherwise renovate wont follow our schedule
-    "platformAutomerge": false,
-    "timezone": "Etc/UTC",
-    "automergeSchedule": [
-        // Allow automerge all weekend: Saturday, Sunday, and Monday morning
-        "* * * * 0,6",
-        "* 0-12 * * 1"
+    branchConcurrentLimit: 10,
+    recreateWhen: 'auto',
+    platformAutomerge: false,
+    timezone: 'Etc/UTC',
+    automergeSchedule: [
+        '* * * * 0,6',
+        '* 0-12 * * 1',
     ],
-    "ignoreDeps": [
-        // https://github.com/TryGhost/Ghost/commit/2b9e494dfcb95c40f596ccf54ec3151c25d53601
-        // `got` 10.x has a Node 10 bug that makes it pretty much unusable for now
-        "got",
-        // https://github.com/TryGhost/Ghost/commit/2b9e494dfcb95c40f596ccf54ec3151c25d53601
-        // `intl-messageformat` 6.0.0 introduced a breaking change in terms of
-        // escaping that would be pretty difficult to fix for now
-        "intl-messageformat",
-        // https://github.com/TryGhost/Ghost/commit/b2fa84c7ff9bf8e21b0791f268f57e92759a87b1
-        // no reason given
-        "moment",
-        // https://github.com/TryGhost/Ghost/pull/10672
-        // https://github.com/TryGhost/Ghost/issues/10870
-        "moment-timezone",
-        // https://github.com/TryGhost/Admin/pull/1111/files
-        // Ignored because of a mobiledoc-kit issue but that's now in koenig, can probably be cleaned up
-        "simple-dom",
-        // https://github.com/TryGhost/Admin/pull/1111/files
-        // https://github.com/TryGhost/Ghost/pull/10672
-        // These have been ignored since forever
-        "ember-drag-drop",
-        "normalize.css",
-        "validator",
-
-        // https://github.com/TryGhost/Ghost/commit/7ebf2891b7470a1c2ffeddefb2fe5e7a57319df3
-        // Changed how modules are loaded, caused a weird error during render
-        "@embroider/macros",
-
-        // https://github.com/TryGhost/Ghost/commit/a10ad3767f60ed2c8e56feb49e7bf83d9618b2ab
-        // Caused linespacing issues in the editor, but now it's used in different places
-        // So not sure if it's relevant - soon we will finish switching to react-codemirror
-        "codemirror",
-
-        // https://github.com/TryGhost/Ghost/commit/3236891b80988924fbbdb625d30cb64a7bf2afd1
-        // ember-cli-code-coverage@2.0.0 broke our code coverage
-        "ember-cli-code-coverage",
-        // https://github.com/TryGhost/Ghost/commit/1382e34e42a513c201cb957b7f843369a2ce1b63
-        // ember-cli-terser@4.0.2 has a regression that breaks our sourcemaps
-        "ember-cli-terser"
+    ignoreDeps: [
+        'got',
+        'intl-messageformat',
+        'moment',
+        'moment-timezone',
+        'simple-dom',
+        'ember-drag-drop',
+        'normalize.css',
+        'validator',
+        '@embroider/macros',
+        'codemirror',
+        'ember-cli-code-coverage',
+        'ember-cli-terser',
     ],
-    "ignorePaths": [
-        "test",
-        "ghost/admin/lib/koenig-editor/package.json"
+    ignorePaths: [
+        'test',
+        'ghost/admin/lib/koenig-editor/package.json',
     ],
-    "packageRules": [
-        // Always require dashboard approval for major updates
-        // This was largely to avoid the noise of major updates which were ESM only
-        // The idea was to check and accept major updates if they were NOT ESM
-        // But this hasn't been workable with our capacity
-        // Plus, ESM-only is an edge case in the grand scheme of dependencies
+    packageRules: [
         {
-            "description": "Require dashboard approval for major updates",
-            "matchUpdateTypes": [
-                "major"
+            description: 'Require dashboard approval for major updates',
+            matchUpdateTypes: [
+                'major',
             ],
-            "dependencyDashboardApproval": true
+            dependencyDashboardApproval: true,
         },
-
-        // Group NQL packages separately from other TryGhost packages
         {
-            "groupName": "NQL packages",
-            "matchPackageNames": [
-                "@tryghost/nql",
-                "@tryghost/nql-lang"
-            ]
+            groupName: 'NQL packages',
+            matchPackageNames: [
+                '@tryghost/nql',
+                '@tryghost/nql-lang',
+            ],
         },
-
-        // Always automerge these packages:
         {
-            "matchPackageNames": [
-                // This is a pre-1.0.0 package, but it provides icons
-                // and is very very regularly updated and seems safe to update
-                "lucide-react"
+            matchPackageNames: [
+                'lucide-react',
             ],
-            "automerge": true
+            automerge: true,
         },
-
-        // Ignore all ember-related packages in admin
-        // Our ember codebase is being replaced with react and
-        // Most of the dependencies have breaking changes and it's too hard to update
-        // Therefore, we'll leave these as-is for now
         {
-            "groupName": "Disable ember updates",
-            "matchFileNames": [
-                "ghost/admin/package.json"
+            groupName: 'Disable ember updates',
+            matchFileNames: [
+                'ghost/admin/package.json',
             ],
-            "matchPackageNames": [
-                // `ember-foo` style packages
-                "/^ember(-|$)/",
-                // scoped `@ember/*` packages
-                "/^@ember\\//",
-                // foo/ember-something style packages
-                "/\\/ember(-|$)/"
+            matchPackageNames: [
+                '/^ember(-|$)/',
+                '/^@ember\\//',
+                '/\\/ember(-|$)/',
             ],
-            "enabled": false
+            enabled: false,
         },
-
-        // Don't allow css preprocessor updates in admin
         {
-            "groupName": "disable css",
-            "matchFileNames": [
-                "ghost/admin/package.json"
+            groupName: 'disable css',
+            matchFileNames: [
+                'ghost/admin/package.json',
             ],
-            "matchPackageNames": [
-                "autoprefixer",
-                "ember-cli-postcss",
-                "/^postcss/",
-                "/^css/"
+            matchPackageNames: [
+                'autoprefixer',
+                'ember-cli-postcss',
+                '/^postcss/',
+                '/^css/',
             ],
-            "enabled": false
-        }
-    ]
+            enabled: false,
+        },
+    ],
 }
