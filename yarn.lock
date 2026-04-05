@@ -21448,12 +21448,12 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-ghost-storage-base@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/ghost-storage-base/-/ghost-storage-base-1.0.0.tgz#931289d310ad59fc80e2be01a81235cc3a76e75a"
-  integrity sha512-qIW6pny/wWKjrbRmXVNis9i7856AMR5/NZmnLTrKbA0KIEnA9K/fhkj7ISnSyTYfBv17sFsC23eJfvj6dDgZrQ==
+ghost-storage-base@1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/ghost-storage-base/-/ghost-storage-base-1.1.2.tgz#e1666b35dc705e667220f4727e4e912bcfd28f4f"
+  integrity sha512-5NG3cm7dbb5RPFcviNlXJuwIN5ydDEaMEY5+ixrMAYspRLLEtAAtUYF+YDkBfpJc86aopqMshcszvwDzE7QCnA==
   dependencies:
-    moment "2.27.0"
+    moment "2.29.4"
 
 git-hooks-list@1.0.3:
   version "1.0.3"
@@ -26851,7 +26851,7 @@ moment-timezone@0.5.45, moment-timezone@^0.5.23, moment-timezone@^0.5.31, moment
   dependencies:
     moment "^2.29.4"
 
-moment@2.24.0, moment@2.27.0, moment@2.30.1, moment@^2.10.2, moment@^2.18.1, moment@^2.19.3, moment@^2.27.0, moment@^2.29.4:
+moment@2.24.0, moment@2.29.4, moment@2.30.1, moment@^2.10.2, moment@^2.18.1, moment@^2.19.3, moment@^2.27.0, moment@^2.29.4:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
