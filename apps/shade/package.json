@@ -93,7 +93,7 @@
         "eslint-plugin-tailwindcss": "4.0.0-beta.0",
         "jsdom": "28.1.0",
         "lodash-es": "4.17.21",
-        "postcss": "8.5.6",
+        "postcss": "8.5.8",
         "rollup-plugin-node-builtins": "2.1.2",
         "sinon": "18.0.1",
         "storybook": "10.3.3",
