@@ -153,6 +153,14 @@ body[data-admin-ui-redesign='true'] {
 .shade[data-admin-ui-redesign='true'].dark,
 :root.dark[data-admin-ui-redesign='true'],
 body.dark[data-admin-ui-redesign='true'] {
+    --background: hsl(216 11% 9%);
+    --muted: hsl(210 11% 25%);
+    --border: hsl(216 7% 14%);
+    --input: hsl(210 11% 25%);
+    --secondary: hsl(210 11% 25%);
     --sidebar-background: hsl(216 11% 9%);
+    --sidebar-foreground: hsl(200 12% 96%);
+    --sidebar-accent: hsl(210 11% 17%);
+    --sidebar-accent-foreground: hsl(200 12% 96%);
     --sidebar-border: transparent;
 }
