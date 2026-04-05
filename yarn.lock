@@ -8832,7 +8832,7 @@
     "@tailwindcss/oxide-win32-arm64-msvc" "4.2.1"
     "@tailwindcss/oxide-win32-x64-msvc" "4.2.1"
 
-"@tailwindcss/postcss@4.2.1", "@tailwindcss/postcss@^4":
+"@tailwindcss/postcss@4.2.1":
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/@tailwindcss/postcss/-/postcss-4.2.1.tgz#efce3b23608b23324ed4848ff1aae657adfe0c5f"
   integrity sha512-OEwGIBnXnj7zJeonOh6ZG9woofIjGrd2BORfvE5p9USYKDCZoQmfqLcfNiRWoJlRWLdNPn2IgVZuWAOM4iTYMw==
@@ -33514,7 +33514,7 @@ tailwindcss@3.4.18:
     resolve "^1.22.8"
     sucrase "^3.35.0"
 
-tailwindcss@4.2.1, tailwindcss@^4:
+tailwindcss@4.2.1:
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/tailwindcss/-/tailwindcss-4.2.1.tgz#018c4720b58baf98a6bf56b0a12aa797c6cfef1d"
   integrity sha512-/tBrSQ36vCleJkAOsy9kbNTgaxvGbyOamC30PRePTQe/o1MFwEKHQk4Cn7BNGaPtjp+PuUrByJehM1hgxfq4sw==

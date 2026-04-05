@@ -42,7 +42,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           # Deploy key (via ssh-agent) is used for git push — it bypasses
           # branch protection and triggers downstream workflows (unlike GITHUB_TOKEN)
@@ -103,7 +103,7 @@ jobs:
 
       - name: Notify on failure
         if: failure()
-        uses: tryghost/actions/actions/slack-build@main
+        uses: tryghost/actions/actions/slack-build@0204421bd3b15725e5b8c606d5d671e9674707ea # main
         with:
           status: ${{ job.status }}
         env:
