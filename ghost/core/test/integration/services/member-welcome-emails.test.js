@@ -65,25 +65,39 @@ describe('Member Welcome Emails Integration', function () {
             }
         });
 
-        await db.knex('automated_emails').insert({
-            id: ObjectId().toHexString(),
-            email_design_setting_id: defaultEmailDesignSettingId,
+        const freeAutomationId = ObjectId().toHexString();
+        await db.knex('welcome_email_automations').insert({
+            id: freeAutomationId,
             status: 'active',
             name: 'Free Member Welcome Email',
             slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+            created_at: new Date()
+        });
+        await db.knex('welcome_email_automated_emails').insert({
+            id: ObjectId().toHexString(),
+            welcome_email_automation_id: freeAutomationId,
+            delay_days: 0,
             subject: 'Welcome to {site_title}',
             lexical,
+            email_design_setting_id: defaultEmailDesignSettingId,
             created_at: new Date()
         });
 
-        await db.knex('automated_emails').insert({
-            id: ObjectId().toHexString(),
-            email_design_setting_id: defaultEmailDesignSettingId,
+        const paidAutomationId = ObjectId().toHexString();
+        await db.knex('welcome_email_automations').insert({
+            id: paidAutomationId,
             status: 'active',
             name: 'Paid Member Welcome Email',
             slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
+            created_at: new Date()
+        });
+        await db.knex('welcome_email_automated_emails').insert({
+            id: ObjectId().toHexString(),
+            welcome_email_automation_id: paidAutomationId,
+            delay_days: 0,
             subject: 'Welcome paid member to {site_title}',
             lexical,
+            email_design_setting_id: defaultEmailDesignSettingId,
             created_at: new Date()
         });
     });
@@ -104,8 +118,8 @@ describe('Member Welcome Emails Integration', function () {
         await db.knex('automated_email_recipients').del();
         await db.knex('outbox').del();
         await db.knex('members').del();
-        await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
-        await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
+        await db.knex('welcome_email_automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
+        await db.knex('welcome_email_automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
     });
 
     describe('Member creation with welcome emails', function () {
@@ -215,7 +229,7 @@ describe('Member Welcome Emails Integration', function () {
         }
 
         it('does not send email when template is inactive', async function () {
-            await db.knex('automated_emails')
+            await db.knex('welcome_email_automations')
                 .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
                 .update({status: 'inactive'});
 
@@ -241,7 +255,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('does not send email when no template exists', async function () {
-            await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
+            await db.knex('welcome_email_automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
 
             await models.Outbox.add({
                 event_type: 'MemberCreatedEvent',
@@ -265,7 +279,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('does not send email when paid template is inactive but entry has status paid', async function () {
-            await db.knex('automated_emails')
+            await db.knex('welcome_email_automations')
                 .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid)
                 .update({status: 'inactive'});
 
@@ -291,7 +305,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('does not send email when no paid template exists but entry has status paid', async function () {
-            await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
+            await db.knex('welcome_email_automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
 
             await models.Outbox.add({
                 event_type: 'MemberCreatedEvent',
@@ -347,9 +361,10 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(record.member_email, memberEmail);
             assert.equal(record.member_name, memberName);
 
-            const automatedEmail = await db.knex('automated_emails')
-                .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
-                .first();
+            const automatedEmail = await db.knex('welcome_email_automated_emails')
+                .join('welcome_email_automations', 'welcome_email_automated_emails.welcome_email_automation_id', 'welcome_email_automations.id')
+                .where('welcome_email_automations.slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
+                .first('welcome_email_automated_emails.id');
             assert.equal(record.automated_email_id, automatedEmail.id);
         });
 
@@ -413,7 +428,7 @@ describe('Member Welcome Emails Integration', function () {
             const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
             memberWelcomeEmailService.init();
 
-            const automatedEmail = await db.knex('automated_emails')
+            const automation = await db.knex('welcome_email_automations')
                 .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
                 .first();
 
@@ -435,7 +450,7 @@ describe('Member Welcome Emails Integration', function () {
                 email: 'test-member@example.com',
                 subject: 'Welcome test',
                 lexical,
-                automatedEmailId: automatedEmail.id
+                automatedEmailId: automation.id
             });
 
             sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);

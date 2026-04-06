@@ -1,6 +1,8 @@
 const ghostBookshelf = require('./base');
+const errors = require('@tryghost/errors');
 const urlUtils = require('../../shared/url-utils');
 const lexicalLib = require('../lib/lexical');
+const {DEFAULT_EMAIL_DESIGN_SETTING_SLUG} = require('../services/member-welcome-emails/constants');
 
 const WelcomeEmailAutomatedEmail = ghostBookshelf.Model.extend({
     tableName: 'welcome_email_automated_emails',
@@ -29,6 +31,24 @@ const WelcomeEmailAutomatedEmail = ghostBookshelf.Model.extend({
         }
 
         return attrs;
+    },
+
+    async onCreating(model, attrs, options) {
+        if (!model.get('email_design_setting_id')) {
+            const emailDesignSetting = await ghostBookshelf.model('EmailDesignSetting').findOne({
+                slug: DEFAULT_EMAIL_DESIGN_SETTING_SLUG
+            }, options);
+
+            if (!emailDesignSetting) {
+                throw new errors.InternalServerError({
+                    message: 'Missing default email design setting for automated emails'
+                });
+            }
+
+            model.set('email_design_setting_id', emailDesignSetting.get('id'));
+        }
+
+        return ghostBookshelf.Model.prototype.onCreating.call(this, model, attrs, options);
     },
 
     // Alternative to Bookshelf's .format() that is only called when writing to db

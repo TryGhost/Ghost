@@ -5,7 +5,7 @@ const AutomatedEmailRecipient = ghostBookshelf.Model.extend({
     hasTimestamps: true,
 
     automatedEmail() {
-        return this.belongsTo('AutomatedEmail', 'automated_email_id');
+        return this.belongsTo('WelcomeEmailAutomatedEmail', 'automated_email_id');
     },
     member() {
         return this.belongsTo('Member', 'member_id');

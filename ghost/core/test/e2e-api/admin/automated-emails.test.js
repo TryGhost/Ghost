@@ -36,7 +36,8 @@ describe('Automated Emails API', function () {
 
     beforeEach(async function () {
         await dbUtils.truncate('brute');
-        await dbUtils.truncate('automated_emails');
+        await dbUtils.truncate('welcome_email_automated_emails');
+        await dbUtils.truncate('welcome_email_automations');
     });
 
     describe('Browse', function () {
