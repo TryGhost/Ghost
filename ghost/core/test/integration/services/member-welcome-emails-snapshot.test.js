@@ -4,7 +4,6 @@ const testUtils = require('../../utils');
 const {assertMatchSnapshot} = require('../../utils/assertions');
 const labs = require('../../../core/shared/labs');
 const MemberWelcomeEmailRenderer = require('../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');
-const configUtils = require('../../utils/config-utils');
 
 describe('Member Welcome Email Renderer Snapshots', function () {
     let renderer;
@@ -12,7 +11,6 @@ describe('Member Welcome Email Renderer Snapshots', function () {
 
     before(async function () {
         await testUtils.setup('default')();
-        configUtils.set('labs:welcomeEmailsDesignCustomization', false);
     });
 
     beforeEach(function () {
@@ -33,10 +31,6 @@ describe('Member Welcome Email Renderer Snapshots', function () {
 
     afterEach(function () {
         sinon.restore();
-    });
-
-    after(async function () {
-        await configUtils.restore();
     });
 
     function makeLexical(children) {
@@ -141,7 +135,14 @@ describe('Member Welcome Email Renderer Snapshots', function () {
 
     describe('labs flag on', function () {
         beforeEach(function () {
-            configUtils.set('labs:welcomeEmailsDesignCustomization', true);
+            labs.isSet.restore();
+            sinon.stub(labs, 'isSet').callsFake((flag) => {
+                if (flag === 'welcomeEmailsDesignCustomization') {
+                    return true;
+                }
+
+                return originalLabsIsSet(flag);
+            });
 
             const i18n = i18nLib('en', 'ghost');
             renderer = new MemberWelcomeEmailRenderer({t: i18n.t});
