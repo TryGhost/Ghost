@@ -2,6 +2,14 @@
     "extends": [
         "github>tryghost/renovate-config"
     ],
+    // Limit concurrent branches to keep Renovate runs within the 30-minute
+    // Mend timeout and avoid overwhelming CI with dozens of queued jobs.
+    // The shared preset disables rate limiting, but Ghost's monorepo is
+    // large enough that unlimited branches cause timeouts during rebasing.
+    "branchConcurrentLimit": 10,
+    // Keep manually-closed immortal/grouped PRs closed unless explicitly
+    // reopened from the Dependency Dashboard.
+    "recreateWhen": "never",
     // We have to disable platform based automerge (forcing renovate to do it manually)
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,

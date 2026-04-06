@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const {spawnSync} = require('node:child_process');
 
 const knex = require('knex').default;
 
@@ -256,20 +255,18 @@ describe('Importer', function () {
 
 describe('Events Generator', function () {
     it('Parses database timestamps as UTC in non-UTC timezones', function () {
-        const script = `
-            const dateToDatabaseString = require(${JSON.stringify(require.resolve('../../../../../core/server/data/seeders/utils/database-date'))});
-            process.stdout.write(dateToDatabaseString.parse('2026-03-26 11:50:00.000').toISOString());
-        `;
-        const result = spawnSync(process.execPath, ['-e', script], {
-            env: {
-                ...process.env,
-                TZ: 'America/New_York'
-            },
-            encoding: 'utf8'
-        });
-
-        assert.equal(result.status, 0);
-        assert.equal(result.stdout, '2026-03-26T11:50:00.000Z');
+        const originalTZ = process.env.TZ;
+        try {
+            process.env.TZ = 'America/New_York';
+            const result = dateToDatabaseString.parse('2026-03-26 11:50:00.000');
+            assert.equal(result.toISOString(), '2026-03-26T11:50:00.000Z');
+        } finally {
+            if (originalTZ === undefined) {
+                delete process.env.TZ;
+            } else {
+                process.env.TZ = originalTZ;
+            }
+        }
     });
 
     it('Returns the start date when a range is inverted', function () {

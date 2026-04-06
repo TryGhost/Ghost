@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Prepare & Push Release
     steps:
-      - uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387 # v0.9.0
+      - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
@@ -54,7 +54,7 @@ jobs:
       # Ghost only and can't authenticate against Casper/Source over SSH
       - run: git submodule update --init
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
