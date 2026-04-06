@@ -798,6 +798,23 @@ export const createPopupNotification = ({type, status, autoHide, duration = 2600
     };
 };
 
+export const createNotification = ({type, status, autoHide, duration = 2600, closeable, state, message}) => {
+    const previousCount = Number.isInteger(state?.notificationSequence)
+        ? state.notificationSequence
+        : state?.notification?.count;
+    const count = Number.isInteger(previousCount) ? previousCount + 1 : 0;
+
+    return {
+        type,
+        status,
+        autoHide,
+        closeable,
+        duration,
+        message,
+        count
+    };
+};
+
 export function isSameCurrency(currency1, currency2) {
     return currency1?.toLowerCase() === currency2?.toLowerCase();
 }
