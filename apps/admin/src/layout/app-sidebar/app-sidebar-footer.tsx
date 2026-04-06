@@ -9,18 +9,28 @@ import { LucideIcon } from "@tryghost/shade/utils";
 
 function AppSidebarFooter({ ...props }: React.ComponentProps<typeof SidebarFooter>) {
     const [isWhatsNewDialogOpen, setIsWhatsNewDialogOpen] = useState(false);
+    const [isHomeAssistantBannerVisible, setIsHomeAssistantBannerVisible] = useState(false);
     const {hasBanner} = useSidebarBannerState();
 
     return (
         <>
             <SidebarFooter {...props}>
-                <div className="mx-2 mb-5 flex flex-col rounded-2xl bg-[#E1F2ED] p-3 text-foreground transition-all hover:scale-[1.033]">
-                    <div className="flex size-10 items-center justify-center rounded-full bg-[#BFE3D8] text-foreground"><LucideIcon.Gift size={16} /></div>
-                    <div className="mt-3 text-md font-semibold">Home assistant</div>
-                    <div>
-                        Connect your Ghost publication to devices in the real world
+                {isHomeAssistantBannerVisible ? (
+                    <div className="mx-2 mb-5 flex flex-col rounded-2xl bg-[#E1F2ED] p-3 text-foreground transition-all hover:scale-[1.033]">
+                        <div className="flex size-10 items-center justify-center rounded-full bg-[#BFE3D8] text-foreground"><LucideIcon.Gift size={16} /></div>
+                        <div className="mt-3 text-md font-semibold">Home assistant</div>
+                        <div>
+                            Connect your Ghost publication to devices in the real world
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <button
+                        aria-label="Toggle Home assistant mock banner"
+                        className="mr-2 ml-auto size-6 rounded-full opacity-0"
+                        type="button"
+                        onClick={() => setIsHomeAssistantBannerVisible(value => !value)}
+                    />
+                )}
                 <SidebarGroup className={hasBanner ? 'pt-3' : ''}>
                     <SidebarMenu>
                         <SidebarMenuItem>
