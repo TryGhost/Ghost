@@ -1,12 +1,11 @@
 import React from "react"
 
-import {SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuBadge} from "@tryghost/shade/components"
-import {formatNumber, LucideIcon} from "@tryghost/shade/utils"
+import {SidebarGroup, SidebarGroupContent, SidebarMenu} from "@tryghost/shade/components"
+import {LucideIcon} from "@tryghost/shade/utils"
 import { useLocation } from "@tryghost/admin-x-framework";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
-import { canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
+import { canManageMembers } from "@tryghost/admin-x-framework/api/users";
 import { NavMenuItem } from "./nav-menu-item";
-import { useMemberCount } from "./hooks/use-member-count";
 import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
 import { NavCustomViews } from "./nav-custom-views";
 import { NavMemberViews } from "./nav-member-views";
@@ -16,7 +15,7 @@ import { useCustomSidebarViews } from "./use-custom-sidebar-views";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
-function PostsNavItemContent({adminUiRedesign, isActive, to}: {adminUiRedesign: boolean; isActive: boolean; to: string}) {
+function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
     return (
         <>
             <NavMenuItem.Link
@@ -26,29 +25,16 @@ function PostsNavItemContent({adminUiRedesign, isActive, to}: {adminUiRedesign: 
                 <LucideIcon.PenLine className="pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0" />
                 <NavMenuItem.Label>Posts</NavMenuItem.Label>
             </NavMenuItem.Link>
-            <a href="#/editor/post"
-                aria-label="Create new post"
-                className={`absolute top-0 right-0 size-8 items-center justify-center rounded-full p-0 text-gray-700 transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${adminUiRedesign ? 'hidden' : 'flex'}`}
-            >
-                <LucideIcon.Plus
-                    size={20}
-                    className="mt-px stroke-[1.5px]!"
-                />
-            </a>
         </>
     );
 }
 
 function MembersNavItemContent({
-    adminUiRedesign,
     collapsible,
-    count,
     isActive,
     to
 }: {
-    adminUiRedesign: boolean;
     collapsible: boolean;
-    count: number | null | undefined;
     isActive: boolean;
     to: string;
 }) {
@@ -61,9 +47,6 @@ function MembersNavItemContent({
                 <LucideIcon.Users className={collapsible ? "pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0" : ""} />
                 <NavMenuItem.Label>Members</NavMenuItem.Label>
             </NavMenuItem.Link>
-            {count != null && (
-                <SidebarMenuBadge className={adminUiRedesign ? 'hidden' : undefined}>{(formatNumber as (value: number) => string)(count)}</SidebarMenuBadge>
-            )}
         </>
     );
 }
@@ -76,13 +59,10 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const memberViews = useMemberSidebarViews();
     const hasMemberViews = memberViews.length > 0;
     const location = useLocation();
-    const memberCount = useMemberCount();
     const routing = useEmberRouting();
     const commentModerationEnabled = useFeatureFlag('commentModeration');
     const membersForwardEnabled = useFeatureFlag('membersForward');
-    const adminUiRedesign = useFeatureFlag('adminUiRedesign');
 
-    const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
     const isDraftPostsRouteActive = routing.isRouteActive('posts', {type: 'draft'});
     const isScheduledPostsRouteActive = routing.isRouteActive('posts', {type: 'scheduled'});
@@ -115,7 +95,6 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     >
                         <NavMenuItem.CollapsibleItem ariaLabel="Toggle post views">
                             <PostsNavItemContent
-                                adminUiRedesign={adminUiRedesign}
                                 isActive={postsNavActive}
                                 to={postsRoute}
                             />
@@ -166,18 +145,6 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         </NavMenuItem.Link>
                     </NavMenuItem>
 
-                    {showTags && (
-                        <NavMenuItem className={adminUiRedesign ? 'hidden' : undefined}>
-                            <NavMenuItem.Link
-                                to="tags"
-                                activeOnSubpath
-                            >
-                                <LucideIcon.Tag />
-                                <NavMenuItem.Label>Tags</NavMenuItem.Label>
-                            </NavMenuItem.Link>
-                        </NavMenuItem>
-                    )}
-
                     {showMembers && (
                         <>
                             {membersForwardEnabled && hasMemberViews ? (
@@ -188,9 +155,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 >
                                     <NavMenuItem.CollapsibleItem ariaLabel="Toggle member views">
                                         <MembersNavItemContent
-                                            adminUiRedesign={adminUiRedesign}
                                             collapsible={true}
-                                            count={memberCount}
                                             isActive={membersNavActive}
                                             to={membersRoute}
                                         />
@@ -203,9 +168,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             ) : (
                                 <NavMenuItem>
                                     <MembersNavItemContent
-                                        adminUiRedesign={adminUiRedesign}
                                         collapsible={false}
-                                        count={memberCount}
                                         isActive={membersNavActive}
                                         to={membersRoute}
                                     />

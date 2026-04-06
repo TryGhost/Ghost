@@ -100,32 +100,18 @@ body.react-admin {
     grid-template-columns: 100%;
 }
 
-body:not([data-admin-ui-redesign='true']).react-admin {
-    overflow: hidden;
-    height: 100svh;
-}
-
 /* Alerts show at the top and push content down */
 body.react-admin #ember-alerts-wormhole {
     grid-row: 1;
     grid-column: 1;
+    display: block;
     z-index: 0; /* Hide alerts when settings app modal is open */
-}
-
-/* Main app container - pass through to children (.shade.shade-admin) */
-body.react-admin #root {
-    display: contents;
 }
 
 /* Ensure ShadeApp takes full grid space */
 body.react-admin #root .shade.shade-admin {
     grid-row: 2;
     grid-column: 1;
-    min-height: 0;
-    overflow: hidden;
-}
-
-body.react-admin[data-admin-ui-redesign='true'] #root .shade.shade-admin {
     max-width: 1400px;
     margin-inline: auto;
     width: 100%;
@@ -133,11 +119,7 @@ body.react-admin[data-admin-ui-redesign='true'] #root .shade.shade-admin {
     min-height: 100svh;
 }
 
-body.react-admin[data-admin-ui-redesign='true'] #ember-alerts-wormhole {
-    display: block;
-}
-
-body.react-admin[data-admin-ui-redesign='true'] #root {
+body.react-admin #root {
     display: block;
 }
 
@@ -198,10 +180,10 @@ body.react-admin [data-test-table="members"] tr {
 
 /* Admin UI redesign token overrides */
 
-body[data-admin-ui-redesign='true'] .shadow-xs {
+body.react-admin .shadow-xs {
     --tw-shadow: 0 0 1px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.05), 0 8px 10px -12px rgba(0,0,0,.1);
 }
 
-body[data-admin-ui-redesign='true'] .shadow-xl {
+body.react-admin .shadow-xl {
     --tw-shadow: 0 0 1px rgba(0,0,0,0.15), 0 100px 92px 0 rgba(0, 0, 0, 0.05), 0 41.778px 38.435px 0 rgba(0, 0, 0, 0.04), 0 22.336px 20.549px 0 rgba(0, 0, 0, 0.03), 0 12.522px 11.52px 0 rgba(0, 0, 0, 0.03), 0 6.65px 6.118px 0 rgba(0, 0, 0, 0.02), 0 2.767px 2.546px 0 rgba(0, 0, 0, 0.01);
 }

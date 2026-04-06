@@ -4,7 +4,6 @@ import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './app.tsx';
 import {AppProvider} from './providers/app-provider';
-import {useFeatureFlag} from './hooks/use-feature-flag';
 import './index.css';
 import {routes} from './routes.tsx';
 import {navigateTo} from './utils/navigation';
@@ -34,11 +33,9 @@ const framework = {
 };
 
 export const AdminShadeRoot = () => {
-    const adminUiRedesign = useFeatureFlag('adminUiRedesign');
-
     return (
         <ShadeApp
-            adminUiRedesign={adminUiRedesign}
+            adminUiRedesign={true}
             className="shade-admin"
             darkMode={false}
             fetchKoenigLexical={null}

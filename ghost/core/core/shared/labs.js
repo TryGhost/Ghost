@@ -52,8 +52,7 @@ const PRIVATE_FEATURES = [
     'welcomeEmailsDesignCustomization',
     'pictureImageFormats',
     'smarterCounts',
-    'giftSubscriptions',
-    'adminUiRedesign'
+    'giftSubscriptions'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

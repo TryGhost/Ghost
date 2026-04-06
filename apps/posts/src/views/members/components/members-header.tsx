@@ -1,7 +1,6 @@
 import React from 'react';
 import {ListHeader} from '@tryghost/shade/primitives';
 import {cn} from '@tryghost/shade/utils';
-import {useAdminUiRedesign} from '@src/hooks/use-admin-ui-redesign';
 
 interface MembersHeaderProps {
     children?: React.ReactNode;
@@ -16,12 +15,10 @@ const MembersHeader: React.FC<MembersHeaderProps> = ({
     totalMembers,
     isLoading
 }) => {
-    const adminUiRedesign = useAdminUiRedesign();
-
     return (
         <ListHeader
             blurredBackground={false}
-            className={cn('relative', adminUiRedesign ? className : undefined)}
+            className={cn('relative', className)}
             sticky={false}
         >
             <ListHeader.Left>

@@ -34,7 +34,6 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
     const [debouncedSearch] = useDebounce(searchInput, SEARCH_DEBOUNCE_MS);
 
     const emailAnalyticsEnabled = configData?.config?.emailAnalytics === true;
-    const adminUiRedesign = configData?.config?.labs?.adminUiRedesign === true;
 
     const activeColumns = useMemo(() => {
         return getMemberActiveColumns(filters);
@@ -96,156 +95,82 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
         setShowMobileSearch(true);
     };
 
-    const filtersClassName = adminUiRedesign
-        ? 'flex flex-col gap-4 px-3 py-3 lg:flex-row lg:items-center sidebar:gap-6 lg:gap-6 min-h-[48px] bg-muted rounded-lg'
-        : 'flex flex-col gap-4 px-4 lg:flex-row lg:items-center sidebar:gap-6 lg:px-8 lg:gap-6';
+    const filtersClassName = 'flex flex-col gap-4 px-3 py-3 lg:flex-row lg:items-center sidebar:gap-6 lg:gap-6 min-h-[48px] bg-muted rounded-lg';
 
     return (
         <MembersLayout>
-            <div ref={headerRef} className={adminUiRedesign ? 'sticky top-0 z-50 flex flex-col bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md lg:border-b dark:bg-black' : 'sticky top-0 z-50 flex flex-col gap-4 bg-gradient-to-b from-background via-background/70 to-background/70 py-4 backdrop-blur-md sidebar:gap-6 sidebar:py-6 dark:bg-black'}>
-                {adminUiRedesign ? (
-                    <div>
-                        <MembersHeader
-                            className={hasFilters ? 'border-none' : ''}
-                            isLoading={shouldShowLoading}
-                            totalMembers={totalMembers}
-                        >
-                            <ListHeader.Actions>
-                                <ListHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
-                                    <div className="hidden lg:flex">
-                                        <MembersHeaderSearch
-                                            search={searchInput}
-                                            onSearchChange={setSearchInput}
-                                        />
-                                    </div>
-                                    <Button
-                                        aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
-                                        className={cn('lg:hidden', showMobileSearch && 'bg-secondary hover:bg-secondary')}
-                                        size="icon"
-                                        variant="secondary"
-                                        onClick={handleMobileSearchToggle}
-                                    >
-                                        <LucideIcon.Search className="size-4" />
-                                    </Button>
-                                    {!hasFilters && (
-                                        <MembersFilters
-                                            activeView={activeView}
-                                            filters={filters}
-                                            iconOnly={true}
-                                            nql={nql}
-                                            savedViews={savedViews}
-                                            onFiltersChange={setFilters}
-                                        />
-                                    )}
-                                    <MembersActions
-                                        canBulkDelete={canBulkDelete}
-                                        hasFilterOrSearch={hasFilterOrSearch}
-                                        memberCount={totalMembers}
-                                        nql={nql}
-                                        search={search}
-                                        onImportComplete={() => {
-                                            void refetch();
-                                        }}
+            <div ref={headerRef} className='sticky top-0 z-50 flex flex-col bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md lg:border-b dark:bg-black'>
+                <div>
+                    <MembersHeader
+                        className={hasFilters ? 'border-none' : ''}
+                        isLoading={shouldShowLoading}
+                        totalMembers={totalMembers}
+                    >
+                        <ListHeader.Actions>
+                            <ListHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
+                                <div className="hidden lg:flex">
+                                    <MembersHeaderSearch
+                                        search={searchInput}
+                                        onSearchChange={setSearchInput}
                                     />
-                                </ListHeader.ActionGroup>
-                            </ListHeader.Actions>
-                        </MembersHeader>
-
-                        {(shouldShowFiltersRow || shouldShowMobileSearchRow) && (
-                            <div className={cn(filtersClassName, !shouldShowFiltersRow && 'lg:hidden')}>
-                                {shouldShowMobileSearchRow && (
-                                    <div className="lg:hidden">
-                                        <MembersHeaderSearch
-                                            ariaLabel="Search members mobile"
-                                            autoFocus={mobileSearchOpenedByUser}
-                                            search={searchInput}
-                                            onSearchChange={setSearchInput}
-                                        />
-                                    </div>
-                                )}
-                                {shouldShowFiltersRow && (
+                                </div>
+                                <Button
+                                    aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
+                                    className={cn('lg:hidden', showMobileSearch && 'bg-secondary hover:bg-secondary')}
+                                    size="icon"
+                                    variant="secondary"
+                                    onClick={handleMobileSearchToggle}
+                                >
+                                    <LucideIcon.Search className="size-4" />
+                                </Button>
+                                {!hasFilters && (
                                     <MembersFilters
                                         activeView={activeView}
                                         filters={filters}
+                                        iconOnly={true}
                                         nql={nql}
                                         savedViews={savedViews}
                                         onFiltersChange={setFilters}
                                     />
                                 )}
-                            </div>
-                        )}
-                    </div>
-                ) : (
-                    <>
-                        <MembersHeader
-                            isLoading={shouldShowLoading}
-                            totalMembers={totalMembers}
-                        >
-                            <ListHeader.Actions>
-                                <ListHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
-                                    <div className="hidden lg:flex">
-                                        <MembersHeaderSearch
-                                            search={searchInput}
-                                            onSearchChange={setSearchInput}
-                                        />
-                                    </div>
-                                    <Button
-                                        aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
-                                        className={cn('lg:hidden', showMobileSearch && 'bg-secondary hover:bg-secondary')}
-                                        variant="outline"
-                                        onClick={handleMobileSearchToggle}
-                                    >
-                                        <LucideIcon.Search className="size-4" />
-                                    </Button>
-                                    {!hasFilters && (
-                                        <MembersFilters
-                                            activeView={activeView}
-                                            filters={filters}
-                                            iconOnly={true}
-                                            nql={nql}
-                                            savedViews={savedViews}
-                                            onFiltersChange={setFilters}
-                                        />
-                                    )}
-                                    <MembersActions
-                                        canBulkDelete={canBulkDelete}
-                                        hasFilterOrSearch={hasFilterOrSearch}
-                                        memberCount={totalMembers}
-                                        nql={nql}
-                                        search={search}
-                                        onImportComplete={() => {
-                                            void refetch();
-                                        }}
-                                    />
-                                </ListHeader.ActionGroup>
-                            </ListHeader.Actions>
-                        </MembersHeader>
+                                <MembersActions
+                                    canBulkDelete={canBulkDelete}
+                                    hasFilterOrSearch={hasFilterOrSearch}
+                                    memberCount={totalMembers}
+                                    nql={nql}
+                                    search={search}
+                                    onImportComplete={() => {
+                                        void refetch();
+                                    }}
+                                />
+                            </ListHeader.ActionGroup>
+                        </ListHeader.Actions>
+                    </MembersHeader>
 
-                        {(shouldShowFiltersRow || shouldShowMobileSearchRow) && (
-                            <div className={cn(filtersClassName, !shouldShowFiltersRow && 'lg:hidden')}>
-                                {shouldShowMobileSearchRow && (
-                                    <div className="lg:hidden">
-                                        <MembersHeaderSearch
-                                            ariaLabel="Search members mobile"
-                                            autoFocus={mobileSearchOpenedByUser}
-                                            search={searchInput}
-                                            onSearchChange={setSearchInput}
-                                        />
-                                    </div>
-                                )}
-                                {shouldShowFiltersRow && (
-                                    <MembersFilters
-                                        activeView={activeView}
-                                        filters={filters}
-                                        nql={nql}
-                                        savedViews={savedViews}
-                                        onFiltersChange={setFilters}
+                    {(shouldShowFiltersRow || shouldShowMobileSearchRow) && (
+                        <div className={cn(filtersClassName, !shouldShowFiltersRow && 'lg:hidden')}>
+                            {shouldShowMobileSearchRow && (
+                                <div className="lg:hidden">
+                                    <MembersHeaderSearch
+                                        ariaLabel="Search members mobile"
+                                        autoFocus={mobileSearchOpenedByUser}
+                                        search={searchInput}
+                                        onSearchChange={setSearchInput}
                                     />
-                                )}
-                            </div>
-                        )}
-                    </>
-                )}
+                                </div>
+                            )}
+                            {shouldShowFiltersRow && (
+                                <MembersFilters
+                                    activeView={activeView}
+                                    filters={filters}
+                                    nql={nql}
+                                    savedViews={savedViews}
+                                    onFiltersChange={setFilters}
+                                />
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
             <MembersContent>
                 {shouldShowLoading ? (

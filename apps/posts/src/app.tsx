@@ -4,19 +4,15 @@ import React from 'react';
 import {APP_ROUTE_PREFIX, routes} from '@src/routes';
 import {BaseAppProps, FrameworkProvider, Outlet, RouterProvider} from '@tryghost/admin-x-framework';
 import {ShadeApp} from '@tryghost/shade/app';
-import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 
 interface AppProps extends BaseAppProps {
     fromAnalytics?: boolean;
 }
 
 const PostsShadeRoot: React.FC<{darkMode: boolean}> = ({darkMode}) => {
-    const {data: configData} = useBrowseConfig();
-    const adminUiRedesign = configData?.config?.labs?.adminUiRedesign === true;
-
     return (
         <PostsErrorBoundary>
-            <ShadeApp adminUiRedesign={adminUiRedesign} className="shade-posts app-container" darkMode={darkMode} fetchKoenigLexical={null}>
+            <ShadeApp adminUiRedesign={true} className="shade-posts app-container" darkMode={darkMode} fetchKoenigLexical={null}>
                 <Outlet />
             </ShadeApp>
         </PostsErrorBoundary>

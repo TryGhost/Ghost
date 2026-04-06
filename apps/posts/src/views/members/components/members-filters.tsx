@@ -11,7 +11,6 @@ import {
 } from '../use-member-filter-fields';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
-import {useAdminUiRedesign} from '@src/hooks/use-admin-ui-redesign';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
@@ -56,7 +55,6 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     activeView,
     iconOnly = false
 }) => {
-    const adminUiRedesign = useAdminUiRedesign();
     const {data: tiersData} = useBrowseTiers({searchParams: {limit: '100'}});
     const {data: offersData} = useBrowseOffers({});
     const {data: newslettersData} = useBrowseNewsletters({searchParams: {limit: '100'}});
@@ -122,16 +120,12 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const hasFilters = filters.length > 0;
     const showIconOnlyTrigger = iconOnly && !hasFilters;
     const addFilterButtonClassName = cn(
-        adminUiRedesign
-            ? hasFilters ? 'h-7 font-semibold bg-background hover:bg-background shadow-xs hover:shadow-sm rounded-full' : 'h-[var(--control-height)] bg-secondary border-none rounded-full dark:bg-background font-semibold'
-            : 'border-input bg-white dark:bg-background',
-        showIconOnlyTrigger && (adminUiRedesign
-            ? 'w-[32px] gap-0 px-2 text-[0px] lg:w-auto lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-sm !px-3'
-            : 'min-w-[34px] gap-0 px-2 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-sm !px-3')
+        hasFilters ? 'h-7 font-semibold bg-background hover:bg-background shadow-xs hover:shadow-sm rounded-full' : 'h-[var(--control-height)] bg-secondary border-none rounded-full dark:bg-background font-semibold',
+        showIconOnlyTrigger && 'w-[32px] gap-0 px-2 text-[0px] lg:w-auto lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-sm !px-3'
     );
 
     const clearAndSaveButtons = hasFilters ? (
-        <div className={adminUiRedesign ? 'flex shrink-0 items-center gap-4 sm:absolute sm:-top-0.5 sm:right-0' : 'flex shrink-0 items-center gap-4 sm:absolute sm:top-0 sm:right-0'}>
+        <div className='flex shrink-0 items-center gap-4 sm:absolute sm:-top-0.5 sm:right-0'>
             <Button
                 className="hidden items-center gap-1 !px-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground lg:inline-flex"
                 type="button"
@@ -164,7 +158,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
             filters={displayFilters}
             keyboardShortcut="f"
             popoverAlign={'start'}
-            popoverContentClassName={adminUiRedesign ? 'z-[80] w-[240px] [&_[data-slot=command-list]]:max-h-[450px]' : 'z-[80] w-[280px] [&_[data-slot=command-list]]:max-h-[450px]'}
+            popoverContentClassName='z-[80] w-[240px] [&_[data-slot=command-list]]:max-h-[450px]'
             showClearButton={hasFilters}
             showSearchInput={true}
             onChange={handleFiltersChange}

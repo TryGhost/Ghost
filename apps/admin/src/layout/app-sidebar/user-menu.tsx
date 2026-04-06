@@ -12,7 +12,6 @@ import { UserMenuItem } from "./user-menu-item";
 import { UserMenuAvatar } from "./user-menu-avatar";
 import { UserMenuHeader } from "./user-menu-header";
 import { Link } from "@tryghost/admin-x-framework";
-import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
 function UserMenuProfile() {
     const currentUser = useCurrentUser();
@@ -98,14 +97,13 @@ function UserMenu(props: UserMenuProps) {
     const currentUser = useCurrentUser();
     const { data: whatsNewData } = useWhatsNew();
     const { showUpgradeBanner } = useUpgradeStatus();
-    const adminUiRedesign = useFeatureFlag('adminUiRedesign');
 
     return (
         <DropdownMenu {...props}>
             <DropdownMenuTrigger asChild className="focus-visible:ring-0">
                 <SidebarMenuButton
                     size="lg"
-                    className={adminUiRedesign ? "p-2 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground" : "data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"}
+                    className="p-2 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                     aria-label="User menu"
                 >
                     <div className="relative">
@@ -123,13 +121,10 @@ function UserMenu(props: UserMenuProps) {
                     </div>
                     <div className="grid flex-1 text-left text-base leading-tight">
                         <span className="truncate font-semibold">{currentUser.data?.name}</span>
-                        <span className={adminUiRedesign ? "-mt-px truncate text-sm text-muted-foreground" : "-mt-px truncate text-xs text-muted-foreground"}>
+                        <span className="-mt-px truncate text-sm text-muted-foreground">
                             {currentUser.data?.email}
                         </span>
                     </div>
-                    {!adminUiRedesign &&
-                        <LucideIcon.ChevronsUpDown className="ml-auto size-4 text-grey-700" data-test-nav="arrow-down" />
-                    }
                 </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -141,7 +136,7 @@ function UserMenu(props: UserMenuProps) {
                     name={currentUser.data?.name}
                     email={currentUser.data?.email}
                 >
-                    <UserMenuAvatar className={adminUiRedesign ? "size-12" : undefined} />
+                    <UserMenuAvatar className="size-12" />
                 </UserMenuHeader>
                 <DropdownMenuSeparator />
                 <UserMenuItem
@@ -165,20 +160,18 @@ function UserMenu(props: UserMenuProps) {
                     )}
                 </UserMenuItem>
                 <UserMenuProfile />
-                {adminUiRedesign && <UserMenuSettings />}
+                <UserMenuSettings />
                 <DropdownMenuSeparator />
-                {adminUiRedesign && (
-                    <UserMenuItem>
-                        <a
-                            href="https://ghost.org/help?utm_source=admin&utm_campaign=resources"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            <LucideIcon.HelpCircle />
-                            <UserMenuItem.Label>Help</UserMenuItem.Label>
-                        </a>
-                    </UserMenuItem>
-                )}
+                <UserMenuItem>
+                    <a
+                        href="https://ghost.org/help?utm_source=admin&utm_campaign=resources"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <LucideIcon.HelpCircle />
+                        <UserMenuItem.Label>Help</UserMenuItem.Label>
+                    </a>
+                </UserMenuItem>
                 <UserMenuItem>
                     <a
                         href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources"

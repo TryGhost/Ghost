@@ -4,7 +4,6 @@ import {LucideIcon} from "@tryghost/shade/utils"
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { isContributorUser } from "@tryghost/admin-x-framework/api/users";
-import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
 const ctrlOrCmd = navigator.userAgent.indexOf('Mac') !== -1 ? 'command' : 'ctrl';
 const searchShortcut = ctrlOrCmd === 'command' ? '⌘K' : 'Ctrl+K';
@@ -27,70 +26,37 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
     const title = site.data?.site.title ?? "";
     const siteIcon = site.data?.site.icon ?? "https://static.ghost.org/v4.0.0/images/ghost-orb-1.png";
     const showSearch = currentUser && !isContributorUser(currentUser);
-    const adminUiRedesign = useFeatureFlag('adminUiRedesign');
     const url = site.data?.site.url;
 
     return (
         <SidebarHeader {...props}>
-            {adminUiRedesign ? (
-                <div className="flex flex-col items-stretch">
-                    <div className="group/viewsite flex min-w-0 items-center justify-between gap-3 p-5">
-                        <div className="h-8 w-8 flex-shrink-0 rounded-md border-0 bg-transparent">
-                            <img
-                                src={siteIcon}
-                                alt="Site icon"
-                                className="h-full w-full rounded-md object-cover"
-                            />
-                        </div>
-                        <div className="flex-1 overflow-hidden text-[15px] font-semibold text-ellipsis whitespace-nowrap text-foreground">
-                            {title}
-                        </div>
-                        <a
-                            href={url}
-                            target="_blank"
-                            aria-label="View site in new tab"
-                            rel="noopener noreferrer"
-                            className="flex size-8 items-center justify-center rounded-full opacity-0 transition-all group-hover/viewsite:opacity-100 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                        >
-                            <LucideIcon.ExternalLink size={16} />
-                        </a>
+            <div className="flex flex-col items-stretch">
+                <div className="group/viewsite flex min-w-0 items-center justify-between gap-3 p-5">
+                    <div className="h-8 w-8 flex-shrink-0 rounded-md border-0 bg-transparent">
+                        <img
+                            src={siteIcon}
+                            alt="Site icon"
+                            className="h-full w-full rounded-md object-cover"
+                        />
                     </div>
-                    <div className="flex h-[48px] w-full items-center justify-stretch px-5">
-                        {showSearch && (
-                            <Button
-                                variant="secondary"
-                                className="flex h-[36px] w-full items-center justify-between bg-white pr-2 text-base font-normal! text-muted-foreground shadow-xs hover:border-gray-300 hover:bg-white hover:text-gray-700 hover:shadow-sm dark:bg-gray-950 dark:hover:border-gray-800 [&_svg]:stroke-2"
-                                onClick={openSearchModal}
-                            >
-                                <div className="flex items-center gap-2">
-                                    <LucideIcon.Search className="text-muted-foreground" />
-                                    Search site
-                                </div>
-                                <Kbd className="bg-transparent text-gray-500 shadow-none dark:text-gray-800" style={{textShadow: 'none'}}>{searchShortcut}</Kbd>
-                            </Button>
-                        )}
+                    <div className="flex-1 overflow-hidden text-[15px] font-semibold text-ellipsis whitespace-nowrap text-foreground">
+                        {title}
                     </div>
+                    <a
+                        href={url}
+                        target="_blank"
+                        aria-label="View site in new tab"
+                        rel="noopener noreferrer"
+                        className="flex size-8 items-center justify-center rounded-full opacity-0 transition-all group-hover/viewsite:opacity-100 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    >
+                        <LucideIcon.ExternalLink size={16} />
+                    </a>
                 </div>
-            ) : (
-                <div className="flex flex-col items-stretch gap-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex min-w-0 items-center gap-3">
-                            <div className="h-8 w-8 flex-shrink-0 rounded-md border-0 bg-transparent">
-                                <img
-                                    src={siteIcon}
-                                    alt="Site icon"
-                                    className="h-full w-full rounded-md object-cover"
-                                />
-                            </div>
-                            <div className="flex-1 overflow-hidden text-[15px] font-semibold text-ellipsis whitespace-nowrap text-foreground">
-                                {title}
-                            </div>
-                        </div>
-                    </div>
+                <div className="flex h-[48px] w-full items-center justify-stretch px-5">
                     {showSearch && (
                         <Button
-                            variant="outline"
-                            className="flex h-[38px] items-center justify-between pr-2 text-base text-muted-foreground shadow-xs hover:border-gray-200 hover:bg-background hover:text-gray-700 hover:shadow-sm dark:bg-gray-950 dark:hover:border-gray-800 [&_svg]:stroke-2"
+                            variant="secondary"
+                            className="flex h-[36px] w-full items-center justify-between bg-white pr-2 text-base font-normal! text-muted-foreground shadow-xs hover:border-gray-300 hover:bg-white hover:text-gray-700 hover:shadow-sm dark:bg-gray-950 dark:hover:border-gray-800 [&_svg]:stroke-2"
                             onClick={openSearchModal}
                         >
                             <div className="flex items-center gap-2">
@@ -101,7 +67,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
                         </Button>
                     )}
                 </div>
-            )}
+            </div>
         </SidebarHeader>
     );
 }

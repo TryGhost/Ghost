@@ -3,7 +3,6 @@ import {SidebarInset, SidebarProvider} from "@tryghost/shade/components";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { isContributorUser } from "@tryghost/admin-x-framework/api/users";
 import { useSidebarVisibility } from "@/ember-bridge/ember-bridge";
-import { useFeatureFlag } from "@/hooks/use-feature-flag";
 import AppSidebar from "./app-sidebar";
 import { MobileNavBar } from "./app-sidebar/mobile-nav-bar";
 import { ContributorUserMenu } from "./app-sidebar/user-menu";
@@ -16,7 +15,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     const { data: currentUser } = useCurrentUser();
     const sidebarVisible = useSidebarVisibility();
     const isContributor = currentUser && isContributorUser(currentUser);
-    const adminUiRedesign = useFeatureFlag('adminUiRedesign');
 
     // Contributors get a floating profile menu instead of the full sidebar
     if (isContributor) {
@@ -35,8 +33,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     return (
         <SidebarProvider open={!!currentUser && sidebarVisible}>
             <AppSidebar />
-            <SidebarInset className={adminUiRedesign ? 'bg-background' : `overflow-y-auto bg-background sidebar:max-h-full ${sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full'}`}>
-                <main className={adminUiRedesign ? "min-h-0 flex-1" : "flex-1"}>{children}</main>
+            <SidebarInset className='bg-background'>
+                <main className="min-h-0 flex-1">{children}</main>
                 <MobileNavBar />
             </SidebarInset>
         </SidebarProvider>
