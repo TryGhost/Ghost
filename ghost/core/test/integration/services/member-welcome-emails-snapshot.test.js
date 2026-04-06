@@ -12,7 +12,7 @@ describe('Member Welcome Email Renderer Snapshots', function () {
 
     before(async function () {
         await testUtils.setup('default')();
-        configUtils.set('labs:welcomeEmailsDesignCustomization', true);
+        configUtils.set('labs:welcomeEmailsDesignCustomization', false);
     });
 
     beforeEach(function () {
