@@ -77,6 +77,10 @@ export const routes: RouteObject[] = [
                         lazy: lazyComponent(() => import('@views/members/members'))
                     },
                     {
+                        path: 'detail',
+                        lazy: lazyComponent(() => import('@views/members/member-detail'))
+                    },
+                    {
                         path: ':memberId',
                         lazy: lazyComponent(() => import('@views/members/member-detail'))
                     }

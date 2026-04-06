@@ -25,7 +25,7 @@ function isMemberViewActive(currentSearch: string, filter: string) {
 export function useMemberSidebarViews() {
     const location = useLocation();
     const sharedViews = useSharedViews('members');
-    const isOnMembersForward = location.pathname === '/members-forward';
+    const isOnMembersForward = location.pathname.startsWith('/members-forward');
 
     return useMemo<NavSavedView[]>(() => {
         return sharedViews

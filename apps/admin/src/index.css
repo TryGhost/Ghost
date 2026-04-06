@@ -112,7 +112,7 @@ body.react-admin #ember-alerts-wormhole {
 body.react-admin #root .shade.shade-admin {
     grid-row: 2;
     grid-column: 1;
-    max-width: 1400px;
+    max-width: 1320px;
     margin-inline: auto;
     width: 100%;
     overflow: unset;

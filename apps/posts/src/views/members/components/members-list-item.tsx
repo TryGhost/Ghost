@@ -61,14 +61,14 @@ function isModifiedClick(event: Pick<React.MouseEvent<HTMLElement>, 'button' | '
     return event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
 }
 
-function openMemberInNewTab(memberId: string) {
-    window.open(`#${buildMembersForwardDetailUrl(memberId)}`, '_blank', 'noopener');
+function openMemberInNewTab() {
+    window.open(`#${buildMembersForwardDetailUrl()}`, '_blank', 'noopener');
 }
 
 // --- Sub-components ---
 
 function MembersListItemName({item, onClick}: { item: Member; onClick?: (memberId: string) => void }) {
-    const memberDetailUrl = buildMembersForwardDetailUrl(item.id);
+    const memberDetailUrl = buildMembersForwardDetailUrl();
 
     return (
         <div className="flex min-w-0 items-center gap-3">
@@ -234,7 +234,7 @@ function MembersListItem({
     } as CSSProperties;
     const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
         if (isModifiedClick(event)) {
-            openMemberInNewTab(item.id);
+            openMemberInNewTab();
             return;
         }
 
@@ -246,7 +246,7 @@ function MembersListItem({
         }
 
         event.preventDefault();
-        openMemberInNewTab(item.id);
+        openMemberInNewTab();
     };
 
     return (

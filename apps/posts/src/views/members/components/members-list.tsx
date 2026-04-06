@@ -190,7 +190,7 @@ function MembersList({
             onRowClick(memberId);
         } else {
             // Default: Navigate to members-forward detail page
-            window.location.hash = buildMembersForwardDetailUrl(memberId);
+            window.location.hash = buildMembersForwardDetailUrl();
         }
     };
 

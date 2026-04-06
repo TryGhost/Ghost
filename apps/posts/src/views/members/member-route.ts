@@ -14,6 +14,8 @@ export function buildMembersUrl({filter}: BuildMembersUrlOptions = {}): string {
     return search ? `/members?${search}` : '/members';
 }
 
-export function buildMembersForwardDetailUrl(memberId: string): string {
-    return `/members-forward/${encodeURIComponent(memberId)}`;
+export function buildMembersForwardDetailUrl(memberId?: string): string {
+    return memberId
+        ? `/members-forward/${encodeURIComponent(memberId)}`
+        : '/members-forward/detail';
 }

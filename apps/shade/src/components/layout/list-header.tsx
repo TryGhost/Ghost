@@ -1,6 +1,8 @@
 import {H1} from './heading';
+import {Button} from '@/components/ui/button';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
 import {cn} from '@/lib/utils';
+import {ArrowLeft} from 'lucide-react';
 
 import React from 'react';
 
@@ -71,6 +73,24 @@ function ListHeaderCount({className, children}: PropsWithChildrenAndClassName) {
         >
             {children}
         </span>
+    );
+}
+
+type ListHeaderBackButtonProps = Omit<React.ComponentPropsWithoutRef<typeof Button>, 'children' | 'size' | 'variant'> & {
+    ariaLabel?: string;
+};
+
+function ListHeaderBackButton({className, ariaLabel = 'Go back', ...props}: ListHeaderBackButtonProps) {
+    return (
+        <Button
+            aria-label={ariaLabel}
+            className={cn('shrink-0', className)}
+            size='icon'
+            variant='secondary'
+            {...props}
+        >
+            <ArrowLeft className='size-4' />
+        </Button>
     );
 }
 
@@ -237,6 +257,7 @@ function ListHeaderActions({className, children}: PropsWithChildrenAndClassName)
 }
 
 type ListHeaderComponent = React.FC<ListHeaderProps> & {
+    BackButton: React.FC<ListHeaderBackButtonProps>;
     Left: React.FC<PropsWithChildrenAndClassName>;
     Breadcrumb: React.FC<PropsWithChildrenAndClassName>;
     Title: React.FC<PropsWithChildrenAndClassName>;
@@ -263,6 +284,7 @@ const ListHeader: ListHeaderComponent = Object.assign(
         );
     },
     {
+        BackButton: ListHeaderBackButton,
         Left: ListHeaderLeft,
         Breadcrumb: ListHeaderBreadcrumb,
         Title: ListHeaderTitle,
@@ -275,6 +297,7 @@ const ListHeader: ListHeaderComponent = Object.assign(
 
 export {
     ListHeader,
+    ListHeaderBackButton,
     ListHeaderLeft,
     ListHeaderBreadcrumb,
     ListHeaderActions,

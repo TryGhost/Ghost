@@ -19,11 +19,11 @@ describe('buildMembersUrl', () => {
 });
 
 describe('buildMembersForwardDetailUrl', () => {
-    it('builds a members-forward detail route', () => {
-        expect(buildMembersForwardDetailUrl('abc123')).toBe('/members-forward/abc123');
+    it('builds a static members-forward detail route when no id is provided', () => {
+        expect(buildMembersForwardDetailUrl()).toBe('/members-forward/detail');
     });
 
-    it('encodes route segments safely', () => {
+    it('encodes route segments safely when an id is provided', () => {
         expect(buildMembersForwardDetailUrl('member/with space')).toBe('/members-forward/member%2Fwith%20space');
     });
 });

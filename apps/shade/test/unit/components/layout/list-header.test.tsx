@@ -1,6 +1,6 @@
 import assert from 'assert/strict';
 import {beforeEach, describe, it} from 'vitest';
-import {screen, within} from '@testing-library/react';
+import {fireEvent, screen, within} from '@testing-library/react';
 import {DropdownMenuItem} from '../../../../src/components/ui/dropdown-menu';
 import {ListHeader} from '../../../../src/components/layout/list-header';
 import {render} from '../../utils/test-utils';
@@ -125,5 +125,30 @@ describe('ListHeader ActionGroup', () => {
         assert.ok(within(desktop as HTMLElement).getByRole('button', {name: 'Search'}));
         assert.ok(within(desktop as HTMLElement).getByRole('button', {name: 'Filter'}));
         assert.ok(within(desktop as HTMLElement).getByRole('button', {name: 'Add member'}));
+    });
+});
+
+describe('ListHeader BackButton', () => {
+    it('renders an icon-only back button and triggers onClick', () => {
+        let clicked = false;
+
+        render(
+            <ListHeader.BackButton onClick={() => {
+                clicked = true;
+            }}
+            />
+        );
+
+        const backButton = screen.getByRole('button', {name: 'Go back'});
+        assert.ok(backButton, 'Back button should be rendered');
+        assert.ok(backButton.querySelector('svg'), 'Back button should render the left-arrow icon');
+
+        fireEvent.click(backButton);
+        assert.equal(clicked, true, 'Back button should call onClick');
+    });
+
+    it('supports custom ariaLabel', () => {
+        render(<ListHeader.BackButton ariaLabel="Back to members" />);
+        assert.ok(screen.getByRole('button', {name: 'Back to members'}));
     });
 });

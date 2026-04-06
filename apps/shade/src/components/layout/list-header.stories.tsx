@@ -69,6 +69,31 @@ export const WithDescription: Story = {
     }
 };
 
+export const WithBackButton: Story = {
+    args: {
+        children: (
+            <>
+                <ListHeader.Left>
+                    <div className='flex items-center gap-2'>
+                        <ListHeader.BackButton />
+                        <ListHeader.Title>
+                            Members
+                            <ListHeader.Count>12,345</ListHeader.Count>
+                        </ListHeader.Title>
+                    </div>
+                    <ListHeader.Description>Manage your members</ListHeader.Description>
+                </ListHeader.Left>
+                <ListHeader.Actions>
+                    <ListHeader.ActionGroup>
+                        <Button variant="outline">Import</Button>
+                        <Button>Add member</Button>
+                    </ListHeader.ActionGroup>
+                </ListHeader.Actions>
+            </>
+        )
+    }
+};
+
 export const WithBreadcrumbAndDescription: Story = {
     args: {
         children: (
