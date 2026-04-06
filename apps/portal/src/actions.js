@@ -223,6 +223,24 @@ async function checkoutPlan({data, state, api}) {
     }
 }
 
+async function checkoutGift({data, state, api}) {
+    try {
+        const {tierId, cadence, email} = data;
+        await api.member.checkoutGift({tierId, cadence, email});
+        return {
+            action: 'checkoutGift:success'
+        };
+    } catch (e) {
+        return {
+            action: 'checkoutGift:failed',
+            popupNotification: createPopupNotification({
+                type: 'checkoutGift:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: t('Failed to process checkout, please try again')
+            })
+        };
+    }
+}
+
 async function updateSubscription({data, state, api}) {
     try {
         const {plan, planId, subscriptionId, cancelAtPeriodEnd} = data;
@@ -678,6 +696,7 @@ const Actions = {
     editBilling,
     manageBilling,
     checkoutPlan,
+    checkoutGift,
     updateNewsletterPreference,
     showPopupNotification,
     removeEmailFromSuppressionList,

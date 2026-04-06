@@ -683,6 +683,61 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Create a new Stripe Checkout Session for a gift subscription.
+     *
+     * @param {object} options
+     * @param {number} options.amount
+     * @param {string} options.currency
+     * @param {string} options.tierName
+     * @param {'month'|'year'} options.cadence
+     * @param {number} options.duration
+     * @param {object} options.metadata
+     * @param {string} options.successUrl
+     * @param {string} options.cancelUrl
+     * @param {ICustomer|null} options.customer
+     * @param {string|null} options.customerEmail
+     *
+     * @returns {Promise<ICheckoutSession>}
+     */
+    async createGiftCheckoutSession({amount, currency, tierName, cadence, duration, metadata, successUrl, cancelUrl, customer, customerEmail}) {
+        await this._rateLimitBucket.throttle();
+
+        const cadenceLabel = duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
+
+        const stripeSessionOptions = {
+            mode: 'payment',
+            success_url: successUrl,
+            cancel_url: cancelUrl,
+            automatic_tax: {
+                enabled: this._config.enableAutomaticTax
+            },
+            metadata,
+            customer: customer ? customer.id : undefined,
+            customer_email: !customer && customerEmail ? customerEmail : undefined,
+            submit_type: 'pay',
+            line_items: [{
+                price_data: {
+                    currency,
+                    unit_amount: amount,
+                    product_data: {
+                        name: `Gift Subscription - ${tierName} (${cadenceLabel})`
+                    }
+                },
+                quantity: 1
+            }]
+        };
+
+        if (customer && this._config.enableAutomaticTax) {
+            stripeSessionOptions.customer_update = {address: 'auto'};
+        }
+
+        // @ts-ignore
+        const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
+
+        return session;
+    }
+
+    /**
      * Create a new Stripe Checkout Setup Session.
      *
      * @param {ICustomer} customer

@@ -343,3 +343,47 @@ describe('verifyOTC action', () => {
         });
     });
 });
+
+describe('checkoutGift action', () => {
+    test('calls api.member.checkoutGift with correct data', async () => {
+        const mockApi = {
+            member: {
+                checkoutGift: vi.fn(() => Promise.resolve())
+            }
+        };
+
+        const result = await ActionHandler({
+            action: 'checkoutGift',
+            data: {tierId: 'tier_123', cadence: 'month', email: 'buyer@example.com'},
+            state: {},
+            api: mockApi
+        });
+
+        expect(mockApi.member.checkoutGift).toHaveBeenCalledWith({
+            tierId: 'tier_123',
+            cadence: 'month',
+            email: 'buyer@example.com'
+        });
+        expect(result.action).toBe('checkoutGift:success');
+    });
+
+    test('returns failed action with notification on error', async () => {
+        const mockApi = {
+            member: {
+                checkoutGift: vi.fn(() => Promise.reject(new Error('Stripe error')))
+            }
+        };
+
+        const result = await ActionHandler({
+            action: 'checkoutGift',
+            data: {tierId: 'tier_123', cadence: 'month', email: 'buyer@example.com'},
+            state: {},
+            api: mockApi
+        });
+
+        expect(result.action).toBe('checkoutGift:failed');
+        expect(result.popupNotification).toBeDefined();
+        expect(result.popupNotification.type).toBe('checkoutGift:failed');
+        expect(result.popupNotification.status).toBe('error');
+    });
+});

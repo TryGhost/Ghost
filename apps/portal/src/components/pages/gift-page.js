@@ -3,6 +3,7 @@ import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
 import SiteTitleBackButton from '../common/site-title-back-button';
 import InputForm from '../common/input-form';
+import ActionButton from '../common/action-button';
 import LoadingPage from './loading-page';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import {getAvailableProducts, getCurrencySymbol, formatNumber, getStripeAmount, isCookiesDisabled, getActiveInterval} from '../../utils/helpers';
@@ -61,7 +62,7 @@ function GiftProductCardPrice({product, selectedInterval}) {
     );
 }
 
-function GiftProductCard({product, selectedInterval, onPurchase, disabled}) {
+function GiftProductCard({brandColor, product, selectedInterval, isDisabled, isPurchasing, onPurchase}) {
     let productDescription = product.description;
 
     if ((!product.benefits || !product.benefits.length) && !productDescription) {
@@ -84,14 +85,15 @@ function GiftProductCard({product, selectedInterval, onPurchase, disabled}) {
                     <GiftProductCardBenefits product={product} />
                 </div>
                 <div className='gh-portal-btn-product'>
-                    <button
-                        data-test-button='purchase-gift'
-                        className='gh-portal-btn'
-                        disabled={disabled}
-                        onClick={onPurchase}
-                    >
-                        Purchase gift
-                    </button>
+                    <ActionButton
+                        dataTestId='purchase-gift'
+                        label='Purchase gift'
+                        onClick={e => onPurchase(e, product)}
+                        disabled={isDisabled}
+                        isRunning={isPurchasing}
+                        brandColor={brandColor}
+                        style={{width: '100%'}}
+                    />
                 </div>
             </div>
         </div>
@@ -132,10 +134,11 @@ function GiftPriceSwitch({selectedInterval, setSelectedInterval, products}) {
 }
 
 const GiftPage = () => {
-    const {site, member} = useContext(AppContext);
+    const {site, member, brandColor, action, doAction} = useContext(AppContext);
     const [email, setEmail] = useState(member?.email || '');
     const [emailError, setEmailError] = useState('');
     const [selectedInterval, setSelectedInterval] = useState(null);
+    const [selectedProduct, setSelectedProduct] = useState(null);
 
     if (!site) {
         return <LoadingPage />;
@@ -176,7 +179,8 @@ const GiftPage = () => {
 
     const siteIcon = site.icon;
     const siteTitle = site.title || '';
-    const disabled = isCookiesDisabled();
+    const isPurchasing = action === 'checkoutGift:running';
+    const isDisabled = isCookiesDisabled() || isPurchasing;
 
     const emailField = [{
         type: 'email',
@@ -190,7 +194,7 @@ const GiftPage = () => {
         errorMessage: emailError
     }];
 
-    const handlePurchase = (e) => {
+    const handlePurchase = (e, product) => {
         e.preventDefault();
 
         const errors = ValidateInputForm({fields: emailField});
@@ -201,7 +205,13 @@ const GiftPage = () => {
         }
 
         setEmailError('');
-        // TODO: implement gift checkout using priceId and email
+        setSelectedProduct(product.id);
+
+        doAction('checkoutGift', {
+            tierId: product.id,
+            cadence: activeInterval,
+            email
+        });
     };
 
     return (
@@ -243,10 +253,12 @@ const GiftPage = () => {
                                 {products.map(product => (
                                     <GiftProductCard
                                         key={product.id}
+                                        brandColor={brandColor}
                                         product={product}
                                         selectedInterval={activeInterval}
+                                        isDisabled={isDisabled}
+                                        isPurchasing={isPurchasing && selectedProduct === product.id}
                                         onPurchase={handlePurchase}
-                                        disabled={disabled}
                                     />
                                 ))}
                             </div>
