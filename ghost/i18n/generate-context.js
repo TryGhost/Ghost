@@ -36,8 +36,9 @@ const CONTEXT_FILE = './locales/context.json';
 
     const emptyKeys = Object.entries(orderedContext).filter(([, value]) => value === '').map(([key]) => key);
     if (process.env.CI && emptyKeys.length > 0) {
+        const keyList = emptyKeys.map(k => '  - "' + k + '"').join('\n');
         // eslint-disable-next-line no-console
-        console.error(`context.json has ${emptyKeys.length} key(s) with empty descriptions. Every translation key must have a context description for translators:\n${emptyKeys.map(k => `  - "${k}"`).join('\n')}`);
+        console.error('context.json has ' + emptyKeys.length + ' key(s) with empty descriptions. Every translation key must have a context description for translators:\n' + keyList);
         process.exit(1);
     }
 
