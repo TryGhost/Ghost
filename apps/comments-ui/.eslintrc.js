@@ -54,6 +54,10 @@ module.exports = {
         'tailwindcss/no-contradicting-classname': ['error', {config: tailwindConfig}],
 
         // This rule doesn't work correctly with TypeScript, and TypeScript has its own better version
-        'no-undef': 'off'
+        'no-undef': 'off',
+
+        // Flag potential split-sentence translation keys that break i18n.
+        // Warning-only: some adjacent t() calls are independent UI elements, not split sentences.
+        'no-adjacent-t-calls': 'warn'
     }
 };
