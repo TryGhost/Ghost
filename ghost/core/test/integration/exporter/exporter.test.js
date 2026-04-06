@@ -101,7 +101,9 @@ describe('Exporter', function () {
                 'tags',
                 'tokens',
                 'users',
-                'webhooks'
+                'webhooks',
+                'welcome_email_automated_emails',
+                'welcome_email_automations'
             ];
 
             assertExists(exportData);
