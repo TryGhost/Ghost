@@ -26,7 +26,6 @@ describe('Exporter', function () {
                 'actions',
                 'api_keys',
                 'automated_email_recipients',
-                'automated_emails',
                 'benefits',
                 'brute',
                 'collections',
