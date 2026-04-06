@@ -1,6 +1,6 @@
 import MembersContent from './components/members-content';
 import MembersLayout from './components/members-layout';
-import {Avatar, AvatarFallback, AvatarImage, Button, Input, Separator, Switch, Textarea} from '@tryghost/shade/components';
+import {Avatar, AvatarFallback, AvatarImage, Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger, Input, Separator, Switch, Textarea} from '@tryghost/shade/components';
 import {ListHeader} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -11,8 +11,8 @@ const MemberDetail: React.FC = () => {
 
     return (
         <MembersLayout>
-            <div className='sticky top-0 z-50 border-border bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black'>
-                <ListHeader>
+            <div className='sticky top-0 z-50 border-border'>
+                <ListHeader blurredBackground={false} className='bg-background'>
                     <ListHeader.Left>
                         <div className='flex items-center gap-3'>
                             <ListHeader.BackButton onClick={() => navigate('/members-forward')} />
@@ -21,9 +21,59 @@ const MemberDetail: React.FC = () => {
                     </ListHeader.Left>
                     <ListHeader.Actions>
                         <ListHeader.ActionGroup>
-                            <Button data-testid="members-actions" size='icon' variant='secondary'>
-                                <LucideIcon.MoreHorizontal className="size-4" />
-                            </Button>
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button data-testid="members-actions" size='icon' variant='secondary'>
+                                        <LucideIcon.MoreHorizontal className="size-4" />
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className='top-[8vh] max-w-[620px] gap-0 overflow-hidden rounded-[28px] border-none bg-transparent p-0 shadow-none'>
+                                    <DialogTitle className='sr-only'>Share preview</DialogTitle>
+                                    <DialogDescription className='sr-only'>Static share modal mockup for member detail prototype.</DialogDescription>
+                                    <div className='relative h-[340px] overflow-hidden rounded-[28px] bg-background'>
+                                        <div className='absolute inset-x-0 bottom-0 h-[190px] bg-[#F7F6E0]' />
+                                        <DialogClose asChild>
+                                            <button className='absolute top-8 left-8 z-20 flex size-(--control-height) items-center justify-center rounded-full bg-muted text-foreground transition-colors hover:bg-muted/80' type='button'>
+                                                <LucideIcon.ArrowLeft className='size-5' />
+                                            </button>
+                                        </DialogClose>
+                                        <div className='absolute top-8 right-8 z-10 h-[140px] w-[210px] overflow-hidden bg-muted'>
+                                            <img alt='Desk setup' className='size-full object-cover' src='https://images.unsplash.com/photo-1487014679447-9f8336841d58?w=900&h=600&fit=crop' />
+                                        </div>
+                                        <div className='relative z-10 flex h-full flex-col justify-between px-8 py-8'>
+                                            <div />
+                                            <div className='-mb-16 max-w-[500px] space-y-2'>
+                                                <h2 className='[font-family:Times,serif] text-[55px] leading-[0.9] font-semibold tracking-tight text-foreground'>
+                                                    Boom!
+                                                    <br />
+                                                    It&apos;s out there.
+                                                </h2>
+                                                <p className='mt-3 text-lg leading-none text-foreground'>That&apos;s 968 posts published.</p>
+                                            </div>
+                                            <div className='flex items-center justify-between'>
+                                                <div className='flex items-center gap-2'>
+                                                    <Button className='size-(--control-height) bg-white text-foreground' size='icon' type='button' variant='secondary'>
+                                                        <LucideIcon.X className='size-5 stroke-[2px]' />
+                                                    </Button>
+                                                    <Button className='size-(--control-height) bg-white text-foreground' size='icon' type='button' variant='secondary'>
+                                                        <LucideIcon.AtSign className='size-5 stroke-[2px]' />
+                                                    </Button>
+                                                    <Button className='size-(--control-height) bg-white text-foreground' size='icon' type='button' variant='secondary'>
+                                                        <LucideIcon.Facebook className='size-5 stroke-[2px]' />
+                                                    </Button>
+                                                    <Button className='size-(--control-height) bg-white text-foreground' size='icon' type='button' variant='secondary'>
+                                                        <LucideIcon.Linkedin className='size-5 stroke-[2px]' />
+                                                    </Button>
+                                                </div>
+                                                <div className='flex items-center gap-2'>
+                                                    <Button className='bg-background' type='button' variant='secondary'>Open post</Button>
+                                                    <Button type='button'>Copy link</Button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
                             <Button data-testid="members-actions">
                             Save
                             </Button>
@@ -34,7 +84,7 @@ const MemberDetail: React.FC = () => {
             <MembersContent>
                 <div className='mx-auto w-full max-w-6xl space-y-10'>
                     <section className='flex items-center justify-between'>
-                        <div className='flex basis-1/2 flex-col items-start gap-3'>
+                        <div className='flex basis-1/2 flex-col items-start gap-3 pt-5'>
                             <Avatar className='size-16'>
                                 <AvatarImage alt='Carla Culhane' src='https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop' />
                                 <AvatarFallback>CC</AvatarFallback>
@@ -89,7 +139,7 @@ const MemberDetail: React.FC = () => {
                                 <p className='mb-1.5 text-muted-foreground'>Comment status</p>
                                 <div className='flex items-center gap-3 text-base'>
                                     <span className='inline-flex items-center gap-1.5 rounded-sm bg-red/10 px-2 py-0.5 text-red-500'>
-                                        <LucideIcon.CircleOff className='size-4' />
+                                        <LucideIcon.CircleOff className='size-3' />
                                         Blocked
                                     </span>
                                     <button className='underline!' type='button'>Manage</button>
