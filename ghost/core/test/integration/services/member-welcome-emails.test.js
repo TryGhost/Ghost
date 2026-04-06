@@ -7,6 +7,7 @@ const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
 const mailService = require('../../../core/server/services/mail');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
+const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
 const processOutbox = require('../../../core/server/services/outbox/jobs/lib/process-outbox');
 const labs = require('../../../core/shared/labs');
 
@@ -107,6 +108,7 @@ describe('Member Welcome Emails Integration', function () {
         await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
         await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
     });
+
     describe('Member creation with welcome emails', function () {
         it('creates outbox entry when member source is "member"', async function () {
             const member = await membersService.api.members.create({
@@ -409,9 +411,6 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('uses mock member UUID when sending test welcome emails', async function () {
-            const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
-            memberWelcomeEmailService.init();
-
             const automatedEmail = await db.knex('automated_emails')
                 .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
                 .first();
@@ -430,6 +429,9 @@ describe('Member Welcome Emails Integration', function () {
                 }
             });
 
+            memberWelcomeEmailService.api = null;
+            memberWelcomeEmailService.init();
+
             await memberWelcomeEmailService.api.sendTestEmail({
                 email: 'test-member@example.com',
                 subject: 'Welcome test',
@@ -443,11 +445,24 @@ describe('Member Welcome Emails Integration', function () {
             assert(!sendCall.args[0].html.includes('{uuid}'));
             assert(!sendCall.args[0].html.includes('%7Buuid%7D'));
         });
+    });
 
-        it('uses the latest email design settings after welcome emails are loaded', async function () {
-            const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
+    describe('labs flag on', function () {
+        beforeEach(function () {
+            labs.isSet.restore();
+            sinon.stub(labs, 'isSet').callsFake((flag) => {
+                if (flag === 'welcomeEmailsDesignCustomization') {
+                    return true;
+                }
+
+                return originalLabsIsSet(flag);
+            });
+            memberWelcomeEmailService.api = null;
             memberWelcomeEmailService.init();
+            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
+        });
 
+        it('uses refreshed design settings after welcome emails are loaded', async function () {
             await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
 
             await db.knex('email_design_settings')
