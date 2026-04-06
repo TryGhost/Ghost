@@ -15,7 +15,7 @@ runs:
       shell: bash
       run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
 
-    - uses: actions/cache@v4
+    - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
       name: Check if Playwright browser is cached
       id: playwright-cache
       with:
