@@ -155,6 +155,7 @@ class PaymentsService {
      * @param {object} params
      * @param {import('../../../tiers/tier')} params.tier
      * @param {'month'|'year'} params.cadence
+     * @param {number} params.duration
      * @param {string} params.email
      * @param {string} params.successUrl
      * @param {string} params.cancelUrl
@@ -164,7 +165,7 @@ class PaymentsService {
      *
      * @returns {Promise<string>}
      */
-    async getGiftPaymentLink({tier, cadence, email, metadata, successUrl, cancelUrl, member, isAuthenticated}) {
+    async getGiftPaymentLink({tier, cadence, duration, email, metadata, successUrl, cancelUrl, member, isAuthenticated}) {
         let customer = null;
         if (member && isAuthenticated) {
             customer = await this.getCustomerForMember(member);
@@ -184,12 +185,14 @@ class PaymentsService {
             currency,
             tierName: tier.name,
             cadence,
+            duration,
             metadata: {
                 ...metadata,
                 ghost_gift: 'true',
                 gift_token: token,
                 tier_id: tier.id.toHexString(),
                 cadence,
+                duration: String(duration),
                 purchaser_email: email
             },
             successUrl: successUrlObj.toString(),

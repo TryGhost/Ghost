@@ -329,6 +329,7 @@ describe('PaymentsService', function () {
             successUrl: 'https://example.com/',
             cancelUrl: 'https://example.com/',
             email: 'buyer@example.com',
+            duration: 1,
             metadata: {}
         };
 
@@ -358,6 +359,7 @@ describe('PaymentsService', function () {
             assert.equal(args.metadata.ghost_gift, 'true');
             assert.equal(args.metadata.tier_id, tier.id.toHexString());
             assert.equal(args.metadata.cadence, 'month');
+            assert.equal(args.metadata.duration, '1');
             assert.equal(args.metadata.purchaser_email, 'buyer@example.com');
             assert.equal(args.metadata.requestSrc, 'portal');
             assert.match(args.metadata.gift_token, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);

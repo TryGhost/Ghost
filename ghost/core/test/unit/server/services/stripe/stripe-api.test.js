@@ -691,6 +691,7 @@ describe('StripeAPI', function () {
                 currency: 'usd',
                 tierName: 'Pro',
                 cadence: 'year',
+                duration: 1,
                 successUrl: '/gift-success',
                 cancelUrl: '/gift-cancel',
                 metadata: {ghost_gift: 'true', gift_token: 'abc-123'}
@@ -714,6 +715,7 @@ describe('StripeAPI', function () {
                 currency: 'usd',
                 tierName: 'Basic',
                 cadence: 'month',
+                duration: 1,
                 successUrl: '/gift-success',
                 cancelUrl: '/gift-cancel',
                 metadata: {}
@@ -722,6 +724,23 @@ describe('StripeAPI', function () {
             const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
 
             assert.equal(args.line_items[0].price_data.product_data.name, 'Gift Subscription - Basic (1 month)');
+        });
+
+        it('pluralises cadence label when duration is greater than 1', async function () {
+            await api.createGiftCheckoutSession({
+                amount: 3000,
+                currency: 'usd',
+                tierName: 'Pro',
+                cadence: 'month',
+                duration: 3,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {}
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.equal(args.line_items[0].price_data.product_data.name, 'Gift Subscription - Pro (3 months)');
         });
 
         it('passes metadata through directly', async function () {
@@ -738,6 +757,7 @@ describe('StripeAPI', function () {
                 currency: 'usd',
                 tierName: 'Basic',
                 cadence: 'month',
+                duration: 1,
                 successUrl: '/gift-success',
                 cancelUrl: '/gift-cancel',
                 metadata
@@ -754,6 +774,7 @@ describe('StripeAPI', function () {
                 currency: 'usd',
                 tierName: 'Pro',
                 cadence: 'year',
+                duration: 1,
                 successUrl: '/gift-success',
                 cancelUrl: '/gift-cancel',
                 metadata: {},
@@ -772,6 +793,7 @@ describe('StripeAPI', function () {
                 currency: 'usd',
                 tierName: 'Pro',
                 cadence: 'year',
+                duration: 1,
                 successUrl: '/gift-success',
                 cancelUrl: '/gift-cancel',
                 metadata: {},
@@ -790,6 +812,7 @@ describe('StripeAPI', function () {
                 currency: 'usd',
                 tierName: 'Pro',
                 cadence: 'year',
+                duration: 1,
                 successUrl: '/gift-success',
                 cancelUrl: '/gift-cancel',
                 metadata: {}
@@ -816,6 +839,7 @@ describe('StripeAPI', function () {
                 currency: 'usd',
                 tierName: 'Pro',
                 cadence: 'year',
+                duration: 1,
                 successUrl: '/gift-success',
                 cancelUrl: '/gift-cancel',
                 metadata: {},
@@ -842,6 +866,7 @@ describe('StripeAPI', function () {
                 currency: 'usd',
                 tierName: 'Pro',
                 cadence: 'year',
+                duration: 1,
                 successUrl: '/gift-success',
                 cancelUrl: '/gift-cancel',
                 metadata: {},
