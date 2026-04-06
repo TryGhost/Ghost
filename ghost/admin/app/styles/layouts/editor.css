@@ -1022,7 +1022,6 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     line-height: 34px;
     background: var(--white);
     border-radius: var(--border-radius);
-    margin-left: 8px;
 }
 
 @media (max-width: 500px) {
@@ -1078,6 +1077,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 .gh-editor-publish-buttons {
     display: flex;
     align-items: center;
+    gap: 8px;
     height: 100%;
     pointer-events: auto;
 }
@@ -1098,15 +1098,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     border-radius: var(--border-radius);
 }
 
-.gh-editor-save-trigger {
-    margin-right: 8px;
-}
 
-@media (max-width: 500px) {
-    .gh-editor-save-trigger {
-        margin-right: 0;
-    }
-}
 
 .gh-editor-preview-trigger {
     height: 34px;
