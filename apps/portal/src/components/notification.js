@@ -1,4 +1,5 @@
 import React from 'react';
+import Interpolate from '@doist/react-interpolate';
 import Frame from './frame';
 import AppContext from '../app-context';
 import NotificationStyle from './notification.styles';
@@ -40,19 +41,34 @@ const NotificationText = ({type, status, context}) => {
     } else if (type === 'signin' && status === 'error') {
         return (
             <p>
-                {t('Could not sign in. Login link expired.')} <br /><a href={signinPortalLink} target="_parent">{t('Click here to retry')}</a>
+                <Interpolate
+                    mapping={{
+                        a: <a href={signinPortalLink} target="_parent" />
+                    }}
+                    string={t('Could not sign in. Login link expired. <a>Click here to retry</a>')}
+                />
             </p>
         );
     } else if (type === 'signup' && status === 'success') {
         return (
             <p>
-                {t('You\'ve successfully subscribed to')} <br /><strong>{context.site.title}</strong>
+                <Interpolate
+                    mapping={{
+                        strong: <strong />
+                    }}
+                    string={t('You\'ve successfully subscribed to <strong>{siteTitle}</strong>', {siteTitle: context.site.title})}
+                />
             </p>
         );
     } else if (type === 'signup-paid' && status === 'success') {
         return (
             <p>
-                {t('You\'ve successfully subscribed to')} <br /><strong>{context.site.title}</strong>
+                <Interpolate
+                    mapping={{
+                        strong: <strong />
+                    }}
+                    string={t('You\'ve successfully subscribed to <strong>{siteTitle}</strong>', {siteTitle: context.site.title})}
+                />
             </p>
         );
     } else if (type === 'updateEmail' && status === 'success') {
@@ -70,13 +86,23 @@ const NotificationText = ({type, status, context}) => {
     } else if (type === 'signup' && status === 'error') {
         return (
             <p>
-                {t('Signup error: Invalid link')}<br /><a href={singupPortalLink} target="_parent">{t('Click here to retry')}</a>
+                <Interpolate
+                    mapping={{
+                        a: <a href={singupPortalLink} target="_parent" />
+                    }}
+                    string={t('Signup error: Invalid link. <a>Click here to retry</a>')}
+                />
             </p>
         );
     } else if (type === 'signup-paid' && status === 'error') {
         return (
             <p>
-                {t('Signup error: Invalid link')}<br /><a href={singupPortalLink} target="_parent">{t('Click here to retry')}</a>
+                <Interpolate
+                    mapping={{
+                        a: <a href={singupPortalLink} target="_parent" />
+                    }}
+                    string={t('Signup error: Invalid link. <a>Click here to retry</a>')}
+                />
             </p>
         );
     } else if (type === 'stripe:checkout' && status === 'success') {
