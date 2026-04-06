@@ -1,4 +1,4 @@
-import {buildMembersUrl} from './member-route';
+import {buildMembersForwardDetailUrl, buildMembersUrl} from './member-route';
 import {describe, expect, it} from 'vitest';
 
 describe('buildMembersUrl', () => {
@@ -15,5 +15,15 @@ describe('buildMembersUrl', () => {
                 postAnalytics: 'post_123'
             }
         } as never)).toBe('/members?filter=emails.post_id%3Apost_123');
+    });
+});
+
+describe('buildMembersForwardDetailUrl', () => {
+    it('builds a members-forward detail route', () => {
+        expect(buildMembersForwardDetailUrl('abc123')).toBe('/members-forward/abc123');
+    });
+
+    it('encodes route segments safely', () => {
+        expect(buildMembersForwardDetailUrl('member/with space')).toBe('/members-forward/member%2Fwith%20space');
     });
 });

@@ -3,6 +3,7 @@ import moment from 'moment-timezone';
 import {Member} from '@tryghost/admin-x-framework/api/members';
 import {MemberAvatar} from '@components/member-avatar';
 import {TableCell, TableRow} from '@tryghost/shade/components';
+import {buildMembersForwardDetailUrl} from '../member-route';
 import {cn} from '@tryghost/shade/utils';
 import {getActiveColumnValue} from '../member-query-params';
 import type {ActiveColumn} from '../member-query-params';
@@ -61,12 +62,14 @@ function isModifiedClick(event: Pick<React.MouseEvent<HTMLElement>, 'button' | '
 }
 
 function openMemberInNewTab(memberId: string) {
-    window.open(`#/members/${memberId}`, '_blank', 'noopener');
+    window.open(`#${buildMembersForwardDetailUrl(memberId)}`, '_blank', 'noopener');
 }
 
 // --- Sub-components ---
 
 function MembersListItemName({item, onClick}: { item: Member; onClick?: (memberId: string) => void }) {
+    const memberDetailUrl = buildMembersForwardDetailUrl(item.id);
+
     return (
         <div className="flex min-w-0 items-center gap-3">
             <MemberAvatar
@@ -79,7 +82,7 @@ function MembersListItemName({item, onClick}: { item: Member; onClick?: (memberI
             <div className="min-w-0">
                 <a
                     className="block min-w-0 cursor-pointer"
-                    href={`#/members/${item.id}`}
+                    href={`#${memberDetailUrl}`}
                     onClick={onClick ? (e) => {
                         if (isModifiedClick(e)) {
                             e.stopPropagation();

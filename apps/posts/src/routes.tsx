@@ -71,7 +71,16 @@ export const routes: RouteObject[] = [
             },
             {
                 path: 'members-forward',
-                lazy: lazyComponent(() => import('@views/members/members'))
+                children: [
+                    {
+                        index: true,
+                        lazy: lazyComponent(() => import('@views/members/members'))
+                    },
+                    {
+                        path: ':memberId',
+                        lazy: lazyComponent(() => import('@views/members/member-detail'))
+                    }
+                ]
             },
 
             // Error handling

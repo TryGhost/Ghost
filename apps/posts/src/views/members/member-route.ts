@@ -13,3 +13,7 @@ export function buildMembersUrl({filter}: BuildMembersUrlOptions = {}): string {
 
     return search ? `/members?${search}` : '/members';
 }
+
+export function buildMembersForwardDetailUrl(memberId: string): string {
+    return `/members-forward/${encodeURIComponent(memberId)}`;
+}
