@@ -246,20 +246,25 @@ class MemberWelcomeEmailService {
 
 class MemberWelcomeEmailServiceWrapper {
     init() {
-        if (this.api) {
+        const useDesignCustomization = labs.isSet('welcomeEmailsDesignCustomization');
+
+        if (this.api && this.useDesignCustomization === useDesignCustomization) {
             return;
         }
 
-        const i18nLib = require('@tryghost/i18n');
-        const events = require('../../lib/common/events');
+        if (!this.i18n) {
+            const i18nLib = require('@tryghost/i18n');
+            const events = require('../../lib/common/events');
 
-        const i18n = i18nLib(settingsCache.get('locale') || 'en', 'ghost');
+            this.i18n = i18nLib(settingsCache.get('locale') || 'en', 'ghost');
 
-        events.on('settings.locale.edited', (model) => {
-            i18n.changeLanguage(model.get('value'));
-        });
+            events.on('settings.locale.edited', (model) => {
+                this.i18n.changeLanguage(model.get('value'));
+            });
+        }
 
-        this.api = new MemberWelcomeEmailService({t: i18n.t});
+        this.useDesignCustomization = useDesignCustomization;
+        this.api = new MemberWelcomeEmailService({t: this.i18n.t});
     }
 }
 

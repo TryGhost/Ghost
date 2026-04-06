@@ -462,6 +462,35 @@ describe('Member Welcome Emails Integration', function () {
             sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
         });
 
+        it('reinitializes the service when the labs mode changes', function () {
+            labs.isSet.restore();
+            sinon.stub(labs, 'isSet').callsFake((flag) => {
+                if (flag === 'welcomeEmailsDesignCustomization') {
+                    return false;
+                }
+
+                return originalLabsIsSet(flag);
+            });
+
+            memberWelcomeEmailService.api = null;
+            memberWelcomeEmailService.useDesignCustomization = undefined;
+            memberWelcomeEmailService.init();
+            const labsOffApi = memberWelcomeEmailService.api;
+
+            labs.isSet.restore();
+            sinon.stub(labs, 'isSet').callsFake((flag) => {
+                if (flag === 'welcomeEmailsDesignCustomization') {
+                    return true;
+                }
+
+                return originalLabsIsSet(flag);
+            });
+
+            memberWelcomeEmailService.init();
+
+            assert.notEqual(memberWelcomeEmailService.api, labsOffApi);
+        });
+
         it('uses cached design settings after welcome emails are loaded', async function () {
             await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
 
