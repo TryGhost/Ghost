@@ -10,6 +10,7 @@ const models = require('../../models');
 const {getConfig} = require('./config');
 const settingsHelpers = require('../settings-helpers');
 const donationService = require('../donations');
+const giftService = require('../gifts');
 const staffService = require('../staff');
 const labs = require('../../../shared/labs');
 const settingsCache = require('../../../shared/settings-cache');
@@ -60,6 +61,7 @@ module.exports = new StripeService({
         }
     },
     donationService,
+    giftService,
     staffService,
     settingsCache
 });
