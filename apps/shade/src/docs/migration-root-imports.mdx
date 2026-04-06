@@ -42,4 +42,25 @@ import {cn} from '@tryghost/shade/utils';
 import {formatQueryDate, ShadeApp} from '@tryghost/shade/app';
 ```
 
+## MS-3 Primitive Composition Update
+
+`@tryghost/shade/primitives` now includes low-level composition primitives:
+
+- `Stack`
+- `Inline`
+- `Box`
+- `Container`
+- `Grid`
+- `Text`
+
+Legacy layout shells in `@tryghost/shade/primitives` (for example `Header`, `ListHeader`, `ViewHeader`, `Page`, and heading wrappers) remain available as a compatibility lane but are deprecated for new work.
+
+Prefer building new structures directly from primitives and shared components.
+
+```ts
+// Preferred for new composition
+import {Container, Stack, Inline, Text} from '@tryghost/shade/primitives';
+import {Button} from '@tryghost/shade/components';
+```
+
 </div>

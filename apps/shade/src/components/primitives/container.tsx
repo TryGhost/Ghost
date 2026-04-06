@@ -45,25 +45,30 @@ export interface ContainerProps extends React.HTMLAttributes<HTMLDivElement> {
     paddingX?: SpaceStep;
 }
 
-function Container({
-    className,
-    size = 'page',
-    centered = true,
-    paddingX,
-    ...props
-}: ContainerProps) {
-    return (
-        <div
-            className={cn(
-                'w-full',
-                MAX_WIDTH_CLASSES[size],
-                centered && 'mx-auto',
-                paddingX && PADDING_X_CLASSES[paddingX],
-                className
-            )}
-            {...props}
-        />
-    );
-}
+const Container = React.forwardRef<HTMLDivElement, ContainerProps>(
+    function Container({
+        className,
+        size = 'page',
+        centered = true,
+        paddingX,
+        ...props
+    }: ContainerProps, ref) {
+        return (
+            <div
+                ref={ref}
+                className={cn(
+                    'w-full',
+                    MAX_WIDTH_CLASSES[size],
+                    centered && 'mx-auto',
+                    paddingX && PADDING_X_CLASSES[paddingX],
+                    className
+                )}
+                {...props}
+            />
+        );
+    }
+);
+
+Container.displayName = 'Container';
 
 export {Container};

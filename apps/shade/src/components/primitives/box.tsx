@@ -20,26 +20,31 @@ export interface BoxProps extends React.HTMLAttributes<HTMLDivElement> {
     radius?: BoxRadius;
 }
 
-function Box({
-    className,
-    padding,
-    paddingX,
-    paddingY,
-    radius,
-    ...props
-}: BoxProps) {
-    return (
-        <div
-            className={cn(
-                padding && PADDING_CLASSES[padding],
-                paddingX && PADDING_X_CLASSES[paddingX],
-                paddingY && PADDING_Y_CLASSES[paddingY],
-                radius && RADIUS_CLASSES[radius],
-                className
-            )}
-            {...props}
-        />
-    );
-}
+const Box = React.forwardRef<HTMLDivElement, BoxProps>(
+    function Box({
+        className,
+        padding,
+        paddingX,
+        paddingY,
+        radius,
+        ...props
+    }: BoxProps, ref) {
+        return (
+            <div
+                ref={ref}
+                className={cn(
+                    padding && PADDING_CLASSES[padding],
+                    paddingX && PADDING_X_CLASSES[paddingX],
+                    paddingY && PADDING_Y_CLASSES[paddingY],
+                    radius && RADIUS_CLASSES[radius],
+                    className
+                )}
+                {...props}
+            />
+        );
+    }
+);
+
+Box.displayName = 'Box';
 
 export {Box};

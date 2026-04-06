@@ -67,32 +67,37 @@ export interface TextProps extends React.HTMLAttributes<HTMLElement> {
     truncate?: boolean;
 }
 
-function Text({
-    as = 'p',
-    className,
-    size = 'md',
-    weight = 'regular',
-    tone = 'primary',
-    leading = 'body',
-    truncate = false,
-    ...props
-}: TextProps) {
-    const Component = as;
+const Text = React.forwardRef<HTMLElement, TextProps>(
+    function Text({
+        as = 'p',
+        className,
+        size = 'md',
+        weight = 'regular',
+        tone = 'primary',
+        leading = 'body',
+        truncate = false,
+        ...props
+    }: TextProps, ref) {
+        const Component = as as React.ElementType;
 
-    return (
-        <Component
-            className={cn(
-                TEXT_SIZE_CLASSES[size],
-                TEXT_WEIGHT_CLASSES[weight],
-                TEXT_TONE_CLASSES[tone],
-                TEXT_LEADING_CLASSES[leading],
-                truncate && 'truncate',
-                className
-            )}
-            {...props}
-        />
-    );
-}
+        return (
+            <Component
+                ref={ref}
+                className={cn(
+                    TEXT_SIZE_CLASSES[size],
+                    TEXT_WEIGHT_CLASSES[weight],
+                    TEXT_TONE_CLASSES[tone],
+                    TEXT_LEADING_CLASSES[leading],
+                    truncate && 'truncate',
+                    className
+                )}
+                {...props}
+            />
+        );
+    }
+);
+
+Text.displayName = 'Text';
 
 export {Text};
 export type {

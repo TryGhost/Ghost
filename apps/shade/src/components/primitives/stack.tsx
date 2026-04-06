@@ -15,25 +15,30 @@ export interface StackProps extends React.HTMLAttributes<HTMLDivElement> {
     justify?: Justify;
 }
 
-function Stack({
-    className,
-    gap = 'md',
-    align = 'stretch',
-    justify = 'start',
-    ...props
-}: StackProps) {
-    return (
-        <div
-            className={cn(
-                'flex flex-col',
-                GAP_CLASSES[gap],
-                ALIGN_ITEMS_CLASSES[align],
-                JUSTIFY_CONTENT_CLASSES[justify],
-                className
-            )}
-            {...props}
-        />
-    );
-}
+const Stack = React.forwardRef<HTMLDivElement, StackProps>(
+    function Stack({
+        className,
+        gap = 'md',
+        align = 'stretch',
+        justify = 'start',
+        ...props
+    }: StackProps, ref) {
+        return (
+            <div
+                ref={ref}
+                className={cn(
+                    'flex flex-col',
+                    GAP_CLASSES[gap],
+                    ALIGN_ITEMS_CLASSES[align],
+                    JUSTIFY_CONTENT_CLASSES[justify],
+                    className
+                )}
+                {...props}
+            />
+        );
+    }
+);
+
+Stack.displayName = 'Stack';
 
 export {Stack};
