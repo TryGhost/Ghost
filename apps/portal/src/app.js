@@ -715,11 +715,6 @@ export default class App extends React.Component {
         if (path && linkRegex.test(path)) {
             const [,pagePath] = path.match(linkRegex);
 
-            // `#/portal/share` has been replaced with `#/share`.
-            if (pagePath === 'share') {
-                return {};
-            }
-
             const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath, site) || {};
 
             // If user is not logged in and trying to access an account page,

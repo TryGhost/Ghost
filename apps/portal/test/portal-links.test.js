@@ -230,19 +230,6 @@ describe('Portal Data links:', () => {
             const poweredBy = within(popupFrame.contentDocument).queryByText(/Powered by Ghost/i);
             expect(poweredBy).not.toBeInTheDocument();
         });
-
-        test('does not open share page with legacy #/portal/share path', async () => {
-            window.location.hash = '#/portal/share';
-            const {
-                triggerButtonFrame, queryByTitle
-            } = await setup({
-                site: FixtureSite.singleTier.basic,
-                showPopup: false
-            });
-
-            expect(triggerButtonFrame).toBeInTheDocument();
-            expect(queryByTitle(/portal-popup/i)).not.toBeInTheDocument();
-        });
     });
 
     describe('#/portal/signup/free', () => {
