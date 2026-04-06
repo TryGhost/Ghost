@@ -2,10 +2,12 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const errors = require('@tryghost/errors');
+const labs = require('../../../../../core/shared/labs');
 
 describe('MemberWelcomeEmailRenderer', function () {
     let MemberWelcomeEmailRenderer;
     let lexicalRenderStub;
+    let originalLabsIsSet;
 
     const defaultSiteSettings = {
         title: 'Test Site',
@@ -14,6 +16,15 @@ describe('MemberWelcomeEmailRenderer', function () {
     };
 
     beforeEach(function () {
+        originalLabsIsSet = labs.isSet;
+        sinon.stub(labs, 'isSet').callsFake((flag) => {
+            if (flag === 'welcomeEmailsDesignCustomization') {
+                return false;
+            }
+
+            return originalLabsIsSet(flag);
+        });
+
         lexicalRenderStub = sinon.stub().resolves('<p>Hello World</p>');
 
         MemberWelcomeEmailRenderer = rewire('../../../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');

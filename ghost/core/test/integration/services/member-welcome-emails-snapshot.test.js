@@ -2,16 +2,27 @@ const sinon = require('sinon');
 const i18nLib = require('@tryghost/i18n');
 const testUtils = require('../../utils');
 const {assertMatchSnapshot} = require('../../utils/assertions');
+const labs = require('../../../core/shared/labs');
 const MemberWelcomeEmailRenderer = require('../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');
 
 describe('Member Welcome Email Renderer Snapshots', function () {
     let renderer;
+    let originalLabsIsSet;
 
     before(async function () {
         await testUtils.setup('default')();
     });
 
     beforeEach(function () {
+        originalLabsIsSet = labs.isSet;
+        sinon.stub(labs, 'isSet').callsFake((flag) => {
+            if (flag === 'welcomeEmailsDesignCustomization') {
+                return false;
+            }
+
+            return originalLabsIsSet(flag);
+        });
+
         const i18n = i18nLib('en', 'ghost');
         renderer = new MemberWelcomeEmailRenderer({t: i18n.t});
 
