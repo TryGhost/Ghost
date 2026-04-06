@@ -577,6 +577,20 @@ describe('MemberWelcomeEmailRenderer', function () {
                 assert(result.html.includes('https://ghost.org/?via=pbg-newsletter'));
             });
 
+            it('uses the newsletter content-shell class when design customization is enabled', async function () {
+                lexicalRenderStub.resolves('<p>Content</p>');
+                const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+                const result = await renderer.render({
+                    lexical: '{}',
+                    subject: 'Test Subject',
+                    member: {name: 'John', email: 'john@example.com'},
+                    siteSettings: defaultSiteSettings
+                });
+
+                assert.match(result.html, /<tr class="post-content-row">/);
+            });
+
             it('applies header image styles and preserves header background color', async function () {
                 lexicalRenderStub.resolves('<p>Content</p>');
                 const renderer = new MemberWelcomeEmailRenderer({t: key => key});
