@@ -8,6 +8,7 @@ const {MESSAGES} = require('./constants');
 const {wrapReplacementStrings} = require('../koenig/render-utils/replacement-strings');
 const linkReplacer = require('../lib/link-replacer');
 const {getEmailDesign} = require('../email-rendering/email-design');
+const {registerHelpers} = require('../email-service/helpers/register-helpers');
 
 const REPLACEMENT_REGEX = /%%\{(\w+?)(?:,? *"(.*?)")?\}%%/g;
 const UNMATCHED_TOKEN_REGEX = /%%\{.*?\}%%/g;
@@ -34,46 +35,7 @@ class MemberWelcomeEmailRenderer {
 
     constructor({t}) {
         this.Handlebars = require('handlebars').create();
-        this.Handlebars.registerHelper('and', function () {
-            const len = arguments.length - 1;
-
-            for (let i = 0; i < len; i++) {
-                if (!arguments[i]) {
-                    return false;
-                }
-            }
-
-            return true;
-        });
-        this.Handlebars.registerHelper('not', function () {
-            const len = arguments.length - 1;
-
-            for (let i = 0; i < len; i++) {
-                if (!arguments[i]) {
-                    return true;
-                }
-            }
-
-            return false;
-        });
-        this.Handlebars.registerHelper('or', function () {
-            const len = arguments.length - 1;
-
-            for (let i = 0; i < len; i++) {
-                if (arguments[i]) {
-                    return true;
-                }
-            }
-
-            return false;
-        });
-        this.Handlebars.registerHelper('eq', function (a, b) {
-            return a === b;
-        });
-        this.Handlebars.registerHelper('t', function (key, options) {
-            let hash = options?.hash;
-            return t(key, hash || options || {});
-        });
+        registerHelpers(this.Handlebars, labs, t);
         const baseStylesSource = fs.readFileSync(
             path.join(__dirname, '../email-rendering/partials/base-styles.hbs'),
             'utf8'
