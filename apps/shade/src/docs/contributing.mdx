@@ -45,6 +45,13 @@ Do not import `utils` or `app` symbols from root.
 - Keep `utils` design-system-safe only (generic helpers/hooks + third-party namespaces).
 - Do not add new domain/product helpers to `utils`; place them in app-local code or transitional `app` exports.
 
+## Primitive Composition Guardrails (MS-3)
+
+- Prefer `Stack`, `Inline`, `Box`, `Container`, `Grid`, and `Text` over anonymous wrappers that only carry layout utility classes.
+- In MS-3, layout-shell migration scope is limited to `apps/shade/src/components/layout/*`.
+- Keep existing `@tryghost/shade/primitives` consumers compatible during migration; do not remove legacy exports in MS-3.
+- Use semantic spacing props (`none | xs | sm | md | lg | xl | 2xl`) for primitive composition APIs.
+
 ## Naming Conventions
 
 - **File names:** kebab-case, e.g. `dropdown-menu.tsx` (ShadCN-generated files keep kebab-case)

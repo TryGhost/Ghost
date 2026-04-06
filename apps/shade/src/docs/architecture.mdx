@@ -59,6 +59,16 @@ Promotion guidance:
 - Promote to `patterns` when repeated product workflows emerge.
 - Do not place domain/product helpers in `utils`; route them through `app` during migration and then toward app-local/pattern ownership.
 
+## Primitive Composition Contract (MS-3 Phase 1)
+
+The primitive composition layer is locked to these decisions before implementation:
+
+- Primitive set: `Stack`, `Inline`, `Box`, `Container`, `Grid`, `Text`.
+- Spacing API: semantic steps `none | xs | sm | md | lg | xl | 2xl`.
+- Text depth: minimal `Text` primitive with compatibility heading wrappers (`H1`-`H4`, `HTable`).
+- Migration scope (MS-3): `apps/shade/src/components/layout/*` only.
+- Compatibility policy: keep existing `@tryghost/shade/primitives` exports available during MS-3 and deprecate without hard removals.
+
 ## Component Types
 
 ### Base Components (UI)

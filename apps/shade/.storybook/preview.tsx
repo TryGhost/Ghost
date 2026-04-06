@@ -58,8 +58,18 @@ const preview: Preview = {
 			storySort: {
 				method: 'alphabetical',
 				order: [
-					'Introduction', 'Principles', 'Architecture', 'Tokens', 'Contributing',
-					'Components', 'Layout', 'Experimental'],
+					'Primitives',
+					'Components',
+					'Layout',
+					'Features',
+					'Experimental',
+					'Introduction',
+					'Principles',
+					'Architecture',
+					'Tokens',
+					'Contributing',
+					'*'
+				],
 			},
 		},
 		docs: {
