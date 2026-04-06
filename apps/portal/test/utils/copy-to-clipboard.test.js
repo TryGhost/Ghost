@@ -1,6 +1,6 @@
-import {copyTextToClipboard} from '../../src/utils/copy-text-to-clipboard';
+import {copyTextToClipboard} from '../../src/utils/copy-to-clipboard';
 
-describe('copy-text-to-clipboard', () => {
+describe('copy-to-clipboard', () => {
     afterEach(() => {
         vi.restoreAllMocks();
     });

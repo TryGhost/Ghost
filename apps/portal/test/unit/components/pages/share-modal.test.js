@@ -1,8 +1,8 @@
 import {fireEvent, render, waitFor} from '../../../utils/test-utils';
 import ShareModal from '../../../../src/components/pages/share/share-modal';
-import {copyTextToClipboard} from '../../../../src/utils/copy-text-to-clipboard';
+import {copyTextToClipboard} from '../../../../src/utils/copy-to-clipboard';
 
-vi.mock('../../../../src/utils/copy-text-to-clipboard', () => ({
+vi.mock('../../../../src/utils/copy-to-clipboard', () => ({
     copyTextToClipboard: vi.fn()
 }));
 

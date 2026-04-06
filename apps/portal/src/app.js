@@ -720,7 +720,7 @@ export default class App extends React.Component {
                 return {};
             }
 
-            const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath) || {};
+            const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath, site) || {};
 
             // If user is not logged in and trying to access an account page,
             // redirect to signin with a redirect URL back to the intended page

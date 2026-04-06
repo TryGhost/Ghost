@@ -1,5 +1,5 @@
 import CloseButton from '../../common/close-button';
-import {copyTextToClipboard} from '../../../utils/copy-text-to-clipboard';
+import {copyTextToClipboard} from '../../../utils/copy-to-clipboard';
 import useShareData from './use-share-data';
 import {ReactComponent as BlueSkyIcon} from '../../../images/icons/share-bluesky.svg';
 import {ReactComponent as CheckmarkIcon} from '../../../images/icons/checkmark.svg';
