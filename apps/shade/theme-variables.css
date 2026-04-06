@@ -134,9 +134,9 @@
     --sidebar-ring: hsl(210 13% 55%);
 }
 
-.shade[data-admin-ui-redesign='true'],
-:root[data-admin-ui-redesign='true'],
-body[data-admin-ui-redesign='true'] {
+.shade,
+:root,
+body {
     --background: hsl(240 20% 99%);
     --muted: hsl(200 12% 94%);
     --border: hsl(200 12% 94%);
@@ -149,10 +149,10 @@ body[data-admin-ui-redesign='true'] {
     --sidebar-border: transparent;
 }
 
-.dark .shade[data-admin-ui-redesign='true'],
-.shade[data-admin-ui-redesign='true'].dark,
-:root.dark[data-admin-ui-redesign='true'],
-body.dark[data-admin-ui-redesign='true'] {
+.dark .shade,
+.shade.dark,
+:root.dark,
+body.dark {
     --background: hsl(216 11% 9%);
     --muted: hsl(210 11% 25%);
     --border: hsl(216 7% 14%);

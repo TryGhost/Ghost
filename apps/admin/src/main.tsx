@@ -35,7 +35,6 @@ const framework = {
 export const AdminShadeRoot = () => {
     return (
         <ShadeApp
-            adminUiRedesign={true}
             className="shade-admin"
             darkMode={false}
             fetchKoenigLexical={null}

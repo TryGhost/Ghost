@@ -2,7 +2,6 @@ import assert from 'assert/strict';
 import {describe, it, vi} from 'vitest';
 import {fireEvent, screen} from '@testing-library/react';
 import {Button} from '../../../../src/components/ui/button';
-import ShadeProvider from '../../../../src/providers/shade-provider';
 import {render} from '../../utils/test-utils';
 
 describe('Button Component', () => {
@@ -28,12 +27,8 @@ describe('Button Component', () => {
         assert.ok(button.className.includes('h-7'), 'Should have small size class');
     });
 
-    it('applies redesign defaults only when adminUiRedesign is enabled', () => {
-        render(
-            <ShadeProvider adminUiRedesign={true} darkMode={false}>
-                <Button size="icon">Icon</Button>
-            </ShadeProvider>
-        );
+    it('applies redesigned defaults', () => {
+        render(<Button size="icon">Icon</Button>);
 
         const button = screen.getByRole('button', {name: /icon/i});
 

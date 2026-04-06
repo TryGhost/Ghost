@@ -4,17 +4,14 @@ import {cva, type VariantProps} from 'class-variance-authority';
 import {cn} from '@/lib/utils';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
-import {useShade} from '@/providers/shade-provider';
 import {Textarea} from '@/components/ui/textarea';
 
 function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
-    const {adminUiRedesign} = useShade();
-
     return (
         <div
             className={cn(
-                adminUiRedesign ? 'group/input-group border-input bg-surface-elevated relative flex w-full items-center rounded-md border outline-hidden transition-colors' : 'group/input-group border-border-default bg-surface-elevated relative flex w-full items-center rounded-md border outline-hidden transition-colors',
-                adminUiRedesign ? 'has-[>textarea]:h-auto' : 'h-9 has-[>textarea]:h-auto',
+                'group/input-group border-input bg-surface-elevated relative flex w-full items-center rounded-md border outline-hidden transition-colors',
+                'has-[>textarea]:h-auto',
 
                 // Variants based on alignment.
                 'has-[>[data-align=inline-start]]:[&>input]:pl-2',

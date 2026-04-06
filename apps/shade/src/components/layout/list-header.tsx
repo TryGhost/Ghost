@@ -1,7 +1,6 @@
 import {H1} from './heading';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
 import {cn} from '@/lib/utils';
-import {useShade} from '@/providers/shade-provider';
 
 import React from 'react';
 
@@ -37,12 +36,10 @@ function ListHeaderBreadcrumb({className, children}: PropsWithChildrenAndClassNa
 }
 
 function ListHeaderTitle({className, children}: PropsWithChildrenAndClassName) {
-    const {adminUiRedesign} = useShade();
-
     return (
         <H1
             className={cn(
-                adminUiRedesign ? 'text-lg leading-[1.2em] tracking-normal font-semibold whitespace-nowrap' : 'text-2xl leading-[1.2em] sidebar:text-[2.5rem] whitespace-nowrap',
+                'text-lg leading-[1.2em] tracking-normal font-semibold whitespace-nowrap',
                 className
             )}
             data-list-header='list-header-title'
@@ -64,12 +61,10 @@ function ListHeaderDescription({className, children}: PropsWithChildrenAndClassN
 }
 
 function ListHeaderCount({className, children}: PropsWithChildrenAndClassName) {
-    const {adminUiRedesign} = useShade();
-
     return (
         <span
             className={cn(
-                adminUiRedesign ? 'ml-2 lg:ml-3 font-medium text-sm text-muted-foreground tabular-nums' : 'ml-2 lg:ml-3 font-normal text-[1.9rem] sidebar:text-[2.2rem] text-muted-foreground tabular-nums',
+                'ml-2 lg:ml-3 font-medium text-sm text-muted-foreground tabular-nums',
                 className
             )}
             data-list-header='list-header-count'
@@ -253,12 +248,10 @@ type ListHeaderComponent = React.FC<ListHeaderProps> & {
 
 const ListHeader: ListHeaderComponent = Object.assign(
     function ListHeader({className, children, sticky = true, blurredBackground = true}: ListHeaderProps) {
-        const {adminUiRedesign} = useShade();
-
         return (
             <header
                 className={cn(
-                    adminUiRedesign ? 'flex items-start justify-between gap-4 border-b h-[72px] py-5' : 'flex items-start justify-between gap-4 px-4 lg:px-8',
+                    'flex items-start justify-between gap-4 border-b h-[72px] py-5',
                     sticky && 'sticky top-0 z-50 -mb-4 lg:-mb-4',
                     blurredBackground && 'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black',
                     className

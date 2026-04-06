@@ -23,7 +23,6 @@ import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip';
 import {cva, type VariantProps} from 'class-variance-authority';
 import {AlertCircle, Check, Loader2, Plus, X} from 'lucide-react';
 import {cn} from '@/lib/utils';
-import {useShade} from '@/providers/shade-provider';
 
 // i18n Configuration Interface
 export interface FilterI18nConfig {
@@ -185,7 +184,6 @@ interface FilterContextValue {
     size: 'sm' | 'md' | 'lg';
     radius: 'md' | 'full';
     i18n: FilterI18nConfig;
-    adminUiRedesign: boolean;
     cursorPointer: boolean;
     className?: string;
     showAddButton?: boolean;
@@ -203,7 +201,6 @@ const FilterContext = createContext<FilterContextValue>({
     size: 'md',
     radius: 'md',
     i18n: DEFAULT_I18N,
-    adminUiRedesign: false,
     cursorPointer: true,
     className: undefined,
     showAddButton: true,
@@ -240,39 +237,22 @@ const filterInputVariants = cva(
         variants: {
             variant: {
                 solid: 'border-0 bg-secondary',
-                outline: 'border border-border bg-background'
+                outline: 'border border-border bg-surface-elevated'
             },
             size: {
                 lg: 'h-10 px-2.5 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
-                md: 'h-(--control-height) px-2 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
+                md: 'h-7 px-2 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
                 sm: 'h-8 px-2 text-xs has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0'
             },
             cursorPointer: {
                 true: 'cursor-pointer',
                 false: ''
-            },
-            adminUiRedesign: {
-                true: '',
-                false: ''
             }
         },
-        compoundVariants: [
-            {
-                variant: 'outline',
-                adminUiRedesign: true,
-                className: 'bg-surface-elevated'
-            },
-            {
-                size: 'md',
-                adminUiRedesign: true,
-                className: 'h-7'
-            }
-        ],
         defaultVariants: {
             variant: 'outline',
             size: 'md',
-            cursorPointer: true,
-            adminUiRedesign: false
+            cursorPointer: true
         }
     }
 );
@@ -287,11 +267,11 @@ const filterRemoveButtonVariants = cva(
         variants: {
             variant: {
                 solid: 'bg-secondary',
-                outline: 'border border-s-0 border-border hover:bg-secondary'
+                outline: 'border border-s-0 border-border bg-surface-elevated hover:bg-secondary'
             },
             size: {
                 lg: 'size-10 [&_svg:not([class*=size-])]:size-4',
-                md: 'size-(--control-height) [&_svg:not([class*=size-])]:size-3.5',
+                md: 'size-7 [&_svg:not([class*=size-])]:size-3.5',
                 sm: 'size-8 [&_svg:not([class*=size-])]:size-3'
             },
             cursorPointer: {
@@ -301,30 +281,13 @@ const filterRemoveButtonVariants = cva(
             radius: {
                 md: 'rounded-e-md',
                 full: 'rounded-e-full'
-            },
-            adminUiRedesign: {
-                true: '',
-                false: ''
             }
         },
-        compoundVariants: [
-            {
-                variant: 'outline',
-                adminUiRedesign: true,
-                className: 'bg-surface-elevated'
-            },
-            {
-                size: 'md',
-                adminUiRedesign: true,
-                className: 'size-7'
-            }
-        ],
         defaultVariants: {
             variant: 'outline',
             size: 'md',
             radius: 'md',
-            cursorPointer: true,
-            adminUiRedesign: false
+            cursorPointer: true
         }
     }
 );
@@ -343,7 +306,7 @@ const filterAddButtonVariants = cva(
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
-                md: 'h-(--control-height) gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
+                md: 'h-7 gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
                 sm: 'h-8 gap-1.5 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
             },
             radius: {
@@ -353,24 +316,12 @@ const filterAddButtonVariants = cva(
             cursorPointer: {
                 true: 'cursor-pointer',
                 false: ''
-            },
-            adminUiRedesign: {
-                true: '',
-                false: ''
             }
         },
-        compoundVariants: [
-            {
-                size: 'md',
-                adminUiRedesign: true,
-                className: 'h-7'
-            }
-        ],
         defaultVariants: {
             variant: 'outline',
             size: 'md',
-            cursorPointer: true,
-            adminUiRedesign: false
+            cursorPointer: true
         }
     }
 );
@@ -384,39 +335,22 @@ const filterOperatorVariants = cva(
         variants: {
             variant: {
                 solid: 'bg-secondary',
-                outline: 'border border-e-0 border-border bg-background hover:bg-secondary data-[state=open]:bg-secondary [&+[data-slot=filters-remove]]:border-s'
+                outline: 'border border-e-0 border-border bg-surface-elevated hover:bg-secondary data-[state=open]:bg-secondary [&+[data-slot=filters-remove]]:border-s'
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm',
-                md: 'h-(--control-height) gap-0.5 px-3 text-sm',
+                md: 'h-7 gap-0.5 px-3 text-sm',
                 sm: 'h-8 gap-1 px-2.5 text-xs'
             },
             cursorPointer: {
                 true: 'cursor-pointer',
                 false: ''
-            },
-            adminUiRedesign: {
-                true: '',
-                false: ''
             }
         },
-        compoundVariants: [
-            {
-                variant: 'outline',
-                adminUiRedesign: true,
-                className: 'bg-surface-elevated'
-            },
-            {
-                size: 'md',
-                adminUiRedesign: true,
-                className: 'h-7'
-            }
-        ],
         defaultVariants: {
             variant: 'outline',
             size: 'md',
-            cursorPointer: true,
-            adminUiRedesign: false
+            cursorPointer: true
         }
     }
 );
@@ -430,38 +364,21 @@ const filterFieldLabelVariants = cva(
         variants: {
             variant: {
                 solid: 'bg-secondary',
-                outline: 'border border-e-0 border-border'
+                outline: 'border border-e-0 border-border bg-surface-elevated'
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
-                md: 'h-(--control-height) gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
+                md: 'h-7 gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
                 sm: 'h-8 gap-0.5 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
             },
             radius: {
                 md: 'rounded-s-md',
                 full: 'rounded-s-full'
-            },
-            adminUiRedesign: {
-                true: '',
-                false: ''
             }
         },
-        compoundVariants: [
-            {
-                variant: 'outline',
-                adminUiRedesign: true,
-                className: 'bg-surface-elevated'
-            },
-            {
-                size: 'md',
-                adminUiRedesign: true,
-                className: 'h-7'
-            }
-        ],
         defaultVariants: {
             variant: 'outline',
-            size: 'md',
-            adminUiRedesign: false
+            size: 'md'
         }
     }
 );
@@ -475,39 +392,22 @@ const filterFieldValueVariants = cva(
         variants: {
             variant: {
                 solid: 'bg-secondary',
-                outline: 'border border-border bg-background hover:bg-secondary has-[[data-slot=switch]]:hover:bg-transparent'
+                outline: 'border border-border bg-surface-elevated hover:bg-secondary has-[[data-slot=switch]]:hover:bg-transparent'
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
-                md: 'h-(--control-height) gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
+                md: 'h-7 gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
                 sm: 'h-8 gap-0.5 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
             },
             cursorPointer: {
                 true: 'cursor-pointer has-[[data-slot=switch]]:cursor-default',
                 false: ''
-            },
-            adminUiRedesign: {
-                true: '',
-                false: ''
             }
         },
-        compoundVariants: [
-            {
-                variant: 'outline',
-                adminUiRedesign: true,
-                className: 'bg-surface-elevated'
-            },
-            {
-                size: 'md',
-                adminUiRedesign: true,
-                className: 'h-7'
-            }
-        ],
         defaultVariants: {
             variant: 'outline',
             size: 'md',
-            cursorPointer: true,
-            adminUiRedesign: false
+            cursorPointer: true
         }
     }
 );
@@ -520,25 +420,13 @@ const filterFieldAddonVariants = cva('flex shrink-0 items-center justify-center 
         },
         size: {
             lg: 'h-10 px-4 text-sm',
-            md: 'h-(--control-height) px-3 text-sm',
+            md: 'h-7 px-3 text-sm',
             sm: 'h-8 px-2.5 text-xs'
-        },
-        adminUiRedesign: {
-            true: '',
-            false: ''
         }
     },
-    compoundVariants: [
-        {
-            size: 'md',
-            adminUiRedesign: true,
-            className: 'h-7'
-        }
-    ],
     defaultVariants: {
         variant: 'outline',
-        size: 'md',
-        adminUiRedesign: false
+        size: 'md'
     }
 });
 
@@ -546,34 +434,17 @@ const filterFieldBetweenVariants = cva('flex shrink-0 items-center text-muted-fo
     variants: {
         variant: {
             solid: 'bg-secondary',
-            outline: 'border border-x-0 border-border bg-background'
+            outline: 'border border-x-0 border-border bg-surface-elevated'
         },
         size: {
             lg: 'h-10 px-4 text-sm',
-            md: 'h-(--control-height) px-3 text-sm',
+            md: 'h-7 px-3 text-sm',
             sm: 'h-8 px-2.5 text-xs'
-        },
-        adminUiRedesign: {
-            true: '',
-            false: ''
         }
     },
-    compoundVariants: [
-        {
-            variant: 'outline',
-            adminUiRedesign: true,
-            className: 'bg-surface-elevated'
-        },
-        {
-            size: 'md',
-            adminUiRedesign: true,
-            className: 'h-7'
-        }
-    ],
     defaultVariants: {
         variant: 'outline',
-        size: 'md',
-        adminUiRedesign: false
+        size: 'md'
     }
 });
 
@@ -718,12 +589,12 @@ function FilterInput<T = unknown>({
 
     return (
         <div
-            className={cn('w-36', filterInputVariants({variant: context.variant, size: context.size, adminUiRedesign: context.adminUiRedesign}), className)}
+            className={cn('w-36', filterInputVariants({variant: context.variant, size: context.size}), className)}
             data-slot="filters-input-wrapper"
         >
             {field?.prefix && (
                 <div
-                    className={filterFieldAddonVariants({variant: context.variant, size: context.size, adminUiRedesign: context.adminUiRedesign})}
+                    className={filterFieldAddonVariants({variant: context.variant, size: context.size})}
                     data-slot="filters-prefix"
                 >
                     {field.prefix}
@@ -761,7 +632,7 @@ function FilterInput<T = unknown>({
 
             {field?.suffix && (
                 <div
-                    className={cn(filterFieldAddonVariants({variant: context.variant, size: context.size, adminUiRedesign: context.adminUiRedesign}))}
+                    className={cn(filterFieldAddonVariants({variant: context.variant, size: context.size}))}
                     data-slot="filters-suffix"
                 >
                     {field.suffix}
@@ -787,8 +658,7 @@ function FilterRemoveButton({className, icon = <X />, ...props}: FilterRemoveBut
                     variant: context.variant,
                     size: context.size,
                     cursorPointer: context.cursorPointer,
-                    radius: context.radius,
-                    adminUiRedesign: context.adminUiRedesign
+                    radius: context.radius
                 }),
                 className
             )}
@@ -1122,7 +992,7 @@ function FilterOperatorDropdown<T = unknown>({field, operator, values, onChange}
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger className={filterOperatorVariants({variant: context.variant, size: context.size, adminUiRedesign: context.adminUiRedesign})}>
+            <DropdownMenuTrigger className={filterOperatorVariants({variant: context.variant, size: context.size})}>
                 {operatorLabel}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-fit min-w-fit">
@@ -1490,8 +1360,7 @@ function ResolvedSelectOptionsPopover<T = unknown>({
                 className={cn(filterFieldValueVariants({
                     variant: context.variant,
                     size: context.size,
-                    cursorPointer: context.cursorPointer,
-                    adminUiRedesign: context.adminUiRedesign
+                    cursorPointer: context.cursorPointer
                 }), field.triggerClassName ?? 'max-w-60')}
             >
                 <div className="flex min-w-0 items-center gap-1.5">
@@ -1688,8 +1557,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                 className={filterFieldValueVariants({
                     variant: context.variant,
                     size: context.size,
-                    cursorPointer: context.cursorPointer,
-                    adminUiRedesign: context.adminUiRedesign
+                    cursorPointer: context.cursorPointer
                 })}
             >
                 {field.customRenderer({field, values, onChange, operator})}
@@ -1709,8 +1577,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                 className={filterFieldValueVariants({
                     variant: context.variant,
                     size: context.size,
-                    cursorPointer: context.cursorPointer,
-                    adminUiRedesign: context.adminUiRedesign
+                    cursorPointer: context.cursorPointer
                 })}
             >
                 <div className="flex items-center gap-2">
@@ -1739,7 +1606,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                         onInputChange={field.onInputChange}
                     />
                     <div
-                        className={filterFieldBetweenVariants({variant: context.variant, size: context.size, adminUiRedesign: context.adminUiRedesign})}
+                        className={filterFieldBetweenVariants({variant: context.variant, size: context.size})}
                         data-slot="filters-between"
                     >
                         {context.i18n.to}
@@ -1784,7 +1651,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                         onInputChange={field.onInputChange}
                     />
                     <div
-                        className={filterFieldBetweenVariants({variant: context.variant, size: context.size, adminUiRedesign: context.adminUiRedesign})}
+                        className={filterFieldBetweenVariants({variant: context.variant, size: context.size})}
                         data-slot="filters-between"
                     >
                         {context.i18n.to}
@@ -1863,8 +1730,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                 className={filterFieldValueVariants({
                     variant: context.variant,
                     size: context.size,
-                    cursorPointer: context.cursorPointer,
-                    adminUiRedesign: context.adminUiRedesign
+                    cursorPointer: context.cursorPointer
                 })}
             >
                 <FilterInput
@@ -1876,7 +1742,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                     onInputChange={field.onInputChange}
                 />
                 <div
-                    className={filterFieldBetweenVariants({variant: context.variant, size: context.size, adminUiRedesign: context.adminUiRedesign})}
+                    className={filterFieldBetweenVariants({variant: context.variant, size: context.size})}
                     data-slot="filters-between"
                 >
                     {context.i18n.to}
@@ -1915,7 +1781,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                         onInputChange={field.onInputChange}
                     />
                     <div
-                        className={filterFieldBetweenVariants({variant: context.variant, size: context.size, adminUiRedesign: context.adminUiRedesign})}
+                        className={filterFieldBetweenVariants({variant: context.variant, size: context.size})}
                         data-slot="filters-between"
                     >
                         {context.i18n.to}
@@ -1992,8 +1858,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                 className={filterFieldValueVariants({
                     variant: context.variant,
                     size: context.size,
-                    cursorPointer: context.cursorPointer,
-                    adminUiRedesign: context.adminUiRedesign
+                    cursorPointer: context.cursorPointer
                 })}
             >
                 <div className="flex w-full min-w-0 items-center gap-1.5">
@@ -2160,8 +2025,7 @@ export const FiltersContent = <T = unknown,>({filters, fields, onChange}: Filter
                             className={filterFieldLabelVariants({
                                 variant: context.variant,
                                 size: context.size,
-                                radius: context.radius,
-                                adminUiRedesign: context.adminUiRedesign
+                                radius: context.radius
                             })}
                         >
                             {field.icon}
@@ -2252,7 +2116,6 @@ export function Filters<T = unknown>({
     keyboardShortcut,
     onActiveFieldChange
 }: FiltersProps<T>) {
-    const {adminUiRedesign} = useShade();
     const [addFilterOpen, setAddFilterOpen] = useState(false);
     const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
     const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
@@ -2464,7 +2327,6 @@ export function Filters<T = unknown>({
                 size,
                 radius,
                 i18n: mergedI18n,
-                adminUiRedesign,
                 cursorPointer,
                 className,
                 showAddButton,
@@ -2492,7 +2354,7 @@ export function Filters<T = unknown>({
                     return (
                         <div key={filter.id} className={filterItemVariants({variant})} data-slot="filter-item">
                             {/* Field Label */}
-                            <div className={filterFieldLabelVariants({variant: variant, size: size, radius: radius, adminUiRedesign: adminUiRedesign})}>
+                            <div className={filterFieldLabelVariants({variant: variant, size: size, radius: radius})}>
                                 {field.icon}
                                 {field.label}
                             </div>
@@ -2540,8 +2402,7 @@ export function Filters<T = unknown>({
                                             variant: variant,
                                             size: size,
                                             cursorPointer: cursorPointer,
-                                            radius: radius,
-                                            adminUiRedesign: adminUiRedesign
+                                            radius: radius
                                         }),
                                         addButtonClassName
                                     )}
@@ -2706,8 +2567,7 @@ export function Filters<T = unknown>({
                                     variant: variant,
                                     size: size,
                                     cursorPointer: cursorPointer,
-                                    radius: radius,
-                                    adminUiRedesign: adminUiRedesign
+                                    radius: radius
                                 }),
                                 'border-0 bg-transparent hover:bg-transparent hover:text-foreground',
                                 'sm:absolute sm:right-0 sm:top-0',

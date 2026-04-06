@@ -12,7 +12,7 @@ interface AppProps extends BaseAppProps {
 const PostsShadeRoot: React.FC<{darkMode: boolean}> = ({darkMode}) => {
     return (
         <PostsErrorBoundary>
-            <ShadeApp adminUiRedesign={true} className="shade-posts app-container" darkMode={darkMode} fetchKoenigLexical={null}>
+            <ShadeApp className="shade-posts app-container" darkMode={darkMode} fetchKoenigLexical={null}>
                 <Outlet />
             </ShadeApp>
         </PostsErrorBoundary>

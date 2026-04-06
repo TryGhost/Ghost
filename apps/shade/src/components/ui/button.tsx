@@ -4,7 +4,6 @@ import {cva, type VariantProps} from 'class-variance-authority';
 import {ChevronDown} from 'lucide-react';
 
 import {cn} from '@/lib/utils';
-import {useShade} from '@/providers/shade-provider';
 
 const buttonVariants = cva(
     'inline-flex items-center justify-center gap-2 rounded-md text-sm whitespace-nowrap transition-colors focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]',
@@ -42,7 +41,6 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ({className, variant, size, asChild = false, children, ...props}, ref) => {
-        const {adminUiRedesign} = useShade();
         const Comp = asChild ? Slot : 'button';
         const content = variant === 'dropdown' ? (
             <>
@@ -56,9 +54,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 ref={ref}
                 className={cn(
                     buttonVariants({variant, size, className}),
-                    adminUiRedesign && 'rounded-full font-semibold',
-                    adminUiRedesign && size === 'sm' && 'text-sm',
-                    adminUiRedesign && size === 'icon' && 'size-(--control-height)'
+                    'rounded-full font-semibold',
+                    size === 'sm' && 'text-sm',
+                    size === 'icon' && 'size-(--control-height)'
                 )}
                 {...props}
             >
