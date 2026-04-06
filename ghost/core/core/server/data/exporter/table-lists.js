@@ -60,6 +60,7 @@ const BACKUP_TABLES = [
     'outbox',
     'gifts',
     'welcome_email_automations',
+    'welcome_email_automation_runs',
     'welcome_email_automated_emails'
 ];
 

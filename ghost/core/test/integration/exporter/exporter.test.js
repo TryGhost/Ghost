@@ -103,6 +103,7 @@ describe('Exporter', function () {
                 'users',
                 'webhooks',
                 'welcome_email_automated_emails',
+                'welcome_email_automation_runs',
                 'welcome_email_automations'
             ];
 
