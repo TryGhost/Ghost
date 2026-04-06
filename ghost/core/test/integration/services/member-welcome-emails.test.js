@@ -462,7 +462,7 @@ describe('Member Welcome Emails Integration', function () {
             sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
         });
 
-        it('uses refreshed design settings after welcome emails are loaded', async function () {
+        it('uses cached design settings after welcome emails are loaded', async function () {
             await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
 
             await db.knex('email_design_settings')
@@ -483,8 +483,8 @@ describe('Member Welcome Emails Integration', function () {
 
             sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
             const sendCall = mailService.GhostMailer.prototype.send.firstCall;
-            assert.ok(sendCall.args[0].html.includes('Fresh footer content</p>'));
-            assert.equal(sendCall.args[0].html.includes('https://ghost.org/?via=pbg-newsletter'), false);
+            assert.equal(sendCall.args[0].html.includes('Fresh footer content</p>'), false);
+            assert.equal(sendCall.args[0].html.includes('https://ghost.org/?via=pbg-newsletter'), true);
         });
     });
 });
