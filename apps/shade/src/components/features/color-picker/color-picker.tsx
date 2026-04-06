@@ -62,26 +62,17 @@ export type ColorPickerProps = Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> 
 
 export const ColorPickerRoot = ({
     value,
-    defaultValue = '#000000',
+    defaultValue = 'rgb(0 0 0)',
     onChange,
     className,
     ...props
 }: ColorPickerProps) => {
-    const selectedColor = Color(value);
-    const defaultColor = Color(defaultValue);
+    const initialColor = Color(value ?? defaultValue);
 
-    const [hue, setHue] = useState(
-        selectedColor.hue() || defaultColor.hue() || 0
-    );
-    const [saturation, setSaturation] = useState(
-        selectedColor.saturationl() || defaultColor.saturationl() || 100
-    );
-    const [lightness, setLightness] = useState(
-        selectedColor.lightness() || defaultColor.lightness() || 50
-    );
-    const [alpha, setAlpha] = useState(
-        selectedColor.alpha() * 100 || defaultColor.alpha() * 100
-    );
+    const [hue, setHue] = useState(initialColor.hue());
+    const [saturation, setSaturation] = useState(initialColor.saturationl());
+    const [lightness, setLightness] = useState(initialColor.lightness());
+    const [alpha, setAlpha] = useState(initialColor.alpha() * 100);
     const [mode, setMode] = useState('hex');
 
     // Update color when controlled value changes
@@ -156,9 +147,9 @@ export const ColorPickerSelection = memo(
             setPositionY(y);
         }, [saturation, lightness]);
 
-        const handlePointerMove = useCallback(
+        const updateColorFromPointer = useCallback(
             (event: PointerEvent) => {
-                if (!(isDragging && containerRef.current)) {
+                if (!containerRef.current) {
                     return;
                 }
                 const rect = containerRef.current.getBoundingClientRect();
@@ -178,7 +169,17 @@ export const ColorPickerSelection = memo(
 
                 setLightness(newLightness);
             },
-            [isDragging, setSaturation, setLightness]
+            [setSaturation, setLightness]
+        );
+
+        const handlePointerMove = useCallback(
+            (event: PointerEvent) => {
+                if (!isDragging) {
+                    return;
+                }
+                updateColorFromPointer(event);
+            },
+            [isDragging, updateColorFromPointer]
         );
 
         useEffect(() => {
@@ -208,7 +209,7 @@ export const ColorPickerSelection = memo(
                 onPointerDown={(e) => {
                     e.preventDefault();
                     setIsDragging(true);
-                    handlePointerMove(e.nativeEvent);
+                    updateColorFromPointer(e.nativeEvent);
                 }}
                 {...props}
             >
@@ -244,10 +245,10 @@ export const ColorPickerHue = ({
             onValueChange={([value]) => setHue(value)}
             {...props}
         >
-            <Slider.Track className="relative my-0.5 h-3 w-full grow rounded-full bg-[linear-gradient(90deg,#FF0000,#FFFF00,#00FF00,#00FFFF,#0000FF,#FF00FF,#FF0000)]">
+            <Slider.Track className="relative my-0.5 h-3 w-full grow rounded-full bg-[linear-gradient(90deg,red,yellow,lime,aqua,blue,magenta,red)]">
                 <Slider.Range className="absolute h-full" />
             </Slider.Track>
-            <Slider.Thumb className="block size-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50" />
+            <Slider.Thumb className="block size-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50" />
         </Slider.Root>
     );
 };
@@ -273,7 +274,7 @@ export const ColorPickerAlpha = ({
                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent to-black/50 dark:to-white/50" />
                 <Slider.Range className="absolute h-full rounded-full bg-transparent" />
             </Slider.Track>
-            <Slider.Thumb className="block size-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50" />
+            <Slider.Thumb className="block size-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50" />
         </Slider.Root>
     );
 };
@@ -385,7 +386,7 @@ export const ColorPickerFormat = ({
                 setSaturation(newColor.saturationl());
                 setLightness(newColor.lightness());
             }
-        } catch (error) {
+        } catch {
             // Invalid color, ignore
         }
     };

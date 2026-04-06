@@ -1,6 +1,6 @@
 import IframeBuffering from '../../../../utils/iframe-buffering';
 import React, {useCallback} from 'react';
-import {type CustomThemeSetting, hiddenCustomThemeSettingValue} from '@tryghost/admin-x-framework/api/customThemeSettings';
+import {type CustomThemeSetting, hiddenCustomThemeSettingValue} from '@tryghost/admin-x-framework/api/custom-theme-settings';
 import {isCustomThemeSettingVisible} from '../../../../utils/is-custom-theme-settings-visible';
 
 type GlobalSettings = {

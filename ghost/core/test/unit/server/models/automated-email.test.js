@@ -1,9 +1,15 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
+const sinon = require('sinon');
 const models = require('../../../../core/server/models');
+const config = require('../../../../core/shared/config');
 
 describe('Unit: models/automated-email', function () {
     before(function () {
         models.init();
+    });
+
+    afterEach(function () {
+        sinon.restore();
     });
 
     describe('defaults', function () {
@@ -33,7 +39,7 @@ describe('Unit: models/automated-email', function () {
                 lexical: '{"root":{"children":[{"type":"paragraph","children":[{"type":"link","url":"__GHOST_URL__/test"}]}]}}'
             });
 
-            assert.ok(result.lexical.includes('http://127.0.0.1:2369/test'));
+            assert.ok(result.lexical.includes(`${config.get('url')}/test`));
             assert.ok(!result.lexical.includes('__GHOST_URL__'));
         });
 
@@ -80,12 +86,13 @@ describe('Unit: models/automated-email', function () {
         it('transforms absolute URLs to __GHOST_URL__ in lexical field', function () {
             const model = models.AutomatedEmail.forge();
 
+            const siteUrl = config.get('url');
             const result = model.formatOnWrite({
-                lexical: '{"root":{"children":[{"type":"paragraph","children":[{"type":"link","url":"http://127.0.0.1:2369/test"}]}]}}'
+                lexical: `{"root":{"children":[{"type":"paragraph","children":[{"type":"link","url":"${siteUrl}/test"}]}]}}`
             });
 
             assert.ok(result.lexical.includes('__GHOST_URL__/test'));
-            assert.ok(!result.lexical.includes('http://127.0.0.1:2369'));
+            assert.ok(!result.lexical.includes(siteUrl));
         });
 
         it('handles null lexical field', function () {
@@ -124,6 +131,55 @@ describe('Unit: models/automated-email', function () {
             assert.equal(result.name, 'welcome_email');
             assert.equal(result.subject, 'Welcome!');
             assert.equal(result.status, 'active');
+        });
+    });
+
+    describe('onCreating', function () {
+        it('assigns the default email design setting when not provided', async function () {
+            const model = models.AutomatedEmail.forge();
+            const baseOnCreating = sinon.stub(Object.getPrototypeOf(models.AutomatedEmail.prototype), 'onCreating').resolves();
+            const findOne = sinon.stub(models.EmailDesignSetting, 'findOne').resolves(models.EmailDesignSetting.forge({id: 'default-setting-id'}));
+
+            await model.onCreating(model, {}, {});
+
+            sinon.assert.calledOnceWithExactly(findOne, {slug: 'default-automated-email'}, {});
+            assert.equal(model.get('email_design_setting_id'), 'default-setting-id');
+            sinon.assert.calledOnceWithExactly(baseOnCreating, model, {}, {});
+        });
+
+        it('assigns the default email design setting when null is provided', async function () {
+            const model = models.AutomatedEmail.forge({email_design_setting_id: null});
+            sinon.stub(Object.getPrototypeOf(models.AutomatedEmail.prototype), 'onCreating').resolves();
+            sinon.stub(models.EmailDesignSetting, 'findOne').resolves(models.EmailDesignSetting.forge({id: 'default-setting-id'}));
+
+            await model.onCreating(model, {}, {});
+
+            assert.equal(model.get('email_design_setting_id'), 'default-setting-id');
+        });
+
+        it('keeps the provided email design setting id', async function () {
+            const model = models.AutomatedEmail.forge({email_design_setting_id: 'custom-setting-id'});
+            const baseOnCreating = sinon.stub(Object.getPrototypeOf(models.AutomatedEmail.prototype), 'onCreating').resolves();
+            const findOne = sinon.stub(models.EmailDesignSetting, 'findOne');
+
+            await model.onCreating(model, {}, {});
+
+            sinon.assert.notCalled(findOne);
+            assert.equal(model.get('email_design_setting_id'), 'custom-setting-id');
+            sinon.assert.calledOnceWithExactly(baseOnCreating, model, {}, {});
+        });
+
+        it('throws when the default email design setting is missing', async function () {
+            const model = models.AutomatedEmail.forge();
+            sinon.stub(Object.getPrototypeOf(models.AutomatedEmail.prototype), 'onCreating').resolves();
+            sinon.stub(models.EmailDesignSetting, 'findOne').resolves(null);
+
+            await assert.rejects(
+                model.onCreating(model, {}, {}),
+                {
+                    errorType: 'InternalServerError'
+                }
+            );
         });
     });
 });

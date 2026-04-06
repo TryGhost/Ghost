@@ -5,7 +5,7 @@ import {type ReactNode, createContext, useContext, useEffect, useState} from 're
 import {type Setting, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {type SiteData, useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {type User} from '@tryghost/admin-x-framework/api/users';
-import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
+import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 
 interface GlobalData {
     settings: Setting[]

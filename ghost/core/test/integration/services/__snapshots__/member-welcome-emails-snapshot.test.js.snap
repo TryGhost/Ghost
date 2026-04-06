@@ -1,0 +1,1550 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Member Welcome Email Renderer Snapshots renders a simple paragraph welcome email 1 1`] = `
+Object {
+  "html": "<!doctype html>
+<html>
+    <head>
+        <meta name=\\"viewport\\" content=\\"width=device-width\\">
+        <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+        <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch><o:AllowPNG/></o:OfficeDocumentSettings></xml><![endif]-->
+        <title>Welcome to Test Site</title>
+        <style>
+@media only screen and (max-width: 620px) {
+  table.body {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  table.body .content {
+    padding: 0 !important;
+  }
+
+  table.body .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table.body .main {
+    border-spacing: 10px 0 !important;
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.body .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+}
+@media all {
+  .ExternalClass {
+    width: 100%;
+  }
+
+  .ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+  }
+
+  .apple-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
+}
+@media only screen and (max-width: 620px) {
+  table[class=body] h1 {
+    font-size: 28px !important;
+    margin-bottom: 10px !important;
+  }
+
+  table[class=body] p,
+table[class=body] ul,
+table[class=body] ol,
+table[class=body] td,
+table[class=body] span,
+table[class=body] a {
+    font-size: 16px !important;
+  }
+
+  table[class=body] .wrapper,
+table[class=body] .article {
+    padding: 10px !important;
+  }
+
+  table[class=body] .content {
+    padding: 0 !important;
+  }
+
+  table[class=body] .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table[class=body] .main {
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table[class=body] .btn table {
+    width: 100% !important;
+  }
+
+  table[class=body] .btn a {
+    width: 100% !important;
+  }
+
+  table[class=body] .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+
+  table[class=body] p[class=small],
+table[class=body] a[class=small] {
+    font-size: 11px !important;
+  }
+}
+.kg-nft-link {
+  display: block;
+  text-decoration: none !important;
+  color: #15212A !important;
+  font-family: inherit !important;
+  font-size: 14px;
+  line-height: 1.3em;
+  padding-top: 4px;
+  padding-right: 20px;
+  padding-left: 20px;
+  padding-bottom: 4px;
+}
+.kg-twitter-link {
+  display: block;
+  text-decoration: none !important;
+  color: #15212A !important;
+  font-family: inherit !important;
+  font-size: 15px;
+  padding: 8px;
+  line-height: 1.3em;
+}
+.kg-cta-link-accent .kg-cta-sponsor-label a {
+  color: #15212A !important;
+}
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
+}
+.kg-cta-link-accent .kg-cta-text a {
+  color: #15212A !important;
+}
+@media only screen and (max-width: 620px) {
+  table.body .kg-bookmark-card {
+    width: 90vw;
+  }
+
+  table.body .kg-bookmark-thumbnail {
+    display: none !important;
+  }
+
+  table.body .kg-bookmark-metadata span {
+    font-size: 13px !important;
+  }
+
+  table.body .kg-embed-card {
+    max-width: 90vw !important;
+  }
+
+  table.body .kg-cta-card {
+    padding: 0 20px;
+  }
+
+  table.body .kg-cta-card.kg-cta-bg-none {
+    padding: 0;
+  }
+
+  table.body .kg-cta-sponsor-label {
+    padding: 10px 0;
+  }
+
+  table.body table.kg-cta-content-wrapper:not(.kg-cta-bg-none.kg-cta-no-dividers table.kg-cta-content-wrapper) {
+    padding: 20px 0;
+  }
+
+  table.body .kg-cta-immersive.kg-cta-has-img:not(.kg-cta-bg-none):not(.kg-cta-no-label) table.kg-cta-content-wrapper {
+    padding-top: 0;
+  }
+
+  table.body .kg-cta-minimal .kg-cta-image-container {
+    padding-right: 20px;
+  }
+
+  table.body .kg-cta-immersive .kg-cta-image-container {
+    padding-bottom: 20px;
+  }
+
+  table.body .kg-cta-immersive.kg-cta-no-text .kg-cta-image-container {
+    padding-bottom: 0;
+  }
+
+  table.body .kg-cta-button-container {
+    padding-top: 16px;
+  }
+
+  table.body .kg-cta-minimal .kg-cta-image-container {
+    display: inline-block !important;
+    width: 100% !important;
+    padding: 0 !important;
+    padding-bottom: 16px !important;
+    padding-right: 0 !important;
+  }
+
+  table.body .kg-cta-minimal .kg-cta-content-inner {
+    display: inline-block !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+
+  table.body .kg-cta-minimal img.kg-cta-image {
+    width: 52px !important;
+    height: 52px !important;
+  }
+}
+@media all {
+  .ExternalClass {
+    width: 100%;
+  }
+
+  .ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+  }
+
+  .recipient-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
+}
+</style>    </head>
+    <body data-testid=\\"email-preview-body\\" style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
+        <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\"></span>
+        <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
+        <div style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
+            
+        </div>
+
+        <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
+
+        <!-- MAIN CONTENT AREA -->
+        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; line-height: 1.4; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
+            <!-- Outlook doesn't respect max-width so we need an extra centered table -->
+            <!--[if mso]>
+            <tr>
+                <td>
+                    <center>
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
+            <![endif]-->
+            <tr>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&nbsp;</td>
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
+                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
+                                          <tr>
+                                            <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
+                                              <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                                                <tr>
+                                                  <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">Welcome to our site!</p>
+                                                  </td>
+                                                </tr>
+                                              </table>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
+                                              <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
+                                                <tr>
+                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
+                                                    Test Site &copy; 2020 &mdash; <a href=\\"http://example.com/#/portal/account/newsletters\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\">Manage your preferences</a>
+                                                  </td>
+                                                </tr>
+                                              </table>
+                                            </td>
+                                          </tr>
+                        </table>
+                        <!-- END CENTERED WHITE CONTAINER -->
+                    </div>
+                </td>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&nbsp;</td>
+            </tr>
+
+            <!--[if mso]>
+                            </table>
+                        </center>
+                    </td>
+                </tr>
+            <![endif]-->
+        </table>
+    </body>
+</html>
+",
+  "plaintext": "
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Welcome to our site!
+
+
+
+
+
+
+
+
+
+
+
+
+Test Site © 2020 — Manage your preferences [http://example.com/#/portal/account/newsletters]
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+",
+}
+`;
+
+exports[`Member Welcome Email Renderer Snapshots renders fallback values when member has no name 1 1`] = `
+Object {
+  "html": "<!doctype html>
+<html>
+    <head>
+        <meta name=\\"viewport\\" content=\\"width=device-width\\">
+        <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+        <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch><o:AllowPNG/></o:OfficeDocumentSettings></xml><![endif]-->
+        <title>Welcome!</title>
+        <style>
+@media only screen and (max-width: 620px) {
+  table.body {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  table.body .content {
+    padding: 0 !important;
+  }
+
+  table.body .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table.body .main {
+    border-spacing: 10px 0 !important;
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.body .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+}
+@media all {
+  .ExternalClass {
+    width: 100%;
+  }
+
+  .ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+  }
+
+  .apple-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
+}
+@media only screen and (max-width: 620px) {
+  table[class=body] h1 {
+    font-size: 28px !important;
+    margin-bottom: 10px !important;
+  }
+
+  table[class=body] p,
+table[class=body] ul,
+table[class=body] ol,
+table[class=body] td,
+table[class=body] span,
+table[class=body] a {
+    font-size: 16px !important;
+  }
+
+  table[class=body] .wrapper,
+table[class=body] .article {
+    padding: 10px !important;
+  }
+
+  table[class=body] .content {
+    padding: 0 !important;
+  }
+
+  table[class=body] .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table[class=body] .main {
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table[class=body] .btn table {
+    width: 100% !important;
+  }
+
+  table[class=body] .btn a {
+    width: 100% !important;
+  }
+
+  table[class=body] .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+
+  table[class=body] p[class=small],
+table[class=body] a[class=small] {
+    font-size: 11px !important;
+  }
+}
+.kg-nft-link {
+  display: block;
+  text-decoration: none !important;
+  color: #15212A !important;
+  font-family: inherit !important;
+  font-size: 14px;
+  line-height: 1.3em;
+  padding-top: 4px;
+  padding-right: 20px;
+  padding-left: 20px;
+  padding-bottom: 4px;
+}
+.kg-twitter-link {
+  display: block;
+  text-decoration: none !important;
+  color: #15212A !important;
+  font-family: inherit !important;
+  font-size: 15px;
+  padding: 8px;
+  line-height: 1.3em;
+}
+.kg-cta-link-accent .kg-cta-sponsor-label a {
+  color: #15212A !important;
+}
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
+}
+.kg-cta-link-accent .kg-cta-text a {
+  color: #15212A !important;
+}
+@media only screen and (max-width: 620px) {
+  table.body .kg-bookmark-card {
+    width: 90vw;
+  }
+
+  table.body .kg-bookmark-thumbnail {
+    display: none !important;
+  }
+
+  table.body .kg-bookmark-metadata span {
+    font-size: 13px !important;
+  }
+
+  table.body .kg-embed-card {
+    max-width: 90vw !important;
+  }
+
+  table.body .kg-cta-card {
+    padding: 0 20px;
+  }
+
+  table.body .kg-cta-card.kg-cta-bg-none {
+    padding: 0;
+  }
+
+  table.body .kg-cta-sponsor-label {
+    padding: 10px 0;
+  }
+
+  table.body table.kg-cta-content-wrapper:not(.kg-cta-bg-none.kg-cta-no-dividers table.kg-cta-content-wrapper) {
+    padding: 20px 0;
+  }
+
+  table.body .kg-cta-immersive.kg-cta-has-img:not(.kg-cta-bg-none):not(.kg-cta-no-label) table.kg-cta-content-wrapper {
+    padding-top: 0;
+  }
+
+  table.body .kg-cta-minimal .kg-cta-image-container {
+    padding-right: 20px;
+  }
+
+  table.body .kg-cta-immersive .kg-cta-image-container {
+    padding-bottom: 20px;
+  }
+
+  table.body .kg-cta-immersive.kg-cta-no-text .kg-cta-image-container {
+    padding-bottom: 0;
+  }
+
+  table.body .kg-cta-button-container {
+    padding-top: 16px;
+  }
+
+  table.body .kg-cta-minimal .kg-cta-image-container {
+    display: inline-block !important;
+    width: 100% !important;
+    padding: 0 !important;
+    padding-bottom: 16px !important;
+    padding-right: 0 !important;
+  }
+
+  table.body .kg-cta-minimal .kg-cta-content-inner {
+    display: inline-block !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+
+  table.body .kg-cta-minimal img.kg-cta-image {
+    width: 52px !important;
+    height: 52px !important;
+  }
+}
+@media all {
+  .ExternalClass {
+    width: 100%;
+  }
+
+  .ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+  }
+
+  .recipient-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
+}
+</style>    </head>
+    <body data-testid=\\"email-preview-body\\" style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
+        <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\"></span>
+        <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
+        <div style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
+            
+        </div>
+
+        <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
+
+        <!-- MAIN CONTENT AREA -->
+        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; line-height: 1.4; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
+            <!-- Outlook doesn't respect max-width so we need an extra centered table -->
+            <!--[if mso]>
+            <tr>
+                <td>
+                    <center>
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
+            <![endif]-->
+            <tr>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&nbsp;</td>
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
+                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
+                                          <tr>
+                                            <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
+                                              <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                                                <tr>
+                                                  <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">Hello friend, welcome!</p>
+                                                  </td>
+                                                </tr>
+                                              </table>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
+                                              <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
+                                                <tr>
+                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
+                                                    Test Site &copy; 2020 &mdash; <a href=\\"http://example.com/#/portal/account/newsletters\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\">Manage your preferences</a>
+                                                  </td>
+                                                </tr>
+                                              </table>
+                                            </td>
+                                          </tr>
+                        </table>
+                        <!-- END CENTERED WHITE CONTAINER -->
+                    </div>
+                </td>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&nbsp;</td>
+            </tr>
+
+            <!--[if mso]>
+                            </table>
+                        </center>
+                    </td>
+                </tr>
+            <![endif]-->
+        </table>
+    </body>
+</html>
+",
+  "plaintext": "
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hello friend, welcome!
+
+
+
+
+
+
+
+
+
+
+
+
+Test Site © 2020 — Manage your preferences [http://example.com/#/portal/account/newsletters]
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+",
+}
+`;
+
+exports[`Member Welcome Email Renderer Snapshots renders template variable replacements 1 1`] = `
+Object {
+  "html": "<!doctype html>
+<html>
+    <head>
+        <meta name=\\"viewport\\" content=\\"width=device-width\\">
+        <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+        <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch><o:AllowPNG/></o:OfficeDocumentSettings></xml><![endif]-->
+        <title>Welcome to Test Site, Jamie Larson</title>
+        <style>
+@media only screen and (max-width: 620px) {
+  table.body {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  table.body .content {
+    padding: 0 !important;
+  }
+
+  table.body .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table.body .main {
+    border-spacing: 10px 0 !important;
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.body .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+}
+@media all {
+  .ExternalClass {
+    width: 100%;
+  }
+
+  .ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+  }
+
+  .apple-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
+}
+@media only screen and (max-width: 620px) {
+  table[class=body] h1 {
+    font-size: 28px !important;
+    margin-bottom: 10px !important;
+  }
+
+  table[class=body] p,
+table[class=body] ul,
+table[class=body] ol,
+table[class=body] td,
+table[class=body] span,
+table[class=body] a {
+    font-size: 16px !important;
+  }
+
+  table[class=body] .wrapper,
+table[class=body] .article {
+    padding: 10px !important;
+  }
+
+  table[class=body] .content {
+    padding: 0 !important;
+  }
+
+  table[class=body] .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table[class=body] .main {
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table[class=body] .btn table {
+    width: 100% !important;
+  }
+
+  table[class=body] .btn a {
+    width: 100% !important;
+  }
+
+  table[class=body] .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+
+  table[class=body] p[class=small],
+table[class=body] a[class=small] {
+    font-size: 11px !important;
+  }
+}
+.kg-nft-link {
+  display: block;
+  text-decoration: none !important;
+  color: #15212A !important;
+  font-family: inherit !important;
+  font-size: 14px;
+  line-height: 1.3em;
+  padding-top: 4px;
+  padding-right: 20px;
+  padding-left: 20px;
+  padding-bottom: 4px;
+}
+.kg-twitter-link {
+  display: block;
+  text-decoration: none !important;
+  color: #15212A !important;
+  font-family: inherit !important;
+  font-size: 15px;
+  padding: 8px;
+  line-height: 1.3em;
+}
+.kg-cta-link-accent .kg-cta-sponsor-label a {
+  color: #15212A !important;
+}
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
+}
+.kg-cta-link-accent .kg-cta-text a {
+  color: #15212A !important;
+}
+@media only screen and (max-width: 620px) {
+  table.body .kg-bookmark-card {
+    width: 90vw;
+  }
+
+  table.body .kg-bookmark-thumbnail {
+    display: none !important;
+  }
+
+  table.body .kg-bookmark-metadata span {
+    font-size: 13px !important;
+  }
+
+  table.body .kg-embed-card {
+    max-width: 90vw !important;
+  }
+
+  table.body .kg-cta-card {
+    padding: 0 20px;
+  }
+
+  table.body .kg-cta-card.kg-cta-bg-none {
+    padding: 0;
+  }
+
+  table.body .kg-cta-sponsor-label {
+    padding: 10px 0;
+  }
+
+  table.body table.kg-cta-content-wrapper:not(.kg-cta-bg-none.kg-cta-no-dividers table.kg-cta-content-wrapper) {
+    padding: 20px 0;
+  }
+
+  table.body .kg-cta-immersive.kg-cta-has-img:not(.kg-cta-bg-none):not(.kg-cta-no-label) table.kg-cta-content-wrapper {
+    padding-top: 0;
+  }
+
+  table.body .kg-cta-minimal .kg-cta-image-container {
+    padding-right: 20px;
+  }
+
+  table.body .kg-cta-immersive .kg-cta-image-container {
+    padding-bottom: 20px;
+  }
+
+  table.body .kg-cta-immersive.kg-cta-no-text .kg-cta-image-container {
+    padding-bottom: 0;
+  }
+
+  table.body .kg-cta-button-container {
+    padding-top: 16px;
+  }
+
+  table.body .kg-cta-minimal .kg-cta-image-container {
+    display: inline-block !important;
+    width: 100% !important;
+    padding: 0 !important;
+    padding-bottom: 16px !important;
+    padding-right: 0 !important;
+  }
+
+  table.body .kg-cta-minimal .kg-cta-content-inner {
+    display: inline-block !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+
+  table.body .kg-cta-minimal img.kg-cta-image {
+    width: 52px !important;
+    height: 52px !important;
+  }
+}
+@media all {
+  .ExternalClass {
+    width: 100%;
+  }
+
+  .ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+  }
+
+  .recipient-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
+}
+</style>    </head>
+    <body data-testid=\\"email-preview-body\\" style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
+        <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\"></span>
+        <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
+        <div style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
+            
+        </div>
+
+        <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
+
+        <!-- MAIN CONTENT AREA -->
+        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; line-height: 1.4; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
+            <!-- Outlook doesn't respect max-width so we need an extra centered table -->
+            <!--[if mso]>
+            <tr>
+                <td>
+                    <center>
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
+            <![endif]-->
+            <tr>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&nbsp;</td>
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
+                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
+                                          <tr>
+                                            <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
+                                              <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                                                <tr>
+                                                  <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">Hello Jamie, welcome to Test Site! Your email is jamie@example.com.</p>
+                                                  </td>
+                                                </tr>
+                                              </table>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
+                                              <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
+                                                <tr>
+                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
+                                                    Test Site &copy; 2020 &mdash; <a href=\\"http://example.com/#/portal/account/newsletters\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\">Manage your preferences</a>
+                                                  </td>
+                                                </tr>
+                                              </table>
+                                            </td>
+                                          </tr>
+                        </table>
+                        <!-- END CENTERED WHITE CONTAINER -->
+                    </div>
+                </td>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&nbsp;</td>
+            </tr>
+
+            <!--[if mso]>
+                            </table>
+                        </center>
+                    </td>
+                </tr>
+            <![endif]-->
+        </table>
+    </body>
+</html>
+",
+  "plaintext": "
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hello Jamie, welcome to Test Site! Your email is jamie@example.com.
+
+
+
+
+
+
+
+
+
+
+
+
+Test Site © 2020 — Manage your preferences [http://example.com/#/portal/account/newsletters]
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+",
+  "subject": "Welcome to Test Site, Jamie Larson",
+}
+`;
+
+exports[`Member Welcome Email Renderer Snapshots renders with a custom accent color 1 1`] = `
+Object {
+  "html": "<!doctype html>
+<html>
+    <head>
+        <meta name=\\"viewport\\" content=\\"width=device-width\\">
+        <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+        <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch><o:AllowPNG/></o:OfficeDocumentSettings></xml><![endif]-->
+        <title>Welcome</title>
+        <style>
+@media only screen and (max-width: 620px) {
+  table.body {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  table.body .content {
+    padding: 0 !important;
+  }
+
+  table.body .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table.body .main {
+    border-spacing: 10px 0 !important;
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.body .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+}
+@media all {
+  .ExternalClass {
+    width: 100%;
+  }
+
+  .ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+  }
+
+  .apple-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
+}
+@media only screen and (max-width: 620px) {
+  table[class=body] h1 {
+    font-size: 28px !important;
+    margin-bottom: 10px !important;
+  }
+
+  table[class=body] p,
+table[class=body] ul,
+table[class=body] ol,
+table[class=body] td,
+table[class=body] span,
+table[class=body] a {
+    font-size: 16px !important;
+  }
+
+  table[class=body] .wrapper,
+table[class=body] .article {
+    padding: 10px !important;
+  }
+
+  table[class=body] .content {
+    padding: 0 !important;
+  }
+
+  table[class=body] .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table[class=body] .main {
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table[class=body] .btn table {
+    width: 100% !important;
+  }
+
+  table[class=body] .btn a {
+    width: 100% !important;
+  }
+
+  table[class=body] .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+
+  table[class=body] p[class=small],
+table[class=body] a[class=small] {
+    font-size: 11px !important;
+  }
+}
+.kg-nft-link {
+  display: block;
+  text-decoration: none !important;
+  color: #15212A !important;
+  font-family: inherit !important;
+  font-size: 14px;
+  line-height: 1.3em;
+  padding-top: 4px;
+  padding-right: 20px;
+  padding-left: 20px;
+  padding-bottom: 4px;
+}
+.kg-twitter-link {
+  display: block;
+  text-decoration: none !important;
+  color: #15212A !important;
+  font-family: inherit !important;
+  font-size: 15px;
+  padding: 8px;
+  line-height: 1.3em;
+}
+.kg-cta-link-accent .kg-cta-sponsor-label a {
+  color: #FF0000 !important;
+}
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
+}
+.kg-cta-link-accent .kg-cta-text a {
+  color: #FF0000 !important;
+}
+@media only screen and (max-width: 620px) {
+  table.body .kg-bookmark-card {
+    width: 90vw;
+  }
+
+  table.body .kg-bookmark-thumbnail {
+    display: none !important;
+  }
+
+  table.body .kg-bookmark-metadata span {
+    font-size: 13px !important;
+  }
+
+  table.body .kg-embed-card {
+    max-width: 90vw !important;
+  }
+
+  table.body .kg-cta-card {
+    padding: 0 20px;
+  }
+
+  table.body .kg-cta-card.kg-cta-bg-none {
+    padding: 0;
+  }
+
+  table.body .kg-cta-sponsor-label {
+    padding: 10px 0;
+  }
+
+  table.body table.kg-cta-content-wrapper:not(.kg-cta-bg-none.kg-cta-no-dividers table.kg-cta-content-wrapper) {
+    padding: 20px 0;
+  }
+
+  table.body .kg-cta-immersive.kg-cta-has-img:not(.kg-cta-bg-none):not(.kg-cta-no-label) table.kg-cta-content-wrapper {
+    padding-top: 0;
+  }
+
+  table.body .kg-cta-minimal .kg-cta-image-container {
+    padding-right: 20px;
+  }
+
+  table.body .kg-cta-immersive .kg-cta-image-container {
+    padding-bottom: 20px;
+  }
+
+  table.body .kg-cta-immersive.kg-cta-no-text .kg-cta-image-container {
+    padding-bottom: 0;
+  }
+
+  table.body .kg-cta-button-container {
+    padding-top: 16px;
+  }
+
+  table.body .kg-cta-minimal .kg-cta-image-container {
+    display: inline-block !important;
+    width: 100% !important;
+    padding: 0 !important;
+    padding-bottom: 16px !important;
+    padding-right: 0 !important;
+  }
+
+  table.body .kg-cta-minimal .kg-cta-content-inner {
+    display: inline-block !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+
+  table.body .kg-cta-minimal img.kg-cta-image {
+    width: 52px !important;
+    height: 52px !important;
+  }
+}
+@media all {
+  .ExternalClass {
+    width: 100%;
+  }
+
+  .ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+  }
+
+  .recipient-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
+}
+</style>    </head>
+    <body data-testid=\\"email-preview-body\\" style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
+        <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\"></span>
+        <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
+        <div style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
+            
+        </div>
+
+        <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
+
+        <!-- MAIN CONTENT AREA -->
+        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; line-height: 1.4; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
+            <!-- Outlook doesn't respect max-width so we need an extra centered table -->
+            <!--[if mso]>
+            <tr>
+                <td>
+                    <center>
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
+            <![endif]-->
+            <tr>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&nbsp;</td>
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
+                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
+                                          <tr>
+                                            <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
+                                              <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                                                <tr>
+                                                  <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">Welcome!</p>
+                                                  </td>
+                                                </tr>
+                                              </table>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
+                                              <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
+                                                <tr>
+                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
+                                                    Test Site &copy; 2020 &mdash; <a href=\\"http://example.com/#/portal/account/newsletters\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\">Manage your preferences</a>
+                                                  </td>
+                                                </tr>
+                                              </table>
+                                            </td>
+                                          </tr>
+                        </table>
+                        <!-- END CENTERED WHITE CONTAINER -->
+                    </div>
+                </td>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&nbsp;</td>
+            </tr>
+
+            <!--[if mso]>
+                            </table>
+                        </center>
+                    </td>
+                </tr>
+            <![endif]-->
+        </table>
+    </body>
+</html>
+",
+  "plaintext": "
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Welcome!
+
+
+
+
+
+
+
+
+
+
+
+
+Test Site © 2020 — Manage your preferences [http://example.com/#/portal/account/newsletters]
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+",
+}
+`;

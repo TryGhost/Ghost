@@ -33,4 +33,8 @@ test.describe('Ghost Admin - Analytics Web Traffic', () => {
     test('empty top sources card', async () => {
         await expect(analyticsWebTrafficPage.topSourcesCard).toContainText('No visitors');
     });
+
+    test('empty locations card', async () => {
+        await expect(analyticsWebTrafficPage.locationsCard).toContainText('No visitors');
+    });
 });

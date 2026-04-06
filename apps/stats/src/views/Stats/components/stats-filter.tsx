@@ -1,48 +1,158 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {AUDIENCE_BITS} from '@src/utils/constants';
-import {Filter, FilterFieldConfig, Filters, LucideIcon} from '@tryghost/shade';
-import {formatQueryDate, getRangeDates} from '@tryghost/shade';
-import {getAudienceQueryParam} from './audience-select';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import countries from 'i18n-iso-countries';
+import enLocale from 'i18n-iso-countries/langs/en.json';
+import {Button} from '@tryghost/shade/components';
+import {Filter, FilterFieldConfig, Filters} from '@tryghost/shade/patterns';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
+import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
+import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/audience';
 import {useAppContext} from '@src/app';
-import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useGlobalData} from '@src/providers/global-data-provider';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';
+import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
+
+countries.registerLocale(enLocale);
 
 interface StatsFilterProps extends Omit<React.ComponentProps<typeof Filters>, 'fields' | 'onChange'> {
     filters: Filter[];
-    utmTrackingEnabled?: boolean;
     onChange?: (filters: Filter[]) => void;
 }
 
-interface UtmOption {
-    utm_source?: string;
-    utm_medium?: string;
-    utm_campaign?: string;
-    utm_content?: string;
-    utm_term?: string;
-    visits: number;
+// Helper to get country name from code
+const getCountryName = (code: string): string => {
+    return STATS_LABEL_MAPPINGS[code as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(code, 'en') || code;
+};
+
+// Helper component for visit count badge - used by all filter options
+const VisitCountBadge = ({visits}: {visits: number}) => (
+    <span className="order-2 font-mono text-xs text-muted-foreground">
+        {visits.toLocaleString()}
+    </span>
+);
+
+// Configuration for each filter field type
+interface FilterFieldDefinition {
+    endpoint: string;
+    valueKey: string;
+    // Transform value and get display label
+    transformValue?: (value: string) => {value: string; label: string};
+    // Filter out invalid items from API response
+    filterItem?: (item: Record<string, unknown>) => boolean;
 }
 
-interface SourceOption {
-    source?: string;
-    visits: number;
+const FILTER_FIELD_DEFINITIONS: Record<string, FilterFieldDefinition> = {
+    utm_source: {
+        endpoint: 'api_top_utm_sources',
+        valueKey: 'utm_source',
+        transformValue: v => ({value: v || '(not set)', label: v || '(not set)'})
+    },
+    utm_medium: {
+        endpoint: 'api_top_utm_mediums',
+        valueKey: 'utm_medium',
+        transformValue: v => ({value: v || '(not set)', label: v || '(not set)'})
+    },
+    utm_campaign: {
+        endpoint: 'api_top_utm_campaigns',
+        valueKey: 'utm_campaign',
+        transformValue: v => ({value: v || '(not set)', label: v || '(not set)'})
+    },
+    utm_content: {
+        endpoint: 'api_top_utm_contents',
+        valueKey: 'utm_content',
+        transformValue: v => ({value: v || '(not set)', label: v || '(not set)'})
+    },
+    utm_term: {
+        endpoint: 'api_top_utm_terms',
+        valueKey: 'utm_term',
+        transformValue: v => ({value: v || '(not set)', label: v || '(not set)'})
+    },
+    source: {
+        endpoint: 'api_top_sources',
+        valueKey: 'source',
+        transformValue: v => ({
+            value: v || '',
+            label: v || 'Direct'
+        })
+    },
+    location: {
+        endpoint: 'api_top_locations',
+        valueKey: 'location',
+        filterItem(item) {
+            const location = String(item.location || '');
+            return location !== '' && !UNKNOWN_LOCATION_VALUES.includes(location);
+        },
+        transformValue: v => ({value: v, label: getCountryName(v)})
+    },
+    device: {
+        endpoint: 'api_top_devices',
+        valueKey: 'device',
+        transformValue: v => ({
+            value: v,
+            label: v === 'mobile-ios' ? 'iOS' :
+                v === 'mobile-android' ? 'Android' :
+                    v === 'desktop' ? 'Desktop' :
+                        v === 'bot' ? 'Bot' :
+                            v === 'unknown' ? 'Unknown' : v
+        })
+    }
+};
+
+// Build filter params for Tinybird API, excluding the specified field to avoid circular filtering
+const buildFilterParams = (
+    currentFilters: Filter[],
+    excludeField: string,
+    baseParams: Record<string, string>
+): Record<string, string> => {
+    const params = {...baseParams};
+
+    currentFilters.forEach((filter) => {
+        if (filter.field === excludeField || filter.values.length === 0) {
+            return;
+        }
+
+        const value = filter.values[0] as string;
+
+        if (filter.field === 'post') {
+            // Determine if the value is a post_uuid or a pathname
+            if (value.startsWith('/')) {
+                params.pathname = value;
+            } else {
+                params.post_uuid = value;
+            }
+        } else if (filter.field === 'audience') {
+            // Skip audience - handled separately via member_status
+            return;
+        } else if (filter.field === 'source' || filter.field === 'device' || filter.field === 'location' || filter.field.startsWith('utm_')) {
+            params[filter.field] = value;
+        }
+    });
+
+    return params;
+};
+
+interface UseTinybirdFilterOptionsConfig {
+    enabled?: boolean;
 }
 
-// Hook to fetch UTM options from Tinybird
-// Data is contextual - results are filtered based on currently applied filters
-const useUtmOptionsForField = (fieldKey: string, currentFilters: Filter[] = []) => {
-    const {statsConfig, range, audience} = useGlobalData();
+// Generic hook to fetch filter options from Tinybird
+// Handles the common pattern: fetch data, transform to options, ensure selected value is included
+const useTinybirdFilterOptions = (
+    fieldKey: string,
+    currentFilters: Filter[] = [],
+    config: UseTinybirdFilterOptionsConfig = {}
+) => {
+    const {enabled = true} = config;
+    const {statsConfig, range} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
-    const endpointMap: Record<string, string> = {
-        utm_source: 'api_top_utm_sources',
-        utm_medium: 'api_top_utm_mediums',
-        utm_campaign: 'api_top_utm_campaigns',
-        utm_content: 'api_top_utm_contents',
-        utm_term: 'api_top_utm_terms'
-    };
+    const definition = FILTER_FIELD_DEFINITIONS[fieldKey];
 
-    const endpoint = endpointMap[fieldKey] || '';
+    // Derive audience from filters (URL is the source of truth)
+    const audience = useMemo(() => {
+        const audienceFilter = currentFilters.find(f => f.field === 'audience');
+        return getAudienceFromFilterValues(audienceFilter?.values as string[] | undefined);
+    }, [currentFilters]);
 
     // Build params including filters from other fields
     const params = useMemo(() => {
@@ -55,315 +165,173 @@ const useUtmOptionsForField = (fieldKey: string, currentFilters: Filter[] = []) 
             limit: '50'
         };
 
-        // Add filters from currently applied filters (excluding the current field to avoid circular filtering)
-        currentFilters.forEach((filter) => {
-            if (filter.field === 'post' && filter.values.length > 0) {
-                baseParams.post_uuid = filter.values[0] as string;
-            } else if (filter.field === 'source' && filter.values.length > 0) {
-                baseParams.source = filter.values[0] as string;
-            } else if (filter.field !== fieldKey && filter.field.startsWith('utm_') && filter.values.length > 0) {
-                // Add other UTM filters
-                baseParams[filter.field] = filter.values[0] as string;
-            }
-        });
-
-        return baseParams;
+        return buildFilterParams(currentFilters, fieldKey, baseParams);
     }, [statsConfig?.id, startDate, endDate, timezone, audience, currentFilters, fieldKey]);
 
     const {data, loading} = useTinybirdQuery({
-        endpoint,
+        endpoint: definition?.endpoint || '',
         statsConfig,
         params,
-        enabled: !!endpoint
+        enabled: enabled && !!definition
     });
 
     const options = useMemo(() => {
-        if (!data) {
+        if (!definition) {
             return [];
         }
 
-        return (data as unknown as UtmOption[]).map((item: UtmOption) => {
-            const value = String(item[fieldKey as keyof UtmOption] || '(not set)');
-            const visits = item.visits || 0;
-            return {
-                label: value,
-                value: value,
-                // Add a custom icon element that shows the count badge
-                icon: (
-                    <span className="order-2 font-mono text-xs text-muted-foreground">
-                        {visits.toLocaleString()}
-                    </span>
-                )
-            };
-        });
-    }, [data, fieldKey]);
+        const items = (data as unknown as Array<Record<string, unknown>>) || [];
+
+        // Filter and transform items
+        return items
+            .filter(item => (definition.filterItem ? definition.filterItem(item) : true))
+            .map((item) => {
+                const rawValue = String(item[definition.valueKey] ?? '');
+                const visits = Number(item.visits) || 0;
+                const {value, label} = definition.transformValue
+                    ? definition.transformValue(rawValue)
+                    : {value: rawValue, label: rawValue};
+
+                return {
+                    label,
+                    value,
+                    icon: <VisitCountBadge visits={visits} />
+                };
+            });
+    }, [data, definition]);
 
     return {options, loading};
 };
 
-// Hook to fetch source options from Tinybird
-// Data is contextual - results are filtered based on currently applied filters
-const useSourceOptions = (currentFilters: Filter[] = []) => {
-    const {statsConfig, range, audience} = useGlobalData();
+interface UsePostOptionsConfig {
+    enabled?: boolean;
+}
+
+// Hook to fetch posts/pages options from Ghost API (which queries Tinybird and enriches with titles)
+// This uses a different API pattern so it can't use the generic hook
+const usePostOptions = (currentFilters: Filter[] = [], config: UsePostOptionsConfig = {}) => {
+    const {enabled = true} = config;
+    const {range} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
-    // Build params including filters from other fields
-    const params = useMemo(() => {
+    // Derive audience from filters (URL is the source of truth)
+    const audience = useMemo(() => {
+        const audienceFilter = currentFilters.find(f => f.field === 'audience');
+        return getAudienceFromFilterValues(audienceFilter?.values as string[] | undefined);
+    }, [currentFilters]);
+
+    // Build query params including filters from other fields (excluding post to avoid circular filtering)
+    const queryParams = useMemo(() => {
         const baseParams: Record<string, string> = {
-            site_uuid: statsConfig?.id || '',
             date_from: formatQueryDate(startDate),
             date_to: formatQueryDate(endDate),
-            timezone: timezone,
-            member_status: getAudienceQueryParam(audience),
-            limit: '50'
+            member_status: getAudienceQueryParam(audience)
         };
 
-        // Add filters from currently applied filters (excluding source to avoid circular filtering)
-        currentFilters.forEach((filter) => {
-            if (filter.field === 'post' && filter.values.length > 0) {
-                baseParams.post_uuid = filter.values[0] as string;
-            } else if (filter.field === 'source' && filter.values.length > 0) {
-                // Skip source filter to avoid circular filtering
-                return;
-            } else if (filter.field.startsWith('utm_') && filter.values.length > 0) {
-                baseParams[filter.field] = filter.values[0] as string;
-            }
-        });
+        if (timezone) {
+            baseParams.timezone = timezone;
+        }
 
-        return baseParams;
-    }, [statsConfig?.id, startDate, endDate, timezone, audience, currentFilters]);
+        return buildFilterParams(currentFilters, 'post', baseParams);
+    }, [startDate, endDate, timezone, audience, currentFilters]);
 
-    const {data, loading} = useTinybirdQuery({
-        endpoint: 'api_top_sources',
-        statsConfig,
-        params,
-        enabled: true
+    // Fetch top content data from Ghost API (which queries Tinybird and enriches with titles)
+    const {data: topContentData, isLoading} = useTopContent({
+        searchParams: queryParams,
+        enabled
     });
 
     const options = useMemo(() => {
-        if (!data) {
-            return [];
-        }
+        const stats = topContentData?.stats;
 
-        return (data as unknown as SourceOption[]).map((item: SourceOption) => {
-            // For empty/null sources, use empty string as value (for Tinybird) but display "Direct"
-            const isEmpty = !item.source;
-            const value = isEmpty ? '' : String(item.source);
-            const label = isEmpty ? 'Direct' : String(item.source);
-            const visits = item.visits || 0;
-            return {
-                label,
-                value,
-                // Add a custom icon element that shows the count badge
-                icon: (
-                    <span className="order-2 font-mono text-xs text-muted-foreground">
-                        {visits.toLocaleString()}
-                    </span>
-                )
-            };
-        });
-    }, [data]);
+        // Deduplicate items - prefer post_uuid for posts/pages, use pathname for other content
+        const seen = new Set<string>();
+        return (stats || [])
+            .filter((item) => {
+                // Create a unique key - prefer post_uuid if available, otherwise use pathname
+                const hasValidPostUuid = item.post_uuid && item.post_uuid !== '' && item.post_uuid !== 'undefined';
+                const uniqueKey = hasValidPostUuid ? `uuid:${item.post_uuid}` : `path:${item.pathname}`;
 
-    return {options, loading};
+                if (seen.has(uniqueKey)) {
+                    return false;
+                }
+                seen.add(uniqueKey);
+                return true;
+            })
+            .map((item) => {
+                const visits = item.visits || 0;
+                // Use post_uuid as the filter value if available, otherwise use pathname
+                const hasValidPostUuid = item.post_uuid && item.post_uuid !== '' && item.post_uuid !== 'undefined';
+                const filterValue = hasValidPostUuid ? item.post_uuid! : item.pathname;
+
+                return {
+                    label: item.title || item.pathname || '(Untitled)',
+                    value: filterValue,
+                    icon: <VisitCountBadge visits={visits} />
+                };
+            });
+    }, [topContentData]);
+
+    return {options, loading: isLoading};
 };
 
-// Hook to fetch posts/pages options from Ghost API with search support
-const usePostOptions = () => {
-    const [searchQuery, setSearchQueryInternal] = useState('');
-    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-
-    // Debounce the search query to avoid too many API calls
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearchQuery(searchQuery);
-        }, 300);
-
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
-
-    // Use browse API for both initial load and search
-    // When searching, filter by title containing the search query
-    // When not searching, fetch latest 20 published posts
-    const hasSearchQuery = debouncedSearchQuery.trim().length > 0;
-
-    const filter = hasSearchQuery
-        ? `title:~'${debouncedSearchQuery.replace(/'/g, '\\\'')}'+status:[published,sent]`
-        : 'status:[published,sent]';
-
-    const {data: browseData, isLoading: isBrowseLoading} = useBrowsePosts({
-        searchParams: {
-            filter,
-            fields: 'id,uuid,title,slug',
-            order: 'published_at DESC',
-            limit: hasSearchQuery ? '50' : '20'
-        }
-    });
-
-    const options = useMemo(() => {
-        const posts = browseData?.posts;
-
-        if (!posts) {
-            return [];
-        }
-
-        return posts.map(post => ({
-            label: post.title || post.slug || '(Untitled)',
-            value: post.uuid
-        }));
-    }, [browseData]);
-
-    // Memoize the callback to avoid recreating the function on each render
-    const setSearchQuery = useCallback((query: string) => {
-        setSearchQueryInternal(query);
-    }, []);
-
-    return {
-        options,
-        loading: isBrowseLoading,
-        setSearchQuery
-    };
-};
-
-function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: StatsFilterProps) {
-    const {audience, setAudience} = useGlobalData();
+function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
     const {appSettings} = useAppContext();
 
-    // Track if we're currently handling a filter change to prevent loops
-    const isHandlingChange = useRef(false);
+    // Track which filter field is currently being selected (lazy loading)
+    const [activeFilterField, setActiveFilterField] = useState<string | null>(null);
+
+    // Track screen width for responsive popover alignment
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(max-width: 1024px)'); // lg breakpoint
+
+        const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
+            setIsMobile(e.matches);
+        };
+
+        // Set initial value
+        handleChange(mediaQuery);
+
+        // Listen for changes
+        mediaQuery.addEventListener('change', handleChange);
+
+        return () => mediaQuery.removeEventListener('change', handleChange);
+    }, []);
 
     // Filter audience options based on site settings
     const audienceOptions = useMemo(() => {
         const options = [
-            {value: 'undefined', label: 'Public visitors', icon: <LucideIcon.Globe className='text-gray-700'/>, bit: AUDIENCE_BITS.PUBLIC},
-            {value: 'free', label: 'Free members', icon: <LucideIcon.User className='text-green'/>, bit: AUDIENCE_BITS.FREE},
-            {value: 'paid', label: 'Paid members', icon: <LucideIcon.UserPlus className='text-orange'/>, bit: AUDIENCE_BITS.PAID}
+            {value: 'undefined', label: 'Public visitors', icon: <LucideIcon.Globe className='text-gray-700'/>},
+            {value: 'free', label: 'Free members', icon: <LucideIcon.User className='text-green'/>},
+            {value: 'paid', label: 'Paid members', icon: <LucideIcon.UserPlus className='text-orange'/>}
         ];
         return appSettings?.paidMembersEnabled ? options : options.filter(opt => opt.value !== 'paid');
     }, [appSettings?.paidMembersEnabled]);
 
-    // Calculate "all audiences" bitmask based on available options
-    const ALL_AUDIENCES = useMemo(() => {
-        return audienceOptions.reduce((acc, opt) => acc | opt.bit, 0);
-    }, [audienceOptions]);
+    // Helper: determine if a filter field should fetch options
+    // Enable fetching when the field is active OR has an applied filter value (for label display)
+    const shouldFetchOptions = useCallback((fieldKey: string) => {
+        const isActive = activeFilterField === fieldKey;
+        const hasAppliedFilter = filters.some(f => f.field === fieldKey);
+        return isActive || hasAppliedFilter;
+    }, [activeFilterField, filters]);
 
-    const isDefaultAudience = audience === ALL_AUDIENCES;
+    // Fetch options for all Tinybird-backed fields using the generic hook
+    // Options are contextual - filtered based on currently applied filters
+    // Lazy loading: only fetch when field is active or has applied filter
+    const {options: utmSourceOptions, loading: utmSourceLoading} = useTinybirdFilterOptions('utm_source', filters, {enabled: shouldFetchOptions('utm_source')});
+    const {options: utmMediumOptions, loading: utmMediumLoading} = useTinybirdFilterOptions('utm_medium', filters, {enabled: shouldFetchOptions('utm_medium')});
+    const {options: utmCampaignOptions, loading: utmCampaignLoading} = useTinybirdFilterOptions('utm_campaign', filters, {enabled: shouldFetchOptions('utm_campaign')});
+    const {options: utmContentOptions, loading: utmContentLoading} = useTinybirdFilterOptions('utm_content', filters, {enabled: shouldFetchOptions('utm_content')});
+    const {options: utmTermOptions, loading: utmTermLoading} = useTinybirdFilterOptions('utm_term', filters, {enabled: shouldFetchOptions('utm_term')});
+    const {options: sourceOptions, loading: sourceLoading} = useTinybirdFilterOptions('source', filters, {enabled: shouldFetchOptions('source')});
+    const {options: deviceOptions, loading: deviceLoading} = useTinybirdFilterOptions('device', filters, {enabled: shouldFetchOptions('device')});
+    const {options: locationOptions, loading: locationLoading} = useTinybirdFilterOptions('location', filters, {enabled: shouldFetchOptions('location')});
 
-    // Only sync global audience to filter if:
-    // 1. The audience filter already exists (user has interacted with it), OR
-    // 2. The global audience is NOT the default "all" state
-    // This prevents showing the filter by default when all audiences are selected
-    useEffect(() => {
-        // Don't sync if we're in the middle of handling a filter change
-        if (isHandlingChange.current) {
-            return;
-        }
-
-        const audienceFilter = filters.find(f => f.field === 'audience');
-
-        // Don't create the filter if it doesn't exist and we're in default "all" state
-        if (!audienceFilter && isDefaultAudience) {
-            return;
-        }
-
-        // Don't sync if there's no audience filter - this prevents creating it
-        // when other filters change
-        if (!audienceFilter) {
-            return;
-        }
-
-        const currentValues = audienceFilter?.values || [];
-
-        // Convert global audience bitmask to filter values using available options
-        const expectedValues = audienceOptions
-            .filter(opt => (audience & opt.bit) !== 0)
-            .map(opt => opt.value);
-
-        // Only update if values have changed
-        const valuesChanged = expectedValues.length !== currentValues.length ||
-            !expectedValues.every(v => currentValues.includes(v));
-
-        if (valuesChanged && onChange) {
-            const otherFilters = filters.filter(f => f.field !== 'audience');
-            if (expectedValues.length > 0) {
-                // Keep existing audience filter id if it exists, otherwise create new one
-                onChange([
-                    ...otherFilters,
-                    {
-                        id: audienceFilter.id,
-                        field: 'audience',
-                        operator: 'is',
-                        values: expectedValues
-                    }
-                ]);
-            } else {
-                onChange(otherFilters);
-            }
-        }
-    }, [audience, isDefaultAudience, filters, onChange, audienceOptions]);
-
-    // Handle filter changes - update global audience when audience filter changes
-    const handleFilterChange = useCallback((newFilters: Filter[]) => {
-        // Set flag to prevent the useEffect from running during this change
-        isHandlingChange.current = true;
-
-        const oldAudienceFilter = filters.find(f => f.field === 'audience');
-        const audienceFilter = newFilters.find(f => f.field === 'audience');
-        const values = audienceFilter?.values || [];
-
-        // If audience filter was removed, reset to default (all audiences)
-        if (oldAudienceFilter && !audienceFilter) {
-            setAudience(ALL_AUDIENCES);
-            if (onChange) {
-                onChange(newFilters);
-            }
-            // Reset flag after a short delay to allow the change to propagate
-            setTimeout(() => {
-                isHandlingChange.current = false;
-            }, 0);
-            return;
-        }
-
-        // Only update audience if the audience filter actually changed
-        const audienceChanged = oldAudienceFilter !== audienceFilter ||
-            JSON.stringify(oldAudienceFilter?.values) !== JSON.stringify(values);
-
-        if (audienceChanged && audienceFilter) {
-            // Convert filter values to bitmask using available options
-            const newAudience = audienceOptions
-                .filter(opt => values.includes(opt.value))
-                .reduce((acc, opt) => acc | opt.bit, 0);
-
-            // Update global audience if it changed
-            if (newAudience !== audience) {
-                setAudience(newAudience);
-            }
-        }
-
-        // Pass through to parent onChange
-        if (onChange) {
-            onChange(newFilters);
-        }
-
-        // Reset flag after a short delay to allow the change to propagate
-        setTimeout(() => {
-            isHandlingChange.current = false;
-        }, 0);
-    }, [audience, setAudience, onChange, filters, ALL_AUDIENCES, audienceOptions]);
-
-    // Fetch options for all UTM fields
-    // Options are contextual - filtered based on currently applied filters (e.g., if a post is selected,
-    // only UTM params used for that post will be shown)
-    const {options: utmSourceOptions} = useUtmOptionsForField('utm_source', filters);
-    const {options: utmMediumOptions} = useUtmOptionsForField('utm_medium', filters);
-    const {options: utmCampaignOptions} = useUtmOptionsForField('utm_campaign', filters);
-    const {options: utmContentOptions} = useUtmOptionsForField('utm_content', filters);
-    const {options: utmTermOptions} = useUtmOptionsForField('utm_term', filters);
-
-    // Fetch source options
-    const {options: sourceOptions} = useSourceOptions(filters);
-
-    // Fetch options for posts with search support
-    const {options: postOptions, loading: postLoading, setSearchQuery} = usePostOptions();
+    // Fetch options for posts - data is contextual based on current filters
+    const {options: postOptions, loading: postLoading} = usePostOptions(filters, {enabled: shouldFetchOptions('post')});
 
     // Note: Only 'is' operator supported - Tinybird pipes only support exact match
     const supportedOperators = useMemo(() => [
@@ -372,17 +340,18 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
 
     // Grouped fields - memoized to avoid recreation on every render
     const groupedFields: FilterFieldConfig[] = useMemo(() => {
-        const utmFields: FilterFieldConfig[] = utmTrackingEnabled ? [
+        const utmFields: FilterFieldConfig[] = [
             {
                 key: 'utm_source',
                 label: 'UTM Source',
                 type: 'select',
-                icon: <LucideIcon.Link className="size-4" />,
+                icon: <LucideIcon.MousePointerClick className="size-4" />,
                 placeholder: 'Select source',
                 operators: supportedOperators,
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmSourceOptions,
+                isLoading: utmSourceLoading,
                 searchable: true,
                 selectedOptionsClassName: 'hidden'
             },
@@ -390,12 +359,15 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 key: 'utm_medium',
                 label: 'UTM Medium',
                 type: 'select',
-                icon: <LucideIcon.Network className="size-4" />,
+                icon: <LucideIcon.SatelliteDish className="size-4" />,
                 placeholder: 'Select medium',
                 operators: supportedOperators,
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmMediumOptions,
+                isLoading: utmMediumLoading,
+                className: 'w-60',
+                popoverContentClassName: 'w-60',
                 searchable: true,
                 selectedOptionsClassName: 'hidden'
             },
@@ -403,12 +375,15 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 key: 'utm_campaign',
                 label: 'UTM Campaign',
                 type: 'select',
-                icon: <LucideIcon.Megaphone className="size-4" />,
+                icon: <LucideIcon.Flag className="size-4" />,
                 placeholder: 'Select campaign',
                 operators: supportedOperators,
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmCampaignOptions,
+                isLoading: utmCampaignLoading,
+                className: 'w-60',
+                popoverContentClassName: 'w-60',
                 searchable: true,
                 selectedOptionsClassName: 'hidden'
             },
@@ -416,12 +391,15 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 key: 'utm_content',
                 label: 'UTM Content',
                 type: 'select',
-                icon: <LucideIcon.FileText className="size-4" />,
+                icon: <LucideIcon.TextCursorInput className="size-4" />,
                 placeholder: 'Select content',
                 operators: supportedOperators,
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmContentOptions,
+                isLoading: utmContentLoading,
+                className: 'w-60',
+                popoverContentClassName: 'w-60',
                 searchable: true,
                 selectedOptionsClassName: 'hidden'
             },
@@ -435,10 +413,13 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmTermOptions,
+                isLoading: utmTermLoading,
+                className: 'w-60',
+                popoverContentClassName: 'w-60',
                 searchable: true,
                 selectedOptionsClassName: 'hidden'
             }
-        ] : [];
+        ];
 
         return [
             {
@@ -461,14 +442,13 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         icon: <LucideIcon.PenLine />,
                         options: postOptions,
                         searchable: true,
-                        asyncSearch: true,
                         isLoading: postLoading,
-                        onSearchChange: setSearchQuery,
                         operators: supportedOperators,
                         defaultOperator: 'is',
                         className: 'w-80',
                         popoverContentClassName: 'w-80',
-                        hideOperatorSelect: true
+                        hideOperatorSelect: true,
+                        selectedOptionsClassName: 'hidden'
                     },
                     {
                         key: 'source',
@@ -480,30 +460,85 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         defaultOperator: 'is',
                         hideOperatorSelect: true,
                         options: sourceOptions,
+                        isLoading: sourceLoading,
+                        className: 'w-60',
+                        popoverContentClassName: 'w-60',
+                        searchable: true,
+                        selectedOptionsClassName: 'hidden'
+                    },
+                    {
+                        key: 'device',
+                        label: 'Device',
+                        type: 'select',
+                        icon: <LucideIcon.Monitor className="size-4" />,
+                        placeholder: 'Select device',
+                        operators: supportedOperators,
+                        defaultOperator: 'is',
+                        hideOperatorSelect: true,
+                        options: deviceOptions,
+                        isLoading: deviceLoading,
+                        selectedOptionsClassName: 'hidden'
+                    },
+                    {
+                        key: 'location',
+                        label: 'Location',
+                        type: 'select',
+                        icon: <LucideIcon.MapPin className="size-4" />,
+                        placeholder: 'Select location',
+                        operators: supportedOperators,
+                        defaultOperator: 'is',
+                        hideOperatorSelect: true,
+                        options: locationOptions,
+                        isLoading: locationLoading,
                         searchable: true,
                         selectedOptionsClassName: 'hidden'
                     }
                 ]
             },
-            ...(utmTrackingEnabled ? [{
+            {
                 group: 'UTM parameters',
                 fields: utmFields
-            }] : [])
+            }
         ];
-    }, [utmTrackingEnabled, utmSourceOptions, utmMediumOptions, utmCampaignOptions, utmContentOptions, utmTermOptions, supportedOperators, postOptions, postLoading, setSearchQuery, audienceOptions, sourceOptions]);
+    }, [utmSourceOptions, utmSourceLoading, utmMediumOptions, utmMediumLoading, utmCampaignOptions, utmCampaignLoading, utmContentOptions, utmContentLoading, utmTermOptions, utmTermLoading, supportedOperators, postOptions, postLoading, audienceOptions, sourceOptions, sourceLoading, deviceOptions, deviceLoading, locationOptions, locationLoading]);
+
+    // Show clear button when there's at least one filter
+    const hasFilters = filters.length > 0;
+
+    const handleClearFilters = useCallback(() => {
+        if (onChange) {
+            onChange([]);
+        }
+    }, [onChange]);
 
     return (
-        <Filters
-            addButtonIcon={<LucideIcon.FunnelPlus />}
-            addButtonText={filters.length ? '' : ''}
-            className='mb-6 [&>button]:order-last'
-            fields={groupedFields}
-            filters={filters}
-            showSearchInput={false}
-            size='sm'
-            onChange={handleFilterChange}
-            {...props}
-        />
+        <div className="mt-3 flex w-full justify-between gap-2 lg:mt-0" data-testid="stats-filter-container">
+            <Filters
+                addButtonIcon={<LucideIcon.FunnelPlus />}
+                addButtonText={hasFilters ? 'Add filter' : 'Filter'}
+                allowMultiple={false}
+                className={`[&>button]:order-last ${hasFilters && '[&>button]:border-none'}`}
+                fields={groupedFields}
+                filters={filters}
+                keyboardShortcut="f"
+                popoverAlign={isMobile ? 'start' : (hasFilters ? 'start' : 'end')}
+                showSearchInput={false}
+                onActiveFieldChange={setActiveFilterField}
+                onChange={onChange || (() => {})}
+                {...props}
+            />
+            {hasFilters && (
+                <Button
+                    className='hidden font-normal text-muted-foreground lg:flex'
+                    data-testid="stats-filter-clear-button"
+                    variant="ghost"
+                    onClick={handleClearFilters}
+                >
+                    <LucideIcon.FunnelX />
+                    Clear
+                </Button>
+            )}
+        </div>
     );
 };
 

@@ -40,26 +40,26 @@ graph TD
 
 ### Components
 
-#### 1. **MemberAttributionService** (`MemberAttributionService.js`)
+#### 1. **MemberAttributionService** (`member-attribution-service.js`)
 Main service interface that coordinates all attribution logic.
 
-#### 2. **AttributionBuilder** (`AttributionBuilder.js`)
+#### 2. **AttributionBuilder** (`attribution-builder.js`)
 Converts URL history into attribution resources using the "Last Post Algorithm™️".
 
 **Key Classes:**
 - `Attribution`: Represents attribution data with methods to fetch and enrich resources
 - `AttributionBuilder`: Factory for creating `Attribution` instances
 
-#### 3. **UrlHistory** (`UrlHistory.js`)
+#### 3. **UrlHistory** (`url-history.js`)
 Validated container for URL history arrays from the frontend.
 
-#### 4. **UrlTranslator** (`UrlTranslator.js`)
+#### 4. **UrlTranslator** (`url-translator.js`)
 Translates between URLs and Ghost resources.
 
-#### 5. **ReferrerTranslator** (`ReferrerTranslator.js`)
+#### 5. **ReferrerTranslator** (`referrer-translator.js`)
 Parses referrer information into source and medium classifications.
 
-#### 6. **OutboundLinkTagger** (`OutboundLinkTagger.js`)
+#### 6. **OutboundLinkTagger** (`outbound-link-tagger.js`)
 Adds `?ref=` parameters to external links in newsletters.
 
 #### 7. **Frontend Script** (`member-attribution.js`)

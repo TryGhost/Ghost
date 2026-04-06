@@ -2,14 +2,22 @@ import {Factory} from '@/data-factory';
 import {faker} from '@faker-js/faker';
 import {generateId, generateUuid} from '@/data-factory';
 
+export interface Tier {
+    id: string;
+    name: string;
+    slug: string;
+    type: 'free' | 'paid';
+    active: boolean;
+}
+
 export interface Member {
     id: string;
     uuid: string;
     name: string | null;
     email: string;
-    note: string | null;
+    note?: string | null;
     geolocation: string | null;
-    labels: string[];
+    labels?: string[];
     email_count: number;
     email_opened_count: number;
     email_open_rate: number | null;
@@ -17,6 +25,11 @@ export interface Member {
     last_seen_at: Date | null;
     last_commented_at: Date | null;
     newsletters: string[];
+    tiers?: Partial<Tier>[];
+    created_at?: string; // ISO 8601 format for backdating
+    complimentary_plan?: boolean;
+    stripe_customer_id?: string;
+    subscribed_to_emails?: string;
 }
 
 export class MemberFactory extends Factory<Partial<Member>, Member> {
@@ -48,7 +61,8 @@ export class MemberFactory extends Factory<Partial<Member>, Member> {
             status: 'free',
             last_seen_at: null,
             last_commented_at: null,
-            newsletters: []
+            newsletters: [],
+            subscribed_to_emails: 'false'
         };
     }
 }

@@ -1,16 +1,16 @@
-const EmailEventStorage = require('../../../../../core/server/services/email-service/EmailEventStorage');
+const EmailEventStorage = require('../../../../../core/server/services/email-service/email-event-storage');
 
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
 const {createDb, createPrometheusClient} = require('./utils');
 
-const EmailDeliveredEvent = require('../../../../../core/server/services/email-service/events/EmailDeliveredEvent');
-const EmailOpenedEvent = require('../../../../../core/server/services/email-service/events/EmailOpenedEvent');
-const EmailBouncedEvent = require('../../../../../core/server/services/email-service/events/EmailBouncedEvent');
-const EmailTemporaryBouncedEvent = require('../../../../../core/server/services/email-service/events/EmailTemporaryBouncedEvent');
-const EmailUnsubscribedEvent = require('../../../../../core/server/services/email-service/events/EmailUnsubscribedEvent');
-const SpamComplaintEvent = require('../../../../../core/server/services/email-service/events/SpamComplaintEvent');
+const EmailDeliveredEvent = require('../../../../../core/server/services/email-service/events/email-delivered-event');
+const EmailOpenedEvent = require('../../../../../core/server/services/email-service/events/email-opened-event');
+const EmailBouncedEvent = require('../../../../../core/server/services/email-service/events/email-bounced-event');
+const EmailTemporaryBouncedEvent = require('../../../../../core/server/services/email-service/events/email-temporary-bounced-event');
+const EmailUnsubscribedEvent = require('../../../../../core/server/services/email-service/events/email-unsubscribed-event');
+const SpamComplaintEvent = require('../../../../../core/server/services/email-service/events/spam-complaint-event');
 
 describe('Email Event Storage', function () {
     let logError;
@@ -59,7 +59,7 @@ describe('Email Event Storage', function () {
         const eventHandler = new EmailEventStorage({db, prometheusClient});
         sinon.stub(eventHandler, 'recordEventStored').resolves();
         await eventHandler.handleDelivered(event);
-        assert(eventHandler.recordEventStored.calledOnce);
+        sinon.assert.calledOnce(eventHandler.recordEventStored);
     });
 
     it('Handles email opened events', async function () {
@@ -85,7 +85,7 @@ describe('Email Event Storage', function () {
         const eventHandler = new EmailEventStorage({db, prometheusClient});
         sinon.stub(eventHandler, 'recordEventStored').resolves();
         await eventHandler.handleOpened(event);
-        assert(eventHandler.recordEventStored.calledOnce);
+        sinon.assert.calledOnce(eventHandler.recordEventStored);
     });
 
     it('Handles email permanent bounce events with update', async function () {
@@ -131,7 +131,7 @@ describe('Email Event Storage', function () {
         await eventHandler.handlePermanentFailed(event);
         sinon.assert.calledOnce(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
-        assert(existing.save.calledOnce);
+        sinon.assert.calledOnce(existing.save);
     });
 
     it('Handles email permanent bounce events with update and empty message', async function () {
@@ -177,7 +177,7 @@ describe('Email Event Storage', function () {
         await eventHandler.handlePermanentFailed(event);
         sinon.assert.calledOnce(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
-        assert(existing.save.calledOnce);
+        sinon.assert.calledOnce(existing.save);
     });
 
     it('Handles email permanent bounce events with update and empty message and without enhanced code', async function () {
@@ -222,7 +222,7 @@ describe('Email Event Storage', function () {
         await eventHandler.handlePermanentFailed(event);
         sinon.assert.calledOnce(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
-        assert(existing.save.calledOnce);
+        sinon.assert.calledOnce(existing.save);
     });
 
     it('Handles email permanent bounce events with insert', async function () {
@@ -257,7 +257,7 @@ describe('Email Event Storage', function () {
         await eventHandler.handlePermanentFailed(event);
         sinon.assert.calledOnce(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
-        assert(EmailRecipientFailure.add.calledOnce);
+        sinon.assert.calledOnce(EmailRecipientFailure.add);
     });
 
     it('Handles email permanent bounce events with insert and empty message', async function () {
@@ -292,7 +292,7 @@ describe('Email Event Storage', function () {
         await eventHandler.handlePermanentFailed(event);
         sinon.assert.calledOnce(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
-        assert(EmailRecipientFailure.add.calledOnce);
+        sinon.assert.calledOnce(EmailRecipientFailure.add);
     });
 
     it('Handles email permanent bounce events with insert and empty message and without enhanced code', async function () {
@@ -326,7 +326,7 @@ describe('Email Event Storage', function () {
         await eventHandler.handlePermanentFailed(event);
         sinon.assert.calledOnce(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
-        assert(EmailRecipientFailure.add.calledOnce);
+        sinon.assert.calledOnce(EmailRecipientFailure.add);
     });
 
     it('Handles email permanent bounce event without error data', async function () {
@@ -391,8 +391,8 @@ describe('Email Event Storage', function () {
         await eventHandler.handlePermanentFailed(event);
         sinon.assert.calledOnce(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
-        assert(EmailRecipientFailure.findOne.called);
-        assert(!existing.save.called);
+        sinon.assert.called(EmailRecipientFailure.findOne);
+        sinon.assert.notCalled(existing.save);
     });
 
     it('Handles email temporary bounce events with update', async function () {
@@ -434,7 +434,7 @@ describe('Email Event Storage', function () {
             }
         });
         await eventHandler.handleTemporaryFailed(event);
-        assert(existing.save.calledOnce);
+        sinon.assert.calledOnce(existing.save);
     });
 
     it('Handles email temporary bounce events with skipped update', async function () {
@@ -476,7 +476,7 @@ describe('Email Event Storage', function () {
             }
         });
         await eventHandler.handleTemporaryFailed(event);
-        assert(existing.save.notCalled);
+        sinon.assert.notCalled(existing.save);
     });
 
     it('Handles unsubscribe', async function () {
@@ -500,9 +500,9 @@ describe('Email Event Storage', function () {
             emailSuppressionList
         });
         await eventHandler.handleUnsubscribed(event);
-        assert(update.calledOnce);
+        sinon.assert.calledOnce(update);
         assert(update.firstCall.args[0].newsletters.length === 0);
-        assert(emailSuppressionList.removeUnsubscribe.calledOnce);
+        sinon.assert.calledOnce(emailSuppressionList.removeUnsubscribe);
     });
 
     it('Handles unsubscribe with a non-existent member', async function () {
@@ -522,7 +522,7 @@ describe('Email Event Storage', function () {
             }
         });
         await eventHandler.handleUnsubscribed(event);
-        assert(update.calledOnce);
+        sinon.assert.calledOnce(update);
         assert(update.firstCall.args[0].newsletters.length === 0);
     });
 
@@ -576,13 +576,20 @@ describe('Email Event Storage', function () {
             add: sinon.stub().resolves()
         };
 
+        const emailSuppressionList = {
+            removeComplaint: sinon.stub().resolves()
+        };
+
         const eventHandler = new EmailEventStorage({
             models: {
                 EmailSpamComplaintEvent
-            }
+            },
+            emailSuppressionList
         });
         await eventHandler.handleComplained(event);
-        assert(EmailSpamComplaintEvent.add.calledOnce);
+        sinon.assert.calledOnce(EmailSpamComplaintEvent.add);
+        sinon.assert.calledOnce(emailSuppressionList.removeComplaint);
+        sinon.assert.calledWith(emailSuppressionList.removeComplaint, 'example@example.com');
     });
 
     it('Handles duplicate complaints', async function () {
@@ -597,14 +604,19 @@ describe('Email Event Storage', function () {
             add: sinon.stub().rejects({code: 'ER_DUP_ENTRY'})
         };
 
+        const emailSuppressionList = {
+            removeComplaint: sinon.stub().resolves()
+        };
+
         const eventHandler = new EmailEventStorage({
             models: {
                 EmailSpamComplaintEvent
-            }
+            },
+            emailSuppressionList
         });
         await eventHandler.handleComplained(event);
-        assert(EmailSpamComplaintEvent.add.calledOnce);
-        assert(!logError.calledOnce);
+        sinon.assert.calledOnce(EmailSpamComplaintEvent.add);
+        sinon.assert.notCalled(logError);
     });
 
     it('Handles logging failed complaint storage', async function () {
@@ -619,14 +631,19 @@ describe('Email Event Storage', function () {
             add: sinon.stub().rejects(new Error('Some database error'))
         };
 
+        const emailSuppressionList = {
+            removeComplaint: sinon.stub().resolves()
+        };
+
         const eventHandler = new EmailEventStorage({
             models: {
                 EmailSpamComplaintEvent
-            }
+            },
+            emailSuppressionList
         });
         await eventHandler.handleComplained(event);
-        assert(EmailSpamComplaintEvent.add.calledOnce);
-        assert(logError.calledOnce);
+        sinon.assert.calledOnce(EmailSpamComplaintEvent.add);
+        sinon.assert.calledOnce(logError);
     });
 
     describe('recordEventStored', function () {

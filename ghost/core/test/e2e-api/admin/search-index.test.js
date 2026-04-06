@@ -31,7 +31,7 @@ describe('Search Index API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    posts: new Array(13).fill(searchIndexPostMatcher)
+                    posts: new Array(15).fill(searchIndexPostMatcher)
                 });
 
             // Explicitly double-check that expensive fields are not included
@@ -93,7 +93,7 @@ describe('Search Index API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    tags: new Array(6).fill(searchIndexTagMatcher)
+                    tags: new Array(7).fill(searchIndexTagMatcher)
                 });
         });
     });

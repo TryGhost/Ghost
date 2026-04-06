@@ -25,6 +25,8 @@ export default Model.extend(ValidationEngine, {
     tiers: attr('member-tier'),
     newsletters: hasMany('newsletter', {embedded: 'always', async: false}),
     emailSuppression: attr(),
+    canComment: attr('boolean'),
+    commenting: attr(),
 
     labels: hasMany('label', {embedded: 'always', async: false}),
 

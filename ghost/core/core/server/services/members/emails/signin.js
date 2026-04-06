@@ -5,6 +5,8 @@ module.exports = ({t, siteTitle, email, url, otc, accentColor = '#15212A', siteD
   <head>
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="color-scheme" content="light only">
+    <meta name="supported-color-schemes" content="light">
     ${otc
         ? `<title>🔑 ${t('Sign in to {siteTitle} with code {otc}', {siteTitle, otc, interpolation: {escapeValue: false}})}</title>`
         : `<title>🔑 ${t('Secure sign in link for {siteTitle}', {siteTitle, interpolation: {escapeValue: false}})}</title>`
@@ -188,7 +190,7 @@ module.exports = ({t, siteTitle, email, url, otc, accentColor = '#15212A', siteD
                     </tr>
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-top: 2px;">
-                        <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 16px; font-size: 11px; color: #738A94; font-weight: normal; margin: 0;">This message was sent from <a class="small" href="${siteUrl}" style="text-decoration: underline; color: #738A94; font-size: 11px;">${siteDomain}</a> to <a class="small" href="mailto:${email}" style="text-decoration: underline; color: #738A94; font-size: 11px;">${email}</a></p>
+                        <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 16px; font-size: 11px; color: #738A94; font-weight: normal; margin: 0;">${t('This message was sent from {siteDomain} to {email}.', {siteDomain: ('<a class="small" href="' + siteUrl + '" style="text-decoration: underline; color: #738A94; font-size: 11px;">' + siteDomain + '</a>'), email: ('<a class="small" href="mailto:' + email + '" style="text-decoration: underline; color: #738A94; font-size: 11px;">' + email + '</a>'), interpolation: {escapeValue: false}})}</p>
                       </td>
                     </tr>
 

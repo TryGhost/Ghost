@@ -1,7 +1,9 @@
 import React from 'react';
 import SourceIcon from '../../components/source-icon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable} from '@tryghost/shade/components';
+import {HTable} from '@tryghost/shade/primitives';
+import {LucideIcon, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/post-analytics-context';
 
@@ -13,9 +15,10 @@ interface SourcesTableProps {
     range?: number;
     defaultSourceIconUrl?: string;
     dataTableHeader: boolean;
+    onSourceClick?: (source: string) => void;
 }
 
-export const SourcesTable: React.FC<SourcesTableProps> = ({dataTableHeader, data, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL}) => {
+export const SourcesTable: React.FC<SourcesTableProps> = ({dataTableHeader, data, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL, onSourceClick}) => {
     return (
         <DataList>
             {dataTableHeader &&
@@ -26,15 +29,22 @@ export const SourcesTable: React.FC<SourcesTableProps> = ({dataTableHeader, data
             }
             <DataListBody>
                 {data?.map((row) => {
+                    const isClickable = !!onSourceClick;
+                    const sourceId = row.source ? row.source.toLowerCase().replace(/[^a-z0-9]/g, '-') : 'direct';
                     return (
-                        <DataListRow key={row.source} className='group/row'>
+                        <DataListRow
+                            key={row.source}
+                            className={`group/row ${isClickable ? 'cursor-pointer' : ''}`}
+                            data-testid={`source-row-${sourceId}`}
+                            onClick={isClickable ? () => onSourceClick(row.source) : undefined}
+                        >
                             <DataListBar style={{
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
                             }} />
                             <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
                                 <div className='flex items-center space-x-4 overflow-hidden'>
                                     <div className='truncate font-medium'>
-                                        {row.linkUrl ?
+                                        {row.linkUrl && !onSourceClick ?
                                             <a className='group/link flex items-center gap-2' href={row.linkUrl} rel="noreferrer" target="_blank">
                                                 <SourceIcon
                                                     defaultSourceIconUrl={defaultSourceIconUrl}
@@ -80,6 +90,7 @@ interface SourcesCardProps {
     getPeriodText?: (range: number) => string;
     tableOnly?: boolean;
     topSourcesLimit?:number;
+    onSourceClick?: (source: string) => void;
 }
 
 export const Sources: React.FC<SourcesCardProps> = ({
@@ -90,7 +101,8 @@ export const Sources: React.FC<SourcesCardProps> = ({
     siteIcon,
     defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL,
     tableOnly = false,
-    topSourcesLimit = 10
+    topSourcesLimit = 10,
+    onSourceClick
 }) => {
     const {isPostLoading} = useGlobalData();
 
@@ -131,6 +143,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
                     dataTableHeader={false}
                     defaultSourceIconUrl={defaultSourceIconUrl}
                     range={range}
+                    onSourceClick={onSourceClick}
                 />
                 {hasMore && (
                     <div className='mt-4'>
@@ -151,6 +164,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
                                         dataTableHeader={true}
                                         defaultSourceIconUrl={defaultSourceIconUrl}
                                         range={range}
+                                        onSourceClick={onSourceClick}
                                     />
                                 </div>
                             </SheetContent>
@@ -164,7 +178,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
     const isLoading = isPostLoading;
 
     return (
-        <Card className='group/datalist'>
+        <Card className='group/datalist' data-testid="top-sources-card">
             <div className='flex items-center justify-between p-6'>
                 <CardHeader className='p-0'>
                     <CardTitle>{cardTitle}</CardTitle>
@@ -183,6 +197,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
                             dataTableHeader={false}
                             defaultSourceIconUrl={defaultSourceIconUrl}
                             range={range}
+                            onSourceClick={onSourceClick}
                         />
                     ) : (
                         <div className='py-20 text-center text-sm text-gray-700'>
@@ -208,6 +223,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
                                     dataTableHeader={true}
                                     defaultSourceIconUrl={defaultSourceIconUrl}
                                     range={range}
+                                    onSourceClick={onSourceClick}
                                 />
                             </div>
                         </SheetContent>

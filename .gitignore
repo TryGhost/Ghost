@@ -123,6 +123,7 @@ test/functional/*.png
 /ghost/core/core/frontend/public/comment-counts.min.js
 /ghost/core/core/frontend/public/member-attribution.min.js
 /ghost/core/core/frontend/public/ghost-stats.min.js
+/ghost/core/core/frontend/public/private.min.js
 # Caddyfile - for local development with ssl + caddy
 Caddyfile
 !docker/caddy/Caddyfile
@@ -195,6 +196,11 @@ yalc.lock
 
 # direnv environment loader files
 .envrc
+
+# Private Claude Code instructions
+*.local.md
+.claude/settings.local.json
+.mcp.local.json
 
 # e2e test suite
 /e2e/test-results

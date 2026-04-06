@@ -1,4 +1,6 @@
 /* eslint-env node */
+const tailwindCssConfig = `${__dirname}/../admin/src/index.css`;
+
 module.exports = {
     root: true,
     extends: [
@@ -14,15 +16,27 @@ module.exports = {
     settings: {
         react: {
             version: 'detect'
+        },
+        tailwindcss: {
+            config: tailwindCssConfig
         }
     },
     rules: {
         'no-shadow': 'off',
         '@typescript-eslint/no-shadow': 'error',
 
+        // Enforce kebab-case (lowercase with hyphens) for all filenames
+        'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
+
         // sort multiple import lines into alphabetical groups
         'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
             memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']
+        }],
+        'no-restricted-imports': ['error', {
+            paths: [{
+                name: '@tryghost/shade',
+                message: 'Import from layered subpaths instead (components/primitives/patterns/utils/app/tokens).'
+            }]
         }],
 
         // TODO: re-enable this (maybe fixed fast refresh?)
@@ -48,12 +62,12 @@ module.exports = {
         'react/no-array-index-key': 'error',
         'react/jsx-key': 'off',
 
-        'tailwindcss/classnames-order': ['error', {config: 'tailwind.config.cjs'}],
-        'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: 'tailwind.config.cjs'}],
-        'tailwindcss/enforces-shorthand': ['warn', {config: 'tailwind.config.cjs'}],
-        'tailwindcss/migration-from-tailwind-2': ['warn', {config: 'tailwind.config.cjs'}],
+        'tailwindcss/classnames-order': 'error',
+        'tailwindcss/enforces-negative-arbitrary-values': 'warn',
+        'tailwindcss/enforces-shorthand': 'warn',
+        'tailwindcss/migration-from-tailwind-2': 'warn',
         'tailwindcss/no-arbitrary-value': 'off',
         'tailwindcss/no-custom-classname': 'off',
-        'tailwindcss/no-contradicting-classname': ['error', {config: 'tailwind.config.cjs'}]
+        'tailwindcss/no-contradicting-classname': 'error'
     }
 };

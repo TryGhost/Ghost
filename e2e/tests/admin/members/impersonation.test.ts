@@ -26,11 +26,9 @@ test.describe('Ghost Admin - Member Impersonation', () => {
         await memberDetailsPage.goto(magicLink);
 
         const homePage = new HomePage(page);
-        await homePage.waitUntilLoaded();
-        await homePage.accountButton.click();
+        await homePage.openAccountPortal();
 
         const portal = new PortalPage(page);
-        await portal.waitForPortalToOpen();
 
         await expect(portal.portalFrameBody).toContainText('Your account');
         await expect(portal.portalFrameBody).toContainText('impersonate@ghost.org');

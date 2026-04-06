@@ -1,9 +1,8 @@
-const should = require('should');
 const sinon = require('sinon');
-const configUtils = require('../../../../utils/configUtils');
-const SettingsHelpers = require('../../../../../core/server/services/settings-helpers/SettingsHelpers');
+const configUtils = require('../../../../utils/config-utils');
+const SettingsHelpers = require('../../../../../core/server/services/settings-helpers/settings-helpers');
 const crypto = require('crypto');
-const assert = require('assert').strict;
+const assert = require('node:assert/strict');
 
 const mockValidationKey = 'validation_key';
 
@@ -63,8 +62,8 @@ describe('Settings Helpers', function () {
             const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils: {}, labs: {}, limitService});
             const keys = settingsHelpers.getActiveStripeKeys();
 
-            should.equal(keys.publicKey, 'direct_publishable');
-            should.equal(keys.secretKey, 'direct_secret');
+            assert.equal(keys.publicKey, 'direct_publishable');
+            assert.equal(keys.secretKey, 'direct_secret');
         });
 
         it('Does not use connect keys if stripeDirect is true, and the direct keys do not exist', function () {
@@ -75,7 +74,7 @@ describe('Settings Helpers', function () {
             const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils: {}, labs: {}, limitService});
             const keys = settingsHelpers.getActiveStripeKeys();
 
-            should.equal(keys, null);
+            assert.equal(keys, null);
         });
 
         it('Uses connect keys when stripeDirect is false, and the connect keys exist', function () {
@@ -86,8 +85,8 @@ describe('Settings Helpers', function () {
             const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils: {}, labs: {}, limitService});
             const keys = settingsHelpers.getActiveStripeKeys();
 
-            should.equal(keys.publicKey, 'connect_publishable');
-            should.equal(keys.secretKey, 'connect_secret');
+            assert.equal(keys.publicKey, 'connect_publishable');
+            assert.equal(keys.secretKey, 'connect_secret');
         });
 
         it('Uses direct keys when stripeDirect is false, but the connect keys do not exist', function () {
@@ -98,8 +97,8 @@ describe('Settings Helpers', function () {
             const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils: {}, labs: {}, limitService});
             const keys = settingsHelpers.getActiveStripeKeys();
 
-            should.equal(keys.publicKey, 'direct_publishable');
-            should.equal(keys.secretKey, 'direct_secret');
+            assert.equal(keys.publicKey, 'direct_publishable');
+            assert.equal(keys.secretKey, 'direct_secret');
         });
     });
 
@@ -108,7 +107,7 @@ describe('Settings Helpers', function () {
             const fakeSettings = createSettingsMock({setDirect: true, setConnect: true});
             const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils: {}, labs: {}, limitService});
             const key = settingsHelpers.getMembersValidationKey();
-            should.equal(key, 'validation_key');
+            assert.equal(key, 'validation_key');
         });
     });
 
@@ -132,25 +131,25 @@ describe('Settings Helpers', function () {
         it('returns a generic unsubscribe url when no uuid is provided', function () {
             const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils, labs: {}, limitService});
             const url = settingsHelpers.createUnsubscribeUrl(null);
-            should.equal(url, 'http://domain.com/unsubscribe/?preview=1');
+            assert.equal(url, 'http://domain.com/unsubscribe/?preview=1');
         });
 
         it('returns a url that can be used to unsubscribe a member', function () {
             const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils, labs: {}, limitService});
             const url = settingsHelpers.createUnsubscribeUrl(memberUuid);
-            should.equal(url, `http://domain.com/unsubscribe/?uuid=memberuuid&key=${memberUuidHash}`);
+            assert.equal(url, `http://domain.com/unsubscribe/?uuid=memberuuid&key=${memberUuidHash}`);
         });
 
         it('returns a url that can be used to unsubscribe a member for a given newsletter', function () {
             const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils, labs: {}, limitService});
             const url = settingsHelpers.createUnsubscribeUrl(memberUuid, {newsletterUuid});
-            should.equal(url, `http://domain.com/unsubscribe/?uuid=memberuuid&key=${memberUuidHash}&newsletter=newsletteruuid`);
+            assert.equal(url, `http://domain.com/unsubscribe/?uuid=memberuuid&key=${memberUuidHash}&newsletter=newsletteruuid`);
         });
 
         it('returns a url that can be used to unsubscribe a member from comments', function () {
             const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils, labs: {}, limitService});
             const url = settingsHelpers.createUnsubscribeUrl(memberUuid, {comments: true});
-            should.equal(url, `http://domain.com/unsubscribe/?uuid=memberuuid&key=${memberUuidHash}&comments=1`);
+            assert.equal(url, `http://domain.com/unsubscribe/?uuid=memberuuid&key=${memberUuidHash}&comments=1`);
         });
     });
 
@@ -261,8 +260,10 @@ describe('Settings Helpers', function () {
 
         beforeEach(function () {
             settingsCache = {
-                get: sinon.stub().withArgs('social_web').returns(true)
+                get: sinon.stub()
             };
+            settingsCache.get.withArgs('social_web').returns(true);
+            settingsCache.get.withArgs('is_private').returns(false);
             urlUtils = {
                 getSiteUrl: sinon.stub().returns('http://example.com/'),
                 getSubdir: sinon.stub().returns('')
@@ -306,6 +307,15 @@ describe('Settings Helpers', function () {
         it('returns false if the site is hosted on a localhost or IP address in production', function () {
             urlUtils.getSiteUrl.returns('http://localhost:2368');
             sinon.stub(process.env, 'NODE_ENV').value('production');
+
+            const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
+            const isEnabled = settingsHelpers.isSocialWebEnabled();
+
+            assert.equal(isEnabled, false);
+        });
+
+        it('returns false when the site is private', function () {
+            settingsCache.get.withArgs('is_private').returns(true);
 
             const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
             const isEnabled = settingsHelpers.isSocialWebEnabled();

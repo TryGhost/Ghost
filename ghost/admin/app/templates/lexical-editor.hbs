@@ -1,4 +1,5 @@
 {{#if this.post}}
+<div class="gh-editor-fullscreen-container">
     <div class="flex flex-row">
         <GhEditor
             @tagName="section"
@@ -77,7 +78,7 @@
                 @updateSecondaryInstanceModel={{this.updateSecondaryInstanceModel}}
                 @headerOffset={{editor.headerHeight}}
                 @scrollContainerSelector=".gh-koenig-editor"
-                @scrollOffsetBottomSelector=".gh-mobile-nav-bar"
+
                 @onEditorCreated={{this.setKoenigEditor}}
                 @updateWordCount={{this.updateWordCount}}
                 @updatePostTkCount={{this.updatePostTkCount}}
@@ -106,6 +107,7 @@
                 <div class="gh-editor-wordcount">
                     {{gh-pluralize this.wordCount "word"}}
                 </div>
+                <Editor::EmailSizeWarning @post={{this.post}} />
                 <a href="https://ghost.org/help/using-the-editor/" class="flex" target="_blank" rel="noopener noreferrer">{{svg-jar "help"}}</a>
             </div>
 
@@ -119,6 +121,7 @@
                     as |publishManagement|
                 >
                     <div class="gh-editor-wordcount">
+                        <Editor::EmailSizeWarning @post={{this.post}} />
                         {{gh-pluralize this.wordCount "word"}}
                     </div>
                     <section class="gh-editor-publish-buttons">
@@ -159,6 +162,8 @@
             @close={{this.closePostHistory}}
             @modifier="total-overlay post-history" />
     {{/if}}
+
+</div>
 {{/if}}
 
 {{outlet}}

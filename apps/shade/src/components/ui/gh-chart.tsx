@@ -37,20 +37,20 @@ const GhCustomTooltipContent = ({active, payload, range, showHours, color}: Tool
         <div className="min-w-[120px] rounded-lg border bg-background px-3 py-2 shadow-lg">
             {date && <div className="text-sm text-foreground">{formatDisplayDateWithRange(date, range || 0, showHours)}</div>}
             <div className='flex items-start gap-2'>
-                <span className='mt-1.5 inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color || 'hsl(var(--chart-blue))'}}></span>
+                <span className='mt-1.5 inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color || 'var(--chart-blue)'}}></span>
                 <div className='flex grow items-start justify-between gap-5'>
                     {label && <div className="text-sm text-muted-foreground">{label}</div>}
                     <div className="flex flex-col items-end font-mono font-medium">
                         {displayValue}
 
                         {diffValue ? diffValue < 0 && (
-                            <div className='flex items-center gap-0.5 text-red-600'>
+                            <div className='flex items-center gap-0.5 text-state-danger'>
                                 <TrendingDown size={14} strokeWidth={1.5} />
                                 <span>{formattedDiffValue}</span>
                             </div>
                         ) : <></>}
                         {diffValue ? diffValue > 0 && (
-                            <div className='flex items-center gap-0.5 text-green-600'>
+                            <div className='flex items-center gap-0.5 text-state-success'>
                                 <TrendingUp size={14} strokeWidth={1.5} />
                                 <span>{formattedDiffValue}</span>
                             </div>
@@ -85,13 +85,14 @@ interface GhAreaChartProps {
     showHorizontalLines?: boolean;
     dataFormatter?: (value: number) => string;
     showHours?: boolean;
+    tooltipContent?: React.ReactElement;
 }
 
 const GhAreaChart: React.FC<GhAreaChartProps> = ({
     data,
     range,
     yAxisRange,
-    color = 'hsl(var(--chart-blue))',
+    color = 'var(--chart-blue)',
     id,
     className,
     syncId,
@@ -99,7 +100,8 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
     showYAxisValues = true,
     showHorizontalLines = true,
     dataFormatter = formatNumber,
-    showHours = false
+    showHours = false,
+    tooltipContent
 }) => {
     const yRange = yAxisRange || [getYRange(data).min, getYRange(data).max];
     const chartConfig = {
@@ -131,9 +133,9 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
                 }}
                 syncId={syncId}
             >
-                <CartesianGrid horizontal={showHorizontalLines} vertical={false} />
+                <CartesianGrid horizontal={showHorizontalLines} stroke="var(--border)" vertical={false} />
                 <XAxis
-                    axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
+                    axisLine={{stroke: 'var(--border)', strokeWidth: 1}}
                     dataKey="date"
                     interval={0}
                     tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(String(value), range, showHours, xTickHoursOnly)} />}
@@ -155,7 +157,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
                     width={showYAxisValues ? calculateYAxisWidth(yRange, dataFormatter) : 0}
                 />
                 <ChartTooltip
-                    content={<GhCustomTooltipContent color={color} range={range} showHours={showHours} />}
+                    content={tooltipContent || <GhCustomTooltipContent color={color} range={range} showHours={showHours} />}
                     cursor={true}
                     isAnimationActive={false}
                     position={{y: 10}}
@@ -193,3 +195,5 @@ export {
     GhAreaChart,
     GhCustomTooltipContent
 };
+
+export type {TooltipProps};

@@ -1,6 +1,6 @@
 import PostAnalyticsLayout from './components/layout/post-analytics-layout';
 import {Outlet} from '@tryghost/admin-x-framework';
-import {PostShareModal} from '@tryghost/shade';
+import {PostShareModal} from '@tryghost/shade/patterns';
 import {usePostSuccessModal} from '@hooks/use-post-success-modal';
 
 const PostAnalytics: React.FC = () => {

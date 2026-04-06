@@ -1,10 +1,10 @@
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const nock = require('nock');
 
 // Helper services
-const configUtils = require('./configUtils');
+const configUtils = require('./config-utils');
 const WebhookMockReceiver = require('@tryghost/webhook-mock-receiver');
 const EmailMockReceiver = require('@tryghost/email-mock-receiver');
 const {snapshotManager} = require('@tryghost/express-test').snapshot;
@@ -13,7 +13,7 @@ let mocks = {};
 let emailCount = 0;
 
 // Mockable services
-const MailgunClient = require('../../core/server/services/lib/MailgunClient');
+const MailgunClient = require('../../core/server/services/lib/mailgun-client');
 const mailService = require('../../core/server/services/mail/index');
 const originalMailServiceSendMail = mailService.GhostMailer.prototype.sendMail;
 const labs = require('../../core/shared/labs');
@@ -195,6 +195,16 @@ const sentEmail = (matchers) => {
     });
 
     return spyCall.args[0];
+};
+
+const sentEmailCount = (expectedCount) => {
+    if (!mocks.mail) {
+        throw new errors.IncorrectUsageError({
+            message: 'Cannot assert on mail when mail has not been mocked'
+        });
+    }
+
+    assert.equal(mocks.mail.callCount, expectedCount, `Expected ${expectedCount} emails to be sent, but ${mocks.mail.callCount} were sent.`);
 };
 
 /**
@@ -391,6 +401,7 @@ module.exports = {
     stripeMocker,
     assert: {
         sentEmail,
+        sentEmailCount,
         emittedEvent
     },
     getMailgunCreateMessageStub: () => mailgunCreateMessageStub

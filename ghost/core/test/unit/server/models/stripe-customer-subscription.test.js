@@ -1,5 +1,5 @@
+const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
-const should = require('should');
 const models = require('../../../../core/server/models');
 
 describe('Unit: models/stripe-customer-subscription', function () {
@@ -45,10 +45,10 @@ describe('Unit: models/stripe-customer-subscription', function () {
             };
 
             const json = serialize(stripeSubscription);
-            should.exist(json.plan);
-            should.exist(json.customer);
-            should.exist(json.trial_start_at);
-            should.exist(json.trial_end_at);
+            assertExists(json.plan);
+            assertExists(json.customer);
+            assertExists(json.trial_start_at);
+            assertExists(json.trial_end_at);
         });
     });
 });

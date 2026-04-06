@@ -2,8 +2,14 @@
     "extends": [
         "github>tryghost/renovate-config"
     ],
-    // This reduces PR churn when managing lots of dependencies
-    "rebaseWhen": "never",
+    // Limit concurrent branches to keep Renovate runs within the 30-minute
+    // Mend timeout and avoid overwhelming CI with dozens of queued jobs.
+    // The shared preset disables rate limiting, but Ghost's monorepo is
+    // large enough that unlimited branches cause timeouts during rebasing.
+    "branchConcurrentLimit": 10,
+    // Keep manually-closed immortal/grouped PRs closed unless explicitly
+    // reopened from the Dependency Dashboard.
+    "recreateWhen": "never",
     // We have to disable platform based automerge (forcing renovate to do it manually)
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,
@@ -58,6 +64,28 @@
         "ghost/admin/lib/koenig-editor/package.json"
     ],
     "packageRules": [
+        // Always require dashboard approval for major updates
+        // This was largely to avoid the noise of major updates which were ESM only
+        // The idea was to check and accept major updates if they were NOT ESM
+        // But this hasn't been workable with our capacity
+        // Plus, ESM-only is an edge case in the grand scheme of dependencies
+        {
+            "description": "Require dashboard approval for major updates",
+            "matchUpdateTypes": [
+                "major"
+            ],
+            "dependencyDashboardApproval": true
+        },
+
+        // Group NQL packages separately from other TryGhost packages
+        {
+            "groupName": "NQL packages",
+            "matchPackageNames": [
+                "@tryghost/nql",
+                "@tryghost/nql-lang"
+            ]
+        },
+
         // Always automerge these packages:
         {
             "matchPackageNames": [

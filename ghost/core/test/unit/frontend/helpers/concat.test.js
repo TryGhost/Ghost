@@ -1,11 +1,10 @@
-const should = require('should');
 const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
 
 const concat = require('../../../../core/frontend/helpers/concat');
 const split = require('../../../../core/frontend/helpers/split');
 const url = require('../../../../core/frontend/helpers/url');
 
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const SafeString = require('../../../../core/frontend/services/handlebars').SafeString;
 const {shouldCompileToExpected, shouldCompileToExpectedWithGlobals} = require('./utils/handlebars');
 

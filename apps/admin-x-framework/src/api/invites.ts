@@ -1,6 +1,6 @@
 import {InfiniteData} from '@tanstack/react-query';
 import {Meta, createMutation, createInfiniteQuery} from '../utils/api/hooks';
-import {deleteFromQueryCache, insertToQueryCache} from '../utils/api/updateQueries';
+import {deleteFromQueryCache, insertToQueryCache} from '../utils/api/update-queries';
 
 export interface UserInvite {
     created_at: string;

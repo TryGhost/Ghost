@@ -1,1 +1,1 @@
-export {default} from './AppSidebar';
+export {default} from './app-sidebar';

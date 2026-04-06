@@ -14,6 +14,10 @@ export const ActionButtonStyles = `
         border: none;
     }
 
+    .gh-portal-btn-primary {
+        color: #fff;
+    }
+
     .gh-portal-btn-primary:hover,
     .gh-portal-btn-primary:focus {
         opacity: 0.92 !important;
@@ -68,11 +72,9 @@ const Styles = ({brandColor, disabled, style = {}, isPrimary}) => {
         opacity = '0.5';
         pointerEvents = 'none';
     }
-    const textColor = '#fff';
 
     return {
         button: {
-            ...(isPrimary ? {color: textColor} : {}),
             ...(isPrimary ? {backgroundColor} : {}),
             opacity,
             pointerEvents,

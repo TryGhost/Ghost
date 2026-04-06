@@ -1,5 +1,5 @@
 const models = require('../../models');
-const getPostServiceInstance = require('../../services/posts/posts-service');
+const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
 
 /** @type {import('@tryghost/api-framework').Controller} */

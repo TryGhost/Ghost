@@ -1,23 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`sendMagicLink Homograph attack prevention should prevent homograph attacks by normalizing unicode domains 1: [body] 1`] = `
-Object {
-  "errors": Array [
-    Object {
-      "code": null,
-      "context": null,
-      "details": null,
-      "ghostErrorCode": null,
-      "help": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "No member exists with this e-mail address. Please sign up first.",
-      "property": null,
-      "type": "BadRequestError",
-    },
-  ],
-}
-`;
-
 exports[`sendMagicLink OTC Rate limiting Will rate limit OTC verification enumeration (IP-based) 1: [body] 1`] = `
 Object {
   "errors": Array [
@@ -49,42 +31,6 @@ Object {
       "message": Any<String>,
       "property": null,
       "type": "TooManyRequestsError",
-    },
-  ],
-}
-`;
-
-exports[`sendMagicLink Throws an error when logging in to a email that does not exist (invite only) 1: [body] 1`] = `
-Object {
-  "errors": Array [
-    Object {
-      "code": null,
-      "context": null,
-      "details": null,
-      "ghostErrorCode": null,
-      "help": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "No member exists with this e-mail address.",
-      "property": null,
-      "type": "BadRequestError",
-    },
-  ],
-}
-`;
-
-exports[`sendMagicLink Throws an error when logging in to a email that does not exist 1: [body] 1`] = `
-Object {
-  "errors": Array [
-    Object {
-      "code": null,
-      "context": null,
-      "details": null,
-      "ghostErrorCode": null,
-      "help": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "No member exists with this e-mail address. Please sign up first.",
-      "property": null,
-      "type": "BadRequestError",
     },
   ],
 }
@@ -206,6 +152,8 @@ Object {
   <head>
     <meta name=\\"viewport\\" content=\\"width=device-width\\">
     <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <meta name=\\"color-scheme\\" content=\\"light only\\">
+    <meta name=\\"supported-color-schemes\\" content=\\"light\\">
     <title>🔑 Sign in to Ghost with code <OTC></title>
     <style>
     /* -------------------------------------
@@ -363,7 +311,7 @@ Object {
                     </tr>
                     <tr>
                       <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-top: 2px;\\">
-                        <p class=\\"small\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 16px; font-size: 11px; color: #738A94; font-weight: normal; margin: 0;\\">This message was sent from <a class=\\"small\\" href=\\"http://127.0.0.1:2369/\\" style=\\"text-decoration: underline; color: #738A94; font-size: 11px;\\">127.0.0.1</a> to <a class=\\"small\\" href=\\"mailto:member1@test.com\\" style=\\"text-decoration: underline; color: #738A94; font-size: 11px;\\">member1@test.com</a></p>
+                        <p class=\\"small\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 16px; font-size: 11px; color: #738A94; font-weight: normal; margin: 0;\\">This message was sent from <a class=\\"small\\" href=\\"http://127.0.0.1:2369/\\" style=\\"text-decoration: underline; color: #738A94; font-size: 11px;\\">127.0.0.1</a> to <a class=\\"small\\" href=\\"mailto:member1@test.com\\" style=\\"text-decoration: underline; color: #738A94; font-size: 11px;\\">member1@test.com</a>.</p>
                       </td>
                     </tr>
 
@@ -414,6 +362,8 @@ Object {
   <head>
     <meta name=\\"viewport\\" content=\\"width=device-width\\">
     <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <meta name=\\"color-scheme\\" content=\\"light only\\">
+    <meta name=\\"supported-color-schemes\\" content=\\"light\\">
     <title>🔑 Secure sign in link for Ghost</title>
     <style>
     /* -------------------------------------
@@ -564,7 +514,7 @@ Object {
                     </tr>
                     <tr>
                       <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-top: 2px;\\">
-                        <p class=\\"small\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 16px; font-size: 11px; color: #738A94; font-weight: normal; margin: 0;\\">This message was sent from <a class=\\"small\\" href=\\"http://127.0.0.1:2369/\\" style=\\"text-decoration: underline; color: #738A94; font-size: 11px;\\">127.0.0.1</a> to <a class=\\"small\\" href=\\"mailto:member1@test.com\\" style=\\"text-decoration: underline; color: #738A94; font-size: 11px;\\">member1@test.com</a></p>
+                        <p class=\\"small\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 16px; font-size: 11px; color: #738A94; font-weight: normal; margin: 0;\\">This message was sent from <a class=\\"small\\" href=\\"http://127.0.0.1:2369/\\" style=\\"text-decoration: underline; color: #738A94; font-size: 11px;\\">127.0.0.1</a> to <a class=\\"small\\" href=\\"mailto:member1@test.com\\" style=\\"text-decoration: underline; color: #738A94; font-size: 11px;\\">member1@test.com</a>.</p>
                       </td>
                     </tr>
 

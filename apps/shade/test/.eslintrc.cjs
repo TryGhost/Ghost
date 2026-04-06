@@ -1,6 +1,9 @@
 module.exports = {
     parser: '@typescript-eslint/parser',
     plugins: ['ghost'],
+    env: {
+        browser: true
+    },
     extends: [
         'plugin:ghost/test'
     ],

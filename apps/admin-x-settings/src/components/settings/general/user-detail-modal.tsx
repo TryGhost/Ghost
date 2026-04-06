@@ -162,7 +162,17 @@ export interface UserDetailProps {
 }
 
 const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute, route} = useRouting();
+
+    const getTabFromPath = (path: string): string => {
+        const lastSegment = path.split('/').pop() || '';
+
+        if (lastSegment === 'social-links' || lastSegment === 'email-notifications') {
+            return lastSegment;
+        }
+
+        return 'profile';
+    };
     const {ownerUser} = useStaffUsers();
     const {currentUser} = useGlobalData();
     const handleError = useHandleError();
@@ -210,7 +220,8 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         if (canAccessSettings(currentUser)) {
             updateRoute('staff');
         } else {
-            updateRoute({isExternal: true, route: 'analytics'});
+            // Contributors can't access settings, exit to let the shell handle navigation
+            updateRoute({isExternal: true, route: ''});
         }
     }, [currentUser, updateRoute]);
 
@@ -271,7 +282,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             title: 'Are you sure you want to delete this user?',
             prompt: (
                 <>
-                    <p className='mb-3'><span className='font-bold'>{_user.name || _user.email}</span> will be permanently deleted and all their posts will be automatically assigned to the <span className='font-bold'>{owner.name}</span>.</p>
+                    <p className='mb-3'><span className='font-bold'>{_user.name || _user.email}</span> will be permanently deleted and all their posts will be automatically assigned to <span className='font-bold'>{owner.name}</span>.</p>
                     <p>To make these easy to find in the future, each post will be given an internal tag of <span className='font-bold'>#{user.slug}</span></p>
                 </>
             ),
@@ -366,27 +377,6 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         });
     }
 
-    if (formState.id !== currentUser.id && (
-        (hasAdminAccess(currentUser) && !isOwnerUser(user)) ||
-        (isEditorUser(currentUser) && isAuthorOrContributor(user))
-    )) {
-        let suspendUserLabel = formState.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
-
-        menuItems.push({
-            id: 'delete-user',
-            label: 'Delete user',
-            onClick: () => {
-                confirmDelete(user, {owner: ownerUser});
-            }
-        }, {
-            id: 'suspend-user',
-            label: suspendUserLabel,
-            onClick: () => {
-                confirmSuspend(formState);
-            }
-        });
-    }
-
     menuItems.push({
         id: 'view-user-activity',
         label: 'View user activity',
@@ -396,13 +386,43 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         }
     });
 
+    if (formState.id !== currentUser.id && (
+        (hasAdminAccess(currentUser) && !isOwnerUser(user)) ||
+        (isEditorUser(currentUser) && isAuthorOrContributor(user))
+    )) {
+        let suspendUserLabel = formState.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
+
+        menuItems.push({
+            id: 'suspend-user',
+            label: suspendUserLabel,
+            onClick: () => {
+                confirmSuspend(formState);
+            }
+        }, {
+            id: 'delete-user',
+            label: 'Delete user',
+            destructive: true,
+            onClick: () => {
+                confirmDelete(user, {owner: ownerUser});
+            }
+        });
+    }
+
     const noCoverButtonClasses = 'rounded text-sm flex flex-nowrap items-center justify-center px-3 h-8 transition-all cursor-pointer font-medium border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white';
 
     const coverButtonClasses = 'flex flex-nowrap items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white transition-all cursor-pointer font-medium nowrap';
 
     const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
 
-    const [selectedTab, setSelectedTab] = useState<string>('profile');
+    const initialTab = getTabFromPath(route);
+    const [selectedTab, setSelectedTab] = useState<string>(initialTab);
+
+    const handleTabChange = (newTabId: string) => {
+        const urlSegment = newTabId === 'profile' ? '' : `/${newTabId}`;
+
+        updateRoute(`staff/${user.slug}${urlSegment}`);
+        setSelectedTab(newTabId);
+    };
 
     return (
         <Modal
@@ -432,9 +452,9 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                             <div className='flex flex-nowrap items-start justify-between gap-3'>
                                 <div>
                                     <ImageUpload
-                                        deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-10 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:!visible'
+                                        deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-10 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:visible!'
                                         deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
-                                        editButtonClassName='md:invisible absolute right-[22px] -top-2 flex h-8 w-8 cursor-pointer items-center justify-center text-white group-hover:!visible z-20'
+                                        editButtonClassName='md:invisible absolute right-[22px] -top-2 flex h-8 w-8 cursor-pointer items-center justify-center text-white group-hover:visible! z-20'
                                         fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
                                         fileUploadProps={{dragIndicatorClassName: 'rounded-full'}}
                                         id='avatar'
@@ -546,7 +566,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                 contents: <EmailNotificationsTab setUserData={setUserData} user={formState} />
                             }
                         ]}
-                        onTabChange={setSelectedTab}
+                        onTabChange={handleTabChange}
                     />
                 </div>
             </div>

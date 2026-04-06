@@ -144,6 +144,8 @@ function doReset(options, tokenParts, settingsAPI) {
         .then((updatedUser) => {
             updatedUser.set('status', 'active');
             return updatedUser.save(options);
+        }).then((savedUser) => {
+            return {user: savedUser};
         })
         .catch((err) => {
             if (errors.utils.isGhostError(err)) {

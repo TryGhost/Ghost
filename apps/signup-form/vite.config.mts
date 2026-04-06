@@ -24,6 +24,9 @@ export default (function viteConfig() {
             allowedHosts: true, // allows domain-name proxies to the preview server
             port: 6174
         },
+        optimizeDeps: {
+            include: ['@tryghost/i18n']
+        },
         build: {
             outDir: resolve(__dirname, 'umd'),
             reportCompressedSize: false,

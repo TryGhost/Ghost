@@ -1,8 +1,9 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const path = require('path');
 const os = require('os');
 const fs = require('fs-extra');
 const crypto = require('crypto');
-const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const config = require('../../../../core/shared/config');
@@ -47,11 +48,11 @@ describe('DB API', function () {
             .expect(200)
             .then((res) => {
                 const jsonResponse = res.body;
-                should.exist(jsonResponse.db);
-                jsonResponse.db.should.have.length(1);
+                assertExists(jsonResponse.db);
+                assert.equal(jsonResponse.db.length, 1);
 
                 // NOTE: default tables + 1 from include parameters
-                Object.keys(jsonResponse.db[0].data).length.should.eql(TABLE_ALLOWLIST_LENGTH + 1);
+                assert.equal(Object.keys(jsonResponse.db[0].data).length, TABLE_ALLOWLIST_LENGTH + 1);
             });
     });
 
@@ -80,7 +81,7 @@ describe('DB API', function () {
             })
             .then((res) => {
                 const jsonResponse = res.body;
-                should.exist(jsonResponse.db);
+                assertExists(jsonResponse.db);
 
                 fs.ensureDirSync(exportFolder);
                 fs.writeJSONSync(exportPath, jsonResponse);
@@ -93,7 +94,7 @@ describe('DB API', function () {
                     .expect(200);
             })
             .then((res) => {
-                res.body.problems.length.should.eql(6);
+                assert.equal(res.body.problems.length, 6);
                 fs.removeSync(exportFolder);
             });
     });
@@ -148,9 +149,9 @@ describe('DB API', function () {
             .expect(200);
 
         const jsonResponse = res.body;
-        should.exist(jsonResponse.db);
-        should.exist(jsonResponse.problems);
-        jsonResponse.problems.should.have.length(2);
+        assertExists(jsonResponse.db);
+        assertExists(jsonResponse.problems);
+        assert.equal(jsonResponse.problems.length, 2);
 
         const postsResponse = await request.get(localUtils.API.getApiQuery('posts/'))
             .set('Origin', config.get('url'))
@@ -158,7 +159,7 @@ describe('DB API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        postsResponse.body.posts.should.have.length(7);
+        assert.equal(postsResponse.body.posts.length, 7);
 
         const usersResponse = await request.get(localUtils.API.getApiQuery('users/'))
             .set('Origin', config.get('url'))
@@ -166,7 +167,7 @@ describe('DB API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        usersResponse.body.users.should.have.length(3);
+        assert.equal(usersResponse.body.users.length, 3);
     });
 
     it('Can import a JSON database exported from Ghost 3.x', async function () {
@@ -195,9 +196,9 @@ describe('DB API', function () {
             .expect(200);
 
         const jsonResponse = res.body;
-        should.exist(jsonResponse.db);
-        should.exist(jsonResponse.problems);
-        jsonResponse.problems.should.have.length(2);
+        assertExists(jsonResponse.db);
+        assertExists(jsonResponse.problems);
+        assert.equal(jsonResponse.problems.length, 2);
 
         const res2 = await request.get(localUtils.API.getApiQuery('posts/'))
             .set('Origin', config.get('url'))
@@ -205,7 +206,7 @@ describe('DB API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        res2.body.posts.should.have.length(7);
+        assert.equal(res2.body.posts.length, 7);
 
         const usersResponse = await request.get(localUtils.API.getApiQuery('users/'))
             .set('Origin', config.get('url'))
@@ -213,7 +214,7 @@ describe('DB API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        usersResponse.body.users.should.have.length(3);
+        assert.equal(usersResponse.body.users.length, 3);
     });
 
     it('Can import a JSON database exported from Ghost 4.x', async function () {
@@ -242,9 +243,9 @@ describe('DB API', function () {
             .expect(200);
 
         const jsonResponse = res.body;
-        should.exist(jsonResponse.db);
-        should.exist(jsonResponse.problems);
-        jsonResponse.problems.should.have.length(2);
+        assertExists(jsonResponse.db);
+        assertExists(jsonResponse.problems);
+        assert.equal(jsonResponse.problems.length, 2);
 
         const res2 = await request.get(localUtils.API.getApiQuery('posts/'))
             .set('Origin', config.get('url'))
@@ -252,7 +253,7 @@ describe('DB API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        res2.body.posts.should.have.length(7);
+        assert.equal(res2.body.posts.length, 7);
 
         const usersResponse = await request.get(localUtils.API.getApiQuery('users/'))
             .set('Origin', config.get('url'))
@@ -260,7 +261,7 @@ describe('DB API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        usersResponse.body.users.should.have.length(3);
+        assert.equal(usersResponse.body.users.length, 3);
     });
 
     it('Can import a JSON database exported from Ghost 5.x', async function () {
@@ -289,13 +290,13 @@ describe('DB API', function () {
             .expect(200);
 
         const jsonResponse = res.body;
-        should.exist(jsonResponse.db);
-        should.exist(jsonResponse.problems);
+        assertExists(jsonResponse.db);
+        assertExists(jsonResponse.problems);
 
         // 2 expected problems:
         // - Theme not imported
         // - Duplicate free product not imported
-        jsonResponse.problems.should.have.length(2);
+        assert.equal(jsonResponse.problems.length, 2);
 
         const res2 = await request.get(localUtils.API.getApiQuery('posts/'))
             .set('Origin', config.get('url'))
@@ -303,11 +304,11 @@ describe('DB API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        res2.body.posts.should.have.length(1);
+        assert.equal(res2.body.posts.length, 1);
 
         // Ensure the author is not imported with the legacy hardcoded user id
-        res2.body.posts[0].authors[0].id.should.not.equal(LEGACY_HARDCODED_USER_ID);
-        res2.body.posts[0].primary_author.id.should.not.equal(LEGACY_HARDCODED_USER_ID);
+        assert.notEqual(res2.body.posts[0].authors[0].id, LEGACY_HARDCODED_USER_ID);
+        assert.notEqual(res2.body.posts[0].primary_author.id, LEGACY_HARDCODED_USER_ID);
 
         const usersResponse = await request.get(localUtils.API.getApiQuery('users/'))
             .set('Origin', config.get('url'))
@@ -315,12 +316,12 @@ describe('DB API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        usersResponse.body.users.should.have.length(3);
+        assert.equal(usersResponse.body.users.length, 3);
 
         // Ensure user is not imported with the legacy hardcoded user id
-        usersResponse.body.users[0].id.should.not.equal(LEGACY_HARDCODED_USER_ID);
-        usersResponse.body.users[1].id.should.not.equal(LEGACY_HARDCODED_USER_ID);
-        usersResponse.body.users[2].id.should.not.equal(LEGACY_HARDCODED_USER_ID);
+        assert.notEqual(usersResponse.body.users[0].id, LEGACY_HARDCODED_USER_ID);
+        assert.notEqual(usersResponse.body.users[1].id, LEGACY_HARDCODED_USER_ID);
+        assert.notEqual(usersResponse.body.users[2].id, LEGACY_HARDCODED_USER_ID);
     });
 
     it('Can import a JSON database with products', async function () {
@@ -338,59 +339,59 @@ describe('DB API', function () {
 
         // Check if we have a product
         const product = await models.Product.findOne({slug: 'ghost-inc'});
-        should.exist(product);
+        assertExists(product);
 
-        product.get('name').should.equal('Ghost Inc.');
-        product.get('description').should.equal('Our daily newsletter');
-        product.get('welcome_page_url').should.equal('/welcome');
+        assert.equal(product.get('name'), 'Ghost Inc.');
+        assert.equal(product.get('description'), 'Our daily newsletter');
+        assert.equal(product.get('welcome_page_url'), '/welcome');
 
         // Check settings
         const portalProducts = await models.Settings.findOne({key: 'portal_products'});
-        should.exist(portalProducts);
-        JSON.parse(portalProducts.get('value')).should.deepEqual([]);
+        assertExists(portalProducts);
+        assert.deepEqual(JSON.parse(portalProducts.get('value')), []);
 
         // Check stripe products
         const stripeProduct = await models.StripeProduct.findOne({product_id: product.id});
-        should.exist(stripeProduct);
-        stripeProduct.get('stripe_product_id').should.equal('prod_d2c1708c21');
-        stripeProduct.id.should.not.equal('60be1fc9bd3af33564cfb337');
+        assertExists(stripeProduct);
+        assert.equal(stripeProduct.get('stripe_product_id'), 'prod_d2c1708c21');
+        assert.notEqual(stripeProduct.id, '60be1fc9bd3af33564cfb337');
 
         // Check newsletters
         const newsletter = await models.Newsletter.findOne({slug: 'test'});
-        should.exist(newsletter);
-        newsletter.get('name').should.equal('Ghost Inc.');
+        assertExists(newsletter);
+        assert.equal(newsletter.get('name'), 'Ghost Inc.');
         // Make sure sender_email is not set
-        should(newsletter.get('sender_email')).equal(null);
+        assert.equal(newsletter.get('sender_email'), null);
 
         // Check posts
         const post = await models.Post.findOne({slug: 'test-newsletter'}, {withRelated: ['tiers']});
-        should.exist(post);
+        assertExists(post);
 
-        post.get('newsletter_id').should.equal(newsletter.id);
-        post.get('visibility').should.equal('public');
-        post.get('email_recipient_filter').should.equal('status:-free');
+        assert.equal(post.get('newsletter_id'), newsletter.id);
+        assert.equal(post.get('visibility'), 'public');
+        assert.equal(post.get('email_recipient_filter'), 'status:-free');
 
         // Check this post is connected to the imported product
-        post.relations.tiers.models.map(m => m.id).should.match([product.id]);
+        assert.deepEqual(post.relations.tiers.models.map(m => m.id), [product.id]);
 
         // Check stripe prices
         const monthlyPrice = await models.StripePrice.findOne({id: product.get('monthly_price_id')});
-        should.exist(monthlyPrice);
+        assertExists(monthlyPrice);
 
         const yearlyPrice = await models.StripePrice.findOne({id: product.get('yearly_price_id')});
-        should.exist(yearlyPrice);
+        assertExists(yearlyPrice);
 
-        monthlyPrice.get('amount').should.equal(500);
-        monthlyPrice.get('currency').should.equal('usd');
-        monthlyPrice.get('interval').should.equal('month');
-        monthlyPrice.get('stripe_price_id').should.equal('price_a425520db0');
-        monthlyPrice.get('stripe_product_id').should.equal('prod_d2c1708c21');
+        assert.equal(monthlyPrice.get('amount'), 500);
+        assert.equal(monthlyPrice.get('currency'), 'usd');
+        assert.equal(monthlyPrice.get('interval'), 'month');
+        assert.equal(monthlyPrice.get('stripe_price_id'), 'price_a425520db0');
+        assert.equal(monthlyPrice.get('stripe_product_id'), 'prod_d2c1708c21');
 
-        yearlyPrice.get('amount').should.equal(4800);
-        yearlyPrice.get('currency').should.equal('usd');
-        yearlyPrice.get('interval').should.equal('year');
-        yearlyPrice.get('stripe_price_id').should.equal('price_d04baebb73');
-        yearlyPrice.get('stripe_product_id').should.equal('prod_d2c1708c21');
+        assert.equal(yearlyPrice.get('amount'), 4800);
+        assert.equal(yearlyPrice.get('currency'), 'usd');
+        assert.equal(yearlyPrice.get('interval'), 'year');
+        assert.equal(yearlyPrice.get('stripe_price_id'), 'price_d04baebb73');
+        assert.equal(yearlyPrice.get('stripe_product_id'), 'prod_d2c1708c21');
     });
 
     it('Can not import a ZIP-file with symlinks', async function () {
@@ -436,62 +437,62 @@ describe('DB API (cleaned)', function () {
 
         // Check if we ignored the import of the product
         const productDuplicate = await models.Product.findOne({slug: 'ghost-inc-2'});
-        should.not.exist(productDuplicate);
+        assert.equal(productDuplicate, null);
 
         // Check if we have a product
         const product = await models.Product.findOne({slug: 'ghost-inc'});
-        should.exist(product);
-        product.id.should.equal(existingProduct.id);
-        product.get('slug').should.equal('ghost-inc');
-        product.get('name').should.equal('Ghost Inc.');
-        product.get('description').should.equal('Our daily newsletter');
+        assertExists(product);
+        assert.equal(product.id, existingProduct.id);
+        assert.equal(product.get('slug'), 'ghost-inc');
+        assert.equal(product.get('name'), 'Ghost Inc.');
+        assert.equal(product.get('description'), 'Our daily newsletter');
 
         // Check settings
         const portalProducts = await models.Settings.findOne({key: 'portal_products'});
-        should.exist(portalProducts);
-        JSON.parse(portalProducts.get('value')).should.deepEqual([]);
+        assertExists(portalProducts);
+        assert.deepEqual(JSON.parse(portalProducts.get('value')), []);
 
         // Check stripe products
         const stripeProduct = await models.StripeProduct.findOne({product_id: product.id});
-        should.exist(stripeProduct);
-        stripeProduct.get('stripe_product_id').should.equal('prod_d2c1708c21');
-        stripeProduct.id.should.not.equal('60be1fc9bd3af33564cfb337');
+        assertExists(stripeProduct);
+        assert.equal(stripeProduct.get('stripe_product_id'), 'prod_d2c1708c21');
+        assert.notEqual(stripeProduct.id, '60be1fc9bd3af33564cfb337');
 
         // Check newsletters
         const newsletter = await models.Newsletter.findOne({slug: 'test'});
-        should.exist(newsletter);
-        newsletter.get('name').should.equal('Ghost Inc.');
+        assertExists(newsletter);
+        assert.equal(newsletter.get('name'), 'Ghost Inc.');
         // Make sure sender_email is not set
-        should(newsletter.get('sender_email')).equal(null);
+        assert.equal(newsletter.get('sender_email'), null);
 
         // Check posts
         const post = await models.Post.findOne({slug: 'test-newsletter'}, {withRelated: ['tiers']});
-        should.exist(post);
+        assertExists(post);
 
-        post.get('newsletter_id').should.equal(newsletter.id);
-        post.get('visibility').should.equal('public');
-        post.get('email_recipient_filter').should.equal('status:-free');
+        assert.equal(post.get('newsletter_id'), newsletter.id);
+        assert.equal(post.get('visibility'), 'public');
+        assert.equal(post.get('email_recipient_filter'), 'status:-free');
 
         // Check this post is connected to the imported product
-        post.relations.tiers.models.map(m => m.id).should.match([product.id]);
+        assert.deepEqual(post.relations.tiers.models.map(m => m.id), [product.id]);
 
         // Check stripe prices
         const monthlyPrice = await models.StripePrice.findOne({stripe_price_id: 'price_a425520db0'});
-        should.exist(monthlyPrice);
+        assertExists(monthlyPrice);
 
         const yearlyPrice = await models.StripePrice.findOne({stripe_price_id: 'price_d04baebb73'});
-        should.exist(yearlyPrice);
+        assertExists(yearlyPrice);
 
-        monthlyPrice.get('amount').should.equal(500);
-        monthlyPrice.get('currency').should.equal('usd');
-        monthlyPrice.get('interval').should.equal('month');
-        monthlyPrice.get('stripe_price_id').should.equal('price_a425520db0');
-        monthlyPrice.get('stripe_product_id').should.equal('prod_d2c1708c21');
+        assert.equal(monthlyPrice.get('amount'), 500);
+        assert.equal(monthlyPrice.get('currency'), 'usd');
+        assert.equal(monthlyPrice.get('interval'), 'month');
+        assert.equal(monthlyPrice.get('stripe_price_id'), 'price_a425520db0');
+        assert.equal(monthlyPrice.get('stripe_product_id'), 'prod_d2c1708c21');
 
-        yearlyPrice.get('amount').should.equal(4800);
-        yearlyPrice.get('currency').should.equal('usd');
-        yearlyPrice.get('interval').should.equal('year');
-        yearlyPrice.get('stripe_price_id').should.equal('price_d04baebb73');
-        yearlyPrice.get('stripe_product_id').should.equal('prod_d2c1708c21');
+        assert.equal(yearlyPrice.get('amount'), 4800);
+        assert.equal(yearlyPrice.get('currency'), 'usd');
+        assert.equal(yearlyPrice.get('interval'), 'year');
+        assert.equal(yearlyPrice.get('stripe_price_id'), 'price_d04baebb73');
+        assert.equal(yearlyPrice.get('stripe_product_id'), 'prod_d2c1708c21');
     });
 });

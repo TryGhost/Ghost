@@ -1,15 +1,16 @@
 const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
 const models = require('../../../../core/server/models');
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
-const labs = require('../../../../core/shared/labs');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
+const ObjectId = require('bson-objectid').default;
+const crypto = require('crypto');
+const db = require('../../../../core/server/data/db');
 
 describe('Domain Warming Integration Tests', function () {
     let agent;
     let clock;
-    let labsStub;
 
     before(async function () {
         const agents = await agentProvider.getAgentsWithFrontend();
@@ -19,17 +20,41 @@ describe('Domain Warming Integration Tests', function () {
         await agent.loginAsOwner();
     });
 
-    // Helper: Create members with newsletter subscription
+    // Helper: Create members with newsletter subscription using bulk insert for performance
     async function createMembers(count, prefix = 'warmup') {
+        const newsletterId = fixtureManager.get('newsletters', 0).id;
+        const now = new Date();
+
+        // Prepare member data for bulk insert
+        const memberRows = [];
+        const newsletterRows = [];
+
         for (let i = 0; i < count; i++) {
-            await models.Member.add({
-                name: `Member ${prefix} ${i}`,
+            const memberId = ObjectId().toHexString();
+            memberRows.push({
+                id: memberId,
+                uuid: crypto.randomUUID(),
+                transient_id: crypto.randomUUID(),
                 email: `member-${prefix}-${i}@example.com`,
+                name: `Member ${prefix} ${i}`,
                 status: 'free',
-                newsletters: [{id: fixtureManager.get('newsletters', 0).id}],
-                email_disabled: false
+                email_disabled: false,
+                enable_comment_notifications: true,
+                email_count: 0,
+                email_opened_count: 0,
+                created_at: now,
+                updated_at: now
+            });
+            newsletterRows.push({
+                id: ObjectId().toHexString(),
+                member_id: memberId,
+                newsletter_id: newsletterId
             });
         }
+
+        // Bulk insert members and newsletter subscriptions
+        await db.knex.batchInsert('members', memberRows, 500);
+        await db.knex.batchInsert('members_newsletters', newsletterRows, 500);
     }
 
     // Helper: Send a post as email and return the email model
@@ -51,16 +76,16 @@ describe('Domain Warming Integration Tests', function () {
     }
 
     // Helper: Set fake time to specific day
-    // Uses a fixed base date to ensure consistent day progression
+    // Uses fixed 24-hour increments from a normalized base to avoid DST drift
+    const MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
     const baseDate = new Date();
-    baseDate.setHours(12, 0, 0, 0);
+    baseDate.setUTCHours(12, 0, 0, 0);
 
     function setDay(daysFromNow = 0) {
         if (clock) {
             clock.restore();
         }
-        const time = new Date(baseDate.getTime());
-        time.setDate(time.getDate() + daysFromNow);
+        const time = new Date(baseDate.getTime() + (daysFromNow * MILLISECONDS_IN_DAY));
         clock = sinon.useFakeTimers({
             now: time.getTime(),
             shouldAdvanceTime: true
@@ -93,14 +118,6 @@ describe('Domain Warming Integration Tests', function () {
         mockManager.mockMailgun();
         mockManager.mockStripe();
 
-        // Enable the domain warming labs flag
-        labsStub = sinon.stub(labs, 'isSet').callsFake((key) => {
-            if (key === 'domainWarmup') {
-                return true;
-            }
-            return false;
-        });
-
         // Set required config values for domain warming
         configUtils.set('hostSettings:managedEmail:fallbackDomain', 'fallback.example.com');
         configUtils.set('hostSettings:managedEmail:fallbackAddress', 'noreply@fallback.example.com');
@@ -111,55 +128,61 @@ describe('Domain Warming Integration Tests', function () {
             clock.restore();
             clock = null;
         }
-        if (labsStub) {
-            labsStub.restore();
-            labsStub = null;
-        }
+
         mockManager.restore();
         await configUtils.restore();
+
         await jobManager.allSettled();
 
-        // Clean up test data to ensure test isolation
-        // Find and delete members created during tests (with our specific naming pattern)
+        // Clean up test data using bulk deletes for performance
         const patterns = ['warmup', 'day2', 'sameday', 'multi', 'limit', 'nowarmup', 'maxlimit', 'gap'];
-        for (const pattern of patterns) {
-            const testMembers = await models.Member.findAll({
-                filter: `email:~'member-${pattern}-'`
-            });
 
-            for (const member of testMembers.models) {
-                await member.destroy();
-            }
+        // Get member IDs first (needed for cascade delete of newsletter subscriptions)
+        const memberIds = await db.knex('members')
+            .where(function () {
+                patterns.forEach((pattern, i) => {
+                    const emailPattern = `member-${pattern}-%`;
+                    if (i === 0) {
+                        this.where('email', 'like', emailPattern);
+                    } else {
+                        this.orWhere('email', 'like', emailPattern);
+                    }
+                });
+            })
+            .pluck('id');
+
+        if (memberIds.length > 0) {
+            // Delete newsletter subscriptions first (foreign key)
+            await db.knex('members_newsletters').whereIn('member_id', memberIds).del();
+            // Delete members
+            await db.knex('members').whereIn('id', memberIds).del();
         }
 
         // Delete emails and related data created during tests
-        // Find all posts created during tests and delete their associated emails
-        const posts = await models.Post.findAll({
-            filter: 'title:~\'Test Post\''
-        });
+        const postIds = await db.knex('posts')
+            .where('title', 'like', 'Test Post%')
+            .pluck('id');
 
-        for (const post of posts.models) {
-            const emails = await models.Email.findAll({
-                filter: `post_id:'${post.id}'`
-            });
+        if (postIds.length > 0) {
+            // Get email IDs for these posts
+            const emailIds = await db.knex('emails')
+                .whereIn('post_id', postIds)
+                .pluck('id');
 
-            for (const email of emails.models) {
-                // Delete recipients first, then batches, then email (foreign key constraints)
-                const recipients = await models.EmailRecipient.findAll({filter: `email_id:'${email.id}'`});
-                for (const recipient of recipients.models) {
-                    await recipient.destroy();
-                }
-
-                const batches = await models.EmailBatch.findAll({filter: `email_id:'${email.id}'`});
-                for (const batch of batches.models) {
-                    await batch.destroy();
-                }
-
-                await email.destroy();
+            if (emailIds.length > 0) {
+                // Delete in correct order for foreign key constraints
+                await db.knex('email_recipients').whereIn('email_id', emailIds).del();
+                await db.knex('email_batches').whereIn('email_id', emailIds).del();
+                await db.knex('emails').whereIn('id', emailIds).del();
             }
 
-            // Delete the test post
-            await post.destroy();
+            // Delete posts (need to handle related tables)
+            await db.knex('posts_authors').whereIn('post_id', postIds).del();
+            await db.knex('posts_tags').whereIn('post_id', postIds).del();
+            await db.knex('posts_meta').whereIn('post_id', postIds).del();
+            await db.knex('mobiledoc_revisions').whereIn('post_id', postIds).del();
+            await db.knex('post_revisions').whereIn('post_id', postIds).del();
+            await db.knex('posts').whereIn('id', postIds).del();
         }
     });
 
@@ -180,7 +203,7 @@ describe('Domain Warming Integration Tests', function () {
             assert.equal(customDomainCount, totalCount, 'All emails should use custom domain when total < warmup limit');
             assert.equal(fallbackDomainCount, 0, 'No emails should use fallback domain when total < warmup limit');
 
-            assert.ok(mockManager.getMailgunCreateMessageStub().called);
+            sinon.assert.called(mockManager.getMailgunCreateMessageStub());
         });
 
         it('increases custom domain limit on subsequent day', async function () {
@@ -195,15 +218,12 @@ describe('Domain Warming Integration Tests', function () {
             const email2 = await sendEmail('Test Post Day 2');
             const email2Count = email2.get('email_count');
             const csdCount2 = email2.get('csd_email_count');
-            const expectedLimit = Math.min(email2Count, Math.ceil(csdCount1 * 1.25));
 
-            assert.equal(csdCount2, expectedLimit);
+            // Time-based warmup: limit = start * (end/start)^(day/(totalDays-1))
+            // Day 1: 200 * (200000/200)^(1/41) ≈ 237
+            const expectedLimit = Math.min(email2Count, 237);
 
-            if (email2Count >= Math.ceil(csdCount1 * 1.25)) {
-                assert.equal(csdCount2, Math.ceil(csdCount1 * 1.25), 'Limit should increase by 1.25× when enough recipients exist');
-            } else {
-                assert.equal(csdCount2, email2Count, 'Limit should equal total when recipients < limit');
-            }
+            assert.equal(csdCount2, expectedLimit, 'Day 2 should use time-based warmup limit');
 
             const {customDomainCount} = await countRecipientsByDomain(email2.id);
             assert.equal(customDomainCount, expectedLimit, `Should send ${expectedLimit} emails from custom domain on day 2`);
@@ -223,27 +243,30 @@ describe('Domain Warming Integration Tests', function () {
         it('handles progression through multiple days correctly', async function () {
             await createMembers(500, 'multi');
 
-            // Day 1: Base limit of 200 (no prior emails)
+            // Time-based warmup formula: start * (end/start)^(day/(totalDays-1))
+            // With start=200, end=200000, totalDays=42
+
+            // Day 0: Base limit of 200
             setDay(0);
             const email1 = await sendEmail('Test Post Multi Day 1');
             const csdCount1 = email1.get('csd_email_count');
 
-            assert.ok(email1.get('email_count') >= 500, 'Day 1: Should have at least 500 recipients');
-            assert.equal(csdCount1, 200, 'Day 1: Should use base limit of 200');
+            assert.ok(email1.get('email_count') >= 500, 'Day 0: Should have at least 500 recipients');
+            assert.equal(csdCount1, 200, 'Day 0: Should use base limit of 200');
 
-            // Day 2: 200 × 1.25 = 250
+            // Day 1: 200 * (1000)^(1/41) ≈ 237
             setDay(1);
             const email2 = await sendEmail('Test Post Multi Day 2');
             const csdCount2 = email2.get('csd_email_count');
 
-            assert.equal(csdCount2, 250, 'Day 2: Should scale to 250');
+            assert.equal(csdCount2, 237, 'Day 1: Should scale to 237');
 
-            // Day 3: 250 × 1.25 = 313
+            // Day 2: 200 * (1000)^(2/41) ≈ 280
             setDay(2);
             const email3 = await sendEmail('Test Post Multi Day 3');
             const csdCount3 = email3.get('csd_email_count');
 
-            assert.equal(csdCount3, 313, 'Day 3: Should scale to 313');
+            assert.equal(csdCount3, 280, 'Day 2: Should scale to 280');
         });
 
         it('respects total email count when it is less than warmup limit', async function () {
@@ -262,9 +285,9 @@ describe('Domain Warming Integration Tests', function () {
             }
         });
 
-        it('sends all emails via fallback when domain warming is disabled', async function () {
-            labsStub.restore();
-            labsStub = sinon.stub(labs, 'isSet').returns(false);
+        it('does not warm up when fallback domain and address are not set', async function () {
+            configUtils.set('hostSettings:managedEmail:fallbackDomain', null);
+            configUtils.set('hostSettings:managedEmail:fallbackAddress', null);
 
             await createMembers(50, 'nowarmup');
 
@@ -293,17 +316,13 @@ describe('Domain Warming Integration Tests', function () {
 
             let previousCsdCount = 0;
 
-            const getExpectedScale = (count) => {
-                if (count <= 100) {
-                    return 200;
-                }
-                if (count <= 1000) {
-                    return Math.ceil(count * 1.25);
-                }
-                if (count <= 5000) {
-                    return Math.ceil(count * 1.5);
-                }
-                return Math.ceil(count * 1.75);
+            // Time-based warmup: limit = start * (end/start)^(day/(totalDays-1))
+            // With start=200, end=200000, totalDays=42
+            const getExpectedLimit = (day) => {
+                const start = 200;
+                const end = 200000;
+                const totalDays = 42;
+                return Math.round(start * Math.pow(end / start, day / (totalDays - 1)));
             };
 
             for (let day = 0; day < 5; day++) {
@@ -313,19 +332,14 @@ describe('Domain Warming Integration Tests', function () {
                 const csdCount = email.get('csd_email_count');
                 const totalCount = email.get('email_count');
 
-                assert.ok(csdCount > 0, `Day ${day + 1}: Should send via custom domain`);
-                assert.ok(csdCount <= totalCount, `Day ${day + 1}: CSD count should not exceed total`);
+                assert.ok(csdCount > 0, `Day ${day}: Should send via custom domain`);
+                assert.ok(csdCount <= totalCount, `Day ${day}: CSD count should not exceed total`);
+
+                const expectedLimit = Math.min(totalCount, getExpectedLimit(day));
+                assert.equal(csdCount, expectedLimit, `Day ${day}: Should match time-based warmup limit`);
 
                 if (previousCsdCount > 0) {
-                    assert.ok(csdCount >= previousCsdCount, `Day ${day + 1}: Should not decrease`);
-
-                    if (csdCount === totalCount) {
-                        assert.equal(csdCount, totalCount, `Day ${day + 1}: Reached full capacity`);
-                    } else {
-                        const expectedScale = getExpectedScale(previousCsdCount);
-                        assert.ok(csdCount === previousCsdCount || csdCount === expectedScale,
-                            `Day ${day + 1}: Should maintain or scale appropriately (got ${csdCount}, previous ${previousCsdCount}, expected ${expectedScale})`);
-                    }
+                    assert.ok(csdCount >= previousCsdCount, `Day ${day}: Should not decrease from previous day`);
                 }
 
                 previousCsdCount = csdCount;

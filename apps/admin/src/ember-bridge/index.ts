@@ -1,6 +1,8 @@
-export { EmberRoot } from "./EmberRoot";
-export { EmberProvider } from "./EmberProvider";
-export { useEmberContext } from "./EmberContext";
-export { EmberFallback } from "./EmberFallback";
-export { useEmberAuthSync, useEmberDataSync, useSidebarVisibility, useSubscriptionStatus, useEmberRouting } from "./EmberBridge";
-export type { EmberDataChangeEvent, EmberRouting } from "./EmberBridge";
+export { EmberRoot } from "./ember-root";
+export { EmberProvider } from "./ember-provider";
+export { useEmberContext } from "./ember-context";
+export { EmberFallback } from "./ember-fallback";
+export { ForceUpgradeGuard } from "./force-upgrade-guard";
+export { useEmberAuthSync, useEmberDataSync, useSidebarVisibility, useSubscriptionStatus, useEmberRouting, useForceUpgrade } from "./ember-bridge";
+export type { EmberDataChangeEvent, EmberRouting } from "./ember-bridge";
+export type { RouteHandle } from "./force-upgrade-guard";

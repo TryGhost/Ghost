@@ -5,6 +5,7 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
 const commentFields = [
     'id',
+    'parent_id',
     'in_reply_to_id',
     'in_reply_to_snippet',
     'status',
@@ -27,19 +28,30 @@ const memberFieldsAdmin = [
     'name',
     'email',
     'expertise',
-    'avatar_image'
+    'avatar_image',
+    'can_comment',
+    'commenting'
 ];
 
 const postFields = [
     'id',
     'uuid',
     'title',
-    'url'
+    'url',
+    'feature_image'
 ];
 
 const countFields = [
     'replies',
+    'direct_replies',
     'likes'
+];
+
+const countFieldsAdmin = [
+    'replies',
+    'direct_replies',
+    'likes',
+    'reports'
 ];
 
 const commentMapper = (model, frame) => {
@@ -47,15 +59,22 @@ const commentMapper = (model, frame) => {
 
     const isPublicRequest = utils.isMembersAPI(frame);
 
-    if (jsonModel.inReplyTo && (jsonModel.inReplyTo.status === 'published' || (!isPublicRequest && jsonModel.inReplyTo.status === 'hidden'))) {
-        jsonModel.in_reply_to_snippet = htmlToPlaintext.commentSnippet(jsonModel.inReplyTo.html);
-    } else if (jsonModel.inReplyTo && jsonModel.inReplyTo.status !== 'published') {
+    // For admin requests, we want to show a snippet for ALL replies
+    // Use in_reply_to if available, otherwise fall back to parent for first-level replies only
+    // (first-level replies have parent_id but no in_reply_to_id)
+    const replyToComment = jsonModel.in_reply_to || (!isPublicRequest && jsonModel.parent_id && !jsonModel.in_reply_to_id && jsonModel.parent);
+
+    if (replyToComment && (replyToComment.status === 'published' || (!isPublicRequest && replyToComment.status === 'hidden'))) {
+        jsonModel.in_reply_to_snippet = htmlToPlaintext.commentSnippet(replyToComment.html);
+    } else if (replyToComment && replyToComment.status !== 'published') {
         jsonModel.in_reply_to_snippet = '[removed]';
     } else {
         jsonModel.in_reply_to_snippet = null;
     }
 
-    if (!jsonModel.inReplyTo) {
+    // Only null out in_reply_to_id if it wasn't set in the original model
+    // (i.e., don't overwrite a valid in_reply_to_id just because the relation wasn't loaded)
+    if (!jsonModel.in_reply_to && !jsonModel.in_reply_to_id) {
         jsonModel.in_reply_to_id = null;
     }
 
@@ -79,6 +98,13 @@ const commentMapper = (model, frame) => {
         // We could use the post mapper here, but we need less field + don't need all the async behavior support
         url.forPost(jsonModel.post.id, jsonModel.post, frame);
         response.post = _.pick(jsonModel.post, postFields);
+
+        // Compute excerpt from custom_excerpt or plaintext (same logic as post serializer)
+        if (jsonModel.post.custom_excerpt) {
+            response.post.excerpt = jsonModel.post.custom_excerpt;
+        } else if (jsonModel.post.plaintext) {
+            response.post.excerpt = jsonModel.post.plaintext.substring(0, 500);
+        }
     }
 
     if (jsonModel.count && jsonModel.count.liked !== undefined) {
@@ -86,13 +112,18 @@ const commentMapper = (model, frame) => {
     }
 
     if (jsonModel.count) {
-        response.count = _.pick(jsonModel.count, countFields);
+        response.count = _.pick(jsonModel.count, isPublicRequest ? countFields : countFieldsAdmin);
     }
 
     if (isPublicRequest) {
         if (jsonModel.status !== 'published') {
             response.html = null;
         }
+    }
+
+    // Deleted comments should never expose their content
+    if (jsonModel.status === 'deleted') {
+        response.html = null;
     }
 
     return response;

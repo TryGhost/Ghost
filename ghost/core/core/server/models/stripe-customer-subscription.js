@@ -41,7 +41,9 @@ const StripeCustomerSubscription = ghostBookshelf.Model.extend({
             cancellation_reason: defaultSerializedObject.cancellation_reason,
             current_period_end: defaultSerializedObject.current_period_end,
             trial_start_at: defaultSerializedObject.trial_start_at,
-            trial_end_at: defaultSerializedObject.trial_end_at
+            trial_end_at: defaultSerializedObject.trial_end_at,
+            discount_start: defaultSerializedObject.discount_start,
+            discount_end: defaultSerializedObject.discount_end
         };
 
         if (!_.isEmpty(defaultSerializedObject.stripePrice)) {

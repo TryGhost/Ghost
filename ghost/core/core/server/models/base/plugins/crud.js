@@ -2,6 +2,7 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 
 const tpl = require('@tryghost/tpl');
+const labs = require('../../../../shared/labs');
 
 const messages = {
     couldNotUnderstandRequest: 'Could not understand request.'
@@ -101,7 +102,12 @@ module.exports = function (Bookshelf) {
                 options.order = order;
                 options.eagerLoad = eagerLoad;
             } else if (options.autoOrder) {
-                options.orderRaw = options.autoOrder;
+                if (typeof options.autoOrder === 'object') {
+                    options.orderRaw = options.autoOrder.sql;
+                    options.orderRawBindings = options.autoOrder.bindings;
+                } else {
+                    options.orderRaw = options.autoOrder;
+                }
             } else if (this.orderDefaultRaw) {
                 options.orderRaw = this.orderDefaultRaw(options);
             } else if (this.orderDefaultOptions) {
@@ -137,6 +143,10 @@ module.exports = function (Bookshelf) {
             //option param to skip distinct from count query, distinct adds a lot of latency and in this case the result set will always be unique.
             if (unfilteredOptions.useBasicCount) {
                 options.useBasicCount = unfilteredOptions.useBasicCount;
+            }
+
+            if (labs.isSet('smarterCounts')) {
+                options.useSmartCount = true;
             }
 
             const response = await itemCollection.fetchPage(options);

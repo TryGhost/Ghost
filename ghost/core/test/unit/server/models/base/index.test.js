@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const security = require('@tryghost/security');
 const models = require('../../../../../core/server/models');
@@ -35,7 +35,7 @@ describe('Models: base', function () {
 
             return models.Base.Model.generateSlug(Model, 'My-Slug', options)
                 .then((slug) => {
-                    slug.should.eql('my-slug');
+                    assert.equal(slug, 'my-slug');
                 });
         });
 
@@ -53,7 +53,7 @@ describe('Models: base', function () {
 
             return models.Base.Model.generateSlug(Model, 'My-Slug', {modelId: 'incorrect-model-id'})
                 .then((slug) => {
-                    slug.should.eql('my-slug-2');
+                    assert.equal(slug, 'my-slug-2');
                 });
         });
 
@@ -71,7 +71,7 @@ describe('Models: base', function () {
 
             return models.Base.Model.generateSlug(Model, 'My-Slug', {modelId: 'correct-model-id'})
                 .then((slug) => {
-                    slug.should.eql('my-slug');
+                    assert.equal(slug, 'my-slug');
                 });
         });
 
@@ -89,19 +89,19 @@ describe('Models: base', function () {
 
             return models.Base.Model.generateSlug(Model, 'My-Slug', options)
                 .then((slug) => {
-                    slug.should.eql('my-slug-2');
+                    assert.equal(slug, 'my-slug-2');
                 });
         });
 
         it('too long', function () {
             Model.findOne.resolves(false);
-            const slug = new Array(500).join('a');
+            const slug = 'a'.repeat(500);
 
             securityStringSafeStub.withArgs(slug).returns(slug);
 
             return models.Base.Model.generateSlug(Model, slug, options)
                 .then((generatedSlug) => {
-                    generatedSlug.should.eql(new Array(186).join('a'));
+                    assert.equal(generatedSlug, 'a'.repeat(185));
                 });
         });
 
@@ -113,7 +113,7 @@ describe('Models: base', function () {
 
             return models.Base.Model.generateSlug(Model, slug, options)
                 .then((generatedSlug) => {
-                    generatedSlug.should.eql('upsi-tableName');
+                    assert.equal(generatedSlug, 'upsi-tableName');
                 });
         });
 
@@ -129,7 +129,7 @@ describe('Models: base', function () {
 
             return models.Base.Model.generateSlug(Model, slug, options)
                 .then((generatedSlug) => {
-                    generatedSlug.should.eql('hash-#lul');
+                    assert.equal(generatedSlug, 'hash-#lul');
                 });
         });
 
@@ -139,7 +139,7 @@ describe('Models: base', function () {
 
             return models.Base.Model.generateSlug(Model, 'abc\u0008', options)
                 .then((slug) => {
-                    slug.should.eql('abc');
+                    assert.equal(slug, 'abc');
                 });
         });
     });
@@ -152,30 +152,30 @@ describe('Models: base', function () {
                 models.Base.Model.sanitizeData
                     .bind({prototype: {tableName: 'posts'}})(data);
             } catch (err) {
-                err.code.should.eql('DATE_INVALID');
+                assert.equal(err.code, 'DATE_INVALID');
             }
         });
 
         it('expect date transformation', function () {
             const data = testUtils.DataGenerator.forKnex.createPost({updated_at: '2018-04-01 07:53:07'});
 
-            data.updated_at.should.be.a.String();
+            assert.equal(typeof data.updated_at, 'string');
 
             models.Base.Model.sanitizeData
                 .bind({prototype: {tableName: 'posts'}})(data);
 
-            data.updated_at.should.be.a.Date();
+            assert(data.updated_at instanceof Date);
         });
 
         it('date is JS date, ignore', function () {
             const data = testUtils.DataGenerator.forKnex.createPost({updated_at: new Date()});
 
-            data.updated_at.should.be.a.Date();
+            assert(data.updated_at instanceof Date);
 
             models.Base.Model.sanitizeData
                 .bind({prototype: {tableName: 'posts'}})(data);
 
-            data.updated_at.should.be.a.Date();
+            assert(data.updated_at instanceof Date);
         });
 
         it('expect date transformation for nested relations', function () {
@@ -186,7 +186,7 @@ describe('Models: base', function () {
                 }]
             });
 
-            data.authors[0].updated_at.should.be.a.String();
+            assert.equal(typeof data.authors[0].updated_at, 'string');
 
             models.Base.Model.sanitizeData
                 .bind({
@@ -197,8 +197,8 @@ describe('Models: base', function () {
                     }
                 })(data);
 
-            data.authors[0].name.should.eql('Thomas');
-            data.authors[0].updated_at.should.be.a.Date();
+            assert.equal(data.authors[0].name, 'Thomas');
+            assert(data.authors[0].updated_at instanceof Date);
         });
     });
 
@@ -209,11 +209,11 @@ describe('Models: base', function () {
             base.getNullableStringProperties = sinon.stub();
             base.getNullableStringProperties.returns(['a']);
 
-            base.get('a').should.eql('');
-            base.get('b').should.eql('');
+            assert.equal(base.get('a'), '');
+            assert.equal(base.get('b'), '');
             base.setEmptyValuesToNull();
-            should.not.exist(base.get('a'));
-            base.get('b').should.eql('');
+            assert.equal(base.get('a'), null);
+            assert.equal(base.get('b'), '');
         });
     });
 });

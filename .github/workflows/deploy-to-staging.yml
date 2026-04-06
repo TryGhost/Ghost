@@ -1,0 +1,127 @@
+name: Deploy to Staging
+
+# DISABLED: The deploy-to-staging label workflow is currently broken and disabled.
+# Problems:
+#   1. Admin is global — deploying a PR's admin overwrites admin-forward/ for ALL staging
+#      sites, not just demo.ghost.is. Per-site admin versioning is needed first.
+#   2. Main merges overwrite — any merge to main triggers a full staging rollout that
+#      overwrites both the server version on demo.ghost.is and admin-forward/ globally.
+# The deployment lasts only until the next merge to main, making it unreliable.
+# See: https://www.notion.so/ghost/Proposal-Per-site-admin-versioning-31951439c03081daa133eb0215642202
+
+on:
+  pull_request_target:
+    types: [labeled]
+
+jobs:
+  deploy:
+    name: Deploy to Staging
+    # Runs when the "deploy-to-staging" label is added — requires collaborator write access.
+    # Fork PRs are rejected because they don't have GHCR images (CI uses artifact transfer).
+    if: >-
+      false
+      && github.event.label.name == 'deploy-to-staging'
+      && github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Wait for CI build artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Waiting for CI to complete Docker build for $HEAD_SHA..."
+          TIMEOUT=1800  # 30 minutes
+          INTERVAL=30
+          START=$(date +%s)
+
+          while true; do
+            ELAPSED=$(( $(date +%s) - START ))
+            if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
+              echo "::error::Timed out waiting for CI (${TIMEOUT}s)"
+              exit 1
+            fi
+
+            # Find the CI run for this SHA
+            RUN=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=${HEAD_SHA}&per_page=1" \
+              --jq '.workflow_runs[0] | {id, status, conclusion}' 2>/dev/null || echo "")
+
+            if [ -z "$RUN" ] || [ "$RUN" = "null" ]; then
+              echo "  No CI run found yet, waiting ${INTERVAL}s... (${ELAPSED}s elapsed)"
+              sleep "$INTERVAL"
+              continue
+            fi
+
+            STATUS=$(echo "$RUN" | jq -r '.status')
+            CONCLUSION=$(echo "$RUN" | jq -r '.conclusion // empty')
+            RUN_ID=$(echo "$RUN" | jq -r '.id')
+
+            if [ "$STATUS" = "completed" ]; then
+              if [ "$CONCLUSION" = "success" ] || [ "$CONCLUSION" = "failure" ]; then
+                # Check if Docker build job specifically succeeded (paginate — CI has 30+ jobs)
+                BUILD_JOB=$(gh api --paginate "repos/${{ github.repository }}/actions/runs/${RUN_ID}/jobs?per_page=100" \
+                  --jq '.jobs[] | select(.name == "Build & Publish Artifacts") | .conclusion')
+                if [ -z "$BUILD_JOB" ]; then
+                  echo "::error::Build & Publish Artifacts job not found in CI run ${RUN_ID}"
+                  exit 1
+                elif [ "$BUILD_JOB" = "success" ]; then
+                  echo "Docker build ready (CI run $RUN_ID)"
+                  break
+                else
+                  echo "::error::Docker build job did not succeed (conclusion: $BUILD_JOB)"
+                  exit 1
+                fi
+              else
+                echo "::error::CI run failed (conclusion: $CONCLUSION)"
+                exit 1
+              fi
+            fi
+
+            echo "  CI still running ($STATUS), waiting ${INTERVAL}s... (${ELAPSED}s elapsed)"
+            sleep "$INTERVAL"
+          done
+
+      - name: Re-check PR eligibility
+        id: recheck
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR=$(gh api "repos/${{ github.repository }}/pulls/${{ env.PR_NUMBER }}" \
+            --jq '{state, labels: [.labels[].name], head_sha: .head.sha}')
+
+          STATE=$(echo "$PR" | jq -r '.state')
+          HAS_LABEL=$(echo "$PR" | jq '.labels | any(. == "deploy-to-staging")')
+          CURRENT_SHA=$(echo "$PR" | jq -r '.head_sha')
+
+          if [ "$STATE" != "open" ]; then
+            echo "::warning::PR is no longer open ($STATE), skipping dispatch"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          elif [ "$HAS_LABEL" != "true" ]; then
+            echo "::warning::deploy-to-staging label was removed, skipping dispatch"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          elif [ "$CURRENT_SHA" != "$HEAD_SHA" ]; then
+            echo "::warning::HEAD SHA changed ($HEAD_SHA → $CURRENT_SHA), skipping dispatch (new push will trigger CI)"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "PR still eligible for deploy"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Dispatch to Ghost-Moya
+        if: steps.recheck.outputs.skip != 'true'
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          repository: TryGhost/Ghost-Moya
+          event-type: ghost-artifacts-ready
+          client-payload: >-
+            {
+              "ref": "${{ env.PR_NUMBER }}",
+              "source_repo": "${{ github.repository }}",
+              "pr_number": "${{ env.PR_NUMBER }}",
+              "deploy": "true"
+            }

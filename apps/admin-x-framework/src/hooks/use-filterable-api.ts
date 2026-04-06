@@ -1,0 +1,78 @@
+import {useRef} from 'react';
+import {apiUrl, useFetchApi} from '../utils/api/fetch-api';
+import {Meta} from '../utils/api/hooks';
+
+const filterData = <
+    Data extends {[k in FilterKey]: string},
+    FilterKey extends keyof Data
+>(data: Data[] = [], filterKey: FilterKey, input: string): Data[] => {
+    if (!data || !input) {
+        return data;
+    }
+    return data.filter(item => item[filterKey]?.toLowerCase().includes(input.toLowerCase()));
+};
+
+const escapeNqlString = (value: string) => {
+    return '\'' + value.replace(/'/g, '\\\'') + '\'';
+};
+
+const useFilterableApi = <
+    Data extends {id: string} & {[k in FilterKey]: string} & {[k: string]: unknown},
+    ResponseKey extends string = string,
+    FilterKey extends string = string
+>({path, filterKey, responseKey, limit = 20}: {
+    path: string
+    filterKey: FilterKey
+    responseKey: ResponseKey
+    limit?: number
+}) => {
+    const fetchApi = useFetchApi();
+
+    const result = useRef<{
+        data?: Data[];
+        allLoaded?: boolean;
+        lastInput?: string;
+    }>({});
+
+    const loadData = async (input: string) => {
+        if ((result.current.allLoaded || result.current.lastInput === input) && result.current.data) {
+            return filterData(result.current.data, filterKey, input);
+        }
+
+        const response = await fetchApi<{meta?: Meta} & {[k in ResponseKey]: Data[]}>(apiUrl(path, {
+            filter: input ? `${filterKey}:~${escapeNqlString(input)}` : '',
+            limit: limit.toString()
+        }));
+
+        result.current.data = response[responseKey];
+        result.current.allLoaded = !input && !response.meta?.pagination.next;
+        result.current.lastInput = input;
+
+        return filterData(response[responseKey], filterKey, input);
+    };
+
+    const loadInitialValues = async (values: string[], key: string) => {
+        await loadData('');
+
+        const data = [...(result.current.data || [])];
+        const missingValues = values.filter(value => !result.current.data?.find(item => item[key] === value));
+
+        if (missingValues.length) {
+            const additionalData = await fetchApi<{meta?: Meta} & {[k in ResponseKey]: Data[]}>(apiUrl(path, {
+                filter: `${key}:[${missingValues.join(',')}]`,
+                limit: '100'
+            }));
+
+            data.push(...additionalData[responseKey]);
+        }
+
+        return values.map(value => data.find(item => item[key] === value)!);
+    };
+
+    return {
+        loadData,
+        loadInitialValues
+    };
+};
+
+export default useFilterableApi;

@@ -1,0 +1,110 @@
+name: Release
+run-name: "Release — ${{ inputs.bump-type || 'auto' }} from ${{ inputs.branch || 'main' }}${{ inputs.dry-run && ' (dry run)' || '' }}"
+
+on:
+  schedule:
+    - cron: '0 15 * * 5' # Friday 3pm UTC
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Git branch to release from'
+        type: string
+        default: 'main'
+        required: false
+      bump-type:
+        description: 'Version bump type (auto, patch, minor)'
+        type: string
+        required: false
+        default: 'auto'
+      skip-checks:
+        description: 'Skip CI status check verification'
+        type: boolean
+        default: false
+      dry-run:
+        description: 'Dry run (version bump without push)'
+        type: boolean
+        default: false
+
+env:
+  FORCE_COLOR: 1
+  NODE_VERSION: 22.18.0
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    name: Prepare & Push Release
+    steps:
+      - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
+      - uses: actions/checkout@v6
+        with:
+          # Deploy key (via ssh-agent) is used for git push — it bypasses
+          # branch protection and triggers downstream workflows (unlike GITHUB_TOKEN)
+          ref: ${{ inputs.branch || 'main' }}
+          fetch-depth: 0
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+
+      # Fetch submodules separately via HTTPS — the deploy key is scoped to
+      # Ghost only and can't authenticate against Casper/Source over SSH
+      - run: git submodule update --init
+
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - run: yarn --ignore-scripts
+
+      - name: Set up Git
+        run: |
+          git config user.name "Ghost CI"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Set up schedule defaults
+        if: github.event_name == 'schedule'
+        run: |
+          echo "RELEASE_BRANCH=main" >> "$GITHUB_ENV"
+          echo "RELEASE_BUMP_TYPE=auto" >> "$GITHUB_ENV"
+          echo "RELEASE_DRY_RUN=" >> "$GITHUB_ENV"
+          echo "RELEASE_SKIP_CHECKS=" >> "$GITHUB_ENV"
+
+      - name: Set up workflow_dispatch inputs
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "RELEASE_BRANCH=${INPUT_BRANCH}" >> "$GITHUB_ENV"
+          echo "RELEASE_BUMP_TYPE=${INPUT_BUMP_TYPE}" >> "$GITHUB_ENV"
+          echo "RELEASE_DRY_RUN=${INPUT_DRY_RUN}" >> "$GITHUB_ENV"
+          echo "RELEASE_SKIP_CHECKS=${INPUT_SKIP_CHECKS}" >> "$GITHUB_ENV"
+        env:
+          INPUT_BRANCH: ${{ inputs.branch }}
+          INPUT_BUMP_TYPE: ${{ inputs.bump-type }}
+          INPUT_DRY_RUN: ${{ inputs.dry-run }}
+          INPUT_SKIP_CHECKS: ${{ inputs.skip-checks }}
+
+      - name: Run release script
+        run: |
+          ARGS="--branch=${{ env.RELEASE_BRANCH }} --bump-type=${{ env.RELEASE_BUMP_TYPE }}"
+          if [ "${{ env.RELEASE_DRY_RUN }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          if [ "${{ env.RELEASE_SKIP_CHECKS }}" = "true" ]; then
+            ARGS="$ARGS --skip-checks"
+          fi
+          node scripts/release.js $ARGS
+        env:
+          GITHUB_TOKEN: ${{ secrets.CANARY_DOCKER_BUILD }}  # PAT for GitHub API (check polling)
+
+      - name: Notify on failure
+        if: failure()
+        uses: tryghost/actions/actions/slack-build@main
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

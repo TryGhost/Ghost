@@ -1,9 +1,10 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const crypto = require('crypto');
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const LimitService = require('@tryghost/limit-service');
 
-const WebhookTrigger = require('../../../../../core/server/services/webhooks/WebhookTrigger');
+const WebhookTrigger = require('../../../../../core/server/services/webhooks/webhook-trigger');
 
 const SIGNATURE_HEADER = 'X-Ghost-Signature';
 const SIGNATURE_REGEX = /^sha256=[a-z0-9]+, t=\d+$/;
@@ -46,6 +47,67 @@ describe('Webhook Service', function () {
         sinon.stub(webhookTrigger, 'onError').callsFake(() => Promise.resolve());
     });
 
+    describe('onError', function () {
+        let loggingStub;
+        let errorTrigger;
+
+        beforeEach(function () {
+            loggingStub = sinon.stub(logging, 'error');
+            errorTrigger = new WebhookTrigger({models, payload, request, limitService});
+        });
+
+        afterEach(function () {
+            loggingStub.restore();
+        });
+
+        it('logs a structured error for failed webhook deliveries', function () {
+            const webhookModel = {
+                id: 'abc123',
+                get: sinon.stub()
+            };
+            webhookModel.get
+                .withArgs('event').returns('post.added')
+                .withArgs('target_url').returns('https://example.com/hook');
+
+            const err = new Error('URL resolves to a non-permitted private IP block');
+            err.statusCode = 500;
+            err.code = 'URL_PRIVATE_INVALID';
+
+            errorTrigger.onError(webhookModel)(err);
+
+            sinon.assert.calledOnce(loggingStub);
+
+            // Example output:
+            // [WEBHOOK_DELIVERY_FAILURE] url=https://example.com/hook status=500 error_code=URL_PRIVATE_INVALID message=URL resolves to a non-permitted private IP block
+            const logLine = loggingStub.args[0][0];
+            assert.ok(logLine.startsWith('[WEBHOOK_DELIVERY_FAILURE]'), 'Log line must start with [WEBHOOK_DELIVERY_FAILURE] prefix');
+            assert.ok(logLine.includes('url=https://example.com/hook'));
+            assert.ok(logLine.includes('status=500'));
+            assert.ok(logLine.includes('error_code=URL_PRIVATE_INVALID'));
+            assert.ok(logLine.includes('message=URL resolves to a non-permitted private IP block'));
+            assert.equal(loggingStub.args[0][1], err, 'Error object must be passed as second argument for stack/metadata');
+        });
+
+        it('logs with fallback values when error properties are missing', function () {
+            const webhookModel = {
+                id: 'abc123',
+                get: sinon.stub()
+            };
+            webhookModel.get
+                .withArgs('event').returns('post.added')
+                .withArgs('target_url').returns(null);
+
+            const err = new Error();
+
+            errorTrigger.onError(webhookModel)(err);
+
+            const logLine = loggingStub.args[0][0];
+            assert.ok(logLine.includes('url=unknown'));
+            assert.ok(logLine.includes('status=none'));
+            assert.ok(logLine.includes('error_code=unknown'));
+        });
+    });
+
     describe('trigger', function () {
         it('does not trigger payload handler when there are no hooks registered for an event', async function () {
             models.Webhook.findAllByEvent
@@ -54,9 +116,9 @@ describe('Webhook Service', function () {
 
             await webhookTrigger.trigger(WEBHOOK_EVENT);
 
-            assert.equal(models.Webhook.findAllByEvent.called, true);
-            assert.equal(payload.called, false);
-            assert.equal(request.called, false);
+            sinon.assert.called(models.Webhook.findAllByEvent);
+            sinon.assert.notCalled(payload);
+            sinon.assert.notCalled(request);
         });
 
         it('does not trigger payload handler when there are hooks registered for an event, but the custom integrations limit is active', async function () {
@@ -81,9 +143,9 @@ describe('Webhook Service', function () {
 
             await webhookTrigger.trigger(WEBHOOK_EVENT);
 
-            assert.equal(models.Webhook.findAllByEvent.called, true);
-            assert.equal(payload.called, false);
-            assert.equal(request.called, false);
+            sinon.assert.called(models.Webhook.findAllByEvent);
+            sinon.assert.notCalled(payload);
+            sinon.assert.notCalled(request);
         });
 
         it('triggers payload handler when there are hooks registered for an event', async function () {
@@ -107,9 +169,9 @@ describe('Webhook Service', function () {
 
             await webhookTrigger.trigger(WEBHOOK_EVENT, postModel);
 
-            assert.equal(models.Webhook.findAllByEvent.called, true);
-            assert.equal(payload.called, true);
-            assert.equal(request.called, true);
+            sinon.assert.called(models.Webhook.findAllByEvent);
+            sinon.assert.called(payload);
+            sinon.assert.called(request);
             assert.equal(request.args[0][0], WEBHOOK_TARGET_URL);
             assert.equal(request.args[0][1].body, '{"data":[1]}');
             assert.deepEqual(Object.keys(request.args[0][1].headers), ['Content-Length', 'Content-Type', 'Content-Version']);
@@ -140,9 +202,9 @@ describe('Webhook Service', function () {
 
             await webhookTrigger.trigger(WEBHOOK_EVENT, postModel);
 
-            assert.equal(models.Webhook.findAllByEvent.called, true);
-            assert.equal(payload.called, true);
-            assert.equal(request.called, true);
+            sinon.assert.called(models.Webhook.findAllByEvent);
+            sinon.assert.called(payload);
+            sinon.assert.called(request);
             assert.equal(request.args[0][0], WEBHOOK_TARGET_URL);
 
             const header = request.args[0][1].headers[SIGNATURE_HEADER];
@@ -173,9 +235,9 @@ describe('Webhook Service', function () {
 
             await webhookTrigger.trigger(WEBHOOK_EVENT, postModel);
 
-            assert.equal(models.Webhook.findAllByEvent.called, true);
-            assert.equal(payload.called, true);
-            assert.equal(request.called, true);
+            sinon.assert.called(models.Webhook.findAllByEvent);
+            sinon.assert.called(payload);
+            sinon.assert.called(request);
             assert.equal(request.args[0][0], WEBHOOK_TARGET_URL);
 
             const expectedHeader = `sha256=${crypto.createHmac('sha256', WEBHOOK_SECRET).update(`{"data":[1]}${ts}`).digest('hex')}, t=${ts}`;

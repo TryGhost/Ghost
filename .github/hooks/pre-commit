@@ -3,15 +3,12 @@
 
 [ -n "$CI" ] && exit 0
 
-GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-if [ "$GIT_BRANCH" = "main" ]; then
-    yarn lint-staged --relative
-    lintStatus=$?
+yarn lint-staged --relative
+lintStatus=$?
 
-    if [ $lintStatus -ne 0 ]; then
-        echo "❌ Linting failed"
-        exit 1
-    fi
+if [ $lintStatus -ne 0 ]; then
+    echo "❌ Linting failed"
+    exit 1
 fi
 
 green='\033[0;32m'

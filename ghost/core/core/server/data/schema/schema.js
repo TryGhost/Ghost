@@ -43,6 +43,7 @@ module.exports = {
         show_comment_cta: {type: 'boolean', nullable: false, defaultTo: true},
         show_subscription_details: {type: 'boolean', nullable: false, defaultTo: false},
         show_latest_posts: {type: 'boolean', nullable: false, defaultTo: false},
+        show_share_button: {type: 'boolean', nullable: false, defaultTo: false},
         background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'light'},
         post_title_color: {type: 'string', maxlength: 50, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
@@ -435,6 +436,7 @@ module.exports = {
         email_disabled: {type: 'boolean', nullable: false, defaultTo: false},
         last_seen_at: {type: 'dateTime', nullable: true},
         last_commented_at: {type: 'dateTime', nullable: true},
+        commenting: {type: 'text', maxlength: 65535, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [
@@ -482,7 +484,7 @@ module.exports = {
         active: {type: 'boolean', nullable: false, defaultTo: true},
         name: {type: 'string', maxlength: 191, nullable: false, unique: true},
         code: {type: 'string', maxlength: 191, nullable: false, unique: true},
-        product_id: {type: 'string', maxlength: 24, nullable: false, references: 'products.id'},
+        product_id: {type: 'string', maxlength: 24, nullable: true, references: 'products.id'},
         stripe_coupon_id: {type: 'string', maxlength: 255, nullable: true, unique: true},
         interval: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['month', 'year']]}},
         currency: {type: 'string', maxlength: 50, nullable: true},
@@ -492,6 +494,7 @@ module.exports = {
         duration_in_months: {type: 'integer', nullable: true},
         portal_title: {type: 'string', maxlength: 191, nullable: true},
         portal_description: {type: 'string', maxlength: 2000, nullable: true},
+        redemption_type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'signup', validations: {isIn: [['signup', 'retention']]}},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
@@ -697,6 +700,8 @@ module.exports = {
         updated_at: {type: 'dateTime', nullable: true},
         mrr: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         offer_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'offers.id'},
+        discount_start: {type: 'dateTime', nullable: true},
+        discount_end: {type: 'dateTime', nullable: true},
         trial_start_at: {type: 'dateTime', nullable: true},
         trial_end_at: {type: 'dateTime', nullable: true},
         /* Below fields are now redundant as we link stripe_price_id to stripe_prices table */
@@ -1121,7 +1126,13 @@ module.exports = {
     outbox: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         event_type: {type: 'string', maxlength: 50, nullable: false},
-        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'pending'},
+        status: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            defaultTo: 'pending',
+            validations: {isIn: [['pending', 'processing', 'failed', 'completed']]}
+        },
         payload: {type: 'text', maxlength: 65535, nullable: false},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
@@ -1131,6 +1142,30 @@ module.exports = {
         '@@INDEXES@@': [
             ['event_type', 'status', 'created_at']
         ]
+    },
+    email_design_settings: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
+        background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'light'},
+        header_background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'transparent'},
+        header_image: {type: 'string', maxlength: 2000, nullable: true},
+        show_header_title: {type: 'boolean', nullable: false, defaultTo: true},
+        footer_content: {type: 'text', maxlength: 1000000000, nullable: true},
+        button_color: {type: 'string', maxlength: 50, nullable: true, defaultTo: 'accent'},
+        button_corners: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'rounded', validations: {isIn: [['square', 'rounded', 'pill']]}},
+        button_style: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'fill', validations: {isIn: [['fill', 'outline']]}},
+        link_color: {type: 'string', maxlength: 50, nullable: true, defaultTo: 'accent'},
+        link_style: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'underline', validations: {isIn: [['underline', 'regular', 'bold']]}},
+        body_font_category: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'sans_serif', validations: {isIn: [['serif', 'sans_serif']]}},
+        // Named "title_*" to match the newsletters table; applies to headings (and post title in newsletters)
+        title_font_category: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'sans_serif', validations: {isIn: [['serif', 'sans_serif']]}},
+        title_font_weight: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'bold', validations: {isIn: [['normal', 'medium', 'semibold', 'bold']]}},
+        image_corners: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'square', validations: {isIn: [['square', 'rounded']]}},
+        divider_color: {type: 'string', maxlength: 50, nullable: true},
+        section_title_color: {type: 'string', maxlength: 50, nullable: true},
+        show_badge: {type: 'boolean', nullable: false, defaultTo: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
     },
     automated_emails: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -1142,11 +1177,22 @@ module.exports = {
         sender_name: {type: 'string', maxlength: 191, nullable: true},
         sender_email: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
         sender_reply_to: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
+        email_design_setting_id: {type: 'string', maxlength: 24, nullable: false, references: 'email_design_settings.id'},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [
             ['slug'],
             ['status']
         ]
+    },
+    automated_email_recipients: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        automated_email_id: {type: 'string', maxlength: 24, nullable: false, references: 'automated_emails.id'},
+        member_id: {type: 'string', maxlength: 24, nullable: false, index: true},
+        member_uuid: {type: 'string', maxlength: 36, nullable: false},
+        member_email: {type: 'string', maxlength: 191, nullable: false},
+        member_name: {type: 'string', maxlength: 191, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
     }
 };

@@ -1,7 +1,6 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils, dbUtils} = require('../../utils/e2e-framework');
 const {nullable, anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyErrorId, anyUuid, anyNumber, anyBoolean, stringMatching} = matchers;
-const should = require('should');
 const models = require('../../../core/server/models');
 const moment = require('moment-timezone');
 const settingsCache = require('../../../core/shared/settings-cache');
@@ -67,6 +66,7 @@ const dbFns = {
                 post_id: parent.get('post_id'),
                 member_id: reply.member_id,
                 parent_id: parent.get('id'),
+                in_reply_to_id: reply.in_reply_to_id,
                 html: reply.html || '<p>This is a reply</p>',
                 status: reply.status
             });
@@ -103,6 +103,7 @@ const dbFns = {
 
 const commentMatcher = {
     id: anyObjectId,
+    parent_id: nullable(anyObjectId),
     created_at: anyISODateTime,
     member: {
         id: anyObjectId,
@@ -134,7 +135,8 @@ function commentMatcherWithReplies(options) {
         replies: new Array(options.replies).fill(options.commentMatcher),
         count: {
             likes: anyNumber,
-            replies: anyNumber
+            replies: anyNumber,
+            direct_replies: anyNumber
         }
     };
 }
@@ -257,10 +259,10 @@ async function testCanCommentOnPost(member) {
 
     // Check last_updated_at changed?
     member = await models.Member.findOne({id: member.id});
-    should.notEqual(member.get('last_seen_at'), null, 'The member should have a `last_seen_at` property after posting a comment.');
+    assert.notEqual(member.get('last_seen_at'), null, 'The member should have a `last_seen_at` property after posting a comment.');
 
     // Check last_commented_at changed?
-    should.notEqual(member.get('last_commented_at'), null, 'The member should have a `last_commented_at` property after posting a comment.');
+    assert.notEqual(member.get('last_commented_at'), null, 'The member should have a `last_commented_at` property after posting a comment.');
 }
 
 async function testCanReply(member, emailMatchers = {}) {
@@ -291,10 +293,10 @@ async function testCanReply(member, emailMatchers = {}) {
 
     // Check last_updated_at changed?
     member = await models.Member.findOne({id: member.id});
-    should.notEqual(member.get('last_seen_at').getTime(), date.getTime(), 'Should update `last_seen_at` property after posting a comment.');
+    assert.notEqual(member.get('last_seen_at').getTime(), date.getTime(), 'Should update `last_seen_at` property after posting a comment.');
 
     // Check last_commented_at changed?
-    should.notEqual(member.get('last_commented_at').getTime(), date.getTime(), 'Should update `last_commented_at` property after posting a comment.');
+    assert.notEqual(member.get('last_commented_at').getTime(), date.getTime(), 'Should update `last_commented_at` property after posting a comment.');
 }
 
 async function testCannotCommentOnPost(status = 403) {
@@ -414,8 +416,8 @@ describe('Comments API', function () {
                     .expectStatus(200);
 
                 // check that hiddenComment.id is not in the response
-                should(data2.body.comments.map(c => c.id)).not.containEql(hiddenComment.id);
-                should(data2.body.comments.length).eql(0);
+                assert(!data2.body.comments.some(c => c.id === hiddenComment.id));
+                assert.equal(data2.body.comments.length, 0);
             });
 
             it('excludes deleted comments', async function () {
@@ -432,10 +434,10 @@ describe('Comments API', function () {
 
                 // go through all comments and check if the deleted comment is not there
                 data2.body.comments.forEach((comment) => {
-                    should(comment.html).not.eql('This is a deleted comment');
+                    assert.notEqual(comment.html, 'This is a deleted comment');
                 });
 
-                data2.body.comments.length.should.eql(0);
+                assert.equal(data2.body.comments.length, 0);
             });
 
             it('shows hidden and deleted comment where there is a reply', async function () {
@@ -474,22 +476,22 @@ describe('Comments API', function () {
 
                 // check if hidden and deleted comments have their html removed
                 data2.body.comments.forEach((comment) => {
-                    should.notEqual(comment.html, 'This is a hidden comment');
-                    should.notEqual(comment.html, 'This is a deleted comment');
+                    assert.notEqual(comment.html, 'This is a hidden comment');
+                    assert.notEqual(comment.html, 'This is a deleted comment');
                 });
 
                 // check if hiddenComment.id and deletedComment.id are in the response
-                should(data2.body.comments.map(c => c.id)).containEql(hiddenComment.id);
-                should(data2.body.comments.map(c => c.id)).containEql(deletedComment.id);
+                assert(data2.body.comments.map(c => c.id).includes(hiddenComment.id));
+                assert(data2.body.comments.map(c => c.id).includes(deletedComment.id));
 
                 // check if the replies to hidden and deleted comments are in the response
                 data2.body.comments.forEach((comment) => {
                     if (comment.id === hiddenComment.id) {
-                        should(comment.replies.length).eql(1);
-                        should(comment.replies[0].html).eql('This is a reply to a hidden comment');
+                        assert.equal(comment.replies.length, 1);
+                        assert.equal(comment.replies[0].html, 'This is a reply to a hidden comment');
                     } else if (comment.id === deletedComment.id) {
-                        should(comment.replies.length).eql(1);
-                        should(comment.replies[0].html).eql('This is a reply to a deleted comment');
+                        assert.equal(comment.replies.length, 1);
+                        assert.equal(comment.replies[0].html, 'This is a reply to a deleted comment');
                     }
                 });
             });
@@ -514,7 +516,7 @@ describe('Comments API', function () {
                     .get(`/api/comments/post/${postId}`)
                     .expectStatus(200);
 
-                should(data2.body.comments.length).eql(0);
+                assert.equal(data2.body.comments.length, 0);
             });
 
             it('cannot comment on a post', async function () {
@@ -638,7 +640,7 @@ describe('Comments API', function () {
                     commentMatcher,
                     commentMatcherWithReplies({replies: 1})
                 ]);
-                should.not.exist(response.body.comments[0].unsubscribe_url);
+                assert.equal(response.body.comments[0].unsubscribe_url, undefined);
             });
 
             describe('browse by post', function () {
@@ -649,8 +651,8 @@ describe('Comments API', function () {
                     });
 
                     const result = await testGetComments(`/api/comments/post/${postId}/`, []);
-                    should(result.body.comments.length).eql(0);
-                    should(result.body.meta.pagination.total).eql(0);
+                    assert.equal(result.body.comments.length, 0);
+                    assert.equal(result.body.meta.pagination.total, 0);
                 });
 
                 it('includes deleted comments if they have published replies', async function () {
@@ -664,11 +666,7 @@ describe('Comments API', function () {
                         }]
                     });
 
-                    const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
-                    should(result.body.comments.length).eql(1);
-                    should(result.body.comments[0].html).eql(null);
-                    should(result.body.comments[0].count.replies).eql(1);
-                    should(result.body.meta.pagination.total).eql(1);
+                    await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
                 });
 
                 it('excludes deleted comments if all replies are hidden or deleted', async function () {
@@ -686,8 +684,8 @@ describe('Comments API', function () {
                     });
 
                     const result = await testGetComments(`/api/comments/post/${postId}/`, []);
-                    should(result.body.comments.length).eql(0);
-                    should(result.body.meta.pagination.total).eql(0);
+                    assert.equal(result.body.comments.length, 0);
+                    assert.equal(result.body.meta.pagination.total, 0);
                 });
 
                 it('excludes hidden comments', async function () {
@@ -697,8 +695,8 @@ describe('Comments API', function () {
                     });
 
                     const result = await testGetComments(`/api/comments/post/${postId}/`, []);
-                    should(result.body.comments.length).eql(0);
-                    should(result.body.meta.pagination.total).eql(0);
+                    assert.equal(result.body.comments.length, 0);
+                    assert.equal(result.body.meta.pagination.total, 0);
                 });
 
                 it('includes hidden comments if they have published replies', async function () {
@@ -713,10 +711,11 @@ describe('Comments API', function () {
                     });
 
                     const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
-                    should(result.body.comments.length).eql(1);
-                    should(result.body.comments[0].html).eql(null);
-                    should(result.body.comments[0].count.replies).eql(1);
-                    should(result.body.meta.pagination.total).eql(1);
+                    assert.equal(result.body.comments.length, 1);
+                    assert.equal(result.body.comments[0].html, null);
+                    assert.equal(result.body.comments[0].count.replies, 1);
+                    assert.equal(result.body.comments[0].count.direct_replies, 1);
+                    assert.equal(result.body.meta.pagination.total, 1);
                 });
 
                 it('excludes hidden comments if all replies are hidden or deleted', async function () {
@@ -734,8 +733,8 @@ describe('Comments API', function () {
                     });
 
                     const result = await testGetComments(`/api/comments/post/${postId}/`, []);
-                    should(result.body.comments.length).eql(0);
-                    should(result.body.meta.pagination.total).eql(0);
+                    assert.equal(result.body.comments.length, 0);
+                    assert.equal(result.body.meta.pagination.total, 0);
                 });
 
                 it('excludes deleted replies', async function () {
@@ -748,7 +747,7 @@ describe('Comments API', function () {
                     });
 
                     const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 0})]);
-                    should(result.body.comments[0].replies.length).eql(0);
+                    assert.equal(result.body.comments[0].replies.length, 0);
                 });
 
                 it('excludes hidden replies', async function () {
@@ -761,7 +760,7 @@ describe('Comments API', function () {
                     });
 
                     const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 0})]);
-                    should(result.body.comments[0].replies.length).eql(0);
+                    assert.equal(result.body.comments[0].replies.length, 0);
                 });
 
                 it('doesn\'t count deleted or hidden comments in replies count', async function () {
@@ -781,8 +780,9 @@ describe('Comments API', function () {
                         }]
                     });
 
+                    // Deleted parent returned with full data, only 1 published reply visible
                     const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
-                    should(result.body.comments[0].count.replies).eql(1);
+                    assert.equal(result.body.comments[0].replies.length, 1);
                 });
             });
 
@@ -844,7 +844,7 @@ describe('Comments API', function () {
                 // get the LAST comment from data2
                 let lastComment = data2.body.comments[data2.body.comments.length - 1];
 
-                should(lastComment.id).eql(oldestComment.id);
+                assert.equal(lastComment.id, oldestComment.id);
             });
 
             it('Can reply to your own comment', async function () {
@@ -872,17 +872,17 @@ describe('Comments API', function () {
 
                 // Check last updated_at is not changed?
                 loggedInMember = await models.Member.findOne({id: loggedInMember.id});
-                should.equal(loggedInMember.get('last_seen_at').getTime(), date.getTime(), 'The member should not update `last_seen_at` if last seen at is same day');
+                assert.equal(loggedInMember.get('last_seen_at').getTime(), date.getTime(), 'The member should not update `last_seen_at` if last seen at is same day');
 
                 // Check last_commented_at changed?
-                should.equal(loggedInMember.get('last_commented_at').getTime(), date.getTime(), 'The member should not update `last_commented_at` f last seen at is same day');
+                assert.equal(loggedInMember.get('last_commented_at').getTime(), date.getTime(), 'The member should not update `last_commented_at` f last seen at is same day');
             });
 
             it('Can reply to a comment', async function () {
                 await testCanReply(loggedInMember);
             });
 
-            it('Limits returned replies to 3', async function () {
+            it('Returns all replies when reading a single comment', async function () {
                 const {parent} = await dbFns.addCommentWithReplies({
                     member_id: fixtureManager.get('members', 0).id,
                     replies: new Array(5).fill({
@@ -890,11 +890,46 @@ describe('Comments API', function () {
                     })
                 });
 
-                // Check if we have count.replies = 4, and replies.length == 3
-                await testGetComments(`/api/comments/${parent.get('id')}/`, [commentMatcherWithReplies({replies: 3})])
+                // All 5 are direct replies (in_reply_to_id IS NULL)
+                // count.replies = 5 (all descendants)
+                // count.direct_replies = 5 (all are direct)
+                await testGetComments(`/api/comments/${parent.get('id')}/`, [commentMatcherWithReplies({replies: 5})])
                     .expect(({body}) => {
-                        body.comments[0].count.replies.should.eql(5);
+                        assert.equal(body.comments[0].count.replies, 5);
+                        assert.equal(body.comments[0].count.direct_replies, 5);
                     });
+            });
+
+            it('Returns all replies for every parent when browsing multiple comments', async function () {
+                // Create two parent comments, each with 5 replies
+                const {parent: parentA} = await dbFns.addCommentWithReplies({
+                    member_id: fixtureManager.get('members', 0).id,
+                    replies: new Array(5).fill({
+                        member_id: fixtureManager.get('members', 1).id
+                    })
+                });
+
+                const {parent: parentB} = await dbFns.addCommentWithReplies({
+                    member_id: fixtureManager.get('members', 0).id,
+                    replies: new Array(5).fill({
+                        member_id: fixtureManager.get('members', 1).id
+                    })
+                });
+
+                const res = await membersAgent
+                    .get(`/api/comments/post/${postId}/`)
+                    .expectStatus(200);
+
+                const commentA = res.body.comments.find(c => c.id === parentA.get('id'));
+                const commentB = res.body.comments.find(c => c.id === parentB.get('id'));
+
+                // Both parents should have all 5 replies loaded
+                assert.equal(commentA.replies.length, 5, `Parent A should have 5 replies, got ${commentA.replies.length}`);
+                assert.equal(commentB.replies.length, 5, `Parent B should have 5 replies, got ${commentB.replies.length}`);
+
+                // Counts should reflect the true totals
+                assert.equal(commentA.count.replies, 5);
+                assert.equal(commentB.count.replies, 5);
             });
 
             it('hidden replies are not included in the count', async function () {
@@ -908,7 +943,8 @@ describe('Comments API', function () {
 
                 const res = await membersAgent.get(`/api/comments/${parent.get('id')}/`);
 
-                res.body.comments[0].count.replies.should.eql(0);
+                assert.equal(res.body.comments[0].count.replies, 0);
+                assert.equal(res.body.comments[0].count.direct_replies, 0);
             });
 
             it('deleted replies are not included in the count', async function () {
@@ -922,7 +958,81 @@ describe('Comments API', function () {
 
                 const res = await membersAgent.get(`/api/comments/${parent.get('id')}/`);
 
-                res.body.comments[0].count.replies.should.eql(0);
+                assert.equal(res.body.comments[0].count.replies, 0);
+                assert.equal(res.body.comments[0].count.direct_replies, 0);
+            });
+
+            it('returns correct count.replies and count.direct_replies for threaded comments', async function () {
+                const member0 = fixtureManager.get('members', 0).id;
+                const member1 = fixtureManager.get('members', 1).id;
+
+                // Root A
+                const rootA = await dbFns.addComment({member_id: member0, html: '<p>Root A</p>'});
+
+                // Reply B to A (direct reply — in_reply_to_id is null)
+                const replyB = await dbFns.addComment({
+                    member_id: member1,
+                    parent_id: rootA.get('id'),
+                    html: '<p>Reply B</p>'
+                });
+
+                // Reply C to B (in_reply_to_id = B)
+                await dbFns.addComment({
+                    member_id: member0,
+                    parent_id: rootA.get('id'),
+                    in_reply_to_id: replyB.get('id'),
+                    html: '<p>Reply C to B</p>'
+                });
+
+                // Reply D to B (in_reply_to_id = B)
+                await dbFns.addComment({
+                    member_id: member1,
+                    parent_id: rootA.get('id'),
+                    in_reply_to_id: replyB.get('id'),
+                    html: '<p>Reply D to B</p>'
+                });
+
+                // Fetch root comment
+                // count.replies = 3 (B, C, D all have parent_id=A)
+                // count.direct_replies = 1 (only B is direct: parent_id=A AND in_reply_to_id IS NULL)
+                const result = await membersAgent.get(`/api/comments/${rootA.get('id')}/`);
+                assert.equal(result.body.comments[0].count.replies, 3);
+                assert.equal(result.body.comments[0].count.direct_replies, 1);
+
+                // Fetch replies — child B should have count.direct_replies = 2 (C, D have in_reply_to_id=B)
+                const repliesResult = await membersAgent.get(`/api/comments/${rootA.get('id')}/replies/`);
+                const childB = repliesResult.body.comments.find(c => c.id === replyB.get('id'));
+                assert.equal(childB.count.direct_replies, 2);
+            });
+
+            it('count.replies and count.direct_replies exclude hidden/deleted for public', async function () {
+                const member0 = fixtureManager.get('members', 0).id;
+                const member1 = fixtureManager.get('members', 1).id;
+
+                const root = await dbFns.addComment({member_id: member0, html: '<p>Root</p>'});
+
+                // Direct reply (visible)
+                const replyA = await dbFns.addComment({
+                    member_id: member1, parent_id: root.get('id'), html: '<p>Reply A</p>'
+                });
+                // Direct reply (hidden — excluded from public counts)
+                await dbFns.addComment({
+                    member_id: member1, parent_id: root.get('id'), html: '<p>Reply B hidden</p>', status: 'hidden'
+                });
+                // Reply-to-reply (visible, to replyA)
+                await dbFns.addComment({
+                    member_id: member0, parent_id: root.get('id'), in_reply_to_id: replyA.get('id'), html: '<p>Reply C to A</p>'
+                });
+                // Reply-to-reply (deleted, to replyA — excluded)
+                await dbFns.addComment({
+                    member_id: member0, parent_id: root.get('id'), in_reply_to_id: replyA.get('id'), html: '<p>Reply D deleted</p>', status: 'deleted'
+                });
+
+                const result = await membersAgent.get(`/api/comments/${root.get('id')}/`);
+                // count.replies = all descendants excluding hidden/deleted: replyA + replyC = 2
+                assert.equal(result.body.comments[0].count.replies, 2);
+                // count.direct_replies = direct replies excluding hidden/deleted: only replyA
+                assert.equal(result.body.comments[0].count.direct_replies, 1);
             });
 
             it('Can reply to a comment with www domain', async function () {
@@ -962,8 +1072,8 @@ describe('Comments API', function () {
                 // Check liked
                 await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher])
                     .expect(({body}) => {
-                        body.comments[0].liked.should.eql(true);
-                        body.comments[0].count.likes.should.eql(1);
+                        assert.equal(body.comments[0].liked, true);
+                        assert.equal(body.comments[0].count.likes, 1);
                     });
             });
 
@@ -1004,8 +1114,8 @@ describe('Comments API', function () {
                 // Check liked
                 await testGetComments(`/api/comments/${reply.id}/`, [commentMatcher])
                     .expect(({body}) => {
-                        body.comments[0].liked.should.eql(true);
-                        body.comments[0].count.likes.should.eql(1);
+                        assert.equal(body.comments[0].liked, true);
+                        assert.equal(body.comments[0].count.likes, 1);
                     });
             });
 
@@ -1023,14 +1133,14 @@ describe('Comments API', function () {
 
                 await testGetComments(`/api/comments/${parent.get('id')}/replies/`, new Array(7).fill(commentMatcher))
                     .expect(({body}) => {
-                        should(body.comments[0].count.replies).be.undefined();
-                        should(body.meta.pagination.total).eql(7);
-                        should(body.meta.pagination.next).eql(null);
+                        assert.equal(body.comments[0].count.replies, undefined);
+                        assert.equal(body.meta.pagination.total, 7);
+                        assert.equal(body.meta.pagination.next, null);
 
                         // Check liked + likes working for replies too
-                        should(body.comments[2].id).eql(replies[2].get('id'));
-                        should(body.comments[2].count.likes).eql(1);
-                        should(body.comments[2].liked).eql(true);
+                        assert.equal(body.comments[2].id, replies[2].get('id'));
+                        assert.equal(body.comments[2].count.likes, 1);
+                        assert.equal(body.comments[2].liked, true);
                     });
             });
 
@@ -1044,9 +1154,9 @@ describe('Comments API', function () {
 
                 await testGetComments(`/api/comments/${parent.get('id')}/replies/?page=3&limit=3`, [commentMatcher])
                     .expect(({body}) => {
-                        should(body.comments[0].count.replies).be.undefined();
-                        should(body.meta.pagination.total).eql(7);
-                        should(body.meta.pagination.next).eql(null);
+                        assert.equal(body.comments[0].count.replies, undefined);
+                        assert.equal(body.meta.pagination.total, 7);
+                        assert.equal(body.meta.pagination.next, null);
                     });
             });
 
@@ -1065,8 +1175,8 @@ describe('Comments API', function () {
                 // Check not liked
                 await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher])
                     .expect(({body}) => {
-                        body.comments[0].liked.should.eql(false);
-                        body.comments[0].count.likes.should.eql(0);
+                        assert.equal(body.comments[0].liked, false);
+                        assert.equal(body.comments[0].count.likes, 0);
                     });
             });
 
@@ -1088,10 +1198,10 @@ describe('Comments API', function () {
 
                 // Check report
                 const reports = await models.CommentReport.findAll({filter: 'comment_id:\'' + comment.get('id') + '\''});
-                reports.models.length.should.eql(1);
+                assert.equal(reports.models.length, 1);
 
                 const report = reports.models[0];
-                report.get('member_id').should.eql(loggedInMember.id);
+                assert.equal(report.get('member_id'), loggedInMember.id);
 
                 mockManager.assert.sentEmail({
                     subject: '🚩 A comment has been reported on your post',
@@ -1114,12 +1224,34 @@ describe('Comments API', function () {
 
                 // Check report should be the same (no extra created)
                 const reports = await models.CommentReport.findAll({filter: 'comment_id:\'' + comment.get('id') + '\''});
-                reports.models.length.should.eql(1);
+                assert.equal(reports.models.length, 1);
 
                 const report = reports.models[0];
-                report.get('member_id').should.eql(loggedInMember.id);
+                assert.equal(report.get('member_id'), loggedInMember.id);
 
                 emailMockReceiver.assertSentEmailCount(0);
+            });
+
+            it('Does not expose reports count in public API', async function () {
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id
+                });
+
+                // Add multiple reports to this comment
+                await dbFns.addReport({
+                    comment_id: comment.get('id'),
+                    member_id: fixtureManager.get('members', 0).id
+                });
+                await dbFns.addReport({
+                    comment_id: comment.get('id'),
+                    member_id: fixtureManager.get('members', 1).id
+                });
+
+                // Verify the reports count is NOT included in public API response
+                const res = await membersAgent.get(`/api/comments/${comment.get('id')}/`);
+                assert.equal(res.body.comments[0].count.reports, undefined);
+                // Verify other counts are still there
+                assert.equal(res.body.comments[0].count.likes, 0);
             });
 
             it('Can edit a comment on a post', async function () {
@@ -1174,6 +1306,29 @@ describe('Comments API', function () {
                     .put(`/api/comments/${comment.get('id')}`)
                     .body({comments: [{
                         html: 'Illegal comment update'
+                    }]})
+                    .expectStatus(403)
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    })
+                    .matchBodySnapshot({
+                        errors: [{
+                            type: 'NoPermissionError',
+                            id: anyUuid
+                        }]
+                    });
+            });
+
+            it('Can not delete a comment which does not belong to you', async function () {
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id
+                });
+
+                // Members delete comments by setting status to 'deleted' via PUT
+                await membersAgent2
+                    .put(`/api/comments/${comment.get('id')}`)
+                    .body({comments: [{
+                        status: 'deleted'
                     }]})
                     .expectStatus(403)
                     .matchHeaderSnapshot({
@@ -1357,8 +1512,8 @@ describe('Comments API', function () {
                     });
 
                     // in_reply_to is set
-                    newComment.in_reply_to_id.should.eql(reply.get('id'));
-                    newComment.in_reply_to_snippet.should.eql('This is a reply');
+                    assert.equal(newComment.in_reply_to_id, reply.get('id'));
+                    assert.equal(newComment.in_reply_to_snippet, 'This is a reply');
 
                     // replied-to comment author is notified
                     // parent comment author is notified
@@ -1392,8 +1547,8 @@ describe('Comments API', function () {
                         });
 
                         // in_reply_to is not set
-                        should.not.exist(newComment.in_reply_to_id);
-                        should.not.exist(newComment.in_reply_to_snippet);
+                        assert.equal(newComment.in_reply_to_id, null);
+                        assert.equal(newComment.in_reply_to_snippet, null);
 
                         // only author and parent email sent
                         emailMockReceiver.assertSentEmailCount(2);
@@ -1415,10 +1570,10 @@ describe('Comments API', function () {
                     });
 
                     // in_reply_to is not set
-                    should.not.exist(newComment.in_reply_to_id);
-                    should.not.exist(newComment.in_reply_to_snippet);
+                    assert.equal(newComment.in_reply_to_id, null);
+                    assert.equal(newComment.in_reply_to_snippet, null);
 
-                    should.not.exist(newComment.parent_id);
+                    assert.equal(newComment.parent_id, null);
 
                     // only author email sent
                     emailMockReceiver.assertSentEmailCount(1);
@@ -1448,8 +1603,8 @@ describe('Comments API', function () {
                     });
 
                     // in_reply_to is not set
-                    should.not.exist(newComment.in_reply_to_id);
-                    should.not.exist(newComment.in_reply_to_snippet);
+                    assert.equal(newComment.in_reply_to_id, null);
+                    assert.equal(newComment.in_reply_to_snippet, null);
                 });
 
                 it('includes in_reply_to_snippet in response', async function () {
@@ -1475,7 +1630,7 @@ describe('Comments API', function () {
                     const {body: {comments: [comment]}} = await testGetComments(`/api/comments/${newComment.id}`, [labsCommentMatcher]);
 
                     // in_reply_to_snippet is included
-                    comment.in_reply_to_snippet.should.eql('This is what was replied to');
+                    assert.equal(comment.in_reply_to_snippet, 'This is what was replied to');
                 });
 
                 ['deleted', 'hidden'].forEach((status) => {
@@ -1497,7 +1652,7 @@ describe('Comments API', function () {
 
                         const {body: {comments: [comment]}} = await testGetComments(`/api/comments/${newComment.id}`, [labsCommentMatcher]);
 
-                        comment.in_reply_to_snippet.should.eql('[removed]');
+                        assert.equal(comment.in_reply_to_snippet, '[removed]');
                     });
                 });
             });
@@ -1528,6 +1683,92 @@ describe('Comments API', function () {
                     html: '<p>This is a <strong>message</strong></p><p>New line</p>'
                 }]})
                 .expectStatus(405);
+        });
+    });
+
+    describe('when member commenting disabled', function () {
+        let adminAgent;
+        let disabledMember;
+        let existingComment;
+
+        before(async function () {
+            adminAgent = await agentProvider.getAdminAPIAgent();
+            await fixtureManager.init('posts', 'members');
+            await adminAgent.loginAsOwner();
+
+            disabledMember = await models.Member.add({
+                name: 'Disabled Member',
+                email: `disabled-commenting-${Date.now()}@example.com`,
+                email_disabled: false
+            });
+
+            await membersAgent.loginAs(disabledMember.get('email'));
+
+            await adminAgent
+                .post(`members/${disabledMember.id}/commenting/disable`)
+                .body({reason: 'Spam behaviour'})
+                .expectStatus(200);
+        });
+
+        beforeEach(async function () {
+            existingComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id
+            });
+
+            const getStub = sinon.stub(settingsCache, 'get');
+            getStub.callsFake((key, options) => {
+                if (key === 'comments_enabled') {
+                    return 'all';
+                }
+                return getStub.wrappedMethod.call(settingsCache, key, options);
+            });
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        after(async function () {
+            if (disabledMember) {
+                await models.Member.destroy({id: disabledMember.id});
+            }
+        });
+
+        const readEndpoints = [
+            {desc: 'GET /api/comments/', method: 'get', url: () => '/api/comments/'},
+            {desc: 'GET /api/comments/post/:id/', method: 'get', url: () => `/api/comments/post/${postId}/`},
+            {desc: 'GET /api/comments/:id/', method: 'get', url: () => `/api/comments/${existingComment.id}/`},
+            {desc: 'GET /api/comments/:id/replies/', method: 'get', url: () => `/api/comments/${existingComment.id}/replies/`}
+        ];
+
+        readEndpoints.forEach(({desc, method, url}) => {
+            it(`${desc} is allowed`, async function () {
+                await membersAgent[method](url())
+                    .expectStatus(200);
+            });
+        });
+
+        const writeEndpoints = [
+            {desc: 'POST /api/comments/', method: 'post', url: () => '/api/comments/', body: () => ({comments: [{post_id: postId, html: '<p>Blocked</p>'}]})},
+            {desc: 'PUT /api/comments/:id/', method: 'put', url: () => `/api/comments/${existingComment.id}/`, body: () => ({comments: [{html: '<p>Blocked edit</p>'}]})},
+            {desc: 'DELETE /api/comments/:id/', method: 'delete', url: () => `/api/comments/${existingComment.id}/`, body: () => null},
+            {desc: 'POST /api/comments/:id/like/', method: 'post', url: () => `/api/comments/${existingComment.id}/like/`, body: () => null},
+            {desc: 'DELETE /api/comments/:id/like/', method: 'delete', url: () => `/api/comments/${existingComment.id}/like/`, body: () => null}
+        ];
+
+        writeEndpoints.forEach(({desc, method, url, body}) => {
+            it(`${desc} is blocked with reason`, async function () {
+                let req = membersAgent[method](url());
+                const payload = body();
+                if (payload) {
+                    req = req.body(payload);
+                }
+                const {body: responseBody} = await req
+                    .expectStatus(403);
+
+                assert.equal(responseBody.errors[0].type, 'NoPermissionError');
+                assert.equal(responseBody.errors[0].context, 'Spam behaviour');
+            });
         });
     });
 

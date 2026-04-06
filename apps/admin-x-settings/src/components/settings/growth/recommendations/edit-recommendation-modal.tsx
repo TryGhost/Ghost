@@ -84,7 +84,7 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
             dismissAllToasts();
             try {
                 await handleSave({force: true});
-            } catch (e) {
+            } catch {
                 showToast({
                     title: 'Something went wrong',
                     type: 'error',

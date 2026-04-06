@@ -1,10 +1,11 @@
+import moment from 'moment';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {mockError, mockLoading, mockSuccess} from '@tryghost/admin-x-framework/test/hook-testing-utils';
 import {renderHook} from '@testing-library/react';
 import {useTopSourcesGrowth} from '@hooks/use-top-sources-growth';
 
 // Mock external dependencies
-vi.mock('@tryghost/shade', () => ({
+vi.mock('@tryghost/shade/app', () => ({
     formatQueryDate: vi.fn(),
     getRangeDates: vi.fn()
 }));
@@ -13,27 +14,24 @@ vi.mock('@tryghost/admin-x-framework/api/referrers', () => ({
     useTopSourcesGrowth: vi.fn()
 }));
 
-vi.mock('@src/providers/global-data-provider', () => ({
-    useGlobalData: vi.fn()
-}));
-
-vi.mock('@src/views/Stats/components/audience-select', () => ({
+vi.mock('@src/utils/audience', () => ({
     getAudienceQueryParam: vi.fn()
 }));
 
-const mockFormatQueryDate = vi.mocked(await import('@tryghost/shade')).formatQueryDate;
-const mockGetRangeDates = vi.mocked(await import('@tryghost/shade')).getRangeDates;
+const mockFormatQueryDate = vi.mocked(await import('@tryghost/shade/app')).formatQueryDate;
+const mockGetRangeDates = vi.mocked(await import('@tryghost/shade/app')).getRangeDates;
 const mockUseTopSourcesGrowthAPI = vi.mocked(await import('@tryghost/admin-x-framework/api/referrers')).useTopSourcesGrowth;
-const mockUseGlobalData = vi.mocked(await import('@src/providers/global-data-provider')).useGlobalData;
-const mockGetAudienceQueryParam = vi.mocked(await import('@views/Stats/components/audience-select')).getAudienceQueryParam;
+const mockGetAudienceQueryParam = vi.mocked(await import('@src/utils/audience')).getAudienceQueryParam;
 
 describe('useTopSourcesGrowth', () => {
-    const mockStartDate = new Date('2024-01-01');
-    const mockEndDate = new Date('2024-01-31');
+    let mockStartDate: moment.Moment;
+    let mockEndDate: moment.Moment;
     const mockTimezone = 'UTC';
 
     beforeEach(() => {
         vi.clearAllMocks();
+        mockStartDate = moment('2024-01-01');
+        mockEndDate = moment('2024-01-31');
 
         // Default mock implementations
         mockGetRangeDates.mockReturnValue({
@@ -42,12 +40,7 @@ describe('useTopSourcesGrowth', () => {
             timezone: mockTimezone
         });
 
-        mockFormatQueryDate.mockImplementation((date: Date) => date.toISOString().split('T')[0]);
-
-        mockUseGlobalData.mockReturnValue({
-            audience: 'all-members'
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any);
+        mockFormatQueryDate.mockImplementation((date: moment.Moment) => date.format('YYYY-MM-DD'));
 
         mockGetAudienceQueryParam.mockReturnValue('all');
 
@@ -79,28 +72,6 @@ describe('useTopSourcesGrowth', () => {
                 member_status: 'all',
                 order: 'clicks desc',
                 limit: '25',
-                timezone: 'UTC'
-            }
-        });
-    });
-
-    it('handles different audience types', () => {
-        mockUseGlobalData.mockReturnValue({
-            audience: 2 // Represents paid members (binary representation)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any);
-        mockGetAudienceQueryParam.mockReturnValue('paid');
-
-        renderHook(() => useTopSourcesGrowth(30));
-
-        expect(mockGetAudienceQueryParam).toHaveBeenCalledWith(2);
-        expect(mockUseTopSourcesGrowthAPI).toHaveBeenCalledWith({
-            searchParams: {
-                date_from: '2024-01-01',
-                date_to: '2024-01-31',
-                member_status: 'paid',
-                order: 'signups desc',
-                limit: '50',
                 timezone: 'UTC'
             }
         });
@@ -149,8 +120,8 @@ describe('useTopSourcesGrowth', () => {
     });
 
     it('correctly formats query dates', () => {
-        const customStartDate = new Date('2024-06-15');
-        const customEndDate = new Date('2024-07-15');
+        const customStartDate = moment('2024-06-15');
+        const customEndDate = moment('2024-07-15');
 
         mockGetRangeDates.mockReturnValue({
             startDate: customStartDate,

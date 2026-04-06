@@ -9,7 +9,7 @@ Object {
       "page": 1,
       "pages": 1,
       "prev": null,
-      "total": 3,
+      "total": 4,
     },
   },
   "newsletters": Array [
@@ -52,6 +52,19 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       "visibility": "members",
     },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Newsletter for testing URL transformations",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "New Newsletter",
+      "sender_email": "test@example.com",
+      "slug": "new-newsletter",
+      "sort_order": 3,
+      "subscribe_on_signup": false,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
   ],
 }
 `;
@@ -60,7 +73,7 @@ exports[`Newsletters Content API Can request only active newsletters 2: [headers
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "public, max-age=0",
-  "content-length": "1090",
+  "content-length": "1457",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -78,7 +91,7 @@ Object {
       "page": 1,
       "pages": 1,
       "prev": null,
-      "total": 3,
+      "total": 4,
     },
   },
   "newsletters": Array [
@@ -121,6 +134,19 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       "visibility": "members",
     },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Newsletter for testing URL transformations",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "New Newsletter",
+      "sender_email": "test@example.com",
+      "slug": "new-newsletter",
+      "sort_order": 3,
+      "subscribe_on_signup": false,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
   ],
 }
 `;
@@ -129,7 +155,7 @@ exports[`Newsletters Content API Cannot override filters to fetch archived newsl
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "public, max-age=0",
-  "content-length": "1090",
+  "content-length": "1457",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

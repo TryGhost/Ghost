@@ -29,8 +29,7 @@ module.exports = function adminController(req, res) {
     // CASE: trigger update check unit and let it run in background, don't block the admin rendering
     updateCheck();
 
-    const adminAssetsPath = config.getAdminAssetsPath();
-    const templatePath = path.resolve(adminAssetsPath, 'index.html');
+    const templatePath = path.resolve(config.get('paths').adminAssets, 'index.html');    
     const headers = {};
 
     try {
@@ -47,7 +46,7 @@ module.exports = function adminController(req, res) {
             headers['X-Frame-Options'] = 'sameorigin';
         }
 
-        res.sendFile(templatePath, {headers});
+        res.sendFile(templatePath, {headers, lastModified: false});
     } catch (err) {
         if (err.code === 'ENOENT') {
             throw new errors.IncorrectUsageError({

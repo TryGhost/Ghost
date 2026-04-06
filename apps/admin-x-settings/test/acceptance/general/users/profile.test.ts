@@ -1,4 +1,4 @@
-import {type StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staffToken';
+import {type StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staff-token';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests, mockApi, responseFixtures, settingsWithStripe, testUrlValidation} from '@tryghost/admin-x-framework/test/acceptance';
 
@@ -165,7 +165,7 @@ test.describe('User profile', async () => {
         await modal.getByLabel('Full name').fill('New Admin');
         await modal.getByLabel('Email').fill('newadmin@test.com');
         await modal.getByLabel('Slug').fill('newadmin');
-        await expect(modal.getByText('https://example.com/author/newadmin')).toBeVisible();
+        await expect(modal.getByText('http://test.com/author/newadmin')).toBeVisible();
         await modal.getByLabel('Location').fill('some location');
         await modal.getByLabel('Bio').fill('some bio');
 

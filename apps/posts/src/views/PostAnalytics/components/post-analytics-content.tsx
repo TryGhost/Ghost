@@ -1,9 +1,9 @@
 import React from 'react';
-import {cn} from '@tryghost/shade';
+import {cn} from '@tryghost/shade/utils';
 
 const PostAnalyticsContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (
-        <section className={cn('flex gap-8 flex-col py-8 size-full grow', className)} {...props}>
+        <section className={cn('flex gap-6 flex-col py-8 size-full grow', className)} {...props}>
             {children}
         </section>
     );

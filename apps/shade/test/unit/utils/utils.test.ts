@@ -2,12 +2,14 @@ import * as assert from 'assert/strict';
 import {
     cn,
     debounce,
-    kebabToPascalCase, 
-    formatQueryDate, 
-    formatDisplayDate, 
+    kebabToPascalCase,
+    formatQueryDate,
+    formatDisplayDate,
+    formatDisplayTime,
     formatNumber,
     formatDuration,
-    formatPercentage
+    formatPercentage,
+    getMemberInitials
 } from '@/lib/utils';
 import moment from 'moment-timezone';
 import {vi} from 'vitest';
@@ -158,6 +160,41 @@ describe('utils', function () {
             const differentYearFormatted = formatDisplayDate('2020-12-31');
             assert.equal(differentYearFormatted, '31 Dec 2020');
         });
+
+        it('converts ISO date to site timezone when timezone is provided', function () {
+            // July 31, 2023 at midnight UTC - in America/New_York (UTC-4 in summer) this is July 30
+            const formatted = formatDisplayDate('2023-07-31T00:00:00Z', 'America/New_York');
+            assert.equal(formatted, '30 Jul 2023');
+        });
+
+        it('converts ISO date to site timezone correctly for positive offset', function () {
+            // July 30, 2023 at 11pm UTC - in Europe/Berlin (UTC+2 in summer) this is July 31
+            const formatted = formatDisplayDate('2023-07-30T23:00:00Z', 'Europe/Berlin');
+            assert.equal(formatted, '31 Jul 2023');
+        });
+
+        it('formats date in UTC when no timezone is provided for ISO dates', function () {
+            // July 31, 2023 at midnight UTC - should show July 31 without timezone conversion
+            const formatted = formatDisplayDate('2023-07-31T00:00:00Z');
+            assert.equal(formatted, '31 Jul 2023');
+        });
+    });
+
+    describe('formatDisplayTime function', function () {
+        it('formats time in the provided timezone', function () {
+            const formatted = formatDisplayTime('2020-04-20T18:09:12.345Z', 'Africa/Lagos');
+            assert.equal(formatted, '7:09pm');
+        });
+
+        it('handles timezones with negative offsets', function () {
+            const formatted = formatDisplayTime('2020-04-20T18:09:12.345Z', 'America/New_York');
+            assert.equal(formatted, '2:09pm');
+        });
+
+        it('handles times that cross a date boundary', function () {
+            const formatted = formatDisplayTime('2020-04-20T00:30:00.000Z', 'America/Los_Angeles');
+            assert.equal(formatted, '5:30pm');
+        });
     });
 
     describe('formatNumber function', function () {
@@ -202,12 +239,66 @@ describe('utils', function () {
         it('formats a decimal as a percentage', function () {
             let formatted = formatPercentage(0.123);
             assert.equal(formatted, '12%');
-            
+
             formatted = formatPercentage(0.789);
             assert.equal(formatted, '79%');
-            
+
             formatted = formatPercentage(1);
             assert.equal(formatted, '100%');
+        });
+
+        it('formats zero percentage', function () {
+            const formatted = formatPercentage(0);
+            assert.equal(formatted, '0%');
+        });
+
+        it('formats very small percentages with 2 decimal places', function () {
+            let formatted = formatPercentage(0.0005);
+            assert.equal(formatted, '0.05%');
+
+            formatted = formatPercentage(0.0009);
+            assert.equal(formatted, '0.09%');
+        });
+
+        it('formats small percentages with 1 decimal place', function () {
+            let formatted = formatPercentage(0.005);
+            assert.equal(formatted, '0.5%');
+
+            formatted = formatPercentage(0.009);
+            assert.equal(formatted, '0.9%');
+        });
+
+        it('formats large percentages with thousand separators', function () {
+            let formatted = formatPercentage(10);
+            assert.equal(formatted, '1,000%');
+
+            formatted = formatPercentage(12.34567);
+            assert.equal(formatted, '1,235%');
+
+            formatted = formatPercentage(100);
+            assert.equal(formatted, '10,000%');
+        });
+    });
+
+    describe('getMemberInitials function', function () {
+        it('returns initials from first and last name', function () {
+            const initials = getMemberInitials({name: 'John Doe'});
+            assert.equal(initials, 'JD');
+        });
+
+        it('returns initials from first and last word for names with middle name', function () {
+            const initials = getMemberInitials({name: 'John Michael Doe'});
+            assert.equal(initials, 'JD');
+        });
+
+        it('returns first two characters for single word names', function () {
+            const initials = getMemberInitials({name: 'John'});
+            assert.equal(initials, 'JO');
+        });
+
+        it('handles empty name by using fallback', function () {
+            const initials = getMemberInitials({name: ''});
+            assert.equal(initials, 'UM'); // "Unknown Member" -> "UM"
         });
     });
 }); 

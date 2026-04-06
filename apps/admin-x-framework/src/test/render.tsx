@@ -1,7 +1,12 @@
 import {DesignSystemAppProps} from '@tryghost/admin-x-design-system';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import {TopLevelFrameworkProps} from '../providers/FrameworkProvider';
+import {TopLevelFrameworkProps} from '../providers/framework-provider';
+
+const fetchKoenigLexical: DesignSystemAppProps['fetchKoenigLexical'] = async () => {
+    // @ts-expect-error koenig-lexical doesn't currently ship TypeScript declarations.
+    return await import('@tryghost/koenig-lexical');
+};
 
 export default function renderStandaloneApp<Props extends object>(
     App: React.ComponentType<Props & {
@@ -36,11 +41,11 @@ export default function renderStandaloneApp<Props extends object>(
     ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <React.StrictMode>
             <App
-                designSystem={{darkMode: false, fetchKoenigLexical: async () => {}}}
+                designSystem={{darkMode: false, fetchKoenigLexical}}
                 framework={{
                     externalNavigate: (link) => {
                         // Use the expectExternalNavigate helper to test this dummy external linking
-                        window.location.href = `/external/${encodeURIComponent(JSON.stringify(link))}`;
+                        document.body.dataset.externalNavigate = JSON.stringify(link);
                     },
                     ghostVersion: '5.x',
                     sentryDSN: null,

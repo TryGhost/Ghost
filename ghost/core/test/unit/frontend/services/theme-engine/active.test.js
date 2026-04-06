@@ -1,10 +1,11 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const config = require('../../../../../core/shared/config');
 
 // is only exposed via themeEngine.getActive()
 const activeTheme = require('../../../../../core/frontend/services/theme-engine/active');
 const engine = require('../../../../../core/frontend/services/theme-engine/engine');
+const assetHash = require('../../../../../core/frontend/services/asset-hash');
 
 describe('Themes', function () {
     afterEach(function () {
@@ -53,28 +54,34 @@ describe('Themes', function () {
                 const theme = activeTheme.set(fakeSettings, fakeLoadedTheme, fakeCheckedTheme);
 
                 // Check the theme is not yet mounted
-                activeTheme.get().mounted.should.be.false();
+                assert.equal(activeTheme.get().mounted, false);
+
+                // Spy on assetHash.clearCache
+                const clearCacheSpy = sinon.spy(assetHash, 'clearCache');
 
                 // Call mount!
                 theme.mount(fakeBlogApp);
 
                 // Check the asset hash gets reset
-                configStub.calledOnce.should.be.true();
-                configStub.calledWith('assetHash', null).should.be.true();
+                sinon.assert.calledOnce(configStub);
+                sinon.assert.calledWith(configStub, 'assetHash', null);
+
+                // Check the file-based asset hash cache is cleared
+                sinon.assert.calledOnce(clearCacheSpy);
 
                 // Check te view cache was cleared
-                fakeBlogApp.cache.should.eql({});
+                assert.deepEqual(fakeBlogApp.cache, {});
 
                 // Check the views were set correctly
-                fakeBlogApp.set.calledOnce.should.be.true();
-                fakeBlogApp.set.calledWith('views', 'my/fake/theme/path').should.be.true();
+                sinon.assert.calledOnce(fakeBlogApp.set);
+                sinon.assert.calledWith(fakeBlogApp.set, 'views', 'my/fake/theme/path');
 
                 // Check handlebars was configured correctly
-                engineStub.calledOnce.should.be.true();
-                engineStub.calledWith('my/fake/theme/path/partials').should.be.true();
+                sinon.assert.calledOnce(engineStub);
+                sinon.assert.calledWith(engineStub, 'my/fake/theme/path/partials');
 
                 // Check the theme is now mounted
-                activeTheme.get().mounted.should.be.true();
+                assert.equal(activeTheme.get().mounted, true);
             });
 
             it('should mount active theme without partials', function () {
@@ -84,28 +91,34 @@ describe('Themes', function () {
                 const theme = activeTheme.set(fakeSettings, fakeLoadedTheme, fakeCheckedTheme);
 
                 // Check the theme is not yet mounted
-                activeTheme.get().mounted.should.be.false();
+                assert.equal(activeTheme.get().mounted, false);
+
+                // Spy on assetHash.clearCache
+                const clearCacheSpy = sinon.spy(assetHash, 'clearCache');
 
                 // Call mount!
                 theme.mount(fakeBlogApp);
 
                 // Check the asset hash gets reset
-                configStub.calledOnce.should.be.true();
-                configStub.calledWith('assetHash', null).should.be.true();
+                sinon.assert.calledOnce(configStub);
+                sinon.assert.calledWith(configStub, 'assetHash', null);
+
+                // Check the file-based asset hash cache is cleared
+                sinon.assert.calledOnce(clearCacheSpy);
 
                 // Check te view cache was cleared
-                fakeBlogApp.cache.should.eql({});
+                assert.deepEqual(fakeBlogApp.cache, {});
 
                 // Check the views were set correctly
-                fakeBlogApp.set.calledOnce.should.be.true();
-                fakeBlogApp.set.calledWith('views', 'my/fake/theme/path').should.be.true();
+                sinon.assert.calledOnce(fakeBlogApp.set);
+                sinon.assert.calledWith(fakeBlogApp.set, 'views', 'my/fake/theme/path');
 
                 // Check handlebars was configured correctly
-                engineStub.calledOnce.should.be.true();
-                engineStub.calledWith().should.be.true();
+                sinon.assert.calledOnce(engineStub);
+                sinon.assert.calledWith(engineStub);
 
                 // Check the theme is now mounted
-                activeTheme.get().mounted.should.be.true();
+                assert.equal(activeTheme.get().mounted, true);
             });
         });
     });

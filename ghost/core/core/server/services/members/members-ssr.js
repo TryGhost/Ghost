@@ -145,6 +145,11 @@ class MembersSSR {
         const cookies = this._getCookies(req, res);
         const value = cookies.get(this.sessionCookieName, {signed: true});
         if (!value) {
+            // Clear orphaned cookie (cookies library only clears .sig on invalid signature)
+            const unsignedValue = cookies.get(this.sessionCookieName, {signed: false});
+            if (unsignedValue) {
+                cookies.set(this.sessionCookieName, null, {...this.sessionCookieOptions, signed: false});
+            }
             throw new BadRequestError({
                 message: `Cookie ${this.sessionCookieName} not found`
             });
@@ -199,6 +204,11 @@ class MembersSSR {
     async _getMemberIdentityToken(transientId) {
         const api = await this._getMembersApi();
         return api.getMemberIdentityToken(transientId);
+    }
+
+    async _getMemberEntitlementToken(transientId) {
+        const api = await this._getMembersApi();
+        return api.getMemberEntitlementToken(transientId);
     }
 
     /**
@@ -313,6 +323,18 @@ class MembersSSR {
             await this.deleteSession(req, res);
             throw new BadRequestError({
                 message: 'Invalid session, could not get identity token'
+            });
+        }
+        return token;
+    }
+
+    async getEntitlementTokenForMemberFromSession(req, res) {
+        const transientId = this._getSessionCookies(req, res);
+        const token = await this._getMemberEntitlementToken(transientId);
+        if (!token) {
+            await this.deleteSession(req, res);
+            throw new BadRequestError({
+                message: 'Invalid session, could not get entitlement token'
             });
         }
         return token;

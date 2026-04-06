@@ -1,6 +1,6 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import {ConfirmationModal, FileUpload, Modal} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, FileUpload, Link, Modal} from '@tryghost/admin-x-design-system';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useImportContent} from '@tryghost/admin-x-framework/api/db';
 
@@ -13,12 +13,18 @@ const UniversalImportModal: React.FC = () => {
     return (
         <Modal
             backDropClick={false}
+            footer={
+                <div className='flex w-full items-center justify-between p-8'>
+                    <Link href="https://docs.ghost.org/migration/ghost" target="_blank">Learn about importing</Link>
+                    <Button color='outline' disabled={uploading} label='Cancel' onClick={() => modal.remove()} />
+                </div>
+            }
             okLabel=''
             size='sm'
             testId='universal-import-modal'
             title='Universal import'
         >
-            <div className='py-4 leading-9'>
+            <div className='py-4'>
                 <FileUpload
                     accept="application/json, application/zip"
                     id="import-file"

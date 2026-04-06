@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const getPublishedDate = require('../../../../core/frontend/meta/published-date');
 
 describe('getPublishedDate', function () {
@@ -9,7 +9,7 @@ describe('getPublishedDate', function () {
                 published_at: new Date('2016-01-01 12:56:45.232Z')
             }
         });
-        should.equal(pubDate, '2016-01-01T12:56:45.232Z');
+        assert.equal(pubDate, '2016-01-01T12:56:45.232Z');
     });
 
     it('should return published at over created at date as ISO 8601 if has both', function () {
@@ -20,7 +20,7 @@ describe('getPublishedDate', function () {
                 created_at: new Date('2015-01-01 12:56:45.232Z')
             }
         });
-        should.equal(pubDate, '2016-01-01T12:56:45.232Z');
+        assert.equal(pubDate, '2016-01-01T12:56:45.232Z');
     });
 
     it('should return null if no update_at date on context', function () {
@@ -28,7 +28,7 @@ describe('getPublishedDate', function () {
             context: ['author'],
             author: {}
         });
-        should.equal(pubDate, null);
+        assert.equal(pubDate, null);
     });
 
     it('should return null if context and property do not match in name', function () {
@@ -38,6 +38,6 @@ describe('getPublishedDate', function () {
                 published_at: new Date('2016-01-01 12:56:45.232Z')
             }
         });
-        should.equal(pubDate, null);
+        assert.equal(pubDate, null);
     });
 });

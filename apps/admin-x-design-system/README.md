@@ -2,10 +2,6 @@
 
 Components, design guidelines and documentation for building apps in Ghost Admin
 
-
-## Usage
-
-
 ## Develop
 
 This is a monorepo package.
@@ -13,8 +9,6 @@ This is a monorepo package.
 Follow the instructions for the top-level repo.
 1. `git clone` this repo & `cd` into it as usual
 2. Run `yarn` to install top-level dependencies.
-
-
 
 ## Test
 

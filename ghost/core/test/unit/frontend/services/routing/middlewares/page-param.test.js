@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../../../../core/shared/url-utils');
@@ -29,9 +29,9 @@ describe('UNIT: services/routing/middleware/page-param', function () {
 
         middleware.pageParam(req, res, next, 2);
 
-        urlUtils.redirect301.called.should.be.false();
-        next.calledOnce.should.be.true();
-        req.params.page.should.eql(2);
+        sinon.assert.notCalled(urlUtils.redirect301);
+        sinon.assert.calledOnce(next);
+        assert.equal(req.params.page, 2);
     });
 
     it('redirect for /page/1/', function () {
@@ -40,8 +40,8 @@ describe('UNIT: services/routing/middleware/page-param', function () {
 
         middleware.pageParam(req, res, next, 1);
 
-        urlUtils.redirect301.calledOnce.should.be.true();
-        next.called.should.be.false();
+        sinon.assert.calledOnce(urlUtils.redirect301);
+        sinon.assert.notCalled(next);
     });
 
     it('404 for /page/0/', function () {
@@ -50,9 +50,9 @@ describe('UNIT: services/routing/middleware/page-param', function () {
 
         middleware.pageParam(req, res, next, 0);
 
-        urlUtils.redirect301.called.should.be.false();
-        next.calledOnce.should.be.true();
-        (next.args[0][0] instanceof errors.NotFoundError).should.be.true();
+        sinon.assert.notCalled(urlUtils.redirect301);
+        sinon.assert.calledOnce(next);
+        assert.equal((next.args[0][0] instanceof errors.NotFoundError), true);
     });
 
     it('404 for /page/something/', function () {
@@ -61,9 +61,9 @@ describe('UNIT: services/routing/middleware/page-param', function () {
 
         middleware.pageParam(req, res, next, 'something');
 
-        urlUtils.redirect301.called.should.be.false();
-        next.calledOnce.should.be.true();
-        (next.args[0][0] instanceof errors.NotFoundError).should.be.true();
+        sinon.assert.notCalled(urlUtils.redirect301);
+        sinon.assert.calledOnce(next);
+        assert.equal((next.args[0][0] instanceof errors.NotFoundError), true);
     });
 
     it('redirect for /rss/page/1/', function () {
@@ -72,7 +72,7 @@ describe('UNIT: services/routing/middleware/page-param', function () {
 
         middleware.pageParam(req, res, next, 1);
 
-        urlUtils.redirect301.calledOnce.should.be.true();
-        next.called.should.be.false();
+        sinon.assert.calledOnce(urlUtils.redirect301);
+        sinon.assert.notCalled(next);
     });
 });

@@ -1,7 +1,7 @@
 import PostAnalyticsLayout from '@src/views/PostAnalytics/components/layout/post-analytics-layout';
 import PostAnalyticsView from '@src/views/PostAnalytics/components/post-analytics-view';
 import React from 'react';
-import {H1, ViewHeader} from '@tryghost/shade';
+import {H1, ViewHeader} from '@tryghost/shade/primitives';
 import {useFeatureFlag} from './use-feature-flag';
 
 /**

@@ -1,5 +1,5 @@
 const config = require('../../../shared/config');
-const Manager = require('./SiteMapManager');
+const Manager = require('./site-map-manager');
 const manager = new Manager();
 
 // Responsible for handling requests for sitemap files

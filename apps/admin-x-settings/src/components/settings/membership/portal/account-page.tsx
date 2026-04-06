@@ -1,16 +1,20 @@
 import React, {type FocusEventHandler, useEffect, useState} from 'react';
+import TransistorSettings from './transistor-settings';
+import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import validator from 'validator';
 import {Form, TextField} from '@tryghost/admin-x-design-system';
-import {type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {type Setting, type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {fullEmailAddress, getEmailDomain} from '@tryghost/admin-x-framework/api/site';
 import {useGlobalData} from '../../../providers/global-data-provider';
 
 const AccountPage: React.FC<{
+    localSettings: Setting[]
     updateSetting: (key: string, setting: SettingValue) => void
     errors: Record<string, string | undefined>
     setError: (key: string, error: string | undefined) => void
-}> = ({updateSetting, errors, setError}) => {
+}> = ({localSettings, updateSetting, errors, setError}) => {
     const {siteData, settings, config} = useGlobalData();
+    const hasTransistor = useFeatureFlag('transistor');
     const [membersSupportAddress, supportEmailAddress] = getSettingValues(settings, ['members_support_address', 'support_email_address']);
     const calculatedSupportAddress = supportEmailAddress?.toString() || fullEmailAddress(membersSupportAddress?.toString() || '', siteData!, config);
     const emailDomain = getEmailDomain(siteData!, config);
@@ -46,6 +50,13 @@ const AccountPage: React.FC<{
             onBlur={updateSupportAddress}
             onChange={e => setValue(e.target.value)}
         />
+
+        {hasTransistor && (
+            <TransistorSettings
+                localSettings={localSettings}
+                updateSetting={updateSetting}
+            />
+        )}
     </Form></div>;
 };
 
