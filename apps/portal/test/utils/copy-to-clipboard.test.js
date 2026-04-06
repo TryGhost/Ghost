@@ -1,4 +1,4 @@
-import {copyTextToClipboard} from '../../src/utils/copy-to-clipboard';
+import copyTextToClipboard from '../../src/utils/copy-to-clipboard';
 
 describe('copy-to-clipboard', () => {
     afterEach(() => {

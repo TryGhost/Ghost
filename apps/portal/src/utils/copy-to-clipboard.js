@@ -1,4 +1,4 @@
-export async function copyTextToClipboard(text) {
+export default async function copyTextToClipboard(text) {
     try {
         await window.navigator.clipboard.writeText(text);
         return true;
