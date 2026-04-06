@@ -51,6 +51,7 @@ const TransistorPodcastsAction = ({hasPodcasts, memberUuid, settings = {}}) => {
                 href={transistorUrl}
                 rel='noopener noreferrer'
                 className='gh-portal-btn gh-portal-btn-list'
+                target="_parent"
             >
                 {buttonText}
             </a>
