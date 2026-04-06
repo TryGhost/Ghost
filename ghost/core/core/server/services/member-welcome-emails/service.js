@@ -8,7 +8,7 @@ const settingsHelpers = require('../settings-helpers');
 const EmailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
 // @ts-expect-error type checker has trouble with the dynamic exporting in models
-const {AutomatedEmail, EmailDesignSetting, Newsletter} = require('../../models');
+const {AutomatedEmail, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
@@ -98,24 +98,6 @@ class MemberWelcomeEmailService {
         return labs.isSet('welcomeEmailsDesignCustomization');
     }
 
-    async #getFreshDesignSettings(emailDesignSettingId, fallbackDesignSettings = null) {
-        if (!this.#useDesignCustomization()) {
-            return null;
-        }
-
-        if (!emailDesignSettingId) {
-            return fallbackDesignSettings;
-        }
-
-        const designSettings = await EmailDesignSetting.findOne({id: emailDesignSettingId});
-
-        if (!designSettings) {
-            return fallbackDesignSettings;
-        }
-
-        return designSettings.toJSON();
-    }
-
     async loadMemberWelcomeEmails() {
         this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
 
@@ -135,7 +117,6 @@ class MemberWelcomeEmailService {
                 lexical: row.get('lexical'),
                 subject: row.get('subject'),
                 status: row.get('status'),
-                emailDesignSettingId: row.get('email_design_setting_id'),
                 designSettings: designSettings?.id ? designSettings.toJSON() : null,
                 senderName: row.get('sender_name'),
                 senderEmail: row.get('sender_email'),
@@ -173,15 +154,10 @@ class MemberWelcomeEmailService {
             });
         }
 
-        const designSettings = await this.#getFreshDesignSettings(
-            memberWelcomeEmail.emailDesignSettingId,
-            memberWelcomeEmail.designSettings
-        );
-
         const {html, text, subject} = await this.#renderer.render({
             lexical: memberWelcomeEmail.lexical,
             subject: memberWelcomeEmail.subject,
-            designSettings,
+            designSettings: memberWelcomeEmail.designSettings,
             member: {
                 name: member.name,
                 email: member.email,
@@ -244,16 +220,12 @@ class MemberWelcomeEmailService {
             uuid: '00000000-0000-4000-8000-000000000000'
         };
 
-        const fallbackDesignSettings = this.#useDesignCustomization() ? automatedEmail.related('emailDesignSetting') : null;
-        const designSettings = await this.#getFreshDesignSettings(
-            automatedEmail.get('email_design_setting_id'),
-            fallbackDesignSettings?.id ? fallbackDesignSettings.toJSON() : null
-        );
+        const designSettings = this.#useDesignCustomization() ? automatedEmail.related('emailDesignSetting') : null;
 
         const {html, text, subject: renderedSubject} = await this.#renderer.render({
             lexical,
             subject,
-            designSettings,
+            designSettings: designSettings?.id ? designSettings.toJSON() : null,
             member: testMember,
             siteSettings: this.#getSiteSettings()
         });
@@ -274,20 +246,25 @@ class MemberWelcomeEmailService {
 
 class MemberWelcomeEmailServiceWrapper {
     init() {
-        if (this.api) {
+        const useDesignCustomization = labs.isSet('welcomeEmailsDesignCustomization');
+
+        if (this.api && this.useDesignCustomization === useDesignCustomization) {
             return;
         }
 
-        const i18nLib = require('@tryghost/i18n');
-        const events = require('../../lib/common/events');
+        if (!this.i18n) {
+            const i18nLib = require('@tryghost/i18n');
+            const events = require('../../lib/common/events');
 
-        const i18n = i18nLib(settingsCache.get('locale') || 'en', 'ghost');
+            this.i18n = i18nLib(settingsCache.get('locale') || 'en', 'ghost');
 
-        events.on('settings.locale.edited', (model) => {
-            i18n.changeLanguage(model.get('value'));
-        });
+            events.on('settings.locale.edited', (model) => {
+                this.i18n.changeLanguage(model.get('value'));
+            });
+        }
 
-        this.api = new MemberWelcomeEmailService({t: i18n.t});
+        this.useDesignCustomization = useDesignCustomization;
+        this.api = new MemberWelcomeEmailService({t: this.i18n.t});
     }
 }
 

@@ -577,6 +577,39 @@ describe('MemberWelcomeEmailRenderer', function () {
                 assert(result.html.includes('https://ghost.org/?via=pbg-newsletter'));
             });
 
+            it('uses the newsletter content-shell class when design customization is enabled', async function () {
+                lexicalRenderStub.resolves('<p>Content</p>');
+                const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+                const result = await renderer.render({
+                    lexical: '{}',
+                    subject: 'Test Subject',
+                    member: {name: 'John', email: 'john@example.com'},
+                    siteSettings: defaultSiteSettings
+                });
+
+                assert.match(result.html, /<tr class="post-content-row">/);
+                assert(result.html.includes('class="post-content"'));
+            });
+
+            it('applies custom link colors when design customization is enabled', async function () {
+                lexicalRenderStub.resolves('<p><a href="https://example.com">Custom link</a></p>');
+                const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+                const result = await renderer.render({
+                    lexical: '{}',
+                    subject: 'Test Subject',
+                    designSettings: {
+                        link_color: '#000000'
+                    },
+                    member: {name: 'John', email: 'john@example.com'},
+                    siteSettings: defaultSiteSettings
+                });
+
+                assert(result.html.includes('class="post-content"'));
+                assert(result.html.includes('color: #000000'));
+            });
+
             it('applies header image styles and preserves header background color', async function () {
                 lexicalRenderStub.resolves('<p>Content</p>');
                 const renderer = new MemberWelcomeEmailRenderer({t: key => key});
