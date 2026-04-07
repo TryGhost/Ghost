@@ -70,6 +70,15 @@ describe('MembersActions', () => {
         mockUseNavigate.mockReturnValue(vi.fn());
     });
 
+    it('opens the import modal on the import route', () => {
+        setLocation('/members/import');
+
+        renderMembersActions({onImportComplete: vi.fn()});
+
+        expect(importModalPropsRef.current).not.toBeNull();
+        expect(importModalPropsRef.current?.open).toBe(true);
+    });
+
     it('navigates back to members when the import route modal closes', () => {
         const navigate = vi.fn();
         setLocation('/members/import', '?filter=label%3AVIP&search=alice');
