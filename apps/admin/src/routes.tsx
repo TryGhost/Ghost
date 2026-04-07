@@ -15,7 +15,7 @@ import MyProfileRedirect from "./my-profile-redirect";
 // Ember
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
-import { MembersRouteGate } from "./members-route-gate";
+import { MembersRoute } from "./members-route";
 
 import { NotFound } from "./not-found";
 
@@ -58,7 +58,7 @@ const emberFallbackRoutes: RouteObject[] = EMBER_ROUTES.map(path => ({
 
 const membersRoute: RouteObject = {
     path: "/members",
-    element: <MembersRouteGate />,
+    element: <MembersRoute />,
     handle: emberFallbackHandle,
     children: [
         {
