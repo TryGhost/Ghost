@@ -12,6 +12,8 @@ const {registerHelpers} = require('../email-service/helpers/register-helpers');
 
 const REPLACEMENT_REGEX = /%%\{(\w+?)(?:,? *"(.*?)")?\}%%/g;
 const UNMATCHED_TOKEN_REGEX = /%%\{.*?\}%%/g;
+
+// TODO: remove this constant after removing the labs flag, as we won't need these defaults anymore
 const DEFAULT_DESIGN_SETTINGS = {
     background_color: '#ffffff',
     button_color: 'accent',
@@ -149,10 +151,9 @@ class MemberWelcomeEmailRenderer {
     async render({lexical, subject, designSettings = {}, member, siteSettings}) {
         const useDesignCustomization = labs.isSet('welcomeEmailsDesignCustomization');
 
-        designSettings = useDesignCustomization ? {
-            ...DEFAULT_DESIGN_SETTINGS,
-            ...designSettings
-        } : DEFAULT_DESIGN_SETTINGS;
+        if (!useDesignCustomization) {
+            designSettings = DEFAULT_DESIGN_SETTINGS;
+        }
 
         const design = getEmailDesign({
             accentColor: siteSettings.accentColor,
