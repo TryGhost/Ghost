@@ -30,7 +30,6 @@ Object {
       "superEditors": true,
       "tagsX": true,
       "themeTranslation": true,
-      "transistor": true,
       "urlCache": true,
       "welcomeEmailsDesignCustomization": true,
     },

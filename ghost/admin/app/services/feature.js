@@ -65,7 +65,6 @@ export default class FeatureService extends Service {
     @feature('importMemberTier') importMemberTier;
     @feature('lexicalIndicators') lexicalIndicators;
     @feature('editorExcerpt') editorExcerpt;
-    @feature('transistor') transistor;
     @feature('tagsX') tagsX;
     @feature('commentModeration') commentModeration;
     _user = null;
