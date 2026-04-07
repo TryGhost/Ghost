@@ -1,5 +1,5 @@
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import WelcomeEmailCustomizeModal from './member-emails/welcome-email-customize-modal';
 import WelcomeEmailModal from './member-emails/welcome-email-modal';
@@ -160,10 +160,17 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
         return addAutomatedEmail({...defaults, status});
     };
 
+    const submittedTokenRef = useRef<string | null>(null);
+
     useEffect(() => {
         if (!verifyEmailToken || !window.location.href.includes('memberemails')) {
             return;
         }
+
+        if (submittedTokenRef.current === verifyEmailToken) {
+            return;
+        }
+        submittedTokenRef.current = verifyEmailToken;
 
         const clearVerifyEmailFromRoute = () => {
             const hash = window.location.hash.slice(1);
