@@ -4,9 +4,10 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {render} from '@testing-library/react';
 
 const importModalPropsRef: {current: Record<string, unknown> | null} = {current: null};
-const {mockUseLocation, mockUseNavigate} = vi.hoisted(() => ({
+const {mockUseLocation, mockUseNavigate, mockUseBrowseConfig} = vi.hoisted(() => ({
     mockUseLocation: vi.fn(),
-    mockUseNavigate: vi.fn()
+    mockUseNavigate: vi.fn(),
+    mockUseBrowseConfig: vi.fn()
 }));
 
 vi.mock('@tryghost/admin-x-framework', () => ({
@@ -23,6 +24,10 @@ vi.mock('@src/views/members/components/bulk-action-modals', () => ({
     RemoveLabelModal: () => React.createElement('div'),
     UnsubscribeModal: () => React.createElement('div'),
     DeleteModal: () => React.createElement('div')
+}));
+
+vi.mock('@tryghost/admin-x-framework/api/config', () => ({
+    useBrowseConfig: mockUseBrowseConfig
 }));
 
 vi.mock('@tryghost/admin-x-framework/api/newsletters', () => ({
@@ -51,11 +56,74 @@ describe('MembersActions', () => {
             search: ''
         });
         mockUseNavigate.mockReturnValue(vi.fn());
+        mockUseBrowseConfig.mockReturnValue({
+            data: {
+                config: {
+                    labs: {}
+                }
+            }
+        });
     });
 
-    it('opens the import modal when rendered on the import route', () => {
+    it('does not open the import modal on the import route when neither React ownership flag is enabled', () => {
         mockUseLocation.mockReturnValue({
             pathname: '/members/import'
+        });
+
+        render(
+            <MembersActions
+                hasFilterOrSearch={false}
+                memberCount={10}
+                search=""
+                canBulkDelete
+                onImportComplete={vi.fn()}
+            />
+        );
+
+        expect(importModalPropsRef.current).not.toBeNull();
+        expect(importModalPropsRef.current?.open).toBe(false);
+    });
+
+    it('opens the import modal when membersForward is enabled on the import route', () => {
+        mockUseLocation.mockReturnValue({
+            pathname: '/members/import'
+        });
+        mockUseBrowseConfig.mockReturnValue({
+            data: {
+                config: {
+                    labs: {
+                        membersForward: true
+                    }
+                }
+            }
+        });
+
+        render(
+            <MembersActions
+                hasFilterOrSearch={false}
+                memberCount={10}
+                search=""
+                canBulkDelete
+                onImportComplete={vi.fn()}
+            />
+        );
+
+        expect(importModalPropsRef.current).not.toBeNull();
+        expect(importModalPropsRef.current?.open).toBe(true);
+    });
+
+    it('opens the import modal when inAdminForward is enabled on the import route', () => {
+        mockUseLocation.mockReturnValue({
+            pathname: '/members/import'
+        });
+        mockUseBrowseConfig.mockReturnValue({
+            data: {
+                config: {
+                    labs: {
+                        inAdminForward: true
+                    }
+                }
+            }
         });
 
         render(
@@ -79,6 +147,15 @@ describe('MembersActions', () => {
             search: '?filter=label%3AVIP&search=alice'
         });
         mockUseNavigate.mockReturnValue(navigate);
+        mockUseBrowseConfig.mockReturnValue({
+            data: {
+                config: {
+                    labs: {
+                        membersForward: true
+                    }
+                }
+            }
+        });
 
         render(
             <MembersActions
@@ -107,6 +184,15 @@ describe('MembersActions', () => {
             search: '?filter=label%3AVIP&search=alice'
         });
         mockUseNavigate.mockReturnValue(navigate);
+        mockUseBrowseConfig.mockReturnValue({
+            data: {
+                config: {
+                    labs: {
+                        membersForward: true
+                    }
+                }
+            }
+        });
 
         render(
             <MembersActions
