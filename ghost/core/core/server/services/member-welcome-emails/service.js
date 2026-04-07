@@ -194,7 +194,7 @@ class MemberWelcomeEmailService {
         // Still validate the automated email exists (for permission purposes)
         const automation = await WelcomeEmailAutomation.findOne({id: automatedEmailId}, {withRelated: ['welcomeEmailAutomatedEmail']});
 
-        if (!automation || !automation.related('welcomeEmailAutomatedEmail')) {
+        if (!automation || !automation.related('welcomeEmailAutomatedEmail')?.id) {
             throw new errors.NotFoundError({
                 message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
             });
