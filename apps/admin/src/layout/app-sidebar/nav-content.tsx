@@ -11,12 +11,11 @@ import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
 import { NavCustomViews } from "./nav-custom-views";
 import { NavMemberViews } from "./nav-member-views";
 import { useMemberSidebarViews } from "./member-sidebar-views";
-import { isMembersNavActive } from "./nav-content.helpers";
 import { useCustomSidebarViews } from "./use-custom-sidebar-views";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
-const LEGACY_MEMBERS_ACTIVE_ROUTES = ['members', 'member', 'member.new'];
+const LEGACY_MEMBERS_SUBROUTES = ['member', 'member.new', 'members-activity'];
 
 function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
     return (
@@ -80,6 +79,9 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const routing = useEmberRouting();
     const commentModerationEnabled = useFeatureFlag('commentModeration');
     const membersForwardEnabled = useFeatureFlag('membersForward');
+    const normalizedPathname = location.pathname.replace(/\/+$/, '') || '/';
+    const isReactMembersListRouteActive = normalizedPathname === '/members';
+    const isReactMembersImportRouteActive = normalizedPathname === '/members/import';
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
@@ -88,19 +90,14 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const isPublishedPostsRouteActive = routing.isRouteActive('posts', {type: 'published'});
     const hasActivePostChild = isDraftPostsRouteActive || isScheduledPostsRouteActive || isPublishedPostsRouteActive || postCustomViews.some(view => view.isActive);
     const postsExpanded = savedPostsExpanded;
-    const isOnMembersRoute = location.pathname === '/members' || location.pathname === '/members/import';
-    const hasActiveMemberView = memberViews.some(view => view.isActive);
+    const hasActiveMemberChild = membersForwardEnabled && hasMemberViews && memberViews.some(view => view.isActive);
     const membersExpanded = savedMembersExpanded;
-    const membersNavActive = isMembersNavActive({
-        membersForwardEnabled,
-        isOnMembersRoute,
-        hasActiveMemberView,
-        isMembersExpanded: membersExpanded,
-        isLegacyMembersRouteActive: routing.isRouteActive(LEGACY_MEMBERS_ACTIVE_ROUTES)
-    });
+    const isLegacyMembersRouteActive = routing.isRouteActive(LEGACY_MEMBERS_SUBROUTES) || (!membersForwardEnabled && routing.isRouteActive('members'));
+    const isMembersBaseRouteActive = isLegacyMembersRouteActive || isReactMembersImportRouteActive || (isReactMembersListRouteActive && !hasActiveMemberChild);
     const postsRoute = routing.getRouteUrl('posts');
     const isPostsRouteActive = routing.isRouteActive('posts');
     const postsNavActive = isPostsRouteActive || (!postsExpanded && hasActivePostChild);
+    const membersNavActive = isMembersBaseRouteActive || (!membersExpanded && hasActiveMemberChild);
     const membersRoute = routing.getRouteUrl('members');
 
     return (
