@@ -1,7 +1,6 @@
-import {Navigate} from "@tryghost/admin-x-framework";
+import {Navigate, Outlet} from "@tryghost/admin-x-framework";
 import {useCurrentUser} from "@tryghost/admin-x-framework/api/current-user";
 import {canManageMembers} from "@tryghost/admin-x-framework/api/users";
-import {MembersRouteGate} from "./members-route-gate";
 
 export function MembersRoute() {
     const {data: currentUser, isError, isLoading} = useCurrentUser();
@@ -18,5 +17,5 @@ export function MembersRoute() {
         return <Navigate replace to="/" />;
     }
 
-    return <MembersRouteGate />;
+    return <Outlet />;
 }

@@ -2,6 +2,7 @@ import React from "react"
 
 import {SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuBadge} from "@tryghost/shade/components"
 import {formatNumber, LucideIcon} from "@tryghost/shade/utils"
+import { useLocation } from "@tryghost/admin-x-framework";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
 import { NavMenuItem } from "./nav-menu-item";
@@ -13,6 +14,8 @@ import { useMemberSidebarViews } from "./member-sidebar-views";
 import { useCustomSidebarViews } from "./use-custom-sidebar-views";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
+
+const LEGACY_MEMBERS_ACTIVE_ROUTES = ['member', 'member.new', 'members-activity'];
 
 function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
     return (
@@ -70,12 +73,12 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const [savedMembersExpanded, setMembersExpanded] = useNavigationExpanded('members');
     const postCustomViews = useCustomSidebarViews('posts');
     const memberViews = useMemberSidebarViews();
+    const hasMemberViews = memberViews.length > 0;
+    const location = useLocation();
     const memberCount = useMemberCount();
     const routing = useEmberRouting();
     const commentModerationEnabled = useFeatureFlag('commentModeration');
-    const membersForwardEnabled = useFeatureFlag('membersForward');
-    const visibleMemberViews = membersForwardEnabled ? memberViews : [];
-    const hasMemberViews = visibleMemberViews.length > 0;
+    const normalizedPathname = location.pathname.replace(/\/+$/, '') || '/';
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
@@ -84,14 +87,16 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const isPublishedPostsRouteActive = routing.isRouteActive('posts', {type: 'published'});
     const hasActivePostChild = isDraftPostsRouteActive || isScheduledPostsRouteActive || isPublishedPostsRouteActive || postCustomViews.some(view => view.isActive);
     const postsExpanded = savedPostsExpanded;
-    const hasActiveMemberChild = visibleMemberViews.some(view => view.isActive);
+    const isOnMembersRoute = normalizedPathname === '/members' || normalizedPathname === '/members/import';
+    const hasActiveMemberView = hasMemberViews && memberViews.some(view => view.isActive);
     const membersExpanded = savedMembersExpanded;
-    const isMembersBaseRouteActive = routing.isRouteActive(['members', 'member', 'member.new', 'members-activity']);
+    const membersNavActive = isOnMembersRoute
+        ? (!hasActiveMemberView || !membersExpanded)
+        : routing.isRouteActive(LEGACY_MEMBERS_ACTIVE_ROUTES);
     const postsRoute = routing.getRouteUrl('posts');
     const isPostsRouteActive = routing.isRouteActive('posts');
     const postsNavActive = isPostsRouteActive || (!postsExpanded && hasActivePostChild);
-    const membersNavActive = (isMembersBaseRouteActive && !hasActiveMemberChild) || (!membersExpanded && hasActiveMemberChild);
-    const membersRoute = routing.getRouteUrl('members');
+    const membersRoute = 'members';
 
     return (
         <SidebarGroup {...props}>

@@ -39,6 +39,7 @@ const PlaceholderRow = forwardRef<HTMLTableRowElement>(
 interface MembersListProps {
     items: Member[];
     totalItems: number;
+    backPath?: string;
     hasNextPage?: boolean;
     isFetchingNextPage?: boolean;
     fetchNextPage: () => void;
@@ -53,6 +54,7 @@ interface MembersListProps {
 function MembersList({
     items,
     totalItems,
+    backPath,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
@@ -263,6 +265,7 @@ function MembersList({
                                     key={key}
                                     {...props}
                                     activeColumns={activeColumns}
+                                    backPath={backPath}
                                     columnStyles={columnStyles}
                                     item={item}
                                     showEmailOpenRate={showEmailOpenRate}

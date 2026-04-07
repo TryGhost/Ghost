@@ -48,10 +48,6 @@ const features: Feature[] = [{
     description: 'Display a Feedback menu item in the admin sidebar. Requires the new admin experience.',
     flag: 'featurebaseFeedback'
 }, {
-    title: 'Members Forward',
-    description: 'Use the new React-based members list instead of the Ember implementation',
-    flag: 'membersForward'
-}, {
     title: 'Drip Sequences',
     description: 'Enable welcome email drip sequences',
     flag: 'dripSequences'

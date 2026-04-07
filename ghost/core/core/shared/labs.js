@@ -46,7 +46,6 @@ const PRIVATE_FEATURES = [
     'emailUniqueid',
     'themeTranslation',
     'indexnow',
-    'membersForward',
     'dripSequences',
     'welcomeEmailsDesignCustomization',
     'pictureImageFormats',

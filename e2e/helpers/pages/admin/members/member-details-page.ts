@@ -39,6 +39,7 @@ export class MemberDetailsPage extends AdminPage {
     readonly saveButton: Locator;
     readonly savedButton: Locator;
     readonly retryButton: Locator;
+    readonly membersBackLink: Locator;
 
     readonly copyLinkButton: Locator;
     readonly magicLinkInput: Locator;
@@ -69,6 +70,7 @@ export class MemberDetailsPage extends AdminPage {
         this.saveButton = page.getByRole('button', {name: 'Save'});
         this.savedButton = page.getByRole('button', {name: 'Saved'});
         this.retryButton = page.getByRole('button', {name: 'Retry'});
+        this.membersBackLink = page.locator('[data-test-link="members-back"]');
         this.copyLinkButton = page.getByRole('button', {name: 'Copy link'});
         this.magicLinkInput = page.getByTestId('member-signin-url').last();
         this.confirmLeaveButton = page.getByRole('button', {name: 'Leave'});
