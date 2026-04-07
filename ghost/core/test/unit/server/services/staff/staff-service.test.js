@@ -973,5 +973,73 @@ describe('StaffService', function () {
                 sinon.assert.calledWith(mailStub, sinon.match.has('text', sinon.match('No message provided')));
             });
         });
+
+        describe('notifyGiftReceived', function () {
+            it('sends gift email with correct subject', async function () {
+                await service.emails.notifyGiftReceived({
+                    name: 'Alice',
+                    email: 'alice@example.com',
+                    memberId: null,
+                    amount: 6000,
+                    currency: 'usd'
+                });
+
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'gift-purchased');
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('subject', sinon.match('Gift subscription purchased: $60.00 from Alice')));
+            });
+
+            it('includes amount in HTML', async function () {
+                await service.emails.notifyGiftReceived({
+                    name: 'Bob',
+                    email: 'bob@example.com',
+                    memberId: null,
+                    amount: 1500,
+                    currency: 'eur'
+                });
+
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('€15.00')));
+            });
+
+            it('includes purchaser name in HTML', async function () {
+                await service.emails.notifyGiftReceived({
+                    name: 'Charlie',
+                    email: 'charlie@example.com',
+                    memberId: null,
+                    amount: 5000,
+                    currency: 'usd'
+                });
+
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Charlie')));
+            });
+
+            it('includes amount in plain text', async function () {
+                await service.emails.notifyGiftReceived({
+                    name: 'Diana',
+                    email: 'diana@example.com',
+                    memberId: null,
+                    amount: 2000,
+                    currency: 'gbp'
+                });
+
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('text', sinon.match('£20.00')));
+            });
+
+            it('falls back to email when name is null', async function () {
+                await service.emails.notifyGiftReceived({
+                    name: null,
+                    email: 'anon@example.com',
+                    memberId: null,
+                    amount: 3000,
+                    currency: 'usd'
+                });
+
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('subject', sinon.match('from anon@example.com')));
+            });
+        });
     });
 });

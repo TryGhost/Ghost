@@ -10,6 +10,7 @@ class GiftServiceWrapper {
         const {GiftBookshelfRepository} = require('./gift-bookshelf-repository');
         const {GiftService} = require('./gift-service');
         const membersService = require('../members');
+        const staffService = require('../staff');
 
         const repository = new GiftBookshelfRepository({
             GiftModel
@@ -19,6 +20,9 @@ class GiftServiceWrapper {
             giftRepository: repository,
             get memberRepository() {
                 return membersService.api.members;
+            },
+            get staffServiceEmails() {
+                return staffService.api.emails;
             }
         });
     }
