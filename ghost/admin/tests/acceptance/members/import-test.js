@@ -120,6 +120,15 @@ testemail@example.com,Test Email,This is a test template for importing your memb
             expect(currentRouteName()).to.equal('react-fallback');
             expect(find('[data-test-modal="import-members"]'), 'members import modal').to.not.exist;
         });
+
+        it('preserves query params when membersForward is enabled', async function () {
+            enableLabsFlag(this.server, 'membersForward');
+
+            await visit('/members/import?filter=label%3AVIP&search=alice');
+
+            expect(currentRouteName()).to.equal('react-fallback');
+            expect(currentURL()).to.equal('/members/import?filter=label%3AVIP&search=alice');
+        });
     });
     describe ('super editors functions', function () {
         beforeEach(async function () {
@@ -232,6 +241,14 @@ testemail@example.com,Test Email,This is a test template for importing your memb
 
         it('Editor cannot access members import', async function () {
             await visit('/members/import');
+
+            expect(currentURL()).to.equal('/site');
+        });
+
+        it('Editor cannot access members import when membersForward is enabled', async function () {
+            enableLabsFlag(this.server, 'membersForward');
+
+            await visit('/members/import?filter=label%3AVIP&search=alice');
 
             expect(currentURL()).to.equal('/site');
         });

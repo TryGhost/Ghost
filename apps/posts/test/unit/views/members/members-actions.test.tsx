@@ -97,7 +97,7 @@ describe('MembersActions', () => {
 
         handleImportClose?.();
 
-        expect(navigate).toHaveBeenCalledWith('/members?filter=label%3AVIP&search=alice');
+        expect(navigate).toHaveBeenCalledWith('/members?filter=label%3AVIP&search=alice', {replace: true});
     });
 
     it('navigates to the imported label filter when the import route modal closes after a labeled import', () => {
@@ -122,6 +122,6 @@ describe('MembersActions', () => {
         handleImportClose?.({
             importLabel: {slug: 'import-2026-03-17'}
         });
-        expect(navigate).toHaveBeenCalledWith('/members?filter=label%3A%5Bimport-2026-03-17%5D');
+        expect(navigate).toHaveBeenCalledWith('/members?filter=label%3A%5Bimport-2026-03-17%5D', {replace: true});
     });
 });

@@ -3,12 +3,20 @@ import {inject as service} from '@ember/service';
 
 export default class MembersImportRoute extends MembersManagementRoute {
     @service feature;
+    @service router;
 
-    beforeModel() {
-        super.beforeModel(...arguments);
+    beforeModel(transition) {
+        const nextTransition = super.beforeModel(...arguments);
+
+        if (nextTransition) {
+            return nextTransition;
+        }
 
         if (this.feature.membersForward) {
-            return this.replaceWith('react-fallback', 'members/import');
+            const queryString = new URLSearchParams(transition?.to?.queryParams || {}).toString();
+            const path = queryString ? `/members/import?${queryString}` : '/members/import';
+
+            return this.router.replaceWith(path);
         }
     }
 }

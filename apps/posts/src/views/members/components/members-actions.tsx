@@ -199,11 +199,11 @@ const MembersActions: React.FC<MembersActionsProps> = ({
         if (importResponse?.importLabel) {
             navigate(buildMembersUrl({
                 filter: `label:[${importResponse.importLabel.slug}]`
-            }));
+            }), {replace: true});
             return;
         }
 
-        navigate(`/members${currentSearch}`);
+        navigate(`/members${currentSearch}`, {replace: true});
     }, [currentSearch, navigate]);
 
     return (
