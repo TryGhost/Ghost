@@ -62,13 +62,25 @@ function isModifiedClick(event: Pick<React.MouseEvent<HTMLElement>, 'button' | '
     return event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
 }
 
-function openMemberInNewTab(memberId: string) {
-    window.open(`#/members/${memberId}`, '_blank', 'noopener');
+function buildMemberHref(memberId: string, backPath?: string) {
+    const params = new URLSearchParams();
+
+    if (backPath) {
+        params.set('back', backPath);
+    }
+
+    const queryString = params.toString();
+
+    return `#/members/${memberId}${queryString ? `?${queryString}` : ''}`;
+}
+
+function openMemberInNewTab(memberId: string, backPath?: string) {
+    window.open(buildMemberHref(memberId, backPath), '_blank', 'noopener');
 }
 
 // --- Sub-components ---
 
-function MembersListItemName({item, onClick}: { item: Member; onClick?: (memberId: string) => void }) {
+function MembersListItemName({item, backPath, onClick}: { item: Member; backPath?: string; onClick?: (memberId: string) => void }) {
     return (
         <div className="flex min-w-0 items-center gap-3">
             <MemberAvatar
@@ -81,7 +93,7 @@ function MembersListItemName({item, onClick}: { item: Member; onClick?: (memberI
             <div className="min-w-0">
                 <a
                     className="block min-w-0 cursor-pointer"
-                    href={`#/members/${item.id}`}
+                    href={buildMemberHref(item.id, backPath)}
                     onClick={onClick ? (e) => {
                         if (isModifiedClick(e)) {
                             e.stopPropagation();
@@ -209,6 +221,7 @@ function MembersListItemDynamicColumn({
 interface MembersListItemProps {
     item: Member;
     activeColumns: ActiveColumn[];
+    backPath?: string;
     columnStyles: MemberTableColumnStyles;
     showPinnedEdge: boolean;
     showEmailOpenRate: boolean;
@@ -219,6 +232,7 @@ interface MembersListItemProps {
 function MembersListItem({
     item,
     activeColumns,
+    backPath,
     columnStyles,
     showPinnedEdge,
     showEmailOpenRate,
@@ -232,7 +246,7 @@ function MembersListItem({
     } as CSSProperties;
     const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
         if (isModifiedClick(event)) {
-            openMemberInNewTab(item.id);
+            openMemberInNewTab(item.id, backPath);
             return;
         }
 
@@ -244,7 +258,7 @@ function MembersListItem({
         }
 
         event.preventDefault();
-        openMemberInNewTab(item.id);
+        openMemberInNewTab(item.id, backPath);
     };
 
     return (
@@ -258,7 +272,7 @@ function MembersListItem({
             <TableCell className={cn(
                 'min-w-0 bg-background px-4 py-3 group-hover:bg-[var(--members-sticky-hover-bg)] max-sm:!w-full max-sm:!min-w-0 lg:sticky lg:left-0 lg:z-20'
             )} style={memberCellStyle}>
-                <MembersListItemName item={item} onClick={onClick} />
+                <MembersListItemName backPath={backPath} item={item} onClick={onClick} />
                 {showPinnedEdge && (
                     <>
                         <div

@@ -16,8 +16,6 @@ async function saveCurrentView(membersPage: MembersListPage, name: string) {
 }
 
 test.describe('Ghost Admin - Members Saved Views', () => {
-    test.use({labs: {membersForward: true}});
-
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {
