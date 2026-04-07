@@ -4,10 +4,9 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {render} from '@testing-library/react';
 
 const importModalPropsRef: {current: Record<string, unknown> | null} = {current: null};
-const {mockUseLocation, mockUseNavigate, mockUseBrowseConfig} = vi.hoisted(() => ({
+const {mockUseLocation, mockUseNavigate} = vi.hoisted(() => ({
     mockUseLocation: vi.fn(),
-    mockUseNavigate: vi.fn(),
-    mockUseBrowseConfig: vi.fn()
+    mockUseNavigate: vi.fn()
 }));
 
 vi.mock('@tryghost/admin-x-framework', () => ({
@@ -24,10 +23,6 @@ vi.mock('@src/views/members/components/bulk-action-modals', () => ({
     RemoveLabelModal: () => React.createElement('div'),
     UnsubscribeModal: () => React.createElement('div'),
     DeleteModal: () => React.createElement('div')
-}));
-
-vi.mock('@tryghost/admin-x-framework/api/config', () => ({
-    useBrowseConfig: mockUseBrowseConfig
 }));
 
 vi.mock('@tryghost/admin-x-framework/api/newsletters', () => ({
@@ -59,18 +54,6 @@ const setLocation = (pathname: string, search = '') => {
     mockUseLocation.mockReturnValue({pathname, search});
 };
 
-const setMembersForward = (enabled: boolean) => {
-    mockUseBrowseConfig.mockReturnValue({
-        data: {
-            config: {
-                labs: {
-                    membersForward: enabled
-                }
-            }
-        }
-    });
-};
-
 const renderMembersActions = (props: Partial<React.ComponentProps<typeof MembersActions>> = {}) => {
     return render(
         <MembersActions
@@ -85,33 +68,12 @@ describe('MembersActions', () => {
         importModalPropsRef.current = null;
         setLocation('/members');
         mockUseNavigate.mockReturnValue(vi.fn());
-        setMembersForward(false);
-    });
-
-    it('does not open the import modal on the import route when membersForward is disabled', () => {
-        setLocation('/members/import');
-
-        renderMembersActions({onImportComplete: vi.fn()});
-
-        expect(importModalPropsRef.current).not.toBeNull();
-        expect(importModalPropsRef.current?.open).toBe(false);
-    });
-
-    it('opens the import modal when membersForward is enabled on the import route', () => {
-        setLocation('/members/import');
-        setMembersForward(true);
-
-        renderMembersActions({onImportComplete: vi.fn()});
-
-        expect(importModalPropsRef.current).not.toBeNull();
-        expect(importModalPropsRef.current?.open).toBe(true);
     });
 
     it('navigates back to members when the import route modal closes', () => {
         const navigate = vi.fn();
         setLocation('/members/import', '?filter=label%3AVIP&search=alice');
         mockUseNavigate.mockReturnValue(navigate);
-        setMembersForward(true);
 
         renderMembersActions();
 
@@ -130,7 +92,6 @@ describe('MembersActions', () => {
         const navigate = vi.fn();
         setLocation('/members/import', '?filter=label%3AVIP&search=alice');
         mockUseNavigate.mockReturnValue(navigate);
-        setMembersForward(true);
 
         renderMembersActions();
         expect(importModalPropsRef.current).not.toBeNull();

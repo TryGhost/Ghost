@@ -7,7 +7,6 @@ import {blobDownloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
 import {buildMemberOperationParams} from '../member-query-params';
 import {buildMembersUrl} from '../member-route';
 import {toast} from 'sonner';
-import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBulkDeleteMembers, useBulkEditMembers} from '@tryghost/admin-x-framework/api/members';
 import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
@@ -45,9 +44,6 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     const navigate = useNavigate();
     const isImportRoute = location.pathname === '/members/import';
     const currentSearch = location.search ?? '';
-    const {data: configData} = useBrowseConfig();
-    const membersForwardEnabled = configData?.config?.labs?.membersForward === true;
-    const isReactImportRoute = isImportRoute && membersForwardEnabled;
     const [showAddLabelModal, setShowAddLabelModal] = useState(false);
     const [showRemoveLabelModal, setShowRemoveLabelModal] = useState(false);
     const [showUnsubscribeModal, setShowUnsubscribeModal] = useState(false);
@@ -276,7 +272,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
 
             {/* Modals */}
             <ImportMembersModal
-                open={isReactImportRoute}
+                open={isImportRoute}
                 onClose={handleImportClose}
                 onComplete={handleImportComplete}
                 onOpenChange={handleImportModalOpenChange}
