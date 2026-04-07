@@ -117,7 +117,7 @@ testemail@example.com,Test Email,This is a test template for importing your memb
 
             await visit('/members/import');
 
-            expect(currentRouteName()).to.equal('react-fallback');
+            expect(currentRouteName()).to.equal('members.import');
             expect(find('[data-test-modal="import-members"]'), 'members import modal').to.not.exist;
         });
 
@@ -126,7 +126,7 @@ testemail@example.com,Test Email,This is a test template for importing your memb
 
             await visit('/members/import?filter=label%3AVIP&search=alice');
 
-            expect(currentRouteName()).to.equal('react-fallback');
+            expect(currentRouteName()).to.equal('members.import');
             expect(currentURL()).to.equal('/members/import?filter=label%3AVIP&search=alice');
         });
     });
