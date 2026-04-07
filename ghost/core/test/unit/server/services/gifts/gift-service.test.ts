@@ -14,6 +14,12 @@ describe('GiftService', function () {
     let staffServiceEmails: {
         notifyGiftReceived: sinon.SinonStub;
     };
+    let giftEmailService: {
+        sendPurchaseConfirmation: sinon.SinonStub;
+    };
+    let tiersService: {
+        api: {read: sinon.SinonStub};
+    };
     const purchaseData = {
         token: 'abc-123',
         buyerEmail: 'buyer@example.com',
@@ -38,6 +44,12 @@ describe('GiftService', function () {
         staffServiceEmails = {
             notifyGiftReceived: sinon.stub()
         };
+        giftEmailService = {
+            sendPurchaseConfirmation: sinon.stub()
+        };
+        tiersService = {
+            api: {read: sinon.stub().resolves({name: 'Gold'})}
+        };
     });
 
     afterEach(function () {
@@ -45,7 +57,7 @@ describe('GiftService', function () {
     });
 
     function createService() {
-        return new GiftService({giftRepository: giftRepository as any, memberRepository, staffServiceEmails});
+        return new GiftService({giftRepository: giftRepository as any, memberRepository, tiersService, giftEmailService, staffServiceEmails});
     }
 
     describe('recordPurchase', function () {
@@ -168,7 +180,7 @@ describe('GiftService', function () {
             assert.equal(emailData.currency, 'usd');
         });
 
-        it('uses buyerEmail and null name when purchaser is not a member', async function () {
+        it('uses buyerEmail and null name when buyer is not a member', async function () {
             const service = createService();
 
             await service.recordPurchase({...purchaseData, stripeCustomerId: null});
@@ -180,6 +192,49 @@ describe('GiftService', function () {
             assert.equal(emailData.name, null);
             assert.equal(emailData.email, 'buyer@example.com');
             assert.equal(emailData.memberId, null);
+        });
+
+        it('sends buyer confirmation email', async function () {
+            const service = createService();
+
+            await service.recordPurchase(purchaseData);
+
+            sinon.assert.calledOnce(tiersService.api.read);
+            sinon.assert.calledWith(tiersService.api.read, 'tier_1');
+            sinon.assert.calledOnce(giftEmailService.sendPurchaseConfirmation);
+
+            const emailData = giftEmailService.sendPurchaseConfirmation.getCall(0).args[0];
+
+            assert.equal(emailData.buyerEmail, 'buyer@example.com');
+            assert.equal(emailData.amount, 5000);
+            assert.equal(emailData.currency, 'usd');
+            assert.equal(emailData.token, 'abc-123');
+            assert.equal(emailData.tierName, 'Gold');
+            assert.equal(emailData.cadence, 'year');
+            assert.equal(emailData.duration, 1);
+            assert.ok(emailData.expiresAt instanceof Date);
+        });
+
+        it('does not send confirmation email when tier is not found', async function () {
+            tiersService.api.read.resolves(null);
+
+            const service = createService();
+
+            const result = await service.recordPurchase(purchaseData);
+
+            assert.equal(result, true);
+            sinon.assert.notCalled(giftEmailService.sendPurchaseConfirmation);
+        });
+
+        it('does not fail purchase when buyer confirmation email throws', async function () {
+            giftEmailService.sendPurchaseConfirmation.rejects(new Error('SMTP error'));
+
+            const service = createService();
+
+            const result = await service.recordPurchase(purchaseData);
+
+            assert.equal(result, true);
+            sinon.assert.calledOnce(giftRepository.create);
         });
     });
 });
