@@ -96,6 +96,19 @@
             "automerge": true
         },
 
+        // Allow patch updates to the internal traffic analytics image to
+        // automerge once CI has gone green.
+        {
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchPackageNames": [
+                "ghost/traffic-analytics"
+            ],
+            "automerge": true,
+            "automergeType": "pr"
+        },
+
         // Ignore all ember-related packages in admin
         // Our ember codebase is being replaced with react and
         // Most of the dependencies have breaking changes and it's too hard to update
