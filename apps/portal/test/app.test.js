@@ -15,6 +15,18 @@ vi.mock('../src/utils/i18n', () => ({
     t: vi.fn(str => str)
 }));
 
+const createDeferred = () => {
+    let resolve;
+    const promise = new Promise((res) => {
+        resolve = res;
+    });
+
+    return {
+        promise,
+        resolve
+    };
+};
+
 describe('App', function () {
     beforeEach(function () {
         // Stub window.location with a URL object so we have an expected origin
@@ -113,6 +125,140 @@ describe('App', function () {
         app.componentDidUpdate({}, {showPopup: true});
 
         expect(window.location.reload).not.toHaveBeenCalled();
+    });
+
+    test('ignores malformed gift redemption tokens in hash links', async () => {
+        window.location.hash = '#/portal/gift/redeem/%E0%A4%A';
+
+        const app = new App({siteUrl: 'http://example.com'});
+        app.fetchGiftRedemptionData = vi.fn();
+
+        const result = await app.fetchLinkData(FixtureSite.singleTier.basic, FixtureMember.free);
+
+        expect(result).toEqual({});
+        expect(app.fetchGiftRedemptionData).not.toHaveBeenCalled();
+    });
+
+    test('ignores malformed gift redemption tokens in trigger links', async () => {
+        const app = new App({siteUrl: 'http://example.com'});
+        app.dispatchAction = vi.fn();
+        app.fetchGiftRedemptionData = vi.fn();
+        app.state = {
+            ...app.state,
+            initStatus: 'success',
+            site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}}
+        };
+
+        await app.clickHandler({
+            preventDefault: vi.fn(),
+            currentTarget: {
+                dataset: {
+                    portal: 'gift/redeem/%E0%A4%A'
+                }
+            }
+        });
+
+        expect(app.fetchGiftRedemptionData).not.toHaveBeenCalled();
+        expect(app.dispatchAction).not.toHaveBeenCalled();
+    });
+
+    test('drops stale custom-trigger gift redemption responses', async () => {
+        const app = new App({siteUrl: 'http://example.com'});
+        const firstRequest = createDeferred();
+        const secondRequest = createDeferred();
+
+        app.setState = vi.fn((updatedState) => {
+            app.state = {...app.state, ...updatedState};
+        });
+        app.state = {
+            ...app.state,
+            initStatus: 'success',
+            site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}}
+        };
+        app.fetchGiftRedemptionData = vi.fn(({token}) => {
+            return token === 'first-token' ? firstRequest.promise : secondRequest.promise;
+        });
+
+        const firstClick = app.clickHandler({
+            preventDefault: vi.fn(),
+            currentTarget: {
+                dataset: {
+                    portal: 'gift/redeem/first-token'
+                }
+            }
+        });
+        const secondClick = app.clickHandler({
+            preventDefault: vi.fn(),
+            currentTarget: {
+                dataset: {
+                    portal: 'gift/redeem/second-token'
+                }
+            }
+        });
+
+        secondRequest.resolve({
+            page: 'giftRedemption',
+            pageData: {
+                token: 'second-token'
+            }
+        });
+        await secondClick;
+
+        firstRequest.resolve({
+            page: 'giftRedemption',
+            pageData: {
+                token: 'first-token'
+            }
+        });
+        await firstClick;
+
+        expect(app.setState).toHaveBeenCalledTimes(1);
+        expect(app.state.pageData.token).toBe('second-token');
+    });
+
+    test('drops stale hashchange gift redemption responses', async () => {
+        const app = new App({siteUrl: 'http://example.com'});
+        const firstRequest = createDeferred();
+        const secondRequest = createDeferred();
+
+        app.setState = vi.fn((updatedState) => {
+            app.state = {...app.state, ...updatedState};
+        });
+        app.state = {
+            ...app.state,
+            site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}},
+            member: FixtureMember.free
+        };
+        app.fetchGiftRedemptionData = vi.fn(({token}) => {
+            return token === 'first-token' ? firstRequest.promise : secondRequest.promise;
+        });
+
+        window.location.hash = '#/portal/gift/redeem/first-token';
+        const firstUpdate = app.updateStateForPreviewLinks();
+
+        window.location.hash = '#/portal/gift/redeem/second-token';
+        const secondUpdate = app.updateStateForPreviewLinks();
+
+        secondRequest.resolve({
+            showPopup: true,
+            page: 'giftRedemption',
+            pageData: {
+                token: 'second-token'
+            }
+        });
+        await secondUpdate;
+
+        firstRequest.resolve({
+            showPopup: true,
+            page: 'giftRedemption',
+            pageData: {
+                token: 'first-token'
+            }
+        });
+        await firstUpdate;
+
+        expect(app.state.pageData.token).toBe('second-token');
+        expect(app.setState).toHaveBeenCalledTimes(1);
     });
 
     test('parses retention offer preview query data into account cancellation flow', () => {

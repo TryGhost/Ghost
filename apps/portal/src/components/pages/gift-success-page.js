@@ -112,7 +112,7 @@ const GiftSuccessPage = () => {
 
     const token = pageData?.token;
     const siteUrl = site?.url || '';
-    const redeemUrl = `${siteUrl.replace(/\/$/, '')}/gift/${token}`;
+    const redeemUrl = `${siteUrl.replace(/\/$/, '')}/#/portal/gift/redeem/${token}`;
 
     const handleCopy = () => {
         copyTextToClipboard(redeemUrl);
