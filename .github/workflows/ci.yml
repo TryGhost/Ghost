@@ -62,11 +62,19 @@ jobs:
           echo "GITHUB_EVENT_NAME: ${{ github.event_name }}"
           echo "GITHUB_CONTEXT: ${{ toJson(github.event) }}"
 
-      - name: Set SHAs for Nx Commands
-        id: set_nx_shas
+      - name: Set SHAs for Nx Commands (push)
+        if: github.event_name == 'push'
         uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
         with:
           error-on-no-successful-workflow: true
+
+        # use separate step for pull_request since nx-set-shas requires a full git tree
+      - name: Set SHAs for Nx Commands (pull_request)
+        if: github.event_name == 'pull_request'
+        run: |
+          NX_BASE=$(curl --location --request GET 'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}' --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq -r .base.sha)
+          echo "Setting NX_BASE to NX_BASE"
+          echo "NX_BASE=$NX_BASE" >> $GITHUB_ENV
 
       - name: Check user org membership
         id: check_user_org_membership
@@ -107,32 +115,6 @@ jobs:
               - 'ghost/**'
               - '!ghost/admin/**'
               - '!ghost/core/core/server/data/tinybird/**'
-            admin-x-settings:
-              - *shared
-              - 'apps/admin-x-settings/**'
-              - 'apps/admin-x-design-system/**'
-              - 'apps/admin-x-framework/**'
-              - 'apps/shade/**'
-            activitypub:
-              - *shared
-              - 'apps/shade/**'
-              - 'apps/admin-x-framework/**'
-              - 'apps/activitypub/**'
-            announcement-bar:
-              - *shared
-              - 'apps/announcement-bar/**'
-            comments-ui:
-              - *shared
-              - 'apps/comments-ui/**'
-            portal:
-              - *shared
-              - 'apps/portal/**'
-            signup-form:
-              - *shared
-              - 'apps/signup-form/**'
-            sodo-search:
-              - *shared
-              - 'apps/sodo-search/**'
             tinybird:
               - 'ghost/core/core/server/data/tinybird/**'
               - '!ghost/core/core/server/data/tinybird/**/*.md'
@@ -191,7 +173,12 @@ jobs:
           UNIT_TEST_PROJECTS=$(yarn -s nx show projects ${AFFECTED_ARG} --withTarget test:unit --sep=, | tr -d '\n')
           echo "affected_unit_tests=${UNIT_TEST_PROJECTS}" >> "$GITHUB_OUTPUT"
 
-          PLAYWRIGHT_PROJECTS=$(yarn -s nx show projects ${AFFECTED_ARG} --withTarget test:acceptance --projects 'apps/*' --json)
+          # NOTE: remove stats exclusion if/when stats has playwright tests added
+          PLAYWRIGHT_PROJECTS=$(yarn -s nx show projects ${AFFECTED_ARG} \
+            --withTarget test:acceptance \
+            --exclude @tryghost/stats \
+            --projects 'apps/*' \
+            --json)
           echo "affected_playwright_projects=$PLAYWRIGHT_PROJECTS" >> "$GITHUB_OUTPUT"
 
 
@@ -201,13 +188,6 @@ jobs:
       affected_unit_tests: ${{ steps.affected.outputs.affected_unit_tests }}
       changed_common: ${{ steps.changed.outputs.common }}
       changed_core: ${{ steps.changed.outputs.core }}
-      changed_admin_x_settings: ${{ steps.changed.outputs.admin-x-settings }}
-      changed_activitypub: ${{ steps.changed.outputs.activitypub }}
-      changed_announcement_bar: ${{ steps.changed.outputs.announcement-bar }}
-      changed_comments_ui: ${{ steps.changed.outputs.comments-ui }}
-      changed_portal: ${{ steps.changed.outputs.portal }}
-      changed_signup_form: ${{ steps.changed.outputs.signup-form }}
-      changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
       changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
@@ -221,7 +201,6 @@ jobs:
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
       nx_base: ${{ env.NX_BASE }}
-      nx_head: ${{ env.NX_HEAD }}
 
   job_app_version_bump_check:
     name: Check app version bump
@@ -272,7 +251,7 @@ jobs:
       - run: yarn nx affected -t lint
         env:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
-          NX_HEAD: ${{ needs.job_setup.outputs.nx_head }}
+          NX_HEAD: ${{ env.HEAD_COMMIT }}
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -384,7 +363,7 @@ jobs:
           NX_SKIP_LOG_GROUPING: true
           logging__level: fatal
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
-          NX_HEAD: ${{ needs.job_setup.outputs.nx_head }}
+          NX_HEAD: ${{ env.HEAD_COMMIT }}
 
       - uses: actions/upload-artifact@v4
         if: matrix.node == env.NODE_VERSION
