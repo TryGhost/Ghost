@@ -66,6 +66,7 @@ const preview: Preview = {
 					'Introduction',
 					'Principles',
 					'Architecture',
+					'Component Rules and Guarantees',
 					'Tokens',
 					'Contributing',
 					'*'
