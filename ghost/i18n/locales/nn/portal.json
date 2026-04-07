@@ -242,7 +242,7 @@
     "You're not receiving emails": "Du mottek ikkje e-postar",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Du mottar ikkje e-postar. Anten fordi du har markert dei som spame, eller fordi dei ikkje kan bli levert til e-posten du har gitt oss.",
     "You've successfully signed in.": "Vellykka innlogging.",
-    "You've successfully subscribed to": "",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "",
     "Your account": "Din brukar",
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",

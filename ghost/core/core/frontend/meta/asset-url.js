@@ -126,8 +126,12 @@ function getAssetUrl(assetPath, hasMinFile) {
     const isThemeAsset = !isPublicAsset && !assetPath.match(/^asset/);
 
     // CASE: Build the output URL
-    // Add subdirectory...
-    let output = urlUtils.urlJoin(urlUtils.getSubdir(), '/');
+    // If assetCdnUrl is configured, use it as the base (produces an absolute URL).
+    // Otherwise fall back to the subdirectory-relative path.
+    const cdnUrl = config.get('urls:assets');
+    let output = cdnUrl
+        ? cdnUrl.replace(/\/$/, '') + '/'
+        : urlUtils.urlJoin(urlUtils.getSubdir(), '/');
 
     // Optionally add /assets/
     if (isThemeAsset) {

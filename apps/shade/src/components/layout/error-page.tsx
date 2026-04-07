@@ -6,6 +6,9 @@ export interface ErrorPageProps
     onBackToDashboard?: () => void;
 }
 
+/**
+ * @deprecated Prefer composing product-specific error states from primitives and shared components.
+ */
 const ErrorPage = React.forwardRef<HTMLDivElement, ErrorPageProps>(
     ({className, onBackToDashboard, ...props}, ref) => {
         return (

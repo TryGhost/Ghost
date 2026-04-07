@@ -3,6 +3,7 @@ import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
 import SiteTitleBackButton from '../common/site-title-back-button';
 import InputForm from '../common/input-form';
+import ActionButton from '../common/action-button';
 import LoadingPage from './loading-page';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import {getAvailableProducts, getCurrencySymbol, formatNumber, getStripeAmount, isCookiesDisabled, getActiveInterval} from '../../utils/helpers';
@@ -61,7 +62,7 @@ function GiftProductCardPrice({product, selectedInterval}) {
     );
 }
 
-function GiftProductCard({product, selectedInterval, onPurchase, disabled}) {
+function GiftProductCard({brandColor, product, selectedInterval, isDisabled, isPurchasing, onPurchase}) {
     let productDescription = product.description;
 
     if ((!product.benefits || !product.benefits.length) && !productDescription) {
@@ -84,14 +85,15 @@ function GiftProductCard({product, selectedInterval, onPurchase, disabled}) {
                     <GiftProductCardBenefits product={product} />
                 </div>
                 <div className='gh-portal-btn-product'>
-                    <button
-                        data-test-button='purchase-gift'
-                        className='gh-portal-btn'
-                        disabled={disabled}
-                        onClick={onPurchase}
-                    >
-                        Purchase gift
-                    </button>
+                    <ActionButton
+                        dataTestId='purchase-gift'
+                        label={<><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '6px', verticalAlign: 'middle'}}><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg> Gift this</>}
+                        onClick={e => onPurchase(e, product)}
+                        disabled={isDisabled}
+                        isRunning={isPurchasing}
+                        brandColor={brandColor}
+                        style={{width: '100%'}}
+                    />
                 </div>
             </div>
         </div>
@@ -116,14 +118,14 @@ function GiftPriceSwitch({selectedInterval, setSelectedInterval, products}) {
                     className={'gh-portal-btn' + (selectedInterval === 'month' ? ' active' : '')}
                     onClick={() => setSelectedInterval('month')}
                 >
-                    Monthly
+                    1 month
                 </button>
                 <button
                     data-test-button='switch-yearly'
                     className={'gh-portal-btn' + (selectedInterval === 'year' ? ' active' : '')}
                     onClick={() => setSelectedInterval('year')}
                 >
-                    Yearly
+                    1 year
                     {highestDiscount > 0 && <span className='gh-portal-maximum-discount'>(save {highestDiscount}%)</span>}
                 </button>
             </div>
@@ -132,10 +134,11 @@ function GiftPriceSwitch({selectedInterval, setSelectedInterval, products}) {
 }
 
 const GiftPage = () => {
-    const {site, member} = useContext(AppContext);
+    const {site, member, brandColor, action, doAction} = useContext(AppContext);
     const [email, setEmail] = useState(member?.email || '');
     const [emailError, setEmailError] = useState('');
     const [selectedInterval, setSelectedInterval] = useState(null);
+    const [selectedProduct, setSelectedProduct] = useState(null);
 
     if (!site) {
         return <LoadingPage />;
@@ -176,7 +179,8 @@ const GiftPage = () => {
 
     const siteIcon = site.icon;
     const siteTitle = site.title || '';
-    const disabled = isCookiesDisabled();
+    const isPurchasing = action === 'checkoutGift:running';
+    const isDisabled = isCookiesDisabled() || isPurchasing;
 
     const emailField = [{
         type: 'email',
@@ -190,7 +194,7 @@ const GiftPage = () => {
         errorMessage: emailError
     }];
 
-    const handlePurchase = (e) => {
+    const handlePurchase = (e, product) => {
         e.preventDefault();
 
         const errors = ValidateInputForm({fields: emailField});
@@ -201,7 +205,13 @@ const GiftPage = () => {
         }
 
         setEmailError('');
-        // TODO: implement gift checkout using priceId and email
+        setSelectedProduct(product.id);
+
+        doAction('checkoutGift', {
+            tierId: product.id,
+            cadence: activeInterval,
+            email
+        });
     };
 
     return (
@@ -216,7 +226,7 @@ const GiftPage = () => {
                         <img className='gh-portal-signup-logo' src={siteIcon} alt={siteTitle} />
                     )}
                     <h1 className="gh-portal-main-title">{siteTitle}</h1>
-                    <p className="gh-portal-main-subtitle">Give the gift of a membership</p>
+                    <p className="gh-portal-main-subtitle" style={{fontSize: '1.7rem', marginTop: '8px'}}>Give the gift of a membership</p>
                 </header>
 
                 <section className="gh-portal-signup">
@@ -243,17 +253,19 @@ const GiftPage = () => {
                                 {products.map(product => (
                                     <GiftProductCard
                                         key={product.id}
+                                        brandColor={brandColor}
                                         product={product}
                                         selectedInterval={activeInterval}
+                                        isDisabled={isDisabled}
+                                        isPurchasing={isPurchasing && selectedProduct === product.id}
                                         onPurchase={handlePurchase}
-                                        disabled={disabled}
                                     />
                                 ))}
                             </div>
                         </section>
 
                         <div className='gh-portal-signup-message'>
-                            <div>Gift can only be redeemed by members without an active paid subscription.</div>
+                            <div>Only redeemable by free or new members.</div>
                         </div>
                     </div>
                 </section>

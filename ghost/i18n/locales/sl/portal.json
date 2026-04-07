@@ -242,7 +242,7 @@
     "You're not receiving emails": "Ne prejemate e-pošte",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Ne prejemate e-pošte, ker ste naše sporočilo nedavno označili kot vsiljeno pošto ali, ker sporočil ni bilo mogoče dostaviti na vaš e-poštni naslov.",
     "You've successfully signed in.": "Uspešno ste se prijavili.",
-    "You've successfully subscribed to": "Uspešno ste se naročili na",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Uspešno ste se naročili na <strong>{siteTitle}</strong>",
     "Your account": "Vaš račun",
     "Your email has failed to resubscribe, please try again": "Vašega e-poštnega naslova nismo uspeli ponovno prijaviti, prosimo, poskusite znova",
     "your inbox": "",

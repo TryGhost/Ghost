@@ -268,7 +268,6 @@ class StaffServiceEmails {
      * @returns {Promise<void>}
      */
     async notifyDonationReceived({donationPaymentEvent}) {
-        const emailPromises = [];
         const users = await this.models.User.getEmailAlertUsers('donation');
         const formattedAmount = this.getFormattedAmount({currency: donationPaymentEvent.currency, amount: donationPaymentEvent.amount / 100});
 
@@ -279,12 +278,70 @@ class StaffServiceEmails {
             email: donationPaymentEvent.email
         }) : null;
 
+        await this.sendToStaff({
+            users,
+            subject,
+            template: 'donation',
+            memberData,
+            templateData: {
+                donation: {
+                    name: donationPaymentEvent.name ?? donationPaymentEvent.email,
+                    email: donationPaymentEvent.email,
+                    amount: formattedAmount,
+                    donationMessage: donationPaymentEvent.donationMessage
+                }
+            }
+        });
+    }
+
+    /**
+     * @param {object} eventData
+     * @param {string|null} eventData.name
+     * @param {string} eventData.email
+     * @param {string|null} eventData.memberId
+     * @param {number} eventData.amount - amount in cents
+     * @param {string} eventData.currency
+     *
+     * @returns {Promise<void>}
+     */
+    async notifyGiftReceived({name, email, memberId, amount, currency}) {
+        const users = await this.models.User.getEmailAlertUsers('gift-purchased');
+        const formattedAmount = this.getFormattedAmount({currency, amount: amount / 100});
+
+        const displayName = name ?? email;
+        const subject = `🎁 Gift subscription purchased: ${formattedAmount} from ${displayName}`;
+        const memberData = memberId ? this.getMemberData({
+            id: memberId,
+            name: name ?? null,
+            email
+        }) : null;
+
+        await this.sendToStaff({
+            users,
+            subject,
+            template: 'gift',
+            memberData,
+            templateData: {
+                gift: {
+                    name: displayName,
+                    amount: formattedAmount
+                }
+            }
+        });
+    }
+
+    // Utils
+
+    /** @private */
+    async sendToStaff({users, subject, template, memberData, templateData}) {
+        const emailPromises = [];
+
         for (const user of users) {
             const to = user.email;
 
             let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}/email-notifications`);
 
-            const templateData = {
+            const data = {
                 siteTitle: this.settingsCache.get('title'),
                 siteUrl: this.urlUtils.getSiteUrl(),
                 siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
@@ -293,17 +350,12 @@ class StaffServiceEmails {
                 toEmail: to,
                 adminUrl: this.urlUtils.urlFor('admin', true),
                 staffUrl: staffUrl,
-                donation: {
-                    name: donationPaymentEvent.name ?? donationPaymentEvent.email,
-                    email: donationPaymentEvent.email,
-                    amount: formattedAmount,
-                    donationMessage: donationPaymentEvent.donationMessage
-                },
                 memberData,
-                accentColor: this.settingsCache.get('accent_color')
+                accentColor: this.settingsCache.get('accent_color'),
+                ...templateData
             };
 
-            const {html, text} = await this.renderEmailTemplate('donation', templateData);
+            const {html, text} = await this.renderEmailTemplate(template, data);
 
             emailPromises.push(await this.sendMail({
                 to,
@@ -321,8 +373,6 @@ class StaffServiceEmails {
             }
         }
     }
-
-    // Utils
 
     /** @private */
     getMemberData(member) {

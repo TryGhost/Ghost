@@ -27,6 +27,7 @@
     "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
     "clean:hard": "node ./.github/scripts/clean.js",
     "dev": "nx run ghost-monorepo:docker:dev",
+    "dev:sqlite": "DEV_COMPOSE_FILES='-f compose.dev.sqlite.yaml' nx run ghost-monorepo:docker:dev",
     "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' nx run ghost-monorepo:docker:dev",
     "dev:lexical": "EDITOR_URL=http://localhost:2368/ghost/assets/koenig-lexical/ yarn dev",
     "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' nx run ghost-monorepo:docker:dev",
@@ -82,7 +83,7 @@
     "lint-staged": "15.5.2",
     "nx": "22.0.4",
     "rimraf": "5.0.10",
-    "semver": "7.7.3",
+    "semver": "7.7.4",
     "typescript": "5.8.3"
   },
   "dependencies": {},

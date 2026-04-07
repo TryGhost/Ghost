@@ -2,16 +2,26 @@
     "extends": [
         "github>tryghost/renovate-config"
     ],
-    // This reduces PR churn when managing lots of dependencies
-    "rebaseWhen": "never",
+    // Limit concurrent branches to keep Renovate runs within the 30-minute
+    // Mend timeout and avoid overwhelming CI with dozens of queued jobs.
+    // The shared preset disables rate limiting, but Ghost's monorepo is
+    // large enough that unlimited branches cause timeouts during rebasing.
+    "branchConcurrentLimit": 10,
+    // Keep manually-closed immortal/grouped PRs closed unless explicitly
+    // reopened from the Dependency Dashboard.
+    "recreateWhen": "never",
     // We have to disable platform based automerge (forcing renovate to do it manually)
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,
     "timezone": "Etc/UTC",
     "automergeSchedule": [
-        // Allow automerge all weekend: Saturday, Sunday, and Monday morning
+        // Allow automerge all weekend
         "* * * * 0,6",
-        "* 0-12 * * 1"
+        // Allow automerge on Monday morning
+        "* 0-12 * * 1",
+        // Allow automerge overnight on weekday evenings (10pm-4:59am UTC)
+        "* 22-23 * * 1-5",
+        "* 0-4 * * 2-6"
     ],
     "ignoreDeps": [
         // https://github.com/TryGhost/Ghost/commit/2b9e494dfcb95c40f596ccf54ec3151c25d53601
@@ -88,6 +98,19 @@
                 "lucide-react"
             ],
             "automerge": true
+        },
+
+        // Allow patch updates to the internal traffic analytics image to
+        // automerge once CI has gone green.
+        {
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchPackageNames": [
+                "ghost/traffic-analytics"
+            ],
+            "automerge": true,
+            "automergeType": "pr"
         },
 
         // Ignore all ember-related packages in admin

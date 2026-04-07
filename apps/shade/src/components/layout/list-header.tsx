@@ -1,5 +1,6 @@
 import {H1} from './heading';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
+import {Inline, Stack, Text} from '@/components/primitives';
 import {cn} from '@/lib/utils';
 
 import React from 'react';
@@ -15,23 +16,27 @@ type ListHeaderProps = PropsWithChildrenAndClassName & {
 
 function ListHeaderLeft({className, children}: PropsWithChildrenAndClassName) {
     return (
-        <div
-            className={cn('flex min-w-0 flex-col gap-1 h-full min-h-[34px] justify-center', className)}
+        <Stack
+            className={cn('min-w-0 h-full min-h-(--control-height)', className)}
             data-list-header='list-header-left'
+            gap='xs'
+            justify='center'
         >
             {children}
-        </div>
+        </Stack>
     );
 }
 
 function ListHeaderBreadcrumb({className, children}: PropsWithChildrenAndClassName) {
     return (
-        <div
-            className={cn('flex items-center gap-2 text-sm text-muted-foreground', className)}
+        <Inline
+            align='center'
+            className={cn('text-sm text-muted-foreground', className)}
             data-list-header='list-header-breadcrumb'
+            gap='sm'
         >
             {children}
-        </div>
+        </Inline>
     );
 }
 
@@ -51,23 +56,29 @@ function ListHeaderTitle({className, children}: PropsWithChildrenAndClassName) {
 
 function ListHeaderDescription({className, children}: PropsWithChildrenAndClassName) {
     return (
-        <p
-            className={cn('text-sm text-muted-foreground', className)}
+        <Text
+            as='p'
+            className={className}
             data-list-header='list-header-description'
+            size='sm'
+            tone='secondary'
         >
             {children}
-        </p>
+        </Text>
     );
 }
 
 function ListHeaderCount({className, children}: PropsWithChildrenAndClassName) {
     return (
-        <span
-            className={cn('ml-2 lg:ml-3 font-normal text-[1.9rem] sidebar:text-[2.2rem] text-muted-foreground tabular-nums', className)}
+        <Text
+            as='span'
+            className={cn('ml-2 lg:ml-3 text-[1.9rem] sidebar:text-[2.2rem] tabular-nums', className)}
             data-list-header='list-header-count'
+            tone='secondary'
+            weight='regular'
         >
             {children}
-        </span>
+        </Text>
     );
 }
 
@@ -170,39 +181,52 @@ const ListHeaderActionGroup: ListHeaderActionGroupComponent = Object.assign(
 
         if (!mobileMenu) {
             return (
-                <div
-                    className={cn('flex items-center justify-end gap-2', className)}
+                <Inline
+                    align='center'
+                    className={className}
                     data-list-header='list-header-action-group'
+                    gap='sm'
+                    justify='end'
                 >
                     {children}
-                </div>
+                </Inline>
             );
         }
 
         if (!shouldCollapse) {
             return (
-                <div
-                    className={cn('flex items-center justify-end gap-2', className)}
+                <Inline
+                    align='center'
+                    className={className}
                     data-list-header='list-header-action-group'
+                    gap='sm'
+                    justify='end'
                 >
-                    <div
-                        className='flex items-center justify-end gap-2'
+                    <Inline
+                        align='center'
                         data-list-header='list-header-action-group-desktop'
+                        gap='sm'
+                        justify='end'
                     >
                         {desktopChildren}
-                    </div>
-                </div>
+                    </Inline>
+                </Inline>
             );
         }
 
         return (
-            <div
-                className={cn('flex items-center justify-end gap-2', className)}
+            <Inline
+                align='center'
+                className={className}
                 data-list-header='list-header-action-group'
+                gap='sm'
+                justify='end'
             >
-                <div
-                    className='ml-auto flex items-center gap-2'
+                <Inline
+                    align='center'
+                    className='ml-auto'
                     data-list-header='list-header-action-group-mobile'
+                    gap='sm'
                 >
                     {mobileMenu}
                     {primaryAction && (
@@ -210,8 +234,8 @@ const ListHeaderActionGroup: ListHeaderActionGroupComponent = Object.assign(
                             {primaryAction}
                         </div>
                     )}
-                </div>
-            </div>
+                </Inline>
+            </Inline>
         );
     },
     {
@@ -224,12 +248,14 @@ const ListHeaderActionGroup: ListHeaderActionGroupComponent = Object.assign(
 
 function ListHeaderActions({className, children}: PropsWithChildrenAndClassName) {
     return (
-        <div
-            className={cn('flex shrink-0 items-center gap-4', className)}
+        <Inline
+            align='center'
+            className={cn('shrink-0', className)}
             data-list-header='list-header-actions'
+            gap='lg'
         >
             {children}
-        </div>
+        </Inline>
     );
 }
 
@@ -243,20 +269,27 @@ type ListHeaderComponent = React.FC<ListHeaderProps> & {
     ActionGroup: ListHeaderActionGroupComponent;
 };
 
+/**
+ * @deprecated Prefer composing list header shells directly from `Inline`, `Stack`, `Grid`, and `Text` primitives.
+ */
 const ListHeader: ListHeaderComponent = Object.assign(
     function ListHeader({className, children, sticky = true, blurredBackground = true}: ListHeaderProps) {
         return (
-            <header
+            <Inline
+                align='start'
+                as='header'
                 className={cn(
-                    'flex items-start justify-between gap-4 px-4 lg:px-8',
+                    'px-4 lg:px-8',
                     sticky && 'sticky top-0 z-50 -mb-4 lg:-mb-4',
                     blurredBackground && 'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black',
                     className
                 )}
                 data-list-header='list-header'
+                gap='lg'
+                justify='between'
             >
                 {children}
-            </header>
+            </Inline>
         );
     },
     {

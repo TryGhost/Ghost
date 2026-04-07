@@ -334,14 +334,13 @@ async function initServices() {
     const slackNotifications = require('./server/services/slack-notifications');
     const mediaInliner = require('./server/services/media-inliner');
     const donationService = require('./server/services/donations');
+    const giftService = require('./server/services/gifts');
     const recommendationsService = require('./server/services/recommendations');
     const emailAddressService = require('./server/services/email-address');
     const statsService = require('./server/services/stats');
     const explorePingService = require('./server/services/explore-ping');
 
-    const config = require('./shared/config');
     const urlUtils = require('./shared/url-utils');
-    const schedulingApiUrl = config.get('scheduling').schedulerUrl || urlUtils.urlFor('api', {type: 'admin'}, true);
 
     // NOTE: Members service depends on these
     //       so they are initialized before it.
@@ -368,7 +367,7 @@ async function initServices() {
         emailAnalytics.init(),
         webhooks.listen(),
         scheduling.init({
-            apiUrl: schedulingApiUrl
+            apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true)
         }),
         comments.init(),
         linkTracking.init(),
@@ -376,6 +375,7 @@ async function initServices() {
         slackNotifications.init(),
         mediaInliner.init(),
         donationService.init(),
+        giftService.init(),
         recommendationsService.init(),
         statsService.init(),
         explorePingService.init()

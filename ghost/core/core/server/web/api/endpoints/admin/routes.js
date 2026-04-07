@@ -13,9 +13,6 @@ const shared = require('../../../shared');
 module.exports = function apiRoutes() {
     const router = express.Router('admin api');
 
-    // alias delete with del
-    router.del = router.delete;
-
     router.use(apiMw.cors);
 
     // ## Public
@@ -33,12 +30,12 @@ module.exports = function apiRoutes() {
     router.get('/posts/export', mw.authAdminApi, http(api.posts.exportCSV));
 
     router.post('/posts', mw.authAdminApi, http(api.posts.add));
-    router.del('/posts', mw.authAdminApi, http(api.posts.bulkDestroy));
+    router.delete('/posts', mw.authAdminApi, http(api.posts.bulkDestroy));
     router.put('/posts/bulk', mw.authAdminApi, http(api.posts.bulkEdit));
     router.get('/posts/:id', mw.authAdminApi, http(api.posts.read));
     router.get('/posts/slug/:slug', mw.authAdminApi, http(api.posts.read));
     router.put('/posts/:id', mw.authAdminApi, http(api.posts.edit));
-    router.del('/posts/:id', mw.authAdminApi, http(api.posts.destroy));
+    router.delete('/posts/:id', mw.authAdminApi, http(api.posts.destroy));
     router.post('/posts/:id/copy', mw.authAdminApi, http(api.posts.copy));
 
     router.get('/mentions', mw.authAdminApi, http(api.mentions.browse));
@@ -55,13 +52,13 @@ module.exports = function apiRoutes() {
 
     // ## Pages
     router.get('/pages', mw.authAdminApi, http(api.pages.browse));
-    router.del('/pages', mw.authAdminApi, http(api.pages.bulkDestroy));
+    router.delete('/pages', mw.authAdminApi, http(api.pages.bulkDestroy));
     router.put('/pages/bulk', mw.authAdminApi, http(api.pages.bulkEdit));
     router.post('/pages', mw.authAdminApi, http(api.pages.add));
     router.get('/pages/:id', mw.authAdminApi, http(api.pages.read));
     router.get('/pages/slug/:slug', mw.authAdminApi, http(api.pages.read));
     router.put('/pages/:id', mw.authAdminApi, http(api.pages.edit));
-    router.del('/pages/:id', mw.authAdminApi, http(api.pages.destroy));
+    router.delete('/pages/:id', mw.authAdminApi, http(api.pages.destroy));
     router.post('/pages/:id/copy', mw.authAdminApi, http(api.pages.copy));
 
     // # Integrations
@@ -71,7 +68,7 @@ module.exports = function apiRoutes() {
     router.post('/integrations', mw.authAdminApi, http(api.integrations.add));
     router.post('/integrations/:id/api_key/:keyid/refresh', mw.authAdminApi, http(api.integrations.edit));
     router.put('/integrations/:id', mw.authAdminApi, http(api.integrations.edit));
-    router.del('/integrations/:id', mw.authAdminApi, http(api.integrations.destroy));
+    router.delete('/integrations/:id', mw.authAdminApi, http(api.integrations.destroy));
 
     // ## Schedules
     router.put('/schedules/:resource/:id', mw.authAdminApiWithUrl, http(api.schedules.publish));
@@ -88,7 +85,7 @@ module.exports = function apiRoutes() {
     router.get('/settings', mw.authAdminApi, http(api.settings.browse));
     router.put('/settings', mw.authAdminApi, http(api.settings.edit));
     router.put('/settings/verifications/', mw.authAdminApi, http(api.settings.verifyKeyUpdate));
-    router.del('/settings/stripe/connect', mw.authAdminApi, http(api.settings.disconnectStripeConnectIntegration));
+    router.delete('/settings/stripe/connect', mw.authAdminApi, http(api.settings.disconnectStripeConnectIntegration));
 
     // ## Users
     router.get('/users', mw.authAdminApi, http(api.users.browse));
@@ -102,7 +99,7 @@ module.exports = function apiRoutes() {
     router.put('/users/owner', mw.authAdminApi, http(api.users.transferOwnership));
     router.put('/users/:id', mw.authAdminApi, http(api.users.edit));
     router.put('/users/:id/token', mw.authAdminApi, http(api.users.regenerateToken));
-    router.del('/users/:id', mw.authAdminApi, http(api.users.destroy));
+    router.delete('/users/:id', mw.authAdminApi, http(api.users.destroy));
 
     // ## Tags
     router.get('/tags', mw.authAdminApi, http(api.tags.browse));
@@ -110,7 +107,7 @@ module.exports = function apiRoutes() {
     router.get('/tags/slug/:slug', mw.authAdminApi, http(api.tags.read));
     router.post('/tags', mw.authAdminApi, http(api.tags.add));
     router.put('/tags/:id', mw.authAdminApi, http(api.tags.edit));
-    router.del('/tags/:id', mw.authAdminApi, http(api.tags.destroy));
+    router.delete('/tags/:id', mw.authAdminApi, http(api.tags.destroy));
 
     // Tiers
     router.get('/tiers', mw.authAdminApi, http(api.tiers.browse));
@@ -121,7 +118,7 @@ module.exports = function apiRoutes() {
     // ## Members
     router.get('/members', mw.authAdminApi, http(api.members.browse));
     router.post('/members', mw.authAdminApi, http(api.members.add));
-    router.del('/members', mw.authAdminApi, http(api.members.bulkDestroy));
+    router.delete('/members', mw.authAdminApi, http(api.members.bulkDestroy));
     router.put('/members/bulk', mw.authAdminApi, http(api.members.bulkEdit));
 
     router.get('/offers', mw.authAdminApi, http(api.offers.browse));
@@ -146,9 +143,9 @@ module.exports = function apiRoutes() {
 
     router.get('/members/:id', mw.authAdminApi, http(api.members.read));
     router.put('/members/:id', mw.authAdminApi, http(api.members.edit));
-    router.del('/members/:id', mw.authAdminApi, http(api.members.destroy));
-    router.del('/members/:id/sessions', mw.authAdminApi, http(api.members.logout));
-    router.del('/members/:id/suppression', mw.authAdminApi, http(api.members.deleteEmailSuppression));
+    router.delete('/members/:id', mw.authAdminApi, http(api.members.destroy));
+    router.delete('/members/:id/sessions', mw.authAdminApi, http(api.members.logout));
+    router.delete('/members/:id/suppression', mw.authAdminApi, http(api.members.deleteEmailSuppression));
 
     router.post('/members/:id/subscriptions/', mw.authAdminApi, http(api.members.createSubscription));
     router.put('/members/:id/subscriptions/:subscription_id', mw.authAdminApi, http(api.members.editSubscription));
@@ -183,7 +180,7 @@ module.exports = function apiRoutes() {
     router.get('/labels/slug/:slug', mw.authAdminApi, http(api.labels.read));
     router.post('/labels', mw.authAdminApi, http(api.labels.add));
     router.put('/labels/:id', mw.authAdminApi, http(api.labels.edit));
-    router.del('/labels/:id', mw.authAdminApi, http(api.labels.destroy));
+    router.delete('/labels/:id', mw.authAdminApi, http(api.labels.destroy));
 
     // ## Automated Emails
     router.get('/automated_emails', mw.authAdminApi, http(api.automatedEmails.browse));
@@ -192,7 +189,6 @@ module.exports = function apiRoutes() {
     router.post('/automated_emails', mw.authAdminApi, http(api.automatedEmails.add));
     router.put('/automated_emails/design', mw.authAdminApi, http(api.automatedEmailDesign.edit));
     router.put('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.edit));
-    router.del('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.destroy));
     router.post('/automated_emails/:id/test', shared.middleware.brute.previewEmailLimiter, mw.authAdminApi, http(api.automatedEmails.sendTestEmail));
 
     // ## Roles
@@ -229,7 +225,7 @@ module.exports = function apiRoutes() {
         http(api.themes.activate)
     );
 
-    router.del('/themes/:name',
+    router.delete('/themes/:name',
         mw.authAdminApi,
         http(api.themes.destroy)
     );
@@ -237,7 +233,7 @@ module.exports = function apiRoutes() {
     // ## Notifications
     router.get('/notifications', mw.authAdminApi, http(api.notifications.browse));
     router.post('/notifications', mw.authAdminApi, http(api.notifications.add));
-    router.del('/notifications/:notification_id', mw.authAdminApi, http(api.notifications.destroy));
+    router.delete('/notifications/:notification_id', mw.authAdminApi, http(api.notifications.destroy));
 
     // ## DB
     router.get('/db', mw.authAdminApi, http(api.db.exportContent));
@@ -247,7 +243,7 @@ module.exports = function apiRoutes() {
         apiMw.upload.validation({type: 'db'}),
         http(api.db.importContent)
     );
-    router.del('/db', mw.authAdminApi, http(api.db.deleteAllContent));
+    router.delete('/db', mw.authAdminApi, http(api.db.deleteAllContent));
     router.post('/db/backup',
         mw.authAdminApi,
         http(api.db.backupContent)
@@ -274,7 +270,7 @@ module.exports = function apiRoutes() {
         shared.middleware.brute.userLogin,
         http(api.session.add)
     );
-    router.del('/session', mw.authAdminApi, http(api.session.delete));
+    router.delete('/session', mw.authAdminApi, http(api.session.delete));
     router.post('/session/verify', shared.middleware.brute.sendVerificationCode, http(api.session.sendVerification));
     router.put('/session/verify', shared.middleware.brute.userVerification, http(api.session.verify));
 
@@ -333,7 +329,7 @@ module.exports = function apiRoutes() {
     router.get('/invites', mw.authAdminApi, http(api.invites.browse));
     router.get('/invites/:id', mw.authAdminApi, http(api.invites.read));
     router.post('/invites', mw.authAdminApi, http(api.invites.add));
-    router.del('/invites/:id', mw.authAdminApi, http(api.invites.destroy));
+    router.delete('/invites/:id', mw.authAdminApi, http(api.invites.destroy));
 
     // ## Redirects
     router.get('/redirects/download', mw.authAdminApi, http(api.redirects.download));
@@ -347,7 +343,7 @@ module.exports = function apiRoutes() {
     // ## Webhooks (RESTHooks)
     router.post('/webhooks', mw.authAdminApi, http(api.webhooks.add));
     router.put('/webhooks/:id', mw.authAdminApi, http(api.webhooks.edit));
-    router.del('/webhooks/:id', mw.authAdminApi, http(api.webhooks.destroy));
+    router.delete('/webhooks/:id', mw.authAdminApi, http(api.webhooks.destroy));
 
     // ## Oembed (fetch response from oembed provider)
     router.get('/oembed', mw.authAdminApi, http(api.oembed.read));
@@ -375,7 +371,7 @@ module.exports = function apiRoutes() {
     router.get('/snippets/:id', mw.authAdminApi, http(api.snippets.read));
     router.post('/snippets', mw.authAdminApi, http(api.snippets.add));
     router.put('/snippets/:id', mw.authAdminApi, http(api.snippets.edit));
-    router.del('/snippets/:id', mw.authAdminApi, http(api.snippets.destroy));
+    router.delete('/snippets/:id', mw.authAdminApi, http(api.snippets.destroy));
 
     // ## Custom theme settings
     router.get('/custom_theme_settings', mw.authAdminApi, http(api.customThemeSettings.browse));
@@ -396,7 +392,7 @@ module.exports = function apiRoutes() {
     router.post('/recommendations', mw.authAdminApi, http(api.recommendations.add));
     router.post('/recommendations/check', mw.authAdminApi, http(api.recommendations.check));
     router.put('/recommendations/:id', mw.authAdminApi, http(api.recommendations.edit));
-    router.del('/recommendations/:id', mw.authAdminApi, http(api.recommendations.destroy));
+    router.delete('/recommendations/:id', mw.authAdminApi, http(api.recommendations.destroy));
 
     // Incoming recommendations
     router.get('/incoming_recommendations', mw.authAdminApi, http(api.incomingRecommendations.browse));

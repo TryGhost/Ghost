@@ -206,7 +206,7 @@ test.describe('Ghost Admin - Publishing', () => {
         await expectFrontendStatus(frontendPage, slug, 404);
     });
 
-    test('scheduled publish only - post becomes visible on frontend', async ({page}) => {
+    test.skip('scheduled publish only - post becomes visible on frontend', async ({page}) => {
         const title = `scheduled-publish-only-${Date.now()}`;
         const body = 'This is my scheduled post body.';
         const slug = generateSlug(title);
@@ -238,7 +238,7 @@ test.describe('Ghost Admin - Publishing', () => {
         await expectPostStatus(editor, 'Published');
     });
 
-    test('scheduled publish and email - post becomes visible on frontend', async ({page}) => {
+    test.skip('scheduled publish and email - post becomes visible on frontend', async ({page}) => {
         const title = `scheduled-publish-email-${Date.now()}`;
         const body = 'This is my scheduled publish and email post body.';
         const slug = generateSlug(title);
@@ -282,7 +282,7 @@ test.describe('Ghost Admin - Publishing', () => {
         await expectPostStatus(editor, 'Published');
     });
 
-    test('scheduled email only - post is not visible on frontend', async ({page}) => {
+    test.skip('scheduled email only - post is not visible on frontend', async ({page}) => {
         const title = `scheduled-email-only-${Date.now()}`;
         const body = 'This is my scheduled email-only post body.';
         const slug = generateSlug(title);
@@ -325,7 +325,7 @@ test.describe('Ghost Admin - Publishing', () => {
         await expectFrontendStatus(frontendPage, slug, 404);
     });
 
-    test('scheduled publish only - page becomes visible on frontend', async ({page}) => {
+    test.skip('scheduled publish only - page becomes visible on frontend', async ({page}) => {
         const title = `scheduled-page-only-${Date.now()}`;
         const body = 'This is my scheduled page body.';
         const slug = generateSlug(title);

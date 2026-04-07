@@ -8,11 +8,13 @@ const db = require('../../../core/server/data/db');
 const mailService = require('../../../core/server/services/mail');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 const processOutbox = require('../../../core/server/services/outbox/jobs/lib/process-outbox');
+const labs = require('../../../core/shared/labs');
 
 describe('Member Welcome Emails Integration', function () {
     let membersService;
     let defaultNewsletterSenderState = null;
     let defaultEmailDesignSettingId;
+    let originalLabsIsSet;
 
     before(async function () {
         await testUtils.setup('default')();
@@ -25,6 +27,15 @@ describe('Member Welcome Emails Integration', function () {
     });
 
     beforeEach(async function () {
+        originalLabsIsSet = labs.isSet;
+        sinon.stub(labs, 'isSet').callsFake((flag) => {
+            if (flag === 'welcomeEmailsDesignCustomization') {
+                return false;
+            }
+
+            return originalLabsIsSet(flag);
+        });
+
         const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
         if (defaultNewsletter) {
             defaultNewsletterSenderState = {
@@ -78,6 +89,8 @@ describe('Member Welcome Emails Integration', function () {
     });
 
     afterEach(async function () {
+        sinon.restore();
+
         if (defaultNewsletterSenderState) {
             await db.knex('newsletters')
                 .where('id', defaultNewsletterSenderState.id)

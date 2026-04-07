@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "6.26.0-rc.0",
+  "version": "6.27.0-rc.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -135,7 +135,7 @@
     "miragejs": "0.1.48",
     "moment-timezone": "0.5.45",
     "normalize.css": "3.0.3",
-    "papaparse": "5.3.2",
+    "papaparse": "5.5.3",
     "postcss-color-mod-function": "3.0.3",
     "postcss-custom-media": "7.0.8",
     "postcss-custom-properties": "10.0.0",
@@ -145,7 +145,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "reframe.js": "4.0.2",
-    "semver": "7.7.3",
+    "semver": "7.7.4",
     "sentry-testkit": "5.0.10",
     "sinon-chai": "4.0.1",
     "testem": "3.16.0",
@@ -178,7 +178,7 @@
     "i18n-iso-countries": "7.14.0",
     "lru-cache": "6.0.0",
     "path-browserify": "1.0.1",
-    "webpack": "5.102.1"
+    "webpack": "5.105.4"
   },
   "nx": {
     "targets": {
