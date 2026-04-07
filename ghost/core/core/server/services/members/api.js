@@ -242,7 +242,8 @@ function createApiInstance(config) {
             EmailSpamComplaintEvent: models.EmailSpamComplaintEvent,
             Outbox: models.Outbox,
             WelcomeEmailAutomation: models.WelcomeEmailAutomation,
-            AutomatedEmailRecipient: models.AutomatedEmailRecipient
+            AutomatedEmailRecipient: models.AutomatedEmailRecipient,
+            Gift: models.Gift
         },
         stripeAPIService: stripeService.api,
         tiersService: tiersService,

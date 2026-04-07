@@ -34,7 +34,8 @@ module.exports = class EventRepository {
         labsService,
         memberAttributionService,
         MemberEmailChangeEvent,
-        AutomatedEmailRecipient
+        AutomatedEmailRecipient,
+        Gift
     }) {
         this._DonationPaymentEvent = DonationPaymentEvent;
         this._MemberSubscribeEvent = MemberSubscribeEvent;
@@ -53,6 +54,7 @@ module.exports = class EventRepository {
         this._memberAttributionService = memberAttributionService;
         this._MemberEmailChangeEvent = MemberEmailChangeEvent;
         this._AutomatedEmailRecipient = AutomatedEmailRecipient;
+        this._Gift = Gift;
     }
 
     async getEventTimeline(options = {}) {
@@ -82,7 +84,8 @@ module.exports = class EventRepository {
                 {type: 'newsletter_event', action: 'getNewsletterSubscriptionEvents'},
                 {type: 'login_event', action: 'getLoginEvents'},
                 {type: 'payment_event', action: 'getPaymentEvents'},
-                {type: 'email_change_event', action: 'getEmailChangeEvent'}
+                {type: 'email_change_event', action: 'getEmailChangeEvent'},
+                {type: 'gift_purchase_event', action: 'getGiftPurchaseEvents'}
             );
 
             if (this._AutomatedEmailRecipient) {
@@ -412,6 +415,55 @@ module.exports = class EventRepository {
                 data: {
                     ...json,
                     attribution: this._memberAttributionService.getEventAttribution(model)
+                }
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
+    async getGiftPurchaseEvents(options = {}, filter) {
+        options = {
+            ...options,
+            withRelated: ['buyer', 'tier'],
+            filter: 'buyer_member_id:-null+custom:true',
+            useBasicCount: true,
+            mongoTransformer: chainTransformers(
+                // First set the filter manually
+                replaceCustomFilterTransformer(filter),
+
+                // Map the used keys in that filter
+                ...mapKeys({
+                    'data.created_at': 'purchased_at',
+                    'data.member_id': 'buyer_member_id'
+                })
+            )
+        };
+
+        if (options.order) {
+            options.order = options.order.replace(/created_at/g, 'purchased_at');
+        }
+
+        const {data: models, meta} = await this._Gift.findPage(options);
+
+        const data = models.map((model) => {
+            const json = model.toJSON(options);
+
+            return {
+                type: 'gift_purchase_event',
+                data: {
+                    id: json.id,
+                    member: json.buyer || null,
+                    member_id: json.buyer_member_id,
+                    tier_name: json.tier?.name || null,
+                    cadence: json.cadence,
+                    duration: json.duration,
+                    amount: json.amount,
+                    currency: json.currency,
+                    created_at: json.purchased_at
                 }
             };
         });

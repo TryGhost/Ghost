@@ -66,7 +66,8 @@ module.exports = function MembersAPI({
         MemberFeedback,
         Outbox,
         WelcomeEmailAutomation,
-        AutomatedEmailRecipient
+        AutomatedEmailRecipient,
+        Gift
     },
     tiersService,
     stripeAPIService,
@@ -134,7 +135,8 @@ module.exports = function MembersAPI({
         labsService,
         memberAttributionService,
         MemberEmailChangeEvent,
-        AutomatedEmailRecipient
+        AutomatedEmailRecipient,
+        Gift
     });
 
     const nextPaymentCalculator = new NextPaymentCalculator();
