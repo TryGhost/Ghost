@@ -1,9 +1,14 @@
 import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 import {Gift} from './gift';
 import type {GiftBookshelfRepository} from './gift-bookshelf-repository';
 
 interface MemberRepository {
-    get(filter: Record<string, unknown>): Promise<{id: string} | null>;
+    get(filter: Record<string, unknown>): Promise<{id: string; get(key: string): string | null} | null>;
+}
+
+interface StaffServiceEmails {
+    notifyGiftReceived(data: {name: string | null; email: string; memberId: string | null; amount: number; currency: string}): Promise<void>;
 }
 
 interface GiftPurchaseData {
@@ -22,10 +27,12 @@ interface GiftPurchaseData {
 export class GiftService {
     readonly #giftRepository: GiftBookshelfRepository;
     readonly #memberRepository: MemberRepository;
+    readonly #staffServiceEmails: StaffServiceEmails;
 
-    constructor({giftRepository, memberRepository}: {giftRepository: GiftBookshelfRepository; memberRepository: MemberRepository}) {
+    constructor({giftRepository, memberRepository, staffServiceEmails}: {giftRepository: GiftBookshelfRepository; memberRepository: MemberRepository; staffServiceEmails: StaffServiceEmails}) {
         this.#giftRepository = giftRepository;
         this.#memberRepository = memberRepository;
+        this.#staffServiceEmails = staffServiceEmails;
     }
 
     async recordPurchase(data: GiftPurchaseData): Promise<boolean> {
@@ -57,6 +64,18 @@ export class GiftService {
         });
 
         await this.#giftRepository.create(gift);
+
+        try {
+            await this.#staffServiceEmails.notifyGiftReceived({
+                name: member?.get('name') ?? null,
+                email: member?.get('email') ?? data.buyerEmail,
+                memberId: member?.id ?? null,
+                amount: data.amount,
+                currency: data.currency
+            });
+        } catch (err) {
+            logging.error(err);
+        }
 
         return true;
     }
