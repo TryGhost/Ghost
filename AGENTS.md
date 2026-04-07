@@ -205,26 +205,7 @@ Public-facing apps (`comments-ui`, `signup-form`, `sodo-search`, `portal`, `anno
 ## Code Guidelines
 
 ### Commit Messages
-Follow the project's commit message format:
-- **1st line:** Max 80 chars, past tense, with emoji if user-facing
-- **2nd line:** [blank]
-- **3rd line:** `ref`, `fixes`, or `closes` with issue link
-- **4th line:** Context (why this change, why now)
-
-**Emojis for user-facing changes:**
-- ✨ Feature
-- 🎨 Improvement/change
-- 🐛 Bug fix
-- 🌐 i18n/translation
-- 💡 Other user-facing changes
-
-Example:
-```
-✨ Added dark mode toggle to admin settings
-
-fixes https://github.com/TryGhost/Ghost/issues/12345
-Users requested ability to switch themes for better accessibility
-```
+When the user asks you to create a commit or draft a commit message, load and follow the `commit` skill from `.agents/skills/commit`.
 
 ### When Working on Admin UI
 - **New features:** Build in React (`apps/admin-x-*` or `apps/posts`)

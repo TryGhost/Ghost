@@ -20,6 +20,11 @@
       "source": "./.agents",
       "sourceType": "local",
       "computedHash": "ecdbd8c0832ed9be10573d3c7383291ae0b0a6ab84fa496b4a0ed54aac8d176b"
+    },
+    "commit": {
+      "source": "./.agents",
+      "sourceType": "local",
+      "computedHash": "f2f9a52e210a32ad42d4bf5826ce7cec265a2c472de03bee3840a5b295d734d7"
     }
   }
 }
