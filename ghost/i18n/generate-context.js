@@ -34,5 +34,24 @@ const CONTEXT_FILE = './locales/context.json';
         process.exit(1);
     }
 
+    const emptyKeys = Object.keys(orderedContext).filter((key) => {
+        const value = orderedContext[key] ?? '';
+        return value.trim() === '';
+    });
+
+    if (emptyKeys.length > 0) {
+        if (process.env.CI) {
+            const keyList = emptyKeys.map(k => '  - "' + k + '"').join('\n');
+            // eslint-disable-next-line no-console
+            console.error('Translation keys are missing context descriptions in context.json:\n' + keyList);
+            // eslint-disable-next-line no-console
+            console.error('\nAdd a description for each key in locales/context.json to help translators understand where and how the string is used.');
+            process.exit(1);
+        } else {
+            // eslint-disable-next-line no-console
+            console.warn(`Warning: ${emptyKeys.length} key(s) in context.json have empty descriptions. Please add context before committing.`);
+        }
+    }
+
     await fs.writeFile(CONTEXT_FILE, newContent);
 })();
