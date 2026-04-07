@@ -401,8 +401,6 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                 throw new Error('Unable to load email design settings');
             }
 
-            await editDesign(buildAutomatedEmailDesignPayload(state));
-
             await ensureWelcomeEmailRows();
             const senderPayload = {
                 sender_name: normalizeSenderValue(state.generalSettings.senderName),
@@ -413,6 +411,8 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
             };
 
             const {meta: {sent_email_verification: sentEmailVerification = []} = {}} = await editAutomatedEmailSenders(senderPayload);
+
+            await editDesign(buildAutomatedEmailDesignPayload(state));
 
             if (sentEmailVerification.length > 0) {
                 toast.info('We\u2019ve sent a confirmation email to the new address.');
