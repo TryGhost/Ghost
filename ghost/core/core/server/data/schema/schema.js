@@ -1179,7 +1179,7 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         welcome_email_automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'welcome_email_automations.id', constraintName: 'weae_automation_id_foreign', cascadeDelete: true},
         next_welcome_email_automated_email_id: {type: 'string', maxlength: 24, nullable: true, references: 'welcome_email_automated_emails.id', constraintName: 'weae_next_email_id_foreign', cascadeDelete: false},
-        delay_days: {type: 'integer', nullable: false},
+        delay_days: {type: 'integer', nullable: false, unsigned: true},
         subject: {type: 'string', maxlength: 300, nullable: false},
         lexical: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         sender_name: {type: 'string', maxlength: 191, nullable: true},
