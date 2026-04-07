@@ -22,7 +22,7 @@
     --surface-page: var(--background);
     --surface-panel: var(--card);
     --surface-panel-foreground: var(--card-foreground);
-    --surface-elevated: hsl(200 12% 96%);
+    --surface-elevated: hsl(0 0% 100%);
     --surface-elevated-foreground: var(--card-foreground);
     --surface-overlay: var(--popover);
     --surface-overlay-foreground: var(--popover-foreground);
