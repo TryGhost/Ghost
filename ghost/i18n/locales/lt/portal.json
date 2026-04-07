@@ -242,7 +242,7 @@
     "You're not receiving emails": "Jūs negaunate el. laiškų",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Jūs šiuo metu negaunate el. laiškų, nes pažymėjote naujausią laišką kaip šlamštą arba dėl to, kad nepavyko išsiųsti pranešimų jūsų nurodytu el. pašto adresu.",
     "You've successfully signed in.": "Sėkmingai prisijungėte.",
-    "You've successfully subscribed to": "Sėkmingai užsiprenumeravote",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Sėkmingai užsiprenumeravote <strong>{siteTitle}</strong>",
     "Your account": "Jūsų paskyra",
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",

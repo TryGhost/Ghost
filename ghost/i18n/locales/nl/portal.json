@@ -242,7 +242,7 @@
     "You're not receiving emails": "Je ontvangt geen e-mails",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Je ontvangt geen e-mails omdat je ofwel een recent bericht als spam had gemarkeerd, of omdat de berichten niet verzonden konden worden naar jouw e-mailadres.",
     "You've successfully signed in.": "Je bent succesvol ingelogd.",
-    "You've successfully subscribed to": "Je bent succesvol geabonneerd op",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Je bent succesvol geabonneerd op <strong>{siteTitle}</strong>",
     "Your account": "Jouw account",
     "Your email has failed to resubscribe, please try again": "Je e-mail is niet opnieuw geabonneerd, probeer het opnieuw",
     "your inbox": "",

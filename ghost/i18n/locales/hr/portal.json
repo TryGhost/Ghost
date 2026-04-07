@@ -242,7 +242,7 @@
     "You're not receiving emails": "Ne primate e-poštu",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Ne primate e-poštu zato što ste nedavnu poruku označili kao nepoželjnu ili zato što se poruke nisu mogle isporučiti na vašu adresu e-pošte.",
     "You've successfully signed in.": "Uspješno ste prijavljeni.",
-    "You've successfully subscribed to": "Uspješno ste pretplaćeni na",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Uspješno ste pretplaćeni na <strong>{siteTitle}</strong>",
     "Your account": "Vaš korisnički račun",
     "Your email has failed to resubscribe, please try again": "Ponovna pretplata nije uspjela, pokušajte ponovno",
     "your inbox": "",

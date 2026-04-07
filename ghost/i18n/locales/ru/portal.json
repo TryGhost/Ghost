@@ -242,7 +242,7 @@
     "You're not receiving emails": "Вы не получаете электронные письма",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Вы не получаете электронные письма, потому что: либо отметили одно из наших писем как спам, либо письма не могут быть доставлены на указанный вами email адрес.",
     "You've successfully signed in.": "Вы успешно вошли.",
-    "You've successfully subscribed to": "Вы успешно подписались на",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Вы успешно подписались на <strong>{siteTitle}</strong>",
     "Your account": "Ваш аккаунт",
     "Your email has failed to resubscribe, please try again": "Не удалось подписаться повторно используя ваш email, попробуйте ещё раз",
     "your inbox": "",

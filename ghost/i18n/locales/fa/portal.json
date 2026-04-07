@@ -242,7 +242,7 @@
     "You're not receiving emails": "شما هیچ ایمیلی دریافت نمی\u200cکنید",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "شما به خاطر این که آخرین ایمیلی که دریافت کرده\u200cاید به عنوان اسپم علامت\u200cگذاری شده است و یا این که مشکلی برای تحویل ایمیل به آدرسی که وارد کرده\u200cاید وجود دارد، ایمیلی دریافت نمی\u200cکنید.",
     "You've successfully signed in.": "شما با موفقیت وارد شدید.",
-    "You've successfully subscribed to": "شما با موفقیت مشترک این موارد شدید:",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "شما با موفقیت مشترک این موارد شدید: <strong>{siteTitle}</strong>",
     "Your account": "حساب کاربری شما",
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",

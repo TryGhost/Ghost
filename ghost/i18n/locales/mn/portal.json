@@ -242,7 +242,7 @@
     "You're not receiving emails": "Та имэйл хүлээж тохиргоогүй байна",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Таны имэйл хүлээж авахгүй байгаа шалтгаан нь нэг бол та аль нэг имэйлийг спам гэж тэмдэглэсэн, эсвэл таны хаяг имэйл хүлээж авах боломжгүй байна.",
     "You've successfully signed in.": "Та амжилттай нэвтэрлээ.",
-    "You've successfully subscribed to": "Таны захиалга амжилттай үүслээ.",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Таны захиалга амжилттай үүслээ. <strong>{siteTitle}</strong>",
     "Your account": "Таны бүртгэл",
     "Your email has failed to resubscribe, please try again": "Таны имэйлийг дахин захиалахад алдаа гарлаа, дахин оролдоно уу",
     "your inbox": "",

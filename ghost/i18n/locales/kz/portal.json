@@ -242,7 +242,7 @@
     "You're not receiving emails": "Сізге электрондық хаттар келіп жатқан жоқ",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Сізге электрондық хаттар келіп жатқан жоқ, себебі жақында келген хат спам ретінде белгіленген немесе хабарламаларды сіз көрсеткен электрондық пошта мекенжайына жеткізу мүмкін емес.",
     "You've successfully signed in.": "Кіру сәтті орындалды.",
-    "You've successfully subscribed to": "Жазылым сәтті орындалды",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Жазылым сәтті орындалды <strong>{siteTitle}</strong>",
     "Your account": "Сіздің аккаунт",
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",

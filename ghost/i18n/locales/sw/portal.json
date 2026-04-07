@@ -242,7 +242,7 @@
     "You're not receiving emails": "Hupokei barua pepe",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Hupokei barua pepe kwa sababu umeashiria ujumbe wa hivi karibuni kama spam, au kwa sababu ujumbe haukuweza kuwasilishwa kwenye anwani yako ya barua pepe iliyotolewa.",
     "You've successfully signed in.": "Umeingia kwa mafanikio.",
-    "You've successfully subscribed to": "Umejiunga kwa mafanikio na",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Umejiunga kwa mafanikio na <strong>{siteTitle}</strong>",
     "Your account": "Akaunti yako",
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",

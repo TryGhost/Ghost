@@ -242,7 +242,7 @@
     "You're not receiving emails": "E-posta almıyorsunuz",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "E-postaları alamıyorsanız, ya yakın zamanda bir mesajı spam olarak işaretlediniz ya da mesajlar sağlanan e-posta adresinize teslim edilemedi.",
     "You've successfully signed in.": "Başarıyla oturum açtınız.",
-    "You've successfully subscribed to": "Başarıyla abone oldunuz",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Başarıyla abone oldunuz <strong>{siteTitle}</strong>",
     "Your account": "Hesabın",
     "Your email has failed to resubscribe, please try again": "E-postanız yeniden abone olmayı başaramadı, lütfen tekrar deneyin",
     "your inbox": "gelen kutunuz",

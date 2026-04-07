@@ -242,7 +242,7 @@
     "You're not receiving emails": "No estàs rebent correus electrònics",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "No estàs rebent correus electrònics perquè l'has marcat recentment com a correu brossa o perquè no s'han pogut entregar els missatges a l'adreça de correu electrònic proporcionada.",
     "You've successfully signed in.": "Has iniciat la sessió correctament.",
-    "You've successfully subscribed to": "T'has subscrit correctament a",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "T'has subscrit correctament a <strong>{siteTitle}</strong>",
     "Your account": "El teu compte",
     "Your email has failed to resubscribe, please try again": "La teva adreça de correu no s'ha pogut tornar a subscriure - torna-ho a intentar",
     "your inbox": "",

@@ -242,7 +242,7 @@
     "You're not receiving emails": "আপনি ইমেল পাচ্ছেন না",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "আপনি ইমেল পাচ্ছেন না কারণ আপনি হয়তো একটি সাম্প্রতিক বার্তা স্প্যাম হিসেবে চিহ্নিত করেছেন, অথবা বার্তাগুলি আপনার প্রদত্ত ইমেল ঠিকানায় বিতরণ করা যায়নি।",
     "You've successfully signed in.": "আপনি সফলভাবে সাইন ইন করেছেন।",
-    "You've successfully subscribed to": "আপনি সফলভাবে সাবস্ক্রাইব করেছেন",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "আপনি সফলভাবে সাবস্ক্রাইব করেছেন <strong>{siteTitle}</strong>",
     "Your account": "আপনার অ্যাকাউন্ট",
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",

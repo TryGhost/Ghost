@@ -363,7 +363,7 @@
     "You're one tap away from subscribing to {siteTitle} — please confirm your email address with this link:": "Signup confirmation email",
     "You're one tap away from subscribing to {siteTitle}!": "Signup confirmation email",
     "You've successfully signed in.": "A notification displayed when the user signs in",
-    "You've successfully subscribed to": "A notification displayed when the user subscribed",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Notification displayed after a successful signup. The <strong>...</strong> tag wraps the site name. {siteTitle} is the name of the publication",
     "Your account": "A label indicating member account details",
     "Your email address": "Placeholder text in an input field",
     "Your email has failed to resubscribe, please try again": "error message in portal",

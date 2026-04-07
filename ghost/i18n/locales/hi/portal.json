@@ -242,7 +242,7 @@
     "You're not receiving emails": "आप ईमेल प्राप्त नहीं कर रहे हैं",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "आप ईमेल प्राप्त नहीं कर रहे हैं क्योंकि आपने हाल की एक संदेश को स्पैम के रूप में चिन्हित किया है, या क्योंकि संदेश आपके द्वारा प्रदान किए गए ईमेल पते पर डिलीवर नहीं किए जा सके।",
     "You've successfully signed in.": "आपने सफलतापूर्वक साइन इन कर लिया है।",
-    "You've successfully subscribed to": "आपने सफलतापूर्वक सदस्यता ली है",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "आपने सफलतापूर्वक सदस्यता ली है <strong>{siteTitle}</strong>",
     "Your account": "आपका खाता",
     "Your email has failed to resubscribe, please try again": "आपका ईमेल पुनः सदस्यता लेने में विफल रहा, कृपया पुनः प्रयास करें",
     "your inbox": "",

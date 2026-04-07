@@ -242,7 +242,7 @@
     "You're not receiving emails": "ਤੁਹਾਨੂੰ ਈਮੇਲਾਂ ਨਹੀਂ ਮਿਲ ਰਹੀਆਂ",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "ਤੁਹਾਨੂੰ ਈਮੇਲਾਂ ਨਹੀਂ ਮਿਲ ਰਹੀਆਂ ਕਿਉਂਕਿ ਤੁਸੀਂ ਜਾਂ ਤਾਂ ਹਾਲੀਆ ਸੁਨੇਹੇ ਨੂੰ ਸਪੈਮ ਵਜੋਂ ਮਾਰਕ ਕੀਤਾ ਹੈ, ਜਾਂ ਕਿਉਂਕਿ ਸੁਨੇਹੇ ਤੁਹਾਡੇ ਦਿੱਤੇ ਗਏ ਈਮੇਲ ਪਤੇ 'ਤੇ ਨਹੀਂ ਪਹੁੰਚਾਏ ਜਾ ਸਕੇ।",
     "You've successfully signed in.": "ਤੁਸੀਂ ਸਫਲਤਾਪੂਰਵਕ ਸਾਈਨ ਇਨ ਕਰ ਲਿਆ ਹੈ।",
-    "You've successfully subscribed to": "ਤੁਸੀਂ ਸਫਲਤਾਪੂਰਵਕ ਸਦੱਸਤਾ ਲਈ ਹੈ:",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "ਤੁਸੀਂ ਸਫਲਤਾਪੂਰਵਕ ਸਦੱਸਤਾ ਲਈ ਹੈ: <strong>{siteTitle}</strong>",
     "Your account": "ਤੁਹਾਡਾ ਖਾਤਾ",
     "Your email has failed to resubscribe, please try again": "ਤੁਹਾਡੀ ਈਮੇਲ ਮੁੜ-ਸਦੱਸਤਾ ਲੈਣ ਵਿੱਚ ਅਸਫਲ ਰਹੀ ਹੈ, ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
     "your inbox": "",

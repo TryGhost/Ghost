@@ -242,7 +242,7 @@
     "You're not receiving emails": "Anda tidak menerima e-mel",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Anda tidak menerima e-mel kerana anda sama ada menandai mesej terkini sebagai spam, atau kerana mesej tidak dapat dihantar ke alamat e-mel yang diberikan.",
     "You've successfully signed in.": "Anda telah berjaya log masuk.",
-    "You've successfully subscribed to": "",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "",
     "Your account": "Akaun anda",
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",

@@ -242,7 +242,7 @@
     "You're not receiving emails": "Не добивате пораки",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Не добивате пораки бидејќи вие ја обележавте некоја од последните пораки како спам, или бидејќи пораките не можат да бидат доставени на адресата која ја доставивте.",
     "You've successfully signed in.": "Успешно се најавивте.",
-    "You've successfully subscribed to": "Успешно се претплативте на",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Успешно се претплативте на <strong>{siteTitle}</strong>",
     "Your account": "Вашата сметка",
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",

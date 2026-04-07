@@ -242,7 +242,7 @@
     "You're not receiving emails": "Du tar inte emot e-post",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Du får inte e-postmeddelanden eftersom du antingen markerade ett nyligt meddelande som skräppost, eller för att meddelanden inte kunde levereras till din angivna e-postadress.",
     "You've successfully signed in.": "Du är nu inloggad.",
-    "You've successfully subscribed to": "Du är nu anmäld till",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Du är nu anmäld till <strong>{siteTitle}</strong>",
     "Your account": "Ditt konto",
     "Your email has failed to resubscribe, please try again": "Din e-postadress kunde inte återanmälas, vänligen försök igen",
     "your inbox": "din inkorg",
