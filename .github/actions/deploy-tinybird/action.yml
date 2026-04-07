@@ -36,7 +36,7 @@ runs:
       working-directory: ghost/core/core/server/data/tinybird
 
     - name: Send slack notification
-      uses: slackapi/slack-github-action@v2.1.1
+      uses: slackapi/slack-github-action@af78098f536edbc4de71162a307590698245be95 # v3.0.1
       if: always()
       with:
         webhook: ${{ inputs.slack-webhook }}
