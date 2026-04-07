@@ -1,8 +1,11 @@
 const {agentProvider, fixtureManager, matchers, dbUtils} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyObjectId, anyISODateTime, anyErrorId, anyEtag, anyLocationFor} = matchers;
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const mailService = require('../../../core/server/services/mail');
+const SingleUseTokenProvider = require('../../../core/server/services/members/single-use-token-provider');
+const models = require('../../../core/server/models');
 
 const matchAutomatedEmail = {
     id: anyObjectId,
@@ -412,6 +415,60 @@ describe('Automated Emails API', function () {
         });
     });
 
+    describe('Shared sender settings', function () {
+        const createSenderVerificationToken = async (property, value) => {
+            return (new SingleUseTokenProvider({
+                SingleUseTokenModel: models.SingleUseToken,
+                validityPeriod: 24 * 60 * 60 * 1000,
+                validityPeriodAfterUsage: 10 * 60 * 1000,
+                maxUsageCount: 1
+            })).create({property, value});
+        };
+
+        beforeEach(async function () {
+            await createAutomatedEmail();
+            await createAutomatedEmail({
+                name: 'Welcome Email (Paid)',
+                slug: 'member-welcome-email-paid',
+                subject: 'Welcome paid member'
+            });
+        });
+
+        it('Can edit sender settings for free and paid welcome emails', async function () {
+            await agent
+                .put('automated_emails/senders/')
+                .body({
+                    sender_name: 'Custom Sender',
+                    sender_email: 'sender@example.com',
+                    sender_reply_to: 'reply@example.com'
+                })
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails.length, 2);
+                    for (const automatedEmail of body.automated_emails) {
+                        assert.equal(automatedEmail.sender_name, 'Custom Sender');
+                        assert.equal(automatedEmail.sender_email, 'sender@example.com');
+                        assert.equal(automatedEmail.sender_reply_to, 'reply@example.com');
+                    }
+                });
+        });
+
+        it('Can verify pending sender update with token', async function () {
+            const token = await createSenderVerificationToken('sender_reply_to', 'verified-reply@example.com');
+
+            await agent
+                .put('automated_emails/verifications/')
+                .body({token})
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.meta.email_verified, 'sender_reply_to');
+                    assert.equal(body.automated_emails.length, 2);
+                    for (const automatedEmail of body.automated_emails) {
+                        assert.equal(automatedEmail.sender_reply_to, 'verified-reply@example.com');
+                    }
+                });
+        });
+    });
     describe('SendTestEmail', function () {
         let automatedEmailId;
 

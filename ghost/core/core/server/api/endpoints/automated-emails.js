@@ -170,6 +170,40 @@ const controller = {
         }
     },
 
+    editSenders: {
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            memberWelcomeEmailService.init();
+            const data = frame.data;
+
+            return memberWelcomeEmailService.api.editSharedSenderOptions({
+                sender_name: data.sender_name,
+                sender_email: data.sender_email,
+                sender_reply_to: data.sender_reply_to
+            });
+        }
+    },
+
+    verifySenderUpdate: {
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: {
+            method: 'edit'
+        },
+        data: [
+            'token'
+        ],
+        async query(frame) {
+            memberWelcomeEmailService.init();
+            return memberWelcomeEmailService.api.verifySenderPropertyUpdate(frame.data.token);
+        }
+    },
     sendTestEmail: {
         statusCode: 204,
         headers: {
