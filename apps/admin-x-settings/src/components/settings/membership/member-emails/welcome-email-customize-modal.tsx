@@ -435,7 +435,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
             if (showSenderEmailInput && senderEmail) {
                 if (!validator.isEmail(senderEmail)) {
                     validationErrors.senderEmail = 'Enter a valid email address';
-                } else if (senderEmailDomain && senderEmail.split('@')[1] !== senderEmailDomain) {
+                } else if (senderEmailDomain && senderEmail.split('@')[1]?.toLowerCase() !== senderEmailDomain.toLowerCase()) {
                     validationErrors.senderEmail = `Email address must end with @${senderEmailDomain}`;
                 }
             }
