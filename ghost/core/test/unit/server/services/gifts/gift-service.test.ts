@@ -11,6 +11,9 @@ describe('GiftService', function () {
     let memberRepository: {
         get: sinon.SinonStub;
     };
+    let staffServiceEmails: {
+        notifyGiftReceived: sinon.SinonStub;
+    };
     const purchaseData = {
         token: 'abc-123',
         buyerEmail: 'buyer@example.com',
@@ -30,7 +33,10 @@ describe('GiftService', function () {
             existsByCheckoutSessionId: sinon.stub().resolves(false)
         };
         memberRepository = {
-            get: sinon.stub().resolves({id: 'member_1'})
+            get: sinon.stub().resolves({id: 'member_1', get: sinon.stub().returns(null)})
+        };
+        staffServiceEmails = {
+            notifyGiftReceived: sinon.stub()
         };
     });
 
@@ -39,7 +45,7 @@ describe('GiftService', function () {
     });
 
     function createService() {
-        return new GiftService({giftRepository: giftRepository as any, memberRepository});
+        return new GiftService({giftRepository: giftRepository as any, memberRepository, staffServiceEmails});
     }
 
     describe('recordPurchase', function () {
@@ -70,6 +76,13 @@ describe('GiftService', function () {
         });
 
         it('resolves member by stripeCustomerId', async function () {
+            const memberGet = sinon.stub();
+
+            memberGet.withArgs('name').returns('Member Name');
+            memberGet.withArgs('email').returns('member@example.com');
+
+            memberRepository.get.resolves({id: 'member_1', get: memberGet});
+
             const service = createService();
 
             await service.recordPurchase(purchaseData);
@@ -130,6 +143,43 @@ describe('GiftService', function () {
             );
 
             sinon.assert.notCalled(giftRepository.create);
+        });
+
+        it('sends staff notification email after recording purchase', async function () {
+            const memberGet = sinon.stub();
+
+            memberGet.withArgs('name').returns('Member Name');
+            memberGet.withArgs('email').returns('member@example.com');
+
+            memberRepository.get.resolves({id: 'member_1', get: memberGet});
+
+            const service = createService();
+
+            await service.recordPurchase(purchaseData);
+
+            sinon.assert.calledOnce(staffServiceEmails.notifyGiftReceived);
+
+            const emailData = staffServiceEmails.notifyGiftReceived.getCall(0).args[0];
+
+            assert.equal(emailData.name, 'Member Name');
+            assert.equal(emailData.email, 'member@example.com');
+            assert.equal(emailData.memberId, 'member_1');
+            assert.equal(emailData.amount, 5000);
+            assert.equal(emailData.currency, 'usd');
+        });
+
+        it('uses buyerEmail and null name when purchaser is not a member', async function () {
+            const service = createService();
+
+            await service.recordPurchase({...purchaseData, stripeCustomerId: null});
+
+            sinon.assert.calledOnce(staffServiceEmails.notifyGiftReceived);
+
+            const emailData = staffServiceEmails.notifyGiftReceived.getCall(0).args[0];
+
+            assert.equal(emailData.name, null);
+            assert.equal(emailData.email, 'buyer@example.com');
+            assert.equal(emailData.memberId, null);
         });
     });
 });
