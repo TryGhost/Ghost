@@ -410,6 +410,45 @@ describe('Member Welcome Emails Integration', function () {
             assert.ok(sendCall.args[0].from.includes(senderEmail));
         });
 
+        it('uses automated email sender overrides when configured', async function () {
+            const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
+
+            await db.knex('newsletters')
+                .where('id', defaultNewsletter.id)
+                .update({
+                    sender_name: 'Newsletter Sender',
+                    sender_email: 'newsletter@example.com',
+                    sender_reply_to: 'newsletter-reply@example.com'
+                });
+
+            await db.knex('automated_emails')
+                .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
+                .update({
+                    sender_name: 'Automation Sender',
+                    sender_email: 'automation@example.com',
+                    sender_reply_to: 'automation-reply@example.com'
+                });
+
+            await models.Outbox.add({
+                event_type: 'MemberCreatedEvent',
+                payload: JSON.stringify({
+                    memberId: ObjectId().toHexString(),
+                    uuid: '88888888-8888-4888-8888-888888888888',
+                    email: 'automation-sender-test@example.com',
+                    name: 'Automation Sender Test',
+                    status: 'free'
+                }),
+                status: OUTBOX_STATUSES.PENDING
+            });
+
+            await scheduleInlineJob();
+
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            assert.ok(sendCall.args[0].from.includes('automation@example.com'));
+            assert.equal(sendCall.args[0].replyTo, 'automation-reply@example.com');
+        });
+
         it('uses mock member UUID when sending test welcome emails', async function () {
             const automatedEmail = await db.knex('automated_emails')
                 .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
@@ -444,6 +483,46 @@ describe('Member Welcome Emails Integration', function () {
             assert.ok(sendCall.args[0].html.includes('00000000-0000-4000-8000-000000000000'));
             assert(!sendCall.args[0].html.includes('{uuid}'));
             assert(!sendCall.args[0].html.includes('%7Buuid%7D'));
+        });
+
+        it('uses automated sender overrides for test welcome emails', async function () {
+            memberWelcomeEmailService.init();
+
+            const automatedEmail = await db.knex('automated_emails')
+                .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
+                .first();
+
+            await db.knex('automated_emails')
+                .where('id', automatedEmail.id)
+                .update({
+                    sender_name: 'Automation Sender',
+                    sender_email: 'automation@example.com',
+                    sender_reply_to: 'automation-reply@example.com'
+                });
+
+            await memberWelcomeEmailService.api.sendTestEmail({
+                email: 'test-member@example.com',
+                subject: 'Welcome test',
+                lexical: JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'paragraph',
+                            children: [{type: 'text', text: 'Hello'}]
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                }),
+                automatedEmailId: automatedEmail.id
+            });
+
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            assert.ok(sendCall.args[0].from.includes('automation@example.com'));
+            assert.equal(sendCall.args[0].replyTo, 'automation-reply@example.com');
         });
     });
 

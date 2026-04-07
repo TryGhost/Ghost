@@ -185,6 +185,8 @@ module.exports = function apiRoutes() {
     // ## Automated Emails
     router.get('/automated_emails', mw.authAdminApi, http(api.automatedEmails.browse));
     router.get('/automated_emails/design', mw.authAdminApi, http(api.automatedEmailDesign.read));
+    router.put('/automated_emails/senders', mw.authAdminApi, http(api.automatedEmails.editSenders));
+    router.put('/automated_emails/verifications', mw.authAdminApi, http(api.automatedEmails.verifySenderUpdate));
     router.get('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.read));
     router.post('/automated_emails', mw.authAdminApi, http(api.automatedEmails.add));
     router.put('/automated_emails/design', mw.authAdminApi, http(api.automatedEmailDesign.edit));
