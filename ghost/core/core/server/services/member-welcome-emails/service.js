@@ -1,5 +1,6 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
+const labs = require('../../../shared/labs');
 const urlUtils = require('../../../shared/url-utils');
 const settingsCache = require('../../../shared/settings-cache');
 const emailAddressService = require('../email-address');
@@ -93,11 +94,19 @@ class MemberWelcomeEmailService {
         return this.#defaultNewsletterSenderOptions;
     }
 
+    #useDesignCustomization() {
+        return labs.isSet('welcomeEmailsDesignCustomization');
+    }
+
     async loadMemberWelcomeEmails() {
         this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
 
         for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
-            const row = await WelcomeEmailAutomation.findOne({slug}, {withRelated: ['welcomeEmailAutomatedEmail']});
+            const row = await WelcomeEmailAutomation.findOne({slug}, {
+                withRelated: this.#useDesignCustomization()
+                    ? ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
+                    : ['welcomeEmailAutomatedEmail']
+            });
 
             if (!row) {
                 this.#memberWelcomeEmails[memberStatus] = null;
@@ -111,10 +120,13 @@ class MemberWelcomeEmailService {
                 continue;
             }
 
+            const designSettings = this.#useDesignCustomization() ? email.related('emailDesignSetting') : null;
+
             this.#memberWelcomeEmails[memberStatus] = {
                 lexical: email.get('lexical'),
                 subject: email.get('subject'),
                 status: row.get('status'),
+                designSettings: designSettings?.id ? designSettings.toJSON() : null,
                 senderName: email.get('sender_name'),
                 senderEmail: email.get('sender_email'),
                 senderReplyTo: email.get('sender_reply_to')
@@ -154,6 +166,7 @@ class MemberWelcomeEmailService {
         const {html, text, subject} = await this.#renderer.render({
             lexical: memberWelcomeEmail.lexical,
             subject: memberWelcomeEmail.subject,
+            designSettings: memberWelcomeEmail.designSettings,
             member: {
                 name: member.name,
                 email: member.email,
@@ -192,7 +205,12 @@ class MemberWelcomeEmailService {
 
     async sendTestEmail({email, subject, lexical, automatedEmailId}) {
         // Still validate the automated email exists (for permission purposes)
-        const automation = await WelcomeEmailAutomation.findOne({id: automatedEmailId}, {withRelated: ['welcomeEmailAutomatedEmail']});
+        const automation = await WelcomeEmailAutomation.findOne({id: automatedEmailId}, {
+            withRelated: this.#useDesignCustomization()
+                ? ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
+                : ['welcomeEmailAutomatedEmail']
+        });
+        const automatedEmail = automation?.related('welcomeEmailAutomatedEmail');
 
         if (!automation || !automation.related('welcomeEmailAutomatedEmail')?.id) {
             throw new errors.NotFoundError({
@@ -218,9 +236,12 @@ class MemberWelcomeEmailService {
             uuid: '00000000-0000-4000-8000-000000000000'
         };
 
+        const designSettings = this.#useDesignCustomization() ? automatedEmail.related('emailDesignSetting') : null;
+
         const {html, text, subject: renderedSubject} = await this.#renderer.render({
             lexical,
             subject,
+            designSettings: designSettings?.id ? designSettings.toJSON() : null,
             member: testMember,
             siteSettings: this.#getSiteSettings()
         });
@@ -241,20 +262,25 @@ class MemberWelcomeEmailService {
 
 class MemberWelcomeEmailServiceWrapper {
     init() {
-        if (this.api) {
+        const useDesignCustomization = labs.isSet('welcomeEmailsDesignCustomization');
+
+        if (this.api && this.useDesignCustomization === useDesignCustomization) {
             return;
         }
 
-        const i18nLib = require('@tryghost/i18n');
-        const events = require('../../lib/common/events');
+        if (!this.i18n) {
+            const i18nLib = require('@tryghost/i18n');
+            const events = require('../../lib/common/events');
 
-        const i18n = i18nLib(settingsCache.get('locale') || 'en', 'ghost');
+            this.i18n = i18nLib(settingsCache.get('locale') || 'en', 'ghost');
 
-        events.on('settings.locale.edited', (model) => {
-            i18n.changeLanguage(model.get('value'));
-        });
+            events.on('settings.locale.edited', (model) => {
+                this.i18n.changeLanguage(model.get('value'));
+            });
+        }
 
-        this.api = new MemberWelcomeEmailService({t: i18n.t});
+        this.useDesignCustomization = useDesignCustomization;
+        this.api = new MemberWelcomeEmailService({t: this.i18n.t});
     }
 }
 

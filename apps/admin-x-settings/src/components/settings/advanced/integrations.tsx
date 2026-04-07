@@ -2,7 +2,6 @@ import IntegrationsSettingsImg from '../../../assets/images/integrations-setting
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
-import useFeatureFlag from '../../../hooks/use-feature-flag';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, SettingGroupHeader, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {type Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
@@ -91,7 +90,6 @@ const BuiltInIntegrations: React.FC = () => {
     };
 
     const builtInApiIntegrationsDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
-    const transistorFeatureEnabled = useFeatureFlag('transistor');
 
     const pinturaEditor = usePinturaEditor();
 
@@ -145,7 +143,7 @@ const BuiltInIntegrations: React.FC = () => {
             testId: 'pintura-integration',
             title: 'Pintura'
         },
-        ...(transistorFeatureEnabled ? [{
+        {
             active: !!transistorEnabled,
             detail: 'Give your members access to private podcasts',
             disabled: builtInApiIntegrationsDisabled,
@@ -153,7 +151,7 @@ const BuiltInIntegrations: React.FC = () => {
             modal: 'integrations/transistor',
             testId: 'transistor-integration',
             title: 'Transistor.fm'
-        }] : []),
+        },
         {
             detail: 'Access your content programmatically',
             icon: <Icon name='angle-brackets' size={32} />,
