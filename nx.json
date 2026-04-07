@@ -1,7 +1,11 @@
 {
     "$schema": "./node_modules/nx/schemas/nx-schema.json",
     "namedInputs": {
-        "default": ["{projectRoot}/**/*", "{workspaceRoot}/ghost/tsconfig.json"]
+        "default": [
+            "{projectRoot}/**/*",
+            "{workspaceRoot}/package.json",
+            "{workspaceRoot}/ghost/tsconfig.json"
+        ]
     },
     "parallel": 4,
     "targetDefaults": {
@@ -29,7 +33,8 @@
             "cache": true
         },
         "test:unit": {
-            "cache": true
+            "cache": true,
+            "dependsOn": ["build"]
         },
         "dev": {
           "dependsOn": ["^dev"],

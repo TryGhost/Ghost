@@ -46,6 +46,7 @@ jobs:
       IS_SIX: ${{ github.ref == 'refs/heads/6.x' }}
       IS_SIX_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == '6.x' }}
     permissions:
+      actions: read
       contents: read
       pull-requests: read
     steps:
@@ -61,19 +62,11 @@ jobs:
           echo "GITHUB_EVENT_NAME: ${{ github.event_name }}"
           echo "GITHUB_CONTEXT: ${{ toJson(github.event) }}"
 
-      - name: Get metadata (push)
-        if: github.event_name == 'push'
-        run: |
-          NUMBER_OF_COMMITS=$(printf "%s\n" '${{ toJson(github.event.commits.*.id) }}' | jq length)
-          echo "There are $NUMBER_OF_COMMITS commits in this push."
-          echo "BASE_COMMIT=$(git rev-parse HEAD~$NUMBER_OF_COMMITS)" >> $GITHUB_ENV
-
-      - name: Get metadata (pull_request)
-        if: github.event_name == 'pull_request'
-        run: |
-          BASE_COMMIT=$(curl --location --request GET 'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}' --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq -r .base.sha)
-          echo "Setting BASE_COMMIT to $BASE_COMMIT"
-          echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
+      - name: Set SHAs for Nx Commands
+        id: set_nx_shas
+        uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
+        with:
+          error-on-no-successful-workflow: true
 
       - name: Check user org membership
         id: check_user_org_membership
@@ -105,7 +98,7 @@ jobs:
         id: changed
         with:
           filters: |
-            shared: &shared
+            common: &shared
               - '.github/**'
               - 'package.json'
               - 'yarn.lock'
@@ -114,9 +107,6 @@ jobs:
               - 'ghost/**'
               - '!ghost/admin/**'
               - '!ghost/core/core/server/data/tinybird/**'
-            admin:
-              - *shared
-              - 'ghost/admin/**'
             admin-x-settings:
               - *shared
               - 'apps/admin-x-settings/**'
@@ -164,17 +154,6 @@ jobs:
           echo "dep-cache" >> "$GITHUB_ENV"
           echo "$EOF" >> "$GITHUB_ENV"
 
-      - name: Nx cache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-        id: cache_nx
-        with:
-          path: .nxcache
-          key: nx-Linux-${{ github.ref }}-${{ env.HEAD_COMMIT }}
-          restore-keys: |
-            nx-Linux-${{ github.ref }}-${{ env.HEAD_COMMIT }}
-            nx-Linux-${{ github.ref }}
-            nx-Linux
-
       - name: Check dependency cache
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         id: cache_dependencies
@@ -198,9 +177,20 @@ jobs:
       - name: Install dependencies
         run: bash .github/scripts/install-deps.sh
 
+      - name: Determine Affected Projects
+        id: affected
+        run: |
+          AFFECTED_PROJECTS=$(yarn nx show projects --affected --json | tr -d '\n')
+          echo "affected_projects=$AFFECTED_PROJECTS" >> "$GITHUB_OUTPUT"
+
+          UNIT_TEST_PROJECTS=$(yarn nx show projects --affected --withTarget test:unit --sep=, | tr -d '\n')
+          echo "affected_unit_tests=${UNIT_TEST_PROJECTS}" >> "$GITHUB_OUTPUT"
+
 
     outputs:
-      changed_admin: ${{ steps.changed.outputs.admin }}
+      affected_projects: ${{ steps.affected.outputs.affected_projects }}
+      affected_unit_tests: ${{ steps.affected.outputs.affected_unit_tests }}
+      changed_common: ${{ steps.changed.outputs.common }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_admin_x_settings: ${{ steps.changed.outputs.admin-x-settings }}
       changed_activitypub: ${{ steps.changed.outputs.activitypub }}
@@ -212,7 +202,6 @@ jobs:
       changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
-      base_commit: ${{ env.BASE_COMMIT }}
       is_main: ${{ env.IS_MAIN }}
       is_tag: ${{ env.IS_TAG }}
       is_development: ${{ env.IS_DEVELOPMENT }}
@@ -222,6 +211,8 @@ jobs:
       dependency_cache_key: ${{ env.cachekey }}
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
+      nx_base: ${{ env.NX_BASE }}
+      nx_head: ${{ env.NX_HEAD }}
 
   job_app_version_bump_check:
     name: Check app version bump
@@ -269,7 +260,10 @@ jobs:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - run: yarn nx affected -t lint --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+      - run: yarn nx affected -t lint
+        env:
+          NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
+          NX_HEAD: ${{ needs.job_setup.outputs.nx_head }}
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -284,11 +278,8 @@ jobs:
     name: i18n
     if: |
         needs.job_setup.outputs.is_tag != 'true'
-        && (needs.job_setup.outputs.changed_comments_ui == 'true'
-        || needs.job_setup.outputs.changed_signup_form == 'true'
-        || needs.job_setup.outputs.changed_sodo_search == 'true'
-        || needs.job_setup.outputs.changed_portal == 'true'
-        || needs.job_setup.outputs.changed_core == 'true')
+        && (contains(fromJSON(needs.job_setup.outputs.affected_projects), '@tryghost/i18n')
+          || needs.job_setup.outputs.changed_common == 'true')
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
@@ -306,7 +297,10 @@ jobs:
   job_admin-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_admin == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: |
+        needs.job_setup.outputs.is_tag != 'true'
+        && (contains(fromJSON(needs.job_setup.outputs.affected_projects), 'ghost-admin')
+          || needs.job_setup.outputs.changed_common == 'true')
     name: Admin tests - Chrome
     env:
       MOZ_HEADLESS: 1
@@ -347,7 +341,10 @@ jobs:
   job_unit-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: |
+      needs.job_setup.outputs.changed_any_code == 'true'
+      && needs.job_setup.outputs.affected_unit_tests != ''
+      && needs.job_setup.outputs.is_tag != 'true'
     strategy:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
@@ -372,24 +369,15 @@ jobs:
         with:
           timezoneLinux: "America/New_York"
 
-      - name: Determine affected unit-test projects
-        id: affected_unit_projects
-        run: |
-          PROJECTS=$(yarn -s nx show projects --affected --withTarget=test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }} --sep=, | tr -d '\n')
-          echo "projects=$PROJECTS" >> "$GITHUB_OUTPUT"
-
-      # Build only projects that will run unit tests
-      - name: Build assets for affected unit tests
-        if: steps.affected_unit_projects.outputs.projects != ''
-        run: yarn nx run-many -t build --projects="${{ steps.affected_unit_projects.outputs.projects }}"
-
       - name: Run unit tests
-        run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+        run: yarn nx affected -t test:unit
         env:
           FORCE_COLOR: 0
           GHOST_UNIT_TEST_VARIANT: ci
           NX_SKIP_LOG_GROUPING: true
           logging__level: fatal
+          NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
+          NX_HEAD: ${{ needs.job_setup.outputs.nx_head }}
 
       - uses: actions/upload-artifact@v4
         if: matrix.node == env.NODE_VERSION
