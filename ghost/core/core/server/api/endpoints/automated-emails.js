@@ -103,7 +103,6 @@ const controller = {
 
             return models.Base.transaction(async (transacting) => {
                 const automation = await models.WelcomeEmailAutomation.add(automationData, {...frame.options, transacting});
-                emailData.welcome_email_automation_id = automation.id;
                 const email = await models.WelcomeEmailAutomatedEmail.add(
                     {
                         ...emailData,
