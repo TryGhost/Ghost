@@ -267,3 +267,38 @@ yarn nx reset                  # Reset Nx cache
 ### Test Issues
 - **E2E failures:** Check `e2e/CLAUDE.md` for debugging tips
 - **Docker issues:** `yarn docker:clean && yarn docker:build`
+
+## Cursor Cloud specific instructions
+
+### Docker requirement
+`yarn dev` requires Docker. The update script pre-builds Docker images (`yarn docker:build`) so that `yarn dev` doesn't time out waiting for the initial image build.
+
+### Starting the dev environment
+Run `yarn dev` in a tmux session — it starts Docker services (MySQL, Redis, Mailpit, Ghost backend, Caddy gateway) **and** host-side frontend dev servers (admin, portal, comments-ui, etc.).
+
+### Admin Vite server race condition
+The `@tryghost/admin` Vite dev server (port 5174) probes the Ghost backend on startup (`resolveGhostSiteUrl`). On a cold start (first Docker build), the backend may not be ready in time, causing the admin dev server to fail. If this happens, restart it manually:
+```bash
+cd apps/admin && yarn dev
+```
+The Ember admin dev server on port 4200 is separate and usually starts fine.
+
+### Key ports
+| Service | Port |
+|---|---|
+| Ghost (via Caddy) | 2368 |
+| Admin Vite | 5174 |
+| Admin Ember | 4200 |
+| Portal | 4175 |
+| Comments UI | 7173 |
+| Signup Form | 6174 |
+| Sodo Search | 4178 |
+| Announcement Bar | 4177 |
+| Mailpit Web UI | 8025 |
+| MySQL | 3306 |
+| Redis | 6379 |
+
+### Running tests
+- See "Common Commands" section above for all test commands.
+- Ghost core unit tests use SQLite in-memory and don't require Docker.
+- Integration/E2E API tests (`ghost/core`) connect to the Docker MySQL instance.
