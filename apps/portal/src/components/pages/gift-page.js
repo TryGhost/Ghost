@@ -87,7 +87,7 @@ function GiftProductCard({brandColor, product, selectedInterval, isDisabled, isP
                 <div className='gh-portal-btn-product'>
                     <ActionButton
                         dataTestId='purchase-gift'
-                        label='Purchase gift'
+                        label={<><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '6px', verticalAlign: 'middle'}}><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg> Gift this</>}
                         onClick={e => onPurchase(e, product)}
                         disabled={isDisabled}
                         isRunning={isPurchasing}
@@ -118,14 +118,14 @@ function GiftPriceSwitch({selectedInterval, setSelectedInterval, products}) {
                     className={'gh-portal-btn' + (selectedInterval === 'month' ? ' active' : '')}
                     onClick={() => setSelectedInterval('month')}
                 >
-                    Monthly
+                    1 month
                 </button>
                 <button
                     data-test-button='switch-yearly'
                     className={'gh-portal-btn' + (selectedInterval === 'year' ? ' active' : '')}
                     onClick={() => setSelectedInterval('year')}
                 >
-                    Yearly
+                    1 year
                     {highestDiscount > 0 && <span className='gh-portal-maximum-discount'>(save {highestDiscount}%)</span>}
                 </button>
             </div>
@@ -226,7 +226,7 @@ const GiftPage = () => {
                         <img className='gh-portal-signup-logo' src={siteIcon} alt={siteTitle} />
                     )}
                     <h1 className="gh-portal-main-title">{siteTitle}</h1>
-                    <p className="gh-portal-main-subtitle">Give the gift of a membership</p>
+                    <p className="gh-portal-main-subtitle" style={{fontSize: '1.7rem', marginTop: '8px'}}>Give the gift of a membership</p>
                 </header>
 
                 <section className="gh-portal-signup">
@@ -265,7 +265,7 @@ const GiftPage = () => {
                         </section>
 
                         <div className='gh-portal-signup-message'>
-                            <div>Gift can only be redeemed by members without an active paid subscription.</div>
+                            <div>Only redeemable by free or new members.</div>
                         </div>
                     </div>
                 </section>
