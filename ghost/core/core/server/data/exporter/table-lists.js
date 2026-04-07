@@ -58,7 +58,9 @@ const BACKUP_TABLES = [
     'recommendation_click_events',
     'recommendation_subscribe_events',
     'outbox',
-    'gifts'
+    'gifts',
+    'welcome_email_automations',
+    'welcome_email_automated_emails'
 ];
 
 // NOTE: exposing only tables which are going to be included in a "default" export file
