@@ -47,8 +47,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     const currentSearch = location.search ?? '';
     const {data: configData} = useBrowseConfig();
     const membersForwardEnabled = configData?.config?.labs?.membersForward === true;
-    const inAdminForwardEnabled = configData?.config?.labs?.inAdminForward === true;
-    const isReactImportRoute = isImportRoute && (membersForwardEnabled || inAdminForwardEnabled);
+    const isReactImportRoute = isImportRoute && membersForwardEnabled;
     const [showAddLabelModal, setShowAddLabelModal] = useState(false);
     const [showRemoveLabelModal, setShowRemoveLabelModal] = useState(false);
     const [showUnsubscribeModal, setShowUnsubscribeModal] = useState(false);

@@ -65,7 +65,7 @@ describe('MembersActions', () => {
         });
     });
 
-    it('does not open the import modal on the import route when neither React ownership flag is enabled', () => {
+    it('does not open the import modal on the import route when membersForward is disabled', () => {
         mockUseLocation.mockReturnValue({
             pathname: '/members/import'
         });
@@ -93,34 +93,6 @@ describe('MembersActions', () => {
                 config: {
                     labs: {
                         membersForward: true
-                    }
-                }
-            }
-        });
-
-        render(
-            <MembersActions
-                hasFilterOrSearch={false}
-                memberCount={10}
-                search=""
-                canBulkDelete
-                onImportComplete={vi.fn()}
-            />
-        );
-
-        expect(importModalPropsRef.current).not.toBeNull();
-        expect(importModalPropsRef.current?.open).toBe(true);
-    });
-
-    it('opens the import modal when inAdminForward is enabled on the import route', () => {
-        mockUseLocation.mockReturnValue({
-            pathname: '/members/import'
-        });
-        mockUseBrowseConfig.mockReturnValue({
-            data: {
-                config: {
-                    labs: {
-                        inAdminForward: true
                     }
                 }
             }
