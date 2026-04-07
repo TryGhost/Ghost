@@ -1,5 +1,4 @@
 const logging = require('@tryghost/logging');
-const {commands} = require('../../../schema');
 const {createTransactionalMigration} = require('../../utils');
 const ObjectId = require('bson-objectid').default;
 
@@ -7,8 +6,7 @@ module.exports = createTransactionalMigration(
     async function up(knex) {
         // The welcome_email_automations and welcome_email_automated_emails tables
         // already exist from a prior dormant migration. This migration copies data
-        // from the old automated_emails table into them and re-points the FK on
-        // automated_email_recipients.
+        // from the old automated_emails table into them.
 
         const oldTableExists = await knex.schema.hasTable('automated_emails');
         if (!oldTableExists) {
@@ -57,45 +55,9 @@ module.exports = createTransactionalMigration(
                 updated_at: row.updated_at
             });
         }
-
-        // Update FK on automated_email_recipients: automated_emails -> welcome_email_automated_emails
-        logging.info('Updating foreign key on automated_email_recipients');
-        await commands.dropForeign({
-            fromTable: 'automated_email_recipients',
-            fromColumn: 'automated_email_id',
-            toTable: 'automated_emails',
-            toColumn: 'id',
-            transaction: knex
-        });
-
-        await commands.addForeign({
-            fromTable: 'automated_email_recipients',
-            fromColumn: 'automated_email_id',
-            toTable: 'welcome_email_automated_emails',
-            toColumn: 'id',
-            transaction: knex
-        });
     },
 
     async function down(knex) {
-        // Restore FK on automated_email_recipients back to automated_emails
-        logging.info('Restoring foreign key on automated_email_recipients');
-        await commands.dropForeign({
-            fromTable: 'automated_email_recipients',
-            fromColumn: 'automated_email_id',
-            toTable: 'welcome_email_automated_emails',
-            toColumn: 'id',
-            transaction: knex
-        });
-
-        await commands.addForeign({
-            fromTable: 'automated_email_recipients',
-            fromColumn: 'automated_email_id',
-            toTable: 'automated_emails',
-            toColumn: 'id',
-            transaction: knex
-        });
-
         // Remove migrated data from new tables
         logging.info('Removing migrated data from new tables');
         await knex('welcome_email_automated_emails').del();
