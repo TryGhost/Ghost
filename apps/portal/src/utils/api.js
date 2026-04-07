@@ -169,63 +169,26 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
 
     api.gift = {
         async fetchRedemptionData({token}) {
-            // Temporary: Mocked API response
-            return {
-                gift: {
-                    token,
-                    cadence: 'year',
-                    duration: 1,
-                    currency: 'EUR',
-                    amount: 4000,
-                    expires_at: '2027-04-06T10:09:30.000Z',
-                    tier: {
-                        id: '00000000703e0fb16598bca1',
-                        name: 'Ultra',
-                        description: 'Everything in Premium, but fancier',
-                        benefits: [
-                            {
-                                id: '69d39d43acb2b803745058a1',
-                                name: 'Weekly round-up on Sunday'
-                            },
-                            {
-                                id: '69d39d43acb2b803745058a2',
-                                name: 'Access to all podcasts and videos'
-                            },
-                            {
-                                id: '69d39d43acb2b803745058a3',
-                                name: 'Five new stories per week'
-                            }
-                        ]
-                    }
-                }
-            };
+            const url = endpointFor({type: 'members', resource: `gifts/${encodeURIComponent(token)}/redeem`});
+            const res = await makeRequest({
+                url,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            });
 
-            // Test out error cases:
-            // throw new HumanReadableError('This gift has already been redeemed.');
-            // throw new HumanReadableError('This gift has expired.');
-            // throw new HumanReadableError('This gift link is not valid.');
+            if (res.ok) {
+                return res.json();
+            }
 
-            // TODO: Restore actual API code when ready to integrate
-            // const url = endpointFor({type: 'members', resource: `gifts/${encodeURIComponent(token)}`});
-            // const res = await makeRequest({
-            //     url,
-            //     method: 'GET',
-            //     headers: {
-            //         'Content-Type': 'application/json'
-            //     },
-            //     credentials: 'same-origin'
-            // });
+            const humanError = await HumanReadableError.fromApiResponse(res);
+            if (humanError) {
+                throw humanError;
+            }
 
-            // if (res.ok) {
-            //     return res.json();
-            // }
-
-            // const humanError = await HumanReadableError.fromApiResponse(res);
-            // if (humanError) {
-            //     throw humanError;
-            // }
-
-            // throw new Error('Failed to load gift data');
+            throw new Error('Failed to load gift data');
         }
     };
 

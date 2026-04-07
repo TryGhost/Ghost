@@ -569,7 +569,7 @@ export default class App extends React.Component {
                 page: 'giftRedemption',
                 pageData: {
                     token,
-                    gift: response?.gift || null
+                    gift: response?.gifts?.[0] || null
                 }
             };
         } catch (error) {

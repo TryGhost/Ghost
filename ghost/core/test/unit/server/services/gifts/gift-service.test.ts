@@ -16,7 +16,12 @@ describe('GiftService', function () {
         sendPurchaseConfirmation: sinon.SinonStub;
     };
     let tiersService: {
-        api: {read: sinon.SinonStub};
+        api: {
+            read: sinon.SinonStub;
+        };
+    };
+    let labsService: {
+        isSet: sinon.SinonStub;
     };
     const purchaseData: GiftPurchaseData = {
         token: 'abc-123',
@@ -33,8 +38,9 @@ describe('GiftService', function () {
 
     beforeEach(function () {
         giftRepository = {
-            create: sinon.stub<[Gift], Promise<void>>(),
-            existsByCheckoutSessionId: sinon.stub<[string], Promise<boolean>>().resolves(false)
+            create: sinon.stub(),
+            existsByCheckoutSessionId: sinon.stub<[string], Promise<boolean>>().resolves(false),
+            getByToken: sinon.stub<[string], Promise<Gift | null>>().resolves(null)
         };
         memberRepository = {
             get: sinon.stub().resolves({id: 'member_1', get: sinon.stub().returns(null)})
@@ -46,7 +52,17 @@ describe('GiftService', function () {
             sendPurchaseConfirmation: sinon.stub()
         };
         tiersService = {
-            api: {read: sinon.stub().resolves({name: 'Gold'})}
+            api: {
+                read: sinon.stub().resolves({
+                    id: 'tier_1',
+                    name: 'Bronze',
+                    description: 'Tier description',
+                    benefits: ['Benefit 1', 'Benefit 2']
+                })
+            }
+        };
+        labsService = {
+            isSet: sinon.stub().returns(true)
         };
     });
 
@@ -55,7 +71,39 @@ describe('GiftService', function () {
     });
 
     function createService() {
-        return new GiftService({giftRepository, memberRepository, tiersService, giftEmailService, staffServiceEmails});
+        return new GiftService({
+            giftRepository: giftRepository as any,
+            memberRepository,
+            tiersService,
+            giftEmailService,
+            staffServiceEmails,
+            labsService
+        });
+    }
+
+    function buildGift(overrides: Partial<ConstructorParameters<typeof Gift>[0]> = {}) {
+        return new Gift({
+            token: 'gift-token',
+            buyerEmail: 'buyer@example.com',
+            buyerMemberId: 'buyer_member_1',
+            redeemerMemberId: null,
+            tierId: 'tier_1',
+            cadence: 'year',
+            duration: 1,
+            currency: 'usd',
+            amount: 5000,
+            stripeCheckoutSessionId: 'cs_123',
+            stripePaymentIntentId: 'pi_456',
+            consumesAt: null,
+            expiresAt: new Date('2030-01-01T00:00:00.000Z'),
+            status: 'purchased',
+            purchasedAt: new Date('2026-01-01T00:00:00.000Z'),
+            redeemedAt: null,
+            consumedAt: null,
+            expiredAt: null,
+            refundedAt: null,
+            ...overrides
+        });
     }
 
     describe('recordPurchase', function () {
@@ -207,7 +255,7 @@ describe('GiftService', function () {
             assert.equal(emailData.amount, 5000);
             assert.equal(emailData.currency, 'usd');
             assert.equal(emailData.token, 'abc-123');
-            assert.equal(emailData.tierName, 'Gold');
+            assert.equal(emailData.tierName, 'Bronze');
             assert.equal(emailData.cadence, 'year');
             assert.equal(emailData.duration, 1);
             assert.ok(emailData.expiresAt instanceof Date);
@@ -233,6 +281,184 @@ describe('GiftService', function () {
 
             assert.equal(result, true);
             sinon.assert.calledOnce(giftRepository.create);
+        });
+    });
+
+    describe('getRedeemableGiftByToken', function () {
+        it('returns gift details for an anonymous visitor', async function () {
+            giftRepository.getByToken.resolves(buildGift());
+
+            const service = createService();
+            const gift = await service.getRedeemableGiftByToken({token: 'gift-token'});
+
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, 'gift-token');
+            sinon.assert.calledOnceWithExactly(tiersService.api.read, 'tier_1');
+            assert.deepEqual(gift, {
+                token: 'gift-token',
+                cadence: 'year',
+                duration: 1,
+                currency: 'usd',
+                amount: 5000,
+                expires_at: new Date('2030-01-01T00:00:00.000Z'),
+                tier: {
+                    id: 'tier_1',
+                    name: 'Bronze',
+                    description: 'Tier description',
+                    benefits: ['Benefit 1', 'Benefit 2']
+                }
+            });
+        });
+
+        it('returns gift details for a logged-in free member', async function () {
+            giftRepository.getByToken.resolves(buildGift());
+
+            const service = createService();
+            const gift = await service.getRedeemableGiftByToken({
+                token: 'gift-token',
+                currentMember: {
+                    status: 'free'
+                }
+            });
+
+            assert.equal(gift.token, 'gift-token');
+        });
+
+        it('throws NotFoundError when the token does not exist', async function () {
+            const service = createService();
+
+            await assert.rejects(
+                () => service.getRedeemableGiftByToken({token: 'missing-token'}),
+                (err: any) => {
+                    assert.equal(err.errorType, 'NotFoundError');
+                    assert.equal(err.message, 'Gift not found.');
+                    return true;
+                }
+            );
+        });
+
+        it('throws BadRequestError when the gift has already been redeemed', async function () {
+            giftRepository.getByToken.resolves(buildGift({
+                redeemedAt: new Date('2026-02-01T00:00:00.000Z')
+            }));
+
+            const service = createService();
+
+            await assert.rejects(
+                () => service.getRedeemableGiftByToken({token: 'gift-token'}),
+                (err: any) => {
+                    assert.equal(err.errorType, 'BadRequestError');
+                    assert.equal(err.message, 'This gift has already been redeemed.');
+                    return true;
+                }
+            );
+        });
+
+        it('throws BadRequestError when the gift has expired', async function () {
+            giftRepository.getByToken.resolves(buildGift({
+                expiredAt: new Date('2026-02-01T00:00:00.000Z')
+            }));
+
+            const service = createService();
+
+            await assert.rejects(
+                () => service.getRedeemableGiftByToken({token: 'gift-token'}),
+                (err: any) => {
+                    assert.equal(err.errorType, 'BadRequestError');
+                    assert.equal(err.message, 'This gift has expired.');
+                    return true;
+                }
+            );
+        });
+
+        it('throws BadRequestError when the gift expiry timestamp is in the past but not yet swept', async function () {
+            giftRepository.getByToken.resolves(buildGift({
+                expiresAt: new Date('2026-01-15T00:00:00.000Z'),
+                expiredAt: null
+            }));
+
+            const service = createService();
+
+            await assert.rejects(
+                () => service.getRedeemableGiftByToken({token: 'gift-token'}),
+                (err: any) => {
+                    assert.equal(err.errorType, 'BadRequestError');
+                    assert.equal(err.message, 'This gift has expired.');
+                    return true;
+                }
+            );
+        });
+
+        it('throws BadRequestError for a logged-in paid member', async function () {
+            giftRepository.getByToken.resolves(buildGift());
+
+            const service = createService();
+
+            await assert.rejects(
+                () => service.getRedeemableGiftByToken({
+                    token: 'gift-token',
+                    currentMember: {
+                        status: 'paid'
+                    }
+                }),
+                (err: any) => {
+                    assert.equal(err.errorType, 'BadRequestError');
+                    assert.equal(err.message, 'You already have an active subscription.');
+                    return true;
+                }
+            );
+        });
+
+        it('throws BadRequestError for a logged-in comped member', async function () {
+            giftRepository.getByToken.resolves(buildGift());
+
+            const service = createService();
+
+            await assert.rejects(
+                () => service.getRedeemableGiftByToken({
+                    token: 'gift-token',
+                    currentMember: {
+                        status: 'comped'
+                    }
+                }),
+                (err: any) => {
+                    assert.equal(err.errorType, 'BadRequestError');
+                    assert.equal(err.message, 'You already have an active subscription.');
+                    return true;
+                }
+            );
+        });
+
+        it('throws BadRequestError when the labs flag is disabled', async function () {
+            labsService.isSet.returns(false);
+
+            const service = createService();
+
+            await assert.rejects(
+                () => service.getRedeemableGiftByToken({token: 'gift-token'}),
+                (err: any) => {
+                    assert.equal(err.errorType, 'BadRequestError');
+                    assert.equal(err.message, 'Gift subscriptions are not enabled on this site.');
+                    return true;
+                }
+            );
+
+            sinon.assert.notCalled(giftRepository.getByToken);
+        });
+
+        it('throws NotFoundError when the tier cannot be loaded', async function () {
+            giftRepository.getByToken.resolves(buildGift());
+            tiersService.api.read.resolves(null);
+
+            const service = createService();
+
+            await assert.rejects(
+                () => service.getRedeemableGiftByToken({token: 'gift-token'}),
+                (err: any) => {
+                    assert.equal(err.errorType, 'NotFoundError');
+                    assert.equal(err.message, 'Gift not found.');
+                    return true;
+                }
+            );
         });
     });
 });
