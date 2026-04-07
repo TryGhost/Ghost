@@ -1,43 +1,42 @@
 import {MemberFactory, createMemberFactory} from '@/data-factory';
-import {SidebarPage} from '@/admin-pages';
+import {MembersListPage, SidebarPage} from '@/admin-pages';
 import {expect, test} from '@/helpers/playwright/fixture';
-import type {Page} from '@playwright/test';
 
 function escapeNqlString(value: string): string {
     return `'${value.replace(/\\/g, '\\\\').replace(/'/g, '\\\'')}'`;
 }
 
-async function addFilter(page: Page, filterName: 'Name' | 'Email' | 'Label', value: string) {
+async function addFilter(membersPage: MembersListPage, filterName: 'Name' | 'Email' | 'Label', value: string) {
     if (filterName === 'Label') {
-        const url = new URL(page.url());
+        const url = new URL(membersPage.page.url());
         const params = new URLSearchParams(url.search);
         const labelFilter = `label:${escapeNqlString(value)}`;
         const existingFilter = params.get('filter');
 
         params.set('filter', existingFilter ? `${existingFilter}+${labelFilter}` : labelFilter);
-        await page.goto(`/ghost/#/members?${params.toString()}`);
+        await membersPage.page.goto(`/ghost/#/members?${params.toString()}`);
         return;
     }
 
-    await page.getByRole('button', {name: /^(Filter|Add filter)$/}).click();
-    await page.getByRole('option', {name: filterName, exact: true}).click();
+    await membersPage.filterButton.click();
+    await membersPage.page.getByRole('option', {name: filterName, exact: true}).click();
 
     if (filterName === 'Name') {
-        await page.getByRole('textbox', {name: 'Enter name...'}).fill(value);
+        await membersPage.page.getByRole('textbox', {name: 'Enter name...'}).fill(value);
         return;
     }
 
     if (filterName === 'Email') {
-        await page.getByRole('textbox', {name: 'Enter email...'}).fill(value);
+        await membersPage.page.getByRole('textbox', {name: 'Enter email...'}).fill(value);
         return;
     }
 
-    await page.getByRole('option', {name: value, exact: true}).click();
+    await membersPage.page.getByRole('option', {name: value, exact: true}).click();
 }
 
-async function saveCurrentView(page: Page, name: string) {
-    await page.getByRole('button', {name: 'Save view'}).click();
-    const dialog = page.getByRole('dialog');
+async function saveCurrentView(membersPage: MembersListPage, name: string) {
+    await membersPage.membersPage.getByRole('button', {name: 'Save view'}).click();
+    const dialog = membersPage.page.getByRole('dialog');
     await dialog.waitFor({state: 'visible'});
     await dialog.getByRole('textbox', {name: 'View name'}).fill(name);
     await dialog.getByRole('button', {name: 'Save'}).click();
@@ -63,20 +62,21 @@ test.describe('Ghost Admin - Members Saved Views', () => {
         });
 
         const sidebar = new SidebarPage(page);
+        const membersPage = new MembersListPage(page);
         await page.goto('/ghost/#/members');
 
-        await addFilter(page, 'Name', 'active-nav');
-        await saveCurrentView(page, 'View A');
+        await addFilter(membersPage, 'Name', 'active-nav');
+        await saveCurrentView(membersPage, 'View A');
 
         await expect(sidebar.getNavLink('View A')).toHaveAttribute('aria-current', 'page');
 
-        await addFilter(page, 'Email', 'example.com');
-        await saveCurrentView(page, 'View B');
+        await addFilter(membersPage, 'Email', 'example.com');
+        await saveCurrentView(membersPage, 'View B');
 
         await expect(sidebar.getNavLink('View B')).toHaveAttribute('aria-current', 'page');
         await expect(sidebar.getNavLink('View A')).not.toHaveAttribute('aria-current', 'page');
 
-        await addFilter(page, 'Label', 'Active Nav Label');
+        await addFilter(membersPage, 'Label', 'Active Nav Label');
 
         await expect(sidebar.getNavLink('View A')).not.toHaveAttribute('aria-current', 'page');
         await expect(sidebar.getNavLink('View B')).not.toHaveAttribute('aria-current', 'page');
