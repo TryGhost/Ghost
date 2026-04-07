@@ -19,7 +19,6 @@
     "Comment": "Комментарий",
     "Commenting disabled": "",
     "Complete your profile": "Заполните свой профиль",
-    "Contact support": "",
     "Delete": "Удалить",
     "Deleted": "Удалено",
     "Deleted member": "Удалённый участник",
@@ -30,7 +29,6 @@
     "edited": "Отредактированно",
     "Enter your name": "Введите ваше имя",
     "Expertise": "Деятельность",
-    "for more information.": "",
     "Founder @ Acme Inc": "Основатель @ Корпорация «Акме»",
     "Full-time parent": "Родитель, работающий полный рабочий день",
     "Head of Marketing at Acme, Inc": "Руководитель отдела маркетинга в Корпорации «Акме»",
@@ -76,5 +74,6 @@
     "View in admin": "",
     "Yesterday": "Вчера",
     "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "Ваш запрос будет отправлен владельцу сайта."
 }
