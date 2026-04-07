@@ -22732,12 +22732,10 @@ human-interval@^2.0.0:
   dependencies:
     numbered "^1.1.0"
 
-human-number@2.0.8:
-  version "2.0.8"
-  resolved "https://registry.yarnpkg.com/human-number/-/human-number-2.0.8.tgz#b19658cde210226862d1a7dc3bcec805b32b9eaf"
-  integrity sha512-0OikVKOKQR86Plj4Oyszl4TNYu4a9dsKeZKaZw6uHw+7zCDXZ3E3ldG/3ZRddwRajYljdZsMKFcvrNNXHR6wVg==
-  dependencies:
-    round-to "~5.0.0"
+human-number@2.0.9:
+  version "2.0.9"
+  resolved "https://registry.yarnpkg.com/human-number/-/human-number-2.0.9.tgz#afda90d34bc0165698270878417888aef4aa46d5"
+  integrity sha512-6qnNEP4hVdM0b/e3c95AZK0z+3kjrcZbi4zlHK3P9BULiRkX1WLBnfjhTG4NgP4e8vTiPTl3ltDJ4kRHA+PKPA==
 
 human-signals@^1.1.1:
   version "1.1.1"
@@ -31760,11 +31758,6 @@ rope-sequence@^1.3.0:
   version "1.3.4"
   resolved "https://registry.yarnpkg.com/rope-sequence/-/rope-sequence-1.3.4.tgz#df85711aaecd32f1e756f76e43a415171235d425"
   integrity sha512-UT5EDe2cu2E/6O4igUr5PSFs23nvvukicWHx6GnOPlHAiiYbzNuCRQCuiUdHJQcqKalLKlrYJnjY0ySGsXNQXQ==
-
-round-to@~5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/round-to/-/round-to-5.0.0.tgz#a66292701a93b194f630a0d57f04c08821b6eeed"
-  integrity sha512-i4+Ntwmo5kY7UWWFSDEVN3RjT2PX1FqkZ9iCcAO3sKML3Ady9NgsjM/HLdYKUAnrxK4IlSvXzpBMDvMHZQALRQ==
 
 route-recognizer@^0.3.3:
   version "0.3.4"
