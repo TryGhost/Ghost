@@ -19,7 +19,6 @@
     "Comment": "دیدگاه",
     "Commenting disabled": "",
     "Complete your profile": "نمایه خود را کامل کنید",
-    "Contact support": "",
     "Delete": "پاک کردن",
     "Deleted": "",
     "Deleted member": "حساب پاک\u200cشده",
@@ -30,7 +29,6 @@
     "edited": "ویرایش\u200cشده",
     "Enter your name": "نام خود را بنویسید",
     "Expertise": "تخصص",
-    "for more information.": "",
     "Founder @ Acme Inc": "مدیر عامل یک شرکت خیالی",
     "Full-time parent": " خانه\u200cدار تمام وقت",
     "Head of Marketing at Acme, Inc": "سرپرست بخش بازاریابی یک شرکت خیالی",
@@ -76,5 +74,6 @@
     "View in admin": "",
     "Yesterday": "دیروز",
     "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "درخواست شما برای مدیر این وب\u200cسایت ارسال خواهد شد."
 }
