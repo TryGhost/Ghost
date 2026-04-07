@@ -435,7 +435,7 @@ class MemberWelcomeEmailService {
         });
         const automatedEmail = automation?.related('welcomeEmailAutomatedEmail');
 
-        if (!automation || !automation.related('welcomeEmailAutomatedEmail')?.id) {
+        if (!automation || !automatedEmail?.id) {
             throw new errors.NotFoundError({
                 message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
             });
