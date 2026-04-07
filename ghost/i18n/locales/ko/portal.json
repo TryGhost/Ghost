@@ -242,7 +242,7 @@
     "You're not receiving emails": "이메일을 받지 않고 계세요",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "최근 메시지를 스팸으로 표시했거나 메시지를 제공된 이메일 주소로 전달할 수 없어 이메일을 받지 못하고 계세요.",
     "You've successfully signed in.": "성공적으로 로그인되었어요.",
-    "You've successfully subscribed to": "성공적으로 구독하셨어요:",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "성공적으로 구독하셨어요: <strong>{siteTitle}</strong>",
     "Your account": "계정",
     "Your email has failed to resubscribe, please try again": "이메일 재구독에 실패했어요. 다시 시도해 주세요",
     "your inbox": "",

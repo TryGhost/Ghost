@@ -242,7 +242,7 @@
     "You're not receiving emails": "آپ کو ای میل نہیں آ رہا ہے",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "آپ کو ای میل نہیں مل رہا ہے کیونکہ آپ نے حال ہی میسج کو سپیم مارک کیا ہوا ہے یا یہاں فراہم کردہ ای میل ایڈریس پر پیغامات فراہم نہیں کیے جا سکتے ہیں۔",
     "You've successfully signed in.": "آپ نے کامیابی سے سائن ان کیا ہے۔",
-    "You've successfully subscribed to": "",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "",
     "Your account": "آپ کا اکاؤنٹ",
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",

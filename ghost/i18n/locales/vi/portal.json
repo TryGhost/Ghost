@@ -242,7 +242,7 @@
     "You're not receiving emails": "Bạn không nhận được bản tin email",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Bạn không nhận được bản tin email vì bạn đã đánh dấu một email gần đây là thư rác, hoặc vì địa chỉ email bạn cung cấp không thể gửi được.",
     "You've successfully signed in.": "Bạn đã đăng nhập thành công.",
-    "You've successfully subscribed to": "Bạn đã đăng ký gói thành công",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Bạn đã đăng ký gói thành công <strong>{siteTitle}</strong>",
     "Your account": "Tài khoản của bạn",
     "Your email has failed to resubscribe, please try again": "Không thể gia hạn với email của bạn, vui lòng thử lại",
     "your inbox": "hộp thư đến của bạn",

@@ -242,7 +242,7 @@
     "You're not receiving emails": "Δεν λαμβάνετε emails",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Δεν λαμβάνετε emails επειδή είτε επισημάνατε ένα πρόσφατο μήνυμα ως ανεπιθύμητο είτε επειδή τα μηνύματα δεν μπόρεσαν να παραδοθούν στην παρεχόμενη διεύθυνση email σας.",
     "You've successfully signed in.": "Έχετε συνδεθεί επιτυχώς.",
-    "You've successfully subscribed to": "Έχετε εγγραφεί επιτυχώς στο",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Έχετε εγγραφεί επιτυχώς στο <strong>{siteTitle}</strong>",
     "Your account": "Ο λογαριασμός σας",
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",

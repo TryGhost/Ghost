@@ -1,4 +1,5 @@
 import React from 'react';
+import Interpolate from '@doist/react-interpolate';
 import Frame from './frame';
 import AppContext from '../app-context';
 import NotificationStyle from './notification.styles';
@@ -46,13 +47,23 @@ const NotificationText = ({type, status, context}) => {
     } else if (type === 'signup' && status === 'success') {
         return (
             <p>
-                {t('You\'ve successfully subscribed to')} <br /><strong>{context.site.title}</strong>
+                <Interpolate
+                    mapping={{
+                        strong: <strong />
+                    }}
+                    string={t('You\'ve successfully subscribed to <strong>{siteTitle}</strong>', {siteTitle: context.site.title})}
+                />
             </p>
         );
     } else if (type === 'signup-paid' && status === 'success') {
         return (
             <p>
-                {t('You\'ve successfully subscribed to')} <br /><strong>{context.site.title}</strong>
+                <Interpolate
+                    mapping={{
+                        strong: <strong />
+                    }}
+                    string={t('You\'ve successfully subscribed to <strong>{siteTitle}</strong>', {siteTitle: context.site.title})}
+                />
             </p>
         );
     } else if (type === 'updateEmail' && status === 'success') {

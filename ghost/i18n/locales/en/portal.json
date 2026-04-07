@@ -242,7 +242,7 @@
     "You're not receiving emails": "",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "",
     "You've successfully signed in.": "",
-    "You've successfully subscribed to": "",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "",
     "Your account": "",
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",
