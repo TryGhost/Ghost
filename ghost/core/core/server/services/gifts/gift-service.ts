@@ -14,7 +14,6 @@ interface StaffServiceEmails {
 interface GiftPurchaseData {
     token: string;
     buyerEmail: string;
-    stripeCustomerId: string | null;
     tierId: string;
     cadence: 'month' | 'year';
     duration: string;
@@ -46,9 +45,7 @@ export class GiftService {
             return false;
         }
 
-        const member = data.stripeCustomerId
-            ? await this.#memberRepository.get({customer_id: data.stripeCustomerId})
-            : null;
+        const member = await this.#memberRepository.get({email: data.buyerEmail});
 
         const gift = Gift.fromPurchase({
             token: data.token,

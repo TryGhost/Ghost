@@ -592,7 +592,6 @@ describe('CheckoutSessionEventService', function () {
 
             assert.equal(purchaseData.token, 'abc-123-token');
             assert.equal(purchaseData.buyerEmail, 'buyer@example.com');
-            assert.equal(purchaseData.stripeCustomerId, 'cust_123');
             assert.equal(purchaseData.tierId, 'tier_456');
             assert.equal(purchaseData.cadence, 'year');
             assert.equal(purchaseData.duration, '1');
@@ -600,32 +599,6 @@ describe('CheckoutSessionEventService', function () {
             assert.equal(purchaseData.amount, 5000);
             assert.equal(purchaseData.stripeCheckoutSessionId, 'cs_test_123');
             assert.equal(purchaseData.stripePaymentIntentId, 'pi_test_456');
-        });
-
-        it('passes null stripeCustomerId for unauthenticated purchasers', async function () {
-            const service = createService();
-            const session = {
-                id: 'cs_test_123',
-                mode: 'payment',
-                amount_total: 3000,
-                currency: 'gbp',
-                customer: null,
-                payment_intent: 'pi_test_789',
-                metadata: {
-                    ghost_gift: 'true',
-                    gift_token: 'def-456-token',
-                    tier_id: 'tier_111',
-                    cadence: 'month',
-                    duration: '1',
-                    purchaser_email: 'guest@example.com'
-                }
-            };
-
-            await service.handleGiftEvent(session);
-
-            const purchaseData = giftService.recordPurchase.getCall(0).args[0];
-
-            assert.equal(purchaseData.stripeCustomerId, null);
         });
     });
 

@@ -17,7 +17,6 @@ describe('GiftService', function () {
     const purchaseData = {
         token: 'abc-123',
         buyerEmail: 'buyer@example.com',
-        stripeCustomerId: 'cust_123',
         tierId: 'tier_1',
         cadence: 'year' as const,
         duration: '1',
@@ -33,7 +32,7 @@ describe('GiftService', function () {
             existsByCheckoutSessionId: sinon.stub().resolves(false)
         };
         memberRepository = {
-            get: sinon.stub().resolves({id: 'member_1', get: sinon.stub().returns(null)})
+            get: sinon.stub()
         };
         staffServiceEmails = {
             notifyGiftReceived: sinon.stub()
@@ -75,39 +74,22 @@ describe('GiftService', function () {
             sinon.assert.notCalled(giftRepository.create);
         });
 
-        it('resolves member by stripeCustomerId', async function () {
-            const memberGet = sinon.stub();
-
-            memberGet.withArgs('name').returns('Member Name');
-            memberGet.withArgs('email').returns('member@example.com');
-
-            memberRepository.get.resolves({id: 'member_1', get: memberGet});
+        it('resolves member by buyerEmail', async function () {
+            memberRepository.get.withArgs({email: 'buyer@example.com'}).resolves({id: 'member_1', get: sinon.stub().returns(null)});
 
             const service = createService();
 
             await service.recordPurchase(purchaseData);
 
-            sinon.assert.calledWith(memberRepository.get, {customer_id: 'cust_123'});
+            sinon.assert.calledWith(memberRepository.get, {email: 'buyer@example.com'});
 
             const gift = giftRepository.create.getCall(0).args[0];
 
             assert.equal(gift.buyerMemberId, 'member_1');
         });
 
-        it('sets buyerMemberId to null when stripeCustomerId is null', async function () {
-            const service = createService();
-
-            await service.recordPurchase({...purchaseData, stripeCustomerId: null});
-
-            sinon.assert.notCalled(memberRepository.get);
-
-            const gift = giftRepository.create.getCall(0).args[0];
-
-            assert.equal(gift.buyerMemberId, null);
-        });
-
         it('sets buyerMemberId to null when member not found', async function () {
-            memberRepository.get.resolves(null);
+            memberRepository.get.withArgs({email: 'buyer@example.com'}).resolves(null);
 
             const service = createService();
 
@@ -148,10 +130,10 @@ describe('GiftService', function () {
         it('sends staff notification email after recording purchase', async function () {
             const memberGet = sinon.stub();
 
-            memberGet.withArgs('name').returns('Member Name');
-            memberGet.withArgs('email').returns('member@example.com');
+            memberGet.withArgs('name').returns('Alice');
+            memberGet.withArgs('email').returns('buyer@example.com');
 
-            memberRepository.get.resolves({id: 'member_1', get: memberGet});
+            memberRepository.get.withArgs({email: 'buyer@example.com'}).resolves({id: 'member_1', get: memberGet});
 
             const service = createService();
 
@@ -161,17 +143,19 @@ describe('GiftService', function () {
 
             const emailData = staffServiceEmails.notifyGiftReceived.getCall(0).args[0];
 
-            assert.equal(emailData.name, 'Member Name');
-            assert.equal(emailData.email, 'member@example.com');
+            assert.equal(emailData.name, 'Alice');
+            assert.equal(emailData.email, 'buyer@example.com');
             assert.equal(emailData.memberId, 'member_1');
             assert.equal(emailData.amount, 5000);
             assert.equal(emailData.currency, 'usd');
         });
 
         it('uses buyerEmail and null name when purchaser is not a member', async function () {
+            memberRepository.get.withArgs({email: 'buyer@example.com'}).resolves(null);
+
             const service = createService();
 
-            await service.recordPurchase({...purchaseData, stripeCustomerId: null});
+            await service.recordPurchase(purchaseData);
 
             sinon.assert.calledOnce(staffServiceEmails.notifyGiftReceived);
 
