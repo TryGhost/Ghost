@@ -242,7 +242,7 @@
     "You're not receiving emails": "Não está a receber emails",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Não está a receber emails porque, classificou uma mensagem recente como spam, ou as mensagens não puderam ser entregues no endereço de email que forneceu.",
     "You've successfully signed in.": "Registou-se com sucesso.",
-    "You've successfully subscribed to": "Subscreveu com sucesso",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Subscreveu com sucesso <strong>{siteTitle}</strong>",
     "Your account": "A sua conta",
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",

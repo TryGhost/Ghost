@@ -242,7 +242,7 @@
     "You're not receiving emails": "Nem kapsz e-maileket",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Nem kapsz e-maileket, mert vagy spamnek jelöltél egy tőlünk kapott e-mailt, vagy mert a megadott e-mail-cím nem tud üzeneteket fogadni.",
     "You've successfully signed in.": "Sikeresen bejelentkeztél.",
-    "You've successfully subscribed to": "Sikeresen bejelentkeztél ide: ",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Sikeresen bejelentkeztél ide:  <strong>{siteTitle}</strong>",
     "Your account": "Fiókod",
     "Your email has failed to resubscribe, please try again": "Az e-mail-címedet nem sikerült újra regisztrálni. Kérjük, próbáld újra",
     "your inbox": "",

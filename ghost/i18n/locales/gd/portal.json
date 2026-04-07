@@ -242,7 +242,7 @@
     "You're not receiving emails": "Chan eil thu a’ faighinn puist-d",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Chan eil thu a’ faighinn puist-d air sgàth ’s gu bheil thu air brath a chomharradh mar spama o chionn ghoirid, no air sgàth ’s nach gabh brathan a chur dhan a’ phost-d a thug thu seachad.",
     "You've successfully signed in.": "Chlàraich thu a-steach gu soirbheachail.",
-    "You've successfully subscribed to": "Fo-sgrìobh thu gu soirbheachail gu",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Fo-sgrìobh thu gu soirbheachail gu <strong>{siteTitle}</strong>",
     "Your account": "An cunntas agad",
     "Your email has failed to resubscribe, please try again": "Dh'fhàillig ath-nuadhachadh an fho-sgrìobhaidh, feuch a-rithist",
     "your inbox": "",

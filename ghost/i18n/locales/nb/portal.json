@@ -242,7 +242,7 @@
     "You're not receiving emails": "Du mottar ikke e-poster",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Du mottar ikke e-poster fordi du enten nylig har merket en melding som søppelpost, eller fordi meldinger ikke kunne leveres til den oppgitte e-postadressen din.",
     "You've successfully signed in.": "Du har logget på.",
-    "You've successfully subscribed to": "Du har meldt deg på",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Du har meldt deg på <strong>{siteTitle}</strong>",
     "Your account": "Din konto",
     "Your email has failed to resubscribe, please try again": "E-posten din kunne ikke bli meldt på igjen, vennligst prøv på nytt",
     "your inbox": "",

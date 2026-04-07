@@ -242,7 +242,7 @@
     "You're not receiving emails": "Et saa sähköposteja",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Et saa sähköposteja siksi, että joko merkitsit äskettäisen viestin roskapostiksi tai siksi, että viestejä ei voitu toimittaa antamaasi sähköpostiosoitteeseen.",
     "You've successfully signed in.": "Olet kirjautunut sisään onnistuneesti",
-    "You've successfully subscribed to": "Tilaus onnistui:",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Tilaus onnistui: <strong>{siteTitle}</strong>",
     "Your account": "Tilisi",
     "Your email has failed to resubscribe, please try again": "Tilauksen uusiminen epäonnistui sähköpostillesi. Yritäthän uudelleen.",
     "your inbox": "sähköpostilaatikkoosi",

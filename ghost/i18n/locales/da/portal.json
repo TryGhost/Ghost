@@ -242,7 +242,7 @@
     "You're not receiving emails": "Du modtager ikke e-mails",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Du modtager ikke e-mails fordi du enten har markeret en af de seneste mails som spam, eller fordi e-mails ikke kunne leveres til den oplyste e-mailadresse.",
     "You've successfully signed in.": "Du er nu logget ind.",
-    "You've successfully subscribed to": "Du er nu tilmeldt til",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Du er nu tilmeldt til <strong>{siteTitle}</strong>",
     "Your account": "Din konto",
     "Your email has failed to resubscribe, please try again": "Din e-mail kunne ikke genabonneres, prøv venligst igen.",
     "your inbox": "",

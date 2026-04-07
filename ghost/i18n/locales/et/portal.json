@@ -242,7 +242,7 @@
     "You're not receiving emails": "Te ei saa e-kirju",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Te ei saa e-kirju, kuna kas märkisite hiljutise sõnumi rämpspostiks või sõnumeid ei saanud teie antud e-posti aadressile kohale toimetada.",
     "You've successfully signed in.": "Olete edukalt sisse loginud.",
-    "You've successfully subscribed to": "Olete edukalt tellinud",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Olete edukalt tellinud <strong>{siteTitle}</strong>",
     "Your account": "Teie konto",
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",

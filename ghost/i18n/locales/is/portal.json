@@ -242,7 +242,7 @@
     "You're not receiving emails": "Þú færð ekki tölvupósta",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Þú færð ekki tölvupósta ýmist vegna þess að þú merktir síðustu skilaboð sem ruslpóst eða vegna þess að ekki er hægt að senda skilaboð á netfangið sem þú gafst upp.",
     "You've successfully signed in.": "Þér tókst að skrá þig inn",
-    "You've successfully subscribed to": "",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "",
     "Your account": "Aðgangurinn þinn",
     "Your email has failed to resubscribe, please try again": "",
     "your inbox": "",

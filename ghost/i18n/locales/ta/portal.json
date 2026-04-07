@@ -242,7 +242,7 @@
     "You're not receiving emails": "நீங்கள் மின்னஞ்சல்களைப் பெறவில்லை",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "நீங்கள் சமீபத்திய செய்தியை ஸ்பாம் என குறித்திருப்பதால் அல்லது உங்கள் வழங்கப்பட்ட மின்னஞ்சல் முகவரிக்கு செய்திகளை அனுப்ப முடியவில்லை என்பதால் நீங்கள் மின்னஞ்சல்களைப் பெறவில்லை.",
     "You've successfully signed in.": "நீங்கள் வெற்றிகரமாக உள்நுழைந்துள்ளீர்கள்.",
-    "You've successfully subscribed to": "நீங்கள் வெற்றிகரமாக சந்தா செய்துள்ளீர்கள்",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "நீங்கள் வெற்றிகரமாக சந்தா செய்துள்ளீர்கள் <strong>{siteTitle}</strong>",
     "Your account": "உங்கள் கணக்கு",
     "Your email has failed to resubscribe, please try again": "உங்கள் மின்னஞ்சல் மீண்டும் சந்தா செய்ய முடியவில்லை, தயவுசெய்து மீண்டும் முயற்சிக்கவும்",
     "your inbox": "",

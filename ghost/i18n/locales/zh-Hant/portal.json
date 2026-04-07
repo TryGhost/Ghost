@@ -242,7 +242,7 @@
     "You're not receiving emails": "您當前不會收到電子郵件。",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "您無法接收郵件，可能是因為您最近將某個郵件標記為垃圾郵件，或者郵件無法發送到您提供的 email 地址。",
     "You've successfully signed in.": "您已成功登入。",
-    "You've successfully subscribed to": "您已經成功訂閱",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "您已經成功訂閱 <strong>{siteTitle}</strong>",
     "Your account": "您的帳號",
     "Your email has failed to resubscribe, please try again": "您的電子郵件重新訂閱失敗，請再試一次",
     "your inbox": "您的收件匣",

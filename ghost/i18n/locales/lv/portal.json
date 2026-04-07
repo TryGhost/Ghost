@@ -242,7 +242,7 @@
     "You're not receiving emails": "Jūs nesaņemat e-pasta ziņojumus",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Jūs nesaņemat e-pasta ziņojumus, jo nesen kādu ziņojumu esat atzīmējis kā surogātpastu, vai arī tāpēc, ka ziņojumus nevarēja piegādāt uz jūsu norādīto e-pasta adresi.",
     "You've successfully signed in.": "Jūs esat veiksmīgi pierakstījies.",
-    "You've successfully subscribed to": "Jūs esat veiksmīgi abonējis",
+    "You've successfully subscribed to <strong>{siteTitle}</strong>": "Jūs esat veiksmīgi abonējis <strong>{siteTitle}</strong>",
     "Your account": "Jūsu konts",
     "Your email has failed to resubscribe, please try again": "Jūsu e-pasta abonēšana neizdevās atkārtoti. Lūdzu, mēģiniet vēlreiz",
     "your inbox": "",
