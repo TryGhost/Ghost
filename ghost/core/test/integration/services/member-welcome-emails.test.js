@@ -229,6 +229,13 @@ describe('Member Welcome Emails Integration', function () {
             await jobService.awaitCompletion(JOB_NAME);
         }
 
+        async function getAutomatedEmailBySlug(slug) {
+            return db.knex('welcome_email_automated_emails')
+                .join('welcome_email_automations', 'welcome_email_automated_emails.welcome_email_automation_id', 'welcome_email_automations.id')
+                .where('welcome_email_automations.slug', slug)
+                .first('welcome_email_automated_emails.*');
+        }
+
         it('does not send email when template is inactive', async function () {
             await db.knex('welcome_email_automations')
                 .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
@@ -436,8 +443,10 @@ describe('Member Welcome Emails Integration', function () {
                     sender_reply_to: 'newsletter-reply@example.com'
                 });
 
-            await db.knex('automated_emails')
-                .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
+            const automatedEmail = await getAutomatedEmailBySlug(MEMBER_WELCOME_EMAIL_SLUGS.free);
+
+            await db.knex('welcome_email_automated_emails')
+                .where('id', automatedEmail.id)
                 .update({
                     sender_name: 'Automation Sender',
                     sender_email: 'automation@example.com',
@@ -503,11 +512,12 @@ describe('Member Welcome Emails Integration', function () {
         it('uses automated sender overrides for test welcome emails', async function () {
             memberWelcomeEmailService.init();
 
-            const automatedEmail = await db.knex('automated_emails')
+            const automation = await db.knex('welcome_email_automations')
                 .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
                 .first();
+            const automatedEmail = await getAutomatedEmailBySlug(MEMBER_WELCOME_EMAIL_SLUGS.free);
 
-            await db.knex('automated_emails')
+            await db.knex('welcome_email_automated_emails')
                 .where('id', automatedEmail.id)
                 .update({
                     sender_name: 'Automation Sender',
@@ -531,7 +541,7 @@ describe('Member Welcome Emails Integration', function () {
                         version: 1
                     }
                 }),
-                automatedEmailId: automatedEmail.id
+                automatedEmailId: automation.id
             });
 
             sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);

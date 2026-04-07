@@ -180,12 +180,15 @@ const controller = {
         async query(frame) {
             memberWelcomeEmailService.init();
             const data = frame.data;
-
-            return memberWelcomeEmailService.api.editSharedSenderOptions({
+            const result = await memberWelcomeEmailService.api.editSharedSenderOptions({
                 sender_name: data.sender_name,
                 sender_email: data.sender_email,
                 sender_reply_to: data.sender_reply_to
             });
+            return {
+                ...result,
+                data: result.data.map(automation => flattenAutomation(automation))
+            };
         }
     },
 
@@ -201,7 +204,11 @@ const controller = {
         ],
         async query(frame) {
             memberWelcomeEmailService.init();
-            return memberWelcomeEmailService.api.verifySenderPropertyUpdate(frame.data.token);
+            const result = await memberWelcomeEmailService.api.verifySenderPropertyUpdate(frame.data.token);
+            return {
+                ...result,
+                data: result.data.map(automation => flattenAutomation(automation))
+            };
         }
     },
     sendTestEmail: {

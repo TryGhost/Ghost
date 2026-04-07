@@ -11,7 +11,7 @@ const settingsHelpers = require('../settings-helpers');
 const EmailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
 // @ts-expect-error type checker has trouble with the dynamic exporting in models
-const {WelcomeEmailAutomation, Newsletter} = require('../../models');
+const {WelcomeEmailAutomation, WelcomeEmailAutomatedEmail, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
@@ -178,8 +178,9 @@ class MemberWelcomeEmailService {
     }
 
     async #loadWelcomeEmailsCollection() {
-        return AutomatedEmail.findAll({
-            filter: WELCOME_EMAIL_FILTER
+        return WelcomeEmailAutomation.findAll({
+            filter: WELCOME_EMAIL_FILTER,
+            withRelated: ['welcomeEmailAutomatedEmail']
         });
     }
 
@@ -201,6 +202,13 @@ class MemberWelcomeEmailService {
 
     async #loadRequiredWelcomeEmailRows() {
         const {free, paid} = await this.#loadWelcomeEmailsMap({requireAll: true});
+
+        if (!free.related('welcomeEmailAutomatedEmail')?.id || !paid.related('welcomeEmailAutomatedEmail')?.id) {
+            throw new errors.NotFoundError({
+                message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
+            });
+        }
+
         return [free, paid];
     }
 
@@ -229,7 +237,7 @@ class MemberWelcomeEmailService {
 
     #hasSharedSenderFieldChanged(rows, field, value) {
         return rows.some((row) => {
-            const currentValue = row.get(field);
+            const currentValue = row.related('welcomeEmailAutomatedEmail')?.get(field);
             return trimValue(currentValue) !== trimValue(value);
         });
     }
@@ -285,7 +293,10 @@ class MemberWelcomeEmailService {
             return;
         }
 
-        await Promise.all(rows.map(row => AutomatedEmail.edit(attrs, {id: row.id})));
+        await Promise.all(rows.map((row) => {
+            const email = row.related('welcomeEmailAutomatedEmail');
+            return WelcomeEmailAutomatedEmail.edit(attrs, {id: email.id});
+        }));
     }
 
     async #sendSharedSenderVerifications(emailsToVerify = []) {
