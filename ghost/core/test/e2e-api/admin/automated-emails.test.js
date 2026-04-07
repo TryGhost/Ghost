@@ -203,10 +203,10 @@ describe('Automated Emails API', function () {
                 sinon.assert.calledWithMatch(infoStub, {
                     system: {
                         event: 'welcome_email.enabled',
-                        automated_email_id: automatedEmail.id,
+                        automation_id: automatedEmail.id,
                         slug: 'member-welcome-email-free'
                     }
-                }, 'Welcome email enabled');
+                }, 'Welcome email automation enabled');
             });
 
             it('Does not log when a welcome email is created as inactive', async function () {
@@ -369,10 +369,10 @@ describe('Automated Emails API', function () {
                 sinon.assert.calledWithMatch(infoStub, {
                     system: {
                         event: 'welcome_email.enabled',
-                        automated_email_id: automatedEmail.id,
+                        automation_id: automatedEmail.id,
                         slug: 'member-welcome-email-free'
                     }
-                }, 'Welcome email enabled');
+                }, 'Welcome email automation enabled');
             });
 
             it('Logs when a welcome email is disabled', async function () {
@@ -389,10 +389,10 @@ describe('Automated Emails API', function () {
                 sinon.assert.calledWithMatch(infoStub, {
                     system: {
                         event: 'welcome_email.disabled',
-                        automated_email_id: automatedEmail.id,
+                        automation_id: automatedEmail.id,
                         slug: 'member-welcome-email-free'
                     }
-                }, 'Welcome email disabled');
+                }, 'Welcome email automation disabled');
             });
 
             it('Does not log when status does not change', async function () {
