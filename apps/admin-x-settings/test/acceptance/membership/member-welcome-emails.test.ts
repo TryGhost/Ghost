@@ -852,6 +852,7 @@ test.describe('Member emails settings', async () => {
         const confirmation = page.getByTestId('confirmation-modal');
         await expect(confirmation).toBeVisible();
         await expect(confirmation).toContainText('Reply-to address verified');
+        await expect(page).toHaveURL(/#\/memberemails$/);
     });
 
     // NY-842: Tests for editing/viewing welcome emails before activation

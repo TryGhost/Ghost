@@ -12,6 +12,7 @@ import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail, useVerifyAutomatedEmailSender} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 
 const EmailPreviewRow: React.FC<{
@@ -165,9 +166,19 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
             return;
         }
 
+        const clearVerifyEmailFromRoute = () => {
+            const hash = window.location.hash.slice(1);
+            const url = new URL(hash || '/memberemails', window.location.origin);
+            url.searchParams.delete('verifyEmail');
+
+            const nextHash = url.search ? `#${url.pathname}${url.search}` : `#${url.pathname}`;
+            window.history.replaceState(null, '', `${window.location.pathname}${nextHash}`);
+        };
+
         const verify = async () => {
             try {
                 const {meta: {email_verified: emailVerified} = {}} = await verifySenderUpdate({token: verifyEmailToken});
+                clearVerifyEmailFromRoute();
 
                 let title = 'Sender email verified';
                 let prompt = <>Welcome email sender settings have been updated.</>;
@@ -190,6 +201,8 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 if (e instanceof APIError && e.message === 'Token expired') {
                     prompt = 'Verification link has expired.';
                 }
+
+                clearVerifyEmailFromRoute();
 
                 NiceModal.show(ConfirmationModal, {
                     title: 'Error verifying email address',
