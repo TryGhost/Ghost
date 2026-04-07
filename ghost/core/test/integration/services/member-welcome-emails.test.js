@@ -7,6 +7,7 @@ const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
 const mailService = require('../../../core/server/services/mail');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
+const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
 const processOutbox = require('../../../core/server/services/outbox/jobs/lib/process-outbox');
 const labs = require('../../../core/shared/labs');
 
@@ -410,9 +411,6 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('uses mock member UUID when sending test welcome emails', async function () {
-            const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
-            memberWelcomeEmailService.init();
-
             const automatedEmail = await db.knex('automated_emails')
                 .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
                 .first();
@@ -431,6 +429,9 @@ describe('Member Welcome Emails Integration', function () {
                 }
             });
 
+            memberWelcomeEmailService.api = null;
+            memberWelcomeEmailService.init();
+
             await memberWelcomeEmailService.api.sendTestEmail({
                 email: 'test-member@example.com',
                 subject: 'Welcome test',
@@ -443,6 +444,76 @@ describe('Member Welcome Emails Integration', function () {
             assert.ok(sendCall.args[0].html.includes('00000000-0000-4000-8000-000000000000'));
             assert(!sendCall.args[0].html.includes('{uuid}'));
             assert(!sendCall.args[0].html.includes('%7Buuid%7D'));
+        });
+    });
+
+    describe('labs flag on', function () {
+        beforeEach(function () {
+            labs.isSet.restore();
+            sinon.stub(labs, 'isSet').callsFake((flag) => {
+                if (flag === 'welcomeEmailsDesignCustomization') {
+                    return true;
+                }
+
+                return originalLabsIsSet(flag);
+            });
+            memberWelcomeEmailService.api = null;
+            memberWelcomeEmailService.init();
+            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
+        });
+
+        it('reinitializes the service when the labs mode changes', function () {
+            labs.isSet.restore();
+            sinon.stub(labs, 'isSet').callsFake((flag) => {
+                if (flag === 'welcomeEmailsDesignCustomization') {
+                    return false;
+                }
+
+                return originalLabsIsSet(flag);
+            });
+
+            memberWelcomeEmailService.api = null;
+            memberWelcomeEmailService.useDesignCustomization = undefined;
+            memberWelcomeEmailService.init();
+            const labsOffApi = memberWelcomeEmailService.api;
+
+            labs.isSet.restore();
+            sinon.stub(labs, 'isSet').callsFake((flag) => {
+                if (flag === 'welcomeEmailsDesignCustomization') {
+                    return true;
+                }
+
+                return originalLabsIsSet(flag);
+            });
+
+            memberWelcomeEmailService.init();
+
+            assert.notEqual(memberWelcomeEmailService.api, labsOffApi);
+        });
+
+        it('uses cached design settings after welcome emails are loaded', async function () {
+            await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
+
+            await db.knex('email_design_settings')
+                .where('id', defaultEmailDesignSettingId)
+                .update({
+                    footer_content: '<p>Fresh footer content</p>',
+                    show_badge: false
+                });
+
+            await memberWelcomeEmailService.api.send({
+                member: {
+                    email: 'fresh-design@example.com',
+                    name: 'Fresh Design',
+                    uuid: '77777777-7777-4777-8777-777777777777'
+                },
+                memberStatus: 'free'
+            });
+
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            assert.equal(sendCall.args[0].html.includes('Fresh footer content</p>'), false);
+            assert.equal(sendCall.args[0].html.includes('https://ghost.org/?via=pbg-newsletter'), true);
         });
     });
 });
