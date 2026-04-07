@@ -19,7 +19,6 @@
     "Comment": "Comentari",
     "Commenting disabled": "",
     "Complete your profile": "Completa el teu perfil",
-    "Contact support": "",
     "Delete": "Esborra",
     "Deleted": "Esborrat",
     "Deleted member": "Membre esborrat",
@@ -30,7 +29,6 @@
     "edited": "editat",
     "Enter your name": "Escriu el teu nom",
     "Expertise": "Expertesa",
-    "for more information.": "",
     "Founder @ Acme Inc": "Fundador @ Acme Inc",
     "Full-time parent": "Pare a temps complet",
     "Head of Marketing at Acme, Inc": "Cap de màrqueting a Acme, Inc",
@@ -76,5 +74,6 @@
     "View in admin": "",
     "Yesterday": "Ahir",
     "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "La teva sol·licitud s'enviarà al propietari d'aquest lloc."
 }

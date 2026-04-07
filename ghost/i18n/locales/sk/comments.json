@@ -19,7 +19,6 @@
     "Comment": "Komentár",
     "Commenting disabled": "",
     "Complete your profile": "Dokončite váš profil",
-    "Contact support": "",
     "Delete": "Vymazať",
     "Deleted": "Vymazané",
     "Deleted member": "Vymazaný člen",
@@ -30,7 +29,6 @@
     "edited": "upravený",
     "Enter your name": "Zadajte vaše meno",
     "Expertise": "Odbornosť",
-    "for more information.": "",
     "Founder @ Acme Inc": "Zakladateľ @ Acme Inc",
     "Full-time parent": "Rodič na plný úväzok",
     "Head of Marketing at Acme, Inc": "Vedúci marketingu v spoločnosti Acme, Inc",
@@ -76,5 +74,6 @@
     "View in admin": "",
     "Yesterday": "Včera",
     "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "Vaša požiadavka bude odoslaná vlastníkovi stránky."
 }

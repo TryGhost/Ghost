@@ -19,7 +19,6 @@
     "Comment": "Kommentar",
     "Commenting disabled": "Kommentare deaktiviert",
     "Complete your profile": "Vervollständigen Sie Ihr Profil",
-    "Contact support": "Kontaktieren Sie den Support",
     "Delete": "Löschen",
     "Deleted": "Gelöscht",
     "Deleted member": "Gelöschtes Mitglied",
@@ -30,7 +29,6 @@
     "edited": "bearbeitet",
     "Enter your name": "Geben Sie Ihren Namen ein",
     "Expertise": "Expertise",
-    "for more information.": "für weitere Informationen.",
     "Founder @ Acme Inc": "Gründer bei Acme Inc",
     "Full-time parent": "Vollzeit-Elternteil",
     "Head of Marketing at Acme, Inc": "Leiter Marketing bei Acme, Inc",
@@ -76,5 +74,6 @@
     "View in admin": "Im Admin anzeigen",
     "Yesterday": "Gestern",
     "You can't post comments in this publication.": "Sie können in dieser Publikation keine Kommentare schreiben.",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "Sie können in dieser Publikation keine Kommentare schreiben. <a>Kontaktieren Sie den Support</a> für weitere Informationen.",
     "Your request will be sent to the owner of this site.": "Ihre Anfrage wird an den Seitenbesitzer gesendet."
 }
