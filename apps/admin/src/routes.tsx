@@ -72,16 +72,6 @@ const membersRoute: RouteObject = {
     ]
 };
 
-const membersForwardRedirectRoute: RouteObject = {
-    path: "/members-forward",
-    // TODO: Remove once the legacy Ember members list is deleted.
-    handle: emberFallbackHandle,
-    loader: ({request}) => {
-        const url = new URL(request.url);
-        return redirect(`/members${url.search}`);
-    }
-};
-
 export const routes: RouteObject[] = [
     {
         // ForceUpgradeGuard wraps all routes to redirect to /pro when in force upgrade mode.
@@ -99,7 +89,6 @@ export const routes: RouteObject[] = [
                 handle: emberFallbackHandle,
             },
             membersRoute,
-            membersForwardRedirectRoute,
             {
                 element: (
                     <PostsAppContextProvider value={{ fromAnalytics: true }}>

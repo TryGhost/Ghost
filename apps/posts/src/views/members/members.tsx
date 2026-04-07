@@ -18,13 +18,14 @@ import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useDebounce} from 'use-debounce';
-import {useSearchParams} from 'react-router';
+import {useLocation, useSearchParams} from 'react-router';
 
 const SEARCH_DEBOUNCE_MS = 250;
 
 const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
     const headerRef = useRef<HTMLDivElement>(null);
     const {filters, nql, search, setFilters, setSearch, hasFilterOrSearch, clearAll} = useMembersFilterState(timezone);
+    const location = useLocation();
     const {data: configData} = useBrowseConfig();
     const savedViews = useMemberViews();
     const activeView = useActiveMemberView(savedViews, nql);
@@ -209,6 +210,7 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                 ) : (
                     <MembersList
                         activeColumns={activeColumns}
+                        backPath={`${location.pathname}${location.search}`}
                         fetchNextPage={fetchNextPage}
                         hasNextPage={hasNextPage}
                         isFetchingNextPage={isFetchingNextPage}

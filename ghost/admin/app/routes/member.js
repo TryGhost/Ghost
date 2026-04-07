@@ -55,9 +55,13 @@ export default class MembersRoute extends MembersManagementRoute {
         super.resetController(...arguments);
 
         // Make sure we clear
+        if (isExiting) {
+            controller.set('backPath', null);
+            controller.set('directlyFromAnalytics', false);
+        }
+
         if (isExiting && controller.postAnalytics) {
             controller.set('postAnalytics', null);
-            controller.set('directlyFromAnalytics', false);
         }
     }
 

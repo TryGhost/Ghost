@@ -6,8 +6,6 @@ import {MembersImportModal, MembersPage} from '@/helpers/pages';
 import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Members Import', () => {
-    test.use({labs: {membersForward: false}});
-
     test('imports members from CSV via the UI', async ({page}) => {
         const importPage = new MembersPage(page, {route: 'members/import'});
         const membersPage = new MembersPage(page);

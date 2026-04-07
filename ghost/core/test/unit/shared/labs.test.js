@@ -136,4 +136,8 @@ describe('Labs Service - Flag Integrity', function () {
 
         assert.equal(duplicates.length, 0, `There are duplicate flags in the labs configuration: ${duplicates.join(', ')}`);
     });
+
+    it('does not expose the removed membersForward flag', function () {
+        assert.equal(labs.getAllFlags().includes('membersForward'), false);
+    });
 });
