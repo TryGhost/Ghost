@@ -2,12 +2,20 @@ import {AdminPage} from '@/admin-pages';
 import {Download, Locator, Page} from '@playwright/test';
 import {readFileSync} from 'node:fs';
 
-interface ExportedFile {
+export interface ExportedFile {
     suggestedFilename: string;
     content: string;
 }
 
-export class MembersListPage extends AdminPage {
+export interface MembersListSurface {
+    goto(): Promise<unknown>;
+    openActionsMenu(): Promise<void>;
+    applyLabelFilter(labelName: string): Promise<void>;
+    getVisibleMemberCount(): Promise<number>;
+    exportMembers(): Promise<ExportedFile>;
+}
+
+export class MembersListPage extends AdminPage implements MembersListSurface {
     readonly membersPage: Locator;
     readonly membersList: Locator;
     readonly memberRows: Locator;
