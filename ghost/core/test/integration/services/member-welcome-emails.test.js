@@ -486,7 +486,6 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('uses automated sender overrides for test welcome emails', async function () {
-            const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
             memberWelcomeEmailService.init();
 
             const automatedEmail = await db.knex('automated_emails')
