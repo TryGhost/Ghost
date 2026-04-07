@@ -46,8 +46,7 @@ test.describe('Ghost Admin - Members Import', () => {
         // Close the modal and reload to see the imported members in the list
         await importModal.closeButton.click();
 
-        await expect(page).toHaveURL(/\/members(\?.*)?$/);
-        await expect.poll(() => new URL(page.url()).searchParams.get('filter')).toMatch(/^label:\[import-/);
+        await expect(page).toHaveURL(/#\/members\?filter=label%3A%5Bimport-/);
 
         await expect(membersPage.getMemberByName('Alice Test')).toBeVisible({timeout: 30000});
         await expect(membersPage.getMemberByName('Bob Test')).toBeVisible();
