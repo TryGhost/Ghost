@@ -45,10 +45,10 @@ const WelcomeEmailAutomation = ghostBookshelf.Model.extend({
         logging.info({
             system: {
                 event: isEnableTransition ? 'welcome_email.enabled' : 'welcome_email.disabled',
-                automated_email_id: model.id,
+                automation_id: model.id,
                 slug
             }
-        }, isEnableTransition ? 'Welcome email enabled' : 'Welcome email disabled');
+        }, isEnableTransition ? 'Welcome email automation enabled' : 'Welcome email automation disabled');
     }
 });
 
