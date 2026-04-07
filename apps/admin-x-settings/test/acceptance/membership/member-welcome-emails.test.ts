@@ -45,6 +45,56 @@ const configWithTenorEnabled = {
     }
 };
 
+const configWithWelcomeEmailCustomization = {
+    ...responseFixtures.config,
+    config: {
+        ...responseFixtures.config.config,
+        labs: {
+            ...responseFixtures.config.config.labs,
+            welcomeEmailsDesignCustomization: true
+        }
+    }
+};
+
+const managedEmailConfigWithoutSendingDomain = {
+    ...configWithWelcomeEmailCustomization,
+    config: {
+        ...configWithWelcomeEmailCustomization.config,
+        hostSettings: {
+            ...configWithWelcomeEmailCustomization.config.hostSettings,
+            managedEmail: {
+                enabled: true
+            }
+        }
+    }
+};
+
+const automatedEmailDesignFixture = {
+    automated_email_design: [{
+        id: 'default-automated-email-design',
+        slug: 'default-automated-email',
+        background_color: 'light',
+        header_background_color: 'transparent',
+        header_image: null,
+        show_header_title: true,
+        footer_content: null,
+        button_color: null,
+        button_corners: 'square',
+        button_style: 'fill',
+        link_color: null,
+        link_style: 'accent',
+        body_font_category: 'sans_serif',
+        title_font_category: 'sans_serif',
+        title_font_weight: 'bold',
+        image_corners: 'square',
+        divider_color: null,
+        section_title_color: null,
+        show_badge: true,
+        created_at: '2024-01-01T00:00:00.000Z',
+        updated_at: null
+    }]
+};
+
 const pasteText = async (page: Page, content: string) => {
     await page.evaluate((text: string) => {
         const dataTransfer = new DataTransfer();
@@ -577,6 +627,232 @@ test.describe('Member emails settings', async () => {
             const cardTitle = section.getByTestId('free-welcome-email-title');
             await expect(cardTitle).toHaveText('Free members welcome email');
         });
+    });
+
+    test.describe('Welcome email customize modal sender fields', async () => {
+        test('uses placeholders when no automated sender overrides exist', async ({page}) => {
+            await mockApi({page, requests: {
+                ...globalDataRequests,
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailCustomization},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
+                readAutomatedEmailDesign: {method: 'GET', path: '/automated_emails/design/', response: automatedEmailDesignFixture}
+            }});
+
+            await page.goto('/#/memberemails');
+            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByRole('button', {name: 'Customize'}).click();
+
+            const modal = page.getByTestId('welcome-email-customize-modal');
+            await expect(modal).toBeVisible();
+
+            const senderNameInput = modal.getByLabel('Sender name');
+            const senderEmailInput = modal.getByLabel('Sender email');
+            const replyToInput = modal.getByLabel('Reply-to email');
+
+            await expect(senderNameInput).toHaveValue('');
+            await expect(senderEmailInput).toHaveValue('');
+            await expect(replyToInput).toHaveValue('');
+
+            await expect(senderNameInput).toHaveAttribute('placeholder', 'Sender');
+            await expect(senderEmailInput).toHaveAttribute('placeholder', 'default@example.com');
+            await expect(replyToInput).toHaveAttribute('placeholder', 'support@example.com');
+        });
+
+        test('uses sender email placeholder when newsletter reply-to is newsletter', async ({page}) => {
+            const newsletterReplyToNewsletterResponse = {
+                newsletters: [{
+                    ...responseFixtures.newsletters.newsletters[0],
+                    sender_email: 'test@example.com',
+                    sender_reply_to: 'newsletter'
+                }],
+                meta: responseFixtures.newsletters.meta
+            };
+
+            await mockApi({page, requests: {
+                ...globalDataRequests,
+                browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: newsletterReplyToNewsletterResponse},
+                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailCustomization},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
+                readAutomatedEmailDesign: {method: 'GET', path: '/automated_emails/design/', response: automatedEmailDesignFixture}
+            }});
+
+            await page.goto('/#/memberemails');
+            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByRole('button', {name: 'Customize'}).click();
+
+            const modal = page.getByTestId('welcome-email-customize-modal');
+            await expect(modal).toBeVisible();
+
+            const senderEmailInput = modal.getByLabel('Sender email');
+            const replyToInput = modal.getByLabel('Reply-to email');
+
+            await expect(senderEmailInput).toHaveAttribute('placeholder', 'test@example.com');
+            await expect(replyToInput).toHaveAttribute('placeholder', 'test@example.com');
+            await expect(modal.getByText(/Reply-to:\s*test@example\.com/)).toBeVisible();
+        });
+
+        test('uses explicit newsletter reply-to as placeholder when set', async ({page}) => {
+            const newsletterCustomReplyToResponse = {
+                newsletters: [{
+                    ...responseFixtures.newsletters.newsletters[0],
+                    sender_email: 'test@example.com',
+                    sender_reply_to: 'custom-reply@example.com'
+                }],
+                meta: responseFixtures.newsletters.meta
+            };
+
+            await mockApi({page, requests: {
+                ...globalDataRequests,
+                browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: newsletterCustomReplyToResponse},
+                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailCustomization},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
+                readAutomatedEmailDesign: {method: 'GET', path: '/automated_emails/design/', response: automatedEmailDesignFixture}
+            }});
+
+            await page.goto('/#/memberemails');
+            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByRole('button', {name: 'Customize'}).click();
+
+            const modal = page.getByTestId('welcome-email-customize-modal');
+            await expect(modal).toBeVisible();
+
+            const replyToInput = modal.getByLabel('Reply-to email');
+            await expect(replyToInput).toHaveAttribute('placeholder', 'custom-reply@example.com');
+            await expect(modal.getByText(/Reply-to:\s*custom-reply@example\.com/)).toBeVisible();
+        });
+
+        test('hides sender email field when managed email has no sending domain', async ({page}) => {
+            await mockApi({page, requests: {
+                ...globalDataRequests,
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: managedEmailConfigWithoutSendingDomain},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
+                readAutomatedEmailDesign: {method: 'GET', path: '/automated_emails/design/', response: automatedEmailDesignFixture}
+            }});
+
+            await page.goto('/#/memberemails');
+            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByRole('button', {name: 'Customize'}).click();
+
+            const modal = page.getByTestId('welcome-email-customize-modal');
+            await expect(modal).toBeVisible();
+            await expect(modal.getByLabel('Sender email')).toHaveCount(0);
+        });
+
+        test('saves shared sender settings and creates missing welcome-email rows', async ({page}) => {
+            const addPaidResponse = {
+                automated_emails: [{
+                    id: 'paid-welcome-email-id',
+                    status: 'inactive',
+                    name: 'Welcome Email (Paid)',
+                    slug: 'member-welcome-email-paid',
+                    subject: 'Welcome to your paid subscription',
+                    lexical: '{"root":{"children":[]}}',
+                    sender_name: null,
+                    sender_email: null,
+                    sender_reply_to: null,
+                    created_at: '2024-01-01T00:00:00.000Z',
+                    updated_at: null
+                }]
+            };
+
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailCustomization},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
+                readAutomatedEmailDesign: {method: 'GET', path: '/automated_emails/design/', response: automatedEmailDesignFixture},
+                editAutomatedEmailDesign: {method: 'PUT', path: '/automated_emails/design/', response: automatedEmailDesignFixture},
+                addAutomatedEmail: {method: 'POST', path: '/automated_emails/', response: addPaidResponse},
+                editAutomatedEmailSenders: {
+                    method: 'PUT',
+                    path: /^\/automated_emails\/senders\/?$/,
+                    response: {
+                        automated_emails: [
+                            {
+                                ...automatedEmailsFixture.automated_emails[0],
+                                sender_name: 'Shared sender',
+                                sender_email: 'shared@example.com',
+                                sender_reply_to: 'shared-reply@example.com'
+                            },
+                            {
+                                ...addPaidResponse.automated_emails[0],
+                                sender_name: 'Shared sender',
+                                sender_email: 'shared@example.com',
+                                sender_reply_to: 'shared-reply@example.com'
+                            }
+                        ]
+                    }
+                }
+            }});
+
+            await page.goto('/#/memberemails');
+            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByRole('button', {name: 'Customize'}).click();
+
+            const modal = page.getByTestId('welcome-email-customize-modal');
+            await expect(modal).toBeVisible();
+
+            await modal.getByLabel('Sender name').fill('Shared sender');
+            await modal.getByLabel('Sender email').fill('shared@example.com');
+            await modal.getByLabel('Reply-to email').fill('shared-reply@example.com');
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect.poll(() => lastApiRequests.addAutomatedEmail?.body).toMatchObject({
+                automated_emails: [{
+                    slug: 'member-welcome-email-paid',
+                    status: 'inactive'
+                }]
+            });
+            await expect.poll(() => lastApiRequests.editAutomatedEmailSenders?.body).toEqual({
+                sender_name: 'Shared sender',
+                sender_email: 'shared@example.com',
+                sender_reply_to: 'shared-reply@example.com'
+            });
+        });
+    });
+
+    test('shows verification confirmation for memberemails verifyEmail token', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...newslettersRequest,
+            browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
+            browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
+            verifyAutomatedEmailSenders: {
+                method: 'PUT',
+                path: /^\/automated_emails\/verifications\/?$/,
+                response: {
+                    automated_emails: automatedEmailsFixture.automated_emails,
+                    meta: {
+                        email_verified: 'sender_reply_to'
+                    }
+                }
+            }
+        }});
+
+        await page.goto('/#/memberemails?verifyEmail=test-verification-token');
+        await page.waitForLoadState('networkidle');
+
+        const confirmation = page.getByTestId('confirmation-modal');
+        await expect(confirmation).toBeVisible();
+        await expect(confirmation).toContainText('Reply-to address verified');
+        await expect(page).toHaveURL(/#\/memberemails$/);
     });
 
     // NY-842: Tests for editing/viewing welcome emails before activation

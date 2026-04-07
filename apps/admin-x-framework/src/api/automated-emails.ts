@@ -20,6 +20,14 @@ export interface AutomatedEmailsResponseType {
     automated_emails: AutomatedEmail[];
 }
 
+export interface AutomatedEmailsEditSendersResponseType extends AutomatedEmailsResponseType {
+    meta?: Meta & {sent_email_verification: string[]};
+}
+
+export interface AutomatedEmailsVerifyResponseType extends AutomatedEmailsResponseType {
+    meta?: Meta & {email_verified: string};
+}
+
 const dataType = 'AutomatedEmailsResponseType';
 
 export const useBrowseAutomatedEmails = createQuery<AutomatedEmailsResponseType>({
@@ -42,6 +50,34 @@ export const useEditAutomatedEmail = createMutation<AutomatedEmailsResponseType,
     method: 'PUT',
     path: automatedEmail => `/automated_emails/${automatedEmail.id}/`,
     body: automatedEmail => ({automated_emails: [automatedEmail]}),
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'createOrUpdate',
+        update: updateQueryCache('automated_emails')
+    }
+});
+
+type EditAutomatedEmailSendersPayload = {
+    sender_name?: string | null;
+    sender_email?: string | null;
+    sender_reply_to?: string | null;
+};
+
+export const useEditAutomatedEmailSenders = createMutation<AutomatedEmailsEditSendersResponseType, EditAutomatedEmailSendersPayload>({
+    method: 'PUT',
+    path: () => '/automated_emails/senders/',
+    body: payload => payload,
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'createOrUpdate',
+        update: updateQueryCache('automated_emails')
+    }
+});
+
+export const useVerifyAutomatedEmailSender = createMutation<AutomatedEmailsVerifyResponseType, {token: string}>({
+    method: 'PUT',
+    path: () => '/automated_emails/verifications/',
+    body: ({token}) => ({token}),
     updateQueries: {
         dataType,
         emberUpdateType: 'createOrUpdate',
