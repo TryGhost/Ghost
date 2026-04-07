@@ -33,6 +33,7 @@
         "@/public-pages": ["./helpers/pages/public/index"],
         "@/portal-pages": ["./helpers/pages/portal/index"],
         "@/helpers/*": ["./helpers/*"],
+        "@/tests/*": ["./tests/*"],
         "@/data-factory": ["./data-factory/index.ts"],
         "@/data-factory/*": ["./data-factory/*"]
     },                                                   /* Specify a set of entries that re-map imports to additional lookup locations. */

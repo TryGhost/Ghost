@@ -48,65 +48,60 @@ vi.mock('@tryghost/admin-x-framework/api/members', () => ({
     })
 }));
 
+const defaultProps = {
+    hasFilterOrSearch: false,
+    memberCount: 10,
+    search: '',
+    canBulkDelete: true
+} as const;
+
+const setLocation = (pathname: string, search = '') => {
+    mockUseLocation.mockReturnValue({pathname, search});
+};
+
+const setMembersForward = (enabled: boolean) => {
+    mockUseBrowseConfig.mockReturnValue({
+        data: {
+            config: {
+                labs: {
+                    membersForward: enabled
+                }
+            }
+        }
+    });
+};
+
+const renderMembersActions = (props: Partial<React.ComponentProps<typeof MembersActions>> = {}) => {
+    return render(
+        <MembersActions
+            {...defaultProps}
+            {...props}
+        />
+    );
+};
+
 describe('MembersActions', () => {
     beforeEach(() => {
         importModalPropsRef.current = null;
-        mockUseLocation.mockReturnValue({
-            pathname: '/members',
-            search: ''
-        });
+        setLocation('/members');
         mockUseNavigate.mockReturnValue(vi.fn());
-        mockUseBrowseConfig.mockReturnValue({
-            data: {
-                config: {
-                    labs: {}
-                }
-            }
-        });
+        setMembersForward(false);
     });
 
     it('does not open the import modal on the import route when membersForward is disabled', () => {
-        mockUseLocation.mockReturnValue({
-            pathname: '/members/import'
-        });
+        setLocation('/members/import');
 
-        render(
-            <MembersActions
-                hasFilterOrSearch={false}
-                memberCount={10}
-                search=""
-                canBulkDelete
-                onImportComplete={vi.fn()}
-            />
-        );
+        renderMembersActions({onImportComplete: vi.fn()});
 
         expect(importModalPropsRef.current).not.toBeNull();
         expect(importModalPropsRef.current?.open).toBe(false);
     });
 
     it('opens the import modal when membersForward is enabled on the import route', () => {
-        mockUseLocation.mockReturnValue({
-            pathname: '/members/import'
-        });
-        mockUseBrowseConfig.mockReturnValue({
-            data: {
-                config: {
-                    labs: {
-                        membersForward: true
-                    }
-                }
-            }
-        });
+        setLocation('/members/import');
+        setMembersForward(true);
 
-        render(
-            <MembersActions
-                hasFilterOrSearch={false}
-                memberCount={10}
-                search=""
-                canBulkDelete
-                onImportComplete={vi.fn()}
-            />
-        );
+        renderMembersActions({onImportComplete: vi.fn()});
 
         expect(importModalPropsRef.current).not.toBeNull();
         expect(importModalPropsRef.current?.open).toBe(true);
@@ -114,29 +109,11 @@ describe('MembersActions', () => {
 
     it('navigates back to members when the import route modal closes', () => {
         const navigate = vi.fn();
-        mockUseLocation.mockReturnValue({
-            pathname: '/members/import',
-            search: '?filter=label%3AVIP&search=alice'
-        });
+        setLocation('/members/import', '?filter=label%3AVIP&search=alice');
         mockUseNavigate.mockReturnValue(navigate);
-        mockUseBrowseConfig.mockReturnValue({
-            data: {
-                config: {
-                    labs: {
-                        membersForward: true
-                    }
-                }
-            }
-        });
+        setMembersForward(true);
 
-        render(
-            <MembersActions
-                hasFilterOrSearch={false}
-                memberCount={10}
-                search=""
-                canBulkDelete
-            />
-        );
+        renderMembersActions();
 
         expect(importModalPropsRef.current).not.toBeNull();
 
@@ -151,29 +128,11 @@ describe('MembersActions', () => {
 
     it('navigates to the imported label filter when the import route modal closes after a labeled import', () => {
         const navigate = vi.fn();
-        mockUseLocation.mockReturnValue({
-            pathname: '/members/import',
-            search: '?filter=label%3AVIP&search=alice'
-        });
+        setLocation('/members/import', '?filter=label%3AVIP&search=alice');
         mockUseNavigate.mockReturnValue(navigate);
-        mockUseBrowseConfig.mockReturnValue({
-            data: {
-                config: {
-                    labs: {
-                        membersForward: true
-                    }
-                }
-            }
-        });
+        setMembersForward(true);
 
-        render(
-            <MembersActions
-                hasFilterOrSearch={false}
-                memberCount={10}
-                search=""
-                canBulkDelete
-            />
-        );
+        renderMembersActions();
         expect(importModalPropsRef.current).not.toBeNull();
         const handleImportClose = importModalPropsRef.current?.onClose as ((importResponse?: {importLabel?: {slug: string}}) => void) | undefined;
         expect(handleImportClose).toBeTypeOf('function');

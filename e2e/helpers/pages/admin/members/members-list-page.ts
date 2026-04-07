@@ -55,6 +55,23 @@ export class MembersListPage extends AdminPage {
         await this.actionsButton.click();
     }
 
+    async applyLabelFilter(labelName: string): Promise<void> {
+        await this.addSearchableFilter('Label', labelName, labelName);
+    }
+
+    async getVisibleMemberCount(): Promise<number> {
+        return await this.memberRows.count();
+    }
+
+    async saveCurrentView(name: string): Promise<void> {
+        await this.membersPage.getByRole('button', {name: 'Save view'}).click();
+        const dialog = this.page.getByRole('dialog');
+        await dialog.waitFor({state: 'visible'});
+        await dialog.getByRole('textbox', {name: 'View name'}).fill(name);
+        await dialog.getByRole('button', {name: 'Save'}).click();
+        await dialog.waitFor({state: 'hidden'});
+    }
+
     getMenuItem(name: string | RegExp): Locator {
         return this.page.getByRole('menuitem', {name});
     }

@@ -2,45 +2,17 @@ import {MemberFactory, createMemberFactory} from '@/data-factory';
 import {MembersListPage, SidebarPage} from '@/admin-pages';
 import {expect, test} from '@/helpers/playwright/fixture';
 
-function escapeNqlString(value: string): string {
-    return `'${value.replace(/\\/g, '\\\\').replace(/'/g, '\\\'')}'`;
-}
-
 async function addFilter(membersPage: MembersListPage, filterName: 'Name' | 'Email' | 'Label', value: string) {
     if (filterName === 'Label') {
-        const url = new URL(membersPage.page.url());
-        const params = new URLSearchParams(url.search);
-        const labelFilter = `label:${escapeNqlString(value)}`;
-        const existingFilter = params.get('filter');
-
-        params.set('filter', existingFilter ? `${existingFilter}+${labelFilter}` : labelFilter);
-        await membersPage.page.goto(`/ghost/#/members?${params.toString()}`);
+        await membersPage.applyLabelFilter(value);
         return;
     }
 
-    await membersPage.filterButton.click();
-    await membersPage.page.getByRole('option', {name: filterName, exact: true}).click();
-
-    if (filterName === 'Name') {
-        await membersPage.page.getByRole('textbox', {name: 'Enter name...'}).fill(value);
-        return;
-    }
-
-    if (filterName === 'Email') {
-        await membersPage.page.getByRole('textbox', {name: 'Enter email...'}).fill(value);
-        return;
-    }
-
-    await membersPage.page.getByRole('option', {name: value, exact: true}).click();
+    await membersPage.addFilter(filterName, value);
 }
 
 async function saveCurrentView(membersPage: MembersListPage, name: string) {
-    await membersPage.membersPage.getByRole('button', {name: 'Save view'}).click();
-    const dialog = membersPage.page.getByRole('dialog');
-    await dialog.waitFor({state: 'visible'});
-    await dialog.getByRole('textbox', {name: 'View name'}).fill(name);
-    await dialog.getByRole('button', {name: 'Save'}).click();
-    await dialog.waitFor({state: 'hidden'});
+    await membersPage.saveCurrentView(name);
 }
 
 test.describe('Ghost Admin - Members Saved Views', () => {

@@ -138,6 +138,18 @@ export class MembersPage extends AdminPage {
         await this.memberListItems.filter({hasText: email}).click();
     }
 
+    async openActionsMenu(): Promise<void> {
+        await this.membersActionsButton.click();
+    }
+
+    async applyLabelFilter(labelName: string): Promise<void> {
+        await this.filterSection.applyLabel(labelName);
+    }
+
+    async getVisibleMemberCount(): Promise<number> {
+        return await this.memberListItems.count();
+    }
+
     async getMaxRenderedIndex(): Promise<number> {
         return await this.memberListItems.evaluateAll((rows) => {
             return rows.reduce((maxIndex, row) => {
