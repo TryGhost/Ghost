@@ -1558,11 +1558,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
-
       - name: Check if version changed
         id: version_check
         working-directory: ${{ matrix.package_path }}
@@ -1586,6 +1581,12 @@ jobs:
             echo "Version has changed."
             echo "version_changed=true" >> $GITHUB_OUTPUT
           fi
+
+      - name: Restore caches
+        if: steps.version_check.outputs.version_changed == 'true'
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Build the package
         if: steps.version_check.outputs.version_changed == 'true'
