@@ -45,7 +45,7 @@ const NotificationText = ({type, status, context}) => {
                     mapping={{
                         a: <a href={signinPortalLink} target="_parent" />
                     }}
-                    string={t('Could not sign in. Login link expired. <a>Click here to retry</a>')}
+                    string={t('Could not sign in. Login link expired. <br /><a>Click here to retry</a>')}
                 />
             </p>
         );
@@ -56,7 +56,7 @@ const NotificationText = ({type, status, context}) => {
                     mapping={{
                         strong: <strong />
                     }}
-                    string={t('You\'ve successfully subscribed to <strong>{siteTitle}</strong>', {siteTitle: context.site.title})}
+                    string={t('You\'ve successfully subscribed to <br /><strong>{siteTitle}</strong>', {siteTitle: context.site.title})}
                 />
             </p>
         );
@@ -67,7 +67,7 @@ const NotificationText = ({type, status, context}) => {
                     mapping={{
                         strong: <strong />
                     }}
-                    string={t('You\'ve successfully subscribed to <strong>{siteTitle}</strong>', {siteTitle: context.site.title})}
+                    string={t('You\'ve successfully subscribed to <br /><strong>{siteTitle}</strong>', {siteTitle: context.site.title})}
                 />
             </p>
         );
@@ -90,7 +90,7 @@ const NotificationText = ({type, status, context}) => {
                     mapping={{
                         a: <a href={singupPortalLink} target="_parent" />
                     }}
-                    string={t('Signup error: Invalid link. <a>Click here to retry</a>')}
+                    string={t('Signup error: Invalid link.<br /><a>Click here to retry</a>')}
                 />
             </p>
         );
@@ -101,7 +101,7 @@ const NotificationText = ({type, status, context}) => {
                     mapping={{
                         a: <a href={singupPortalLink} target="_parent" />
                     }}
-                    string={t('Signup error: Invalid link. <a>Click here to retry</a>')}
+                    string={t('Signup error: Invalid link.<br /><a>Click here to retry</a>')}
                 />
             </p>
         );
