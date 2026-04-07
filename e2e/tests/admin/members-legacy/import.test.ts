@@ -35,9 +35,9 @@ test.describe('Ghost Admin - Members Import', () => {
 
         // Verify all three fields were auto-detected
         await expect(importModal.importButton).toBeVisible();
-        await expect(importModal.getMappingValue('email')).toHaveText('Email');
-        await expect(importModal.getMappingValue('name')).toHaveText('Name');
-        await expect(importModal.getMappingValue('note')).toHaveText('Note');
+        await expect(importModal.getMappingValue('email')).toHaveValue('email');
+        await expect(importModal.getMappingValue('name')).toHaveValue('name');
+        await expect(importModal.getMappingValue('note')).toHaveValue('note');
 
         await importModal.importButton.click();
 
