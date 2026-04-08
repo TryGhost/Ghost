@@ -1,4 +1,4 @@
-FROM caddy:2-alpine
+FROM caddy:2-alpine@sha256:fce4f15aad23222c0ac78a1220adf63bae7b94355d5ea28eee53910624acedfa
 
 RUN caddy add-package github.com/caddyserver/transform-encoder
 

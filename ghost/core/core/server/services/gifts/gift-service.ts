@@ -1,15 +1,30 @@
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
+import tpl from '@tryghost/tpl';
 import {Gift} from './gift';
 import type {GiftRepository} from './gift-repository';
+import ObjectID from 'bson-objectid';
 
 interface MemberRepository {
     get(filter: Record<string, unknown>): Promise<{id: string; get(key: string): string | null} | null>;
 }
 
+type Tier = {
+    id: ObjectID;
+    name: string;
+    description: string | null;
+    benefits: string[] | null;
+    toJSON?: () => {
+        id: string;
+        name: string;
+        description: string | null;
+        benefits: string[] | null;
+    };
+};
+
 interface TiersService {
     api: {
-        read(idString: string): Promise<{name: string} | null>;
+        read(idString: string): Promise<Tier | null>;
     };
 }
 
@@ -36,6 +51,10 @@ interface StaffServiceEmails {
     }): Promise<void>;
 }
 
+interface LabsService {
+    isSet(key: string): boolean;
+}
+
 export interface GiftPurchaseData {
     token: string;
     buyerEmail: string;
@@ -49,19 +68,31 @@ export interface GiftPurchaseData {
     stripePaymentIntentId: string;
 }
 
+const messages = {
+    giftSubscriptionsNotEnabled: 'Gift subscriptions are not enabled on this site.',
+    giftNotFound: 'Gift not found.',
+    giftAlreadyRedeemed: 'This gift has already been redeemed.',
+    giftConsumed: 'This gift has already been consumed.',
+    giftExpired: 'This gift has expired.',
+    giftRefunded: 'This gift has been refunded.',
+    memberAlreadySubscribed: 'You already have an active subscription.'
+};
+
 export class GiftService {
     private readonly giftRepository: GiftRepository;
     private readonly memberRepository: MemberRepository;
     private readonly tiersService: TiersService;
     private readonly giftEmailService: GiftEmailService;
     private readonly staffServiceEmails: StaffServiceEmails;
+    private readonly labsService: LabsService;
 
-    constructor({giftRepository, memberRepository, tiersService, giftEmailService, staffServiceEmails}: {giftRepository: GiftRepository; memberRepository: MemberRepository; tiersService: TiersService; giftEmailService: GiftEmailService; staffServiceEmails: StaffServiceEmails}) {
+    constructor({giftRepository, memberRepository, tiersService, giftEmailService, staffServiceEmails, labsService}: {giftRepository: GiftRepository; memberRepository: MemberRepository; tiersService: TiersService; giftEmailService: GiftEmailService; staffServiceEmails: StaffServiceEmails; labsService: LabsService}) {
         this.giftRepository = giftRepository;
         this.memberRepository = memberRepository;
         this.tiersService = tiersService;
         this.giftEmailService = giftEmailService;
         this.staffServiceEmails = staffServiceEmails;
+        this.labsService = labsService;
     }
 
     async recordPurchase(data: GiftPurchaseData): Promise<boolean> {
@@ -132,5 +163,79 @@ export class GiftService {
         }
 
         return true;
+    }
+
+    async getRedeemableGiftByToken({token, currentMember}: {token: string; currentMember?: {status: string} | null}) {
+        if (!this.labsService.isSet('giftSubscriptions')) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.giftSubscriptionsNotEnabled)
+            });
+        }
+
+        const gift = await this.giftRepository.getByToken(token);
+
+        if (!gift) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.giftNotFound)
+            });
+        }
+
+        const isRedeemable = gift.isRedeemable();
+
+        if (!isRedeemable) {
+            const redeemFailureReason = gift.getRedeemFailureReason();
+
+            switch (redeemFailureReason) {
+            case 'redeemed':
+                throw new errors.BadRequestError({
+                    message: tpl(messages.giftAlreadyRedeemed)
+                });
+            case 'consumed':
+                throw new errors.BadRequestError({
+                    message: tpl(messages.giftConsumed)
+                });
+            case 'expired':
+                throw new errors.BadRequestError({
+                    message: tpl(messages.giftExpired)
+                });
+            case 'refunded':
+                throw new errors.BadRequestError({
+                    message: tpl(messages.giftRefunded)
+                });
+            default:
+                break;
+            }
+        }
+
+        if (currentMember && currentMember.status !== 'free') {
+            throw new errors.BadRequestError({
+                message: tpl(messages.memberAlreadySubscribed)
+            });
+        }
+
+        const tier = await this.tiersService.api.read(gift.tierId);
+
+        if (!tier) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.giftNotFound)
+            });
+        }
+
+        const tierJSON = tier.toJSON ? tier.toJSON() : tier;
+
+        return {
+            token: gift.token,
+            cadence: gift.cadence,
+            duration: gift.duration,
+            currency: gift.currency,
+            amount: gift.amount,
+            expires_at: gift.expiresAt,
+            tier: {
+                id: tierJSON.id,
+                name: tierJSON.name,
+                description: tierJSON.description ?? null,
+                benefits: Array.isArray(tierJSON.benefits) ? tierJSON.benefits : []
+            }
+        };
     }
 }

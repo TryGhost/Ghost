@@ -422,7 +422,7 @@ module.exports = {
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         status: {
             type: 'string', maxlength: 50, nullable: false, defaultTo: 'free', validations: {
-                isIn: [['free', 'paid', 'comped']]
+                isIn: [['free', 'paid', 'comped', 'gift']]
             }
         },
         name: {type: 'string', maxlength: 191, nullable: true},
@@ -586,12 +586,12 @@ module.exports = {
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
         from_status: {
             type: 'string', maxlength: 50, nullable: true, validations: {
-                isIn: [['free', 'paid', 'comped']]
+                isIn: [['free', 'paid', 'comped', 'gift']]
             }
         },
         to_status: {
             type: 'string', maxlength: 50, nullable: true, validations: {
-                isIn: [['free', 'paid', 'comped']]
+                isIn: [['free', 'paid', 'comped', 'gift']]
             }
         },
         created_at: {type: 'dateTime', nullable: false}
@@ -1200,24 +1200,6 @@ module.exports = {
         exit_reason: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['member not found', 'email send failed', 'member unsubscribed', 'member changed status', 'finished']]}},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
-    },
-    automated_emails: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'inactive', validations: {isIn: [['active', 'inactive']]}},
-        name: {type: 'string', maxlength: 191, nullable: false, unique: true},
-        slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
-        subject: {type: 'string', maxlength: 300, nullable: false},
-        lexical: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
-        sender_name: {type: 'string', maxlength: 191, nullable: true},
-        sender_email: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
-        sender_reply_to: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
-        email_design_setting_id: {type: 'string', maxlength: 24, nullable: false, references: 'email_design_settings.id'},
-        created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true},
-        '@@INDEXES@@': [
-            ['slug'],
-            ['status']
-        ]
     },
     automated_email_recipients: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

@@ -5,7 +5,7 @@
 
 services:
   analytics:
-    image: ghost/traffic-analytics:1.0.172@sha256:14a736594128b06a0f7222d45e29ce284011f7346b17d2d5f0a7de9aa00cd11a
+    image: ghost/traffic-analytics:1.0.175@sha256:853fae2f7db4d280502caf4ac51090ad232395a667f405f22beb089c07ec7bcb
     container_name: ghost-dev-analytics
     platform: linux/amd64
     command: ["node", "--enable-source-maps", "dist/server.js"]
@@ -29,7 +29,7 @@ services:
         condition: service_completed_successfully
 
   tinybird-local:
-    image: tinybirdco/tinybird-local:latest
+    image: tinybirdco/tinybird-local:latest@sha256:3bbfa58373928313a290f40193598d992f613173c67e9ed8c980d662a911f15a
     container_name: ghost-dev-tinybird
     platform: linux/amd64
     stop_grace_period: 2s

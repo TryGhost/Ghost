@@ -67,7 +67,7 @@
     "cli": "^1.27.0"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.1023.0",
+    "@aws-sdk/client-s3": "3.1024.0",
     "@extractus/oembed-extractor": "3.2.1",
     "@faker-js/faker": "7.6.0",
     "@isaacs/ttlcache": "1.4.1",
@@ -234,7 +234,7 @@
     "@types/common-tags": "1.8.4",
     "@types/jsonwebtoken": "9.0.10",
     "@types/mime-types": "3.0.1",
-    "@types/node": "22.19.16",
+    "@types/node": "22.19.17",
     "@types/node-jose": "1.1.13",
     "@types/nodemailer": "6.4.23",
     "@types/sinon": "17.0.4",
