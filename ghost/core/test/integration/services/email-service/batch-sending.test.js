@@ -903,17 +903,19 @@ describe.skip('Batch sending tests', function () {
             mockSetting('email_track_clicks', false); // Disable link replacement for this test
 
             const defaultNewsletter = await getDefaultNewsletter();
+            const originalShowShareButton = defaultNewsletter.get('show_share_button');
             await models.Newsletter.edit({show_share_button: true}, {id: defaultNewsletter.id});
 
             try {
                 const {html} = await sendEmail(agent, {
                     title: 'This is a test post title',
-                    mobiledoc: mobileDocExample
+                    mobiledoc: mobileDocExample,
+                    visibility: 'public'
                 });
 
                 assert.match(html, /#\/share/);
             } finally {
-                await models.Newsletter.edit({show_share_button: false}, {id: defaultNewsletter.id});
+                await models.Newsletter.edit({show_share_button: originalShowShareButton}, {id: defaultNewsletter.id});
             }
         });
 
@@ -921,14 +923,20 @@ describe.skip('Batch sending tests', function () {
             mockSetting('email_track_clicks', false); // Disable link replacement for this test
 
             const defaultNewsletter = await getDefaultNewsletter();
+            const originalShowShareButton = defaultNewsletter.get('show_share_button');
             await models.Newsletter.edit({show_share_button: false}, {id: defaultNewsletter.id});
 
-            const {html} = await sendEmail(agent, {
-                title: 'This is a test post title',
-                mobiledoc: mobileDocExample
-            });
+            try {
+                const {html} = await sendEmail(agent, {
+                    title: 'This is a test post title',
+                    mobiledoc: mobileDocExample,
+                    visibility: 'public'
+                });
 
-            assert.doesNotMatch(html, /#\/share/);
+                assert.doesNotMatch(html, /#\/share/);
+            } finally {
+                await models.Newsletter.edit({show_share_button: originalShowShareButton}, {id: defaultNewsletter.id});
+            }
         });
 
         it('Shows subscription details box for free members', async function () {

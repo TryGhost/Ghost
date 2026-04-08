@@ -26,7 +26,6 @@ const NewsletterPreviewContent: React.FC<{
     showCommentCta: boolean;
     showFeatureImage: boolean;
     showFeedback: boolean;
-    showShareButton: boolean;
     showLatestPosts: boolean;
     showSubscriptionDetails: boolean;
 
@@ -71,7 +70,6 @@ const NewsletterPreviewContent: React.FC<{
     showCommentCta,
     showFeatureImage,
     showFeedback,
-    showShareButton,
     showLatestPosts,
     showSubscriptionDetails,
 
@@ -268,40 +266,32 @@ const NewsletterPreviewContent: React.FC<{
                             </div>
 
                             {/* Feedback */}
-                            {(showFeedback || showCommentCta || showShareButton) && (
+                            {(showFeedback || showCommentCta) && (
                                 <div className={clsx('grid gap-5 border-b border-grey-200 px-6 py-5', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-dotted')} style={{borderColor: dividerColor}}>
-                                    <div className="grid auto-cols-fr grid-flow-col gap-4">
+                                    <div className="flex justify-center gap-3">
                                         {showFeedback && (
                                             <>
-                                                <div className="pointer-events-none flex min-w-[120px] cursor-default flex-col items-center gap-[11px] text-center">
-                                                    <span className="inline-flex size-[54px] items-center justify-center rounded-full border" style={{borderColor: dividerColor, color: textColor}}>
+                                                <button className="pointer-events-none cursor-default rounded-[2.2rem] bg-transparent font-semibold whitespace-nowrap" type="button">
+                                                    <span className="inline-flex items-center gap-2 px-[18px] py-[7px]" style={{color: textColor}}>
                                                         <Icon colorClass='' name="thumbs-up" size="md" />
+                                                        <span>More like this</span>
                                                     </span>
-                                                    <span className="font-sans text-[1.3rem] leading-[1.4] font-medium" style={{color: textColor}}>More like this</span>
-                                                </div>
-                                                <div className="pointer-events-none flex min-w-[120px] cursor-default flex-col items-center gap-[11px] text-center">
-                                                    <span className="inline-flex size-[54px] items-center justify-center rounded-full border" style={{borderColor: dividerColor, color: textColor}}>
-                                                        <Icon colorClass='' name="thumbs-down" size="md" />
+                                                </button>
+                                                <button className="pointer-events-none cursor-default rounded-[2.2rem] bg-transparent font-semibold whitespace-nowrap" type="button">
+                                                    <span className="inline-flex items-center gap-2 px-[18px] py-[7px]" style={{color: textColor}}>
+                                                        <Icon colorClass='' name="thumbs-down" />
+                                                        <span>Less like this</span>
                                                     </span>
-                                                    <span className="font-sans text-[1.3rem] leading-[1.4] font-medium" style={{color: textColor}}>Less like this</span>
-                                                </div>
+                                                </button>
                                             </>
                                         )}
                                         {showCommentCta && (
-                                            <div className="pointer-events-none flex min-w-[120px] cursor-default flex-col items-center gap-[11px] text-center">
-                                                <span className="inline-flex size-[54px] items-center justify-center rounded-full border" style={{borderColor: dividerColor, color: textColor}}>
-                                                    <Icon colorClass='' name="comment" size="md" />
+                                            <button className="pointer-events-none cursor-default rounded-[2.2rem] bg-transparent font-semibold whitespace-nowrap" type="button">
+                                                <span className="inline-flex items-center gap-2 px-[18px] py-[7px]" style={{color: textColor}}>
+                                                    <Icon colorClass='' name="comment" />
+                                                    <span>Comment</span>
                                                 </span>
-                                                <span className="font-sans text-[1.3rem] leading-[1.4] font-medium" style={{color: textColor}}>Comment</span>
-                                            </div>
-                                        )}
-                                        {showShareButton && (
-                                            <div className="pointer-events-none flex min-w-[120px] cursor-default flex-col items-center gap-[11px] text-center">
-                                                <span className="inline-flex size-[54px] items-center justify-center rounded-full border" style={{borderColor: dividerColor, color: textColor}}>
-                                                    <Icon colorClass='' name="share" size="md" />
-                                                </span>
-                                                <span className="font-sans text-[1.3rem] leading-[1.4] font-medium" style={{color: textColor}}>Share</span>
-                                            </div>
+                                            </button>
                                         )}
                                     </div>
                                 </div>
