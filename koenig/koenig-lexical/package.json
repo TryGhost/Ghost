@@ -98,7 +98,7 @@
     "concurrently": "9.2.1",
     "cross-fetch": "4.1.0",
     "dompurify": "3.3.3",
-    "dotenv": "17.4.0",
+    "dotenv": "17.4.1",
     "emoji-mart": "5.6.0",
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "5.2.0",
