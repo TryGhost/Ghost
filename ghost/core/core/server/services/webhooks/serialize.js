@@ -42,9 +42,6 @@ module.exports = (event, model) => {
                 .then(() => {
                     const result = frame.response[docName][0];
 
-                    // Remove subscriptions from webhook payload — without full
-                    // Stripe relations loaded, it would always be an empty array
-                    // which falsely implies the member has no subscriptions
                     if (docName === 'members') {
                         delete result.subscriptions;
                     }
