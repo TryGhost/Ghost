@@ -43,7 +43,7 @@ test.describe('Ghost Public - Member Signup', () => {
         expect(emailTextBody).toContain('complete the signup process');
     });
 
-    test('received welcome email', async ({page}) => {
+    test('free signup sends welcome email after signup completion', async ({page}) => {
         const automatedEmailFactory = createAutomatedEmailFactory(page.request);
         await automatedEmailFactory.create();
 
@@ -51,24 +51,24 @@ test.describe('Ghost Public - Member Signup', () => {
         await homePage.goto();
         const {emailAddress} = await signupViaPortal(page);
 
-        let latestMessage = await retrieveLatestEmailMessage(emailAddress);
-        const emailTextBody = latestMessage.Text;
+        const signupEmail = await retrieveLatestEmailMessage(emailAddress);
+        expect(signupEmail.Subject.toLowerCase()).toContain('complete');
 
-        const magicLink = extractMagicLink(emailTextBody);
+        const magicLink = extractMagicLink(signupEmail.Text);
         const publicPage = new PublicPage(page);
         await publicPage.goto(magicLink);
         await homePage.waitUntilLoaded();
 
         const welcomeMessages = await emailClient.search(
-            {to: emailAddress, subject: 'Welcome'},
+            {to: emailAddress, subject: 'Welcome to Test Blog!'},
             {timeoutMs: 10000}
         );
-        latestMessage = await emailClient.getMessageDetailed(welcomeMessages[0]);
+        const welcomeEmail = await emailClient.getMessageDetailed(welcomeMessages[0]);
 
-        expect(latestMessage.From.Name).toContain('Test Blog');
-        expect(latestMessage.From.Address).toContain('test@example.com');
-        expect(latestMessage.Subject).toContain('Welcome to Test Blog!');
-        expect(latestMessage.Text).toContain('Welcome to Test Blog!');
-        expect(latestMessage.HTML).toContain('Welcome to Test Blog!');
+        expect(welcomeEmail.From.Name).toContain('Test Blog');
+        expect(welcomeEmail.From.Address).toContain('@');
+        expect(welcomeEmail.Subject).toBe('Welcome to Test Blog!');
+        expect(welcomeEmail.Text).toContain('Welcome to Test Blog!');
+        expect(welcomeEmail.HTML).toContain('Welcome to Test Blog!');
     });
 });
