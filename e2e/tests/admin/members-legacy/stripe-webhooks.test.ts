@@ -28,7 +28,7 @@ async function waitForPaymentEvent(request: APIRequestContext, memberId: string,
 }
 
 test.describe('Ghost Admin - Stripe Webhooks', () => {
-    test.use({stripeEnabled: true});
+    test.use({labs: {membersForward: false}, stripeEnabled: true});
 
     test('member created via webhooks - has paid status', async ({stripe, page}) => {
         const membersService = new MembersService(page.request);
@@ -42,7 +42,7 @@ test.describe('Ghost Admin - Stripe Webhooks', () => {
 });
 
 test.describe('Ghost Admin - Stripe Subscription Lifecycle', () => {
-    test.use({stripeEnabled: true});
+    test.use({labs: {membersForward: false}, stripeEnabled: true});
 
     test('subscription canceled at period end - member remains paid', async ({stripe, page}) => {
         const membersService = new MembersService(page.request);

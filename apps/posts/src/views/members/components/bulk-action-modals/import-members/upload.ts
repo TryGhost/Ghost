@@ -13,6 +13,7 @@ type UploadApiResponse = {
         };
         import_label?: {
             name: string;
+            slug: string;
         };
     };
 };
@@ -49,6 +50,7 @@ export function buildImportResponse(importData: UploadApiResponse): ImportRespon
         errorCount,
         errorCsvUrl,
         errorCsvName,
-        errorList: Object.values(errorListMap)
+        errorList: Object.values(errorListMap),
+        importLabel: importData.meta.import_label
     };
 }

@@ -1,11 +1,11 @@
 import {MemberFactory, createMemberFactory} from '@/data-factory';
-import {MembersForwardPage} from '@/admin-pages';
+import {MembersListPage} from '@/admin-pages';
 import {expect, test} from '@/helpers/playwright';
 import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
 usePerTestIsolation();
 
-test.describe('Ghost Admin - Members Forward Search and Filter', () => {
+test.describe('Ghost Admin - Members Search and Filter', () => {
     test.use({labs: {membersForward: true}});
 
     let memberFactory: MemberFactory;
@@ -21,7 +21,7 @@ test.describe('Ghost Admin - Members Forward Search and Filter', () => {
             {name: 'Another Member', email: 'another@example.com'}
         ]);
 
-        const membersPage = new MembersForwardPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
         await expect(membersPage.memberRows).toHaveCount(3);
 
@@ -40,11 +40,11 @@ test.describe('Ghost Admin - Members Forward Search and Filter', () => {
             {name: 'No Label', email: 'nolabel@example.com'}
         ]);
 
-        const membersPage = new MembersForwardPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
         await expect(membersPage.memberRows).toHaveCount(3);
 
-        await page.goto('/ghost/#/members-forward?filter=label:VIP');
+        await page.goto('/ghost/#/members?filter=label:VIP');
         await expect(membersPage.memberRows).toHaveCount(2);
         await expect(membersPage.getMemberByName('Labelled One')).toBeVisible();
         await expect(membersPage.getMemberByName('Labelled Two')).toBeVisible();
@@ -58,14 +58,14 @@ test.describe('Ghost Admin - Members Forward Search and Filter', () => {
             {name: 'Charlie Gamma', email: 'charlie@gamma.com'}
         ]);
 
-        const membersPage = new MembersForwardPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
         await expect(membersPage.memberRows).toHaveCount(4);
 
         await membersPage.addFilter('Name', 'Alice');
         await expect(membersPage.memberRows).toHaveCount(2);
 
-        await page.goto('/ghost/#/members-forward?filter=name:~%27Alice%27%2Blabel:Premium');
+        await page.goto('/ghost/#/members?filter=name:~%27Alice%27%2Blabel:Premium');
         await expect(membersPage.memberRows).toHaveCount(1);
         await expect(membersPage.getMemberByName('Alice Alpha')).toBeVisible();
 
@@ -81,14 +81,14 @@ test.describe('Ghost Admin - Members Forward Search and Filter', () => {
             {name: 'No Label', email: 'nolabel@example.com'}
         ]);
 
-        const membersPage = new MembersForwardPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
         await expect(membersPage.memberRows).toHaveCount(4);
 
-        await page.goto('/ghost/#/members-forward?filter=label:VIP');
+        await page.goto('/ghost/#/members?filter=label:VIP');
         await expect(membersPage.memberRows).toHaveCount(2);
 
-        await page.goto('/ghost/#/members-forward?filter=label:VIP%2Blabel:Premium');
+        await page.goto('/ghost/#/members?filter=label:VIP%2Blabel:Premium');
         await expect(membersPage.memberRows).toHaveCount(1);
         await expect(membersPage.getMemberByName('Both Labels')).toBeVisible();
     });
@@ -96,7 +96,7 @@ test.describe('Ghost Admin - Members Forward Search and Filter', () => {
     test('shows no results state when search matches nothing', async ({page}) => {
         await memberFactory.create({name: 'Existing Member', email: 'exists@example.com'});
 
-        const membersPage = new MembersForwardPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
         await expect(membersPage.memberRows).toHaveCount(1);
 

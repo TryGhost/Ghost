@@ -3,6 +3,8 @@ import {MemberFactory, createMemberFactory} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Member Impersonation', () => {
+    test.use({labs: {membersForward: false}});
+
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {

@@ -2,13 +2,20 @@ import {AdminPage} from '@/admin-pages';
 import {Download, Locator, Page} from '@playwright/test';
 import {readFileSync} from 'node:fs';
 
-interface ExportedFile {
+export interface ExportedFile {
     suggestedFilename: string;
     content: string;
 }
 
-export class MembersForwardPage extends AdminPage {
-    readonly membersList: Locator;
+export interface MembersListSurface {
+    goto(): Promise<unknown>;
+    openActionsMenu(): Promise<void>;
+    applyLabelFilter(labelName: string): Promise<void>;
+    getVisibleMemberCount(): Promise<number>;
+    exportMembers(): Promise<ExportedFile>;
+}
+
+export class MembersListPage extends AdminPage implements MembersListSurface {
     readonly memberRows: Locator;
     readonly searchInput: Locator;
     readonly actionsButton: Locator;
@@ -21,11 +28,10 @@ export class MembersForwardPage extends AdminPage {
 
     constructor(page: Page) {
         super(page);
-        this.pageUrl = '/ghost/#/members-forward';
+        this.pageUrl = '/ghost/#/members';
 
-        this.membersList = page.getByTestId('members-list');
         this.memberRows = page.getByTestId('members-list-item');
-        this.searchInput = page.getByLabel('Search members', {exact: true});
+        this.searchInput = page.getByTestId('members-search-input');
         this.actionsButton = page.getByTestId('members-actions');
         this.newMemberButton = page.getByRole('link', {name: 'New member'});
         this.filterButton = page.getByRole('button', {name: /^(Filter|Add filter)$/});
@@ -36,11 +42,38 @@ export class MembersForwardPage extends AdminPage {
     }
 
     getMemberByName(name: string): Locator {
-        return this.memberRows.filter({hasText: name});
+        return this.memberRows.filter({
+            has: this.page.getByRole('link', {name, exact: true})
+        });
+    }
+
+    getMemberLinkByName(name: string): Locator {
+        return this.getMemberByName(name).getByRole('link', {name, exact: true});
+    }
+
+    async openMemberByName(name: string): Promise<void> {
+        await this.getMemberLinkByName(name).click();
     }
 
     async openActionsMenu(): Promise<void> {
         await this.actionsButton.click();
+    }
+
+    async applyLabelFilter(labelName: string): Promise<void> {
+        await this.addSearchableFilter('Label', labelName, labelName);
+    }
+
+    async getVisibleMemberCount(): Promise<number> {
+        return await this.memberRows.count();
+    }
+
+    async saveCurrentView(name: string): Promise<void> {
+        await this.page.getByRole('button', {name: 'Save view'}).click();
+        const dialog = this.page.getByRole('dialog');
+        await dialog.waitFor({state: 'visible'});
+        await dialog.getByRole('textbox', {name: 'View name'}).fill(name);
+        await dialog.getByRole('button', {name: 'Save'}).click();
+        await dialog.waitFor({state: 'hidden'});
     }
 
     getMenuItem(name: string | RegExp): Locator {

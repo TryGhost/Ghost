@@ -6,6 +6,8 @@ import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 usePerTestIsolation();
 
 test.describe('Ghost Admin - Members', () => {
+    test.use({labs: {membersForward: false}});
+
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {
