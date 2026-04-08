@@ -577,7 +577,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 assert(result.html.includes('https://ghost.org/?via=pbg-newsletter'));
             });
 
-            it('uses the newsletter content-shell class when design customization is enabled', async function () {
+            it('uses the sans-serif content-shell class by default when design customization is enabled', async function () {
                 lexicalRenderStub.resolves('<p>Content</p>');
                 const renderer = new MemberWelcomeEmailRenderer({t: key => key});
 
@@ -589,7 +589,26 @@ describe('MemberWelcomeEmailRenderer', function () {
                 });
 
                 assert.match(result.html, /<tr class="post-content-row">/);
+                assert(result.html.includes('class="post-content-sans-serif"'));
+                assert(result.html.includes('font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;'));
+            });
+
+            it('uses the serif content-shell class when a serif body font is explicitly configured', async function () {
+                lexicalRenderStub.resolves('<p>Content</p>');
+                const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+                const result = await renderer.render({
+                    lexical: '{}',
+                    subject: 'Test Subject',
+                    designSettings: {
+                        body_font_category: 'serif'
+                    },
+                    member: {name: 'John', email: 'john@example.com'},
+                    siteSettings: defaultSiteSettings
+                });
+
                 assert(result.html.includes('class="post-content"'));
+                assert(result.html.includes('font-family: Georgia, serif;'));
             });
 
             it('applies custom link colors when design customization is enabled', async function () {
@@ -606,7 +625,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                     siteSettings: defaultSiteSettings
                 });
 
-                assert(result.html.includes('class="post-content"'));
+                assert(result.html.includes('class="post-content-sans-serif"'));
                 assert(result.html.includes('color: #000000'));
             });
 
