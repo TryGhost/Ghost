@@ -62,8 +62,8 @@
     "test:release": "node --test 'scripts/test/*.js'"
   },
   "resolutions": {
-    "@tryghost/errors": "^1.3.7",
-    "@tryghost/logging": "2.5.0",
+    "@tryghost/errors": "^3.0.0",
+    "@tryghost/logging": "4.0.3",
     "jackspeak": "2.3.6",
     "moment": "2.24.0",
     "moment-timezone": "0.5.45",
