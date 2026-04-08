@@ -206,8 +206,10 @@ describe('member.* events', function () {
 
         const sub = current.subscriptions[0];
         assert.ok(sub.id, 'Subscription should have id');
-        assert.ok(sub.stripe_price_id, 'Subscription should have stripe_price_id');
         assert.ok(sub.status, 'Subscription should have status');
-        assert.equal(Object.keys(sub).length, 3, 'Subscription should only contain id, stripe_price_id, and status');
+        assert.ok(sub.tier, 'Subscription should have tier');
+        assert.ok(sub.tier.id, 'Subscription tier should have Ghost product id');
+        assert.ok(sub.tier.stripe_product_id, 'Subscription tier should have stripe_product_id');
+        assert.equal(Object.keys(sub).length, 3, 'Subscription should only contain id, status, and tier');
     });
 });

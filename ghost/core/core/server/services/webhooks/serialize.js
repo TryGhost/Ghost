@@ -13,6 +13,8 @@ module.exports = (event, model) => {
         'labels',
         'products',
         'stripeSubscriptions',
+        'stripeSubscriptions.stripePrice',
+        'stripeSubscriptions.stripePrice.stripeProduct',
         'newsletters'
     ];
 
@@ -45,13 +47,19 @@ module.exports = (event, model) => {
 
                     // Replace full subscription data with minimal references
                     // to avoid exposing Stripe customer/payment details in webhooks
+                    // Replace full subscription data with minimal references
+                    // to avoid exposing Stripe customer/payment details in webhooks
                     if (docName === 'members') {
                         const stripeSubscriptions = model.related('stripeSubscriptions');
                         result.subscriptions = stripeSubscriptions.map((sub) => {
+                            const stripeProduct = sub.related('stripePrice')?.related('stripeProduct');
                             return {
                                 id: sub.get('subscription_id'),
-                                stripe_price_id: sub.get('stripe_price_id'),
-                                status: sub.get('status')
+                                status: sub.get('status'),
+                                tier: {
+                                    id: stripeProduct?.get('product_id') || null,
+                                    stripe_product_id: stripeProduct?.get('stripe_product_id') || null
+                                }
                             };
                         });
                     }
