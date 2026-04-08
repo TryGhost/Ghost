@@ -5,7 +5,7 @@ const nock = require('nock');
 const externalRequest = require('../../../../../core/server/lib/request-external.js');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
-const dnsPromises = require('dns').promises;
+const dnsPromises = require('node:dns').promises;
 const {createModel} = require('./utils/index.js');
 
 // mock up job service
