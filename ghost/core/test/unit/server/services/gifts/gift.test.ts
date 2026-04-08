@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
-import {Gift} from '../../../../../core/server/services/gifts/gift';
+import {Gift, type GiftFromPurchaseData} from '../../../../../core/server/services/gifts/gift';
 import {GIFT_EXPIRY_DAYS} from '../../../../../core/server/services/gifts/constants';
 
 describe('Gift', function () {
-    const purchaseData = {
+    const purchaseData: GiftFromPurchaseData = {
         token: 'abc-123',
         buyerEmail: 'buyer@example.com',
         buyerMemberId: 'member_1',
         tierId: 'tier_1',
-        cadence: 'year' as const,
+        cadence: 'year',
         duration: 1,
         currency: 'usd',
         amount: 5000,
