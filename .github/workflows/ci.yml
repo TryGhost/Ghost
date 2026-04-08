@@ -220,6 +220,27 @@ jobs:
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
         run: node .github/scripts/check-app-version-bump.js
 
+  job_migration_integrity_check:
+    name: Check migration integrity
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout PR head commit
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Fetch main branch
+        run: git fetch --no-tags origin main
+
+      - name: Check migration integrity
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node .github/scripts/check-migration-integrity.js
+
   job_lint:
     runs-on: ubuntu-latest
     needs: [job_setup]
@@ -1470,6 +1491,7 @@ jobs:
       [
         job_setup,
         job_app_version_bump_check,
+        job_migration_integrity_check,
         job_lint,
         job_i18n,
         job_ghost-cli,
