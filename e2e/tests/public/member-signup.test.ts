@@ -1,5 +1,6 @@
 import {EmailClient, MailPit} from '@/helpers/services/email/mail-pit';
 import {HomePage, PublicPage} from '@/public-pages';
+import {Page} from '@playwright/test';
 import {createAutomatedEmailFactory} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
 import {extractMagicLink} from '@/helpers/services/email/utils';
@@ -15,6 +16,29 @@ test.describe('Ghost Public - Member Signup', () => {
     async function retrieveLatestEmailMessage(emailAddress: string, timeoutMs: number = 10000) {
         const messages = await emailClient.searchByRecipient(emailAddress, {timeoutMs: timeoutMs});
         return await emailClient.getMessageDetailed(messages[0]);
+    }
+
+    async function completeSignupViaMagicLink(page: Page, emailAddress: string) {
+        const signupEmail = await retrieveLatestEmailMessage(emailAddress);
+        const magicLink = extractMagicLink(signupEmail.Text);
+        const publicPage = new PublicPage(page);
+        const homePage = new HomePage(page);
+
+        await publicPage.goto(magicLink);
+        await homePage.waitUntilLoaded();
+
+        return signupEmail;
+    }
+
+    async function expectWelcomeEmailCount(emailAddress: string, expectedCount: number) {
+        await expect.poll(async () => {
+            const welcomeMessages = await emailClient.search(
+                {to: emailAddress, subject: 'Welcome to Test Blog!'},
+                {timeoutMs: null}
+            );
+
+            return welcomeMessages.length;
+        }, {timeout: 5000}).toBe(expectedCount);
     }
 
     test('signed up with magic link in email', async ({page}) => {
@@ -51,13 +75,8 @@ test.describe('Ghost Public - Member Signup', () => {
         await homePage.goto();
         const {emailAddress} = await signupViaPortal(page);
 
-        const signupEmail = await retrieveLatestEmailMessage(emailAddress);
+        const signupEmail = await completeSignupViaMagicLink(page, emailAddress);
         expect(signupEmail.Subject.toLowerCase()).toContain('complete');
-
-        const magicLink = extractMagicLink(signupEmail.Text);
-        const publicPage = new PublicPage(page);
-        await publicPage.goto(magicLink);
-        await homePage.waitUntilLoaded();
 
         const welcomeMessages = await emailClient.search(
             {to: emailAddress, subject: 'Welcome to Test Blog!'},
@@ -70,5 +89,16 @@ test.describe('Ghost Public - Member Signup', () => {
         expect(welcomeEmail.Subject).toBe('Welcome to Test Blog!');
         expect(welcomeEmail.Text).toContain('Welcome to Test Blog!');
         expect(welcomeEmail.HTML).toContain('Welcome to Test Blog!');
+    });
+
+    test('free signup does not send welcome email when free automation is disabled', async ({page}) => {
+        const homePage = new HomePage(page);
+        await homePage.goto();
+        const {emailAddress} = await signupViaPortal(page);
+
+        const signupEmail = await completeSignupViaMagicLink(page, emailAddress);
+        expect(signupEmail.Subject.toLowerCase()).toContain('complete');
+
+        await expectWelcomeEmailCount(emailAddress, 0);
     });
 });
