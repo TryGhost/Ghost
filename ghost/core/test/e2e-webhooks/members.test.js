@@ -171,7 +171,6 @@ describe('member.* events', function () {
         mockManager.mockStripe();
 
         const webhookURL = 'https://test-webhook-receiver.com/member-comped/';
-        webhookMockReceiver = mockManager.mockWebhookRequests();
         await webhookMockReceiver.mock(webhookURL);
         await fixtureManager.insertWebhook({
             event: 'member.edited',
