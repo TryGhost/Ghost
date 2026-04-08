@@ -23,11 +23,6 @@ env:
     ~/.cache/ms-playwright/
   NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
   NODE_VERSION: 22.18.0
-  # Keep PLAYWRIGHT_VERSION in sync with @playwright/test in apps/*/package.json
-  # and e2e/package.json. The Microsoft Playwright Docker image used by the
-  # apps test jobs must match the @playwright/test version exactly, otherwise
-  # Playwright cannot find its browser binaries inside the container.
-  PLAYWRIGHT_VERSION: 1.58.2
   # Disable v8-compile-cache to prevent intermittent V8 deserializer crashes
   # when multiple parallel Nx workers race to read/write shared bytecode cache
   # files. The cache lives in /tmp and is discarded after each run anyway,
@@ -203,6 +198,21 @@ jobs:
       - name: Install dependencies
         run: bash .github/scripts/install-deps.sh
 
+      - name: Resolve Playwright version
+        id: playwright
+        # Read the @playwright/test version from one of the apps so the
+        # Playwright Docker image used by the app test jobs always matches the
+        # version Renovate has bumped in package.json. This avoids needing a
+        # second source of truth (env var or custom Renovate manager) for the
+        # Playwright version. Any leading range qualifier (`^`, `~`, `>=`) is
+        # stripped so the value is always a bare semver, suitable for the
+        # `mcr.microsoft.com/playwright:v<version>-noble` image tag.
+        run: |
+          raw="$(node -p "require('./apps/comments-ui/package.json').devDependencies['@playwright/test']")"
+          version="${raw#[\^~>=<]*}"
+          echo "Resolved Playwright version: ${version}"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
 
     outputs:
       changed_admin: ${{ steps.changed.outputs.admin }}
@@ -227,6 +237,7 @@ jobs:
       dependency_cache_key: ${{ env.cachekey }}
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
+      playwright_version: ${{ steps.playwright.outputs.version }}
 
   job_app_version_bump_check:
     name: Check app version bump
@@ -575,8 +586,10 @@ jobs:
     # Run inside the official Playwright container so browsers and OS deps are
     # already installed. This avoids the apt-get based `Setup Playwright` step
     # that has been intermittently hanging the runner for the full job timeout.
+    # The image tag is resolved from `@playwright/test` in package.json by
+    # job_setup so it always matches the version Renovate has bumped to.
     container:
-      image: mcr.microsoft.com/playwright:v1.58.2-noble
+      image: mcr.microsoft.com/playwright:v${{ needs.job_setup.outputs.playwright_version }}-noble
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_admin_x_settings == 'true' && needs.job_setup.outputs.is_tag != 'true'
     name: Admin-X Settings tests
@@ -617,8 +630,10 @@ jobs:
     # Run inside the official Playwright container so browsers and OS deps are
     # already installed. This avoids the apt-get based `Setup Playwright` step
     # that has been intermittently hanging the runner for the full job timeout.
+    # The image tag is resolved from `@playwright/test` in package.json by
+    # job_setup so it always matches the version Renovate has bumped to.
     container:
-      image: mcr.microsoft.com/playwright:v1.58.2-noble
+      image: mcr.microsoft.com/playwright:v${{ needs.job_setup.outputs.playwright_version }}-noble
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_activitypub == 'true' && needs.job_setup.outputs.is_tag != 'true'
     name: ActivityPub tests
@@ -659,8 +674,10 @@ jobs:
     # Run inside the official Playwright container so browsers and OS deps are
     # already installed. This avoids the apt-get based `Setup Playwright` step
     # that has been intermittently hanging the runner for the full job timeout.
+    # The image tag is resolved from `@playwright/test` in package.json by
+    # job_setup so it always matches the version Renovate has bumped to.
     container:
-      image: mcr.microsoft.com/playwright:v1.58.2-noble
+      image: mcr.microsoft.com/playwright:v${{ needs.job_setup.outputs.playwright_version }}-noble
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_comments_ui == 'true' && needs.job_setup.outputs.is_tag != 'true'
     name: Comments-UI tests
@@ -701,8 +718,10 @@ jobs:
     # Run inside the official Playwright container so browsers and OS deps are
     # already installed. This avoids the apt-get based `Setup Playwright` step
     # that has been intermittently hanging the runner for the full job timeout.
+    # The image tag is resolved from `@playwright/test` in package.json by
+    # job_setup so it always matches the version Renovate has bumped to.
     container:
-      image: mcr.microsoft.com/playwright:v1.58.2-noble
+      image: mcr.microsoft.com/playwright:v${{ needs.job_setup.outputs.playwright_version }}-noble
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_signup_form == 'true' && needs.job_setup.outputs.is_tag != 'true'
     name: Signup-form tests
