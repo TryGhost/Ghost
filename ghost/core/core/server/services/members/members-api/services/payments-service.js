@@ -174,7 +174,7 @@ class PaymentsService {
         const amount = tier.getPrice(cadence);
         const currency = tier.currency.toLowerCase();
 
-        const token = crypto.randomUUID();
+        const token = crypto.randomBytes(6).toString('base64url');
 
         const successUrlObj = new URL(successUrl);
         successUrlObj.searchParams.set('stripe', 'gift-purchase-success');
