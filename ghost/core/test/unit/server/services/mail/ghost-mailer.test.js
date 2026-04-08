@@ -1,4 +1,3 @@
-const dns = require('dns');
 const sinon = require('sinon');
 const mail = require('../../../../../core/server/services/mail');
 const settingsCache = require('../../../../../core/shared/settings-cache');
@@ -123,8 +122,6 @@ describe('Mail: Ghostmailer', function () {
             configUtils.set({mail: {}});
 
             mailer = new mail.GhostMailer();
-
-            sinon.stub(dns, 'resolveMx').yields(null, []);
         });
 
         afterEach(function () {
