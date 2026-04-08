@@ -2,7 +2,6 @@ import React from "react"
 
 import {SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuBadge} from "@tryghost/shade/components"
 import {formatNumber, LucideIcon} from "@tryghost/shade/utils"
-import { useLocation } from "@tryghost/admin-x-framework";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
 import { NavMenuItem } from "./nav-menu-item";
@@ -12,6 +11,7 @@ import { NavCustomViews } from "./nav-custom-views";
 import { NavMemberViews } from "./nav-member-views";
 import { useMemberSidebarViews } from "./member-sidebar-views";
 import { useCustomSidebarViews } from "./use-custom-sidebar-views";
+import { useIsActiveLink } from "./use-is-active-link";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
@@ -74,11 +74,10 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const postCustomViews = useCustomSidebarViews('posts');
     const memberViews = useMemberSidebarViews();
     const hasMemberViews = memberViews.length > 0;
-    const location = useLocation();
     const memberCount = useMemberCount();
     const routing = useEmberRouting();
     const commentModerationEnabled = useFeatureFlag('commentModeration');
-    const normalizedPathname = location.pathname.replace(/\/+$/, '') || '/';
+    const isMembersRouteActive = useIsActiveLink({path: 'members', activeOnSubpath: true});
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
@@ -87,10 +86,9 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const isPublishedPostsRouteActive = routing.isRouteActive('posts', {type: 'published'});
     const hasActivePostChild = isDraftPostsRouteActive || isScheduledPostsRouteActive || isPublishedPostsRouteActive || postCustomViews.some(view => view.isActive);
     const postsExpanded = savedPostsExpanded;
-    const isOnMembersRoute = normalizedPathname === '/members' || normalizedPathname === '/members/import';
     const hasActiveMemberView = hasMemberViews && memberViews.some(view => view.isActive);
     const membersExpanded = savedMembersExpanded;
-    const membersNavActive = isOnMembersRoute
+    const membersNavActive = isMembersRouteActive
         ? (!hasActiveMemberView || !membersExpanded)
         : routing.isRouteActive(LEGACY_MEMBERS_ACTIVE_ROUTES);
     const postsRoute = routing.getRouteUrl('posts');
