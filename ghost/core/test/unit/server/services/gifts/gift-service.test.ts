@@ -1,13 +1,11 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import {GiftService} from '../../../../../core/server/services/gifts/gift-service';
+import {GiftService, type GiftPurchaseData} from '../../../../../core/server/services/gifts/gift-service';
 import {Gift} from '../../../../../core/server/services/gifts/gift';
+import type {GiftRepository} from '../../../../../core/server/services/gifts/gift-repository';
 
 describe('GiftService', function () {
-    let giftRepository: {
-        create: sinon.SinonStub;
-        existsByCheckoutSessionId: sinon.SinonStub;
-    };
+    let giftRepository: sinon.SinonStubbedInstance<GiftRepository>;
     let memberRepository: {
         get: sinon.SinonStub;
     };
@@ -20,12 +18,12 @@ describe('GiftService', function () {
     let tiersService: {
         api: {read: sinon.SinonStub};
     };
-    const purchaseData = {
+    const purchaseData: GiftPurchaseData = {
         token: 'abc-123',
         buyerEmail: 'buyer@example.com',
         stripeCustomerId: 'cust_123',
         tierId: 'tier_1',
-        cadence: 'year' as const,
+        cadence: 'year',
         duration: '1',
         currency: 'usd',
         amount: 5000,
@@ -35,8 +33,8 @@ describe('GiftService', function () {
 
     beforeEach(function () {
         giftRepository = {
-            create: sinon.stub(),
-            existsByCheckoutSessionId: sinon.stub().resolves(false)
+            create: sinon.stub<[Gift], Promise<void>>(),
+            existsByCheckoutSessionId: sinon.stub<[string], Promise<boolean>>().resolves(false)
         };
         memberRepository = {
             get: sinon.stub().resolves({id: 'member_1', get: sinon.stub().returns(null)})
@@ -57,7 +55,7 @@ describe('GiftService', function () {
     });
 
     function createService() {
-        return new GiftService({giftRepository: giftRepository as any, memberRepository, tiersService, giftEmailService, staffServiceEmails});
+        return new GiftService({giftRepository, memberRepository, tiersService, giftEmailService, staffServiceEmails});
     }
 
     describe('recordPurchase', function () {

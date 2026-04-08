@@ -25,7 +25,7 @@ interface GiftData {
     refundedAt: Date | null;
 }
 
-interface GiftPurchaseData {
+export interface GiftFromPurchaseData {
     token: string;
     buyerEmail: string;
     buyerMemberId: string | null;
@@ -81,7 +81,7 @@ export class Gift {
         this.refundedAt = data.refundedAt;
     }
 
-    static fromPurchase(data: GiftPurchaseData) {
+    static fromPurchase(data: GiftFromPurchaseData) {
         const now = new Date();
         const expiresAt = new Date(now);
 
