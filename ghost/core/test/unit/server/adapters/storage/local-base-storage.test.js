@@ -2,6 +2,8 @@ const assert = require('assert/strict');
 const path = require('path');
 const http = require('http');
 const express = require('express');
+const sinon = require('sinon');
+const fs = require('fs-extra');
 const LocalStorageBase = require('../../../../../core/server/adapters/storage/LocalStorageBase');
 
 describe('Local Storage Base', function () {
@@ -93,6 +95,123 @@ describe('Local Storage Base', function () {
             assert.throws(() => {
                 localStorageBase.urlToPath('http://anothersite.com/blog/content/media/2021/11/media.mp4');
             }, {message: 'The URL "http://anothersite.com/blog/content/media/2021/11/media.mp4" is not a valid URL for this site.'});
+        });
+    });
+
+    describe('path validation', function () {
+        it('read rejects if the path resolves outside the storage root', async function () {
+            const localStorageBase = new LocalStorageBase({
+                storagePath: '/media-storage/path/',
+                staticFileURLPrefix: 'content/media',
+                siteUrl: 'http://example.com/blog/'
+            });
+
+            await assert.rejects(
+                localStorageBase.read({path: '../../outside-root.txt'}),
+                {message: 'The path "../../outside-root.txt" is not valid for this storage.'}
+            );
+        });
+
+        it('exists returns false if the path resolves outside the storage root', async function () {
+            const localStorageBase = new LocalStorageBase({
+                storagePath: '/media-storage/path/',
+                staticFileURLPrefix: 'content/media',
+                siteUrl: 'http://example.com/blog/'
+            });
+
+            await assert.doesNotReject(async function () {
+                const exists = await localStorageBase.exists('../../outside-root.txt');
+                assert.equal(exists, false);
+            });
+        });
+
+        it('read rejects dot-equivalent paths', async function () {
+            const localStorageBase = new LocalStorageBase({
+                storagePath: '/media-storage/path/',
+                staticFileURLPrefix: 'content/media',
+                siteUrl: 'http://example.com/blog/'
+            });
+
+            await assert.rejects(
+                localStorageBase.read({path: 'foo/..'}),
+                {message: 'The path "foo/.." is not valid for this storage.'}
+            );
+        });
+
+        it('exists returns false for dot-equivalent paths', async function () {
+            const localStorageBase = new LocalStorageBase({
+                storagePath: '/media-storage/path/',
+                staticFileURLPrefix: 'content/media',
+                siteUrl: 'http://example.com/blog/'
+            });
+
+            const exists = await localStorageBase.exists('.');
+            assert.equal(exists, false);
+        });
+
+        it('delete rejects dot-equivalent paths', async function () {
+            const localStorageBase = new LocalStorageBase({
+                storagePath: '/media-storage/path/',
+                staticFileURLPrefix: 'content/media',
+                siteUrl: 'http://example.com/blog/'
+            });
+
+            await assert.rejects(
+                localStorageBase.delete(''),
+                {message: 'The path "" is not valid for this storage.'}
+            );
+        });
+
+        it('exists rejects when targetDir resolves outside storage root via traversal', async function () {
+            // Stub fs.stat to always succeed so we can detect traversal
+            // rather than having it masked by file-not-found
+            const statStub = sinon.stub(fs, 'stat').resolves({});
+
+            try {
+                const localStorageBase = new LocalStorageBase({
+                    storagePath: '/media-storage/path/',
+                    staticFileURLPrefix: 'content/media',
+                    siteUrl: 'http://example.com/blog/'
+                });
+
+                // targetDir traverses out of storage root — should return false, not attempt access
+                const exists = await localStorageBase.exists('file.txt', '../../etc');
+                assert.equal(exists, false, 'should be false because the path escapes the storage root');
+            } finally {
+                statStub.restore();
+            }
+        });
+
+        it('exists rejects when targetDir prefix-matches but is not inside storage root', async function () {
+            const statStub = sinon.stub(fs, 'stat').resolves({});
+
+            try {
+                const localStorageBase = new LocalStorageBase({
+                    storagePath: '/media-storage/path',
+                    staticFileURLPrefix: 'content/media',
+                    siteUrl: 'http://example.com/blog/'
+                });
+
+                // targetDir starts with storagePath string but is a sibling directory
+                // naive startsWith would treat this as already absolute + inside root
+                const exists = await localStorageBase.exists('file.txt', '/media-storage/path-evil');
+                assert.equal(exists, false, 'should be false because path-evil is not inside path/');
+            } finally {
+                statStub.restore();
+            }
+        });
+
+        it('delete rejects when targetDir resolves outside storage root', async function () {
+            const localStorageBase = new LocalStorageBase({
+                storagePath: '/media-storage/path/',
+                staticFileURLPrefix: 'content/media',
+                siteUrl: 'http://example.com/blog/'
+            });
+
+            await assert.rejects(
+                localStorageBase.delete('file.txt', '../../etc'),
+                {message: 'The path "file.txt" is not valid for this storage.'}
+            );
         });
     });
 });

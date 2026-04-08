@@ -2,6 +2,7 @@ import moment from 'moment-timezone';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
+import {enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -36,6 +37,20 @@ describe('Acceptance: Members Test', function () {
             this.server.create('user', {roles: [role]});
 
             await authenticateSession();
+        });
+
+        it('does not load or render the Ember members list when membersForward is enabled', async function () {
+            enableLabsFlag(this.server, 'membersForward');
+            this.server.createList('member', 2);
+
+            await visit('/members');
+
+            expect(currentURL()).to.equal('/members');
+            expect(find('[data-test-screen-title]')).to.not.exist;
+            expect(find('[data-test-table="members"]')).to.not.exist;
+
+            const membersRequests = this.server.pretender.handledRequests.filter(request => request.url.match(/\/members\/(\?|$)/));
+            expect(membersRequests.length, 'members API requests').to.equal(0);
         });
 
         it('it renders, can be navigated, can edit member', async function () {

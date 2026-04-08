@@ -107,4 +107,51 @@ describe('Unit: models/welcome-email-automated-email', function () {
             assert.equal(result.subject, 'Welcome!');
         });
     });
+
+    describe('onCreating', function () {
+        it('assigns the default email design setting when not provided', async function () {
+            const model = models.WelcomeEmailAutomatedEmail.forge();
+            const baseOnCreating = sinon.stub(Object.getPrototypeOf(models.WelcomeEmailAutomatedEmail.prototype), 'onCreating').resolves();
+            const findOne = sinon.stub(models.EmailDesignSetting, 'findOne').resolves(models.EmailDesignSetting.forge({id: 'default-setting-id'}));
+
+            await model.onCreating(model, {}, {});
+
+            assert.equal(model.get('email_design_setting_id'), 'default-setting-id');
+            sinon.assert.calledOnce(findOne);
+            sinon.assert.calledOnce(baseOnCreating);
+        });
+
+        it('assigns the default email design setting when null is provided', async function () {
+            const model = models.WelcomeEmailAutomatedEmail.forge({email_design_setting_id: null});
+            sinon.stub(Object.getPrototypeOf(models.WelcomeEmailAutomatedEmail.prototype), 'onCreating').resolves();
+            sinon.stub(models.EmailDesignSetting, 'findOne').resolves(models.EmailDesignSetting.forge({id: 'default-setting-id'}));
+
+            await model.onCreating(model, {}, {});
+
+            assert.equal(model.get('email_design_setting_id'), 'default-setting-id');
+        });
+
+        it('keeps the provided email design setting id', async function () {
+            const model = models.WelcomeEmailAutomatedEmail.forge({email_design_setting_id: 'custom-setting-id'});
+            const baseOnCreating = sinon.stub(Object.getPrototypeOf(models.WelcomeEmailAutomatedEmail.prototype), 'onCreating').resolves();
+            const findOne = sinon.stub(models.EmailDesignSetting, 'findOne');
+
+            await model.onCreating(model, {}, {});
+
+            assert.equal(model.get('email_design_setting_id'), 'custom-setting-id');
+            sinon.assert.notCalled(findOne);
+            sinon.assert.calledOnce(baseOnCreating);
+        });
+
+        it('throws when the default email design setting is missing', async function () {
+            const model = models.WelcomeEmailAutomatedEmail.forge();
+            sinon.stub(Object.getPrototypeOf(models.WelcomeEmailAutomatedEmail.prototype), 'onCreating').resolves();
+            sinon.stub(models.EmailDesignSetting, 'findOne').resolves(null);
+
+            await assert.rejects(
+                () => model.onCreating(model, {}, {}),
+                {message: 'Missing default email design setting for automated emails'}
+            );
+        });
+    });
 });
