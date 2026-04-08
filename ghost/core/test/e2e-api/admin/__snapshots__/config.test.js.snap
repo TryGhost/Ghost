@@ -36,6 +36,7 @@ Object {
     "mail": "",
     "mailgunIsConfigured": false,
     "security": Object {
+      "allowWebhookInternalIPs": true,
       "staffDeviceVerification": false,
     },
     "signupForm": Object {

@@ -19,7 +19,8 @@
         "level": "error"
     },
     "security": {
-        "staffDeviceVerification": false
+        "staffDeviceVerification": false,
+        "allowWebhookInternalIPs": true
     },
     "spam": {
         "user_login": {
