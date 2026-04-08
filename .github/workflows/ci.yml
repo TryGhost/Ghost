@@ -1631,7 +1631,7 @@ jobs:
           branch: main
           dispatch-inputs: >-
             {
-              "ghost_ref": "main",
+              "ghost_ref": "${{ github.sha }}",
               "caller_run_id": "${{ github.run_id }}",
               "run_local_tests": false,
               "deploy_staging": true,
