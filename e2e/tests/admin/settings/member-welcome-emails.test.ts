@@ -1,5 +1,10 @@
+import {EmailClient, MailPit} from '@/helpers/services/email/mail-pit';
+import {HomePage, PublicPage} from '@/public-pages';
 import {MemberWelcomeEmailsSection} from '@/admin-pages';
-import {expect, test} from '@/helpers/playwright';
+import {SignUpPage, SignUpSuccessPage} from '@/portal-pages';
+import {expect, test, withIsolatedPage} from '@/helpers/playwright';
+import {extractMagicLink} from '@/helpers/services/email/utils';
+import {faker} from '@faker-js/faker';
 import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
 usePerTestIsolation();
@@ -41,6 +46,11 @@ interface AutomatedEmailDesign {
 
 interface AutomatedEmailDesignResponse {
     automated_email_design: AutomatedEmailDesign[];
+}
+
+async function retrieveLatestEmailMessage(emailClient: EmailClient, emailAddress: string, timeoutMs: number = 10000) {
+    const messages = await emailClient.searchByRecipient(emailAddress, {timeoutMs});
+    return await emailClient.getMessageDetailed(messages[0]);
 }
 
 test.describe('Ghost Admin - Member Welcome Emails', () => {
@@ -227,6 +237,54 @@ test.describe('Ghost Admin - Welcome Email Customize Button - flag enabled', () 
         await welcomeEmailsSection.openCustomizeModal();
 
         await expect(welcomeEmailsSection.customizeModalFooterTextarea).toHaveValue('Persisted footer');
+    });
+
+    test('customized design is applied to the free member welcome email', async ({page, browser, baseURL}) => {
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+        const emailClient = new MailPit();
+
+        await welcomeEmailsSection.goto();
+        await welcomeEmailsSection.enableFreeWelcomeEmail();
+        await welcomeEmailsSection.openCustomizeModal();
+
+        await welcomeEmailsSection.customizeModalFooterTextarea.fill('Custom footer text for welcome members');
+
+        await welcomeEmailsSection.switchToDesignTab();
+        await welcomeEmailsSection.chooseBodyFont('Elegant serif');
+        await welcomeEmailsSection.saveCustomizeModal();
+        await welcomeEmailsSection.closeCustomizeModal();
+
+        await withIsolatedPage(browser, {baseURL}, async ({page: signupPage}) => {
+            const homePage = new HomePage(signupPage);
+            await homePage.gotoPortalSignup();
+
+            const signUpPage = new SignUpPage(signupPage);
+            const emailAddress = `test${faker.string.uuid()}@ghost.org`;
+            const name = faker.person.fullName();
+            await signUpPage.waitForPortalToOpen();
+            await signUpPage.fillAndSubmit(emailAddress, name);
+
+            const successPage = new SignUpSuccessPage(signupPage);
+            await successPage.waitForSignUpSuccess();
+            await successPage.closePortal();
+
+            const signupEmail = await retrieveLatestEmailMessage(emailClient, emailAddress);
+            const magicLink = extractMagicLink(signupEmail.Text);
+
+            const publicPage = new PublicPage(signupPage);
+            await publicPage.goto(magicLink);
+            await homePage.waitUntilLoaded();
+
+            const welcomeMessages = await emailClient.search(
+                {to: emailAddress, subject: 'Welcome'},
+                {timeoutMs: 10000}
+            );
+            const welcomeEmail = await emailClient.getMessageDetailed(welcomeMessages[0]);
+
+            expect(welcomeEmail.Subject).toContain('Welcome to Test Blog');
+            expect(welcomeEmail.HTML).toContain('Custom footer text for welcome members');
+            expect(welcomeEmail.HTML).toContain('font-family: Georgia, serif;');
+        });
     });
 });
 
