@@ -297,15 +297,13 @@ class StripeMocker {
             }
         }
 
-        if (resource === 'prices') {
-            if (!id) {
-                // Mimic Stripe API: set type based on whether recurring is present
-                decoded = {
-                    object: 'price',
-                    type: decoded.recurring ? 'recurring' : 'one_time',
-                    ...decoded
-                };
-            }
+        // Mimic Stripe API: set type based on whether recurring is present
+        if (resource === 'prices' && !id) {
+            decoded = {
+                object: 'price',
+                type: decoded.recurring ? 'recurring' : 'one_time',
+                ...decoded
+            };
         }
 
         if (resource === 'subscriptions') {

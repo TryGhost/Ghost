@@ -164,7 +164,7 @@ describe('member.* events', function () {
     it('member.edited event includes tiers when comped', async function () {
         mockManager.mockStripe();
 
-        const webhookURL = 'https://test-webhook-receiver.com/member-comped/';
+        const webhookURL = 'https://test-webhook-receiver.example/member-comped/';
         await webhookMockReceiver.mock(webhookURL);
         await fixtureManager.insertWebhook({
             event: 'member.edited',
@@ -197,6 +197,9 @@ describe('member.* events', function () {
         const webhookPayload = webhookMockReceiver.body.body;
         const current = webhookPayload.member.current;
 
-        assert.ok(current.tiers.length > 0, 'Webhook should include tiers');
+        assert.equal(current.tiers.length, 1, 'Webhook should include one tier');
+        assert.ok(current.tiers[0].id, 'Tier should have an id');
+        assert.ok(current.tiers[0].name, 'Tier should have a name');
+        assert.ok(current.tiers[0].slug, 'Tier should have a slug');
     });
 });

@@ -23,16 +23,20 @@ module.exports = (event, model) => {
 
             // @NOTE: below options are lost during event processing, a more holistic approach would be
             //       to pass them somehow along with the model
-            if (['posts', 'pages'].includes(docName)) {
+            switch (docName) {
+            case 'posts':
+            case 'pages':
                 frame.options.formats = POST_FORMATS;
                 frame.options.withRelated = POST_WITH_RELATED;
                 model._originalOptions = {
                     withRelated: POST_WITH_RELATED
                 };
-            }
-
-            if (docName === 'members') {
+                break;
+            case 'members':
                 await model.load(MEMBER_WITH_RELATED);
+                break;
+            default:
+                break;
             }
 
             return apiFramework
@@ -40,13 +44,7 @@ module.exports = (event, model) => {
                 .handle
                 .output(model, {docName: docName, method: 'read'}, api.serializers.output, frame)
                 .then(() => {
-                    const result = frame.response[docName][0];
-
-                    if (docName === 'members') {
-                        delete result.subscriptions;
-                    }
-
-                    return result;
+                    return frame.response[docName][0];
                 });
         });
     } else {
@@ -59,9 +57,14 @@ module.exports = (event, model) => {
         ops.push(() => {
             const frame = {options: {previous: true, context: {user: true}}};
 
-            if (['posts', 'pages'].includes(docName)) {
+            switch (docName) {
+            case 'posts':
+            case 'pages':
                 frame.options.formats = POST_FORMATS;
                 frame.options.withRelated = POST_WITH_RELATED;
+                break;
+            default:
+                break;
             }
 
             return apiFramework
