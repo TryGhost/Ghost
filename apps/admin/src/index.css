@@ -170,9 +170,3 @@ body.react-admin .gh-canvas-header {
 body.react-admin .members-header {
     position: relative;
 }
-
-body.react-admin [data-test-table="members"] thead,
-body.react-admin [data-test-table="members"] tr {
-    position: relative;
-    z-index: 30;
-}
