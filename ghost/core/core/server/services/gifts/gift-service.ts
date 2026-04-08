@@ -1,7 +1,7 @@
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import {Gift} from './gift';
-import type {GiftBookshelfRepository} from './gift-bookshelf-repository';
+import type {GiftRepository} from './gift-repository';
 
 interface MemberRepository {
     get(filter: Record<string, unknown>): Promise<{id: string; get(key: string): string | null} | null>;
@@ -36,7 +36,7 @@ interface StaffServiceEmails {
     }): Promise<void>;
 }
 
-interface GiftPurchaseData {
+export interface GiftPurchaseData {
     token: string;
     buyerEmail: string;
     stripeCustomerId: string | null;
@@ -50,18 +50,18 @@ interface GiftPurchaseData {
 }
 
 export class GiftService {
-    readonly #giftRepository: GiftBookshelfRepository;
-    readonly #memberRepository: MemberRepository;
-    readonly #tiersService: TiersService;
-    readonly #giftEmailService: GiftEmailService;
-    readonly #staffServiceEmails: StaffServiceEmails;
+    private readonly giftRepository: GiftRepository;
+    private readonly memberRepository: MemberRepository;
+    private readonly tiersService: TiersService;
+    private readonly giftEmailService: GiftEmailService;
+    private readonly staffServiceEmails: StaffServiceEmails;
 
-    constructor({giftRepository, memberRepository, tiersService, giftEmailService, staffServiceEmails}: {giftRepository: GiftBookshelfRepository; memberRepository: MemberRepository; tiersService: TiersService; giftEmailService: GiftEmailService; staffServiceEmails: StaffServiceEmails}) {
-        this.#giftRepository = giftRepository;
-        this.#memberRepository = memberRepository;
-        this.#tiersService = tiersService;
-        this.#giftEmailService = giftEmailService;
-        this.#staffServiceEmails = staffServiceEmails;
+    constructor({giftRepository, memberRepository, tiersService, giftEmailService, staffServiceEmails}: {giftRepository: GiftRepository; memberRepository: MemberRepository; tiersService: TiersService; giftEmailService: GiftEmailService; staffServiceEmails: StaffServiceEmails}) {
+        this.giftRepository = giftRepository;
+        this.memberRepository = memberRepository;
+        this.tiersService = tiersService;
+        this.giftEmailService = giftEmailService;
+        this.staffServiceEmails = staffServiceEmails;
     }
 
     async recordPurchase(data: GiftPurchaseData): Promise<boolean> {
@@ -71,12 +71,12 @@ export class GiftService {
             throw new errors.ValidationError({message: `Invalid gift duration: ${data.duration}`});
         }
 
-        if (await this.#giftRepository.existsByCheckoutSessionId(data.stripeCheckoutSessionId)) {
+        if (await this.giftRepository.existsByCheckoutSessionId(data.stripeCheckoutSessionId)) {
             return false;
         }
 
         const member = data.stripeCustomerId
-            ? await this.#memberRepository.get({customer_id: data.stripeCustomerId})
+            ? await this.memberRepository.get({customer_id: data.stripeCustomerId})
             : null;
 
         const gift = Gift.fromPurchase({
@@ -92,10 +92,10 @@ export class GiftService {
             stripePaymentIntentId: data.stripePaymentIntentId
         });
 
-        await this.#giftRepository.create(gift);
+        await this.giftRepository.create(gift);
 
         try {
-            await this.#staffServiceEmails.notifyGiftReceived({
+            await this.staffServiceEmails.notifyGiftReceived({
                 name: member?.get('name') ?? null,
                 email: member?.get('email') ?? data.buyerEmail,
                 memberId: member?.id ?? null,
@@ -103,21 +103,21 @@ export class GiftService {
                 currency: data.currency
             });
         } catch (err) {
-            logging.error(err);
+            logging.error('Failed to notify staff of gift purchase', err);
         }
 
         try {
-            const tier = await this.#tiersService.api.read(data.tierId);
+            if (!gift.expiresAt) {
+                throw new errors.InternalServerError({message: 'Gift is missing expiration date'});
+            }
+
+            const tier = await this.tiersService.api.read(data.tierId);
 
             if (!tier) {
                 throw new errors.NotFoundError({message: `Tier not found: ${data.tierId}`});
             }
 
-            if (!gift.expiresAt) {
-                throw new errors.InternalServerError({message: 'Gift is missing expiration date'});
-            }
-
-            await this.#giftEmailService.sendPurchaseConfirmation({
+            await this.giftEmailService.sendPurchaseConfirmation({
                 buyerEmail: data.buyerEmail,
                 amount: data.amount,
                 currency: data.currency,
@@ -128,7 +128,7 @@ export class GiftService {
                 expiresAt: gift.expiresAt
             });
         } catch (err) {
-            logging.error(err);
+            logging.error('Failed to send gift purchase confirmation email', err);
         }
 
         return true;

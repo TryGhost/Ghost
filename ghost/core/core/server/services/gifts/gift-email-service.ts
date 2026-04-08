@@ -53,6 +53,14 @@ export class GiftEmailService {
         this.renderer = new GiftEmailRenderer();
     }
 
+    private get siteDomain(): string {
+        try {
+            return new URL(this.urlUtils.getSiteUrl()).hostname;
+        } catch {
+            return '';
+        }
+    }
+
     async sendPurchaseConfirmation({buyerEmail, amount, currency, token, tierName, cadence, duration, expiresAt}: PurchaseConfirmationData): Promise<void> {
         const formattedAmount = this.formatAmount({currency, amount: amount / 100});
         const siteDomain = this.siteDomain;
@@ -89,14 +97,6 @@ export class GiftEmailService {
             from: this.getFromAddress(),
             forceTextContent: true
         });
-    }
-
-    private get siteDomain(): string {
-        try {
-            return new URL(this.urlUtils.getSiteUrl()).hostname;
-        } catch {
-            return '';
-        }
     }
 
     private formatAmount({amount = 0, currency}: {amount?: number; currency?: string}): string {

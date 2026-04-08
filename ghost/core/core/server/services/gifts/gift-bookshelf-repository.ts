@@ -1,4 +1,5 @@
-import {Gift} from './gift';
+import type {Gift} from './gift';
+import type {GiftRepository} from './gift-repository';
 
 type BookshelfModel<T> = {
     add(data: Partial<T>, unfilteredOptions?: unknown): Promise<T>;
@@ -7,15 +8,15 @@ type BookshelfModel<T> = {
 
 type GiftBookshelfModel = BookshelfModel<Record<string, unknown>>;
 
-export class GiftBookshelfRepository {
-    readonly #Model: GiftBookshelfModel;
+export class GiftBookshelfRepository implements GiftRepository {
+    private readonly model: GiftBookshelfModel;
 
     constructor({GiftModel}: {GiftModel: GiftBookshelfModel}) {
-        this.#Model = GiftModel;
+        this.model = GiftModel;
     }
 
     async existsByCheckoutSessionId(checkoutSessionId: string): Promise<boolean> {
-        const existing = await this.#Model.findOne({
+        const existing = await this.model.findOne({
             stripe_checkout_session_id: checkoutSessionId
         }, {require: false});
 
@@ -23,7 +24,7 @@ export class GiftBookshelfRepository {
     }
 
     async create(gift: Gift) {
-        await this.#Model.add({
+        await this.model.add({
             token: gift.token,
             buyer_email: gift.buyerEmail,
             buyer_member_id: gift.buyerMemberId,
