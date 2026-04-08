@@ -1,4 +1,4 @@
-import Controller, {inject as controller} from '@ember/controller';
+import Controller from '@ember/controller';
 import DeleteMemberModal from '../components/members/modals/delete-member';
 import DisableCommentingModal from '../components/members/modals/disable-commenting';
 import EmberObject, {action, defineProperty} from '@ember/object';
@@ -12,7 +12,6 @@ import {tracked} from '@glimmer/tracking';
 const SCRATCH_PROPS = ['name', 'email', 'note'];
 
 export default class MemberController extends Controller {
-    @controller members;
     @service ajax;
     @service session;
     @service dropdown;
@@ -161,9 +160,7 @@ export default class MemberController extends Controller {
         this.modals.open(DeleteMemberModal, {
             member: this.member,
             afterDelete: () => {
-                this.membersStats.invalidate();
-                this.members.refreshData();
-                this.membersCountCache.clear();
+                this._refreshMembersData({invalidateStats: true, clearCountCache: true});
                 this.router.transitionTo(this.membersListPath);
             }
         });
@@ -174,7 +171,7 @@ export default class MemberController extends Controller {
         this.modals.open(LogoutMemberModal, {
             member: this.member,
             afterLogout: () => {
-                this.members.refreshData();
+                this._refreshMembersData();
             }
         });
     }
@@ -241,13 +238,9 @@ export default class MemberController extends Controller {
             yield member.save();
             member.updateLabels();
             member.labels.forEach(label => this.labelsManager.addLabel(label));
-            this.members.refreshData();
+            this._refreshMembersData({clearCountCache});
 
             this.setInitialRelationshipValues();
-
-            if (clearCountCache) {
-                this.membersCountCache.clear();
-            }
 
             // replace 'member.new' route with 'member' route
             this.replaceRoute('member', member);
@@ -334,5 +327,19 @@ export default class MemberController extends Controller {
         let {hasDirtyAttributes} = member;
 
         return hasDirtyAttributes;
+    }
+
+    _refreshMembersData({clearCountCache = false, invalidateStats = false} = {}) {
+        if (invalidateStats) {
+            this.membersStats.invalidate();
+        }
+
+        if (clearCountCache) {
+            this.membersCountCache.clear();
+        }
+
+        if (window.adminXQueryClient) {
+            window.adminXQueryClient.invalidateQueries({queryKey: ['MembersResponseType']});
+        }
     }
 }
