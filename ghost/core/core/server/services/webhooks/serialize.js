@@ -9,11 +9,21 @@ module.exports = (event, model) => {
 
     const POST_FORMATS = ['html', 'plaintext'];
     const POST_WITH_RELATED = ['tags', 'authors'];
+    const MEMBER_WITH_RELATED = [
+        'labels',
+        'products',
+        'stripeSubscriptions',
+        'stripeSubscriptions.customer',
+        'stripeSubscriptions.stripePrice',
+        'stripeSubscriptions.stripePrice.stripeProduct',
+        'stripeSubscriptions.stripePrice.stripeProduct.product',
+        'newsletters'
+    ];
 
     const ops = [];
 
     if (Object.keys(model.attributes).length) {
-        ops.push(() => {
+        ops.push(async () => {
             let frame = {options: {previous: false, context: {user: true}}};
 
             // @NOTE: below options are lost during event processing, a more holistic approach would be
@@ -24,6 +34,10 @@ module.exports = (event, model) => {
                 model._originalOptions = {
                     withRelated: POST_WITH_RELATED
                 };
+            }
+
+            if (docName === 'members') {
+                await model.load(MEMBER_WITH_RELATED);
             }
 
             return apiFramework
