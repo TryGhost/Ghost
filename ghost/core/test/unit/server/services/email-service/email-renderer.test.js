@@ -1468,7 +1468,7 @@ describe('Email renderer', function () {
                 options
             );
 
-            assert(!response.html.includes('#/portal/share'));
+            assert(!response.html.includes('#/share'));
         });
 
         it('does not include share links when disabled in newsletter settings', async function () {

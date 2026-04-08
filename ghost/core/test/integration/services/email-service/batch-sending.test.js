@@ -911,7 +911,7 @@ describe.skip('Batch sending tests', function () {
                     mobiledoc: mobileDocExample
                 });
 
-                assert.match(html, /#\/portal\/share/);
+                assert.match(html, /#\/share/);
             } finally {
                 await models.Newsletter.edit({show_share_button: false}, {id: defaultNewsletter.id});
             }
@@ -928,7 +928,7 @@ describe.skip('Batch sending tests', function () {
                 mobiledoc: mobileDocExample
             });
 
-            assert.doesNotMatch(html, /#\/portal\/share/);
+            assert.doesNotMatch(html, /#\/share/);
         });
 
         it('Shows subscription details box for free members', async function () {
