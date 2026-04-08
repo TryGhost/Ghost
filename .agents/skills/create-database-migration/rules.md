@@ -31,3 +31,15 @@ Protect against missing data. If a migration crashes, Ghost cannot boot.
 ## Migrations should log every code path
 
 If we have to debug a migration, we need to know what it actually did. Without logging, that's impossible, so ensure all code paths and early returns contain logging. Note: when using the utility functions, logging is typically handled in the utility function itself, so no additional logging statements are necessary.
+
+## Use Knex bindings in raw queries
+
+When writing `knex.raw()` queries, always use parameter bindings instead of string interpolation:
+- `?` for value bindings: `knex.raw('UPDATE t SET col = ? WHERE id = ?', [value, id])`
+- `??` for identifier bindings (table/column names): `knex.raw('DROP VIEW IF EXISTS ??', [viewName])`
+
+This ensures proper quoting across both MySQL and SQLite (used in tests).
+
+## Migrations must work on both MySQL and SQLite
+
+Ghost uses MySQL in production and SQLite in tests. Migrations must be compatible with both. Avoid MySQL-specific syntax (e.g. backtick-quoting identifiers directly). Using Knex's `??` binding handles cross-database identifier quoting automatically.
