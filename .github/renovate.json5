@@ -14,6 +14,23 @@
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,
     "timezone": "Etc/UTC",
+    // Restrict Renovate runs to the automerge windows so branch updates
+    // (rebasing, force-pushes) happen around the same times automerge
+    // can actually complete, not during the working day when CI is busy.
+    // Each block starts one hour earlier than the matching automerge
+    // window so Renovate has time to rebase and open/refresh PRs before
+    // automerge is eligible to run.
+    "schedule": [
+        // Run all weekend
+        "* * * * 0,6",
+        // Run on Monday morning (Sun 23:00 is already covered by weekend)
+        "* 0-12 * * 1",
+        // Run on weekday evenings, starting 1 hour earlier than automerge
+        "* 21-23 * * 1-5",
+        // Run on early weekday mornings (previous day 23:00 is already
+        // covered by the evening block above)
+        "* 0-4 * * 2-6"
+    ],
     "automergeSchedule": [
         // Allow automerge all weekend
         "* * * * 0,6",
