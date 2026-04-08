@@ -16,6 +16,7 @@ const UNMATCHED_TOKEN_REGEX = /%%\{.*?\}%%/g;
 // TODO: remove this constant after removing the labs flag, as we won't need these defaults anymore
 const DEFAULT_DESIGN_SETTINGS = {
     background_color: '#ffffff',
+    body_font_category: 'sans_serif',
     button_color: 'accent',
     button_corners: null,
     button_style: null,
@@ -203,6 +204,7 @@ class MemberWelcomeEmailRenderer {
         const headerImage = useDesignCustomization ? (designSettings.header_image || null) : null;
         const showHeaderTitle = useDesignCustomization ? designSettings.show_header_title !== false : false;
         const showBadge = useDesignCustomization ? designSettings.show_badge !== false : false;
+        const bodyFontCategory = designSettings.body_font_category === 'serif' ? 'serif' : 'sans_serif';
 
         const html = this.#wrapperTemplate({
             content: contentWithAbsoluteLinks,
@@ -235,7 +237,8 @@ class MemberWelcomeEmailRenderer {
             ],
             ...design,
             classes: {
-                container: 'container'
+                container: 'container',
+                content: useDesignCustomization && bodyFontCategory !== 'serif' ? 'post-content-sans-serif' : 'post-content'
             }
         });
 
