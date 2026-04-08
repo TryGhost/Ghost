@@ -196,6 +196,16 @@
             "automerge": true,
             "automergeType": "pr"
         },
+        {
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchPackageNames": [
+                "tinybirdco/tinybird-local"
+            ],
+            "automerge": true,
+            "automergeType": "pr"
+        },
 
         // Ignore all ember-related packages in admin
         // Our ember codebase is being replaced with react and
