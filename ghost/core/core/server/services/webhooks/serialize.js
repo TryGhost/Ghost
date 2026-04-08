@@ -13,10 +13,6 @@ module.exports = (event, model) => {
         'labels',
         'products',
         'stripeSubscriptions',
-        'stripeSubscriptions.customer',
-        'stripeSubscriptions.stripePrice',
-        'stripeSubscriptions.stripePrice.stripeProduct',
-        'stripeSubscriptions.stripePrice.stripeProduct.product',
         'newsletters'
     ];
 
@@ -45,7 +41,22 @@ module.exports = (event, model) => {
                 .handle
                 .output(model, {docName: docName, method: 'read'}, api.serializers.output, frame)
                 .then(() => {
-                    return frame.response[docName][0];
+                    const result = frame.response[docName][0];
+
+                    // Replace full subscription data with minimal references
+                    // to avoid exposing Stripe customer/payment details in webhooks
+                    if (docName === 'members') {
+                        const stripeSubscriptions = model.related('stripeSubscriptions');
+                        result.subscriptions = stripeSubscriptions.map((sub) => {
+                            return {
+                                id: sub.get('subscription_id'),
+                                stripe_price_id: sub.get('stripe_price_id'),
+                                status: sub.get('status')
+                            };
+                        });
+                    }
+
+                    return result;
                 });
         });
     } else {

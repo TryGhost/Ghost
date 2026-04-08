@@ -202,11 +202,18 @@ describe('member.* events', function () {
 
         await webhookMockReceiver.receivedRequest();
 
-        // Verify the webhook payload matches
+        // Verify the webhook payload includes tiers and minimal subscription data
         const webhookPayload = webhookMockReceiver.body.body;
         const current = webhookPayload.member.current;
 
         assert.ok(current.tiers.length > 0, 'Webhook should include tiers');
         assert.ok(current.subscriptions.length > 0, 'Webhook should include subscriptions');
+
+        // Subscription should only contain minimal references, not full Stripe data
+        const sub = current.subscriptions[0];
+        assert.ok(sub.id, 'Subscription should have id');
+        assert.ok(sub.stripe_price_id, 'Subscription should have stripe_price_id');
+        assert.ok(sub.status, 'Subscription should have status');
+        assert.equal(Object.keys(sub).length, 3, 'Subscription should only have id, stripe_price_id, and status');
     });
 });
