@@ -24,11 +24,11 @@ describe('virtual-list-window', () => {
     it('restores the unlocked window from the current history entry on remount', () => {
         window.history.replaceState({
             ghostVirtualListWindow: {
-                '/members-forward::?filter=members': 2000
+                '/members::?filter=members': 2000
             }
         }, '');
 
-        const wrapper = createWrapper('/members-forward?filter=members');
+        const wrapper = createWrapper('/members?filter=members');
         const {result, unmount} = renderHook(() => useVirtualListWindow(5000), {wrapper});
 
         expect(result.current.visibleItemCount).toBe(2000);
@@ -44,7 +44,7 @@ describe('virtual-list-window', () => {
         window.history.replaceState({}, '');
 
         const {result} = renderHook(() => useVirtualListWindow(5000), {
-            wrapper: createWrapper('/members-forward?filter=members')
+            wrapper: createWrapper('/members?filter=members')
         });
 
         act(() => {
@@ -53,14 +53,14 @@ describe('virtual-list-window', () => {
 
         expect(window.history.state).toMatchObject({
             ghostVirtualListWindow: {
-                '/members-forward::?filter=members': 2000
+                '/members::?filter=members': 2000
             }
         });
     });
 
     it('caps the visible window at 1,000 rows by default', () => {
         const {result} = renderHook(() => useVirtualListWindow(1500), {
-            wrapper: createWrapper('/members-forward?filter=members')
+            wrapper: createWrapper('/members?filter=members')
         });
 
         expect(result.current).toMatchObject({
@@ -71,7 +71,7 @@ describe('virtual-list-window', () => {
 
     it('shows all items when the total is below the cap', () => {
         const {result} = renderHook(() => useVirtualListWindow(125), {
-            wrapper: createWrapper('/members-forward?filter=members')
+            wrapper: createWrapper('/members?filter=members')
         });
 
         expect(result.current).toMatchObject({
@@ -82,7 +82,7 @@ describe('virtual-list-window', () => {
 
     it('unlocks the next 1,000 rows each time load more is requested', () => {
         const {result} = renderHook(() => useVirtualListWindow(5000), {
-            wrapper: createWrapper('/members-forward?filter=members')
+            wrapper: createWrapper('/members?filter=members')
         });
 
         expect(result.current.visibleItemCount).toBe(1000);
@@ -97,12 +97,12 @@ describe('virtual-list-window', () => {
     it('ignores invalid persisted unlocked counts', () => {
         window.history.replaceState({
             ghostVirtualListWindow: {
-                '/members-forward::?filter=members': Number.NaN
+                '/members::?filter=members': Number.NaN
             }
         }, '');
 
         const {result} = renderHook(() => useVirtualListWindow(5000), {
-            wrapper: createWrapper('/members-forward?filter=members')
+            wrapper: createWrapper('/members?filter=members')
         });
 
         expect(result.current.visibleItemCount).toBe(1000);

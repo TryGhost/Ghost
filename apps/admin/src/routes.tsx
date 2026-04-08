@@ -15,6 +15,7 @@ import MyProfileRedirect from "./my-profile-redirect";
 // Ember
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
+import { MembersRoute } from "./members-route";
 
 import { NotFound } from "./not-found";
 
@@ -40,7 +41,8 @@ const EMBER_ROUTES: string[] = [
     "/tags/new",
     "/explore/*",
     "/migrate/*",
-    "/members/*",
+    "/members/new",
+    "/members/:member_id",
     "/members-activity",
     "/designsandbox",
     "/mentions",
@@ -53,6 +55,33 @@ const emberFallbackRoutes: RouteObject[] = EMBER_ROUTES.map(path => ({
     Component: EmberFallback,
     handle: emberFallbackHandle,
 }));
+
+const membersRoute: RouteObject = {
+    path: "/members",
+    element: <MembersRoute />,
+    handle: emberFallbackHandle,
+    children: [
+        {
+            index: true,
+            lazy: lazyComponent(() => import("@tryghost/posts/src/views/members/members"))
+        },
+        {
+            path: "import",
+            lazy: lazyComponent(() => import("@tryghost/posts/src/views/members/members"))
+        }
+    ]
+};
+
+const membersForwardRedirectRoute: RouteObject = {
+    path: "/members-forward",
+    // TODO: Remove once the legacy Ember members list is deleted.
+    handle: emberFallbackHandle,
+    loader: ({request}) => {
+        const url = new URL(request.url);
+        return redirect(`/members${url.search}`);
+    }
+};
+
 export const routes: RouteObject[] = [
     {
         // ForceUpgradeGuard wraps all routes to redirect to /pro when in force upgrade mode.
@@ -69,6 +98,8 @@ export const routes: RouteObject[] = [
                 Component: EmberFallback,
                 handle: emberFallbackHandle,
             },
+            membersRoute,
+            membersForwardRedirectRoute,
             {
                 element: (
                     <PostsAppContextProvider value={{ fromAnalytics: true }}>

@@ -580,7 +580,7 @@ describe('CheckoutSessionEventService', function () {
                     tier_id: 'tier_456',
                     cadence: 'year',
                     duration: '1',
-                    purchaser_email: 'buyer@example.com'
+                    buyer_email: 'buyer@example.com'
                 }
             };
 
@@ -617,7 +617,7 @@ describe('CheckoutSessionEventService', function () {
                     tier_id: 'tier_111',
                     cadence: 'month',
                     duration: '1',
-                    purchaser_email: 'guest@example.com'
+                    buyer_email: 'guest@example.com'
                 }
             };
 

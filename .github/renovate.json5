@@ -14,6 +14,23 @@
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,
     "timezone": "Etc/UTC",
+    // Restrict Renovate runs to the automerge windows so branch updates
+    // (rebasing, force-pushes) happen around the same times automerge
+    // can actually complete, not during the working day when CI is busy.
+    // Each block starts one hour earlier than the matching automerge
+    // window so Renovate has time to rebase and open/refresh PRs before
+    // automerge is eligible to run.
+    "schedule": [
+        // Run all weekend
+        "* * * * 0,6",
+        // Run on Monday morning (Sun 23:00 is already covered by weekend)
+        "* 0-12 * * 1",
+        // Run on weekday evenings, starting 1 hour earlier than automerge
+        "* 21-23 * * 1-5",
+        // Run on early weekday mornings (previous day 23:00 is already
+        // covered by the evening block above)
+        "* 0-4 * * 2-6"
+    ],
     "automergeSchedule": [
         // Allow automerge all weekend
         "* * * * 0,6",
@@ -87,6 +104,73 @@
             "matchPackageNames": [
                 "@tryghost/nql",
                 "@tryghost/nql-lang"
+            ]
+        },
+
+        // Split the broad shared TryGhost group into smaller logical lanes so
+        // failures in one area (e.g. email rendering) don't block unrelated
+        // internal package updates from merging.
+        {
+            "groupName": "TryGhost runtime packages",
+            "matchPackageNames": [
+                "@tryghost/adapter-base-cache",
+                "@tryghost/admin-api-schema",
+                "@tryghost/api-framework",
+                "@tryghost/bookshelf-plugins",
+                "@tryghost/database-info",
+                "@tryghost/debug",
+                "@tryghost/domain-events",
+                "@tryghost/errors",
+                "@tryghost/http-cache-utils",
+                "@tryghost/job-manager",
+                "@tryghost/logging",
+                "@tryghost/metrics",
+                "@tryghost/mw-error-handler",
+                "@tryghost/mw-vhost",
+                "@tryghost/pretty-cli",
+                "@tryghost/prometheus-metrics",
+                "@tryghost/promise",
+                "@tryghost/referrer-parser",
+                "@tryghost/root-utils",
+                "@tryghost/security",
+                "@tryghost/social-urls",
+                "@tryghost/tpl",
+                "@tryghost/validator",
+                "@tryghost/version",
+                "@tryghost/zip"
+            ]
+        },
+        {
+            "groupName": "TryGhost admin support packages",
+            "matchPackageNames": [
+                "@tryghost/color-utils",
+                "@tryghost/custom-fonts",
+                "@tryghost/limit-service",
+                "@tryghost/members-csv",
+                "@tryghost/timezone-data"
+            ]
+        },
+        {
+            "groupName": "TryGhost content and email packages",
+            "matchPackageNames": [
+                "@tryghost/config-url-helpers",
+                "@tryghost/content-api",
+                "@tryghost/helpers",
+                "@tryghost/html-to-mobiledoc",
+                "@tryghost/html-to-plaintext",
+                "@tryghost/nodemailer",
+                "@tryghost/parse-email-address",
+                "@tryghost/request",
+                "@tryghost/string",
+                "@tryghost/url-utils"
+            ]
+        },
+        {
+            "groupName": "TryGhost test support packages",
+            "matchPackageNames": [
+                "@tryghost/email-mock-receiver",
+                "@tryghost/express-test",
+                "@tryghost/webhook-mock-receiver"
             ]
         },
 

@@ -1,7 +1,7 @@
 import {GIFT_EXPIRY_DAYS} from './constants';
 
-type GiftStatus = 'purchased' | 'redeemed' | 'consumed' | 'expired' | 'refunded';
-type GiftCadence = 'month' | 'year';
+export type GiftStatus = 'purchased' | 'redeemed' | 'consumed' | 'expired' | 'refunded';
+export type GiftCadence = 'month' | 'year';
 
 interface GiftData {
     token: string;
@@ -25,7 +25,7 @@ interface GiftData {
     refundedAt: Date | null;
 }
 
-interface GiftPurchaseData {
+export interface GiftFromPurchaseData {
     token: string;
     buyerEmail: string;
     buyerMemberId: string | null;
@@ -81,7 +81,7 @@ export class Gift {
         this.refundedAt = data.refundedAt;
     }
 
-    static fromPurchase(data: GiftPurchaseData) {
+    static fromPurchase(data: GiftFromPurchaseData) {
         const now = new Date();
         const expiresAt = new Date(now);
 
@@ -99,5 +99,45 @@ export class Gift {
             expiredAt: null,
             refundedAt: null
         });
+    }
+
+    isRedeemed() {
+        return this.redeemedAt !== null;
+    }
+
+    isExpired() {
+        return this.expiredAt !== null;
+    }
+
+    isRefunded() {
+        return this.refundedAt !== null;
+    }
+
+    isConsumed() {
+        return this.consumedAt !== null;
+    }
+
+    getRedeemFailureReason(): 'redeemed' | 'consumed' | 'expired' | 'refunded' | null {
+        if (this.isRedeemed()) {
+            return 'redeemed';
+        }
+
+        if (this.isConsumed()) {
+            return 'consumed';
+        }
+
+        if (this.isExpired()) {
+            return 'expired';
+        }
+
+        if (this.isRefunded()) {
+            return 'refunded';
+        }
+
+        return null;
+    }
+
+    isRedeemable() {
+        return this.getRedeemFailureReason() === null;
     }
 }

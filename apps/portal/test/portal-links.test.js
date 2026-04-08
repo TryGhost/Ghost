@@ -4,19 +4,21 @@ import {appRender, fireEvent, waitFor, within} from './utils/test-utils';
 import setupGhostApi from '../src/utils/api';
 
 const defaultGiftResponse = {
-    gift: {
-        token: 'gift-token-123',
-        cadence: 'year',
-        duration: 1,
-        tier: {
-            id: 'tier-gift',
-            name: 'Bronze',
-            benefits: [
-                {id: 'benefit-1', name: 'Five great stories to read every day'},
-                {id: 'benefit-2', name: 'Videos and podcasts to charm and delight you'}
-            ]
+    gifts: [
+        {
+            token: 'gift-token-123',
+            cadence: 'year',
+            duration: 1,
+            tier: {
+                id: 'tier-gift',
+                name: 'Bronze',
+                benefits: [
+                    'Five great stories to read every day',
+                    'Videos and podcasts to charm and delight you'
+                ]
+            }
         }
-    }
+    ]
 };
 
 const setup = async ({site, member = null, showPopup = true, giftResponse = defaultGiftResponse, giftError = null}) => {
@@ -210,6 +212,25 @@ describe('Portal Data links:', () => {
                     expect(chooseBtns).toHaveLength(3);
                 });
             });
+        });
+    });
+
+    describe('#/share', () => {
+        test('opens portal share page', async () => {
+            window.location.hash = '#/share';
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                showPopup: false
+            });
+            expect(triggerButtonFrame).toBeInTheDocument();
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+            const shareTitle = within(popupFrame.contentDocument).queryByText(/^Share$/i);
+            expect(shareTitle).toBeInTheDocument();
+            const poweredBy = within(popupFrame.contentDocument).queryByText(/Powered by Ghost/i);
+            expect(poweredBy).not.toBeInTheDocument();
         });
     });
 
@@ -457,6 +478,22 @@ describe('Portal Data links:', () => {
             await expectGiftRedemptionErrorToast({
                 utils,
                 subtitle: /This gift has already been redeemed\./i
+            });
+        });
+
+        test('renders a toast error when logged-in member already has an active subscription', async () => {
+            let {
+                ghostApi, triggerButtonFrame, ...utils
+            } = await setupGiftRedemption({
+                giftError: new Error('You already have an active subscription.')
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(ghostApi.gift.fetchRedemptionData).toHaveBeenCalledWith({token: 'gift-token-123'});
+
+            await expectGiftRedemptionErrorToast({
+                utils,
+                subtitle: /You already have an active subscription\./i
             });
         });
 

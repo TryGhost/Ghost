@@ -749,7 +749,7 @@ describe('StripeAPI', function () {
                 gift_token: 'token-xyz',
                 tier_id: 'tier_123',
                 cadence: 'month',
-                purchaser_email: 'buyer@example.com'
+                buyer_email: 'buyer@example.com'
             };
 
             await api.createGiftCheckoutSession({
