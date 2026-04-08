@@ -16,8 +16,6 @@ export interface MembersListSurface {
 }
 
 export class MembersListPage extends AdminPage implements MembersListSurface {
-    readonly membersPage: Locator;
-    readonly membersList: Locator;
     readonly memberRows: Locator;
     readonly searchInput: Locator;
     readonly actionsButton: Locator;
@@ -32,17 +30,15 @@ export class MembersListPage extends AdminPage implements MembersListSurface {
         super(page);
         this.pageUrl = '/ghost/#/members';
 
-        this.membersPage = page.getByTestId('members-page');
-        this.membersList = this.membersPage.getByTestId('members-list');
-        this.memberRows = this.membersList.getByTestId('members-list-item');
-        this.searchInput = this.membersPage.getByTestId('members-search-input');
-        this.actionsButton = this.membersPage.getByTestId('members-actions');
-        this.newMemberButton = this.membersPage.getByRole('link', {name: 'New member'});
-        this.filterButton = this.membersPage.getByRole('button', {name: /^(Filter|Add filter)$/});
-        this.clearFiltersButton = this.membersPage.getByRole('button', {name: 'Clear'});
-        this.emptyState = this.membersPage.getByText('No members yet');
-        this.noResults = this.membersPage.getByText('No matching members found.');
-        this.showAllButton = this.membersPage.getByRole('button', {name: 'Show all members'});
+        this.memberRows = page.getByTestId('members-list-item');
+        this.searchInput = page.getByTestId('members-search-input');
+        this.actionsButton = page.getByTestId('members-actions');
+        this.newMemberButton = page.getByRole('link', {name: 'New member'});
+        this.filterButton = page.getByRole('button', {name: /^(Filter|Add filter)$/});
+        this.clearFiltersButton = page.getByRole('button', {name: 'Clear'});
+        this.emptyState = page.getByText('No members yet');
+        this.noResults = page.getByText('No matching members found.');
+        this.showAllButton = page.getByRole('button', {name: 'Show all members'});
     }
 
     getMemberByName(name: string): Locator {
@@ -72,7 +68,7 @@ export class MembersListPage extends AdminPage implements MembersListSurface {
     }
 
     async saveCurrentView(name: string): Promise<void> {
-        await this.membersPage.getByRole('button', {name: 'Save view'}).click();
+        await this.page.getByRole('button', {name: 'Save view'}).click();
         const dialog = this.page.getByRole('dialog');
         await dialog.waitFor({state: 'visible'});
         await dialog.getByRole('textbox', {name: 'View name'}).fill(name);
