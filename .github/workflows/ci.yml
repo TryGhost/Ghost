@@ -735,7 +735,7 @@ jobs:
           working-directory: ghost/core/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:a652699bdd66f3972c09f028d5b044ba7a13bd479d13f9047f2c795b60fe95ab
+        image: tinybirdco/tinybird-local:latest@sha256:3bbfa58373928313a290f40193598d992f613173c67e9ed8c980d662a911f15a
         ports:
           - 7181:7181
     steps:
