@@ -184,24 +184,19 @@
             "automerge": true
         },
 
-        // Allow patch updates to the internal traffic analytics image to
-        // automerge once CI has gone green.
+        // Allow internal Docker digest pins to automerge once the relevant
+        // CI checks have gone green.
         {
+            "description": "Automerge internal Docker digest updates after CI passes",
             "matchDatasources": [
                 "docker"
             ],
             "matchPackageNames": [
-                "ghost/traffic-analytics"
-            ],
-            "automerge": true,
-            "automergeType": "pr"
-        },
-        {
-            "matchDatasources": [
-                "docker"
-            ],
-            "matchPackageNames": [
+                "ghost/traffic-analytics",
                 "tinybirdco/tinybird-local"
+            ],
+            "matchUpdateTypes": [
+                "digest"
             ],
             "automerge": true,
             "automergeType": "pr"

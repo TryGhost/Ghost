@@ -143,6 +143,8 @@ jobs:
               - *shared
               - 'apps/sodo-search/**'
             tinybird:
+              - '.github/workflows/ci.yml'
+              - 'compose.dev.analytics.yaml'
               - 'ghost/core/core/server/data/tinybird/**'
               - '!ghost/core/core/server/data/tinybird/**/*.md'
             any-code:
