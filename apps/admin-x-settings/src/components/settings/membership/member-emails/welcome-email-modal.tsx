@@ -3,17 +3,18 @@ import React from 'react';
 import {useCallback, useEffect, useRef, useState} from 'react';
 
 import MemberEmailEditor from './member-email-editor';
-import {Hint, Button as LegacyButton, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Hint, Button as LegacyButton, LoadingIndicator, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {confirmIfDirty} from '@tryghost/admin-x-design-system';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useWelcomeEmailSenderDetails} from '../../../../hooks/use-welcome-email-sender-details';
 
 import TestEmailDropdown from './test-email-dropdown';
+import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {useBrowseAutomatedEmails, useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
+import {useBrowseAutomatedEmails, useEditAutomatedEmail, usePreviewWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../../../components/providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
-import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
+import type {AutomatedEmail, AutomatedEmailPreview} from '@tryghost/admin-x-framework/api/automated-emails';
 
 import {Button} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
@@ -85,6 +86,14 @@ interface WelcomeEmailModalProps {
     automatedEmail: AutomatedEmail;
 }
 
+type PreviewMode = 'edit' | 'preview';
+
+type PreviewState = {
+    status: 'idle' | 'loading' | 'success' | 'error' | 'invalid';
+    preview?: AutomatedEmailPreview;
+    message?: string;
+};
+
 const isEmptyLexical = (lexical: string | null | undefined): boolean => {
     if (!lexical) {
         return true;
@@ -110,13 +119,33 @@ const isEmptyLexical = (lexical: string | null | undefined): boolean => {
     }
 };
 
+const getWelcomeEmailValidationErrors = (state: {subject: string; lexical: string}): Record<string, string> => {
+    const newErrors: Record<string, string> = {};
+
+    if (!state.subject?.trim()) {
+        newErrors.subject = 'A subject is required';
+    }
+
+    if (isEmptyLexical(state.lexical)) {
+        newErrors.lexical = 'Email content is required';
+    }
+
+    return newErrors;
+};
+
+const getPreviewSignature = (subject: string, lexical: string) => `${subject}::${lexical}`;
+
 const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType = 'free', automatedEmail}) => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const {mutateAsync: editAutomatedEmail} = useEditAutomatedEmail();
+    const {mutateAsync: previewWelcomeEmail} = usePreviewWelcomeEmail();
     const {data: automatedEmailsData} = useBrowseAutomatedEmails();
     const [showTestDropdown, setShowTestDropdown] = useState(false);
+    const [mode, setMode] = useState<PreviewMode>('edit');
+    const [previewState, setPreviewState] = useState<PreviewState>({status: 'idle'});
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const previewCacheRef = useRef<{signature: string; preview: AutomatedEmailPreview} | null>(null);
     const normalizedLexical = useRef<string>(automatedEmail?.lexical || '');
     const hasEditorBeenFocused = useRef(false);
     const handleError = useHandleError();
@@ -127,7 +156,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const emailTypeLabel = emailType === 'paid' ? 'Paid' : 'Free';
     const modalTitle = `${emailTypeLabel} members welcome email`;
 
-    const {formState, saveState, updateForm, setFormState, handleSave, okProps, errors, validate} = useForm({
+    const {formState, saveState, updateForm, setFormState, setErrors, handleSave, okProps, errors, validate} = useForm({
         initialState: {
             subject: automatedEmail?.subject || 'Welcome',
             lexical: automatedEmail?.lexical || ''
@@ -137,19 +166,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
             await editAutomatedEmail({...automatedEmail, ...state});
         },
         onSaveError: handleError,
-        onValidate: (state) => {
-            const newErrors: Record<string, string> = {};
-
-            if (!state.subject?.trim()) {
-                newErrors.subject = 'A subject is required';
-            }
-
-            if (isEmptyLexical(state.lexical)) {
-                newErrors.lexical = 'Email content is required';
-            }
-
-            return newErrors;
-        }
+        onValidate: getWelcomeEmailValidationErrors
     });
     const saveButtonLabel = okProps.label || 'Save';
 
@@ -195,6 +212,81 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
             window.removeEventListener('keydown', handleCMDS);
         };
     }, []);
+
+    useEffect(() => {
+        if (mode !== 'edit') {
+            return;
+        }
+
+        const currentSignature = getPreviewSignature(formState.subject, formState.lexical);
+        if (previewCacheRef.current?.signature !== currentSignature) {
+            previewCacheRef.current = null;
+        }
+    }, [mode, formState.subject, formState.lexical]);
+
+    const renderPreview = useCallback(async () => {
+        const validationErrors = getWelcomeEmailValidationErrors(formState);
+        setErrors(validationErrors);
+
+        const hasValidationErrors = Boolean(validationErrors.subject || validationErrors.lexical);
+        if (hasValidationErrors) {
+            setPreviewState({
+                status: 'invalid',
+                message: validationErrors.subject || validationErrors.lexical
+            });
+            return;
+        }
+
+        const signature = getPreviewSignature(formState.subject, formState.lexical);
+        if (previewCacheRef.current?.signature === signature) {
+            setPreviewState({
+                status: 'success',
+                preview: previewCacheRef.current.preview
+            });
+            return;
+        }
+
+        setPreviewState({status: 'loading'});
+
+        try {
+            const response = await previewWelcomeEmail({
+                id: automatedEmail.id,
+                subject: formState.subject,
+                lexical: formState.lexical
+            });
+            const preview = response.automated_emails?.[0];
+
+            if (!preview?.html || !preview?.plaintext || !preview?.subject) {
+                throw new Error('Preview response was incomplete');
+            }
+
+            previewCacheRef.current = {signature, preview};
+            setPreviewState({
+                status: 'success',
+                preview
+            });
+        } catch (error) {
+            let message = 'Failed to render preview';
+            if (error instanceof JSONError && error.data?.errors?.[0]) {
+                message = error.data.errors[0].context || error.data.errors[0].message || message;
+            } else if (error instanceof Error && error.message) {
+                message = error.message;
+            }
+
+            setPreviewState({
+                status: 'error',
+                message
+            });
+        }
+    }, [automatedEmail.id, formState, previewWelcomeEmail, setErrors]);
+
+    const handleModeChange = useCallback((nextMode: PreviewMode) => {
+        setMode(nextMode);
+
+        if (nextMode === 'preview') {
+            void renderPreview();
+        }
+    }, [renderPreview]);
 
     // The editor normalizes content on mount (e.g., processing {name} templates),
     // which triggers onChange even without user edits. We track whether the editor
@@ -249,6 +341,22 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 title={modalTitle}
             >
                 <div className='flex grow flex-col items-center p-6'>
+                    <div className='mb-4 flex w-full max-w-[780px] items-center justify-end gap-2' data-testid='welcome-email-mode-toggle'>
+                        <Button
+                            data-testid='welcome-email-mode-edit'
+                            variant={mode === 'edit' ? 'default' : 'outline'}
+                            onClick={() => handleModeChange('edit')}
+                        >
+                            Edit
+                        </Button>
+                        <Button
+                            data-testid='welcome-email-mode-preview'
+                            variant={mode === 'preview' ? 'default' : 'outline'}
+                            onClick={() => handleModeChange('preview')}
+                        >
+                            Preview
+                        </Button>
+                    </div>
                     <EmailPreviewEmailHeader className='border-x-0 border-t-0 border-b'>
                         <div className='flex flex-col gap-2'>
                             <div className='flex items-center py-1'>
@@ -283,22 +391,31 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                             <div className='flex items-center'>
                                 <div className='w-20 shrink-0 text-sm font-semibold'>Subject:</div>
                                 <div className='grow'>
-                                    <TextField
-                                        className='w-full'
-                                        error={Boolean(errors.subject)}
-                                        hint={errors.subject || ''}
-                                        maxLength={300}
-                                        placeholder={`Welcome to ${siteTitle}`}
-                                        value={formState.subject}
-                                        onChange={e => updateForm(state => ({...state, subject: e.target.value}))}
-                                    />
+                                    {mode === 'edit' ? (
+                                        <TextField
+                                            className='w-full'
+                                            error={Boolean(errors.subject)}
+                                            hint={errors.subject || ''}
+                                            maxLength={300}
+                                            placeholder={`Welcome to ${siteTitle}`}
+                                            value={formState.subject}
+                                            onChange={e => updateForm(state => ({...state, subject: e.target.value}))}
+                                        />
+                                    ) : (
+                                        <div className='py-1 text-sm' data-testid='welcome-email-preview-subject'>
+                                            {previewState.preview?.subject || formState.subject}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </EmailPreviewEmailHeader>
-                    <EmailPreviewBody className={errors.lexical ? 'border border-red-500' : ''}>
+                    <EmailPreviewBody className={mode === 'edit' && errors.lexical ? 'border border-red-500' : ''}>
                         <div
-                            className='mx-auto w-full max-w-[600px] pt-10 pb-8 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none'
+                            className={cn(
+                                'mx-auto w-full max-w-[600px] pt-10 pb-8 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none',
+                                mode === 'preview' && 'hidden'
+                            )}
                             data-testid='welcome-email-editor'
                             onFocus={() => {
                                 hasEditorBeenFocused.current = true;
@@ -308,13 +425,35 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                 key={automatedEmail?.id || 'new'}
                                 className='welcome-email-editor'
                                 placeholder='Write your welcome email content...'
-
-                                value={automatedEmail?.lexical || ''}
+                                value={formState.lexical}
                                 onChange={handleEditorChange}
                             />
                         </div>
+                        {mode === 'preview' && (
+                            <div className='mx-auto flex h-full w-full max-w-[740px] flex-col py-6' data-testid='welcome-email-preview'>
+                                {previewState.status === 'loading' && (
+                                    <div className='flex h-full items-center justify-center' data-testid='welcome-email-preview-loading'>
+                                        <LoadingIndicator />
+                                    </div>
+                                )}
+                                {previewState.status === 'success' && previewState.preview && (
+                                    <iframe
+                                        className='h-full w-full rounded border border-gray-200 bg-white'
+                                        data-testid='welcome-email-preview-iframe'
+                                        sandbox=""
+                                        srcDoc={previewState.preview.html}
+                                        title='Welcome email preview'
+                                    />
+                                )}
+                                {(previewState.status === 'error' || previewState.status === 'invalid') && (
+                                    <div className='flex h-full items-center justify-center px-4' data-testid='welcome-email-preview-error'>
+                                        <Hint color='red'>{previewState.message || 'Failed to render preview'}</Hint>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </EmailPreviewBody>
-                    {errors.lexical && <Hint className='mt-2 max-w-[740px]' color='red'>{errors.lexical}</Hint>}
+                    {mode === 'edit' && errors.lexical && <Hint className='mt-2 max-w-[740px]' color='red'>{errors.lexical}</Hint>}
                 </div>
             </EmailPreviewModalContent>
         </Modal>

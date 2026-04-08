@@ -100,6 +100,14 @@ const settingsWithPublicationIcon = updatedSettingsResponse([
     {key: 'icon', value: 'https://example.com/content/images/icon.png'}
 ]);
 
+const automatedEmailPreviewFixture = {
+    automated_emails: [{
+        html: '<!doctype html><html><body><h1>Preview content</h1><p>Welcome preview body.</p></body></html>',
+        plaintext: 'Preview content\nWelcome preview body.',
+        subject: 'Preview Subject'
+    }]
+};
+
 const pasteText = async (page: Page, content: string) => {
     await page.evaluate((text: string) => {
         const dataTransfer = new DataTransfer();
@@ -117,6 +125,117 @@ const pasteText = async (page: Page, content: string) => {
 
 test.describe('Member emails settings', async () => {
     test.describe('Welcome email modal', async () => {
+        test('Edit and Preview controls render; preview request only happens on Preview switch', async ({page}) => {
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
+                previewWelcomeEmail: {
+                    method: 'POST',
+                    path: '/automated_emails/free-welcome-email-id/preview/',
+                    response: automatedEmailPreviewFixture
+                }
+            }});
+
+            await page.goto('/#/memberemails');
+            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByTestId('free-welcome-email-preview').click();
+
+            const modal = page.getByTestId('welcome-email-modal');
+            await expect(modal).toBeVisible();
+
+            await expect(modal.getByTestId('welcome-email-mode-edit')).toBeVisible();
+            await expect(modal.getByTestId('welcome-email-mode-preview')).toBeVisible();
+
+            const subjectInput = modal.locator('input').first();
+            await subjectInput.fill('Unsaved subject for preview');
+
+            expect(lastApiRequests.previewWelcomeEmail).toBeUndefined();
+
+            await modal.getByTestId('welcome-email-mode-preview').click();
+
+            await expect.poll(() => (lastApiRequests.previewWelcomeEmail?.body as {subject?: string} | undefined)?.subject).toBe('Unsaved subject for preview');
+            await expect.poll(() => (lastApiRequests.previewWelcomeEmail?.body as {lexical?: string} | undefined)?.lexical || '').toContain('Welcome');
+            await expect(modal.getByTestId('welcome-email-preview-iframe')).toBeVisible();
+        });
+
+        test('Preview/Edit toggle preserves unsaved draft subject and lexical', async ({page}) => {
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
+                previewWelcomeEmail: {
+                    method: 'POST',
+                    path: '/automated_emails/free-welcome-email-id/preview/',
+                    response: automatedEmailPreviewFixture
+                }
+            }});
+
+            await page.goto('/#/memberemails');
+            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByTestId('free-welcome-email-preview').click();
+
+            const modal = page.getByTestId('welcome-email-modal');
+            await expect(modal).toBeVisible();
+
+            const subjectInput = modal.locator('input').first();
+            await subjectInput.fill('Unsaved welcome email subject');
+
+            const editor = modal.locator('[data-kg="editor"] div[contenteditable="true"]').first();
+            await editor.click({timeout: 5000});
+            await page.keyboard.type(' Draft note');
+
+            await modal.getByTestId('welcome-email-mode-preview').click();
+            await expect.poll(() => (lastApiRequests.previewWelcomeEmail?.body as {lexical?: string} | undefined)?.lexical || '').toContain('Draft note');
+            await expect(modal.getByTestId('welcome-email-preview-iframe')).toBeVisible();
+
+            await modal.getByTestId('welcome-email-mode-edit').click();
+
+            await expect(subjectInput).toHaveValue('Unsaved welcome email subject');
+            await expect(editor).toContainText('Draft note');
+        });
+
+        test('Invalid draft shows preview inline error state', async ({page}) => {
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
+                previewWelcomeEmail: {
+                    method: 'POST',
+                    path: '/automated_emails/free-welcome-email-id/preview/',
+                    response: automatedEmailPreviewFixture
+                }
+            }});
+
+            await page.goto('/#/memberemails');
+            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByTestId('free-welcome-email-preview').click();
+
+            const modal = page.getByTestId('welcome-email-modal');
+            await expect(modal).toBeVisible();
+
+            const subjectInput = modal.locator('input').first();
+            await subjectInput.fill('   ');
+
+            await modal.getByTestId('welcome-email-mode-preview').click();
+
+            await expect(modal.getByTestId('welcome-email-preview-error')).toBeVisible();
+            await expect(modal.getByTestId('welcome-email-preview-error')).toContainText('A subject is required');
+            expect(lastApiRequests.previewWelcomeEmail).toBeUndefined();
+        });
+
         test('Escape key closes test email dropdown without closing modal', async ({page}) => {
             await mockApi({page, requests: {
                 ...globalDataRequests,
