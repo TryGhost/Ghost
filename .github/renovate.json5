@@ -107,6 +107,73 @@
             ]
         },
 
+        // Split the broad shared TryGhost group into smaller logical lanes so
+        // failures in one area (e.g. email rendering) don't block unrelated
+        // internal package updates from merging.
+        {
+            "groupName": "TryGhost runtime packages",
+            "matchPackageNames": [
+                "@tryghost/adapter-base-cache",
+                "@tryghost/admin-api-schema",
+                "@tryghost/api-framework",
+                "@tryghost/bookshelf-plugins",
+                "@tryghost/database-info",
+                "@tryghost/debug",
+                "@tryghost/domain-events",
+                "@tryghost/email-mock-receiver",
+                "@tryghost/errors",
+                "@tryghost/http-cache-utils",
+                "@tryghost/job-manager",
+                "@tryghost/logging",
+                "@tryghost/metrics",
+                "@tryghost/mw-error-handler",
+                "@tryghost/mw-vhost",
+                "@tryghost/pretty-cli",
+                "@tryghost/prometheus-metrics",
+                "@tryghost/promise",
+                "@tryghost/referrer-parser",
+                "@tryghost/root-utils",
+                "@tryghost/security",
+                "@tryghost/social-urls",
+                "@tryghost/tpl",
+                "@tryghost/validator",
+                "@tryghost/version",
+                "@tryghost/zip"
+            ]
+        },
+        {
+            "groupName": "TryGhost admin support packages",
+            "matchPackageNames": [
+                "@tryghost/color-utils",
+                "@tryghost/custom-fonts",
+                "@tryghost/limit-service",
+                "@tryghost/members-csv",
+                "@tryghost/timezone-data"
+            ]
+        },
+        {
+            "groupName": "TryGhost content and email packages",
+            "matchPackageNames": [
+                "@tryghost/config-url-helpers",
+                "@tryghost/content-api",
+                "@tryghost/helpers",
+                "@tryghost/html-to-mobiledoc",
+                "@tryghost/html-to-plaintext",
+                "@tryghost/nodemailer",
+                "@tryghost/parse-email-address",
+                "@tryghost/request",
+                "@tryghost/string",
+                "@tryghost/url-utils"
+            ]
+        },
+        {
+            "groupName": "TryGhost test support packages",
+            "matchPackageNames": [
+                "@tryghost/express-test",
+                "@tryghost/webhook-mock-receiver"
+            ]
+        },
+
         // Always automerge these packages:
         {
             "matchPackageNames": [
