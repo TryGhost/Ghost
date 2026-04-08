@@ -72,7 +72,9 @@ const messages = {
     giftSubscriptionsNotEnabled: 'Gift subscriptions are not enabled on this site.',
     giftNotFound: 'Gift not found.',
     giftAlreadyRedeemed: 'This gift has already been redeemed.',
+    giftConsumed: 'This gift has already been consumed.',
     giftExpired: 'This gift has expired.',
+    giftRefunded: 'This gift has been refunded.',
     memberAlreadySubscribed: 'You already have an active subscription.'
 };
 
@@ -178,18 +180,31 @@ export class GiftService {
             });
         }
 
-        if (gift.redeemedAt !== null) {
-            throw new errors.BadRequestError({
-                message: tpl(messages.giftAlreadyRedeemed)
-            });
-        }
+        const isRedeemable = gift.isRedeemable();
 
-        const now = new Date();
+        if (!isRedeemable) {
+            const redeemFailureReason = gift.getRedeemFailureReason();
 
-        if (gift.expiredAt !== null || (gift.expiresAt !== null && gift.expiresAt <= now)) {
-            throw new errors.BadRequestError({
-                message: tpl(messages.giftExpired)
-            });
+            switch (redeemFailureReason) {
+            case 'redeemed':
+                throw new errors.BadRequestError({
+                    message: tpl(messages.giftAlreadyRedeemed)
+                });
+            case 'consumed':
+                throw new errors.BadRequestError({
+                    message: tpl(messages.giftConsumed)
+                });
+            case 'expired':
+                throw new errors.BadRequestError({
+                    message: tpl(messages.giftExpired)
+                });
+            case 'refunded':
+                throw new errors.BadRequestError({
+                    message: tpl(messages.giftRefunded)
+                });
+            default:
+                break;
+            }
         }
 
         if (currentMember && currentMember.status !== 'free') {

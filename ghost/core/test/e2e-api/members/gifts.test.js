@@ -8,7 +8,9 @@ describe('Members Gifts', function () {
     let giftSequence = 0;
 
     const alreadyRedeemedMessage = 'This gift has already been redeemed.';
+    const alreadyConsumedMessage = 'This gift has already been consumed.';
     const expiredMessage = 'This gift has expired.';
+    const refundedMessage = 'This gift has been refunded.';
     const activeSubscriptionMessage = 'You already have an active subscription.';
     const notFoundMessage = 'Gift not found.';
 
@@ -160,6 +162,20 @@ describe('Members Gifts', function () {
         assert.equal(body.errors[0].message, alreadyRedeemedMessage);
     });
 
+    it('returns 400 when the gift has already been consumed', async function () {
+        const consumedAt = new Date('2026-04-07T11:00:00.000Z');
+        const gift = await createGift({
+            status: 'consumed',
+            consumed_at: consumedAt
+        });
+
+        const {body} = await membersAgent
+            .get(`/api/gifts/${gift.get('token')}/redeem/`)
+            .expectStatus(400);
+
+        assert.equal(body.errors[0].message, alreadyConsumedMessage);
+    });
+
     it('returns 400 when the gift has expired', async function () {
         const expiredAt = new Date('2026-04-07T11:00:00.000Z');
         const gift = await createGift({
@@ -172,6 +188,20 @@ describe('Members Gifts', function () {
             .expectStatus(400);
 
         assert.equal(body.errors[0].message, expiredMessage);
+    });
+
+    it('returns 400 when the gift has been refunded', async function () {
+        const refundedAt = new Date('2026-04-07T11:00:00.000Z');
+        const gift = await createGift({
+            status: 'refunded',
+            refunded_at: refundedAt
+        });
+
+        const {body} = await membersAgent
+            .get(`/api/gifts/${gift.get('token')}/redeem/`)
+            .expectStatus(400);
+
+        assert.equal(body.errors[0].message, refundedMessage);
     });
 
     it('returns 404 when the gift token does not exist', async function () {

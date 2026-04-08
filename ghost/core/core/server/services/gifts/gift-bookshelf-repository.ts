@@ -1,4 +1,4 @@
-import {Gift} from './gift';
+import {Gift, type GiftCadence, type GiftStatus} from './gift';
 import type {GiftRepository} from './gift-repository';
 
 type BookshelfDocument<T> = {
@@ -16,7 +16,7 @@ type GiftRow = {
     buyer_member_id: string | null;
     redeemer_member_id: string | null;
     tier_id: string;
-    cadence: 'month' | 'year';
+    cadence: GiftCadence;
     duration: number;
     currency: string;
     amount: number;
@@ -24,7 +24,7 @@ type GiftRow = {
     stripe_payment_intent_id: string;
     consumes_at: Date | null;
     expires_at: Date | null;
-    status: 'purchased' | 'redeemed' | 'consumed' | 'expired' | 'refunded';
+    status: GiftStatus;
     purchased_at: Date;
     redeemed_at: Date | null;
     consumed_at: Date | null;

@@ -353,6 +353,25 @@ describe('GiftService', function () {
             );
         });
 
+        it('throws BadRequestError when the gift has already been consumed', async function () {
+            giftRepository.getByToken.resolves(buildGift({
+                consumedAt: new Date('2026-02-01T00:00:00.000Z')
+            }));
+
+            const service = createService();
+
+            await assert.rejects(
+                () => service.getRedeemableGiftByToken({token: 'gift-token'}),
+                (err: any) => {
+                    assert.equal(err.errorType, 'BadRequestError');
+                    assert.equal(err.message, 'This gift has already been consumed.');
+                    return true;
+                }
+            );
+
+            sinon.assert.notCalled(tiersService.api.read);
+        });
+
         it('throws BadRequestError when the gift has expired', async function () {
             giftRepository.getByToken.resolves(buildGift({
                 expiredAt: new Date('2026-02-01T00:00:00.000Z')
@@ -370,10 +389,9 @@ describe('GiftService', function () {
             );
         });
 
-        it('throws BadRequestError when the gift expiry timestamp is in the past but not yet swept', async function () {
+        it('throws BadRequestError when the gift has been refunded', async function () {
             giftRepository.getByToken.resolves(buildGift({
-                expiresAt: new Date('2026-01-15T00:00:00.000Z'),
-                expiredAt: null
+                refundedAt: new Date('2026-02-01T00:00:00.000Z')
             }));
 
             const service = createService();
@@ -382,10 +400,12 @@ describe('GiftService', function () {
                 () => service.getRedeemableGiftByToken({token: 'gift-token'}),
                 (err: any) => {
                     assert.equal(err.errorType, 'BadRequestError');
-                    assert.equal(err.message, 'This gift has expired.');
+                    assert.equal(err.message, 'This gift has been refunded.');
                     return true;
                 }
             );
+
+            sinon.assert.notCalled(tiersService.api.read);
         });
 
         it('throws BadRequestError for a logged-in paid member', async function () {
