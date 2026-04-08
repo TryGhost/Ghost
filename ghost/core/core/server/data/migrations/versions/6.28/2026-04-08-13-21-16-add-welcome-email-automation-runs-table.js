@@ -15,7 +15,10 @@ const welcomeEmailAutomationRunsSpec = {
     step_attempts: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
     exit_reason: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['member not found', 'email send failed', 'member unsubscribed', 'member changed status', 'finished']]}},
     created_at: {type: 'dateTime', nullable: false},
-    updated_at: {type: 'dateTime', nullable: true}
+    updated_at: {type: 'dateTime', nullable: true},
+    '@@INDEXES@@': [
+        ['ready_at']
+    ]
 };
 
 module.exports = addTable('welcome_email_automation_runs', welcomeEmailAutomationRunsSpec);
