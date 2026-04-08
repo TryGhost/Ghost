@@ -277,15 +277,13 @@
     "moment-timezone": "0.5.45"
   },
   "nx": {
+    "tags": [
+      "i18n"
+    ],
     "targets": {
       "build:tsc": {
         "dependsOn": [
-          {
-            "projects": [
-              "@tryghost/parse-email-address"
-            ],
-            "target": "build"
-          }
+          "^build"
         ]
       },
       "archive": {
@@ -307,12 +305,7 @@
       },
       "lint": {
         "dependsOn": [
-          {
-            "projects": [
-              "@tryghost/parse-email-address"
-            ],
-            "target": "build"
-          }
+          "^build"
         ]
       },
       "test:all": {
@@ -323,12 +316,22 @@
       "test:unit": {
         "dependsOn": [
           "build:assets",
-          {
-            "projects": [
-              "@tryghost/parse-email-address"
-            ],
-            "target": "build"
-          }
+          "^build"
+        ]
+      },
+      "test:ci:e2e": {
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "test:ci:legacy": {
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "test:ci:integration": {
+        "dependsOn": [
+          "^build"
         ]
       }
     }

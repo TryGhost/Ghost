@@ -71,6 +71,7 @@
     "vitest": "1.6.1"
   },
   "nx": {
+    "tags": ["i18n"],
     "targets": {
       "dev": {
         "dependsOn": [
