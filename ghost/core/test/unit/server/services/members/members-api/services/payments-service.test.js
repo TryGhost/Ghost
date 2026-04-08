@@ -362,7 +362,7 @@ describe('PaymentsService', function () {
             assert.equal(args.metadata.duration, '1');
             assert.equal(args.metadata.buyer_email, 'buyer@example.com');
             assert.equal(args.metadata.requestSrc, 'portal');
-            assert.match(args.metadata.gift_token, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+            assert.match(args.metadata.gift_token, /^[A-Za-z0-9_-]{8}$/);
         });
 
         it('appends gift token to success URL', async function () {
