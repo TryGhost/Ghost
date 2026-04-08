@@ -232,9 +232,11 @@ class PopupContent extends React.Component {
                             : '')}
                     </div>
                 </div>
-                <div className={'gh-portal-powered outside ' + (hasMode(['preview']) ? 'hidden ' : '') + pageClass}>
-                    <PoweredBy />
-                </div>
+                {page !== 'share' && (
+                    <div className={'gh-portal-powered outside ' + (hasMode(['preview']) ? 'hidden ' : '') + pageClass}>
+                        <PoweredBy />
+                    </div>
+                )}
             </>
         );
     }

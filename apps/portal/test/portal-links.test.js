@@ -213,6 +213,25 @@ describe('Portal Data links:', () => {
         });
     });
 
+    describe('#/share', () => {
+        test('opens portal share page', async () => {
+            window.location.hash = '#/share';
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                showPopup: false
+            });
+            expect(triggerButtonFrame).toBeInTheDocument();
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+            const shareTitle = within(popupFrame.contentDocument).queryByText(/^Share$/i);
+            expect(shareTitle).toBeInTheDocument();
+            const poweredBy = within(popupFrame.contentDocument).queryByText(/Powered by Ghost/i);
+            expect(poweredBy).not.toBeInTheDocument();
+        });
+    });
+
     describe('#/portal/signup/free', () => {
         test('opens free signup page and completes signup even if free plan is hidden', async () => {
             window.location.hash = '#/portal/signup/free';
