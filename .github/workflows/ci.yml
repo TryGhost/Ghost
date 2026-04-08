@@ -750,39 +750,17 @@ jobs:
         if: github.repository == 'TryGhost/Ghost'
         env:
           GH_TOKEN: ${{ secrets.TRAFFIC_ANALYTICS_GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-
-          REPO="TryGhost/traffic-analytics-infra"
-          WORKFLOW="tinybird.yml"
-          BRANCH="main"
-          DISPATCH_RESPONSE=$(gh api \
-            --method POST \
-            -H "Accept: application/vnd.github+json" \
-            "repos/$REPO/actions/workflows/$WORKFLOW/dispatches" \
-            --input - <<EOF
-          {
-            "ref": "$BRANCH",
-            "return_run_details": true,
-            "inputs": {
+        uses: ./.github/actions/dispatch-workflow
+        with:
+          repo: TryGhost/traffic-analytics-infra
+          workflow: tinybird.yml
+          branch: main
+          dispatch-inputs: >-
+            {
               "ghost_ref": "${{ github.sha }}",
               "caller_run_id": "${{ github.run_id }}",
               "run_local_tests": false
             }
-          }
-          EOF
-          )
-
-          RUN_ID=$(printf '%s' "$DISPATCH_RESPONSE" | jq -r '.workflow_run_id // empty')
-          RUN_URL=$(printf '%s' "$DISPATCH_RESPONSE" | jq -r '.html_url // .run_url // empty')
-
-          if [ -z "$RUN_ID" ]; then
-            echo "::error::Unable to find the triggered workflow run in $REPO"
-            exit 1
-          fi
-
-          echo "Watching remote workflow run: $RUN_URL"
-          gh run watch "$RUN_ID" --repo "$REPO" --exit-status
 
   job_ghost-cli:
     name: Ghost-CLI tests
@@ -1641,45 +1619,24 @@ jobs:
     ]
     if: always() && github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
+      - uses: actions/checkout@v6
       - name: Trigger and watch traffic analytics infra Tinybird workflow
         if: github.repository == 'TryGhost/Ghost'
         env:
           GH_TOKEN: ${{ secrets.TRAFFIC_ANALYTICS_GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-
-          REPO="TryGhost/traffic-analytics-infra"
-          WORKFLOW="tinybird.yml"
-          BRANCH="main"
-          DISPATCH_RESPONSE=$(gh api \
-            --method POST \
-            -H "Accept: application/vnd.github+json" \
-            "repos/$REPO/actions/workflows/$WORKFLOW/dispatches" \
-            --input - <<EOF
-          {
-            "ref": "$BRANCH",
-            "return_run_details": true,
-            "inputs": {
+        uses: ./.github/actions/dispatch-workflow
+        with:
+          repo: TryGhost/traffic-analytics-infra
+          workflow: tinybird.yml
+          branch: main
+          dispatch-inputs: >-
+            {
               "ghost_ref": "main",
               "caller_run_id": "${{ github.run_id }}",
               "run_local_tests": false,
               "deploy_staging": true,
               "deploy_production": true
             }
-          }
-          EOF
-          )
-
-          RUN_ID=$(printf '%s' "$DISPATCH_RESPONSE" | jq -r '.workflow_run_id // empty')
-          RUN_URL=$(printf '%s' "$DISPATCH_RESPONSE" | jq -r '.html_url // .run_url // empty')
-
-          if [ -z "$RUN_ID" ]; then
-            echo "::error::Unable to find the triggered workflow run in $REPO"
-            exit 1
-          fi
-
-          echo "Watching remote workflow run: $RUN_URL"
-          gh run watch "$RUN_ID" --repo "$REPO" --exit-status
 
   # --------------------------------------------------------------------------- #
   # Trigger Pro CD — dispatch to Ghost-Moya cd.yml (runs on main + PRs)
