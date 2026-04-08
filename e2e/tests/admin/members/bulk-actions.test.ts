@@ -1,11 +1,11 @@
 import {MemberFactory, createMemberFactory} from '@/data-factory';
-import {MembersForwardPage} from '@/admin-pages';
+import {MembersListPage} from '@/admin-pages';
 import {expect, test} from '@/helpers/playwright';
 import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
 usePerTestIsolation();
 
-test.describe('Ghost Admin - Members Forward Bulk Actions', () => {
+test.describe('Ghost Admin - Members Bulk Actions', () => {
     test.use({labs: {membersForward: true}});
 
     let memberFactory: MemberFactory;
@@ -20,7 +20,7 @@ test.describe('Ghost Admin - Members Forward Bulk Actions', () => {
             {name: 'Bulk Label 2', email: 'bulk2@example.com', labels: ['existing']}
         ]);
 
-        const membersPage = new MembersForwardPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
         await expect(membersPage.memberRows).toHaveCount(2);
 
@@ -48,8 +48,10 @@ test.describe('Ghost Admin - Members Forward Bulk Actions', () => {
             {name: 'No Label', email: 'nolabel@example.com'}
         ]);
 
-        const membersPage = new MembersForwardPage(page);
-        await page.goto('/ghost/#/members-forward?filter=label:removable');
+        const membersPage = new MembersListPage(page);
+        await membersPage.goto();
+
+        await membersPage.addFilter('Label', 'removable');
         await expect(membersPage.memberRows).toHaveCount(2);
 
         await membersPage.openActionsMenu();
@@ -73,7 +75,7 @@ test.describe('Ghost Admin - Members Forward Bulk Actions', () => {
             {name: 'Sub Member 2', email: 'sub2@example.com'}
         ]);
 
-        const membersPage = new MembersForwardPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
         await expect(membersPage.memberRows).toHaveCount(2);
 
@@ -94,7 +96,7 @@ test.describe('Ghost Admin - Members Forward Bulk Actions', () => {
             {name: 'Delete Me 2', email: 'delete2@example.com'}
         ]);
 
-        const membersPage = new MembersForwardPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
         await expect(membersPage.memberRows).toHaveCount(2);
 

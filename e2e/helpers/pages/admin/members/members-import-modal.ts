@@ -10,10 +10,10 @@ export class MembersImportModal {
 
     constructor(page: Page) {
         this.page = page;
-        this.fileInput = page.locator('input[type="file"]');
-        this.importButton = page.getByRole('button', {name: /import \d+ members?/i});
-        this.importHeading = page.getByRole('heading', {name: /import (in progress|complete)/i});
-        this.closeButton = page.getByRole('button', {name: /got it|view members/i});
+        this.fileInput = page.locator('[data-test-fileinput="members-csv"] input[type="file"]').first();
+        this.importButton = page.locator('[data-test-button="perform-import"]');
+        this.importHeading = page.locator('[data-test-modal="import-members"]').getByRole('heading', {name: /import (in progress|complete)/i});
+        this.closeButton = page.locator('[data-test-button="close-import-members"]');
     }
 
     getMappingRow(fieldName: string): Locator {

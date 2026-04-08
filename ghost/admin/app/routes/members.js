@@ -16,6 +16,10 @@ export default class MembersRoute extends MembersManagementRoute {
     };
 
     model(params) {
+        if (this.feature.membersForward) {
+            return null;
+        }
+
         this.controllerFor('members').resetFilters(params);
         return this.controllerFor('members').fetchMembersTask.perform(params);
     }
@@ -23,6 +27,10 @@ export default class MembersRoute extends MembersManagementRoute {
     // trigger a background load of members plus labels for filter dropdown
     setupController(controller) {
         super.setupController(...arguments);
+
+        if (this.feature.membersForward) {
+            return;
+        }
 
         try {
             controller.fetchLabelsTask.perform();

@@ -6,8 +6,11 @@ import {MembersImportModal, MembersPage} from '@/helpers/pages';
 import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Members Import', () => {
+    test.use({labs: {membersForward: false}});
+
     test('imports members from CSV via the UI', async ({page}) => {
-        const membersPage = new MembersPage(page, {route: 'members-forward'});
+        const importPage = new MembersPage(page, {route: 'members/import'});
+        const membersPage = new MembersPage(page);
         const importModal = new MembersImportModal(page);
 
         const timestamp = Date.now();
@@ -26,17 +29,15 @@ test.describe('Ghost Admin - Members Import', () => {
         const csvPath = join(tmpdir(), `members-import-${timestamp}.csv`);
         writeFileSync(csvPath, csvContent);
 
-        await membersPage.goto();
-        await membersPage.membersActionsButton.click();
-        await page.getByRole('menuitem', {name: 'Import members'}).click();
+        await importPage.goto();
 
         await importModal.fileInput.setInputFiles(csvPath);
 
         // Verify all three fields were auto-detected
         await expect(importModal.importButton).toBeVisible();
-        await expect(importModal.getMappingValue('email')).toHaveText('Email');
-        await expect(importModal.getMappingValue('name')).toHaveText('Name');
-        await expect(importModal.getMappingValue('note')).toHaveText('Note');
+        await expect(importModal.getMappingValue('email')).toHaveValue('email');
+        await expect(importModal.getMappingValue('name')).toHaveValue('name');
+        await expect(importModal.getMappingValue('note')).toHaveValue('note');
 
         await importModal.importButton.click();
 
@@ -44,7 +45,8 @@ test.describe('Ghost Admin - Members Import', () => {
 
         // Close the modal and reload to see the imported members in the list
         await importModal.closeButton.click();
-        await membersPage.goto();
+
+        await expect(page).toHaveURL(/#\/members\?filter=label%3A%5Bimport-/);
 
         await expect(membersPage.getMemberByName('Alice Test')).toBeVisible({timeout: 30000});
         await expect(membersPage.getMemberByName('Bob Test')).toBeVisible();

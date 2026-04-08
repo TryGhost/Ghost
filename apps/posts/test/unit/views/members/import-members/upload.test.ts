@@ -19,13 +19,20 @@ describe('buildImportResponse', () => {
         const result = buildImportResponse({
             meta: {
                 stats: {imported: 5, invalid: []},
-                import_label: {name: 'Import 2026-03-17'}
+                import_label: {
+                    name: 'Import 2026-03-17',
+                    slug: 'import-2026-03-17'
+                }
             }
         });
 
         expect(result.importedCount).toBe(5);
         expect(result.errorCount).toBe(0);
         expect(result.errorList).toEqual([]);
+        expect(result.importLabel).toEqual({
+            name: 'Import 2026-03-17',
+            slug: 'import-2026-03-17'
+        });
         expect(result.errorCsvName).toBe('Import 2026-03-17 - Errors.csv');
         expect(result.errorCsvUrl).toMatch(/^blob:/);
     });
@@ -41,7 +48,7 @@ describe('buildImportResponse', () => {
                         {email: 'c@test.com', error: 'Validation (isEmail) failed for email'}
                     ]
                 },
-                import_label: {name: 'Test Import'}
+                import_label: {name: 'Test Import', slug: 'test-import'}
             }
         });
 
@@ -66,7 +73,7 @@ describe('buildImportResponse', () => {
                         {email: 'w', error: 'No such customer:cus_abc123'}
                     ]
                 },
-                import_label: {name: 'Errors'}
+                import_label: {name: 'Errors', slug: 'errors'}
             }
         });
 
@@ -87,7 +94,7 @@ describe('buildImportResponse', () => {
                         {email: 'a@test.com', error: 'Value in [members.email] cannot be blank.,Validation (isEmail) failed for email'}
                     ]
                 },
-                import_label: {name: 'Test'}
+                import_label: {name: 'Test', slug: 'test'}
             }
         });
 
@@ -127,7 +134,7 @@ describe('buildImportResponse', () => {
                     imported: 0,
                     invalid: [{email: 'bad', error: 'Validation (isEmail) failed for email'}]
                 },
-                import_label: {name: 'Test'}
+                import_label: {name: 'Test', slug: 'test'}
             }
         });
 

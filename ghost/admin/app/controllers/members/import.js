@@ -4,6 +4,7 @@ import {resetQueryParams} from 'ghost-admin/helpers/reset-query-params';
 import {inject as service} from '@ember/service';
 
 export default class ImportController extends Controller {
+    @service feature;
     @service router;
     @controller members;
 
