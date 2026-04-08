@@ -37,14 +37,5 @@
   },
   "dependencies": {
     "i18next": "23.16.8"
-  },
-  "nx": {
-    "implicitDependencies": [
-      "ghost",
-      "@tryghost/portal",
-      "@tryghost/signup-form",
-      "@tryghost/comments-ui",
-      "@tryghost/sodo-search"
-    ]
   }
 }

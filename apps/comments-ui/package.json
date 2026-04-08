@@ -84,8 +84,6 @@
     "vitest": "1.6.1"
   },
   "nx": {
-    "implicitDependencies": [
-      "!@tryghost/i18n"
-    ]
+    "tags": ["i18n"]
   }
 }

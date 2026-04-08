@@ -131,8 +131,6 @@
     "vitest": "3.2.4"
   },
   "nx": {
-    "implicitDependencies": [
-      "!@tryghost/i18n"
-    ]
+    "tags": ["i18n"]
   }
 }
