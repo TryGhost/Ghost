@@ -294,12 +294,21 @@ const GiftRedemptionPage = () => {
 
                     {gift.tier.benefits.length > 0 && (
                         <div className='gh-gift-redemption-benefits'>
-                            {gift.tier.benefits.map((benefit, index) => (
-                                <div className='gh-gift-redemption-benefit' key={benefit?.id || `gift-benefit-${index}`}>
-                                    <CheckmarkIcon />
-                                    <span>{benefit.name}</span>
-                                </div>
-                            ))}
+                            {gift.tier.benefits.map((benefit, index) => {
+                                const benefitName = typeof benefit === 'string' ? benefit : benefit?.name;
+                                const benefitKey = typeof benefit === 'string' ? benefit : benefit?.id || `gift-benefit-${index}`;
+
+                                if (!benefitName) {
+                                    return null;
+                                }
+
+                                return (
+                                    <div className='gh-gift-redemption-benefit' key={benefitKey}>
+                                        <CheckmarkIcon />
+                                        <span>{benefitName}</span>
+                                    </div>
+                                );
+                            })}
                         </div>
                     )}
 

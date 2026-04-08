@@ -11,8 +11,9 @@ class GiftServiceWrapper {
         const {GiftService} = require('./gift-service');
         const {GiftEmailService} = require('./gift-email-service');
         const membersService = require('../members');
-        const tiersService = require('../tiers/service');
+        const tiersService = require('../tiers');
         const staffService = require('../staff');
+        const labsService = require('../../../shared/labs');
 
         const {GhostMailer} = require('../mail');
         const settingsCache = require('../../../shared/settings-cache');
@@ -42,7 +43,8 @@ class GiftServiceWrapper {
             giftEmailService,
             get staffServiceEmails() {
                 return staffService.api.emails;
-            }
+            },
+            labsService
         });
     }
 }
