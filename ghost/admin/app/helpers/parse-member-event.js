@@ -263,14 +263,10 @@ export default class ParseMemberEventHelper extends Helper {
             const symbol = getSymbol(event.data.currency);
             const formattedAmount = symbol + getNonDecimal(event.data.amount, event.data.currency);
             const tierName = event.data.tier_name;
-            const cadenceLabel = event.data.cadence === 'month' ? 'month' : 'year';
-            const duration = event.data.duration || 1;
+            const duration = event.data.duration;
+            const cadenceLabel = duration === 1 ? event.data.cadence : event.data.cadence + 's';
 
-            if (tierName) {
-                return `Purchased a gift subscription for ${formattedAmount} (${tierName}, ${duration} ${cadenceLabel})`;
-            }
-
-            return `Purchased a gift subscription (${formattedAmount})`;
+            return `Purchased a gift subscription for ${formattedAmount} (${tierName}, ${duration} ${cadenceLabel})`;
         }
     }
 

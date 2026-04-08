@@ -458,7 +458,7 @@ module.exports = class EventRepository {
                     id: json.id,
                     member: json.buyer || null,
                     member_id: json.buyer_member_id,
-                    tier_name: json.tier?.name || null,
+                    tier_name: json.tier?.name,
                     cadence: json.cadence,
                     duration: json.duration,
                     amount: json.amount,
