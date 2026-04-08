@@ -422,7 +422,7 @@ module.exports = {
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         status: {
             type: 'string', maxlength: 50, nullable: false, defaultTo: 'free', validations: {
-                isIn: [['free', 'paid', 'comped']]
+                isIn: [['free', 'paid', 'comped', 'gift']]
             }
         },
         name: {type: 'string', maxlength: 191, nullable: true},
@@ -586,12 +586,12 @@ module.exports = {
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
         from_status: {
             type: 'string', maxlength: 50, nullable: true, validations: {
-                isIn: [['free', 'paid', 'comped']]
+                isIn: [['free', 'paid', 'comped', 'gift']]
             }
         },
         to_status: {
             type: 'string', maxlength: 50, nullable: true, validations: {
-                isIn: [['free', 'paid', 'comped']]
+                isIn: [['free', 'paid', 'comped', 'gift']]
             }
         },
         created_at: {type: 'dateTime', nullable: false}
