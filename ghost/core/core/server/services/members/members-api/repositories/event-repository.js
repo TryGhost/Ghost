@@ -887,7 +887,7 @@ module.exports = class EventRepository {
     async getAutomatedEmailSentEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'automatedEmail'],
+            withRelated: ['member', 'automatedEmail.welcomeEmailAutomation'],
             filter: 'custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
@@ -902,7 +902,14 @@ module.exports = class EventRepository {
         const {data: models, meta} = await this._AutomatedEmailRecipient.findPage(options);
 
         const data = models.map((model) => {
-            const automatedEmail = model.related('automatedEmail').toJSON();
+            const automatedEmail = model.related('automatedEmail');
+            const automation = automatedEmail.related('welcomeEmailAutomation');
+            if (!automation || !automation.id) {
+                throw new errors.InternalServerError({
+                    message: `Automated email recipient ${model.id} has no associated welcome email automation`
+                });
+            }
+
             return {
                 type: 'automated_email_sent_event',
                 data: {
@@ -912,7 +919,7 @@ module.exports = class EventRepository {
                     member: model.related('member').toJSON(),
                     automatedEmail: {
                         id: automatedEmail.id,
-                        slug: automatedEmail.slug
+                        slug: automation.get('slug')
                     }
                 }
             };
