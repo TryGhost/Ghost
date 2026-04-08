@@ -9,11 +9,28 @@ class GiftServiceWrapper {
         const {Gift: GiftModel} = require('../../models');
         const {GiftBookshelfRepository} = require('./gift-bookshelf-repository');
         const {GiftService} = require('./gift-service');
+        const {GiftEmailService} = require('./gift-email-service');
         const membersService = require('../members');
+        const tiersService = require('../tiers/service');
         const staffService = require('../staff');
+
+        const {GhostMailer} = require('../mail');
+        const settingsCache = require('../../../shared/settings-cache');
+        const urlUtils = require('../../../shared/url-utils');
+        const settingsHelpers = require('../settings-helpers');
+        const EmailAddressParser = require('../email-address/email-address-parser');
+        const {blogIcon} = require('../../../server/lib/image');
 
         const repository = new GiftBookshelfRepository({
             GiftModel
+        });
+
+        const giftEmailService = new GiftEmailService({
+            mailer: new GhostMailer(),
+            settingsCache,
+            urlUtils,
+            getFromAddress: () => EmailAddressParser.stringify(settingsHelpers.getDefaultEmail()),
+            blogIcon
         });
 
         this.service = new GiftService({
@@ -21,6 +38,8 @@ class GiftServiceWrapper {
             get memberRepository() {
                 return membersService.api.members;
             },
+            tiersService,
+            giftEmailService,
             get staffServiceEmails() {
                 return staffService.api.emails;
             }

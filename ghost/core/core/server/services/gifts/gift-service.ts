@@ -7,8 +7,33 @@ interface MemberRepository {
     get(filter: Record<string, unknown>): Promise<{id: string; get(key: string): string | null} | null>;
 }
 
+interface TiersService {
+    api: {
+        read(idString: string): Promise<{name: string} | null>;
+    };
+}
+
+interface GiftEmailService {
+    sendPurchaseConfirmation(data: {
+        buyerEmail: string;
+        amount: number;
+        currency: string;
+        token: string;
+        tierName: string;
+        cadence: 'month' | 'year';
+        duration: number;
+        expiresAt: Date;
+    }): Promise<void>;
+}
+
 interface StaffServiceEmails {
-    notifyGiftReceived(data: {name: string | null; email: string; memberId: string | null; amount: number; currency: string}): Promise<void>;
+    notifyGiftReceived(data: {
+        name: string | null;
+        email: string;
+        memberId: string | null;
+        amount: number;
+        currency: string;
+    }): Promise<void>;
 }
 
 interface GiftPurchaseData {
@@ -27,11 +52,15 @@ interface GiftPurchaseData {
 export class GiftService {
     readonly #giftRepository: GiftBookshelfRepository;
     readonly #memberRepository: MemberRepository;
+    readonly #tiersService: TiersService;
+    readonly #giftEmailService: GiftEmailService;
     readonly #staffServiceEmails: StaffServiceEmails;
 
-    constructor({giftRepository, memberRepository, staffServiceEmails}: {giftRepository: GiftBookshelfRepository; memberRepository: MemberRepository; staffServiceEmails: StaffServiceEmails}) {
+    constructor({giftRepository, memberRepository, tiersService, giftEmailService, staffServiceEmails}: {giftRepository: GiftBookshelfRepository; memberRepository: MemberRepository; tiersService: TiersService; giftEmailService: GiftEmailService; staffServiceEmails: StaffServiceEmails}) {
         this.#giftRepository = giftRepository;
         this.#memberRepository = memberRepository;
+        this.#tiersService = tiersService;
+        this.#giftEmailService = giftEmailService;
         this.#staffServiceEmails = staffServiceEmails;
     }
 
@@ -72,6 +101,31 @@ export class GiftService {
                 memberId: member?.id ?? null,
                 amount: data.amount,
                 currency: data.currency
+            });
+        } catch (err) {
+            logging.error(err);
+        }
+
+        try {
+            const tier = await this.#tiersService.api.read(data.tierId);
+
+            if (!tier) {
+                throw new errors.NotFoundError({message: `Tier not found: ${data.tierId}`});
+            }
+
+            if (!gift.expiresAt) {
+                throw new errors.InternalServerError({message: 'Gift is missing expiration date'});
+            }
+
+            await this.#giftEmailService.sendPurchaseConfirmation({
+                buyerEmail: data.buyerEmail,
+                amount: data.amount,
+                currency: data.currency,
+                token: data.token,
+                tierName: tier.name,
+                cadence: data.cadence,
+                duration,
+                expiresAt: gift.expiresAt
             });
         } catch (err) {
             logging.error(err);

@@ -193,7 +193,7 @@ class PaymentsService {
                 tier_id: tier.id.toHexString(),
                 cadence,
                 duration: String(duration),
-                purchaser_email: email
+                buyer_email: email
             },
             successUrl: successUrlObj.toString(),
             cancelUrl,

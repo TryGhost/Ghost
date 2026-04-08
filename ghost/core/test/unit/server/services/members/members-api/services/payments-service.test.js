@@ -360,7 +360,7 @@ describe('PaymentsService', function () {
             assert.equal(args.metadata.tier_id, tier.id.toHexString());
             assert.equal(args.metadata.cadence, 'month');
             assert.equal(args.metadata.duration, '1');
-            assert.equal(args.metadata.purchaser_email, 'buyer@example.com');
+            assert.equal(args.metadata.buyer_email, 'buyer@example.com');
             assert.equal(args.metadata.requestSrc, 'portal');
             assert.match(args.metadata.gift_token, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
         });
