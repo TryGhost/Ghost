@@ -41,7 +41,6 @@ module.exports = {
         show_header_name: {type: 'boolean', nullable: false, defaultTo: true},
         show_post_title_section: {type: 'boolean', nullable: false, defaultTo: true},
         show_comment_cta: {type: 'boolean', nullable: false, defaultTo: true},
-        show_share_button: {type: 'boolean', nullable: false, defaultTo: false},
         show_subscription_details: {type: 'boolean', nullable: false, defaultTo: false},
         show_latest_posts: {type: 'boolean', nullable: false, defaultTo: false},
         show_share_button: {type: 'boolean', nullable: false, defaultTo: false},
