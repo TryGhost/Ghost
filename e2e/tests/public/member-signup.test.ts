@@ -133,4 +133,14 @@ test.describe('Ghost Public - Member Signup', () => {
             expect(welcomeEmail.HTML).toContain(customBody);
         });
     });
+
+    test('free signup sends welcome email exactly once', async ({page}) => {
+        const automatedEmailFactory = createAutomatedEmailFactory(page.request);
+        await automatedEmailFactory.create();
+
+        const {emailAddress} = await signupViaPortal(page);
+        await completeSignupViaMagicLink(page, emailAddress);
+
+        await expectWelcomeEmailCount(emailAddress, 1);
+    });
 });
