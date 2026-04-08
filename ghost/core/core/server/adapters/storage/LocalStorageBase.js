@@ -13,7 +13,8 @@ const messages = {
     notFound: 'File not found',
     notFoundWithRef: 'File not found: {file}',
     cannotRead: 'Could not read file: {file}',
-    invalidUrlParameter: `The URL "{url}" is not a valid URL for this site.`
+    invalidUrlParameter: `The URL "{url}" is not a valid URL for this site.`,
+    invalidPathParameter: 'The path "{path}" is not valid for this storage.'
 };
 
 class LocalStorageBase extends StorageBase {
@@ -39,6 +40,75 @@ class LocalStorageBase extends StorageBase {
     }
 
     /**
+     * Normalizes a relative storage path and rejects traversal outside the storage root.
+     *
+     * @param {string} filePath
+     * @returns {string}
+     */
+    _normalizeStorageRelativePath(filePath) {
+        const normalized = path.posix.normalize(String(filePath || '')
+            .replaceAll('\\', '/')
+            .replace(/^\/+/, '')
+            .replace(/\/+$/, ''));
+
+        if (normalized === '.' || normalized === '..' || normalized.startsWith('../')) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.invalidPathParameter, {path: filePath})
+            });
+        }
+
+        return normalized;
+    }
+
+    /**
+     * Resolves a target directory and optional file name into a full path,
+     * validating the result is inside the storage root.
+     *
+     * Supports relative paths (preferred) and absolute paths (legacy).
+     * TODO: remove absolute path support once all callers pass relative paths
+     *
+     * @param {String} [targetDir] absolute or relative directory
+     * @param {String} [fileName] file name to normalize and append
+     * @returns {String} resolved absolute path inside storagePath
+     */
+    _resolveAndValidateStoragePath(targetDir, fileName) {
+        const resolvedRoot = path.resolve(this.storagePath);
+
+        // Resolve targetDir: if already inside storage root use as-is, otherwise treat as relative
+        let resolvedBase;
+        if (targetDir) {
+            const resolvedTargetDir = path.resolve(targetDir);
+            const relToRoot = path.relative(resolvedRoot, resolvedTargetDir);
+            if (relToRoot === '' || (!relToRoot.startsWith('..') && !path.isAbsolute(relToRoot))) {
+                resolvedBase = resolvedTargetDir;
+            } else {
+                resolvedBase = path.resolve(this.storagePath, targetDir);
+            }
+        } else {
+            resolvedBase = resolvedRoot;
+        }
+
+        // If fileName provided, normalize and resolve
+        let resolvedPath;
+        if (fileName) {
+            const normalizedFileName = this._normalizeStorageRelativePath(fileName);
+            resolvedPath = path.resolve(resolvedBase, normalizedFileName);
+        } else {
+            resolvedPath = resolvedBase;
+        }
+
+        // Validate the resolved path is strictly inside the storage root (not equal to it)
+        const relative = path.relative(resolvedRoot, resolvedPath);
+        if (relative === '' || relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative)) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.invalidPathParameter, {path: fileName || targetDir || ''})
+            });
+        }
+
+        return resolvedPath;
+    }
+
+    /**
      * Saves the file to storage (the file system)
      * - returns a promise which ultimately returns the full url to the uploaded file
      *
@@ -49,13 +119,9 @@ class LocalStorageBase extends StorageBase {
     async save(file, targetDir) {
         let targetFilename;
 
-        // Supports relative paths (preferred) and absolute paths (legacy)
-        // TODO: remove absolute path support once all callers pass relative paths
-        if (targetDir && !targetDir.startsWith(this.storagePath)) {
-            targetDir = path.join(this.storagePath, targetDir);
-        }
-
-        targetDir = targetDir || this.getTargetDir(this.storagePath);
+        targetDir = targetDir
+            ? this._resolveAndValidateStoragePath(targetDir)
+            : this.getTargetDir(this.storagePath);
 
         const filename = await this.getUniqueFileName(file, targetDir);
 
@@ -91,7 +157,7 @@ class LocalStorageBase extends StorageBase {
      * @returns {Promise<String>} a URL to retrieve the data
      */
     async saveRaw(buffer, targetPath) {
-        const storagePath = path.join(this.storagePath, targetPath);
+        const storagePath = path.join(this.storagePath, this._normalizeStorageRelativePath(targetPath));
         const targetDir = path.dirname(storagePath);
 
         await fs.mkdirs(targetDir);
@@ -131,31 +197,34 @@ class LocalStorageBase extends StorageBase {
             });
         }
 
-        const normalized = path.posix.normalize(relativePath.replace(/^\//, ''));
-        if (normalized.startsWith('..')) {
+        try {
+            return this._normalizeStorageRelativePath(relativePath);
+        } catch (err) {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.invalidUrlParameter, {url})
             });
         }
-
-        return normalized;
     }
 
-    exists(fileName, targetDir) {
-        // Supports relative paths (preferred) and absolute paths (legacy)
-        // TODO: remove absolute path support once all callers pass relative paths
-        if (targetDir && !targetDir.startsWith(this.storagePath)) {
-            targetDir = path.join(this.storagePath, targetDir);
-        }
-        const filePath = path.join(targetDir || this.storagePath, fileName);
+    async exists(fileName, targetDir) {
+        let filePath;
 
-        return fs.stat(filePath)
-            .then(() => {
-                return true;
-            })
-            .catch(() => {
+        try {
+            filePath = this._resolveAndValidateStoragePath(targetDir, fileName);
+        } catch (err) {
+            if (err instanceof errors.IncorrectUsageError) {
                 return false;
-            });
+            }
+
+            throw err;
+        }
+
+        try {
+            await fs.stat(filePath);
+            return true;
+        } catch {
+            return false;
+        }
     }
 
     /**
@@ -210,12 +279,7 @@ class LocalStorageBase extends StorageBase {
      * @returns {Promise.<*>}
      */
     async delete(fileName, targetDir) {
-        // Supports relative paths (preferred) and absolute paths (legacy)
-        // TODO: remove absolute path support once all callers pass relative paths
-        if (targetDir && !targetDir.startsWith(this.storagePath)) {
-            targetDir = path.join(this.storagePath, targetDir);
-        }
-        const filePath = path.join(targetDir || this.storagePath, fileName);
+        const filePath = this._resolveAndValidateStoragePath(targetDir, fileName);
         return await fs.remove(filePath);
     }
 
@@ -225,41 +289,35 @@ class LocalStorageBase extends StorageBase {
      *
      * @param options
      */
-    read(options) {
+    async read(options) {
         options = options || {};
 
-        // remove trailing slashes
-        options.path = (options.path || '').replace(/\/$|\\$/, '');
+        const normalizedPath = this._normalizeStorageRelativePath(options.path);
+        const targetPath = path.join(this.storagePath, normalizedPath);
 
-        const targetPath = path.join(this.storagePath, options.path);
+        try {
+            return await fs.readFile(targetPath);
+        } catch (err) {
+            if (err.code === 'ENOENT' || err.code === 'ENOTDIR') {
+                throw new errors.NotFoundError({
+                    err: err,
+                    message: tpl(this.errorMessages.notFoundWithRef, {file: options.path})
+                });
+            }
 
-        return new Promise((resolve, reject) => {
-            fs.readFile(targetPath, (err, bytes) => {
-                if (err) {
-                    if (err.code === 'ENOENT' || err.code === 'ENOTDIR') {
-                        return reject(new errors.NotFoundError({
-                            err: err,
-                            message: tpl(this.errorMessages.notFoundWithRef, {file: options.path})
-                        }));
-                    }
+            if (err.code === 'ENAMETOOLONG') {
+                throw new errors.BadRequestError({err: err});
+            }
 
-                    if (err.code === 'ENAMETOOLONG') {
-                        return reject(new errors.BadRequestError({err: err}));
-                    }
+            if (err.code === 'EACCES') {
+                throw new errors.NoPermissionError({err: err});
+            }
 
-                    if (err.code === 'EACCES') {
-                        return reject(new errors.NoPermissionError({err: err}));
-                    }
-
-                    return reject(new errors.InternalServerError({
-                        err: err,
-                        message: tpl(this.errorMessages.cannotRead, {file: options.path})
-                    }));
-                }
-
-                resolve(bytes);
+            throw new errors.InternalServerError({
+                err: err,
+                message: tpl(this.errorMessages.cannotRead, {file: options.path})
             });
-        });
+        }
     }
 }
 
