@@ -120,7 +120,6 @@
                 "@tryghost/database-info",
                 "@tryghost/debug",
                 "@tryghost/domain-events",
-                "@tryghost/email-mock-receiver",
                 "@tryghost/errors",
                 "@tryghost/http-cache-utils",
                 "@tryghost/job-manager",
@@ -169,6 +168,7 @@
         {
             "groupName": "TryGhost test support packages",
             "matchPackageNames": [
+                "@tryghost/email-mock-receiver",
                 "@tryghost/express-test",
                 "@tryghost/webhook-mock-receiver"
             ]
