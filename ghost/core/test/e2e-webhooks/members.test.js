@@ -161,12 +161,6 @@ describe('member.* events', function () {
             });
     });
 
-    // The member.edited webhook previously only included relations that were loaded
-    // on the model at the time of the event (just labels). This meant subscriptions
-    // and tiers were always missing from the payload, even when the edit created a
-    // comp subscription. The webhook serializer now loads these relations before
-    // serializing, but only exposes minimal subscription references (id, price, status)
-    // rather than full Stripe customer/payment data.
     it('member.edited event includes tiers and minimal subscription data when comped', async function () {
         mockManager.mockStripe();
 
@@ -177,7 +171,6 @@ describe('member.* events', function () {
             url: webhookURL
         });
 
-        // Create a free member first
         const res = await adminAPIAgent
             .post('members/')
             .body({
@@ -190,8 +183,6 @@ describe('member.* events', function () {
 
         const memberId = res.body.members[0].id;
 
-        // Comp the member via the Admin API — this creates a real $0 Stripe
-        // subscription and triggers a member.edited event
         const editRes = await adminAPIAgent
             .put('members/' + memberId)
             .body({
@@ -201,7 +192,6 @@ describe('member.* events', function () {
             })
             .expectStatus(200);
 
-        // The API response includes full subscription + tier data
         const apiMember = editRes.body.members[0];
         assert.ok(apiMember.tiers.length > 0, 'API response should have tiers');
         assert.ok(apiMember.subscriptions.length > 0, 'API response should have subscriptions');
@@ -211,14 +201,11 @@ describe('member.* events', function () {
         const webhookPayload = webhookMockReceiver.body.body;
         const current = webhookPayload.member.current;
 
-        // The webhook should include tiers (full Ghost product data)
         assert.ok(current.tiers.length > 0, 'Webhook should include tiers');
-
-        // The webhook should include subscriptions, but only minimal Stripe
-        // references — not full customer/payment details like the API returns
         assert.ok(current.subscriptions.length > 0, 'Webhook should include subscriptions');
+
         const sub = current.subscriptions[0];
-        assert.ok(sub.id, 'Subscription should have stripe subscription id');
+        assert.ok(sub.id, 'Subscription should have id');
         assert.ok(sub.stripe_price_id, 'Subscription should have stripe_price_id');
         assert.ok(sub.status, 'Subscription should have status');
         assert.equal(Object.keys(sub).length, 3, 'Subscription should only contain id, stripe_price_id, and status');
