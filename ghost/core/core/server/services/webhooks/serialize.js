@@ -12,9 +12,6 @@ module.exports = (event, model) => {
     const MEMBER_WITH_RELATED = [
         'labels',
         'products',
-        'stripeSubscriptions',
-        'stripeSubscriptions.stripePrice',
-        'stripeSubscriptions.stripePrice.stripeProduct',
         'newsletters'
     ];
 
@@ -43,28 +40,7 @@ module.exports = (event, model) => {
                 .handle
                 .output(model, {docName: docName, method: 'read'}, api.serializers.output, frame)
                 .then(() => {
-                    const result = frame.response[docName][0];
-
-                    // Replace full subscription data with minimal references
-                    // to avoid exposing Stripe customer/payment details in webhooks
-                    // Replace full subscription data with minimal references
-                    // to avoid exposing Stripe customer/payment details in webhooks
-                    if (docName === 'members') {
-                        const stripeSubscriptions = model.related('stripeSubscriptions');
-                        result.subscriptions = stripeSubscriptions.map((sub) => {
-                            const stripeProduct = sub.related('stripePrice')?.related('stripeProduct');
-                            return {
-                                id: sub.get('subscription_id'),
-                                status: sub.get('status'),
-                                tier: {
-                                    id: stripeProduct?.get('product_id') || null,
-                                    stripe_product_id: stripeProduct?.get('stripe_product_id') || null
-                                }
-                            };
-                        });
-                    }
-
-                    return result;
+                    return frame.response[docName][0];
                 });
         });
     } else {

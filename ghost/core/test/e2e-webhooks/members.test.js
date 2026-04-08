@@ -161,7 +161,7 @@ describe('member.* events', function () {
             });
     });
 
-    it('member.edited event includes tiers and minimal subscription data when comped', async function () {
+    it('member.edited event includes tiers when comped', async function () {
         mockManager.mockStripe();
 
         const webhookURL = 'https://test-webhook-receiver.com/member-comped/';
@@ -183,7 +183,7 @@ describe('member.* events', function () {
 
         const memberId = res.body.members[0].id;
 
-        const editRes = await adminAPIAgent
+        await adminAPIAgent
             .put('members/' + memberId)
             .body({
                 members: [{
@@ -192,24 +192,11 @@ describe('member.* events', function () {
             })
             .expectStatus(200);
 
-        const apiMember = editRes.body.members[0];
-        assert.ok(apiMember.tiers.length > 0, 'API response should have tiers');
-        assert.ok(apiMember.subscriptions.length > 0, 'API response should have subscriptions');
-
         await webhookMockReceiver.receivedRequest();
 
         const webhookPayload = webhookMockReceiver.body.body;
         const current = webhookPayload.member.current;
 
         assert.ok(current.tiers.length > 0, 'Webhook should include tiers');
-        assert.ok(current.subscriptions.length > 0, 'Webhook should include subscriptions');
-
-        const sub = current.subscriptions[0];
-        assert.ok(sub.id, 'Subscription should have id');
-        assert.ok(sub.status, 'Subscription should have status');
-        assert.ok(sub.tier, 'Subscription should have tier');
-        assert.ok(sub.tier.id, 'Subscription tier should have Ghost product id');
-        assert.ok(sub.tier.stripe_product_id, 'Subscription tier should have stripe_product_id');
-        assert.equal(Object.keys(sub).length, 3, 'Subscription should only contain id, status, and tier');
     });
 });
