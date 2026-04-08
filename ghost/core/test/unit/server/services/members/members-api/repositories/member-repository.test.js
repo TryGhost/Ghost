@@ -1454,7 +1454,7 @@ describe('MemberRepository', function () {
         let MemberStatusEvent;
         let MemberSubscribeEvent;
         let newslettersService;
-        let AutomatedEmail;
+        let WelcomeEmailAutomation;
         const oldNodeEnv = process.env.NODE_ENV;
 
         beforeEach(function () {
@@ -1508,11 +1508,20 @@ describe('MemberRepository', function () {
                 getAll: sinon.stub().resolves([])
             };
 
-            AutomatedEmail = {
+            WelcomeEmailAutomation = {
                 findOne: sinon.stub().resolves({
                     get: sinon.stub().callsFake((key) => {
-                        const data = {lexical: '{"root":{}}', status: 'active'};
+                        const data = {status: 'active'};
                         return data[key];
+                    }),
+                    related: sinon.stub().callsFake((relation) => {
+                        assert.equal(relation, 'welcomeEmailAutomatedEmail');
+                        return {
+                            get: sinon.stub().callsFake((key) => {
+                                const data = {lexical: '{"root":{}}'};
+                                return data[key];
+                            })
+                        };
                     })
                 })
             };
@@ -1529,7 +1538,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
-                AutomatedEmail,
+                WelcomeEmailAutomation,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1553,7 +1562,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
-                AutomatedEmail,
+                WelcomeEmailAutomation,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1577,7 +1586,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
-                AutomatedEmail,
+                WelcomeEmailAutomation,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1595,7 +1604,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
-                AutomatedEmail,
+                WelcomeEmailAutomation,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1606,10 +1615,19 @@ describe('MemberRepository', function () {
         });
 
         it('does NOT create outbox entry when welcome email is inactive', async function () {
-            AutomatedEmail.findOne.resolves({
+            WelcomeEmailAutomation.findOne.resolves({
                 get: sinon.stub().callsFake((key) => {
-                    const data = {lexical: '{"root":{}}', status: 'inactive'};
+                    const data = {status: 'inactive'};
                     return data[key];
+                }),
+                related: sinon.stub().callsFake((relation) => {
+                    assert.equal(relation, 'welcomeEmailAutomatedEmail');
+                    return {
+                        get: sinon.stub().callsFake((key) => {
+                            const data = {lexical: '{"root":{}}'};
+                            return data[key];
+                        })
+                    };
                 })
             });
 
@@ -1619,7 +1637,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
-                AutomatedEmail,
+                WelcomeEmailAutomation,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1638,7 +1656,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
-                AutomatedEmail,
+                WelcomeEmailAutomation,
                 StripeCustomer,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1667,7 +1685,7 @@ describe('MemberRepository', function () {
 
             // The free welcome email should NOT be sent when stripeCustomer is present
             sinon.assert.notCalled(Outbox.add);
-            sinon.assert.notCalled(AutomatedEmail.findOne);
+            sinon.assert.notCalled(WelcomeEmailAutomation.findOne);
             sinon.assert.notCalled(Member.transaction);
         });
     });
@@ -1681,7 +1699,7 @@ describe('MemberRepository', function () {
         let MemberStatusEvent;
         let stripeAPIService;
         let productRepository;
-        let AutomatedEmail;
+        let WelcomeEmailAutomation;
         let subscriptionData;
 
         beforeEach(function () {
@@ -1803,11 +1821,20 @@ describe('MemberRepository', function () {
                 update: sinon.stub().resolves({})
             };
 
-            AutomatedEmail = {
+            WelcomeEmailAutomation = {
                 findOne: sinon.stub().resolves({
                     get: sinon.stub().callsFake((key) => {
-                        const data = {lexical: '{"root":{}}', status: 'active'};
+                        const data = {status: 'active'};
                         return data[key];
+                    }),
+                    related: sinon.stub().callsFake((relation) => {
+                        assert.equal(relation, 'welcomeEmailAutomatedEmail');
+                        return {
+                            get: sinon.stub().callsFake((key) => {
+                                const data = {lexical: '{"root":{}}'};
+                                return data[key];
+                            })
+                        };
                     })
                 })
             };
@@ -1836,7 +1863,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 stripeAPIService,
                 productRepository,
-                AutomatedEmail,
+                WelcomeEmailAutomation,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1881,7 +1908,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 stripeAPIService,
                 productRepository,
-                AutomatedEmail,
+                WelcomeEmailAutomation,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1918,10 +1945,19 @@ describe('MemberRepository', function () {
                 })
             });
 
-            AutomatedEmail.findOne.resolves({
+            WelcomeEmailAutomation.findOne.resolves({
                 get: sinon.stub().callsFake((key) => {
-                    const data = {lexical: '{"root":{}}', status: 'inactive'};
+                    const data = {status: 'inactive'};
                     return data[key];
+                }),
+                related: sinon.stub().callsFake((relation) => {
+                    assert.equal(relation, 'welcomeEmailAutomatedEmail');
+                    return {
+                        get: sinon.stub().callsFake((key) => {
+                            const data = {lexical: '{"root":{}}'};
+                            return data[key];
+                        })
+                    };
                 })
             });
 
@@ -1934,7 +1970,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 stripeAPIService,
                 productRepository,
-                AutomatedEmail,
+                WelcomeEmailAutomation,
                 OfferRedemption: mockOfferRedemption
             });
 

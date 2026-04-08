@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
-import {Gift} from '../../../../../core/server/services/gifts/gift';
+import {Gift, type GiftFromPurchaseData} from '../../../../../core/server/services/gifts/gift';
 import {GIFT_EXPIRY_DAYS} from '../../../../../core/server/services/gifts/constants';
 
 describe('Gift', function () {
-    const purchaseData = {
+    const purchaseData: GiftFromPurchaseData = {
         token: 'abc-123',
         buyerEmail: 'buyer@example.com',
         buyerMemberId: 'member_1',
         tierId: 'tier_1',
-        cadence: 'year' as const,
+        cadence: 'year',
         duration: 1,
         currency: 'usd',
         amount: 5000,
@@ -65,6 +65,76 @@ describe('Gift', function () {
             assert.equal(gift.amount, 5000);
             assert.equal(gift.stripeCheckoutSessionId, 'cs_123');
             assert.equal(gift.stripePaymentIntentId, 'pi_456');
+        });
+    });
+
+    describe('redeemability', function () {
+        function buildGift(overrides: Partial<ConstructorParameters<typeof Gift>[0]> = {}) {
+            return new Gift({
+                token: 'gift-token',
+                buyerEmail: 'buyer@example.com',
+                buyerMemberId: 'buyer_member_1',
+                redeemerMemberId: null,
+                tierId: 'tier_1',
+                cadence: 'year',
+                duration: 1,
+                currency: 'usd',
+                amount: 5000,
+                stripeCheckoutSessionId: 'cs_123',
+                stripePaymentIntentId: 'pi_456',
+                consumesAt: null,
+                expiresAt: new Date('2030-01-01T00:00:00.000Z'),
+                status: 'purchased',
+                purchasedAt: new Date('2026-01-01T00:00:00.000Z'),
+                redeemedAt: null,
+                consumedAt: null,
+                expiredAt: null,
+                refundedAt: null,
+                ...overrides
+            });
+        }
+
+        it('is redeemable when it has not been redeemed, consumed, expired, or refunded', function () {
+            const gift = buildGift();
+
+            assert.equal(gift.isRedeemable(), true);
+            assert.equal(gift.getRedeemFailureReason(), null);
+        });
+
+        it('is not redeemable when it has already been redeemed', function () {
+            const gift = buildGift({
+                redeemedAt: new Date('2026-02-01T00:00:00.000Z')
+            });
+
+            assert.equal(gift.isRedeemable(), false);
+            assert.equal(gift.getRedeemFailureReason(), 'redeemed');
+        });
+
+        it('is not redeemable when it has already been consumed', function () {
+            const gift = buildGift({
+                consumedAt: new Date('2026-02-01T00:00:00.000Z')
+            });
+
+            assert.equal(gift.isRedeemable(), false);
+            assert.equal(gift.getRedeemFailureReason(), 'consumed');
+        });
+
+        it('is not redeemable when it has already been expired', function () {
+            const gift = buildGift({
+                expiredAt: new Date('2026-02-01T00:00:00.000Z')
+            });
+
+            assert.equal(gift.isRedeemable(), false);
+            assert.equal(gift.getRedeemFailureReason(), 'expired');
+        });
+
+        it('is not redeemable when it has been refunded', function () {
+            const gift = buildGift({
+                refundedAt: new Date('2026-02-01T00:00:00.000Z')
+            });
+
+            assert.equal(gift.isRedeemable(), false);
+            assert.equal(gift.getRedeemFailureReason(), 'refunded');
         });
     });
 });
