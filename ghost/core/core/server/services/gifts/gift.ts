@@ -1,7 +1,7 @@
 import {GIFT_EXPIRY_DAYS} from './constants';
 
-type GiftStatus = 'purchased' | 'redeemed' | 'consumed' | 'expired' | 'refunded';
-type GiftCadence = 'month' | 'year';
+export type GiftStatus = 'purchased' | 'redeemed' | 'consumed' | 'expired' | 'refunded';
+export type GiftCadence = 'month' | 'year';
 
 interface GiftData {
     token: string;
@@ -99,5 +99,45 @@ export class Gift {
             expiredAt: null,
             refundedAt: null
         });
+    }
+
+    isRedeemed() {
+        return this.redeemedAt !== null;
+    }
+
+    isExpired() {
+        return this.expiredAt !== null;
+    }
+
+    isRefunded() {
+        return this.refundedAt !== null;
+    }
+
+    isConsumed() {
+        return this.consumedAt !== null;
+    }
+
+    getRedeemFailureReason(): 'redeemed' | 'consumed' | 'expired' | 'refunded' | null {
+        if (this.isRedeemed()) {
+            return 'redeemed';
+        }
+
+        if (this.isConsumed()) {
+            return 'consumed';
+        }
+
+        if (this.isExpired()) {
+            return 'expired';
+        }
+
+        if (this.isRefunded()) {
+            return 'refunded';
+        }
+
+        return null;
+    }
+
+    isRedeemable() {
+        return this.getRedeemFailureReason() === null;
     }
 }

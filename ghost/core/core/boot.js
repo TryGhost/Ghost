@@ -375,11 +375,14 @@ async function initServices() {
         slackNotifications.init(),
         mediaInliner.init(),
         donationService.init(),
-        giftService.init(),
         recommendationsService.init(),
         statsService.init(),
         explorePingService.init()
     ]);
+
+    // Gift service depends on members, tiers, and staff services
+    await giftService.init();
+
     debug('End: Services');
 
     debug('End: initServices');
