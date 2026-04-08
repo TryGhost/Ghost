@@ -1,10 +1,13 @@
 import {EmailClient, MailPit} from '@/helpers/services/email/mail-pit';
 import {HomePage, PublicPage} from '@/public-pages';
+import {MemberWelcomeEmailsSection} from '@/admin-pages';
 import {Page} from '@playwright/test';
 import {createAutomatedEmailFactory} from '@/data-factory';
-import {expect, test} from '@/helpers/playwright';
+import {expect, test, withIsolatedPage} from '@/helpers/playwright';
 import {extractMagicLink} from '@/helpers/services/email/utils';
 import {signupViaPortal} from '@/helpers/playwright/flows/signup';
+
+test.setTimeout(120000);
 
 test.describe('Ghost Public - Member Signup', () => {
     let emailClient: EmailClient;
@@ -100,5 +103,34 @@ test.describe('Ghost Public - Member Signup', () => {
         expect(signupEmail.Subject.toLowerCase()).toContain('complete');
 
         await expectWelcomeEmailCount(emailAddress, 0);
+    });
+
+    test('free signup delivers edited subject and body', async ({page, browser, baseURL}) => {
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+        const customSubject = 'A custom welcome subject';
+        const customBody = 'This welcome body was edited through the admin UI.';
+
+        await welcomeEmailsSection.goto();
+        await welcomeEmailsSection.enableFreeWelcomeEmail();
+        await welcomeEmailsSection.openFreeWelcomeEmailModal();
+        await welcomeEmailsSection.modalSubjectInput.clear();
+        await welcomeEmailsSection.modalSubjectInput.fill(customSubject);
+        await welcomeEmailsSection.replaceWelcomeEmailContent(customBody);
+        await welcomeEmailsSection.saveWelcomeEmail();
+
+        await withIsolatedPage(browser, {baseURL}, async ({page: signupPage}) => {
+            const {emailAddress} = await signupViaPortal(signupPage);
+            await completeSignupViaMagicLink(signupPage, emailAddress);
+
+            const welcomeMessages = await emailClient.search(
+                {to: emailAddress, subject: customSubject},
+                {timeoutMs: 10000}
+            );
+            const welcomeEmail = await emailClient.getMessageDetailed(welcomeMessages[0]);
+
+            expect(welcomeEmail.Subject).toBe(customSubject);
+            expect(welcomeEmail.Text).toContain(customBody);
+            expect(welcomeEmail.HTML).toContain(customBody);
+        });
     });
 });
