@@ -23,6 +23,11 @@ env:
     ~/.cache/ms-playwright/
   NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
   NODE_VERSION: 22.18.0
+  # Keep PLAYWRIGHT_VERSION in sync with @playwright/test in apps/*/package.json
+  # and e2e/package.json. The Microsoft Playwright Docker image used by the
+  # apps test jobs must match the @playwright/test version exactly, otherwise
+  # Playwright cannot find its browser binaries inside the container.
+  PLAYWRIGHT_VERSION: 1.58.2
   # Disable v8-compile-cache to prevent intermittent V8 deserializer crashes
   # when multiple parallel Nx workers race to read/write shared bytecode cache
   # files. The cache lives in /tmp and is discarded after each run anyway,
@@ -567,6 +572,11 @@ jobs:
 
   job_admin_x_settings:
     runs-on: ubuntu-latest
+    # Run inside the official Playwright container so browsers and OS deps are
+    # already installed. This avoids the apt-get based `Setup Playwright` step
+    # that has been intermittently hanging the runner for the full job timeout.
+    container:
+      image: mcr.microsoft.com/playwright:v1.58.2-noble
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_admin_x_settings == 'true' && needs.job_setup.outputs.is_tag != 'true'
     name: Admin-X Settings tests
@@ -584,9 +594,6 @@ jobs:
         uses: ./.github/actions/restore-cache
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
-
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
 
       - run: yarn nx run @tryghost/admin-x-settings:test:acceptance
 
@@ -607,6 +614,11 @@ jobs:
 
   job_activitypub:
     runs-on: ubuntu-latest
+    # Run inside the official Playwright container so browsers and OS deps are
+    # already installed. This avoids the apt-get based `Setup Playwright` step
+    # that has been intermittently hanging the runner for the full job timeout.
+    container:
+      image: mcr.microsoft.com/playwright:v1.58.2-noble
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_activitypub == 'true' && needs.job_setup.outputs.is_tag != 'true'
     name: ActivityPub tests
@@ -624,9 +636,6 @@ jobs:
         uses: ./.github/actions/restore-cache
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
-
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
 
       - run: yarn nx run @tryghost/activitypub:test:acceptance
 
@@ -647,6 +656,11 @@ jobs:
 
   job_comments_ui:
     runs-on: ubuntu-latest
+    # Run inside the official Playwright container so browsers and OS deps are
+    # already installed. This avoids the apt-get based `Setup Playwright` step
+    # that has been intermittently hanging the runner for the full job timeout.
+    container:
+      image: mcr.microsoft.com/playwright:v1.58.2-noble
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_comments_ui == 'true' && needs.job_setup.outputs.is_tag != 'true'
     name: Comments-UI tests
@@ -664,9 +678,6 @@ jobs:
         uses: ./.github/actions/restore-cache
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
-
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
 
       - run: yarn nx run @tryghost/comments-ui:test
 
@@ -687,6 +698,11 @@ jobs:
 
   job_signup_form:
     runs-on: ubuntu-latest
+    # Run inside the official Playwright container so browsers and OS deps are
+    # already installed. This avoids the apt-get based `Setup Playwright` step
+    # that has been intermittently hanging the runner for the full job timeout.
+    container:
+      image: mcr.microsoft.com/playwright:v1.58.2-noble
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_signup_form == 'true' && needs.job_setup.outputs.is_tag != 'true'
     name: Signup-form tests
@@ -704,9 +720,6 @@ jobs:
         uses: ./.github/actions/restore-cache
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
-
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
 
       - run: yarn nx run @tryghost/signup-form:test:e2e
 
