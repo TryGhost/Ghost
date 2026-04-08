@@ -25,6 +25,7 @@ export class MemberWelcomeEmailsSection extends BasePage {
     // Customize modal — Design tab locators
     readonly customizeModalButtonStyleFill: Locator;
     readonly customizeModalButtonStyleOutline: Locator;
+    readonly customizeModalBodyFontSelect: Locator;
 
     // Modal locators
     readonly welcomeEmailModal: Locator;
@@ -54,11 +55,12 @@ export class MemberWelcomeEmailsSection extends BasePage {
         this.customizeModalPublicationTitleToggle = this.customizeModal.getByText('Publication title').locator('..').getByRole('switch');
         this.customizeModalFooterTextarea = this.customizeModal.getByLabel('Email footer');
         this.customizeModalHeaderImageUpload = this.customizeModal.getByTestId('header-image-field');
-        this.customizeModalBadgeToggle = this.customizeModal.getByText('Show badge').locator('..').getByRole('switch');
+        this.customizeModalBadgeToggle = this.customizeModal.getByText('Promote independent publishing').locator('../..').getByRole('switch');
 
         // Customize modal — Design tab
         this.customizeModalButtonStyleFill = this.customizeModal.getByLabel('Fill');
         this.customizeModalButtonStyleOutline = this.customizeModal.getByLabel('Outline');
+        this.customizeModalBodyFontSelect = this.customizeModal.getByText('Body font').locator('..').getByRole('combobox');
 
         // Modal locators
         this.welcomeEmailModal = page.getByTestId('welcome-email-modal');
@@ -182,5 +184,10 @@ export class MemberWelcomeEmailsSection extends BasePage {
 
     async switchToGeneralTab(): Promise<void> {
         await this.customizeModalGeneralTab.click();
+    }
+
+    async chooseBodyFont(optionName: 'Elegant serif' | 'Clean sans-serif'): Promise<void> {
+        await this.customizeModalBodyFontSelect.click();
+        await this.page.getByRole('option', {name: optionName, exact: true}).click();
     }
 }
