@@ -332,7 +332,7 @@ jobs:
       - name: Merge Admin test coverage
         run: yarn ember coverage-merge
         working-directory: ghost/admin
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
@@ -391,7 +391,7 @@ jobs:
           NX_SKIP_LOG_GROUPING: true
           logging__level: fatal
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: matrix.node == env.NODE_VERSION
         with:
           name: unit-coverage
@@ -477,7 +477,7 @@ jobs:
         working-directory: ghost/core
         run: yarn test:ci:integration
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
         with:
           name: e2e-coverage
@@ -592,7 +592,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: admin-x-settings-playwright-report
           path: apps/admin-x-settings/playwright-report
@@ -632,7 +632,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: activitypub-playwright-report
           path: apps/activitypub/playwright-report
@@ -672,7 +672,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: comments-ui-playwright-report
           path: apps/comments-ui/playwright-report
@@ -712,7 +712,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: signup-form-playwright-report
           path: apps/signup-form/playwright-report
@@ -817,7 +817,7 @@ jobs:
 
       - name: Save Ghost CLI Debug Logs
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: ghost-cli-debug-logs
           path: /home/runner/.ghost/logs/
@@ -899,7 +899,7 @@ jobs:
 
       - name: Upload npm tarball
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: ghost-npm-tarball
           path: ghost/core/ghost-*.tgz
@@ -952,7 +952,7 @@ jobs:
 
       - name: Upload admin artifact for CD
         id: upload-admin
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: admin-build-cd
           path: apps/admin/dist
@@ -1047,7 +1047,7 @@ jobs:
           ls -lh docker-image-production.tar.gz
 
       - name: Upload image artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: docker-image-production
           path: docker-image-production.tar.gz
@@ -1141,7 +1141,7 @@ jobs:
           ls -lh e2e-public-apps.tar.gz
 
       - name: Upload public app artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: e2e-public-apps
           path: e2e-public-apps.tar.gz
@@ -1160,7 +1160,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Download public app artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: e2e-public-apps
 
@@ -1244,7 +1244,7 @@ jobs:
 
       - name: Upload E2E image artifact
         if: steps.strategy.outputs.use-artifact == 'true'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: docker-image-e2e
           path: docker-image-e2e.tar.gz
@@ -1329,7 +1329,7 @@ jobs:
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: blob-report-${{ matrix.shardIndex }}
           path: e2e/blob-report
@@ -1337,7 +1337,7 @@ jobs:
 
       - name: Upload test results artifacts
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: test-results-${{ matrix.shardIndex }}
           path: e2e/test-results
@@ -1371,7 +1371,7 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         continue-on-error: true
         with:
           path: e2e/all-blob-reports
@@ -1389,7 +1389,7 @@ jobs:
 
       - name: Download test results from GitHub Actions Artifacts
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           path: e2e/all-test-results
           pattern: test-results-*
@@ -1402,7 +1402,7 @@ jobs:
 
       - name: Upload HTML report
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: playwright-report
           path: e2e/playwright-report
@@ -1410,7 +1410,7 @@ jobs:
 
       - name: Upload merged test results
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: test-results
           path: e2e/all-test-results
@@ -1447,7 +1447,7 @@ jobs:
 
       - name: Restore Admin coverage
         if: contains(needs.job_admin-tests.result, 'success')
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: admin-coverage
 
@@ -1463,7 +1463,7 @@ jobs:
 
       - name: Restore E2E coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: e2e-coverage
 
@@ -1738,7 +1738,7 @@ jobs:
       id-token: write
     steps:
       - name: Download npm tarball
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: ghost-npm-tarball
 
