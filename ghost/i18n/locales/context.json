@@ -245,7 +245,7 @@
     "Sending...": "A loading status message when an email is being sent",
     "Sent": "Button text when a comment was reported succesfully",
     "Sent to {email}": "Magic link email footer",
-    "Share": "Title of Portal share modal for sharing a post",
+    "Share": "Title of Portal share modal for sharing a post, and label for the newsletter email footer Share button text passed as buttonText to the feedbackButton partial",
     "Show": "Context menu action for a comment, for administrators - smaller devices",
     "Show 1 more reply": "Button text to load the last remaining reply for a comment",
     "Show all": "Show all recommendations",

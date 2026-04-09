@@ -19,17 +19,20 @@
 
                             <!-- END MAIN CONTENT AREA -->
 
-                            {{#if (or feedbackButtons newsletter.showCommentCta) }}
+                            {{#if (or feedbackButtons newsletter.showCommentCta post.shareUrl) }}
                                 <tr>
                                     <td class="feedback-buttons-container" dir="ltr" width="100%" align="center">
                                         <table class="feedback-buttons" role="presentation" border="0" cellpadding="0" cellspacing="0">
                                             <tr>
                                                 {{#if feedbackButtons }}
-                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/more-like-this-mobile.png" width="42" height="42" }}
-                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this-mobile.png" width="42" height="42" }}
+                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/more-like-this-mobile.png" width="42" height="42" cellWidth=feedbackButtonCellWidth }}
+                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this-mobile.png" width="42" height="42" cellWidth=feedbackButtonCellWidth }}
                                                 {{/if}}
                                                 {{#if newsletter.showCommentCta}}
-                                                    {{> feedbackButton href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment-mobile.png" width="42" height="42"}}
+                                                    {{> feedbackButton href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment-mobile.png" width="42" height="42" cellWidth=feedbackButtonCellWidth }}
+                                                {{/if}}
+                                                {{#if post.shareUrl}}
+                                                    {{> feedbackButton href=post.shareUrl buttonText='Share' iconUrl="https://static.ghost.org/v6.0.0/images/share-mobile.png" width="42" height="42" cellWidth=feedbackButtonCellWidth}}
                                                 {{/if}}
                                             </tr>
                                         </table>
