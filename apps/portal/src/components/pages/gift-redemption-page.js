@@ -81,7 +81,7 @@ export const GiftRedemptionStyles = `
     .gh-gift-redemption-kicker {
         font-size: 1.3rem;
         font-weight: 600;
-        letter-spacing: 0.05;
+        letter-spacing: 0.02em;
         text-transform: uppercase;
         color: var(--brandcolor);
     }
