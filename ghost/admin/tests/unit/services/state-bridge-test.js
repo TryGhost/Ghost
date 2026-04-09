@@ -531,7 +531,7 @@ describe('Unit: Service: state-bridge', function () {
     });
 
     describe('#getRouteUrl', function () {
-        let postsController, originalLookup;
+        let postsController, membersController, originalLookup;
 
         beforeEach(function () {
             // Mock controllers
@@ -540,11 +540,19 @@ describe('Unit: Service: state-bridge', function () {
                 type: null
             });
 
+            membersController = EmberObject.create({
+                queryParams: [{filterParam: 'filter'}],
+                filterParam: null
+            });
+
             // Stub the owner's lookup method to return our mock controllers
             originalLookup = this.owner.lookup.bind(this.owner);
             sinon.stub(this.owner, 'lookup').callsFake((name) => {
                 if (name === 'controller:posts') {
                     return postsController;
+                }
+                if (name === 'controller:members') {
+                    return membersController;
                 }
                 // Fall back to original lookup for services, etc.
                 return originalLookup(name);
@@ -578,10 +586,10 @@ describe('Unit: Service: state-bridge', function () {
         });
 
         it('returns base route when on a subpath of the route', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'posts.index');
+            sinon.stub(service.router, 'currentRouteName').get(() => 'members.index');
 
-            const url = service.getRouteUrl('posts');
-            expect(url).to.equal('posts');
+            const url = service.getRouteUrl('members');
+            expect(url).to.equal('members');
         });
 
         it('generates URL with provided query params', function () {
@@ -627,6 +635,15 @@ describe('Unit: Service: state-bridge', function () {
 
             const url = service.getRouteUrl('posts');
             expect(url).to.equal('posts?type=published');
+        });
+
+        it('handles mapped query params correctly', function () {
+            sinon.stub(service.router, 'currentRouteName').get(() => 'dashboard');
+            membersController.set('filterParam', 'status:free');
+
+            // The controller has {filterParam: 'filter'}, so the URL should use 'filter' not 'filterParam'
+            const url = service.getRouteUrl('members');
+            expect(url).to.equal('members?filter=status%3Afree');
         });
 
         it('returns base route when controller does not exist', function () {
@@ -680,10 +697,10 @@ describe('Unit: Service: state-bridge', function () {
         });
 
         it('returns true when current route is a subpath of provided route', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'posts.index');
+            sinon.stub(service.router, 'currentRouteName').get(() => 'members.index');
             sinon.stub(service.customViews, 'activeView').get(() => null);
 
-            const isActive = service.isRouteActive('posts');
+            const isActive = service.isRouteActive('members');
             expect(isActive).to.be.true;
         });
 
