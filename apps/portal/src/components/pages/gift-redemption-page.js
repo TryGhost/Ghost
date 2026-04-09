@@ -12,7 +12,7 @@ import {hasGiftSubscriptions, removePortalLinkFromUrl} from '../../utils/helpers
 export const GiftRedemptionStyles = `
     .gh-portal-popup-container.giftRedemption {
         width: calc(100vw - 24px);
-        max-width: 452px;
+        max-width: 500px;
         padding: 0;
         overflow: hidden;
     }
@@ -47,10 +47,21 @@ export const GiftRedemptionStyles = `
     }
 
     .gh-gift-redemption-summary {
-        padding: 32px 32px 28px;
+        position: relative;
+        padding: 32px;
         text-align: center;
-        background: #fff5f5;
-        border-bottom: 1px solid #f1e7e4;
+    }
+
+    .gh-gift-redemption-summary:before {
+        position: absolute;
+        content: "";
+        display: block;
+        background: var(--brandcolor);
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        opacity: 0.06;
     }
 
     .gh-gift-redemption-icon {
@@ -63,14 +74,14 @@ export const GiftRedemptionStyles = `
     }
 
     .gh-gift-redemption-icon svg {
-        width: 40px;
-        height: 40px;
+        width: 52px;
+        height: 52px;
     }
 
     .gh-gift-redemption-kicker {
-        font-size: 1.15rem;
-        font-weight: 700;
-        letter-spacing: 0.14em;
+        font-size: 1.3rem;
+        font-weight: 600;
+        letter-spacing: 0.05;
         text-transform: uppercase;
         color: var(--brandcolor);
     }
@@ -78,17 +89,17 @@ export const GiftRedemptionStyles = `
     .gh-gift-redemption-title {
         max-width: none;
         margin: 16px auto 0;
-        font-size: 2.25rem;
-        font-weight: 800;
+        font-size: 2.6rem;
+        font-weight: 700;
         line-height: 1.08;
-        letter-spacing: -0.03em;
+        letter-spacing: -0.015em;
         white-space: nowrap;
         color: var(--grey0);
     }
 
     .gh-gift-redemption-plan {
         margin-top: 10px;
-        font-size: 1.65rem;
+        font-size: 1.6rem;
         color: var(--grey2);
     }
 
@@ -104,14 +115,14 @@ export const GiftRedemptionStyles = `
         display: flex;
         flex-direction: column;
         gap: 8px;
-        max-width: 302px;
+        max-width: 400px;
         margin: 20px auto 0;
     }
 
     .gh-gift-redemption-benefit {
         display: flex;
         align-items: flex-start;
-        justify-content: flex-start;
+        justify-content: center;
         gap: 10px;
         color: var(--grey2);
         font-size: 1.45rem;
@@ -132,29 +143,9 @@ export const GiftRedemptionStyles = `
         flex-direction: row-reverse;
     }
 
-    .gh-gift-redemption-benefit span {
-        display: block;
-        flex: 1;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
     .gh-gift-redemption-form {
         padding: 22px 28px 28px;
         background: var(--white);
-    }
-
-    .gh-gift-redemption-form .gh-portal-input-label {
-        margin-bottom: 5px;
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--grey1);
-    }
-
-    .gh-gift-redemption-form .gh-portal-input {
-        margin-bottom: 14px;
     }
 
     .gh-gift-redemption-submit {
