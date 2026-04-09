@@ -1,5 +1,6 @@
 import React from 'react';
-import {LucideIcon, TableHeadButton} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {TableHeadButton} from '@tryghost/shade/components';
 
 interface SortButtonProps<T extends string> {
     sortBy: T;

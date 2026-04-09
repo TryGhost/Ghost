@@ -1,4 +1,5 @@
-import {Table, TableHead, TableHeader, TableRow, cn} from '@tryghost/shade';
+import {Table, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
+import {cn} from '@tryghost/shade/utils';
 import type {ActiveColumn} from '../member-query-params';
 import type {CSSProperties, Ref} from 'react';
 import type {MemberTableColumnStyles} from './member-table-layout';
@@ -19,13 +20,13 @@ export const MembersTableColGroup = ({
 }) => {
     return (
         <colgroup>
-            <col style={columnStyles.member} />
-            <col style={columnStyles.status} />
-            {showEmailOpenRate && <col style={columnStyles.openRate} />}
-            <col style={columnStyles.location} />
-            <col style={columnStyles.created} />
+            <col className="max-sm:!w-full max-sm:!min-w-0 sm:max-lg:!w-auto sm:max-lg:!min-w-0" style={columnStyles.member} />
+            <col className="hidden sm:table-column" style={columnStyles.status} />
+            {showEmailOpenRate && <col className="hidden lg:table-column" style={columnStyles.openRate} />}
+            <col className="hidden lg:table-column" style={columnStyles.location} />
+            <col className="hidden lg:table-column" style={columnStyles.created} />
             {activeColumns.map(col => (
-                <col key={col.key} style={columnStyles.dynamic} />
+                <col key={col.key} className="hidden lg:table-column" style={columnStyles.dynamic} />
             ))}
         </colgroup>
     );
@@ -49,7 +50,7 @@ export const MembersTableHeader = ({
     return (
         <TableHeader
             ref={headerRef}
-            className={cn('hidden bg-transparent lg:table-header-group', className)}
+            className={cn('hidden bg-transparent lg:table-header-group [&_th]:whitespace-nowrap', className)}
         >
             <TableRow>
                 <TableHead
@@ -99,7 +100,7 @@ export const PinnedMemberHeader = ({
                 <colgroup>
                     <col style={{width: '100%'}} />
                 </colgroup>
-                <TableHeader className="bg-transparent lg:table-header-group">
+                <TableHeader className="bg-transparent lg:table-header-group [&_th]:whitespace-nowrap">
                     <TableRow>
                         <TableHead className="bg-transparent px-4 py-3">
                             Member

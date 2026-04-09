@@ -64,9 +64,9 @@ jobs:
               if [ "$CONCLUSION" = "success" ] || [ "$CONCLUSION" = "failure" ]; then
                 # Check if Docker build job specifically succeeded (paginate — CI has 30+ jobs)
                 BUILD_JOB=$(gh api --paginate "repos/${{ github.repository }}/actions/runs/${RUN_ID}/jobs?per_page=100" \
-                  --jq '.jobs[] | select(.name == "Build & Push Production Docker Images") | .conclusion')
+                  --jq '.jobs[] | select(.name == "Build & Publish Artifacts") | .conclusion')
                 if [ -z "$BUILD_JOB" ]; then
-                  echo "::error::Build & Push Production Docker Images job not found in CI run ${RUN_ID}"
+                  echo "::error::Build & Publish Artifacts job not found in CI run ${RUN_ID}"
                   exit 1
                 elif [ "$BUILD_JOB" = "success" ]; then
                   echo "Docker build ready (CI run $RUN_ID)"
@@ -113,7 +113,7 @@ jobs:
 
       - name: Dispatch to Ghost-Moya
         if: steps.recheck.outputs.skip != 'true'
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           repository: TryGhost/Ghost-Moya

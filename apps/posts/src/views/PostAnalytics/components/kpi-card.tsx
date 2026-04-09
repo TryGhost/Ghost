@@ -1,5 +1,6 @@
 import React from 'react';
-import {Button, cn} from '@tryghost/shade';
+import {Button} from '@tryghost/shade/components';
+import {cn} from '@tryghost/shade/utils';
 
 export const KpiCardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (

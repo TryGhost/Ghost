@@ -8,6 +8,23 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <p className="excerpt">Shade is built as a layered system, with each layer building upon the previous to create a complete design system. This document outlines how these layers work together.</p>
 
+## Read This First (60 seconds)
+
+If you are not sure where code belongs, use this:
+
+- `tokens`: visual values only (color, type, radius, motion)
+- `primitives`: layout structure only (`Stack`, `Inline`, `Box`, `Container`, `Grid`, `Text`)
+- `components`: reusable generic controls (button, input, dialog)
+- `patterns`: repeated product workflows (filters, resource flows)
+- `app`: app shell and transitional domain exports
+- `utils`: design-system-safe generic helpers only
+
+Fast decision rule:
+
+- If it changes spacing/alignment/layout, use `primitives`.
+- If it is a generic control, use `components`.
+- If it encodes product workflow, use `patterns`.
+
 ## File Structure
 
 ```
@@ -19,12 +36,78 @@ import { Meta } from '@storybook/addon-docs/blocks';
 │   │   └── features/     # Feature-specific, higher-level components
 │   ├── hooks/            # Custom React hooks
 │   ├── providers/        # Context providers
-│   ├── lib/utils.ts      # Utilities
+│   ├── lib/ds-utils.ts   # DS-safe utilities
+│   ├── lib/app-utils.ts  # Transitional domain utilities
 │   └── docs/             # Documentation
 ├── .storybook/          # Storybook configuration
 ├── styles.css           # Tailwind imports + runtime variables
 └── tailwind.theme.css   # CSS-first token definitions (@theme)
 ```
+
+## Export Entrypoints
+
+Shade now uses layered package entrypoints:
+
+- `@tryghost/shade/tokens` and `@tryghost/shade/tokens.css`
+- `@tryghost/shade/primitives`
+- `@tryghost/shade/components`
+- `@tryghost/shade/patterns`
+- `@tryghost/shade/app`
+- `@tryghost/shade/utils`
+
+The root `@tryghost/shade` entrypoint remains a compatibility lane during migration, but new code should import from a layer-specific subpath.
+The root entrypoint now keeps compatibility for DS layers only (`tokens`, `primitives`, `components`, `patterns`).
+`app` and `utils` are intentionally subpath-only.
+
+## Layer Ownership Rules
+
+- `tokens`: token definitions and helpers only (CSS variables, token names, token lookup helpers).
+- `primitives`: structure/layout building blocks with no product/domain behavior.
+- `components`: reusable UI controls and visual assets/icons.
+- `patterns`: feature-level reusable compositions and interaction rules.
+- `app`: app shell/provider/context APIs and transitional domain exports.
+- `utils`: DS-safe helpers, generic hooks, and third-party namespaces.
+
+## Human and AI Decision Protocol
+
+Run this order before implementing UI:
+
+1. Choose the layer (`tokens` -> `primitives` -> `components` -> `patterns`).
+2. Reuse existing API first.
+3. If no fit, keep code local and add it to Shade only after repeated use.
+4. Keep shared APIs product-agnostic.
+
+Stop and re-evaluate when:
+
+- a shared component needs workflow-specific props
+- a layout abstraction starts carrying business logic
+- ownership between `components` and `patterns` is unclear
+
+When to add code to Shade:
+
+- Keep code local first, then add it to Shade when it is reused across surfaces.
+- Add to `primitives` when the abstraction is structural.
+- Add to `components` when the abstraction is a reusable control.
+- Add to `patterns` when repeated product workflows emerge.
+- Do not place domain/product helpers in `utils`; route them through `app` during migration and then toward app-local/pattern ownership.
+
+## Primitive Composition Rules and Guarantees
+
+Primitive composition has these fixed rules:
+
+- Primitive set: `Stack`, `Inline`, `Box`, `Container`, `Grid`, `Text`.
+- Spacing API: semantic steps `none | xs | sm | md | lg | xl | 2xl`.
+- Text depth: minimal `Text` primitive with compatibility heading wrappers (`H1`-`H4`, `HTable`).
+- Migration scope: `apps/shade/src/components/layout/*` only.
+- Compatibility policy: keep existing `@tryghost/shade/primitives` exports available during migration and deprecate without hard removals.
+
+## Component Rules and Guarantees Layer
+
+This layer keeps shared control APIs explicit and stable in `components/ui`:
+
+- Define explicit API and state rules for Wave A controls (`Button`, `Input`, `Field`, `Select`, `Tabs`, `Table`, `Dialog`, `DropdownMenu`, `Card`).
+- Keep shared controls product-agnostic.
+- Preserve compatibility through deprecation notes, not hard removals.
 
 ## Component Types
 

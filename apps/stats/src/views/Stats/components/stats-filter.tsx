@@ -1,9 +1,11 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Button, Filter, FilterFieldConfig, Filters, LucideIcon} from '@tryghost/shade';
+import {Button} from '@tryghost/shade/components';
+import {Filter, FilterFieldConfig, Filters} from '@tryghost/shade/patterns';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
-import {formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/audience';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';

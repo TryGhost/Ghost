@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./app.tsx";
 import { FrameworkProvider, RouterProvider } from "@tryghost/admin-x-framework";
-import { ShadeApp } from "@tryghost/shade";
+import { ShadeApp } from "@tryghost/shade/app";
 
 import { routes } from "./routes.tsx";
 import { navigateTo } from "./utils/navigation";

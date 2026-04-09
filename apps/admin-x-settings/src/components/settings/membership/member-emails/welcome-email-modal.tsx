@@ -10,15 +10,13 @@ import {useWelcomeEmailSenderDetails} from '../../../../hooks/use-welcome-email-
 
 import TestEmailDropdown from './test-email-dropdown';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
+import {useBrowseAutomatedEmails, useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../../../components/providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 
-import {
-    Button,
-    cn
-} from '@tryghost/shade';
+import {Button} from '@tryghost/shade/components';
+import {cn} from '@tryghost/shade/utils';
 
 interface EmailPreviewModalContentProps {
     title: string;
@@ -116,6 +114,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const modal = useModal();
     const {updateRoute} = useRouting();
     const {mutateAsync: editAutomatedEmail} = useEditAutomatedEmail();
+    const {data: automatedEmailsData} = useBrowseAutomatedEmails();
     const [showTestDropdown, setShowTestDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const normalizedLexical = useRef<string>(automatedEmail?.lexical || '');
@@ -123,7 +122,8 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const handleError = useHandleError();
     const {settings} = useGlobalData();
     const [siteTitle] = getSettingValues<string>(settings, ['title']);
-    const {resolvedSenderName, resolvedSenderEmail, resolvedReplyToEmail, hasDistinctReplyTo} = useWelcomeEmailSenderDetails(automatedEmail);
+    const automatedEmails = automatedEmailsData?.automated_emails || [];
+    const {resolvedSenderName, resolvedSenderEmail, resolvedReplyToEmail, hasDistinctReplyTo} = useWelcomeEmailSenderDetails(automatedEmails);
     const emailTypeLabel = emailType === 'paid' ? 'Paid' : 'Free';
     const modalTitle = `${emailTypeLabel} members welcome email`;
 

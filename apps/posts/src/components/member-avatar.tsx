@@ -1,4 +1,5 @@
-import {LucideIcon, cn, formatMemberName, getMemberInitials, stringToHslColor} from '@tryghost/shade';
+import {LucideIcon, cn, stringToHslColor} from '@tryghost/shade/utils';
+import {formatMemberName, getMemberInitials} from '@tryghost/shade/app';
 
 interface MemberAvatarProps {
     avatarImage?: string | null;

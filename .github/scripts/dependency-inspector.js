@@ -484,16 +484,6 @@ With a severity flag, shows all packages with that update type.
   displayResults(results) {
     console.log('\n🎯 DEPENDENCY ANALYSIS RESULTS\n');
 
-    // Summary
-    console.log('📈 SUMMARY:');
-    console.log(`   Total dependencies: ${this.directDeps.size}`);
-    console.log(`   Total outdated: ${results.stats.total}`);
-    console.log(`   Major updates: ${results.stats.major}`);
-    console.log(`   Minor updates: ${results.stats.minor}`);
-    console.log(`   Patch updates: ${results.stats.patch}`);
-    console.log(`   Direct deps: ${results.direct.length}`);
-    console.log(`   Transitive deps: ${results.transitive.length}\n`);
-
     // If filtering by severity, show filtered results
     if (this.filterSeverity) {
       this.displayFilteredResults(results);
@@ -595,6 +585,82 @@ With a severity flag, shows all packages with that update type.
       }
       console.log('');
     }
+
+    const generatedAt = new Date().toISOString();
+    const latestCommit = this.getLatestCommitRef();
+
+    // Summary at the end
+    console.log('📈 SUMMARY:');
+    console.log(`   Generated at: ${generatedAt}`);
+    console.log(`   Latest commit: ${latestCommit}`);
+    console.log(`   Total dependencies: ${this.directDeps.size}`);
+    console.log(`   Total outdated: ${results.stats.total}`);
+    console.log(`   Major updates: ${results.stats.major}`);
+    console.log(`   Minor updates: ${results.stats.minor}`);
+    console.log(`   Patch updates: ${results.stats.patch}`);
+    console.log(`   Direct deps: ${results.direct.length}`);
+    console.log(`   Transitive deps: ${results.transitive.length}\n`);
+  }
+
+  /**
+   * Get the latest commit reference for the current checkout
+   */
+  getLatestCommitRef() {
+    try {
+      return execSync("git log -1 --format='%h %ad %s' --date=iso-strict", {
+        encoding: 'utf8'
+      }).trim();
+    } catch (error) {
+      return 'Unavailable';
+    }
+  }
+
+  /**
+   * Run yarn audit and display a vulnerability summary
+   */
+  displayAuditSummary() {
+    console.log('🔒 SECURITY AUDIT:\n');
+
+    try {
+      let stdout = '';
+      try {
+        stdout = execSync('yarn audit --json 2>/dev/null', {
+          encoding: 'utf8',
+          maxBuffer: 10 * 1024 * 1024
+        });
+      } catch (error) {
+        // yarn audit exits with non-zero when vulnerabilities are found
+        stdout = error.stdout || '';
+      }
+
+      // Find the auditSummary line
+      const lines = stdout.trim().split('\n');
+      for (const line of lines) {
+        try {
+          const data = JSON.parse(line);
+          if (data.type === 'auditSummary' && data.data && data.data.vulnerabilities) {
+            const v = data.data.vulnerabilities;
+            const total = v.info + v.low + v.moderate + v.high + v.critical;
+            console.log(`   Total vulnerabilities: ${total}`);
+            console.log(`   🔴 Critical: ${v.critical}`);
+            console.log(`   🟠 High:     ${v.high}`);
+            console.log(`   🟡 Moderate: ${v.moderate}`);
+            console.log(`   🟢 Low:      ${v.low}`);
+            if (v.info > 0) {
+              console.log(`   ℹ️  Info:     ${v.info}`);
+            }
+            console.log(`   Total dependencies scanned: ${data.data.totalDependencies}\n`);
+            return;
+          }
+        } catch (e) {
+          // Skip non-JSON lines
+        }
+      }
+
+      console.log('   ⚠️  Could not parse audit summary\n');
+    } catch (error) {
+      console.log(`   ⚠️  Audit failed: ${error.message}\n`);
+    }
   }
 
     async run() {
@@ -615,6 +681,7 @@ With a severity flag, shows all packages with that update type.
 
       const results = this.processOutdatedPackages(outdatedData);
       this.displayResults(results);
+      this.displayAuditSummary();
 
     } catch (error) {
       console.error('❌ Error:', error.message);

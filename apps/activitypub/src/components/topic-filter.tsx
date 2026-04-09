@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Button} from '@tryghost/shade';
+import {Button} from '@tryghost/shade/components';
 import {useTopicsForUser} from '@src/hooks/use-activity-pub-queries';
 
 export type Topic = string;

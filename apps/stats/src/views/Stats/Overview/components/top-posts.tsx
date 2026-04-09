@@ -1,6 +1,7 @@
 import FeatureImagePlaceholder from '../../components/feature-image-placeholder';
 import React from 'react';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, abbreviateNumber, cn, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, SkeletonTable} from '@tryghost/shade/components';
+import {LucideIcon, abbreviateNumber, cn, formatDisplayDate, formatNumber} from '@tryghost/shade/utils';
 import {TopPostViewsStats} from '@tryghost/admin-x-framework/api/stats';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {getPostDestination} from '@src/utils/url-helpers';

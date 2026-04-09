@@ -78,12 +78,12 @@ export class VerificationWebhookService {
         const {webhookType, webhookUrl, webhookSecret, siteId} = this.#readWebhookConfig();
 
         if (typeof webhookUrl !== 'string' || webhookUrl.length === 0) {
-            this.#logging.warn('Verification webhook flow is enabled but webhookUrl is not configured.');
+            this.#logging.warn('Verification webhook is not configured because webhookUrl is missing.');
             return false;
         }
 
         if (typeof webhookType !== 'string' || webhookType.length === 0) {
-            this.#logging.warn('Verification webhook flow is enabled but webhookType is not configured.');
+            this.#logging.warn('Verification webhook is not configured because webhookType is missing.');
             return false;
         }
 

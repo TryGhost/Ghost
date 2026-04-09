@@ -21,14 +21,14 @@ jobs:
     if: github.repository == 'TryGhost/Ghost'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         if: inputs.base-ref == 'latest'
         with:
           ref: main
           fetch-depth: 0
           submodules: true
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         if: inputs.base-ref != 'latest'
         with:
           ref: ${{ inputs.base-ref }}
@@ -39,7 +39,7 @@ jobs:
         run: git checkout "$(git describe --tags --abbrev=0 --match=v*)"
         if: inputs.base-ref == 'latest'
 
-      - uses: asdf-vm/actions/install@v4
+      - uses: asdf-vm/actions/install@b7bcd026f18772e44fe1026d729e1611cc435d47 # v4
         with:
           tool_versions: |
             semver 3.3.0
@@ -53,7 +53,7 @@ jobs:
           BUMP_TYPE_INPUT: ${{ inputs.bump-type }}
 
       - name: Create branch
-        uses: actions/github-script@v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             const branchName = `v${process.env.NEW_VERSION}`;

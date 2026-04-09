@@ -2,6 +2,7 @@ import moment from 'moment-timezone';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
+import {enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -36,6 +37,20 @@ describe('Acceptance: Members Test', function () {
             this.server.create('user', {roles: [role]});
 
             await authenticateSession();
+        });
+
+        it('does not load or render the Ember members list when membersForward is enabled', async function () {
+            enableLabsFlag(this.server, 'membersForward');
+            this.server.createList('member', 2);
+
+            await visit('/members');
+
+            expect(currentURL()).to.equal('/members');
+            expect(find('[data-test-screen-title]')).to.not.exist;
+            expect(find('[data-test-table="members"]')).to.not.exist;
+
+            const membersRequests = this.server.pretender.handledRequests.filter(request => request.url.match(/\/members\/(\?|$)/));
+            expect(membersRequests.length, 'members API requests').to.equal(0);
         });
 
         it('it renders, can be navigated, can edit member', async function () {
@@ -298,6 +313,18 @@ describe('Acceptance: Members Test', function () {
             await click('[data-test-button="close-modal"]');
 
             expect(find('[data-test-modal="delete-members"]')).to.not.exist;
+        });
+
+        it('formats counts in members actions menu for filtered lists', async function () {
+            this.server.createList('member', 1000, {status: 'free'});
+
+            await visit('/members?filter=status%3Afree');
+            await click('[data-test-button="members-actions"]');
+
+            expect(find('[data-test-button="export-members"] span')).to.have.text('Export selected members (1,000)');
+            expect(find('[data-test-button="add-label-selected"] span')).to.have.text('Add label for selected members (1,000)');
+            expect(find('[data-test-button="remove-label-selected"] span')).to.have.text('Remove label from selected members (1,000)');
+            expect(find('[data-test-button="delete-selected"] span')).to.have.text('Delete selected members (1,000)');
         });
 
         it('can delete a member (via list)', async function () {

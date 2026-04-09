@@ -1,11 +1,4 @@
-import {
-    Button,
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle
-} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@tryghost/shade/components';
 import {LabelPicker} from '@src/components/label-picker';
 import {useCallback, useState} from 'react';
 import {useLabelPicker} from '@src/hooks/use-label-picker';

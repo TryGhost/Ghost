@@ -1,14 +1,4 @@
-import {
-    Button,
-    Checkbox,
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    Label
-} from '@tryghost/shade';
+import {Button, Checkbox, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Label} from '@tryghost/shade/components';
 import {useState} from 'react';
 
 interface DisableCommentingDialogProps {

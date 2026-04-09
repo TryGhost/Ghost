@@ -1,7 +1,4 @@
-import {
-    Banner,
-    Button,
-} from "@tryghost/shade"
+import {Banner, Button} from "@tryghost/shade/components"
 
 import ghostProLogo from "@/assets/images/ghost-pro-logo.png";
 import ghostProLogoDark from "@/assets/images/ghost-pro-logo-dark.png";

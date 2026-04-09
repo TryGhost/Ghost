@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import {Button} from '@tryghost/shade';
+import {Button} from '@tryghost/shade/components';
 import {useEffect, useState} from 'react';
 import {useFollowMutationForUser, useUnfollowMutationForUser} from '@hooks/use-activity-pub-queries';
 

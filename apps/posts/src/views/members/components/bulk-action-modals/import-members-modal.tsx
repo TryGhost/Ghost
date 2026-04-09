@@ -1,7 +1,9 @@
 import {CompleteStep, ErrorStep, InitStep, MappingStep, ProcessingStep} from './import-members/components';
-import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, cn} from '@tryghost/shade';
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@tryghost/shade/components';
+import {type ImportResponse} from './import-members/state';
 import {MembersFieldMapping, detectFieldTypes} from './import-members/mapping';
 import {buildImportResponse} from './import-members/upload';
+import {cn} from '@tryghost/shade/utils';
 import {createInitialImportState, importReducer} from './import-members/reducer';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {parseCSV} from './import-members/csv';
@@ -11,13 +13,15 @@ import {useLabelPicker} from '@src/hooks/use-label-picker';
 interface ImportMembersModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onComplete?: () => void;
+    onComplete?: (importResponse?: ImportResponse) => void;
+    onClose?: (importResponse?: ImportResponse) => void;
 }
 
 export function ImportMembersModal({
     open,
     onOpenChange,
-    onComplete
+    onComplete,
+    onClose
 }: ImportMembersModalProps) {
     const [state, dispatch] = useReducer(importReducer, undefined, createInitialImportState);
     const errorCsvUrlRef = useRef<string | null>(null);
@@ -28,8 +32,10 @@ export function ImportMembersModal({
     });
 
     const revokeErrorCsvUrl = useCallback(() => {
-        if (errorCsvUrlRef.current) {
+        if (errorCsvUrlRef.current && typeof URL.revokeObjectURL === 'function') {
             URL.revokeObjectURL(errorCsvUrlRef.current);
+            errorCsvUrlRef.current = null;
+        } else if (errorCsvUrlRef.current) {
             errorCsvUrlRef.current = null;
         }
     }, []);
@@ -50,10 +56,12 @@ export function ImportMembersModal({
             return;
         }
         if (!isOpen) {
+            const importResponse = state.importResponse ?? undefined;
             reset();
+            onClose?.(importResponse);
         }
         onOpenChange(isOpen);
-    }, [onOpenChange, reset, state.status]);
+    }, [onClose, onOpenChange, reset, state.importResponse, state.status]);
 
     useEffect(() => {
         if (!state.file) {
@@ -257,7 +265,7 @@ export function ImportMembersModal({
                 type: 'UPLOAD_COMPLETE',
                 importResponse
             });
-            onComplete?.();
+            onComplete?.(importResponse);
         } catch {
             dispatch({
                 type: 'UPLOAD_ERROR',

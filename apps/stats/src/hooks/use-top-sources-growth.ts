@@ -1,5 +1,5 @@
 import {ALL_AUDIENCES} from '@src/utils/constants';
-import {formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceQueryParam} from '@src/utils/audience';
 import {useTopSourcesGrowth as useTopSourcesGrowthAPI} from '@tryghost/admin-x-framework/api/referrers';
 

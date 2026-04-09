@@ -1,0 +1,3 @@
+/* Token-only CSS entrypoint (no preflight or utility layers). */
+@import "./tailwind.theme.css";
+@import "./theme-variables.css";

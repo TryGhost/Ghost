@@ -7,9 +7,11 @@ import SortButton from '../components/sort-button';
 import StatsHeader from '../layout/stats-header';
 import StatsLayout from '../layout/stats-layout';
 import StatsView from '../layout/stats-view';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, NavbarActions, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage, getRangeDates} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, NavbarActions, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
+import {LucideIcon, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {Navigate, useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
+import {getRangeDates} from '@tryghost/shade/app';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useGlobalData} from '@src/providers/global-data-provider';
 import {useNewsletterStatsWithRangeSplit, useSubscriberCountWithRange} from '@hooks/use-newsletter-stats-with-range';
@@ -301,9 +303,10 @@ const Newsletters: React.FC = () => {
             const {startDate, endDate} = getRangeDates(range);
 
             const dailyData = [];
-            const currentDate = new Date(startDate);
+            const currentDate = startDate.clone().toDate();
+            const endDateObj = endDate.toDate();
 
-            while (currentDate <= endDate) {
+            while (currentDate <= endDateObj) {
                 dailyData.push({
                     date: currentDate.toISOString().split('T')[0],
                     value: 0

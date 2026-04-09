@@ -1,6 +1,7 @@
-import {Button, DialogFooter, LoadingIndicator, LucideIcon, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn} from '@tryghost/shade';
+import {Button, DialogFooter, LoadingIndicator, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {FIELD_MAPPINGS, MembersFieldMapping} from '../mapping';
 import {LabelPicker} from '@src/components/label-picker';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {UseLabelPickerResult} from '@src/hooks/use-label-picker';
 
 interface MappingPreviewRow {

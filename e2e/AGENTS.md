@@ -11,8 +11,23 @@ E2E testing guidance for AI assistants (Claude, Codex, etc.) working with Ghost 
 4. **Never use CSS/XPath selectors** - only semantic locators or data-testid
 5. **Prefer less comments and giving things clear names**
 
-## Essential Commands
+## Running E2E Tests
+
+**`yarn dev` must be running before you run E2E tests.** The E2E test runner auto-detects
+whether the admin dev server is reachable at `http://127.0.0.1:5174`. If it is, tests run
+in **dev mode** (fast, no pre-built Docker image required). If not, tests fall back to
+**build mode** which requires a `ghost-e2e:local` Docker image that is only built in CI.
+
+**If you see the error `Build image not found: ghost-e2e:local`, it means `yarn dev` is
+not running.** Start it first, wait for the admin dev server to be ready, then re-run tests.
+
 ```bash
+# Terminal 1 (or background): Start dev environment from the repo root
+yarn dev
+
+# Wait for the admin dev server to be reachable (http://127.0.0.1:5174)
+
+# Terminal 2: Run e2e tests from the e2e/ directory
 yarn test                                       # Run all tests
 yarn test tests/path/to/test.ts                 # Run specific test
 yarn lint                                       # Required after writing tests
@@ -20,20 +35,6 @@ yarn test:types                                 # Check TypeScript errors
 yarn build                                      # Required after factory changes
 yarn test --debug                               # See browser during execution, for debugging
 PRESERVE_ENV=true yarn test                     # Debug failed tests (keeps containers)
-```
-
-## Dev Environment Mode (Recommended)
-
-When `GHOST_E2E_MODE` is unset, the e2e shell entrypoints auto-select `dev` only if the local admin dev server is reachable. Otherwise they fall back to `build`.
-
-When `yarn dev` is running, e2e tests use dev mode:
-
-```bash
-# Terminal 1: Start dev environment
-yarn dev
-
-# Terminal 2: Run e2e tests (automatically uses dev environment)
-cd e2e && yarn test
 ```
 
 ## Test Structure

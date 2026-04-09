@@ -1,16 +1,7 @@
 import CommentThreadList from './comment-thread-list';
 import React from 'react';
-import {
-    Button,
-    EmptyIndicator,
-    LoadingIndicator,
-    LucideIcon,
-    Separator,
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle
-} from '@tryghost/shade';
+import {Button, EmptyIndicator, LoadingIndicator, Separator, Sheet, SheetContent, SheetHeader, SheetTitle} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {useReadComment, useThreadComments} from '@tryghost/admin-x-framework/api/comments';
 
 interface CommentThreadSidebarProps {

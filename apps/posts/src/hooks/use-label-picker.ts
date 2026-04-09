@@ -1,5 +1,5 @@
 import {Label, useCreateLabel, useDeleteLabel, useEditLabel} from '@tryghost/admin-x-framework/api/labels';
-import {ValueSource} from '@tryghost/shade';
+import {ValueSource} from '@tryghost/shade/patterns';
 import {useCallback, useMemo, useRef, useState} from 'react';
 import {useLabelValueSource} from './filter-sources/use-label-value-source';
 

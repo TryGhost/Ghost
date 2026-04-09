@@ -185,6 +185,11 @@ class PopupContent extends React.Component {
             }
         }
 
+        if (page === 'gift') {
+            pageClass += ' full-size';
+            popupSize = 'full';
+        }
+
         const freeProduct = hasFreeProductPrice({site});
         if ((freeProduct && noOfProducts > 2) || (!freeProduct && noOfProducts > 1)) {
             if (page === 'accountPlan') {
@@ -227,9 +232,11 @@ class PopupContent extends React.Component {
                             : '')}
                     </div>
                 </div>
-                <div className={'gh-portal-powered outside ' + (hasMode(['preview']) ? 'hidden ' : '') + pageClass}>
-                    <PoweredBy />
-                </div>
+                {page !== 'share' && (
+                    <div className={'gh-portal-powered outside ' + (hasMode(['preview']) ? 'hidden ' : '') + pageClass}>
+                        <PoweredBy />
+                    </div>
+                )}
             </>
         );
     }

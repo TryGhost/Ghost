@@ -4,7 +4,8 @@ import apDashedLines from '@assets/images/onboarding/ap-dashed-lines.png';
 import apDashedLinesDark from '@assets/images/onboarding/ap-dashed-lines-dark.png';
 import flipboardAvatar from '@assets/images/onboarding/avatar-flipboard.png';
 import vergeAvatar from '@assets/images/onboarding/avatar-verge.png';
-import {Avatar, AvatarFallback, AvatarImage, Button, LucideIcon, Separator} from '@tryghost/shade';
+import {Avatar, AvatarFallback, AvatarImage, Button, Separator} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 const Reply: React.FC<{

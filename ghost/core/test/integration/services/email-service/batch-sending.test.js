@@ -11,6 +11,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const emailService = require('../../../../core/server/services/email-service');
 const {mockSetting, stripeMocker} = require('../../../utils/e2e-framework-mock-manager');
 const {sendEmail, sendFailedEmail, matchEmailSnapshot, getDefaultNewsletter, retryEmail} = require('../../../utils/batch-email-utils');
+const {setupEmailVerificationUtils, restoreEmailVerificationUtils} = require('../../../utils/email-verification-utils');
 
 const mobileDocExample = '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]]],"ghostVersion":"4.0"}';
 const mobileDocWithPaywall = '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}';
@@ -503,12 +504,10 @@ describe.skip('Batch sending tests', function () {
 
     it('Cannot send an email if verification is required', async function () {
         // First enable import thresholds
-        configUtils.set('hostSettings:emailVerification', {
+        setupEmailVerificationUtils({
             apiThreshold: 100,
             adminThreshold: 100,
-            importThreshold: 100,
-            verified: false,
-            escalationAddress: 'test@example.com'
+            importThreshold: 100
         });
 
         // We stub a lot of imported members to mimic a large import that is in progress but is not yet finished
@@ -552,7 +551,7 @@ describe.skip('Batch sending tests', function () {
         sinon.assert.calledTwice(getSignupEvents);
         assert.equal(settingsCache.get('email_verification_required'), true);
 
-        await configUtils.restore();
+        await restoreEmailVerificationUtils();
     });
 
     // FLAKEY

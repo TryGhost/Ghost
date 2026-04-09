@@ -37,10 +37,10 @@ describe('TransistorPodcastsAction', () => {
         expect(link.getAttribute('href')).toBe(`https://partner.transistor.fm/ghost/${TEST_UUID}`);
     });
 
-    test('Manage link opens in new tab', () => {
+    test('Manage link opens in the parent browsing context', () => {
         const {getByText} = setup({hasPodcasts: true, memberUuid: TEST_UUID});
         const link = getByText('Manage');
-        expect(link.getAttribute('target')).toBe('_blank');
+        expect(link.getAttribute('target')).toBe('_parent');
         expect(link.getAttribute('rel')).toBe('noopener noreferrer');
     });
 });

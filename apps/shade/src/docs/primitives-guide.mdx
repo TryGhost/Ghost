@@ -1,0 +1,202 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Primitives Guide" />
+
+<div className="sb-doc">
+
+# Primitives Guide
+
+<p className="excerpt">Use primitives to make layout intent explicit. This page explains when to use each primitive, which props matter, and how to migrate from raw layout classes.</p>
+
+## Why Primitives
+
+Primitives solve a simple problem: repeated `flex/grid/gap` class strings hide intent.
+
+Use primitives so that:
+
+- humans can read structure quickly
+- AI agents can generate consistent layout trees
+- spacing/alignment decisions stay explicit
+
+## Primitive Selection
+
+- `Stack`: vertical grouping and vertical spacing
+- `Inline`: horizontal grouping, action rows, wrapped inline controls
+- `Box`: padding and radius framing without layout semantics
+- `Container`: width constraints and horizontal page padding
+- `Grid`: two-dimensional column layout
+- `Text`: semantic text element + typography rules
+
+Fast rule:
+
+- vertical composition -> `Stack`
+- horizontal composition -> `Inline`
+- framed region -> `Box`
+- max width shell -> `Container`
+- columns/cards -> `Grid`
+- copy/headings/labels -> `Text`
+
+## Prop Reference
+
+### Stack
+
+| Prop | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `gap` | `none|xs|sm|md|lg|xl|2xl` | `md` | Vertical spacing between children |
+| `align` | `start|center|end|stretch|baseline` | `stretch` | Cross-axis alignment |
+| `justify` | `start|center|end|between|around|evenly` | `start` | Main-axis distribution |
+
+### Inline
+
+| Prop | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `as` | `div|header|section|footer|nav|span` | `div` | Render element |
+| `gap` | `none|xs|sm|md|lg|xl|2xl` | `md` | Horizontal spacing |
+| `align` | `start|center|end|stretch|baseline` | `center` | Cross-axis alignment |
+| `justify` | `start|center|end|between|around|evenly` | `start` | Main-axis distribution |
+| `wrap` | `boolean` | `false` | Wrap items to multiple rows |
+
+### Box
+
+| Prop | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `padding` | `none|xs|sm|md|lg|xl|2xl` | unset | Uniform padding |
+| `paddingX` | `none|xs|sm|md|lg|xl|2xl` | unset | Horizontal padding only |
+| `paddingY` | `none|xs|sm|md|lg|xl|2xl` | unset | Vertical padding only |
+| `radius` | `none|sm|md|lg|xl|full` | unset | Border radius |
+
+### Container
+
+| Prop | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `size` | `xs...9xl|prose|page|page-with-sidebar` | `page` | Maximum width |
+| `centered` | `boolean` | `true` | Apply horizontal centering |
+| `paddingX` | `none|xs|sm|md|lg|xl|2xl` | unset | Horizontal shell padding |
+
+### Grid
+
+| Prop | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `columns` | `1|2|3|4|5|6|12` | `1` | Column count |
+| `gap` | `none|xs|sm|md|lg|xl|2xl` | `md` | Grid spacing |
+| `align` | `start|center|end|stretch|baseline` | `stretch` | Cross-axis alignment |
+| `justify` | `start|center|end|between|around|evenly` | `start` | Main-axis distribution |
+
+### Text
+
+| Prop | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `as` | `p|span|div|label|small|strong|em|h1..h6` | `p` | Semantic element |
+| `size` | `2xs|xs|sm|md|lg|xl|2xl|3xl` | `md` | Font size token |
+| `weight` | `regular|medium|semibold|bold` | `regular` | Font weight |
+| `tone` | `primary|secondary|tertiary|inverse` | `primary` | Text tone token |
+| `leading` | `none|snug|normal|relaxed|tight|tighter|supertight|body|heading` | `body` | Line-height token |
+| `truncate` | `boolean` | `false` | Single-line truncation |
+
+## Composition Examples
+
+### Page Shell
+
+```tsx
+import {Button} from '@tryghost/shade/components';
+import {Container, Inline, Stack, Text} from '@tryghost/shade/primitives';
+
+<Container size="page" paddingX="lg">
+    <Stack gap="xl">
+        <Inline justify="between" align="center">
+            <Text as="h1" size="2xl" weight="bold" leading="heading">Members</Text>
+            <Button>New member</Button>
+        </Inline>
+
+        <Stack gap="md">
+            <Text tone="secondary">Core content goes here.</Text>
+        </Stack>
+    </Stack>
+</Container>
+```
+
+### Header Shell
+
+```tsx
+import {Button} from '@tryghost/shade/components';
+import {Inline, Stack, Text} from '@tryghost/shade/primitives';
+
+<Stack gap="sm">
+    <Text as="h2" size="xl" weight="semibold" leading="heading">Posts</Text>
+    <Inline justify="between" align="center" wrap>
+        <Text tone="secondary">2,132 total</Text>
+        <Inline gap="sm">
+            <Button variant="outline">Export</Button>
+            <Button>New post</Button>
+        </Inline>
+    </Inline>
+</Stack>
+```
+
+### List Shell
+
+```tsx
+import {Box, Grid, Stack, Text} from '@tryghost/shade/primitives';
+
+<Stack gap="sm">
+    <Text as="h3" size="lg" weight="semibold">Drafts</Text>
+    <Grid columns={1} gap="sm">
+        <Box padding="md" radius="md" className="border border-border-default">
+            <Text>Draft row content</Text>
+        </Box>
+        <Box padding="md" radius="md" className="border border-border-default">
+            <Text>Another draft row</Text>
+        </Box>
+    </Grid>
+</Stack>
+```
+
+## Migration Examples
+
+### Before -> After: Vertical Layout
+
+```tsx
+// Before
+<div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-2">
+        <h1 className="text-2xl font-bold">Members</h1>
+        <p className="text-gray-600">Manage your audience</p>
+    </div>
+    <div className="flex items-center justify-between gap-2">...</div>
+</div>
+
+// After
+<Stack gap="lg">
+    <Stack gap="sm">
+        <Text as="h1" size="2xl" weight="bold" leading="heading">Members</Text>
+        <Text tone="secondary">Manage your audience</Text>
+    </Stack>
+    <Inline align="center" justify="between" gap="sm">...</Inline>
+</Stack>
+```
+
+### Before -> After: Framed Grid
+
+```tsx
+// Before
+<div className="grid grid-cols-3 gap-6">
+    <div className="rounded-lg p-4">A</div>
+    <div className="rounded-lg p-4">B</div>
+    <div className="rounded-lg p-4">C</div>
+</div>
+
+// After
+<Grid columns={3} gap="xl">
+    <Box radius="lg" padding="lg">A</Box>
+    <Box radius="lg" padding="lg">B</Box>
+    <Box radius="lg" padding="lg">C</Box>
+</Grid>
+```
+
+## Practical Guardrails
+
+- Do not add anonymous wrappers that only carry `flex/grid/gap` utilities.
+- Prefer semantic spacing (`sm`, `md`, `lg`) over ad-hoc spacing choices.
+- Keep primitives layout-focused; do not put product workflow logic in primitives.
+
+</div>

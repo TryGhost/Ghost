@@ -1,5 +1,7 @@
 import React from 'react';
-import {Button, H1, LucideIcon} from '@tryghost/shade';
+import {Button} from '@tryghost/shade/components';
+import {H1} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {useNavigationStack, useRouteHasParams} from '@tryghost/admin-x-framework';
 
 import BackButton from '@src/components/global/back-button';

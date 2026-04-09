@@ -37,6 +37,7 @@ module.exports = class StripeService {
      * @param {*} deps.labs
      * @param {*} deps.membersService
      * @param {*} deps.donationService
+     * @param {*} deps.giftService
      * @param {*} deps.staffService
      * @param {import('./webhook-manager').StripeWebhook} deps.StripeWebhook
      * @param {object} deps.settingsCache
@@ -53,6 +54,7 @@ module.exports = class StripeService {
         labs,
         membersService,
         donationService,
+        giftService,
         staffService,
         StripeWebhook,
         settingsCache,
@@ -109,6 +111,9 @@ module.exports = class StripeService {
             },
             get donationRepository(){
                 return donationService.repository;
+            },
+            get giftService(){
+                return giftService.service;
             },
             get staffServiceEmails(){
                 return staffService.api.emails;

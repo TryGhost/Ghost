@@ -1,7 +1,7 @@
 import {Button, type ButtonProps, showToast} from '@tryghost/admin-x-design-system';
 import {ButtonGroup} from '@tryghost/admin-x-design-system';
 import {Icon} from '@tryghost/admin-x-design-system';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {Modal} from '@tryghost/admin-x-design-system';
 import {Popover} from '@tryghost/admin-x-design-system';
 import {type RetentionOffer, getRetentionOffers} from './offers-retention';

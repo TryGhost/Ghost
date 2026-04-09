@@ -35,7 +35,9 @@ module.exports = class WebmentionMetadata {
     async fetch(url) {
         const mappedUrl = this.#getMappedUrl(url);
         const data = await oembedService.fetchOembedDataFromUrl(mappedUrl.href, 'mention', {
-            timeout: 15000,
+            timeout: {
+                request: 15000
+            },
             retry: {
                 // Only retry on network issues, or specific HTTP status codes
                 limit: 3
@@ -57,7 +59,9 @@ module.exports = class WebmentionMetadata {
             // Still need to fetch body and contentType separately now
             // For verification
             const {body, contentType} = await oembedService.fetchPageHtml(url, {
-                timeout: 15000,
+                timeout: {
+                    request: 15000
+                },
                 retry: {
                     // Only retry on network issues, or specific HTTP status codes
                     limit: 3

@@ -19,7 +19,6 @@
     "Comment": "コメント",
     "Commenting disabled": "",
     "Complete your profile": "プロフィールを完成させる",
-    "Contact support": "",
     "Delete": "削除",
     "Deleted": "",
     "Deleted member": "削除されたメンバー",
@@ -30,7 +29,6 @@
     "edited": "編集済み",
     "Enter your name": "名前を記入",
     "Expertise": "専門分野",
-    "for more information.": "",
     "Founder @ Acme Inc": "創業者 @ Acme Inc",
     "Full-time parent": "専業主婦・主夫",
     "Head of Marketing at Acme, Inc": "マーケティング責任者 @ Acme, Inc",
@@ -76,5 +74,6 @@
     "View in admin": "",
     "Yesterday": "昨日",
     "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "あなたのリクエストはこのサイトの管理者に送信されます。"
 }

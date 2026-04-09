@@ -1,11 +1,6 @@
 import React, { useState } from "react"
 
-import {
-    SidebarFooter,
-    SidebarGroup,
-    SidebarMenu,
-    SidebarMenuItem
-} from "@tryghost/shade"
+import {SidebarFooter, SidebarGroup, SidebarMenu, SidebarMenuItem} from "@tryghost/shade/components"
 import WhatsNewDialog from "@/whats-new/components/whats-new-dialog";
 import { UserMenu } from "./user-menu";
 import { useSidebarBannerState } from "./hooks/use-sidebar-banner-state";

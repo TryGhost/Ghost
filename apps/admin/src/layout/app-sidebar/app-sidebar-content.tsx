@@ -1,6 +1,4 @@
-import {
-    SidebarContent,
-} from "@tryghost/shade"
+import {SidebarContent} from "@tryghost/shade/components"
 
 import AppSidebarBanner from "./app-sidebar-banner";
 import NavMain from "./nav-main";

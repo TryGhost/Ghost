@@ -8,6 +8,21 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <p className="excerpt">This guide explains how to contribute to the Shade design system, including adding or modifying components and documentation.</p>
 
+## Quick Start (Humans and Agents)
+
+Use this sequence before writing code:
+
+1. Pick the right layer (`tokens`, `primitives`, `components`, `patterns`).
+2. Reuse existing APIs first.
+3. If no good fit exists, keep code local first.
+4. Add shared abstractions to Shade only after clear repetition.
+5. Add stories that prove intended usage and states.
+
+If unsure between `components` and `patterns`:
+
+- choose `components` for generic controls
+- choose `patterns` for product workflow composition
+
 ## Repository Layout
 
 ```
@@ -20,6 +35,53 @@ import { Meta } from '@storybook/addon-docs/blocks';
       features/               # Feature-specific, higher-level components
     docs/                     # System docs rendered in Storybook
 ```
+
+## Import From Layered Entrypoints
+
+For new code, import from a layer-specific Shade subpath instead of the root barrel:
+
+- `@tryghost/shade/tokens` (+ `@tryghost/shade/tokens.css` for CSS token consumption)
+- `@tryghost/shade/primitives`
+- `@tryghost/shade/components`
+- `@tryghost/shade/patterns`
+- `@tryghost/shade/app`
+- `@tryghost/shade/utils`
+
+Use the root `@tryghost/shade` entrypoint only for DS-layer compatibility (`tokens`/`primitives`/`components`/`patterns`).
+Do not import `utils` or `app` symbols from root.
+
+## Ownership and "Add to Shade" Rules
+
+- Put token names/helpers and CSS token definitions in `tokens`.
+- Put layout/structure-only abstractions in `primitives`.
+- Put reusable controls and visual assets in `components`.
+- Put reusable feature-level compositions/rules in `patterns`.
+- Put app shell/provider/context APIs in `app`.
+- Keep `utils` design-system-safe only (generic helpers/hooks + third-party namespaces).
+- Do not add new domain/product helpers to `utils`; place them in app-local code or transitional `app` exports.
+
+## Primitive Composition Guardrails
+
+- Prefer `Stack`, `Inline`, `Box`, `Container`, `Grid`, and `Text` over anonymous wrappers that only carry layout utility classes.
+- Layout-shell migration scope is limited to `apps/shade/src/components/layout/*`.
+- Keep existing `@tryghost/shade/primitives` consumers compatible during migration; do not remove legacy exports during compatibility windows.
+- Use semantic spacing props (`none | xs | sm | md | lg | xl | 2xl`) for primitive composition APIs.
+
+## Component Rules and Guarantees
+
+- Shared controls in `apps/shade/src/components/ui/*` must be product-agnostic.
+- Define explicit public API and state rules before expanding variants.
+- Required interactive states for shared controls: `default`, `hover`, `focus-visible`, `disabled`.
+- If behavior becomes workflow-specific, move it into a `patterns` wrapper instead of growing the base control API.
+
+## AI Agent Output Format
+
+When an AI agent proposes or changes a shared component, include:
+
+1. `Scope` (purpose + non-goals)
+2. `Public API` (props, slots, variants)
+3. `States` (`default`, `hover`, `focus-visible`, `disabled` at minimum)
+4. `Compatibility notes` (what changed, what remains stable)
 
 ## Naming Conventions
 

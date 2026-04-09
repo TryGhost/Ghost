@@ -900,6 +900,28 @@ describe('Portal Data attributes:', () => {
         });
     });
 
+    describe('data-portal=share', () => {
+        test('opens Portal share page', async () => {
+            document.body.innerHTML = `
+                <div data-portal="share"> </div>
+            `;
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixturesSite.singleTier.basic,
+                showPopup: false
+            });
+            expect(popupFrame).not.toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            const portalElement = document.querySelector('[data-portal]');
+            fireEvent.click(portalElement);
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+            const shareTitle = within(popupFrame.contentDocument).queryByText(/^Share$/i);
+            expect(shareTitle).toBeInTheDocument();
+        });
+    });
+
     describe('data-portal=account', () => {
         test('opens Portal account home page', async () => {
             document.body.innerHTML = `
