@@ -121,7 +121,7 @@
     "@tryghost/social-urls": "0.1.60",
     "@tryghost/string": "0.3.2",
     "@tryghost/tpl": "0.1.40",
-    "@tryghost/url-utils": "5.1.2",
+    "@tryghost/url-utils": "5.2.2",
     "@tryghost/validator": "0.2.22",
     "@tryghost/version": "0.1.38",
     "@tryghost/zip": "1.1.54",
