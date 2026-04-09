@@ -7,8 +7,6 @@ import {expect, test, withIsolatedPage} from '@/helpers/playwright';
 import {extractMagicLink} from '@/helpers/services/email/utils';
 import {signupViaPortal} from '@/helpers/playwright/flows/signup';
 
-test.setTimeout(120000);
-
 test.describe('Ghost Public - Member Signup', () => {
     let emailClient: EmailClient;
 
