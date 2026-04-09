@@ -16,6 +16,7 @@ describe('automated-email-design api', () => {
                 background_color: 'light',
                 header_background_color: 'transparent',
                 header_image: null,
+                show_header_icon: true,
                 show_header_title: true,
                 footer_content: null,
                 button_color: null,

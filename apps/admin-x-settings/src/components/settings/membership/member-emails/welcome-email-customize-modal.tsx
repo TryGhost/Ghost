@@ -38,6 +38,7 @@ interface GeneralSettings {
     senderEmail: string;
     replyToEmail: string;
     headerImage: string;
+    showPublicationIcon: boolean;
     showPublicationTitle: boolean;
     showBadge: boolean;
     emailFooter: string;
@@ -55,6 +56,7 @@ const NON_DESIGN_FIELDS = new Set([
     'created_at',
     'updated_at',
     'header_image',
+    'show_header_icon',
     'show_header_title',
     'show_badge',
     'footer_content'
@@ -67,6 +69,7 @@ const PREVIEW_ONLY_FIELDS = new Set([
 interface GeneralTabProps {
     generalSettings: GeneralSettings;
     onGeneralChange: (updates: Partial<GeneralSettings>) => void;
+    showPublicationIconToggle: boolean;
     senderNamePlaceholder: string;
     senderEmailPlaceholder: string;
     replyToEmailPlaceholder: string;
@@ -79,6 +82,7 @@ interface GeneralTabProps {
 const GeneralTab: React.FC<GeneralTabProps> = ({
     generalSettings,
     onGeneralChange,
+    showPublicationIconToggle,
     senderNamePlaceholder,
     senderEmailPlaceholder,
     replyToEmailPlaceholder,
@@ -135,6 +139,16 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                     value={generalSettings.headerImage}
                     onChange={url => onGeneralChange({headerImage: url})}
                 />
+                {showPublicationIconToggle && (
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Publication icon</span>
+                        <Switch
+                            checked={generalSettings.showPublicationIcon}
+                            size='sm'
+                            onCheckedChange={checked => onGeneralChange({showPublicationIcon: checked})}
+                        />
+                    </div>
+                )}
                 <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Publication title</span>
                     <Switch
@@ -204,6 +218,7 @@ export const DesignTab: React.FC = () => (
 interface SidebarProps {
     generalSettings: GeneralSettings;
     onGeneralChange: (updates: Partial<GeneralSettings>) => void;
+    showPublicationIconToggle: boolean;
     senderNamePlaceholder: string;
     senderEmailPlaceholder: string;
     replyToEmailPlaceholder: string;
@@ -218,6 +233,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({
     generalSettings,
     onGeneralChange,
+    showPublicationIconToggle,
     senderNamePlaceholder,
     senderEmailPlaceholder,
     replyToEmailPlaceholder,
@@ -252,6 +268,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         senderEmailPlaceholder={senderEmailPlaceholder}
                         senderNameError={senderNameError}
                         senderNamePlaceholder={senderNamePlaceholder}
+                        showPublicationIconToggle={showPublicationIconToggle}
                         showSenderEmailInput={showSenderEmailInput}
                         onGeneralChange={onGeneralChange}
                     />
@@ -268,12 +285,12 @@ const Sidebar: React.FC<SidebarProps> = ({
  * Maps API response fields to the frontend GeneralSettings shape.
  * Note: senderName, senderEmail and replyToEmail are not part of the design endpoint.
  *
- * @param {Pick<AutomatedEmailDesign, 'header_image' | 'show_header_title' | 'show_badge' | 'footer_content'>} apiData - Subset of design fields used for general settings
+ * @param {Pick<AutomatedEmailDesign, 'header_image' | 'show_header_icon' | 'show_header_title' | 'show_badge' | 'footer_content'>} apiData - Subset of design fields used for general settings
  * @param {GeneralSettings} defaults - Carries forward sender fields, which are not part of the design API
  * @returns {GeneralSettings} General settings populated from the API response
  */
 function mapApiToGeneralSettings(
-    apiData: Pick<AutomatedEmailDesign, 'header_image' | 'show_header_title' | 'show_badge' | 'footer_content'>,
+    apiData: Pick<AutomatedEmailDesign, 'header_image' | 'show_header_icon' | 'show_header_title' | 'show_badge' | 'footer_content'>,
     defaults: GeneralSettings
 ): GeneralSettings {
     return {
@@ -281,6 +298,7 @@ function mapApiToGeneralSettings(
         senderEmail: defaults.senderEmail,
         replyToEmail: defaults.replyToEmail,
         headerImage: apiData.header_image || '',
+        showPublicationIcon: apiData.show_header_icon,
         showPublicationTitle: apiData.show_header_title,
         showBadge: apiData.show_badge,
         emailFooter: apiData.footer_content || ''
@@ -316,6 +334,7 @@ export function buildAutomatedEmailDesignPayload(state: WelcomeEmailCustomizeFor
     return {
         ...persistedDesign,
         header_image: state.generalSettings.headerImage || null,
+        show_header_icon: state.generalSettings.showPublicationIcon,
         show_header_title: state.generalSettings.showPublicationTitle,
         show_badge: state.generalSettings.showBadge,
         footer_content: state.generalSettings.emailFooter || null
@@ -336,7 +355,7 @@ const normalizeSenderValue = (value: string | null | undefined) => {
 const WelcomeEmailCustomizeModal = NiceModal.create(() => {
     const modal = useModal();
     const {siteData, settings: globalSettings} = useGlobalData();
-    const [siteTitle, defaultEmailAddress] = getSettingValues<string>(globalSettings, ['title', 'default_email_address']);
+    const [siteTitle, defaultEmailAddress, icon] = getSettingValues<string>(globalSettings, ['title', 'default_email_address', 'icon']);
 
     const handleError = useHandleError();
     const {data: designData, isLoading, isError} = useReadAutomatedEmailDesign();
@@ -364,6 +383,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
         senderEmail: senderEmailInput,
         replyToEmail: replyToEmailInput,
         headerImage: '',
+        showPublicationIcon: true,
         showPublicationTitle: true,
         showBadge: true,
         emailFooter: ''
@@ -532,6 +552,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                         senderName={generalSettings.senderName || senderNamePlaceholder || siteTitle || 'Your site'}
                         settings={designSettings}
                         showBadge={generalSettings.showBadge}
+                        showPublicationIcon={generalSettings.showPublicationIcon && Boolean(icon)}
                         showPublicationTitle={generalSettings.showPublicationTitle}
                         showRecipientLine={false}
                         showSubjectLine={false}
@@ -551,6 +572,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                         senderEmailPlaceholder={senderEmailPlaceholder}
                         senderNameError={errors.senderName}
                         senderNamePlaceholder={senderNamePlaceholder}
+                        showPublicationIconToggle={Boolean(icon)}
                         showSenderEmailInput={showSenderEmailInput}
                         onGeneralChange={handleGeneralChange}
                     />

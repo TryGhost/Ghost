@@ -79,10 +79,15 @@ class MemberWelcomeEmailService {
     }
 
     #getSiteSettings() {
+        const icon = settingsCache.get('icon');
+
         return {
             title: settingsCache.get('title') || 'Ghost',
             url: urlUtils.urlFor('home', true),
-            accentColor: settingsCache.get('accent_color') || '#15212A'
+            accentColor: settingsCache.get('accent_color') || '#15212A',
+            iconUrl: icon ? urlUtils.urlFor('image', {
+                image: icon
+            }, true) : null
         };
     }
 
