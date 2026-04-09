@@ -14,7 +14,11 @@ export const HeadingWeightField = () => {
                 <SelectTrigger className="w-[180px]">
                     <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent
+                    onEscapeKeyDown={(event) => {
+                        event.stopPropagation();
+                    }}
+                >
                     {weightOptions.map(opt => (
                         <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                     ))}

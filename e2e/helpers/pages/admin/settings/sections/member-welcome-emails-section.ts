@@ -27,6 +27,7 @@ export class MemberWelcomeEmailsSection extends BasePage {
     readonly customizeModalButtonStyleFill: Locator;
     readonly customizeModalButtonStyleOutline: Locator;
     readonly customizeModalBodyFontSelect: Locator;
+    readonly customizeModalBodyFontSerifOption: Locator;
     readonly customizeModalButtonColorField: Locator;
     readonly customizeModalButtonColorPickerTrigger: Locator;
     readonly customizeModalButtonColorAccentSwatch: Locator;
@@ -67,6 +68,7 @@ export class MemberWelcomeEmailsSection extends BasePage {
         this.customizeModalButtonStyleFill = this.customizeModal.getByLabel('Fill');
         this.customizeModalButtonStyleOutline = this.customizeModal.getByLabel('Outline');
         this.customizeModalBodyFontSelect = this.customizeModal.getByText('Body font').locator('..').getByRole('combobox');
+        this.customizeModalBodyFontSerifOption = page.getByRole('option', {name: 'Elegant serif', exact: true});
         this.customizeModalButtonColorField = this.customizeModal.getByText('Button color').locator('..');
         this.customizeModalButtonColorPickerTrigger = this.customizeModalButtonColorField.getByRole('button', {name: 'Pick color'});
         this.customizeModalButtonColorAccentSwatch = this.customizeModal.getByRole('button', {name: 'Accent'});
