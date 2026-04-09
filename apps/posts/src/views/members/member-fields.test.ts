@@ -48,6 +48,7 @@ describe('memberFields', () => {
     it('keeps the expected operators for key member fields', () => {
         expect(memberFields.label.operators).toEqual(['is-any', 'is-not-any']);
         expect(memberFields.tier_id.operators).toEqual(['is-any', 'is-not-any']);
+        expect(memberFields['subscriptions.status'].operators).toEqual(['is-any', 'is-not-any']);
         expect(memberFields['newsletters.:slug'].operators).toEqual(['is']);
         expect(memberFields.newsletter_feedback.operators).toEqual(['1', '0']);
         expect(memberFields.email_count.operators).toEqual([

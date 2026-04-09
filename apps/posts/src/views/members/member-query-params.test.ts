@@ -1,10 +1,12 @@
 import {
     buildMemberListSearchParams,
     buildMemberOperationParams,
+    getActiveColumnValue,
     getMemberActiveColumns
 } from './member-query-params';
 import {describe, expect, it} from 'vitest';
 import type {FilterPredicate} from '../filters/filter-types';
+import type {Member} from '@tryghost/admin-x-framework/api/members';
 
 describe('member-query-params', () => {
     it('keeps search separate while deriving includes from active field metadata', () => {
@@ -88,5 +90,104 @@ describe('member-query-params', () => {
         })).toEqual({
             all: true
         });
+    });
+});
+
+describe('getActiveColumnValue', () => {
+    const baseMember: Member = {
+        id: '1',
+        transient_id: 't1',
+        uuid: 'u1',
+        status: 'paid',
+        subscribed: true,
+        last_seen_at: null,
+        last_commented_at: null,
+        created_at: '2024-01-01T00:00:00.000Z',
+        updated_at: '2024-01-01T00:00:00.000Z'
+    };
+
+    const makeSub = (id: string, status: string) => ({
+        id,
+        status,
+        customer: {id: 'cust_1', name: null, email: 'test@test.com'},
+        plan: {id: 'plan_1', nickname: '', interval: 'month' as const, currency: 'usd', amount: 500},
+        start_date: '2024-01-01T00:00:00.000Z',
+        current_period_end: '2024-02-01T00:00:00.000Z',
+        cancel_at_period_end: false,
+        price: {id: 'price_1', price_id: 'price_1', nickname: '', amount: 500, currency: 'usd', type: 'recurring', interval: 'month' as const},
+        tier: {id: 'tier_1', name: 'Default', slug: 'default', active: true, type: 'paid' as const},
+        offer: null
+    });
+
+    const statusColumn = {key: 'subscriptions.status', label: 'Subscription status', include: 'subscriptions'};
+
+    it('shows all unique subscription statuses for a member', () => {
+        const member = {
+            ...baseMember,
+            subscriptions: [
+                makeSub('sub_1', 'active'),
+                makeSub('sub_2', 'canceled')
+            ]
+        };
+
+        expect(getActiveColumnValue(statusColumn, member, 'UTC')).toEqual({
+            text: 'Active, Canceled'
+        });
+    });
+
+    it('deduplicates subscription statuses', () => {
+        const member = {
+            ...baseMember,
+            subscriptions: [
+                makeSub('sub_1', 'canceled'),
+                makeSub('sub_2', 'canceled')
+            ]
+        };
+
+        expect(getActiveColumnValue(statusColumn, member, 'UTC')).toEqual({
+            text: 'Canceled'
+        });
+    });
+
+    it('formats multi-word statuses correctly', () => {
+        const member = {
+            ...baseMember,
+            subscriptions: [
+                makeSub('sub_1', 'past_due'),
+                makeSub('sub_2', 'incomplete_expired')
+            ]
+        };
+
+        expect(getActiveColumnValue(statusColumn, member, 'UTC')).toEqual({
+            text: 'Past Due, Incomplete - Expired'
+        });
+    });
+
+    it('sorts statuses by severity (active states first)', () => {
+        const member = {
+            ...baseMember,
+            subscriptions: [
+                makeSub('sub_1', 'canceled'),
+                makeSub('sub_2', 'active'),
+                makeSub('sub_3', 'past_due')
+            ]
+        };
+
+        expect(getActiveColumnValue(statusColumn, member, 'UTC')).toEqual({
+            text: 'Active, Past Due, Canceled'
+        });
+    });
+
+    it('returns null when member has no subscriptions', () => {
+        expect(getActiveColumnValue(statusColumn, baseMember, 'UTC')).toBeNull();
+    });
+
+    it('returns null when subscriptions have no id', () => {
+        const member = {
+            ...baseMember,
+            subscriptions: [{...makeSub('', 'active'), id: ''}]
+        };
+
+        expect(getActiveColumnValue(statusColumn, member, 'UTC')).toBeNull();
     });
 });

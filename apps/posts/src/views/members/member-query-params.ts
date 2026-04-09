@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import {memberFields} from './member-fields';
+import {SUBSCRIPTION_STATUS_OPTIONS, memberFields} from './member-fields';
 import {resolveField} from '../filters/resolve-field';
 import type {FilterPredicate} from '../filters/filter-types';
 import type {Member, MemberSubscription} from '@tryghost/admin-x-framework/api/members';
@@ -7,6 +7,20 @@ import type {Member, MemberSubscription} from '@tryghost/admin-x-framework/api/m
 const MAX_ACTIVE_COLUMNS = 2;
 
 const ACTIVE_SUBSCRIPTION_STATUSES = new Set(['active', 'trialing', 'unpaid', 'past_due']);
+
+const SUBSCRIPTION_STATUS_LABELS = new Map(
+    SUBSCRIPTION_STATUS_OPTIONS.map(option => [option.value, option.label])
+);
+
+const SUBSCRIPTION_STATUS_ORDER: Record<string, number> = {
+    active: 0,
+    trialing: 1,
+    past_due: 2,
+    unpaid: 3,
+    canceled: 4,
+    incomplete: 5,
+    incomplete_expired: 6
+};
 
 export type ActiveColumn = {
     key: string;
@@ -167,15 +181,21 @@ export function getActiveColumnValue(
     }
 
     case 'subscriptions.status': {
-        const status = mostRelevantSubscription(member.subscriptions)?.status;
-        if (!status) {
+        if (!member.subscriptions?.length) {
+            return null;
+        }
+        const statuses = [...new Set(
+            member.subscriptions
+                .filter(s => s.id)
+                .map(s => s.status)
+        )].sort((a, b) => (SUBSCRIPTION_STATUS_ORDER[a] ?? 99) - (SUBSCRIPTION_STATUS_ORDER[b] ?? 99));
+        if (!statuses.length) {
             return null;
         }
         return {
-            text: status
-                .split('_')
-                .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-                .join(' ')
+            text: statuses
+                .map(s => SUBSCRIPTION_STATUS_LABELS.get(s) ?? s.split('_').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' '))
+                .join(', ')
         };
     }
 

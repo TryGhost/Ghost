@@ -16,7 +16,7 @@ const DATE_OPERATORS = ['is-less', 'is-or-less', 'is-greater', 'is-or-greater'] 
 const NUMBER_OPERATORS = ['is', 'is-greater', 'is-less'] as const;
 const SCALAR_OPERATORS = ['is', 'is-not'] as const;
 const SET_OPERATORS = ['is-any', 'is-not-any'] as const;
-const SUBSCRIPTION_STATUS_OPTIONS: Array<{value: string; label: string}> = [
+export const SUBSCRIPTION_STATUS_OPTIONS: Array<{value: string; label: string}> = [
     {value: 'active', label: 'Active'},
     {value: 'trialing', label: 'Trialing'},
     {value: 'canceled', label: 'Canceled'},
@@ -323,11 +323,12 @@ export const memberFields = defineFields({
         codec: scalarCodec()
     },
     'subscriptions.status': {
-        operators: SCALAR_OPERATORS,
+        operators: SET_OPERATORS,
         ui: {
             label: 'Stripe subscription status',
-            type: 'select',
-            searchable: false
+            type: 'multiselect',
+            searchable: false,
+            defaultOperator: 'is-any'
         },
         options: SUBSCRIPTION_STATUS_OPTIONS,
         metadata: {
@@ -337,7 +338,7 @@ export const memberFields = defineFields({
                 include: 'subscriptions'
             }
         },
-        codec: scalarCodec()
+        codec: setCodec()
     },
     'subscriptions.start_date': {
         operators: DATE_OPERATORS,
