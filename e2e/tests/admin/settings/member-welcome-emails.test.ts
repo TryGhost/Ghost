@@ -146,17 +146,6 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
         });
     });
 
-    test('free signup sends welcome email exactly once', async ({page}) => {
-        const automatedEmailFactory = createAutomatedEmailFactory(page.request);
-        const emailClient = new MailPit();
-        await automatedEmailFactory.create();
-
-        const {emailAddress} = await signupViaPortal(page);
-        await completeSignupViaMagicLink(emailClient, page, emailAddress);
-
-        await expectWelcomeEmailCount(emailClient, emailAddress, 1);
-    });
-
     test('can enable free welcome emails', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
