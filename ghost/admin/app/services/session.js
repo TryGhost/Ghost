@@ -88,6 +88,13 @@ export default class SessionService extends ESASessionService {
                 return;
             }
 
+            const redirectUrl = window.sessionStorage.getItem('ghost-signin-redirect');
+            if (redirectUrl) {
+                window.sessionStorage.removeItem('ghost-signin-redirect');
+                this.router.transitionTo(redirectUrl);
+                return;
+            }
+
             super.handleAuthentication('home');
         });
     }
