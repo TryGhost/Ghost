@@ -1,5 +1,6 @@
 const commands = require('../../schema').commands;
 const schema = require('../../schema').tables;
+const views = require('../../schema').views;
 const logging = require('@tryghost/logging');
 const schemaTables = Object.keys(schema);
 const {sequence} = require('@tryghost/promise');
@@ -14,6 +15,13 @@ module.exports.up = async (options) => {
         logging.info('Creating table: ' + table);
         await commands.createTable(table, connection);
     }));
+
+    // Create database views after all tables exist
+    for (const view of views) {
+        logging.info('Creating view: ' + view.name);
+        await connection.raw('DROP VIEW IF EXISTS ??', [view.name]);
+        await connection.raw('CREATE VIEW ?? AS ' + view.body, [view.name]);
+    }
 };
 
 /**

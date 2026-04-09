@@ -96,6 +96,9 @@ const Member = ghostBookshelf.Model.extend({
         }, {
             key: 'offer_redemptions',
             replacement: 'offer_redemptions.offer_id'
+        }, {
+            key: 'subscription_count',
+            replacement: 'subscription_counts.subscription_count'
         }];
     },
 
@@ -167,6 +170,12 @@ const Member = ghostBookshelf.Model.extend({
             },
             offer_redemptions: {
                 tableName: 'offer_redemptions',
+                type: 'oneToOne',
+                joinFrom: 'member_id'
+            },
+            subscription_counts: {
+                tableName: 'members_subscription_counts',
+                tableNameAs: 'subscription_counts',
                 type: 'oneToOne',
                 joinFrom: 'member_id'
             }

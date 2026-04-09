@@ -483,5 +483,17 @@ export const memberFields = defineFields({
             }
         },
         codec: setCodec({quoteStrings: true, serializeSingletonAsScalar: true})
+    },
+    subscription_count: {
+        operators: NUMBER_OPERATORS,
+        ui: {
+            label: 'Active subscriptions',
+            type: 'number',
+            defaultOperator: 'is-greater',
+            defaultValue: 1,
+            min: 1,
+            className: 'w-24'
+        },
+        codec: numberCodec()
     }
 });

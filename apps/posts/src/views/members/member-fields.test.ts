@@ -41,7 +41,8 @@ describe('memberFields', () => {
             'opened_emails.post_id',
             'clicked_links.post_id',
             'newsletter_feedback',
-            'offer_redemptions'
+            'offer_redemptions',
+            'subscription_count'
         ]);
     });
 
@@ -51,6 +52,11 @@ describe('memberFields', () => {
         expect(memberFields['newsletters.:slug'].operators).toEqual(['is']);
         expect(memberFields.newsletter_feedback.operators).toEqual(['1', '0']);
         expect(memberFields.email_count.operators).toEqual([
+            'is',
+            'is-greater',
+            'is-less'
+        ]);
+        expect(memberFields.subscription_count.operators).toEqual([
             'is',
             'is-greater',
             'is-less'

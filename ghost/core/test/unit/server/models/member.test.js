@@ -3,12 +3,18 @@ const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 const configUtils = require('../../../utils/config-utils');
 const labs = require('../../../../core/shared/labs');
+const knex = require('../../../../core/server/data/db').knex;
 
 const config = configUtils.config;
 
 describe('Unit: models/member', function () {
+    const mockDb = require('mock-knex');
+    let tracker;
+
     before(function () {
         models.init();
+        mockDb.mock(knex);
+        tracker = mockDb.getTracker();
     });
 
     beforeEach(function () {
@@ -18,6 +24,10 @@ describe('Unit: models/member', function () {
     afterEach(async function () {
         await configUtils.restore();
         sinon.restore();
+    });
+
+    after(function () {
+        mockDb.unmock(knex);
     });
 
     describe('toJSON', function () {
@@ -84,6 +94,47 @@ describe('Unit: models/member', function () {
             }]);
 
             sinon.assert.calledWith(updatePivot, {expiry_at: null}, {query: {where: {product_id: '1'}}});
+        });
+    });
+
+    describe('filter', function () {
+        it('generates correct query for subscription_count filter', function () {
+            const queries = [];
+            tracker.install();
+
+            tracker.on('query', (query) => {
+                queries.push(query);
+                query.response([]);
+            });
+
+            return models.Member.findPage({
+                filter: 'subscription_count:>1'
+            }).then(() => {
+                assert.equal(queries.length, 2);
+
+                // The count query must alias the VIEW as subscription_counts so the
+                // WHERE clause references the same name used in the LEFT JOIN.
+                assert.ok(
+                    queries[0].sql.includes('left join `members_subscription_counts` as `subscription_counts`'),
+                    `Expected aliased JOIN in count query, got: ${queries[0].sql}`
+                );
+                assert.ok(
+                    queries[0].sql.includes('`subscription_counts`.`subscription_count` > ?'),
+                    `Expected WHERE to reference alias in count query, got: ${queries[0].sql}`
+                );
+
+                // The data query must also use the alias consistently.
+                assert.ok(
+                    queries[1].sql.includes('left join `members_subscription_counts` as `subscription_counts`'),
+                    `Expected aliased JOIN in data query, got: ${queries[1].sql}`
+                );
+                assert.ok(
+                    queries[1].sql.includes('`subscription_counts`.`subscription_count` > ?'),
+                    `Expected WHERE to reference alias in data query, got: ${queries[1].sql}`
+                );
+            }).finally(() => {
+                tracker.uninstall();
+            });
         });
     });
 });

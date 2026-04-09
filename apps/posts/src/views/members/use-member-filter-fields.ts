@@ -102,6 +102,8 @@ function getFieldIcon(key: string) {
         return React.createElement(LucideIcon.MessageSquare, {className: 'size-4'});
     case 'offer_redemptions':
         return React.createElement(LucideIcon.Ticket, {className: 'size-4'});
+    case 'subscription_count':
+        return React.createElement(LucideIcon.Hash, {className: 'size-4'});
     default:
         if (key.startsWith('newsletters.')) {
             return React.createElement(LucideIcon.Newspaper, {className: 'size-4'});
@@ -395,6 +397,10 @@ export function useMemberFilterFields({
                     postValueSource
                 )));
             }
+
+            subscriptionFields.push(
+                createFieldConfig('subscription_count', {}, NUMBER_OPERATOR_LABELS)
+            );
 
             if (offers.length > 0) {
                 subscriptionFields.push(createFieldConfig('offer_redemptions', {
