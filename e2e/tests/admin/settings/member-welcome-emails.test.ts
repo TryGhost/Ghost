@@ -239,6 +239,22 @@ test.describe('Ghost Admin - Welcome Email Customize Button - flag enabled', () 
         await expect(welcomeEmailsSection.customizeModalFooterTextarea).toHaveValue('Persisted footer');
     });
 
+    test('Escape shows unsaved changes confirmation for welcome email customization', async ({page}) => {
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+
+        await welcomeEmailsSection.goto();
+        await welcomeEmailsSection.openCustomizeModal();
+
+        await welcomeEmailsSection.customizeModalFooterTextarea.fill('Unsaved footer change');
+        await expect(welcomeEmailsSection.customizeModalFooterTextarea).toHaveValue('Unsaved footer change');
+
+        await page.keyboard.press('Escape');
+
+        await expect(welcomeEmailsSection.customizeModal).toBeVisible();
+        await expect(welcomeEmailsSection.customizeModalUnsavedChangesDialog).toBeVisible();
+        await expect(page).toHaveURL(/\/ghost\/#\/settings\/memberemails$/);
+    });
+
     test('customized design is applied to the free member welcome email', async ({page, browser, baseURL}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
         const emailClient = new MailPit();

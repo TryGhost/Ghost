@@ -13,6 +13,7 @@ export class MemberWelcomeEmailsSection extends BasePage {
     readonly customizeModal: Locator;
     readonly customizeModalSaveButton: Locator;
     readonly customizeModalCloseButton: Locator;
+    readonly customizeModalUnsavedChangesDialog: Locator;
     readonly customizeModalGeneralTab: Locator;
     readonly customizeModalDesignTab: Locator;
 
@@ -48,6 +49,7 @@ export class MemberWelcomeEmailsSection extends BasePage {
         this.customizeModal = page.getByTestId('welcome-email-customize-modal');
         this.customizeModalSaveButton = this.customizeModal.getByRole('button', {name: 'Save'});
         this.customizeModalCloseButton = this.customizeModal.getByRole('button', {name: 'Close'});
+        this.customizeModalUnsavedChangesDialog = page.getByRole('alertdialog', {name: 'Are you sure you want to leave this page?'});
         this.customizeModalGeneralTab = this.customizeModal.getByRole('tab', {name: 'General'});
         this.customizeModalDesignTab = this.customizeModal.getByRole('tab', {name: 'Design'});
 
