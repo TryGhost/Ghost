@@ -61,9 +61,7 @@ module.exports = {
                     stats: {
                         successful: bulkActionResult.successful,
                         unsuccessful: bulkActionResult.unsuccessful
-                    },
-                    errors: bulkActionResult.errors,
-                    unsuccessfulData: bulkActionResult.unsuccessfulData
+                    }
                 }
             }
         };
@@ -76,8 +74,7 @@ module.exports = {
                     stats: {
                         successful: bulkActionResult.successful,
                         unsuccessful: bulkActionResult.unsuccessful
-                    },
-                    errors: bulkActionResult.errors
+                    }
                 }
             }
         };

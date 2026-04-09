@@ -125,9 +125,7 @@ function bulkAction(bulkActionResult, _apiConfig, frame) {
                 stats: {
                     successful: bulkActionResult.successful,
                     unsuccessful: bulkActionResult.unsuccessful
-                },
-                errors: bulkActionResult.errors,
-                unsuccessfulData: bulkActionResult.unsuccessfulData
+                }
             }
         }
     };
@@ -355,8 +353,6 @@ function createSerializer(debugString, serialize) {
  * @prop {string} action
  *
  * @prop {object} meta
- * @prop {object[]} meta.unsuccessfulData
- * @prop {Error[]} meta.errors
  * @prop {object} meta.stats
  *
  * @prop {number} meta.stats.successful

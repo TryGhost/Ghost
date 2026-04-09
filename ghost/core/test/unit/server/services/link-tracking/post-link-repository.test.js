@@ -16,9 +16,7 @@ describe('UNIT: PostLinkRepository class', function () {
                 }),
                 bulkEdit: sinon.stub().returns({
                     successful: 0,
-                    unsuccessful: 0,
-                    errors: [],
-                    unsuccessfulData: []
+                    unsuccessful: 0
                 })
             },
             linkRedirectRepository: {}
@@ -45,9 +43,7 @@ describe('UNIT: PostLinkRepository class', function () {
                         stats: {
                             successful: 0,
                             unsuccessful: 0
-                        },
-                        errors: [],
-                        unsuccessfulData: []
+                        }
                     }
                 }
             });
