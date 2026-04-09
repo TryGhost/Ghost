@@ -12,6 +12,8 @@ export default class AuthenticatedRoute extends Route {
             if (url) {
                 window.sessionStorage.setItem('ghost-signin-redirect', url);
             }
+        } else {
+            window.sessionStorage.removeItem('ghost-signin-redirect');
         }
 
         this.session.requireAuthentication(transition, () => {
