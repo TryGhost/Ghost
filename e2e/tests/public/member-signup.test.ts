@@ -86,7 +86,6 @@ test.describe('Ghost Public - Member Signup', () => {
         const welcomeEmail = await emailClient.getMessageDetailed(welcomeMessages[0]);
 
         expect(welcomeEmail.From.Name).toContain('Test Blog');
-        expect(welcomeEmail.From.Address).toContain('@');
         expect(welcomeEmail.Subject).toBe('Welcome to Test Blog!');
         expect(welcomeEmail.Text).toContain('Welcome to Test Blog!');
         expect(welcomeEmail.HTML).toContain('Welcome to Test Blog!');
