@@ -12,14 +12,16 @@ test.describe('Ghost Admin - Members Bulk Actions', () => {
         memberFactory = createMemberFactory(page.request);
     });
 
-    test('adds a label to all members via bulk action', async ({page}) => {
+    test('adds a label to filtered members via bulk action', async ({page}) => {
         await memberFactory.createMany([
             {name: 'Bulk Label 1', email: 'bulk1@example.com', labels: ['existing']},
-            {name: 'Bulk Label 2', email: 'bulk2@example.com', labels: ['existing']}
+            {name: 'Bulk Label 2', email: 'bulk2@example.com', labels: ['existing']},
+            {name: 'Bulk Label 3', email: 'bulk3@example.com'}
         ]);
 
         const membersPage = new MembersListPage(page);
         await membersPage.goto();
+        await membersPage.addFilter('Label', 'existing');
         await expect(membersPage.memberRows).toHaveCount(2);
 
         await membersPage.openActionsMenu();
