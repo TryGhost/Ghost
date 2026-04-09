@@ -57,7 +57,7 @@ function GiftProductCardPrice({product, selectedInterval}) {
                     <span className="gh-portal-discount-label">{yearlyDiscount}% discount</span>
                 )}
             </div>
-            <div className="gh-portal-product-alternative-price" style={{display: 'block'}}>one-time payment</div>
+            <span style={{display: 'block', opacity: '0.5'}}>one-time payment</span>
         </div>
     );
 }
