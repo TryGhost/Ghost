@@ -22951,10 +22951,10 @@ human-interval@^2.0.0:
   dependencies:
     numbered "^1.1.0"
 
-human-number@2.0.9:
-  version "2.0.9"
-  resolved "https://registry.yarnpkg.com/human-number/-/human-number-2.0.9.tgz#afda90d34bc0165698270878417888aef4aa46d5"
-  integrity sha512-6qnNEP4hVdM0b/e3c95AZK0z+3kjrcZbi4zlHK3P9BULiRkX1WLBnfjhTG4NgP4e8vTiPTl3ltDJ4kRHA+PKPA==
+human-number@2.0.10:
+  version "2.0.10"
+  resolved "https://registry.yarnpkg.com/human-number/-/human-number-2.0.10.tgz#524d98ff9645518636650542775019ca741737ee"
+  integrity sha512-RHuagJOf+jR/6FkLzz8ZugPUR4KGbqJOWdsYUOqa7j/M542M0gVe4a+TJNVQgqaAMTKX9wyvv/xuiAII0Kq6Iw==
 
 human-signals@^1.1.1:
   version "1.1.1"
