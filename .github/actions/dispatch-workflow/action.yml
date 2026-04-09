@@ -1,0 +1,67 @@
+name: 'Dispatch Workflow'
+description: 'Trigger a GitHub Actions workflow in another repository and watch the resulting run'
+inputs:
+  repo:
+    description: 'Repository in owner/name format'
+    required: true
+  workflow:
+    description: 'Workflow file name or workflow ID to dispatch'
+    required: true
+  branch:
+    description: 'Git ref to dispatch the workflow on'
+    required: true
+  dispatch-inputs:
+    description: 'JSON object passed as workflow_dispatch inputs'
+    required: true
+outputs:
+  dispatch-response:
+    description: 'Raw response from the workflow dispatch API call'
+    value: ${{ steps.dispatch.outputs.dispatch-response }}
+  run-id:
+    description: 'Triggered workflow run ID'
+    value: ${{ steps.dispatch.outputs.run-id }}
+  run-url:
+    description: 'Triggered workflow run URL'
+    value: ${{ steps.dispatch.outputs.run-url }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Dispatch workflow and watch run
+      id: dispatch
+      shell: bash
+      env:
+        REPO: ${{ inputs.repo }}
+        WORKFLOW: ${{ inputs.workflow }}
+        BRANCH: ${{ inputs.branch }}
+        DISPATCH_INPUTS: ${{ inputs.dispatch-inputs }}
+      run: |
+        set -euo pipefail
+
+        DISPATCH_RESPONSE=$(jq -cn \
+          --arg ref "$BRANCH" \
+          --argjson inputs "$DISPATCH_INPUTS" \
+          '{ref: $ref, return_run_details: true, inputs: $inputs}' | gh api \
+          --method POST \
+          -H "Accept: application/vnd.github+json" \
+          "repos/$REPO/actions/workflows/$WORKFLOW/dispatches" \
+          --input -)
+
+        RUN_ID=$(printf '%s' "$DISPATCH_RESPONSE" | jq -r '.workflow_run_id // empty')
+        RUN_URL=$(printf '%s' "$DISPATCH_RESPONSE" | jq -r '.html_url // .run_url // empty')
+
+        if [ -z "$RUN_ID" ]; then
+          echo "::error::Unable to find the triggered workflow run in $REPO"
+          exit 1
+        fi
+
+        echo "Watching remote workflow run: $RUN_URL"
+
+        {
+          echo 'dispatch-response<<EOF'
+          printf '%s\n' "$DISPATCH_RESPONSE"
+          echo 'EOF'
+          echo "run-id=$RUN_ID"
+          echo "run-url=$RUN_URL"
+        } >> "$GITHUB_OUTPUT"
+
+        gh run watch "$RUN_ID" --repo "$REPO" --exit-status
