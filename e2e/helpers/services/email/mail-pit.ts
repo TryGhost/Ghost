@@ -27,7 +27,7 @@ export interface EmailMessageSearchResult {
 }
 
 export type EmailSearchOptions = {
-    limit?: number, timeoutMs?: number, numberOfMessages?: number
+    limit?: number, timeoutMs?: number | null, numberOfMessages?: number
 }
 
 export interface EmailSearchQuery {
