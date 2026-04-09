@@ -1,4 +1,4 @@
-const downsize = require('downsize');
+const downsize = require('downsize-cjs');
 const RSS = require('rss');
 const urlUtils = require('../../../shared/url-utils');
 const {routerManager} = require('../routing');

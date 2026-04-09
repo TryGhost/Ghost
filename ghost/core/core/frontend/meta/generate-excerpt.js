@@ -6,7 +6,7 @@ function generateExcerpt(excerpt, truncateOptions) {
     }
 
     // Just uses downsize to truncate, not format
-    const downsize = require('downsize');
+    const downsize = require('downsize-cjs');
     return downsize(excerpt, truncateOptions);
 }
 
