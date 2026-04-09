@@ -3,7 +3,7 @@ import moment from 'moment-timezone';
 import {Member} from '@tryghost/admin-x-framework/api/members';
 import {MemberAvatar} from '@components/member-avatar';
 import {TableCell, TableRow} from '@tryghost/shade/components';
-import {buildMemberDetailHash} from '../member-detail-hash';
+import {buildMemberDetailPath} from '../member-detail-hash';
 import {cn} from '@tryghost/shade/utils';
 import {getActiveColumnValue} from '../member-query-params';
 import type {ActiveColumn} from '../member-query-params';
@@ -63,12 +63,8 @@ function isModifiedClick(event: Pick<React.MouseEvent<HTMLElement>, 'button' | '
     return event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
 }
 
-function buildMemberHref(memberId: string, backPath?: string) {
-    return `#${buildMemberDetailHash(memberId, backPath)}`;
-}
-
 function openMemberInNewTab(memberId: string, backPath?: string) {
-    window.open(buildMemberHref(memberId, backPath), '_blank', 'noopener');
+    window.open(`#${buildMemberDetailPath(memberId, backPath)}`, '_blank', 'noopener');
 }
 
 // --- Sub-components ---
@@ -86,7 +82,7 @@ function MembersListItemName({item, backPath, onClick}: { item: Member; backPath
             <div className="min-w-0">
                 <a
                     className="block min-w-0 cursor-pointer"
-                    href={buildMemberHref(item.id, backPath)}
+                    href={`#${buildMemberDetailPath(item.id, backPath)}`}
                     onClick={onClick ? (e) => {
                         if (isModifiedClick(e)) {
                             e.stopPropagation();

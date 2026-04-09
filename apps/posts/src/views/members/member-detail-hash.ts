@@ -1,4 +1,4 @@
-export function buildMemberDetailHash(memberId: string, backPath?: string) {
+export function buildMemberDetailPath(memberId: string, backPath?: string) {
     const params = new URLSearchParams();
 
     if (backPath) {

@@ -3,7 +3,7 @@ import MembersListItem from './members-list-item';
 import {Member} from '@tryghost/admin-x-framework/api/members';
 import {MembersTableColGroup, MembersTableHeader, PinnedMemberHeader} from './member-table-chrome';
 import {Table, TableBody, TableCell, TableRow} from '@tryghost/shade/components';
-import {buildMemberDetailHash} from '../member-detail-hash';
+import {buildMemberDetailPath} from '../member-detail-hash';
 import {forwardRef, useEffect, useMemo, useRef, useState} from 'react';
 import {getMemberTableLayout, getMemberTableLayoutStyles} from './member-table-layout';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
@@ -192,7 +192,7 @@ function MembersList({
             onRowClick(memberId);
         } else {
             // Default: Navigate to Ember member detail page
-            window.location.hash = buildMemberDetailHash(memberId, backPath);
+            window.location.hash = buildMemberDetailPath(memberId, backPath);
         }
     };
 
