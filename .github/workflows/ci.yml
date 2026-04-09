@@ -30,7 +30,7 @@ env:
   DISABLE_V8_COMPILE_CACHE: 1
 
 concurrency:
-  group: ${{ github.head_ref || github.run_id }}
+  group: ${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
