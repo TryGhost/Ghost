@@ -34,7 +34,7 @@
     "eslint-plugin-react-hooks": "5.2.0",
     "eslint-plugin-react-refresh": "0.4.24",
     "eslint-plugin-tailwindcss": "4.0.0-beta.0",
-    "globals": "16.4.0",
+    "globals": "16.5.0",
     "jest-extended": "6.0.0",
     "jsdom": "28.1.0",
     "sirv": "3.0.2",
