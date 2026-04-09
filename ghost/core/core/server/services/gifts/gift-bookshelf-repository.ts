@@ -23,7 +23,7 @@ type GiftRow = {
     stripe_checkout_session_id: string;
     stripe_payment_intent_id: string;
     consumes_at: Date | null;
-    expires_at: Date | null;
+    expires_at: Date;
     status: GiftStatus;
     purchased_at: Date;
     redeemed_at: Date | null;
@@ -97,7 +97,7 @@ export class GiftBookshelfRepository implements GiftRepository {
             stripeCheckoutSessionId: json.stripe_checkout_session_id,
             stripePaymentIntentId: json.stripe_payment_intent_id,
             consumesAt: json.consumes_at,
-            expiresAt: json.expires_at ?? new Date(), // TODO: Remove fallback when non-nullable migration is in place
+            expiresAt: json.expires_at,
             status: json.status,
             purchasedAt: json.purchased_at,
             redeemedAt: json.redeemed_at,
