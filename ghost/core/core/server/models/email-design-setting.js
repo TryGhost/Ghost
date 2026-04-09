@@ -7,6 +7,7 @@ const EmailDesignSetting = ghostBookshelf.Model.extend({
         return {
             background_color: 'light',
             header_background_color: 'transparent',
+            show_header_icon: true,
             show_header_title: true,
             button_color: 'accent',
             button_corners: 'rounded',

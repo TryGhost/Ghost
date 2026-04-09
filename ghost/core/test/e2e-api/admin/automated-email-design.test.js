@@ -39,7 +39,8 @@ describe('Automated Email Design API', function () {
                 .body({automated_email_design: [{
                     background_color: 'dark',
                     button_corners: 'pill',
-                    link_style: 'bold'
+                    link_style: 'bold',
+                    show_header_icon: false
                 }]})
                 .expectStatus(200)
                 .matchBodySnapshot({

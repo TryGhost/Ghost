@@ -20,6 +20,7 @@ Object {
       "link_style": "bold",
       "section_title_color": null,
       "show_badge": true,
+      "show_header_icon": false,
       "show_header_title": true,
       "slug": "default-automated-email",
       "title_font_category": "sans_serif",
@@ -34,7 +35,7 @@ exports[`Automated Email Design API Edit Can edit the automated email design 2: 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "607",
+  "content-length": "632",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -218,6 +219,7 @@ Object {
       "link_style": "underline",
       "section_title_color": null,
       "show_badge": true,
+      "show_header_icon": true,
       "show_header_title": true,
       "slug": "default-automated-email",
       "title_font_category": "sans_serif",
@@ -232,7 +234,7 @@ exports[`Automated Email Design API Read Can read the default automated email de
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "616",
+  "content-length": "640",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
