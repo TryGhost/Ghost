@@ -15,7 +15,7 @@ const PopoverClose = PopoverPrimitive.Close;
 const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
->(({className, align = 'center', sideOffset = 4, onEscapeKeyDown, ...props}, ref) => (
+>(({className, align = 'center', sideOffset = 4, ...props}, ref) => (
     <PopoverPrimitive.Portal>
         <div className={SHADE_APP_NAMESPACES}>
             <PopoverPrimitive.Content
@@ -26,10 +26,6 @@ const PopoverContent = React.forwardRef<
                     className
                 )}
                 sideOffset={sideOffset}
-                onEscapeKeyDown={(event) => {
-                    event.stopPropagation();
-                    onEscapeKeyDown?.(event);
-                }}
                 {...props}
             />
         </div>

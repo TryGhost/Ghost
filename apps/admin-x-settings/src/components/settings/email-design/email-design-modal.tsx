@@ -109,7 +109,11 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
                 </DialogContent>
             </Dialog>
             <AlertDialog open={showDirtyConfirm} onOpenChange={setShowDirtyConfirm}>
-                <AlertDialogContent>
+                <AlertDialogContent
+                    onEscapeKeyDown={(event) => {
+                        event.stopPropagation();
+                    }}
+                >
                     <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure you want to leave this page?</AlertDialogTitle>
                         <AlertDialogDescription asChild>
