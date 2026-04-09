@@ -1,6 +1,38 @@
 const _ = require('lodash');
-const core = require('@actions/core');
 const mocha = require('mocha');
+
+// Escape data/properties for GitHub Actions workflow commands.
+// See https://github.com/actions/toolkit/blob/main/packages/core/src/command.ts
+function escapeData(s) {
+    return String(s ?? '')
+        .replace(/%/g, '%25')
+        .replace(/\r/g, '%0D')
+        .replace(/\n/g, '%0A');
+}
+function escapeProperty(s) {
+    return String(s ?? '')
+        .replace(/%/g, '%25')
+        .replace(/\r/g, '%0D')
+        .replace(/\n/g, '%0A')
+        .replace(/:/g, '%3A')
+        .replace(/,/g, '%2C');
+}
+function issueWarning(message, properties) {
+    const {file, startLine, startColumn} = properties || {};
+    const props = [];
+    if (file) {
+        props.push(`file=${escapeProperty(file)}`);
+    }
+    if (startLine !== undefined) {
+        props.push(`line=${escapeProperty(startLine)}`);
+    }
+    if (startColumn !== undefined) {
+        props.push(`col=${escapeProperty(startColumn)}`);
+    }
+    const propsStr = props.length ? ` ${props.join(',')}` : '';
+    // eslint-disable-next-line no-console
+    console.log(`::warning${propsStr}::${escapeData(message)}`);
+}
 
 // From https://github.com/findmypast-oss/mocha-json-streamier-reporter/blob/master/lib/parse-stack-trace.js
 function extractModuleLineAndColumn(stackTrace) {
@@ -56,7 +88,7 @@ module.exports = class RetryReporter extends mocha.reporters.Spec {
                         };
                     }), _.isEqual)
                     .forEach(({file, line, col, testName, err}) => {
-                        core.warning(`Retried '${testName}' due to '${err}'`, {
+                        issueWarning(`Retried '${testName}' due to '${err}'`, {
                             file,
                             startLine: line,
                             startColumn: col
