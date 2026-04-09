@@ -183,8 +183,8 @@ describe('Acceptance: Authentication', function () {
 
             await visit('/signin/invalidurl/');
 
-            expect(currentURL(), 'url after invalid url').to.equal('/signin/invalidurl/');
-            expect(currentRouteName(), 'path after invalid url').to.equal('react-fallback');
+            expect(currentURL(), 'url after invalid url').to.equal('/signin');
+            expect(currentRouteName(), 'path after invalid url').to.equal('signin');
             expect(findAll('nav.gh-nav').length, 'nav menu presence').to.equal(0);
         });
 
