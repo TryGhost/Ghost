@@ -7,7 +7,7 @@ import type {StripeTestService} from '@/helpers/services/stripe';
 export async function signupViaPortal(page: Page): Promise<{emailAddress: string; name: string}> {
     const homePage = new HomePage(page);
     await homePage.goto();
-    await homePage.gotoPortalSignup();
+    await homePage.openPortal();
 
     const signUpPage = new SignUpPage(page);
     const emailAddress = `test${faker.string.uuid()}@ghost.org`;
@@ -29,7 +29,7 @@ export async function completePaidSignupViaPortal(page: Page, stripe: StripeTest
 }): Promise<{emailAddress: string; name: string}> {
     const homePage = new HomePage(page);
     await homePage.goto();
-    await homePage.gotoPortalSignup();
+    await homePage.openPortal();
 
     const signUpPage = new SignUpPage(page);
     const emailAddress = opts?.emailAddress ?? `test${faker.string.uuid()}@ghost.org`;
