@@ -105,7 +105,9 @@ jobs:
         with:
           filters: |
             shared: &shared
-              - '.github/**'
+              - '.github/workflows/**'
+              - '.github/actions/**'
+              - '.github/scripts/**'
               - 'package.json'
               - 'yarn.lock'
             core:
@@ -147,6 +149,27 @@ jobs:
               - '!ghost/core/core/server/data/tinybird/**/*.md'
             any-code:
               - '!**/*.md'
+              - '!.github/renovate.json5'
+              - '!.github/CODEOWNERS'
+              - '!.github/codecov.yml'
+              - '!.github/FUNDING.yml'
+              - '!.github/ISSUE_TEMPLATE/**'
+              - '!.github/hooks/**'
+              - '!.github/agents/**'
+              - '!.github/aw/**'
+              - '!.coderabbit.yaml'
+              - '!.editorconfig'
+              - '!.gitattributes'
+              - '!.vscode/**'
+              - '!.cursor/**'
+              - '!.codex/**'
+              - '!.claude/**'
+              - '!.agents/**'
+              - '!adr/**'
+              - '!ai/**'
+              - '!docs/**'
+              - '!LICENSE'
+              - '!sonar-project.properties'
 
       - name: Compute lockfile hash
         run: echo "hash=lockfile-${{ hashFiles('yarn.lock') }}" >> "$GITHUB_ENV"
@@ -805,6 +828,7 @@ jobs:
   job_build_artifacts:
     name: Build & Publish Artifacts
     needs: [job_setup]
+    if: needs.job_setup.outputs.changed_any_code == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -1067,7 +1091,7 @@ jobs:
   job_build_e2e_public_apps:
     name: Build E2E Public App Assets
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.changed_any_code == 'true' && needs.job_setup.outputs.is_tag != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -1107,7 +1131,7 @@ jobs:
   job_build_e2e_image:
     name: Build E2E Docker Image
     needs: [job_setup, job_build_e2e_public_apps, job_build_artifacts]
-    if: needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.changed_any_code == 'true' && needs.job_setup.outputs.is_tag != 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -1215,7 +1239,7 @@ jobs:
     name: E2E Tests (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
     needs: [job_build_e2e_image, job_setup]
-    if: needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.changed_any_code == 'true' && needs.job_setup.outputs.is_tag != 'true'
     strategy:
       fail-fast: true
       matrix:
