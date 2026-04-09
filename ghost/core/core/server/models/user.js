@@ -71,7 +71,9 @@ User = ghostBookshelf.Model.extend({
             mention_notifications: true,
             recommendation_notifications: true,
             milestone_notifications: true,
-            donation_notifications: true
+            donation_notifications: true,
+            gift_subscription_purchase_notification: true,
+            gift_subscription_redemption_notification: true
         };
     },
 
