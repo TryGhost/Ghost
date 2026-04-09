@@ -20,7 +20,7 @@ interface GiftData {
     stripeCheckoutSessionId: string;
     stripePaymentIntentId: string;
     consumesAt: Date | null;
-    expiresAt: Date | null;
+    expiresAt: Date;
     status: GiftStatus;
     purchasedAt: Date;
     redeemedAt: Date | null;
@@ -55,7 +55,7 @@ export class Gift {
     stripeCheckoutSessionId: string;
     stripePaymentIntentId: string;
     consumesAt: Date | null;
-    expiresAt: Date | null;
+    expiresAt: Date;
     status: GiftStatus;
     purchasedAt: Date;
     redeemedAt: Date | null;

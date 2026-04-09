@@ -981,7 +981,10 @@ describe('StaffService', function () {
                     email: 'alice@example.com',
                     memberId: null,
                     amount: 6000,
-                    currency: 'usd'
+                    currency: 'usd',
+                    tierName: 'Gold',
+                    cadence: 'year',
+                    duration: 1
                 });
 
                 sinon.assert.calledWith(getEmailAlertUsersStub, 'gift-purchased');
@@ -995,7 +998,10 @@ describe('StaffService', function () {
                     email: 'bob@example.com',
                     memberId: null,
                     amount: 1500,
-                    currency: 'eur'
+                    currency: 'eur',
+                    tierName: 'Gold',
+                    cadence: 'year',
+                    duration: 1
                 });
 
                 sinon.assert.calledOnce(mailStub);
@@ -1008,7 +1014,10 @@ describe('StaffService', function () {
                     email: 'charlie@example.com',
                     memberId: null,
                     amount: 5000,
-                    currency: 'usd'
+                    currency: 'usd',
+                    tierName: 'Gold',
+                    cadence: 'year',
+                    duration: 1
                 });
 
                 sinon.assert.calledOnce(mailStub);
@@ -1021,7 +1030,10 @@ describe('StaffService', function () {
                     email: 'diana@example.com',
                     memberId: null,
                     amount: 2000,
-                    currency: 'gbp'
+                    currency: 'gbp',
+                    tierName: 'Gold',
+                    cadence: 'year',
+                    duration: 1
                 });
 
                 sinon.assert.calledOnce(mailStub);
@@ -1034,11 +1046,47 @@ describe('StaffService', function () {
                     email: 'anon@example.com',
                     memberId: null,
                     amount: 3000,
-                    currency: 'usd'
+                    currency: 'usd',
+                    tierName: 'Gold',
+                    cadence: 'year',
+                    duration: 1
                 });
 
                 sinon.assert.calledOnce(mailStub);
                 sinon.assert.calledWith(mailStub, sinon.match.has('subject', sinon.match('from anon@example.com')));
+            });
+
+            it('includes tier and cadence in HTML when provided', async function () {
+                await service.emails.notifyGiftReceived({
+                    name: 'Erin',
+                    email: 'erin@example.com',
+                    memberId: null,
+                    amount: 12000,
+                    currency: 'usd',
+                    tierName: 'Premium',
+                    cadence: 'year',
+                    duration: 1
+                });
+
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Premium')));
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('1 year')));
+            });
+
+            it('formats cadence with pluralized unit when duration is greater than 1', async function () {
+                await service.emails.notifyGiftReceived({
+                    name: 'Erin',
+                    email: 'erin@example.com',
+                    memberId: null,
+                    amount: 12000,
+                    currency: 'usd',
+                    tierName: 'Premium',
+                    cadence: 'month',
+                    duration: 3
+                });
+
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('3 months')));
             });
         });
     });

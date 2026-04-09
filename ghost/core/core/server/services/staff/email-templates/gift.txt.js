@@ -3,7 +3,9 @@ module.exports = function giftText(data) {
     return `
 Someone purchased a gift subscription!
 
-You received a gift subscription purchase of ${data.gift.amount} from "${data.gift.name}".
+From: ${data.gift.name}
+Tier: ${data.gift.tierName} • ${data.gift.cadenceLabel}
+Amount received: ${data.gift.amount}
 
 ---
 
