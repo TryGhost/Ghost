@@ -2,10 +2,10 @@ const fs = require('fs/promises');
 const exec = require('util').promisify(require('child_process').exec);
 const path = require('path');
 
-const core = require('@actions/core');
 const semver = require('semver');
 
 (async () => {
+    const core = await import('@actions/core');
     const corePackageJsonPath = path.join(__dirname, '../../ghost/core/package.json');
     const corePackageJson = require(corePackageJsonPath);
 
@@ -40,5 +40,5 @@ const semver = require('semver');
     console.log('Version bumped to', newVersion);
 
     core.setOutput('BUILD_VERSION', newVersion);
-    core.setOutput('GIT_COMMIT_HASH', buildString)
+    core.setOutput('GIT_COMMIT_HASH', buildString);
 })();
