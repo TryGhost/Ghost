@@ -11,7 +11,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
 
 PLAYWRIGHT_VERSION="$(node -p 'require("./e2e/package.json").devDependencies["@playwright/test"]')"
-PLAYWRIGHT_IMAGE="mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-noble"
+PLAYWRIGHT_IMAGE="${PLAYWRIGHT_IMAGE:-ghcr.io/tryghost/playwright:v${PLAYWRIGHT_VERSION}-noble}"
 WORKSPACE_PATH="${GITHUB_WORKSPACE:-$REPO_ROOT}"
 
 export SCRIPT_DIR

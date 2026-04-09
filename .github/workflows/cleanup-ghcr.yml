@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        package: [ghost, ghost-core, ghost-development]
+        package: [ghost, ghost-core, ghost-development, playwright]
     steps:
       - name: Delete old non-release versions
         env:
@@ -60,6 +60,11 @@ jobs:
             if ! batch=$(gh api \
               "/orgs/${ORG}/packages/container/${PACKAGE}/versions?per_page=100&page=${page}" \
               --jq '.' 2>&1); then
+              if echo "$batch" | grep -qiE '404|package.*not found'; then
+                echo "::notice::Package ${ORG}/${PACKAGE} does not exist yet; skipping."
+                break
+              fi
+
               if [ "$page" = "1" ]; then
                 echo "::error::API request failed: ${batch}"
                 exit 1
@@ -77,6 +82,7 @@ jobs:
             page=$((page + 1))
           done
 
+          all_versions=$(echo "$all_versions" | jq 'sort_by(.updated_at) | reverse')
           total=$(echo "$all_versions" | jq 'length')
           echo "Total versions: ${total}"
 
@@ -84,6 +90,7 @@ jobs:
           keep=0
           delete=0
           delete_ids=""
+          index=0
 
           for row in $(echo "$all_versions" | jq -r '.[] | @base64'); do
             _jq() { echo "$row" | base64 -d | jq -r "$1"; }
@@ -92,28 +99,40 @@ jobs:
             updated=$(_jq '.updated_at')
             tags=$(_jq '[.metadata.container.tags[]] | join(",")')
 
-            # Keep versions with semver tags (v1.2.3, 1.2.3, 1.2)
-            if echo "$tags" | grep -qE '(^|,)v?[0-9]+\.[0-9]+\.[0-9]+(,|$)' || \
-               echo "$tags" | grep -qE '(^|,)[0-9]+\.[0-9]+(,|$)'; then
-              keep=$((keep + 1))
-              continue
-            fi
+            if [ "$PACKAGE" = "playwright" ]; then
+              if [ "$index" -lt "$MIN_KEEP" ] || [[ "$updated" > "$cutoff" ]]; then
+                keep=$((keep + 1))
+                index=$((index + 1))
+                continue
+              fi
+            else
+              # Keep versions with semver tags (v1.2.3, 1.2.3, 1.2)
+              if echo "$tags" | grep -qE '(^|,)v?[0-9]+\.[0-9]+\.[0-9]+(,|$)' || \
+                 echo "$tags" | grep -qE '(^|,)[0-9]+\.[0-9]+(,|$)'; then
+                keep=$((keep + 1))
+                index=$((index + 1))
+                continue
+              fi
 
-            # Keep versions with 'latest' or 'main' or cache-main tags
-            if echo "$tags" | grep -qE '(^|,)(latest|main|cache-main)(,|$)'; then
-              keep=$((keep + 1))
-              continue
-            fi
+              # Keep versions with 'latest' or 'main' or cache-main tags
+              if echo "$tags" | grep -qE '(^|,)(latest|main|cache-main)(,|$)'; then
+                keep=$((keep + 1))
+                index=$((index + 1))
+                continue
+              fi
 
-            # Keep versions newer than cutoff
-            if [[ "$updated" > "$cutoff" ]]; then
-              keep=$((keep + 1))
-              continue
+              # Keep versions newer than cutoff
+              if [[ "$updated" > "$cutoff" ]]; then
+                keep=$((keep + 1))
+                index=$((index + 1))
+                continue
+              fi
             fi
 
             # This version is eligible for deletion
             delete=$((delete + 1))
             delete_ids="${delete_ids} ${id}"
+            index=$((index + 1))
 
             tag_display="${tags:-<untagged>}"
             if [ "$DRY_RUN" = "true" ]; then

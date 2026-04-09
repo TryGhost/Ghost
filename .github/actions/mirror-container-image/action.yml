@@ -1,0 +1,29 @@
+name: 'Mirror Container Image'
+description: 'Mirror an upstream container image into GHCR'
+inputs:
+  source-image:
+    description: 'Fully-qualified source image reference'
+    required: true
+  target-image:
+    description: 'Fully-qualified target image reference'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Mirror image
+      shell: bash
+      env:
+        SOURCE_IMAGE: ${{ inputs.source-image }}
+        TARGET_IMAGE: ${{ inputs.target-image }}
+      run: |
+        set -euo pipefail
+
+        echo "Pulling source image: $SOURCE_IMAGE"
+        docker pull "$SOURCE_IMAGE"
+
+        echo "Tagging image as: $TARGET_IMAGE"
+        docker tag "$SOURCE_IMAGE" "$TARGET_IMAGE"
+
+        echo "Pushing mirrored image: $TARGET_IMAGE"
+        docker push "$TARGET_IMAGE"

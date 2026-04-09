@@ -1,0 +1,47 @@
+name: Publish Playwright Image
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'e2e/package.json'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: Mirror Playwright image to GHCR
+    runs-on: ubuntu-latest
+    if: github.repository == 'TryGhost/Ghost' && github.ref == 'refs/heads/main'
+    concurrency:
+      group: publish-playwright-image
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Resolve Playwright image tags
+        id: resolve
+        run: |
+          set -euo pipefail
+
+          PLAYWRIGHT_VERSION="$(node -p "require('./e2e/package.json').devDependencies['@playwright/test']")"
+          echo "version=$PLAYWRIGHT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "source-image=mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-noble" >> "$GITHUB_OUTPUT"
+          echo "target-image=ghcr.io/tryghost/playwright:v${PLAYWRIGHT_VERSION}-noble" >> "$GITHUB_OUTPUT"
+
+      - name: Login to GHCR
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Mirror Playwright image
+        uses: ./.github/actions/mirror-container-image
+        with:
+          source-image: ${{ steps.resolve.outputs.source-image }}
+          target-image: ${{ steps.resolve.outputs.target-image }}
