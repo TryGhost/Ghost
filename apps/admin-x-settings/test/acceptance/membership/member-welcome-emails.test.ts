@@ -636,6 +636,22 @@ test.describe('Member emails settings', async () => {
 
     test.describe('Welcome email customize modal sender fields', async () => {
         test('shows publication icon toggle, updates preview, and saves show_header_icon when an icon exists', async ({page}) => {
+            const addPaidResponse = {
+                automated_emails: [{
+                    id: 'paid-welcome-email-id',
+                    status: 'inactive',
+                    name: 'Welcome Email (Paid)',
+                    slug: 'member-welcome-email-paid',
+                    subject: 'Welcome to your paid subscription',
+                    lexical: '{"root":{"children":[]}}',
+                    sender_name: null,
+                    sender_email: null,
+                    sender_reply_to: null,
+                    created_at: '2024-01-01T00:00:00.000Z',
+                    updated_at: null
+                }]
+            };
+
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
                 browseSettings: {...globalDataRequests.browseSettings, response: settingsWithPublicationIcon},
@@ -644,6 +660,7 @@ test.describe('Member emails settings', async () => {
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
                 readAutomatedEmailDesign: {method: 'GET', path: '/automated_emails/design/', response: automatedEmailDesignFixture},
                 editAutomatedEmailDesign: {method: 'PUT', path: '/automated_emails/design/', response: automatedEmailDesignFixture},
+                addAutomatedEmail: {method: 'POST', path: '/automated_emails/', response: addPaidResponse},
                 editAutomatedEmailSenders: {
                     method: 'PUT',
                     path: /^\/automated_emails\/senders\/?$/,
