@@ -1,10 +1,13 @@
 import {EmailClient, MailPit} from '@/helpers/services/email/mail-pit';
 import {HomePage, PublicPage} from '@/public-pages';
 import {MemberWelcomeEmailsSection} from '@/admin-pages';
+import {Page} from '@playwright/test';
 import {SignUpPage, SignUpSuccessPage} from '@/portal-pages';
+import {createAutomatedEmailFactory} from '@/data-factory';
 import {expect, test, withIsolatedPage} from '@/helpers/playwright';
 import {extractMagicLink} from '@/helpers/services/email/utils';
 import {faker} from '@faker-js/faker';
+import {signupViaPortal} from '@/helpers/playwright/flows/signup';
 import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
 usePerTestIsolation();
@@ -53,7 +56,107 @@ async function retrieveLatestEmailMessage(emailClient: EmailClient, emailAddress
     return await emailClient.getMessageDetailed(messages[0]);
 }
 
+async function completeSignupViaMagicLink(emailClient: EmailClient, page: Page, emailAddress: string) {
+    const signupEmail = await retrieveLatestEmailMessage(emailClient, emailAddress);
+    const magicLink = extractMagicLink(signupEmail.Text);
+    const publicPage = new PublicPage(page);
+    const homePage = new HomePage(page);
+
+    await publicPage.goto(magicLink);
+    await homePage.waitUntilLoaded();
+
+    return signupEmail;
+}
+
+async function expectWelcomeEmailCount(emailClient: EmailClient, emailAddress: string, expectedCount: number) {
+    await expect.poll(async () => {
+        const welcomeMessages = await emailClient.search(
+            {to: emailAddress, subject: 'Welcome to Test Blog!'},
+            {timeoutMs: null}
+        );
+
+        return welcomeMessages.length;
+    }, {timeout: 5000}).toBe(expectedCount);
+}
+
 test.describe('Ghost Admin - Member Welcome Emails', () => {
+    test('free signup sends welcome email after signup completion', async ({page}) => {
+        const automatedEmailFactory = createAutomatedEmailFactory(page.request);
+        const emailClient = new MailPit();
+        await automatedEmailFactory.create();
+
+        const homePage = new HomePage(page);
+        await homePage.goto();
+        const {emailAddress} = await signupViaPortal(page);
+
+        const signupEmail = await completeSignupViaMagicLink(emailClient, page, emailAddress);
+        expect(signupEmail.Subject.toLowerCase()).toContain('complete');
+
+        const welcomeMessages = await emailClient.search(
+            {to: emailAddress, subject: 'Welcome to Test Blog!'},
+            {timeoutMs: 10000}
+        );
+        const welcomeEmail = await emailClient.getMessageDetailed(welcomeMessages[0]);
+
+        expect(welcomeEmail.From.Name).toContain('Test Blog');
+        expect(welcomeEmail.Subject).toBe('Welcome to Test Blog!');
+        expect(welcomeEmail.Text).toContain('Welcome to Test Blog!');
+        expect(welcomeEmail.HTML).toContain('Welcome to Test Blog!');
+    });
+
+    test('free signup does not send welcome email when free automation is disabled', async ({page}) => {
+        const emailClient = new MailPit();
+        const homePage = new HomePage(page);
+        await homePage.goto();
+        const {emailAddress} = await signupViaPortal(page);
+
+        const signupEmail = await completeSignupViaMagicLink(emailClient, page, emailAddress);
+        expect(signupEmail.Subject.toLowerCase()).toContain('complete');
+
+        await expectWelcomeEmailCount(emailClient, emailAddress, 0);
+    });
+
+    test('free signup delivers edited subject and body', async ({page, browser, baseURL}) => {
+        const emailClient = new MailPit();
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+        const customSubject = 'A custom welcome subject';
+        const customBody = 'This welcome body was edited through the admin UI.';
+
+        await welcomeEmailsSection.goto();
+        await welcomeEmailsSection.enableFreeWelcomeEmail();
+        await welcomeEmailsSection.openFreeWelcomeEmailModal();
+        await welcomeEmailsSection.modalSubjectInput.clear();
+        await welcomeEmailsSection.modalSubjectInput.fill(customSubject);
+        await welcomeEmailsSection.replaceWelcomeEmailContent(customBody);
+        await welcomeEmailsSection.saveWelcomeEmail();
+
+        await withIsolatedPage(browser, {baseURL}, async ({page: signupPage}) => {
+            const {emailAddress} = await signupViaPortal(signupPage);
+            await completeSignupViaMagicLink(emailClient, signupPage, emailAddress);
+
+            const welcomeMessages = await emailClient.search(
+                {to: emailAddress, subject: customSubject},
+                {timeoutMs: 10000}
+            );
+            const welcomeEmail = await emailClient.getMessageDetailed(welcomeMessages[0]);
+
+            expect(welcomeEmail.Subject).toBe(customSubject);
+            expect(welcomeEmail.Text).toContain(customBody);
+            expect(welcomeEmail.HTML).toContain(customBody);
+        });
+    });
+
+    test('free signup sends welcome email exactly once', async ({page}) => {
+        const automatedEmailFactory = createAutomatedEmailFactory(page.request);
+        const emailClient = new MailPit();
+        await automatedEmailFactory.create();
+
+        const {emailAddress} = await signupViaPortal(page);
+        await completeSignupViaMagicLink(emailClient, page, emailAddress);
+
+        await expectWelcomeEmailCount(emailClient, emailAddress, 1);
+    });
+
     test('can enable free welcome emails', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
