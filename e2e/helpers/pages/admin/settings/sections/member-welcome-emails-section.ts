@@ -13,6 +13,7 @@ export class MemberWelcomeEmailsSection extends BasePage {
     readonly customizeModal: Locator;
     readonly customizeModalSaveButton: Locator;
     readonly customizeModalCloseButton: Locator;
+    readonly customizeModalUnsavedChangesDialog: Locator;
     readonly customizeModalGeneralTab: Locator;
     readonly customizeModalDesignTab: Locator;
 
@@ -26,6 +27,11 @@ export class MemberWelcomeEmailsSection extends BasePage {
     readonly customizeModalButtonStyleFill: Locator;
     readonly customizeModalButtonStyleOutline: Locator;
     readonly customizeModalBodyFontSelect: Locator;
+    readonly customizeModalBodyFontSerifOption: Locator;
+    readonly customizeModalButtonColorField: Locator;
+    readonly customizeModalButtonColorPickerTrigger: Locator;
+    readonly customizeModalButtonColorAccentSwatch: Locator;
+    readonly customizeModalColorPickerPopover: Locator;
 
     // Modal locators
     readonly welcomeEmailModal: Locator;
@@ -48,6 +54,7 @@ export class MemberWelcomeEmailsSection extends BasePage {
         this.customizeModal = page.getByTestId('welcome-email-customize-modal');
         this.customizeModalSaveButton = this.customizeModal.getByRole('button', {name: 'Save'});
         this.customizeModalCloseButton = this.customizeModal.getByRole('button', {name: 'Close'});
+        this.customizeModalUnsavedChangesDialog = page.getByRole('alertdialog', {name: 'Are you sure you want to leave this page?'});
         this.customizeModalGeneralTab = this.customizeModal.getByRole('tab', {name: 'General'});
         this.customizeModalDesignTab = this.customizeModal.getByRole('tab', {name: 'Design'});
 
@@ -61,6 +68,11 @@ export class MemberWelcomeEmailsSection extends BasePage {
         this.customizeModalButtonStyleFill = this.customizeModal.getByLabel('Fill');
         this.customizeModalButtonStyleOutline = this.customizeModal.getByLabel('Outline');
         this.customizeModalBodyFontSelect = this.customizeModal.getByText('Body font').locator('..').getByRole('combobox');
+        this.customizeModalBodyFontSerifOption = page.getByRole('option', {name: 'Elegant serif', exact: true});
+        this.customizeModalButtonColorField = this.customizeModal.getByText('Button color').locator('..');
+        this.customizeModalButtonColorPickerTrigger = this.customizeModalButtonColorField.getByRole('button', {name: 'Pick color'});
+        this.customizeModalButtonColorAccentSwatch = this.customizeModal.getByRole('button', {name: 'Accent'});
+        this.customizeModalColorPickerPopover = page.locator('[data-radix-popper-content-wrapper]');
 
         // Modal locators
         this.welcomeEmailModal = page.getByTestId('welcome-email-modal');

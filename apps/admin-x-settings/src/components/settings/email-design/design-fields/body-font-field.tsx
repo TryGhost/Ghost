@@ -11,7 +11,11 @@ export const BodyFontField = () => {
                 <SelectTrigger className="w-[180px]">
                     <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent
+                    onEscapeKeyDown={(event) => {
+                        event.stopPropagation();
+                    }}
+                >
                     {FONT_OPTIONS.map(opt => (
                         <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                     ))}

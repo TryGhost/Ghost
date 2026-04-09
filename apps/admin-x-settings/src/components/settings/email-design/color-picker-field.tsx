@@ -114,7 +114,13 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({title, value, onChan
                     </div>
                 </div>
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-auto p-4">
+            <PopoverContent
+                align="end"
+                className="w-auto p-4"
+                onEscapeKeyDown={(event) => {
+                    event.stopPropagation();
+                }}
+            >
                 <div
                     onInputCapture={() => {
                         allowPickerChanges.current = true;

@@ -73,6 +73,11 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
                         'top-[50%] left-[50%] h-[calc(100vh-8vmin)] w-[calc(100vw-8vmin)] max-w-none translate-x-[-50%] translate-y-[-50%] gap-0 overflow-hidden p-0'
                     )}
                     data-testid={testId}
+                    onEscapeKeyDown={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        handleClose();
+                    }}
                 >
                     <div className="flex h-full min-h-0">
                         {/* Left: Preview */}
@@ -104,7 +109,11 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
                 </DialogContent>
             </Dialog>
             <AlertDialog open={showDirtyConfirm} onOpenChange={setShowDirtyConfirm}>
-                <AlertDialogContent>
+                <AlertDialogContent
+                    onEscapeKeyDown={(event) => {
+                        event.stopPropagation();
+                    }}
+                >
                     <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure you want to leave this page?</AlertDialogTitle>
                         <AlertDialogDescription asChild>
