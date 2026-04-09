@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import {GiftService, type GiftPurchaseData} from '../../../../../core/server/services/gifts/gift-service';
 import {Gift} from '../../../../../core/server/services/gifts/gift';
 import type {GiftRepository} from '../../../../../core/server/services/gifts/gift-repository';
+import {buildGift} from './utils';
 
 describe('GiftService', function () {
     let giftRepository: sinon.SinonStubbedInstance<GiftRepository>;
@@ -39,8 +40,10 @@ describe('GiftService', function () {
     beforeEach(function () {
         giftRepository = {
             create: sinon.stub(),
+            update: sinon.stub(),
             existsByCheckoutSessionId: sinon.stub<[string], Promise<boolean>>().resolves(false),
-            getByToken: sinon.stub<[string], Promise<Gift | null>>().resolves(null)
+            getByToken: sinon.stub<[string], Promise<Gift | null>>().resolves(null),
+            getByPaymentIntentId: sinon.stub<[string], Promise<Gift | null>>().resolves(null)
         };
         memberRepository = {
             get: sinon.stub().resolves({id: 'member_1', get: sinon.stub().returns(null)})
@@ -78,31 +81,6 @@ describe('GiftService', function () {
             giftEmailService,
             staffServiceEmails,
             labsService
-        });
-    }
-
-    function buildGift(overrides: Partial<ConstructorParameters<typeof Gift>[0]> = {}) {
-        return new Gift({
-            token: 'gift-token',
-            buyerEmail: 'buyer@example.com',
-            buyerMemberId: 'buyer_member_1',
-            redeemerMemberId: null,
-            tierId: 'tier_1',
-            cadence: 'year',
-            duration: 1,
-            currency: 'usd',
-            amount: 5000,
-            stripeCheckoutSessionId: 'cs_123',
-            stripePaymentIntentId: 'pi_456',
-            consumesAt: null,
-            expiresAt: new Date('2030-01-01T00:00:00.000Z'),
-            status: 'purchased',
-            purchasedAt: new Date('2026-01-01T00:00:00.000Z'),
-            redeemedAt: null,
-            consumedAt: null,
-            expiredAt: null,
-            refundedAt: null,
-            ...overrides
         });
     }
 
@@ -485,6 +463,47 @@ describe('GiftService', function () {
                     return true;
                 }
             );
+        });
+    });
+
+    describe('refundGift', function () {
+        it('marks gift as refunded and persists it', async function () {
+            const gift = buildGift();
+
+            giftRepository.getByPaymentIntentId.resolves(gift);
+
+            const service = createService();
+            const result = await service.refundGift('pi_456');
+
+            assert.equal(result, true);
+            assert.equal(gift.status, 'refunded');
+            assert.ok(gift.refundedAt);
+            sinon.assert.calledOnce(giftRepository.update);
+            sinon.assert.calledWith(giftRepository.update, gift);
+        });
+
+        it('returns false when no gift matches the payment intent', async function () {
+            giftRepository.getByPaymentIntentId.resolves(null);
+
+            const service = createService();
+            const result = await service.refundGift('pi_unknown');
+
+            assert.equal(result, false);
+            sinon.assert.notCalled(giftRepository.update);
+        });
+
+        it('returns true without updating when gift is already refunded', async function () {
+            const gift = buildGift({
+                refundedAt: new Date('2026-02-01T00:00:00.000Z')
+            });
+
+            giftRepository.getByPaymentIntentId.resolves(gift);
+
+            const service = createService();
+            const result = await service.refundGift('pi_456');
+
+            assert.equal(result, true);
+            sinon.assert.notCalled(giftRepository.update);
         });
     });
 });

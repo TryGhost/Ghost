@@ -7,10 +7,13 @@ type BookshelfDocument<T> = {
 
 type BookshelfModel<T> = {
     add(data: Partial<T>, unfilteredOptions?: unknown): Promise<T>;
-    findOne(data: Record<string, unknown>, unfilteredOptions?: unknown): Promise<BookshelfDocument<T> | null>;
+    edit(data: Partial<T>, unfilteredOptions?: unknown): Promise<BookshelfDocument<T>>;
+    findOne(data: Record<string, unknown>, options: {require: true}): Promise<BookshelfDocument<T>>;
+    findOne(data: Record<string, unknown>, options?: {require?: false}): Promise<BookshelfDocument<T> | null>;
 };
 
 type GiftRow = {
+    id: string;
     token: string;
     buyer_email: string;
     buyer_member_id: string | null;
@@ -50,7 +53,30 @@ export class GiftBookshelfRepository implements GiftRepository {
     }
 
     async create(gift: Gift) {
-        await this.model.add({
+        await this.model.add(this.toRow(gift));
+    }
+
+    async update(gift: Gift): Promise<void> {
+        const existing = await this.model.findOne({token: gift.token}, {require: true});
+        const id = existing.toJSON().id;
+
+        await this.model.edit(this.toRow(gift), {id});
+    }
+
+    async getByToken(token: string): Promise<Gift | null> {
+        return this.toGift(
+            await this.model.findOne({token}, {require: false})
+        );
+    }
+
+    async getByPaymentIntentId(paymentIntentId: string): Promise<Gift | null> {
+        return this.toGift(
+            await this.model.findOne({stripe_payment_intent_id: paymentIntentId}, {require: false})
+        );
+    }
+
+    private toRow(gift: Gift): Omit<GiftRow, 'id'> {
+        return {
             token: gift.token,
             buyer_email: gift.buyerEmail,
             buyer_member_id: gift.buyerMemberId,
@@ -70,14 +96,10 @@ export class GiftBookshelfRepository implements GiftRepository {
             consumed_at: gift.consumedAt,
             expired_at: gift.expiredAt,
             refunded_at: gift.refundedAt
-        });
+        };
     }
 
-    async getByToken(token: string): Promise<Gift | null> {
-        const model = await this.model.findOne({
-            token
-        }, {require: false});
-
+    private toGift(model: BookshelfDocument<GiftRow> | null): Gift | null {
         if (!model) {
             return null;
         }

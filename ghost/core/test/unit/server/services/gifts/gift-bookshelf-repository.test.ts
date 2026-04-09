@@ -11,6 +11,7 @@ describe('GiftBookshelfRepository', function () {
     it('returns a Gift when a token matches', async function () {
         const GiftModel = {
             add: sinon.stub(),
+            edit: sinon.stub(),
             findOne: sinon.stub().resolves({
                 toJSON() {
                     return {
@@ -52,6 +53,7 @@ describe('GiftBookshelfRepository', function () {
     it('returns null when no gift matches the token', async function () {
         const GiftModel = {
             add: sinon.stub(),
+            edit: sinon.stub(),
             findOne: sinon.stub().resolves(null)
         };
         const repository = new GiftBookshelfRepository({GiftModel});

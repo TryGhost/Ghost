@@ -167,6 +167,27 @@ export class GiftService {
         return true;
     }
 
+    async refundGift(paymentIntentId: string): Promise<boolean> {
+        const gift = await this.giftRepository.getByPaymentIntentId(paymentIntentId);
+
+        if (!gift) {
+            return false;
+        }
+
+        const refunded = gift.markRefunded();
+
+        if (!refunded) {
+            return true;
+        }
+
+        await this.giftRepository.update(gift);
+
+        // TODO: if the gift was already redeemed/consumed, we should also
+        // downgrade the recipient member back to free.
+
+        return true;
+    }
+
     async getRedeemableGiftByToken({token, currentMember}: {token: string; currentMember?: {status: string} | null}) {
         if (!this.labsService.isSet('giftSubscriptions')) {
             throw new errors.BadRequestError({

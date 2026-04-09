@@ -140,4 +140,15 @@ export class Gift {
 
         return {redeemable: true};
     }
+
+    markRefunded(): boolean {
+        if (this.isRefunded()) {
+            return false;
+        }
+
+        this.status = 'refunded';
+        this.refundedAt = new Date();
+
+        return true;
+    }
 }
