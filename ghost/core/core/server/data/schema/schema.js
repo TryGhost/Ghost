@@ -1224,7 +1224,7 @@ module.exports = {
         stripe_payment_intent_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
 
         consumes_at: {type: 'dateTime', nullable: true},
-        expires_at: {type: 'dateTime', nullable: true},
+        expires_at: {type: 'dateTime', nullable: false},
 
         status: {
             type: 'string', maxlength: 50, nullable: false, validations: {
