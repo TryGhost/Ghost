@@ -883,6 +883,11 @@ jobs:
       - name: Prepare Docker build context
         run: mv ghost/core/package/ /tmp/ghost-production/
 
+      - name: Add community Docker files to build context
+        run: |
+          cp docker/community/docker-entrypoint.sh /tmp/ghost-production/
+          cp docker/community/config.production.json /tmp/ghost-production/
+
       - name: Determine push strategy
         id: strategy
         run: |
