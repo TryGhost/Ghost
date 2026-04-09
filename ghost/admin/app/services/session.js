@@ -89,8 +89,8 @@ export default class SessionService extends ESASessionService {
             }
 
             const redirectUrl = window.sessionStorage.getItem('ghost-signin-redirect');
-            if (redirectUrl) {
-                window.sessionStorage.removeItem('ghost-signin-redirect');
+            window.sessionStorage.removeItem('ghost-signin-redirect');
+            if (redirectUrl && !redirectUrl.startsWith('/signin') && !redirectUrl.startsWith('/signup') && !redirectUrl.startsWith('/setup')) {
                 this.router.transitionTo(redirectUrl);
                 return;
             }
