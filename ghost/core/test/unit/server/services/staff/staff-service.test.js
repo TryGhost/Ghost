@@ -1040,6 +1040,36 @@ describe('StaffService', function () {
                 sinon.assert.calledOnce(mailStub);
                 sinon.assert.calledWith(mailStub, sinon.match.has('subject', sinon.match('from anon@example.com')));
             });
+
+            it('includes tier and cadence in HTML when provided', async function () {
+                await service.emails.notifyGiftReceived({
+                    name: 'Erin',
+                    email: 'erin@example.com',
+                    memberId: null,
+                    amount: 12000,
+                    currency: 'usd',
+                    tierName: 'Premium',
+                    cadenceLabel: '1 year'
+                });
+
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Premium')));
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('1 year')));
+            });
+
+            it('omits tier row when tierName is not provided', async function () {
+                await service.emails.notifyGiftReceived({
+                    name: 'Frank',
+                    email: 'frank@example.com',
+                    memberId: null,
+                    amount: 5000,
+                    currency: 'usd'
+                });
+
+                sinon.assert.calledOnce(mailStub);
+                const call = mailStub.getCall(0).args[0];
+                assert.doesNotMatch(call.html, />Tier</);
+            });
         });
     });
 });

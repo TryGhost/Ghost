@@ -224,6 +224,33 @@ describe('GiftService', function () {
             assert.equal(emailData.memberId, 'member_1');
             assert.equal(emailData.amount, 5000);
             assert.equal(emailData.currency, 'usd');
+            assert.equal(emailData.tierName, 'Bronze');
+            assert.equal(emailData.cadenceLabel, '1 year');
+        });
+
+        it('formats cadenceLabel with pluralized unit when duration is greater than 1', async function () {
+            const service = createService();
+
+            await service.recordPurchase({...purchaseData, duration: '3', cadence: 'month'});
+
+            const emailData = staffServiceEmails.notifyGiftReceived.getCall(0).args[0];
+
+            assert.equal(emailData.cadenceLabel, '3 months');
+        });
+
+        it('passes a null tierName to staff notification when tier load fails', async function () {
+            tiersService.api.read.resolves(null);
+
+            const service = createService();
+
+            await service.recordPurchase(purchaseData);
+
+            sinon.assert.calledOnce(staffServiceEmails.notifyGiftReceived);
+
+            const emailData = staffServiceEmails.notifyGiftReceived.getCall(0).args[0];
+
+            assert.equal(emailData.tierName, null);
+            assert.equal(emailData.cadenceLabel, '1 year');
         });
 
         it('uses buyerEmail and null name when buyer is not a member', async function () {

@@ -1,9 +1,14 @@
 module.exports = function giftText(data) {
     // Be careful when you indent the email, because whitespaces are visible in emails!
+    const tierLine = data.gift.tierName
+        ? `\nTier: ${data.gift.tierName}${data.gift.cadenceLabel ? ` • ${data.gift.cadenceLabel}` : ''}`
+        : '';
+
     return `
 Someone purchased a gift subscription!
 
-You received a gift subscription purchase of ${data.gift.amount} from "${data.gift.name}".
+From: ${data.gift.name}${tierLine}
+Amount received: ${data.gift.amount}
 
 ---
 

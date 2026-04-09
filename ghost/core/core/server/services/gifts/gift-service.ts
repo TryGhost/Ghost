@@ -48,6 +48,8 @@ interface StaffServiceEmails {
         memberId: string | null;
         amount: number;
         currency: string;
+        tierName: string | null;
+        cadenceLabel: string;
     }): Promise<void>;
 }
 
@@ -125,13 +127,28 @@ export class GiftService {
 
         await this.giftRepository.create(gift);
 
+        const cadenceLabel = duration === 1 ? `1 ${data.cadence}` : `${duration} ${data.cadence}s`;
+
+        // Load the tier once so both the staff notification and the buyer
+        // confirmation email can use it. Failures here are non-fatal: the staff
+        // email will still be sent (without tier details) and the buyer email
+        // block below will skip itself if the tier is missing.
+        let tier: Tier | null = null;
+        try {
+            tier = await this.tiersService.api.read(data.tierId);
+        } catch (err) {
+            logging.error('Failed to load tier for gift purchase', err);
+        }
+
         try {
             await this.staffServiceEmails.notifyGiftReceived({
                 name: member?.get('name') ?? null,
                 email: member?.get('email') ?? data.buyerEmail,
                 memberId: member?.id ?? null,
                 amount: data.amount,
-                currency: data.currency
+                currency: data.currency,
+                tierName: tier?.name ?? null,
+                cadenceLabel
             });
         } catch (err) {
             logging.error('Failed to notify staff of gift purchase', err);
@@ -141,8 +158,6 @@ export class GiftService {
             if (!gift.expiresAt) {
                 throw new errors.InternalServerError({message: 'Gift is missing expiration date'});
             }
-
-            const tier = await this.tiersService.api.read(data.tierId);
 
             if (!tier) {
                 throw new errors.NotFoundError({message: `Tier not found: ${data.tierId}`});
