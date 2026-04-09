@@ -27,6 +27,10 @@ export class MemberWelcomeEmailsSection extends BasePage {
     readonly customizeModalButtonStyleFill: Locator;
     readonly customizeModalButtonStyleOutline: Locator;
     readonly customizeModalBodyFontSelect: Locator;
+    readonly customizeModalButtonColorField: Locator;
+    readonly customizeModalButtonColorPickerTrigger: Locator;
+    readonly customizeModalButtonColorAccentSwatch: Locator;
+    readonly customizeModalColorPickerPopover: Locator;
 
     // Modal locators
     readonly welcomeEmailModal: Locator;
@@ -63,6 +67,10 @@ export class MemberWelcomeEmailsSection extends BasePage {
         this.customizeModalButtonStyleFill = this.customizeModal.getByLabel('Fill');
         this.customizeModalButtonStyleOutline = this.customizeModal.getByLabel('Outline');
         this.customizeModalBodyFontSelect = this.customizeModal.getByText('Body font').locator('..').getByRole('combobox');
+        this.customizeModalButtonColorField = this.customizeModal.getByText('Button color').locator('..');
+        this.customizeModalButtonColorPickerTrigger = this.customizeModalButtonColorField.getByRole('button', {name: 'Pick color'});
+        this.customizeModalButtonColorAccentSwatch = this.customizeModal.getByRole('button', {name: 'Accent'});
+        this.customizeModalColorPickerPopover = page.locator('[data-radix-popper-content-wrapper]');
 
         // Modal locators
         this.welcomeEmailModal = page.getByTestId('welcome-email-modal');

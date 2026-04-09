@@ -273,6 +273,34 @@ test.describe('Ghost Admin - Welcome Email Customize Button - flag enabled', () 
         await expect(page).toHaveURL(/\/ghost\/#\/settings\/memberemails$/);
     });
 
+    test('Escape closes welcome email color picker without bypassing unsaved changes confirmation', async ({page}) => {
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+
+        await welcomeEmailsSection.goto();
+        await welcomeEmailsSection.openCustomizeModal();
+        await welcomeEmailsSection.switchToDesignTab();
+
+        await welcomeEmailsSection.customizeModalButtonColorPickerTrigger.click();
+        await expect(welcomeEmailsSection.customizeModalButtonColorAccentSwatch).toBeVisible();
+        await welcomeEmailsSection.customizeModalButtonColorAccentSwatch.click();
+
+        await welcomeEmailsSection.customizeModalButtonColorPickerTrigger.click();
+        await expect(welcomeEmailsSection.customizeModalButtonColorAccentSwatch).toBeVisible();
+
+        await page.keyboard.press('Escape');
+
+        await expect(welcomeEmailsSection.customizeModalButtonColorAccentSwatch).toBeHidden();
+        await expect(welcomeEmailsSection.customizeModalUnsavedChangesDialog).toBeHidden();
+        await expect(welcomeEmailsSection.customizeModal).toBeVisible();
+        await expect(page).toHaveURL(/\/ghost\/#\/settings\/memberemails$/);
+
+        await page.keyboard.press('Escape');
+
+        await expect(welcomeEmailsSection.customizeModalUnsavedChangesDialog).toBeVisible();
+        await expect(welcomeEmailsSection.customizeModal).toBeVisible();
+        await expect(page).toHaveURL(/\/ghost\/#\/settings\/memberemails$/);
+    });
+
     test('customized design is applied to the free member welcome email', async ({page, browser, baseURL}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
         const emailClient = new MailPit();
