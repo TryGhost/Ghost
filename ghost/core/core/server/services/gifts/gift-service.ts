@@ -180,12 +180,10 @@ export class GiftService {
             });
         }
 
-        const isRedeemable = gift.isRedeemable();
+        const redeemableCheck = gift.checkRedeemable();
 
-        if (!isRedeemable) {
-            const redeemFailureReason = gift.getRedeemFailureReason();
-
-            switch (redeemFailureReason) {
+        if (!redeemableCheck.redeemable) {
+            switch (redeemableCheck.reason) {
             case 'redeemed':
                 throw new errors.BadRequestError({
                     message: tpl(messages.giftAlreadyRedeemed)
@@ -202,8 +200,13 @@ export class GiftService {
                 throw new errors.BadRequestError({
                     message: tpl(messages.giftRefunded)
                 });
-            default:
-                break;
+            default: {
+                const exhaustiveCheck: never = redeemableCheck.reason;
+
+                throw new errors.InternalServerError({
+                    message: `Unhandled redeem failure reason: ${exhaustiveCheck}`
+                });
+            }
             }
         }
 

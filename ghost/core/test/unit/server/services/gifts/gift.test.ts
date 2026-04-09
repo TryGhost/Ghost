@@ -97,8 +97,7 @@ describe('Gift', function () {
         it('is redeemable when it has not been redeemed, consumed, expired, or refunded', function () {
             const gift = buildGift();
 
-            assert.equal(gift.isRedeemable(), true);
-            assert.equal(gift.getRedeemFailureReason(), null);
+            assert.deepEqual(gift.checkRedeemable(), {redeemable: true});
         });
 
         it('is not redeemable when it has already been redeemed', function () {
@@ -106,8 +105,7 @@ describe('Gift', function () {
                 redeemedAt: new Date('2026-02-01T00:00:00.000Z')
             });
 
-            assert.equal(gift.isRedeemable(), false);
-            assert.equal(gift.getRedeemFailureReason(), 'redeemed');
+            assert.deepEqual(gift.checkRedeemable(), {redeemable: false, reason: 'redeemed'});
         });
 
         it('is not redeemable when it has already been consumed', function () {
@@ -115,8 +113,7 @@ describe('Gift', function () {
                 consumedAt: new Date('2026-02-01T00:00:00.000Z')
             });
 
-            assert.equal(gift.isRedeemable(), false);
-            assert.equal(gift.getRedeemFailureReason(), 'consumed');
+            assert.deepEqual(gift.checkRedeemable(), {redeemable: false, reason: 'consumed'});
         });
 
         it('is not redeemable when it has already been expired', function () {
@@ -124,8 +121,7 @@ describe('Gift', function () {
                 expiredAt: new Date('2026-02-01T00:00:00.000Z')
             });
 
-            assert.equal(gift.isRedeemable(), false);
-            assert.equal(gift.getRedeemFailureReason(), 'expired');
+            assert.deepEqual(gift.checkRedeemable(), {redeemable: false, reason: 'expired'});
         });
 
         it('is not redeemable when it has been refunded', function () {
@@ -133,8 +129,7 @@ describe('Gift', function () {
                 refundedAt: new Date('2026-02-01T00:00:00.000Z')
             });
 
-            assert.equal(gift.isRedeemable(), false);
-            assert.equal(gift.getRedeemFailureReason(), 'refunded');
+            assert.deepEqual(gift.checkRedeemable(), {redeemable: false, reason: 'refunded'});
         });
     });
 });
