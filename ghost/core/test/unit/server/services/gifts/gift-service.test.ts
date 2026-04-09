@@ -225,32 +225,22 @@ describe('GiftService', function () {
             assert.equal(emailData.amount, 5000);
             assert.equal(emailData.currency, 'usd');
             assert.equal(emailData.tierName, 'Bronze');
-            assert.equal(emailData.cadenceLabel, '1 year');
+            assert.equal(emailData.cadence, 'year');
+            assert.equal(emailData.duration, 1);
         });
 
-        it('formats cadenceLabel with pluralized unit when duration is greater than 1', async function () {
-            const service = createService();
-
-            await service.recordPurchase({...purchaseData, duration: '3', cadence: 'month'});
-
-            const emailData = staffServiceEmails.notifyGiftReceived.getCall(0).args[0];
-
-            assert.equal(emailData.cadenceLabel, '3 months');
-        });
-
-        it('passes a null tierName to staff notification when tier load fails', async function () {
+        it('throws when tier is not found', async function () {
             tiersService.api.read.resolves(null);
 
             const service = createService();
 
-            await service.recordPurchase(purchaseData);
+            await assert.rejects(
+                () => service.recordPurchase(purchaseData),
+                {message: 'Tier not found: tier_1'}
+            );
 
-            sinon.assert.calledOnce(staffServiceEmails.notifyGiftReceived);
-
-            const emailData = staffServiceEmails.notifyGiftReceived.getCall(0).args[0];
-
-            assert.equal(emailData.tierName, null);
-            assert.equal(emailData.cadenceLabel, '1 year');
+            sinon.assert.notCalled(staffServiceEmails.notifyGiftReceived);
+            sinon.assert.notCalled(giftEmailService.sendPurchaseConfirmation);
         });
 
         it('uses buyerEmail and null name when buyer is not a member', async function () {
@@ -286,17 +276,6 @@ describe('GiftService', function () {
             assert.equal(emailData.cadence, 'year');
             assert.equal(emailData.duration, 1);
             assert.ok(emailData.expiresAt instanceof Date);
-        });
-
-        it('does not send confirmation email when tier is not found', async function () {
-            tiersService.api.read.resolves(null);
-
-            const service = createService();
-
-            const result = await service.recordPurchase(purchaseData);
-
-            assert.equal(result, true);
-            sinon.assert.notCalled(giftEmailService.sendPurchaseConfirmation);
         });
 
         it('does not fail purchase when buyer confirmation email throws', async function () {

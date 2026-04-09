@@ -301,12 +301,13 @@ class StaffServiceEmails {
      * @param {string|null} eventData.memberId
      * @param {number} eventData.amount - amount in cents
      * @param {string} eventData.currency
-     * @param {string|null} [eventData.tierName]
-     * @param {string|null} [eventData.cadenceLabel]
+     * @param {string} eventData.tierName
+     * @param {'month'|'year'} eventData.cadence
+     * @param {number} eventData.duration
      *
      * @returns {Promise<void>}
      */
-    async notifyGiftReceived({name, email, memberId, amount, currency, tierName = null, cadenceLabel = null}) {
+    async notifyGiftReceived({name, email, memberId, amount, currency, tierName, cadence, duration}) {
         const users = await this.models.User.getEmailAlertUsers('gift-purchased');
         const formattedAmount = this.getFormattedAmount({currency, amount: amount / 100});
 
@@ -317,6 +318,8 @@ class StaffServiceEmails {
             name: name ?? null,
             email
         }) : null;
+
+        const cadenceLabel = duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
 
         await this.sendToStaff({
             users,

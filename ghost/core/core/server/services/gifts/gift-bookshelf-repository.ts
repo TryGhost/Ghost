@@ -97,7 +97,7 @@ export class GiftBookshelfRepository implements GiftRepository {
             stripeCheckoutSessionId: json.stripe_checkout_session_id,
             stripePaymentIntentId: json.stripe_payment_intent_id,
             consumesAt: json.consumes_at,
-            expiresAt: json.expires_at,
+            expiresAt: json.expires_at ?? new Date(), // TODO: Remove fallback when non-nullable migration is in place
             status: json.status,
             purchasedAt: json.purchased_at,
             redeemedAt: json.redeemed_at,

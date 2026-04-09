@@ -35,7 +35,7 @@ describe('Gift', function () {
         it('sets expiresAt to GIFT_EXPIRY_DAYS after purchasedAt', function () {
             const gift = Gift.fromPurchase(purchaseData);
             const daysDiff = Math.round(
-                (gift.expiresAt!.getTime() - gift.purchasedAt.getTime()) / (1000 * 60 * 60 * 24)
+                (gift.expiresAt.getTime() - gift.purchasedAt.getTime()) / (1000 * 60 * 60 * 24)
             );
 
             assert.equal(daysDiff, GIFT_EXPIRY_DAYS);

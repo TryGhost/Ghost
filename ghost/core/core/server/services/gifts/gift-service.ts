@@ -48,8 +48,9 @@ interface StaffServiceEmails {
         memberId: string | null;
         amount: number;
         currency: string;
-        tierName: string | null;
-        cadenceLabel: string;
+        tierName: string;
+        cadence: 'month' | 'year';
+        duration: number;
     }): Promise<void>;
 }
 
@@ -127,17 +128,10 @@ export class GiftService {
 
         await this.giftRepository.create(gift);
 
-        const cadenceLabel = duration === 1 ? `1 ${data.cadence}` : `${duration} ${data.cadence}s`;
+        const tier = await this.tiersService.api.read(data.tierId);
 
-        // Load the tier once so both the staff notification and the buyer
-        // confirmation email can use it. Failures here are non-fatal: the staff
-        // email will still be sent (without tier details) and the buyer email
-        // block below will skip itself if the tier is missing.
-        let tier: Tier | null = null;
-        try {
-            tier = await this.tiersService.api.read(data.tierId);
-        } catch (err) {
-            logging.error('Failed to load tier for gift purchase', err);
+        if (!tier) {
+            throw new errors.NotFoundError({message: `Tier not found: ${data.tierId}`});
         }
 
         try {
@@ -147,22 +141,15 @@ export class GiftService {
                 memberId: member?.id ?? null,
                 amount: data.amount,
                 currency: data.currency,
-                tierName: tier?.name ?? null,
-                cadenceLabel
+                tierName: tier.name,
+                cadence: data.cadence,
+                duration
             });
         } catch (err) {
             logging.error('Failed to notify staff of gift purchase', err);
         }
 
         try {
-            if (!gift.expiresAt) {
-                throw new errors.InternalServerError({message: 'Gift is missing expiration date'});
-            }
-
-            if (!tier) {
-                throw new errors.NotFoundError({message: `Tier not found: ${data.tierId}`});
-            }
-
             await this.giftEmailService.sendPurchaseConfirmation({
                 buyerEmail: data.buyerEmail,
                 amount: data.amount,
