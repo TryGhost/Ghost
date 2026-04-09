@@ -94,8 +94,6 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const postsRoute = routing.getRouteUrl('posts');
     const isPostsRouteActive = routing.isRouteActive('posts');
     const postsNavActive = isPostsRouteActive || (!postsExpanded && hasActivePostChild);
-    const membersRoute = 'members';
-
     return (
         <SidebarGroup {...props}>
             <SidebarGroupContent>
@@ -182,7 +180,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                             collapsible={true}
                                             count={memberCount}
                                             isActive={membersNavActive}
-                                            to={membersRoute}
+                                            to="members"
                                         />
                                     </NavMenuItem.CollapsibleItem>
 
@@ -196,7 +194,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                         collapsible={false}
                                         count={memberCount}
                                         isActive={membersNavActive}
-                                        to={membersRoute}
+                                        to="members"
                                     />
                                 </NavMenuItem>
                             )}
