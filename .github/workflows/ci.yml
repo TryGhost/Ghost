@@ -972,7 +972,7 @@ jobs:
 
       - name: Docker meta (core)
         id: meta-core
-        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
         with:
           images: ${{ steps.strategy.outputs.image-core-name }}
           tags: |
@@ -990,7 +990,7 @@ jobs:
 
       - name: Docker meta (full)
         id: meta-full
-        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
         with:
           images: ${{ steps.strategy.outputs.image-full-name }}
           tags: |
@@ -1206,7 +1206,7 @@ jobs:
 
       - name: Docker meta (e2e)
         id: meta-e2e
-        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
         with:
           images: ${{ needs.job_build_artifacts.outputs.image-e2e-name }}
           tags: |
