@@ -48,6 +48,9 @@ interface StaffServiceEmails {
         memberId: string | null;
         amount: number;
         currency: string;
+        tierName: string;
+        cadence: 'month' | 'year';
+        duration: number;
     }): Promise<void>;
 }
 
@@ -125,29 +128,28 @@ export class GiftService {
 
         await this.giftRepository.create(gift);
 
+        const tier = await this.tiersService.api.read(data.tierId);
+
+        if (!tier) {
+            throw new errors.NotFoundError({message: `Tier not found: ${data.tierId}`});
+        }
+
         try {
             await this.staffServiceEmails.notifyGiftReceived({
                 name: member?.get('name') ?? null,
                 email: member?.get('email') ?? data.buyerEmail,
                 memberId: member?.id ?? null,
                 amount: data.amount,
-                currency: data.currency
+                currency: data.currency,
+                tierName: tier.name,
+                cadence: data.cadence,
+                duration
             });
         } catch (err) {
             logging.error('Failed to notify staff of gift purchase', err);
         }
 
         try {
-            if (!gift.expiresAt) {
-                throw new errors.InternalServerError({message: 'Gift is missing expiration date'});
-            }
-
-            const tier = await this.tiersService.api.read(data.tierId);
-
-            if (!tier) {
-                throw new errors.NotFoundError({message: `Tier not found: ${data.tierId}`});
-            }
-
             await this.giftEmailService.sendPurchaseConfirmation({
                 buyerEmail: data.buyerEmail,
                 amount: data.amount,
@@ -180,12 +182,10 @@ export class GiftService {
             });
         }
 
-        const isRedeemable = gift.isRedeemable();
+        const redeemableCheck = gift.checkRedeemable();
 
-        if (!isRedeemable) {
-            const redeemFailureReason = gift.getRedeemFailureReason();
-
-            switch (redeemFailureReason) {
+        if (!redeemableCheck.redeemable) {
+            switch (redeemableCheck.reason) {
             case 'redeemed':
                 throw new errors.BadRequestError({
                     message: tpl(messages.giftAlreadyRedeemed)
@@ -202,8 +202,13 @@ export class GiftService {
                 throw new errors.BadRequestError({
                     message: tpl(messages.giftRefunded)
                 });
-            default:
-                break;
+            default: {
+                const exhaustiveCheck: never = redeemableCheck.reason;
+
+                throw new errors.InternalServerError({
+                    message: `Unhandled redeem failure reason: ${exhaustiveCheck}`
+                });
+            }
             }
         }
 

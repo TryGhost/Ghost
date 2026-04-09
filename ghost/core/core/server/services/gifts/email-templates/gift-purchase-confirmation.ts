@@ -16,12 +16,12 @@ export function renderText(data: GiftPurchaseConfirmationData): string {
 
 Share the link below with the recipient to let them redeem their gift membership.
 
-Gift subscription: ${data.gift.tierName} (${data.gift.cadenceLabel})
+Gift subscription: ${data.gift.tierName} • ${data.gift.cadenceLabel}
 Amount paid: ${data.gift.amount}
 
 Redemption link: ${data.gift.link}
 
-This link can be redeemed once and expires on ${data.gift.expiresAt}.
+This link can be redeemed once and expires on ${data.gift.expiresAt}. It's only available to free or new members.
 
 ---
 

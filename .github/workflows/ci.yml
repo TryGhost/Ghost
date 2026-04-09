@@ -21,7 +21,6 @@ env:
     ${{ github.workspace }}/ghost/*/node_modules
     ${{ github.workspace }}/e2e/node_modules
     ~/.cache/ms-playwright/
-  NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
   NODE_VERSION: 22.18.0
   # Disable v8-compile-cache to prevent intermittent V8 deserializer crashes
   # when multiple parallel Nx workers race to read/write shared bytecode cache
@@ -31,7 +30,7 @@ env:
   DISABLE_V8_COMPILE_CACHE: 1
 
 concurrency:
-  group: ${{ github.head_ref || github.run_id }}
+  group: ${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -93,7 +92,7 @@ jobs:
           fi
 
       - name: Determine added packages
-        uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3.0.3
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         id: added
         with:
           filters: |
@@ -163,17 +162,6 @@ jobs:
           echo "dep-cache-${{ env.hash }}" >> "$GITHUB_ENV"
           echo "dep-cache" >> "$GITHUB_ENV"
           echo "$EOF" >> "$GITHUB_ENV"
-
-      - name: Nx cache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-        id: cache_nx
-        with:
-          path: .nxcache
-          key: nx-Linux-${{ github.ref }}-${{ env.HEAD_COMMIT }}
-          restore-keys: |
-            nx-Linux-${{ github.ref }}-${{ env.HEAD_COMMIT }}
-            nx-Linux-${{ github.ref }}
-            nx-Linux
 
       - name: Check dependency cache
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
@@ -332,7 +320,7 @@ jobs:
       - name: Merge Admin test coverage
         run: yarn ember coverage-merge
         working-directory: ghost/admin
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
@@ -391,7 +379,7 @@ jobs:
           NX_SKIP_LOG_GROUPING: true
           logging__level: fatal
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: matrix.node == env.NODE_VERSION
         with:
           name: unit-coverage
@@ -450,9 +438,6 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Build TS packages
-        run: yarn nx run-many -t build --exclude=ghost-admin
-
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
         with:
@@ -470,14 +455,12 @@ jobs:
           echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: E2E tests
-        working-directory: ghost/core
-        run: yarn test:ci:e2e
+        run: yarn nx run ghost:test:ci:e2e
 
       - name: Integration tests
-        working-directory: ghost/core
-        run: yarn test:ci:integration
+        run: yarn nx run ghost:test:ci:integration
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
         with:
           name: e2e-coverage
@@ -540,9 +523,6 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Build TS packages
-        run: yarn nx run-many -t build --exclude=ghost-admin
-
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
         run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
@@ -555,8 +535,7 @@ jobs:
           echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: Legacy tests
-        working-directory: ghost/core
-        run: yarn test:ci:legacy
+        run: yarn nx run ghost:test:ci:legacy
 
       - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -592,7 +571,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: admin-x-settings-playwright-report
           path: apps/admin-x-settings/playwright-report
@@ -632,7 +611,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: activitypub-playwright-report
           path: apps/activitypub/playwright-report
@@ -672,7 +651,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: comments-ui-playwright-report
           path: apps/comments-ui/playwright-report
@@ -712,7 +691,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: signup-form-playwright-report
           path: apps/signup-form/playwright-report
@@ -750,39 +729,17 @@ jobs:
         if: github.repository == 'TryGhost/Ghost'
         env:
           GH_TOKEN: ${{ secrets.TRAFFIC_ANALYTICS_GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-
-          REPO="TryGhost/traffic-analytics-infra"
-          WORKFLOW="tinybird.yml"
-          BRANCH="main"
-          DISPATCH_RESPONSE=$(gh api \
-            --method POST \
-            -H "Accept: application/vnd.github+json" \
-            "repos/$REPO/actions/workflows/$WORKFLOW/dispatches" \
-            --input - <<EOF
-          {
-            "ref": "$BRANCH",
-            "return_run_details": true,
-            "inputs": {
+        uses: ./.github/actions/dispatch-workflow
+        with:
+          repo: TryGhost/traffic-analytics-infra
+          workflow: tinybird.yml
+          branch: main
+          dispatch-inputs: >-
+            {
               "ghost_ref": "${{ github.sha }}",
               "caller_run_id": "${{ github.run_id }}",
               "run_local_tests": false
             }
-          }
-          EOF
-          )
-
-          RUN_ID=$(printf '%s' "$DISPATCH_RESPONSE" | jq -r '.workflow_run_id // empty')
-          RUN_URL=$(printf '%s' "$DISPATCH_RESPONSE" | jq -r '.html_url // .run_url // empty')
-
-          if [ -z "$RUN_ID" ]; then
-            echo "::error::Unable to find the triggered workflow run in $REPO"
-            exit 1
-          fi
-
-          echo "Watching remote workflow run: $RUN_URL"
-          gh run watch "$RUN_ID" --repo "$REPO" --exit-status
 
   job_ghost-cli:
     name: Ghost-CLI tests
@@ -817,7 +774,7 @@ jobs:
 
       - name: Save Ghost CLI Debug Logs
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: ghost-cli-debug-logs
           path: /home/runner/.ghost/logs/
@@ -899,7 +856,7 @@ jobs:
 
       - name: Upload npm tarball
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: ghost-npm-tarball
           path: ghost/core/ghost-*.tgz
@@ -952,7 +909,7 @@ jobs:
 
       - name: Upload admin artifact for CD
         id: upload-admin
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: admin-build-cd
           path: apps/admin/dist
@@ -960,11 +917,11 @@ jobs:
           if-no-files-found: error
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
 
       - name: Log in to GitHub Container Registry
         if: steps.strategy.outputs.should-push == 'true'
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -972,7 +929,7 @@ jobs:
 
       - name: Docker meta (core)
         id: meta-core
-        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
         with:
           images: ${{ steps.strategy.outputs.image-core-name }}
           tags: |
@@ -990,7 +947,7 @@ jobs:
 
       - name: Docker meta (full)
         id: meta-full
-        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
         with:
           images: ${{ steps.strategy.outputs.image-full-name }}
           tags: |
@@ -1007,7 +964,7 @@ jobs:
             org.opencontainers.image.vendor=TryGhost
 
       - name: Build & push core image
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
         with:
           context: /tmp/ghost-production
           file: Dockerfile.production
@@ -1023,7 +980,7 @@ jobs:
           cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-core-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
       - name: Build & push full image
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
         with:
           context: /tmp/ghost-production
           file: Dockerfile.production
@@ -1047,7 +1004,7 @@ jobs:
           ls -lh docker-image-production.tar.gz
 
       - name: Upload image artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: docker-image-production
           path: docker-image-production.tar.gz
@@ -1141,7 +1098,7 @@ jobs:
           ls -lh e2e-public-apps.tar.gz
 
       - name: Upload public app artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: e2e-public-apps
           path: e2e-public-apps.tar.gz
@@ -1160,7 +1117,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Download public app artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: e2e-public-apps
 
@@ -1168,7 +1125,7 @@ jobs:
         run: tar -xzf e2e-public-apps.tar.gz
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
         with:
           # Fork/cross-repo PRs use artifact transfer (no GHCR push). The default
           # docker-container driver runs in an isolated BuildKit container that
@@ -1198,7 +1155,7 @@ jobs:
 
       - name: Log in to GitHub Container Registry
         if: steps.strategy.outputs.should-push == 'true'
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -1206,7 +1163,7 @@ jobs:
 
       - name: Docker meta (e2e)
         id: meta-e2e
-        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
         with:
           images: ${{ needs.job_build_artifacts.outputs.image-e2e-name }}
           tags: |
@@ -1220,7 +1177,7 @@ jobs:
             org.opencontainers.image.vendor=TryGhost
 
       - name: Build & push E2E image
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
         with:
           context: .
           file: e2e/Dockerfile.e2e
@@ -1244,7 +1201,7 @@ jobs:
 
       - name: Upload E2E image artifact
         if: steps.strategy.outputs.use-artifact == 'true'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: docker-image-e2e
           path: docker-image-e2e.tar.gz
@@ -1269,7 +1226,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
 
       - name: Pull or build Tinybird CLI Image
         run: |
@@ -1329,7 +1286,7 @@ jobs:
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: blob-report-${{ matrix.shardIndex }}
           path: e2e/blob-report
@@ -1337,7 +1294,7 @@ jobs:
 
       - name: Upload test results artifacts
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: test-results-${{ matrix.shardIndex }}
           path: e2e/test-results
@@ -1371,7 +1328,7 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         continue-on-error: true
         with:
           path: e2e/all-blob-reports
@@ -1389,7 +1346,7 @@ jobs:
 
       - name: Download test results from GitHub Actions Artifacts
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           path: e2e/all-test-results
           pattern: test-results-*
@@ -1402,7 +1359,7 @@ jobs:
 
       - name: Upload HTML report
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: playwright-report
           path: e2e/playwright-report
@@ -1410,7 +1367,7 @@ jobs:
 
       - name: Upload merged test results
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: test-results
           path: e2e/all-test-results
@@ -1447,7 +1404,7 @@ jobs:
 
       - name: Restore Admin coverage
         if: contains(needs.job_admin-tests.result, 'success')
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: admin-coverage
 
@@ -1463,7 +1420,7 @@ jobs:
 
       - name: Restore E2E coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: e2e-coverage
 
@@ -1632,8 +1589,8 @@ jobs:
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
 
-  deploy_tinybird_staging:
-    name: Deploy Tinybird - Staging
+  deploy_tinybird:
+    name: Deploy Tinybird
     runs-on: ubuntu-latest
     needs: [
       job_setup,
@@ -1641,35 +1598,24 @@ jobs:
     ]
     if: always() && github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Deploy to Staging
-        uses: ./.github/actions/deploy-tinybird
+      - uses: actions/checkout@v6
+      - name: Trigger and watch traffic analytics infra Tinybird workflow
+        if: github.repository == 'TryGhost/Ghost'
+        env:
+          GH_TOKEN: ${{ secrets.TRAFFIC_ANALYTICS_GITHUB_TOKEN }}
+        uses: ./.github/actions/dispatch-workflow
         with:
-          host: ${{ secrets.TINYBIRD_HOST_STAGING }}
-          token: ${{ secrets.TINYBIRD_TOKEN_STAGING }}
-          workspace: 'Staging'
-          slack-webhook: ${{ secrets.ANALYTICS_SLACK_WEBHOOK_URL }}
-
-  deploy_tinybird_production:
-    name: Deploy Tinybird - Production
-    runs-on: ubuntu-latest
-    needs: [
-      job_setup,
-      job_tinybird-tests,
-      deploy_tinybird_staging
-    ]
-    if: always() && github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.deploy_tinybird_staging.result == 'success' && needs.job_setup.outputs.is_main == 'true'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Deploy to Production
-        uses: ./.github/actions/deploy-tinybird
-        with:
-          host: ${{ secrets.TINYBIRD_HOST }}
-          token: ${{ secrets.TINYBIRD_TOKEN }}
-          workspace: 'Production'
-          slack-webhook: ${{ secrets.ANALYTICS_SLACK_WEBHOOK_URL }}
+          repo: TryGhost/traffic-analytics-infra
+          workflow: tinybird.yml
+          branch: main
+          dispatch-inputs: >-
+            {
+              "ghost_ref": "${{ github.sha }}",
+              "caller_run_id": "${{ github.run_id }}",
+              "run_local_tests": false,
+              "deploy_staging": true,
+              "deploy_production": true
+            }
 
   # --------------------------------------------------------------------------- #
   # Trigger Pro CD — dispatch to Ghost-Moya cd.yml (runs on main + PRs)
@@ -1707,7 +1653,7 @@ jobs:
 
       - name: Dispatch to Ghost-Moya cd.yml
         if: steps.params.outputs.skip != 'true'
-        uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3
+        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           repository: TryGhost/Ghost-Moya
@@ -1738,7 +1684,7 @@ jobs:
       id-token: write
     steps:
       - name: Download npm tarball
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: ghost-npm-tarball
 

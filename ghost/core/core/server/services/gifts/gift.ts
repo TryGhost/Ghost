@@ -2,6 +2,10 @@ import {GIFT_EXPIRY_DAYS} from './constants';
 
 export type GiftStatus = 'purchased' | 'redeemed' | 'consumed' | 'expired' | 'refunded';
 export type GiftCadence = 'month' | 'year';
+export type RedeemableCheckFailureReason = 'redeemed' | 'consumed' | 'expired' | 'refunded';
+export type RedeemableCheckResult =
+    | {redeemable: true}
+    | {redeemable: false; reason: RedeemableCheckFailureReason};
 
 interface GiftData {
     token: string;
@@ -16,7 +20,7 @@ interface GiftData {
     stripeCheckoutSessionId: string;
     stripePaymentIntentId: string;
     consumesAt: Date | null;
-    expiresAt: Date | null;
+    expiresAt: Date;
     status: GiftStatus;
     purchasedAt: Date;
     redeemedAt: Date | null;
@@ -51,7 +55,7 @@ export class Gift {
     stripeCheckoutSessionId: string;
     stripePaymentIntentId: string;
     consumesAt: Date | null;
-    expiresAt: Date | null;
+    expiresAt: Date;
     status: GiftStatus;
     purchasedAt: Date;
     redeemedAt: Date | null;
@@ -117,27 +121,23 @@ export class Gift {
         return this.consumedAt !== null;
     }
 
-    getRedeemFailureReason(): 'redeemed' | 'consumed' | 'expired' | 'refunded' | null {
+    checkRedeemable(): RedeemableCheckResult {
         if (this.isRedeemed()) {
-            return 'redeemed';
+            return {redeemable: false, reason: 'redeemed'};
         }
 
         if (this.isConsumed()) {
-            return 'consumed';
+            return {redeemable: false, reason: 'consumed'};
         }
 
         if (this.isExpired()) {
-            return 'expired';
+            return {redeemable: false, reason: 'expired'};
         }
 
         if (this.isRefunded()) {
-            return 'refunded';
+            return {redeemable: false, reason: 'refunded'};
         }
 
-        return null;
-    }
-
-    isRedeemable() {
-        return this.getRedeemFailureReason() === null;
+        return {redeemable: true};
     }
 }
