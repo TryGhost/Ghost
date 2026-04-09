@@ -3,6 +3,7 @@ import moment from 'moment-timezone';
 import {Member} from '@tryghost/admin-x-framework/api/members';
 import {MemberAvatar} from '@components/member-avatar';
 import {TableCell, TableRow} from '@tryghost/shade/components';
+import {buildMemberDetailHash} from '../member-detail-hash';
 import {cn} from '@tryghost/shade/utils';
 import {getActiveColumnValue} from '../member-query-params';
 import type {ActiveColumn} from '../member-query-params';
@@ -63,15 +64,7 @@ function isModifiedClick(event: Pick<React.MouseEvent<HTMLElement>, 'button' | '
 }
 
 function buildMemberHref(memberId: string, backPath?: string) {
-    const params = new URLSearchParams();
-
-    if (backPath) {
-        params.set('back', backPath);
-    }
-
-    const queryString = params.toString();
-
-    return `#/members/${memberId}${queryString ? `?${queryString}` : ''}`;
+    return `#${buildMemberDetailHash(memberId, backPath)}`;
 }
 
 function openMemberInNewTab(memberId: string, backPath?: string) {
