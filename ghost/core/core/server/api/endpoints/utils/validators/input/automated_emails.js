@@ -16,7 +16,8 @@ const messages = {
     invalidName: `Name must be one of: ${ALLOWED_NAMES.join(', ')}`,
     invalidEmailReceived: 'The server did not receive a valid email',
     subjectRequired: 'Subject is required',
-    lexicalRequired: 'Email content is required'
+    lexicalRequired: 'Email content is required',
+    tokenRequired: 'Token is required'
 };
 
 const validateAutomatedEmail = async function (frame) {
@@ -61,12 +62,36 @@ const validateAutomatedEmail = async function (frame) {
     return Promise.resolve();
 };
 
+const validateOptionalStringField = (value, errorMessage) => {
+    if (value !== undefined && value !== null && typeof value !== 'string') {
+        throw new ValidationError({
+            message: errorMessage
+        });
+    }
+};
+
 module.exports = {
     async add(apiConfig, frame) {
         await validateAutomatedEmail(frame);
     },
     async edit(apiConfig, frame) {
         await validateAutomatedEmail(frame);
+    },
+    editSenders(apiConfig, frame) {
+        const senderName = frame.data.sender_name;
+        const senderEmail = frame.data.sender_email;
+        const senderReplyTo = frame.data.sender_reply_to;
+
+        validateOptionalStringField(senderName, 'Sender name must be a string');
+        validateOptionalStringField(senderEmail, 'Sender email must be a string');
+        validateOptionalStringField(senderReplyTo, 'Reply-to email must be a string');
+    },
+    verifySenderUpdate(apiConfig, frame) {
+        if (typeof frame.data.token !== 'string' || !frame.data.token.trim()) {
+            throw new ValidationError({
+                message: tpl(messages.tokenRequired)
+            });
+        }
     },
     sendTestEmail(apiConfig, frame) {
         const email = frame.data.email;

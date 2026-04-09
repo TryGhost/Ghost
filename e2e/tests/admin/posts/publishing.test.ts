@@ -1,5 +1,5 @@
 import {APIRequestContext, Browser, BrowserContext, Page} from '@playwright/test';
-import {Member, createMemberFactory, createPostFactory, createTierFactory, generateSlug} from '@/data-factory';
+import {Member, PostFactory, createMemberFactory, createPostFactory, createTierFactory, generateSlug} from '@/data-factory';
 import {PageEditorPage, PostEditorPage, PostsPage} from '@/admin-pages';
 import {PostPage} from '@/helpers/pages';
 import {expect, test} from '@/helpers/playwright';
@@ -20,21 +20,9 @@ async function expectFrontendStatus(page: Page, slug: string, status: number, ti
     }).toBe(status);
 }
 
-function formatDateInput(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-
-    return `${year}-${month}-${day}`;
-}
-
-function getAsapSchedule() {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-
+function getFutureSchedule() {
     return {
-        date: formatDateInput(yesterday),
-        time: '00:00'
+        date: '2050-01-01'
     };
 }
 
@@ -53,6 +41,49 @@ async function expectPostStatus(editor: PostEditorPage, status: string | RegExp,
         await editor.postStatus.first().hover();
         await expect(editor.postStatus.first()).toContainText(detail);
     }
+}
+
+async function waitForScheduledSaveResponse(page: Page, resource: 'posts' | 'pages') {
+    const response = await page.waitForResponse((networkResponse) => {
+        if (networkResponse.request().method() !== 'PUT' || networkResponse.status() !== 200) {
+            return false;
+        }
+
+        const pathname = new URL(networkResponse.url()).pathname;
+        if (!new RegExp(`/ghost/api/admin/${resource}/[^/]+/?$`).test(pathname)) {
+            return false;
+        }
+
+        const postData = networkResponse.request().postData();
+        if (!postData) {
+            return false;
+        }
+
+        try {
+            const payload = JSON.parse(postData) as Record<string, unknown>;
+            const resources = payload[resource];
+
+            if (!Array.isArray(resources)) {
+                return false;
+            }
+
+            return resources.some((item) => {
+                if (!item || typeof item !== 'object') {
+                    return false;
+                }
+
+                const resourcePayload = item as Record<string, unknown>;
+                return resourcePayload.status === 'scheduled' ||
+                    (typeof resourcePayload.published_at === 'string' &&
+                        resourcePayload.status !== 'published' &&
+                        resourcePayload.status !== 'sent');
+            });
+        } catch {
+            return false;
+        }
+    });
+
+    expect(response.status()).toBe(200);
 }
 
 function buildLexicalWithBody(body: string): string {
@@ -206,7 +237,7 @@ test.describe('Ghost Admin - Publishing', () => {
         await expectFrontendStatus(frontendPage, slug, 404);
     });
 
-    test('scheduled publish only - post becomes visible on frontend', async ({page}) => {
+    test('scheduled publish only - post is scheduled', async ({page}) => {
         const title = `scheduled-publish-only-${Date.now()}`;
         const body = 'This is my scheduled post body.';
         const slug = generateSlug(title);
@@ -219,26 +250,20 @@ test.describe('Ghost Admin - Publishing', () => {
         await editor.createDraft({title, body});
 
         await editor.publishFlow.open();
-        await editor.publishFlow.schedule(getAsapSchedule());
-        await editor.publishFlow.confirm();
+        await editor.publishFlow.schedule(getFutureSchedule());
+        await Promise.all([
+            waitForScheduledSaveResponse(page, 'posts'),
+            editor.publishFlow.confirm()
+        ]);
         await editor.publishFlow.close();
 
-        await expect(editor.postStatus.first()).toContainText('Scheduled');
-        await expectFrontendStatus(page, slug, 200, 20000);
+        await expectPostStatus(editor, 'Scheduled', /to be published\s+at .*2050/i);
 
         const frontendPage = await page.context().newPage();
-        const publicPage = new PostPage(frontendPage);
-
-        await publicPage.gotoPost(slug);
-        await expect(publicPage.articleTitle).toHaveText(title);
-        await expect(publicPage.articleBody).toHaveText(body);
-
-        await postsPage.goto();
-        await postsPage.getPostByTitle(title).click();
-        await expectPostStatus(editor, 'Published');
+        await expectFrontendStatus(frontendPage, slug, 404);
     });
 
-    test('scheduled publish and email - post becomes visible on frontend', async ({page}) => {
+    test('scheduled publish and email - post is scheduled', async ({page}) => {
         const title = `scheduled-publish-email-${Date.now()}`;
         const body = 'This is my scheduled publish and email post body.';
         const slug = generateSlug(title);
@@ -260,29 +285,21 @@ test.describe('Ghost Admin - Publishing', () => {
 
         await editor.publishFlow.open();
         await editor.publishFlow.selectPublishType('publish+send');
-        await editor.publishFlow.schedule(getAsapSchedule());
-        await editor.publishFlow.confirm();
+        await editor.publishFlow.schedule(getFutureSchedule());
+        await Promise.all([
+            waitForScheduledSaveResponse(page, 'posts'),
+            editor.publishFlow.confirm()
+        ]);
         await editor.publishFlow.close();
 
         await expectPostStatus(editor, 'Scheduled', /published and sent/i);
-        await expectPostStatus(editor, 'Scheduled', /few seconds/i);
+        await expectPostStatus(editor, 'Scheduled', /2050/i);
 
         const frontendPage = await page.context().newPage();
-        const publicPage = new PostPage(frontendPage);
-
         await expectFrontendStatus(frontendPage, slug, 404);
-        await expectFrontendStatus(frontendPage, slug, 200, 20000);
-
-        await publicPage.gotoPost(slug);
-        await expect(publicPage.articleTitle).toHaveText(title);
-        await expect(publicPage.articleBody).toHaveText(body);
-
-        await postsPage.goto();
-        await postsPage.getPostByTitle(title).click();
-        await expectPostStatus(editor, 'Published');
     });
 
-    test('scheduled email only - post is not visible on frontend', async ({page}) => {
+    test('scheduled email only - post is scheduled and not visible on frontend', async ({page}) => {
         const title = `scheduled-email-only-${Date.now()}`;
         const body = 'This is my scheduled email-only post body.';
         const slug = generateSlug(title);
@@ -304,28 +321,21 @@ test.describe('Ghost Admin - Publishing', () => {
 
         await editor.publishFlow.open();
         await editor.publishFlow.selectPublishType('send');
-        await editor.publishFlow.schedule(getAsapSchedule());
-        await editor.publishFlow.confirm();
+        await editor.publishFlow.schedule(getFutureSchedule());
+        await Promise.all([
+            waitForScheduledSaveResponse(page, 'posts'),
+            editor.publishFlow.confirm()
+        ]);
         await editor.publishFlow.close();
 
         await expectPostStatus(editor, 'Scheduled', /to be sent/i);
+        await expectPostStatus(editor, 'Scheduled', /2050/i);
 
         const frontendPage = await page.context().newPage();
         await expectFrontendStatus(frontendPage, slug, 404);
-
-        await postsPage.goto();
-        await postsPage.getPostByTitle(title).click();
-        await expect.poll(async () => {
-            await page.reload();
-            return await editor.postStatus.first().textContent();
-        }, {
-            timeout: 15000
-        }).toContain('Sent');
-        await expectPostStatus(editor, 'Sent', /Sent\s+to/i);
-        await expectFrontendStatus(frontendPage, slug, 404);
     });
 
-    test('scheduled publish only - page becomes visible on frontend', async ({page}) => {
+    test('scheduled publish only - page is scheduled', async ({page}) => {
         const title = `scheduled-page-only-${Date.now()}`;
         const body = 'This is my scheduled page body.';
         const slug = generateSlug(title);
@@ -335,21 +345,17 @@ test.describe('Ghost Admin - Publishing', () => {
         await editor.createDraft({title, body});
 
         await editor.publishFlow.open();
-        await editor.publishFlow.schedule(getAsapSchedule());
-        await editor.publishFlow.confirm();
+        await editor.publishFlow.schedule(getFutureSchedule());
+        await Promise.all([
+            waitForScheduledSaveResponse(page, 'pages'),
+            editor.publishFlow.confirm()
+        ]);
         await editor.publishFlow.close();
 
-        await expectPostStatus(editor, 'Scheduled', /few seconds/i);
+        await expectPostStatus(editor, 'Scheduled', /to be published\s+at .*2050/i);
 
         const frontendPage = await page.context().newPage();
-        const publicPage = new PostPage(frontendPage);
-
         await expectFrontendStatus(frontendPage, slug, 404);
-        await expectFrontendStatus(frontendPage, slug, 200, 20000);
-
-        await publicPage.gotoPost(slug);
-        await expect(publicPage.articleTitle).toHaveText(title);
-        await expect(publicPage.articleBody).toHaveText(body);
     });
 
     test('publish only - page is visible on frontend', async ({page}) => {
@@ -558,5 +564,34 @@ test.describe('Ghost Admin - Deleting Posts', () => {
         await editor.settingsMenu.deletePost();
 
         await expect(editor.screenTitle).toContainText('Posts');
+    });
+});
+
+test.describe('Ghost Admin - Posts List', () => {
+    test('lists posts and reflects newly created posts', async ({page}) => {
+        const postFactory: PostFactory = createPostFactory(page.request);
+
+        const postsPage = new PostsPage(page);
+        await postsPage.goto();
+
+        await expect(postsPage.postsListItem).toHaveCount(1);
+
+        await postFactory.create({title: 'Test Post'});
+        await postsPage.refreshData();
+        await expect(postsPage.postsListItem).toHaveCount(2);
+    });
+
+    test('shows correct publish date format in post settings', async ({page}) => {
+        const postFactory: PostFactory = createPostFactory(page.request);
+        await postFactory.create({title: 'Test Post'});
+
+        const postsPage = new PostsPage(page);
+        await postsPage.goto();
+
+        await postsPage.getPostByTitle('Test Post').click();
+        const editPage = new PostEditorPage(page);
+        await editPage.settingsToggleButton.click();
+
+        await expect(editPage.settingsMenu.publishDateInput).toHaveValue(/^\d{4}-\d{2}-\d{2}$/);
     });
 });

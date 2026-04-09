@@ -1,43 +1,35 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {InputGroup, InputGroupAddon, InputGroupInput, LucideIcon} from '@tryghost/shade';
-import {useDebounce} from 'use-debounce';
-
-const SEARCH_DEBOUNCE_MS = 250;
+import React from 'react';
+import {InputGroup, InputGroupAddon, InputGroupInput} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 interface MembersHeaderSearchProps {
     search: string;
     onSearchChange: (search: string) => void;
+    autoFocus?: boolean;
+    ariaLabel?: string;
 }
 
 const MembersHeaderSearch: React.FC<MembersHeaderSearchProps> = ({
     search,
-    onSearchChange
+    onSearchChange,
+    autoFocus = false,
+    ariaLabel = 'Search members'
 }) => {
-    const [inputValue, setInputValue] = useState(search);
-    const [debouncedSearch] = useDebounce(inputValue, SEARCH_DEBOUNCE_MS);
-    const latestSearchRef = useRef(search);
-
-    useEffect(() => {
-        latestSearchRef.current = search;
-        setInputValue(search);
-    }, [search]);
-
-    useEffect(() => {
-        if (debouncedSearch !== latestSearchRef.current) {
-            onSearchChange(debouncedSearch);
-        }
-    }, [debouncedSearch, onSearchChange]);
+    const testId = ariaLabel === 'Search members mobile' ? 'members-mobile-search-input' : 'members-search-input';
 
     return (
-        <InputGroup className="min-w-0 basis-full sm:w-[240px] sm:basis-auto">
+        <InputGroup className="h-[34px] min-w-0 basis-full lg:w-[180px] lg:basis-auto xl:w-[240px]">
             <InputGroupAddon>
                 <LucideIcon.Search className="size-4" strokeWidth={1.75} />
             </InputGroupAddon>
             <InputGroupInput
-                aria-label="Search members"
+                aria-label={ariaLabel}
+                autoFocus={autoFocus}
+                className='!h-[34px]'
+                data-testid={testId}
                 placeholder="Search members..."
-                value={inputValue}
-                onChange={event => setInputValue(event.target.value)}
+                value={search}
+                onChange={event => onSearchChange(event.target.value)}
             />
         </InputGroup>
     );

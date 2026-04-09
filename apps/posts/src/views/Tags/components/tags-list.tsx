@@ -1,15 +1,6 @@
 import LoadMoreButton from '@components/virtual-table/load-more-button';
-import {
-    Button,
-    LucideIcon,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-    formatNumber
-} from '@tryghost/shade';
+import {Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {Tag} from '@tryghost/admin-x-framework/api/tags';
 import {forwardRef, useRef} from 'react';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';

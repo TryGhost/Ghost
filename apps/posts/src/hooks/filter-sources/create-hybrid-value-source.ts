@@ -1,5 +1,5 @@
 import {RemoteProbeState, RemoteValueSourceHook, ValueSourceHookOptions} from './create-remote-value-source';
-import {ValueSource, ValueSourceParams, ValueSourceState} from '@tryghost/shade';
+import {ValueSource, ValueSourceParams, ValueSourceState} from '@tryghost/shade/patterns';
 import {useEffect, useState} from 'react';
 
 interface HybridValueSourceConfig<Item, T = string> {

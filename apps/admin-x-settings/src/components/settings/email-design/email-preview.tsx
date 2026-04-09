@@ -1,5 +1,6 @@
 import React from 'react';
-import {GhostOrb, cn} from '@tryghost/shade';
+import {GhostOrb} from '@tryghost/shade/components';
+import {cn} from '@tryghost/shade/utils';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {resolveAllColors, resolveImageCorners} from './design-utils';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -9,7 +10,10 @@ interface EmailPreviewProps {
     settings: EmailDesignSettings;
     senderName?: string;
     senderEmail?: string;
+    replyToEmail?: string;
     subject?: string;
+    showRecipientLine?: boolean;
+    showSubjectLine?: boolean;
     headerImage?: string;
     showPublicationTitle?: boolean;
     showBadge?: boolean;
@@ -20,25 +24,39 @@ interface EmailPreviewProps {
 
 // --- Sub-components ---
 
-const EnvelopeHeader: React.FC<{senderName?: string; senderEmail?: string; subject?: string}> = ({senderName, senderEmail, subject}) => {
-    if (!senderName && !senderEmail && !subject) {
+const EnvelopeHeader: React.FC<{
+    senderName?: string;
+    senderEmail?: string;
+    replyToEmail?: string;
+    subject?: string;
+    showRecipientLine?: boolean;
+    showSubjectLine?: boolean;
+}> = ({senderName, senderEmail, replyToEmail, subject, showRecipientLine = true, showSubjectLine = true}) => {
+    const resolvedReplyToEmail = replyToEmail || senderEmail;
+    const senderDisplay = senderName && senderEmail ? `${senderName} (${senderEmail})` : (senderName || senderEmail);
+
+    if (!senderDisplay && !resolvedReplyToEmail && (!showSubjectLine || !subject)) {
         return null;
     }
 
     return (
         <div className="flex flex-col justify-center gap-1 border-b border-grey-200 bg-white p-6 text-sm text-grey-700">
-            {senderName && (
-                <div className="flex gap-2">
-                    <span className="font-semibold text-grey-900">{senderName}</span>
-                    {senderEmail && <span>&lt;{senderEmail}&gt;</span>}
+            {senderDisplay && (
+                <div>
+                    <span className="font-semibold text-grey-900">From:</span> {senderDisplay}
                 </div>
             )}
-            {senderEmail && (
+            {showRecipientLine && senderEmail && (
                 <div>
                     <span className="font-semibold text-grey-900">To:</span> subscriber@example.com
                 </div>
             )}
-            {subject && (
+            {resolvedReplyToEmail && (
+                <div>
+                    <span className="font-semibold text-grey-900">Reply-to:</span> {resolvedReplyToEmail}
+                </div>
+            )}
+            {showSubjectLine && subject && (
                 <div className="text-base font-medium text-grey-900">{subject}</div>
             )}
         </div>
@@ -97,7 +115,7 @@ const Footer: React.FC<{siteTitle?: string; footerLinkText?: string; emailFooter
 
 // --- Main component ---
 
-const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, senderEmail, subject, headerImage, showPublicationTitle = true, showBadge = true, emailFooter, footerLinkText, children}) => {
+const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, senderEmail, replyToEmail, subject, showRecipientLine = true, showSubjectLine = true, headerImage, showPublicationTitle = true, showBadge = true, emailFooter, footerLinkText, children}) => {
     const {settings: globalSettings, siteData} = useGlobalData();
     const [siteTitle] = getSettingValues<string>(globalSettings, ['title']);
     const accentColor = siteData.accent_color;
@@ -107,7 +125,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
 
     return (
         <div className="mx-auto flex max-h-full min-h-0 w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-sm">
-            <EnvelopeHeader senderEmail={senderEmail} senderName={senderName} subject={subject} />
+            <EnvelopeHeader replyToEmail={replyToEmail} senderEmail={senderEmail} senderName={senderName} showRecipientLine={showRecipientLine} showSubjectLine={showSubjectLine} subject={subject} />
 
             <div
                 className="min-h-0 w-full flex-1 overflow-y-auto text-sm"

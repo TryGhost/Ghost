@@ -22,6 +22,22 @@ By default, the script adds a default floating trigger button on the bottom righ
 
 Its possible to add custom trigger button of your own by adding data attribute `data-portal` to any HTML tag on page, and also specify a specific [page](https://github.com/TryGhost/Ghost/blob/main/ghost/portal/src/pages.js#L13-L22) to open from it by using it as `data-portal=signup`.
 
+Share modal can be opened with `data-portal="share"` (or `#/share`).
+
+Default (zero-config) usage:
+```html
+<button type="button" data-portal="share">Share</button>
+```
+
+On pages where `{{ghost_head}}` is rendered, Portal will auto-resolve metadata from DOM tags:
+- URL: canonical URL (or current URL fallback)
+- Title: Open Graph title (or document title fallback)
+- Image: Open Graph image (or Twitter image fallback)
+
+Troubleshooting missing preview metadata:
+1. Verify the template includes `{{ghost_head}}`.
+2. Verify rendered HTML contains canonical + OG/Twitter tags.
+
 The script also adds custom class names to this element for open and close state of popup - `gh-portal-open` and `gh-portal-close`, allowing devs to update its UI based on popup state.
 
 Refer the [docs](https://ghost.org/help/setup-members/#customize-portal-settings) to read about ways in which Portal can be customized for your site.
@@ -52,14 +68,12 @@ To run tests in watch mode:
 yarn test
 ```
 
-### Ghost e2e browser tests
+### Ghost e2e tests
 
-Portal is primarily tested via Ghost's e2e browser tests, see [our Playwright docs](https://ghost.notion.site/Playwright-Tests-b49ccb6e2b4a40f1a4f8df5261391218) for more details.
-
-1. Run the Ghost e2e tests in the top-level of the monorepo, providing ENV variables for Stripe:
-   ```
-   STRIPE_ACCOUNT_ID=acct_xxx STRIPE_PUBLISHABLE_KEY=pk_test_xxx STRIPE_SECRET_KEY=sk_test_xxx yarn test:browser
-   ```
+Portal is primarily tested via Ghost's e2e Playwright tests in the `e2e/` directory. Run them from the monorepo root:
+```
+yarn test:e2e
+```
 
 ## Release
 

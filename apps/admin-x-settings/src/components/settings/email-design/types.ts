@@ -1,11 +1,9 @@
-export interface EmailDesignSettings {
+export interface PersistedEmailDesignSettings {
     background_color: string;
     title_font_category: string;
     title_font_weight: string;
     body_font_category: string;
     header_background_color: string;
-    post_title_color: string | null;
-    title_alignment: string;
     section_title_color: string | null;
     button_color: string | null;
     button_style: string;
@@ -16,20 +14,27 @@ export interface EmailDesignSettings {
     divider_color: string | null;
 }
 
+export interface EmailDesignPreviewSettings {
+    post_title_color: string | null;
+    title_alignment: string;
+}
+
+export type EmailDesignSettings = PersistedEmailDesignSettings & EmailDesignPreviewSettings;
+
 export const DEFAULT_EMAIL_DESIGN: EmailDesignSettings = {
-    background_color: '#ffffff',
+    background_color: 'light',
     title_font_category: 'sans_serif',
     title_font_weight: 'bold',
     body_font_category: 'sans_serif',
-    header_background_color: '#ffffff',
-    post_title_color: null,
-    title_alignment: 'center',
+    header_background_color: 'transparent',
     section_title_color: null,
-    button_color: null,
+    button_color: 'accent',
     button_style: 'fill',
     button_corners: 'rounded',
-    link_color: null,
+    link_color: 'accent',
     link_style: 'underline',
     image_corners: 'square',
-    divider_color: null
+    divider_color: null,
+    post_title_color: null,
+    title_alignment: 'center'
 };

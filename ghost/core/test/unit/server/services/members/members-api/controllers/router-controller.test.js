@@ -681,6 +681,143 @@ describe('RouterController', function () {
             });
         });
 
+        describe('gift checkout', function () {
+            let getGiftLinkSpy;
+
+            beforeEach(function () {
+                getGiftLinkSpy = sinon.stub().resolves('https://checkout.stripe.com/gift');
+                paymentsService.getGiftPaymentLink = getGiftLinkSpy;
+            });
+
+            function createGiftController(overrides = {}) {
+                return new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService,
+                    settingsCache,
+                    settingsHelpers,
+                    memberRepository: {get: sinon.stub().resolves(null)},
+                    urlUtils: {getSiteUrl: sinon.stub().returns('https://example.com/')},
+                    memberAttributionService: {getAttribution: sinon.stub().resolves({})},
+                    emailAddressService,
+                    ...overrides
+                });
+            }
+
+            const mockRes = {writeHead: () => {}, end: () => {}};
+
+            function paidTierService(price = 5000) {
+                return {
+                    api: {
+                        read: sinon.stub().resolves({
+                            id: {toHexString: () => 'tier_123'},
+                            status: 'active',
+                            getPrice: sinon.stub().returns(price)
+                        })
+                    }
+                };
+            }
+
+            it('calls getGiftPaymentLink with correct options', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {type: 'gift', tierId: 'tier_123', cadence: 'month', customerEmail: 'buyer@example.com', metadata: {}}
+                }, mockRes);
+
+                sinon.assert.calledOnce(getGiftLinkSpy);
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({
+                    successUrl: 'https://example.com/',
+                    cancelUrl: 'https://example.com/',
+                    email: 'buyer@example.com'
+                }));
+            });
+
+            it('rejects when giftSubscriptions labs flag is disabled', async function () {
+                labsService.isSet = sinon.stub().returns(false);
+                const controller = createGiftController();
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {type: 'gift', tierId: 'tier_123', cadence: 'month', customerEmail: 'buyer@example.com', metadata: {}}
+                    }, mockRes);
+
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                }
+            });
+
+            it('rejects when customerEmail is not provided', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {}}
+                    }, mockRes);
+
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    assert.equal(error.context, 'A valid email address is required to purchase a gift subscription');
+                }
+            });
+
+            it('rejects when customerEmail is invalid', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {type: 'gift', tierId: 'tier_123', cadence: 'month', customerEmail: 'not-an-email', metadata: {}}
+                    }, mockRes);
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    assert.equal(error.context, 'A valid email address is required to purchase a gift subscription');
+                }
+            });
+
+            it('rejects when offerId is provided', async function () {
+                const controller = createGiftController();
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {type: 'gift', offerId: 'offer_123', customerEmail: 'buyer@example.com', metadata: {}}
+                    }, mockRes);
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    assert.equal(error.context, 'Offers cannot be applied to gift subscriptions');
+                }
+            });
+
+            it('does not block paid members from purchasing gifts', async function () {
+                const controller = createGiftController({
+                    tiersService: paidTierService(),
+                    tokenService: {decodeToken: sinon.stub().resolves({sub: 'member@example.com'})},
+                    memberRepository: {
+                        get: sinon.stub().resolves({
+                            id: 'member_123',
+                            get: sinon.stub().returns('paid'),
+                            related: sinon.stub().returns({
+                                query: sinon.stub().returns({
+                                    fetch: sinon.stub().resolves([])
+                                })
+                            })
+                        })
+                    }
+                });
+
+                await controller.createCheckoutSession({
+                    body: {type: 'gift', tierId: 'tier_123', cadence: 'month', customerEmail: 'buyer@example.com', identity: 'valid-token', metadata: {}}
+                }, mockRes);
+
+                sinon.assert.calledOnce(getGiftLinkSpy);
+            });
+        });
+
         it('adds welcomePageUrl to response for authenticated members when tier has welcomePageURL', async function () {
             const routerController = new RouterController({
                 tiersService: {

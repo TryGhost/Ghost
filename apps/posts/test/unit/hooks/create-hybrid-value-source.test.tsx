@@ -1,4 +1,4 @@
-import {FilterOption, ValueSourceState} from '@tryghost/shade';
+import {FilterOption, ValueSourceState} from '@tryghost/shade/patterns';
 import {RemoteProbeState} from '@src/hooks/filter-sources/create-remote-value-source';
 import {createHybridValueSource} from '@src/hooks/filter-sources/create-hybrid-value-source';
 import {describe, expect, it} from 'vitest';

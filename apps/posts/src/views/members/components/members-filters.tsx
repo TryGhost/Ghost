@@ -1,6 +1,8 @@
 import ManageViewPopover from './manage-view-popover';
 import React, {useCallback, useMemo} from 'react';
-import {Filter, Filters, LucideIcon} from '@tryghost/shade';
+import {Button} from '@tryghost/shade/components';
+import {Filter, Filters} from '@tryghost/shade/patterns';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {
     buildOfferOptions,
     fromOfferFilterDisplayValues,
@@ -24,6 +26,7 @@ interface MembersFiltersProps {
     onFiltersChange: (filters: Filter[]) => void;
     savedViews?: MemberView[];
     activeView?: MemberView | null;
+    iconOnly?: boolean;
 }
 
 const EMPTY_OFFERS: typeof buildOfferOptions extends (offers: infer T) => unknown ? T : never = [];
@@ -49,7 +52,8 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     nql,
     onFiltersChange,
     savedViews = [],
-    activeView
+    activeView,
+    iconOnly = false
 }) => {
     const {data: tiersData} = useBrowseTiers({searchParams: {limit: '100'}});
     const {data: offersData} = useBrowseOffers({});
@@ -94,7 +98,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const postValueSource = usePostResourceValueSource();
     const emailValueSource = useEmailPostValueSource();
     const labelValueSource = useLabelValueSource();
-    const tierValueSource = useTierValueSource(activePaidTiers.map(tier => ({value: tier.id, label: tier.name})));
+    const tierValueSource = useTierValueSource(activePaidTiers.map(tier => ({value: tier.id, label: tier.name, detail: tier.slug})));
 
     const filterFields = useMemberFilterFields({
         newsletters,
@@ -114,16 +118,23 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     });
 
     const hasFilters = filters.length > 0;
+    const showIconOnlyTrigger = iconOnly && !hasFilters;
+    const addFilterButtonClassName = cn(
+        'border-input bg-white dark:bg-background',
+        showIconOnlyTrigger && 'min-w-[34px] gap-0 px-2 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-sm !px-3'
+    );
+
     const clearAndSaveButtons = hasFilters ? (
-        <div className="flex shrink-0 items-center gap-2 sm:absolute sm:top-0 sm:right-0">
-            <button
-                className="flex items-center gap-1 text-sm font-normal text-muted-foreground hover:text-foreground"
+        <div className="flex shrink-0 items-center gap-4 sm:absolute sm:top-0 sm:right-0">
+            <Button
+                className="hidden items-center gap-1 !px-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground lg:inline-flex"
                 type="button"
+                variant="ghost"
                 onClick={() => onFiltersChange([])}
             >
                 <LucideIcon.X className="size-4" />
                 Clear
-            </button>
+            </Button>
             {nql && (
                 <ManageViewPopover
                     activeView={activeView}
@@ -137,6 +148,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 
     return (
         <Filters
+            addButtonClassName={addFilterButtonClassName}
             addButtonIcon={hasFilters ? <LucideIcon.FunnelPlus /> : <LucideIcon.Funnel />}
             addButtonText={hasFilters ? 'Add filter' : 'Filter'}
             allowMultiple={true}
@@ -146,7 +158,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
             filters={displayFilters}
             keyboardShortcut="f"
             popoverAlign={'start'}
-            popoverContentClassName='w-[280px] translate-x-[-32px] [&_[data-slot=command-list]]:max-h-[450px]'
+            popoverContentClassName='z-[80] w-[280px] [&_[data-slot=command-list]]:max-h-[450px]'
             showClearButton={hasFilters}
             showSearchInput={true}
             onChange={handleFiltersChange}

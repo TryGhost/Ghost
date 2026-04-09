@@ -9,6 +9,8 @@ on:
       - main
       - 'v[0-9]+.*' # Matches any release branch, e.g. v6.0.3, v12.1.0
       - '[0-9]+.x' # Matches any major version branch, e.g. 5.x, 23.x
+    tags:
+      - 'v[0-9]*' # Version tags trigger release publishing (npm, GitHub Release)
 
 env:
   FORCE_COLOR: 1
@@ -39,16 +41,16 @@ jobs:
     timeout-minutes: 15
     env:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
-      IS_DEVELOPMENT: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/5.x' || github.ref == 'refs/heads/6.x' }}
+      IS_TAG: ${{ startsWith(github.ref, 'refs/tags/v') }}
+      IS_DEVELOPMENT: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/6.x' }}
       IS_SIX: ${{ github.ref == 'refs/heads/6.x' }}
       IS_SIX_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == '6.x' }}
-      IS_FIVE: ${{ github.ref == 'refs/heads/5.x' }}
     permissions:
       contents: read
       pull-requests: read
     steps:
       - name: Checkout current commit
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ env.HEAD_COMMIT }}
           fetch-depth: 2
@@ -91,7 +93,7 @@ jobs:
           fi
 
       - name: Determine added packages
-        uses: dorny/paths-filter@v3.0.2
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         id: added
         with:
           filters: |
@@ -99,7 +101,7 @@ jobs:
               - added: 'ghost/**/package.json'
 
       - name: Determine changed packages
-        uses: AurorNZ/paths-filter@v4.0.0
+        uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
         id: changed
         with:
           filters: |
@@ -163,7 +165,7 @@ jobs:
           echo "$EOF" >> "$GITHUB_ENV"
 
       - name: Nx cache
-        uses: actions/cache@v4
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         id: cache_nx
         with:
           path: .nxcache
@@ -174,7 +176,7 @@ jobs:
             nx-Linux
 
       - name: Check dependency cache
-        uses: actions/cache@v4
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         id: cache_dependencies
         with:
           path: ${{ env.CACHED_DEPENDENCY_PATHS }}
@@ -187,7 +189,7 @@ jobs:
           echo 'matrix=["22.18.0"]' >> $GITHUB_OUTPUT
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -212,10 +214,10 @@ jobs:
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
       is_main: ${{ env.IS_MAIN }}
+      is_tag: ${{ env.IS_TAG }}
       is_development: ${{ env.IS_DEVELOPMENT }}
       is_six: ${{ env.IS_SIX }}
       is_six_pr: ${{ env.IS_SIX_PR }}
-      is_five: ${{ env.IS_FIVE }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       dependency_cache_key: ${{ env.cachekey }}
       node_version: ${{ env.NODE_VERSION }}
@@ -228,7 +230,7 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout PR head commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -245,13 +247,13 @@ jobs:
   job_lint:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true'
+    if: needs.job_setup.outputs.changed_any_code == 'true' && needs.job_setup.outputs.is_tag != 'true'
     name: Lint
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 1000
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -262,14 +264,14 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
       - run: yarn nx affected -t lint --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -281,14 +283,15 @@ jobs:
     needs: [job_setup]
     name: i18n
     if: |
-        needs.job_setup.outputs.changed_comments_ui == 'true'
+        needs.job_setup.outputs.is_tag != 'true'
+        && (needs.job_setup.outputs.changed_comments_ui == 'true'
         || needs.job_setup.outputs.changed_signup_form == 'true'
         || needs.job_setup.outputs.changed_sodo_search == 'true'
         || needs.job_setup.outputs.changed_portal == 'true'
-        || needs.job_setup.outputs.changed_core == 'true'
+        || needs.job_setup.outputs.changed_core == 'true')
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -303,7 +306,7 @@ jobs:
   job_admin-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_admin == 'true'
+    if: needs.job_setup.outputs.changed_admin == 'true' && needs.job_setup.outputs.is_tag != 'true'
     name: Admin tests - Chrome
     env:
       MOZ_HEADLESS: 1
@@ -311,8 +314,8 @@ jobs:
       CI: true
       COVERAGE: true
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -329,12 +332,12 @@ jobs:
       - name: Merge Admin test coverage
         run: yarn ember coverage-merge
         working-directory: ghost/admin
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -344,16 +347,16 @@ jobs:
   job_unit-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true'
+    if: needs.job_setup.outputs.changed_any_code == 'true' && needs.job_setup.outputs.is_tag != 'true'
     strategy:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     name: Unit tests (Node ${{ matrix.node }})
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 1000
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -365,7 +368,7 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Set timezone (non-UTC)
-        uses: szenius/set-timezone@v2.0
+        uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
         with:
           timezoneLinux: "America/New_York"
 
@@ -388,13 +391,13 @@ jobs:
           NX_SKIP_LOG_GROUPING: true
           logging__level: fatal
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: matrix.node == env.NODE_VERSION
         with:
           name: unit-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -404,7 +407,7 @@ jobs:
   job_acceptance-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_core == 'true'
+    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_tag != 'true'
     services:
       mysql:
         image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
@@ -435,8 +438,8 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Acceptance tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -451,7 +454,7 @@ jobs:
         run: yarn nx run-many -t build --exclude=ghost-admin
 
       - name: Set timezone (non-UTC)
-        uses: szenius/set-timezone@v2.0
+        uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
         with:
           timezoneLinux: "America/New_York"
 
@@ -474,7 +477,7 @@ jobs:
         working-directory: ghost/core
         run: yarn test:ci:integration
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
         with:
           name: e2e-coverage
@@ -482,7 +485,7 @@ jobs:
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -492,7 +495,7 @@ jobs:
   job_legacy-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_core == 'true'
+    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_tag != 'true'
     services:
       mysql:
         image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
@@ -523,10 +526,10 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Legacy tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           submodules: true
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -555,7 +558,7 @@ jobs:
         working-directory: ghost/core
         run: yarn test:ci:legacy
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -565,13 +568,13 @@ jobs:
   job_admin_x_settings:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_admin_x_settings == 'true'
+    if: needs.job_setup.outputs.changed_admin_x_settings == 'true' && needs.job_setup.outputs.is_tag != 'true'
     name: Admin-X Settings tests
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -589,13 +592,13 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: admin-x-settings-playwright-report
           path: apps/admin-x-settings/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -605,13 +608,13 @@ jobs:
   job_activitypub:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_activitypub == 'true'
+    if: needs.job_setup.outputs.changed_activitypub == 'true' && needs.job_setup.outputs.is_tag != 'true'
     name: ActivityPub tests
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -629,13 +632,13 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: activitypub-playwright-report
           path: apps/activitypub/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -645,13 +648,13 @@ jobs:
   job_comments_ui:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_comments_ui == 'true'
+    if: needs.job_setup.outputs.changed_comments_ui == 'true' && needs.job_setup.outputs.is_tag != 'true'
     name: Comments-UI tests
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -669,13 +672,13 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: comments-ui-playwright-report
           path: apps/comments-ui/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -685,13 +688,13 @@ jobs:
   job_signup_form:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_signup_form == 'true'
+    if: needs.job_setup.outputs.changed_signup_form == 'true' && needs.job_setup.outputs.is_tag != 'true'
     name: Signup-form tests
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -709,13 +712,13 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: signup-form-playwright-report
           path: apps/signup-form/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -726,44 +729,72 @@ jobs:
     name: Tinybird Tests
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_tinybird == 'true'
+    if: needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.outputs.is_tag != 'true'
     defaults:
         run:
           working-directory: ghost/core/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest
+        image: tinybirdco/tinybird-local:latest@sha256:3bbfa58373928313a290f40193598d992f613173c67e9ed8c980d662a911f15a
         ports:
           - 7181:7181
-    env:
-      TINYBIRD_HOST: ${{ secrets.TINYBIRD_HOST }}
-      TINYBIRD_TOKEN: ${{ secrets.TINYBIRD_TOKEN }}
-      TINYBIRD_HOST_STAGING: ${{ secrets.TINYBIRD_HOST_STAGING }}
-      TINYBIRD_TOKEN_STAGING: ${{ secrets.TINYBIRD_TOKEN_STAGING }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Install Tinybird CLI
         run: curl -fsSL https://tinybird.co/install.sh | sh
       - name: Build project
         run: tb build
       - name: Test project
         run: tb test run
-      - name: Deployment check - Staging
-        run: tb --cloud --host ${{ env.TINYBIRD_HOST_STAGING }} --token ${{ env.TINYBIRD_TOKEN_STAGING }} deploy --check
-      - name: Deployment check - Production
-        run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deploy --check
+      - name: Trigger and watch traffic analytics infra Tinybird workflow
+        if: github.repository == 'TryGhost/Ghost'
+        env:
+          GH_TOKEN: ${{ secrets.TRAFFIC_ANALYTICS_GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          REPO="TryGhost/traffic-analytics-infra"
+          WORKFLOW="tinybird.yml"
+          BRANCH="main"
+          DISPATCH_RESPONSE=$(gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            "repos/$REPO/actions/workflows/$WORKFLOW/dispatches" \
+            --input - <<EOF
+          {
+            "ref": "$BRANCH",
+            "return_run_details": true,
+            "inputs": {
+              "ghost_ref": "${{ github.sha }}",
+              "caller_run_id": "${{ github.run_id }}",
+              "run_local_tests": false
+            }
+          }
+          EOF
+          )
+
+          RUN_ID=$(printf '%s' "$DISPATCH_RESPONSE" | jq -r '.workflow_run_id // empty')
+          RUN_URL=$(printf '%s' "$DISPATCH_RESPONSE" | jq -r '.html_url // .run_url // empty')
+
+          if [ -z "$RUN_ID" ]; then
+            echo "::error::Unable to find the triggered workflow run in $REPO"
+            exit 1
+          fi
+
+          echo "Watching remote workflow run: $RUN_URL"
+          gh run watch "$RUN_ID" --repo "$REPO" --exit-status
 
   job_ghost-cli:
     name: Ghost-CLI tests
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_core == 'true'
+    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_tag != 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           submodules: true
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -786,7 +817,7 @@ jobs:
 
       - name: Save Ghost CLI Debug Logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: ghost-cli-debug-logs
           path: /home/runner/.ghost/logs/
@@ -807,15 +838,15 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  job_docker_build_production:
-    name: Build & Push Production Docker Images
+  job_build_artifacts:
+    name: Build & Publish Artifacts
     needs: [job_setup]
     runs-on: ubuntu-latest
     permissions:
@@ -823,11 +854,11 @@ jobs:
       packages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           submodules: true
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -848,8 +879,32 @@ jobs:
           fi
           yarn build:production
 
+      - name: Verify tag matches package.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        working-directory: ghost/core
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} doesn't match package.json version ${PKG_VERSION}"
+            exit 1
+          fi
+
       - name: Pack standalone distribution
         run: yarn workspace ghost pack:standalone
+
+      - name: Create npm tarball
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: yarn workspace ghost pack:tarball
+
+      - name: Upload npm tarball
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: ghost-npm-tarball
+          path: ghost/core/ghost-*.tgz
+          retention-days: 7
+          if-no-files-found: error
 
       - name: Prepare Docker build context
         run: mv ghost/core/package/ /tmp/ghost-production/
@@ -882,15 +937,22 @@ jobs:
             IMAGE_FULL_NAME="ghcr.io/${OWNER}/${REPO_NAME}"
           fi
 
+          # Force push on tag pushes (release images must always be published)
+          IS_TAG="${{ startsWith(github.ref, 'refs/tags/v') }}"
+          if [ "$IS_TAG" = "true" ]; then
+            USE_ARTIFACT="false"
+          fi
+
           echo "use-artifact=$USE_ARTIFACT" >> $GITHUB_OUTPUT
           echo "should-push=$( [ "$USE_ARTIFACT" = "false" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
           echo "owner=$OWNER" >> $GITHUB_OUTPUT
           echo "image-core-name=$IMAGE_CORE_NAME" >> $GITHUB_OUTPUT
           echo "image-full-name=$IMAGE_FULL_NAME" >> $GITHUB_OUTPUT
+          echo "image-e2e-name=${IMAGE_FULL_NAME}-e2e" >> $GITHUB_OUTPUT
 
       - name: Upload admin artifact for CD
         id: upload-admin
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: admin-build-cd
           path: apps/admin/dist
@@ -898,11 +960,11 @@ jobs:
           if-no-files-found: error
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
 
       - name: Log in to GitHub Container Registry
         if: steps.strategy.outputs.should-push == 'true'
-        uses: docker/login-action@v3
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -910,13 +972,16 @@ jobs:
 
       - name: Docker meta (core)
         id: meta-core
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
         with:
           images: ${{ steps.strategy.outputs.image-core-name }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
             type=sha
+            type=semver,pattern=v{{version}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable={{is_default_branch}}
           labels: |
             org.opencontainers.image.title=Ghost Core
@@ -925,13 +990,16 @@ jobs:
 
       - name: Docker meta (full)
         id: meta-full
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
         with:
           images: ${{ steps.strategy.outputs.image-full-name }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
             type=sha
+            type=semver,pattern=v{{version}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable={{is_default_branch}}
           labels: |
             org.opencontainers.image.title=Ghost
@@ -939,7 +1007,7 @@ jobs:
             org.opencontainers.image.vendor=TryGhost
 
       - name: Build & push core image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
         with:
           context: /tmp/ghost-production
           file: Dockerfile.production
@@ -955,7 +1023,7 @@ jobs:
           cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-core-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
       - name: Build & push full image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
         with:
           context: /tmp/ghost-production
           file: Dockerfile.production
@@ -979,7 +1047,7 @@ jobs:
           ls -lh docker-image-production.tar.gz
 
       - name: Upload image artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: docker-image-production
           path: docker-image-production.tar.gz
@@ -1037,11 +1105,160 @@ jobs:
       image-tags: ${{ steps.meta-full.outputs.tags }}
       use-artifact: ${{ steps.strategy.outputs.use-artifact }}
       admin-artifact-id: ${{ steps.upload-admin.outputs.artifact-id }}
+      image-e2e-name: ${{ steps.strategy.outputs.image-e2e-name }}
+
+  job_build_e2e_public_apps:
+    name: Build E2E Public App Assets
+    needs: [job_setup]
+    if: needs.job_setup.outputs.is_tag != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Build public apps for E2E
+        run: yarn workspace @tryghost/e2e build:apps
+
+      - name: Pack public app artifacts
+        run: |
+          tar -czf e2e-public-apps.tar.gz \
+            apps/portal/umd \
+            apps/comments-ui/umd \
+            apps/sodo-search/umd \
+            apps/signup-form/umd \
+            apps/announcement-bar/umd
+          ls -lh e2e-public-apps.tar.gz
+
+      - name: Upload public app artifacts
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: e2e-public-apps
+          path: e2e-public-apps.tar.gz
+          retention-days: 1
+
+  job_build_e2e_image:
+    name: Build E2E Docker Image
+    needs: [job_setup, job_build_e2e_public_apps, job_build_artifacts]
+    if: needs.job_setup.outputs.is_tag != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Download public app artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: e2e-public-apps
+
+      - name: Extract public app artifacts
+        run: tar -xzf e2e-public-apps.tar.gz
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
+        with:
+          # Fork/cross-repo PRs use artifact transfer (no GHCR push). The default
+          # docker-container driver runs in an isolated BuildKit container that
+          # cannot see locally loaded images, so we fall back to the docker driver
+          # which shares the host daemon's image store.
+          driver: ${{ needs.job_build_artifacts.outputs.use-artifact == 'true' && 'docker' || '' }}
+
+      - name: Load base Ghost image
+        uses: ./.github/actions/load-docker-image
+        id: load-base
+        with:
+          use-artifact: ${{ needs.job_build_artifacts.outputs.use-artifact }}
+          image-tags: ${{ needs.job_build_artifacts.outputs.image-tags }}
+          artifact-name: docker-image-production
+
+      - name: Determine E2E image distribution strategy
+        id: strategy
+        run: |
+          USE_ARTIFACT="${{ needs.job_build_artifacts.outputs.use-artifact }}"
+          SHOULD_PUSH="true"
+          if [ "$USE_ARTIFACT" = "true" ]; then
+            SHOULD_PUSH="false"
+          fi
+
+          echo "use-artifact=$USE_ARTIFACT" >> $GITHUB_OUTPUT
+          echo "should-push=$SHOULD_PUSH" >> $GITHUB_OUTPUT
+
+      - name: Log in to GitHub Container Registry
+        if: steps.strategy.outputs.should-push == 'true'
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta (e2e)
+        id: meta-e2e
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
+        with:
+          images: ${{ needs.job_build_artifacts.outputs.image-e2e-name }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=Ghost E2E
+            org.opencontainers.image.description=Ghost production build with public E2E app bundles
+            org.opencontainers.image.vendor=TryGhost
+
+      - name: Build & push E2E image
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
+        with:
+          context: .
+          file: e2e/Dockerfile.e2e
+          build-args: |
+            GHOST_IMAGE=${{ steps.load-base.outputs.image-tag }}
+          push: ${{ steps.strategy.outputs.should-push }}
+          load: ${{ steps.strategy.outputs.use-artifact == 'true' }}
+          tags: ${{ steps.meta-e2e.outputs.tags }}
+          labels: ${{ steps.meta-e2e.outputs.labels }}
+          cache-from: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-main', needs.job_build_artifacts.outputs.image-e2e-name) || '' }}
+          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', needs.job_build_artifacts.outputs.image-e2e-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+
+      - name: Save E2E image as artifact
+        if: steps.strategy.outputs.use-artifact == 'true'
+        run: |
+          IMAGE_TAG=$(echo "${{ steps.meta-e2e.outputs.tags }}" | head -n1)
+          echo "Saving image: $IMAGE_TAG"
+          docker save "$IMAGE_TAG" | gzip > docker-image-e2e.tar.gz
+          echo "Image saved as docker-image-e2e.tar.gz"
+          ls -lh docker-image-e2e.tar.gz
+
+      - name: Upload E2E image artifact
+        if: steps.strategy.outputs.use-artifact == 'true'
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: docker-image-e2e
+          path: docker-image-e2e.tar.gz
+          retention-days: 1
+
+    outputs:
+      image-tags: ${{ steps.meta-e2e.outputs.tags }}
+      use-artifact: ${{ steps.strategy.outputs.use-artifact }}
 
   job_e2e_tests:
     name: E2E Tests (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
-    needs: [job_docker_build_production, job_setup]
+    needs: [job_build_e2e_image, job_setup]
+    if: needs.job_setup.outputs.is_tag != 'true'
     strategy:
       fail-fast: true
       matrix:
@@ -1049,10 +1266,10 @@ jobs:
         shardTotal: [8]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
 
       - name: Pull or build Tinybird CLI Image
         run: |
@@ -1070,14 +1287,14 @@ jobs:
         uses: ./.github/actions/load-docker-image
         id: load
         with:
-          use-artifact: ${{ needs.job_docker_build_production.outputs.use-artifact }}
-          image-tags: ${{ needs.job_docker_build_production.outputs.image-tags }}
-          artifact-name: docker-image-production
+          use-artifact: ${{ needs.job_build_e2e_image.outputs.use-artifact }}
+          image-tags: ${{ needs.job_build_e2e_image.outputs.image-tags }}
+          artifact-name: docker-image-e2e
 
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -1088,14 +1305,15 @@ jobs:
 
       - name: Prepare E2E CI job
         env:
-          GHOST_E2E_BASE_IMAGE: ${{ steps.load.outputs.image-tag }}
+          GHOST_E2E_IMAGE: ${{ steps.load.outputs.image-tag }}
+          GHOST_E2E_SKIP_IMAGE_BUILD: 'true'
         run: bash ./e2e/scripts/prepare-ci-e2e-job.sh
 
       - name: Run e2e tests in Playwright container
         env:
           TEST_WORKERS_COUNT: 1
           GHOST_E2E_MODE: build
-          GHOST_E2E_IMAGE: ghost-e2e:local
+          GHOST_E2E_IMAGE: ${{ steps.load.outputs.image-tag }}
           E2E_SHARD_INDEX: ${{ matrix.shardIndex }}
           E2E_SHARD_TOTAL: ${{ matrix.shardTotal }}
           E2E_RETRIES: 2
@@ -1111,7 +1329,7 @@ jobs:
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: blob-report-${{ matrix.shardIndex }}
           path: e2e/blob-report
@@ -1119,13 +1337,13 @@ jobs:
 
       - name: Upload test results artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: test-results-${{ matrix.shardIndex }}
           path: e2e/test-results
           retention-days: 7
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1141,9 +1359,9 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -1153,7 +1371,7 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         continue-on-error: true
         with:
           path: e2e/all-blob-reports
@@ -1171,7 +1389,7 @@ jobs:
 
       - name: Download test results from GitHub Actions Artifacts
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           path: e2e/all-test-results
           pattern: test-results-*
@@ -1184,7 +1402,7 @@ jobs:
 
       - name: Upload HTML report
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: playwright-report
           path: e2e/playwright-report
@@ -1192,7 +1410,7 @@ jobs:
 
       - name: Upload merged test results
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: test-results
           path: e2e/all-test-results
@@ -1225,11 +1443,11 @@ jobs:
     ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Restore Admin coverage
         if: contains(needs.job_admin-tests.result, 'success')
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: admin-coverage
 
@@ -1239,13 +1457,13 @@ jobs:
           rsync -av --remove-source-files admin/* ghost/admin
 
       - name: Upload Admin test coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5
         with:
           flags: admin-tests
 
       - name: Restore E2E coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: e2e-coverage
 
@@ -1256,7 +1474,7 @@ jobs:
 
       - name: Upload E2E test coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5
         with:
           flags: e2e-tests
 
@@ -1278,6 +1496,8 @@ jobs:
         job_comments_ui,
         job_signup_form,
         job_tinybird-tests,
+        job_build_e2e_public_apps,
+        job_build_e2e_image,
         job_e2e_tests
       ]
     if: always()
@@ -1286,8 +1506,12 @@ jobs:
       - name: Output needs
         run: echo "${{ toJson(needs) }}"
 
+      - name: Pass on tag pushes (tests already ran on branch)
+        if: needs.job_setup.outputs.is_tag == 'true'
+        run: echo "Tag push — tests skipped (already tested on branch commit)"
+
       - name: Check if any required jobs failed or been cancelled
-        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        if: needs.job_setup.outputs.is_tag != 'true' && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled'))
         run: |
           echo "One of the dependent jobs have failed or been cancelled. You may need to re-run it." && exit 1
 
@@ -1299,7 +1523,7 @@ jobs:
     ]
     name: Publish ${{ matrix.package_name }}
     runs-on: ubuntu-latest
-    if: always() && github.repository == 'TryGhost/Ghost' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && (needs.job_setup.outputs.is_main == 'true' || needs.job_setup.outputs.is_five == 'true')
+    if: always() && github.repository == 'TryGhost/Ghost' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     permissions:
       id-token: write
     strategy:
@@ -1327,10 +1551,10 @@ jobs:
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/announcement-bar@~CURRENT_MINOR/umd/announcement-bar.min.js'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -1352,27 +1576,15 @@ jobs:
           CURRENT_MAJOR=$(cat package.json | jq -r .version | awk -F. '{print $1}')
           echo "current_major=$CURRENT_MAJOR" >> $GITHUB_OUTPUT
 
-          if [ "${{ needs.job_setup.outputs.is_five }}" = "true" ]; then
-            # For 5.x branch, check if this exact version exists on npm
-            if npm show ${{ matrix.package_name }}@$CURRENT_VERSION version > /dev/null 2>&1; then
-              echo "Version $CURRENT_VERSION already exists on npm."
-              echo "version_changed=false" >> $GITHUB_OUTPUT
-            else
-              echo "Version $CURRENT_VERSION does not exist on npm."
-              echo "version_changed=true" >> $GITHUB_OUTPUT
-            fi
-          else
-            # For main branch, compare against latest
-            PUBLISHED_VERSION=$(npm show ${{ matrix.package_name }} version || echo "0.0.0")
-            echo "Published version (latest): $PUBLISHED_VERSION"
+          PUBLISHED_VERSION=$(npm show ${{ matrix.package_name }} version || echo "0.0.0")
+          echo "Published version (latest): $PUBLISHED_VERSION"
 
-            if [ "$CURRENT_VERSION" = "$PUBLISHED_VERSION" ]; then
-              echo "Version is unchanged."
-              echo "version_changed=false" >> $GITHUB_OUTPUT
-            else
-              echo "Version has changed."
-              echo "version_changed=true" >> $GITHUB_OUTPUT
-            fi
+          if [ "$CURRENT_VERSION" = "$PUBLISHED_VERSION" ]; then
+            echo "Version is unchanged."
+            echo "version_changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Version has changed."
+            echo "version_changed=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Build the package
@@ -1393,11 +1605,7 @@ jobs:
         if: steps.version_check.outputs.version_changed == 'true'
         working-directory: ${{ matrix.package_path }}
         run: |
-          if [ "${{ needs.job_setup.outputs.is_five }}" = "true" ]; then
-            npm publish --access public --tag ghost-5x
-          else
-            npm publish --access public
-          fi
+          npm publish --access public
 
       - name: Replace version placeholders in cdn-paths
         id: cdn_paths
@@ -1420,7 +1628,7 @@ jobs:
 
       - name: Purge jsDelivr cache
         if: steps.version_check.outputs.version_changed == 'true'
-        uses: gacts/purge-jsdelivr-cache@v1
+        uses: gacts/purge-jsdelivr-cache@8d92aea944f1a3e8ad70505379e1a8ac72d56b73 # v1
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
 
@@ -1434,7 +1642,7 @@ jobs:
     if: always() && github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Deploy to Staging
         uses: ./.github/actions/deploy-tinybird
         with:
@@ -1454,7 +1662,7 @@ jobs:
     if: always() && github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.deploy_tinybird_staging.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Deploy to Production
         uses: ./.github/actions/deploy-tinybird
         with:
@@ -1467,15 +1675,15 @@ jobs:
   # Trigger Pro CD — dispatch to Ghost-Moya cd.yml (runs on main + PRs)
   # --------------------------------------------------------------------------- #
   trigger_cd:
-    needs: [job_setup, job_docker_build_production]
+    needs: [job_setup, job_build_artifacts]
     name: Trigger Pro CD
     runs-on: ubuntu-latest
     if: |
       always()
       && github.repository == 'TryGhost/Ghost'
       && needs.job_setup.result == 'success'
-      && needs.job_docker_build_production.result == 'success'
-      && needs.job_docker_build_production.outputs.use-artifact != 'true'
+      && needs.job_build_artifacts.result == 'success'
+      && needs.job_build_artifacts.outputs.use-artifact != 'true'
     steps:
       - name: Determine dispatch parameters
         id: params
@@ -1499,17 +1707,126 @@ jobs:
 
       - name: Dispatch to Ghost-Moya cd.yml
         if: steps.params.outputs.skip != 'true'
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           repository: TryGhost/Ghost-Moya
           event-type: ghost-artifacts-ready
           client-payload: >-
             {
-              "ref": "${{ github.sha }}",
+              "ref": "${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || github.sha }}",
               "source_repo": "${{ github.repository }}",
               "pr_number": "${{ steps.params.outputs.pr_number }}",
               "deploy": "${{ steps.params.outputs.deploy }}",
-              "admin_artifact_id": "${{ needs.job_docker_build_production.outputs.admin-artifact-id }}",
+              "admin_artifact_id": "${{ needs.job_build_artifacts.outputs.admin-artifact-id }}",
               "admin_artifact_run_id": "${{ github.run_id }}"
             }
+
+  # --------------------------------------------------------------------------- #
+  # Publish Ghost npm package — runs on version tags only (OIDC, no stored token)
+  # --------------------------------------------------------------------------- #
+  publish_ghost:
+    needs: [job_setup, job_build_artifacts]
+    name: Publish Ghost to npm
+    runs-on: ubuntu-latest
+    if: |
+      startsWith(github.ref, 'refs/tags/v')
+      && github.repository == 'TryGhost/Ghost'
+      && needs.job_build_artifacts.result == 'success'
+    environment: npm-release
+    permissions:
+      id-token: write
+    steps:
+      - name: Download npm tarball
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: ghost-npm-tarball
+
+      - name: Set up Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # TODO: Remove once Node v24 ships with npm >= 11
+      - name: Install npm v11 (required for OIDC publishing)
+        run: npm install -g npm@11
+
+      - name: Verify tarball contents
+        run: |
+          echo "Tarball contents:"
+          tar -tzf ghost-*.tgz | head -20
+          tar -tzf ghost-*.tgz | grep -q 'package/yarn.lock' || { echo "::error::yarn.lock not found in tarball"; exit 1; }
+
+      - name: Publish to npm
+        run: npm publish ghost-*.tgz --access public
+
+      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
+        if: failure()
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # --------------------------------------------------------------------------- #
+  # Create GitHub Release — runs after successful npm publish
+  # --------------------------------------------------------------------------- #
+  create_github_release:
+    needs: [publish_ghost]
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ secrets.CANARY_DOCKER_BUILD }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Resolve previous tag
+        id: prev_tag
+        run: |
+          CURRENT_TAG="${GITHUB_REF_NAME}"
+          # Find the tag immediately before this one (excluding pre-releases)
+          PREV_TAG=$(git tag --list 'v[0-9]*' --sort=-version:refname | grep -v '-' | grep -v "^${CURRENT_TAG}$" | head -n 1)
+          if [ -z "$PREV_TAG" ]; then
+            echo "::warning::No previous stable tag found — release notes will use fallback message"
+          fi
+          echo "tag=${PREV_TAG}" >> "$GITHUB_OUTPUT"
+          echo "Previous tag: ${PREV_TAG:-<none>}"
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          PREV_TAG="${{ steps.prev_tag.outputs.tag }}"
+          if [ -n "$PREV_TAG" ]; then
+            node scripts/lib/release-notes.js "$PREV_TAG" "${GITHUB_REF_NAME}" > /tmp/release-notes.md
+          else
+            echo "This release contains fixes for minor bugs and issues reported by Ghost users." > /tmp/release-notes.md
+          fi
+          cat /tmp/release-notes.md
+
+      - name: Create GitHub Release
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file /tmp/release-notes.md
+
+      - name: Notify Slack
+        if: always() && steps.notes.outcome == 'success'
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          RELEASE_URL="https://github.com/TryGhost/Ghost/releases/tag/${VERSION}"
+          CHANGELOG=$(cat /tmp/release-notes.md | head -c 3000)
+
+          # Build Slack payload — use --rawfile so newlines in release notes are preserved
+          PAYLOAD=$(jq -n \
+            --arg header ":ghost: Ghost ${VERSION} is loose! - ${RELEASE_URL}" \
+            --rawfile notes /tmp/release-notes.md \
+            '{text: ($header + "\n\n" + $notes)}')
+
+          curl -sf -X POST \
+            -H 'Content-type: application/json' \
+            --data "${PAYLOAD}" \
+            "${{ secrets.RELEASE_NOTIFICATION_URL }}" || echo "Slack notification failed (non-fatal)"

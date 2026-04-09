@@ -1,6 +1,6 @@
 import React, {Suspense, useCallback, useMemo, useRef} from 'react';
 import {ErrorBoundary, type KoenigInstance, LoadingIndicator, loadKoenig, useDesignSystem} from '@tryghost/admin-x-design-system';
-import {cn} from '@tryghost/shade';
+import {cn} from '@tryghost/shade/utils';
 import {focusKoenigEditorOnBottomClick, useFramework} from '@tryghost/admin-x-framework';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {koenigFileUploadTypes, useKoenigFetchEmbed, useKoenigFileUpload, usePinturaConfig} from '@tryghost/admin-x-framework/hooks';
@@ -27,7 +27,7 @@ const baseEditorStyles = cn(
     // Dark mode
     'dark:text-white dark:selection:bg-[rgba(88,101,116,0.99)]',
     // Placeholder styling
-    '[&_.koenig-lexical-editor-input-placeholder]:font-inter [&_.koenig-lexical-editor-input-placeholder]:text-xl [&_.koenig-lexical-editor-input-placeholder]:tracking-tight',
+    '[&_.koenig-lexical-editor-input-placeholder]:font-sans! [&_.koenig-lexical-editor-input-placeholder]:text-xl [&_.koenig-lexical-editor-input-placeholder]:tracking-tight',
     // Headings dark mode
     '[&_:is(h2,h3)]:dark:text-white',
     // Inputs
@@ -37,7 +37,7 @@ const baseEditorStyles = cn(
     // Settings panel
     '[&_[data-kg-card-selected]]:isolate',
     // Content typography
-    '[&_:is(p,blockquote,aside,ul,ol)]:font-inter [&_:is(p,blockquote,aside,ul,ol)]:text-xl [&_:is(p,blockquote,aside,ul,ol)]:tracking-tight',
+    '[&_:is(p,blockquote,aside,ul,ol)]:font-sans! [&_:is(p,blockquote,aside,ul,ol)]:text-xl [&_:is(p,blockquote,aside,ul,ol)]:tracking-tight',
     // Reset content typography inside card captions to match Koenig's caption styles
     '[&_figcaption_:is(p,blockquote,aside,ul,ol)]:text-[1.4rem] [&_figcaption_:is(p,blockquote,aside,ul,ol)]:tracking-[.025em]',
     '[&_figcaption_p]:mb-0',
@@ -49,7 +49,7 @@ const baseEditorStyles = cn(
     // Keep settings panel copy compact
     '[&_[data-kg-settings-panel]_p]:!mb-0',
     // Nested-editor (callout, etc.) fixes: align placeholder with text
-    '[&_.not-kg-prose>div]:font-inter! [&_.not-kg-prose>div]:tracking-tight! [&_.not-kg-prose>div]:text-xl! [&_.not-kg-prose>div]:leading-[1.6]!',
+    '[&_.not-kg-prose>div]:font-sans! [&_.not-kg-prose>div]:tracking-tight! [&_.not-kg-prose>div]:text-xl! [&_.not-kg-prose>div]:leading-[1.6]!',
     '[&_.kg-inherit-styles_p]:mb-0!',
     '[&_.kg-inherit-styles]:pt-[3px]!',
     // CTA card: keep sponsor label at its intended 12.5px size

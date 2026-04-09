@@ -1,0 +1,154 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Component Rules and Guarantees" />
+
+<div className="sb-doc">
+
+# Component Rules and Guarantees
+
+<p className="excerpt">This page defines clear rules and guarantees for shared controls: what they do, what they do not do, and which states must always work.</p>
+
+## Plain-English Definition
+
+In this doc, “contract” means “rules and guarantees”.
+Those rules answer 5 questions:
+
+- What problem does this component solve?
+- What API can consumers use safely?
+- Which states must always work?
+- What is intentionally out of scope?
+- What compatibility promise do we make?
+
+If these answers are missing, teams guess. Guessing causes component drift.
+
+## Why This Matters
+
+For humans:
+
+- Faster code reviews (less ambiguity)
+- Easier reuse decisions (`components` vs `patterns`)
+- Fewer accidental breaking changes
+
+For AI agents:
+
+- Reliable constraints for code generation
+- Fewer invented props and variants
+- Predictable output shape across components
+
+## Scope (Wave A)
+
+Current Wave A rules coverage targets:
+
+- `Button`
+- `Input`
+- `Field`
+- `Select`
+- `Tabs`
+- `Table`
+- `Dialog`
+- `DropdownMenu`
+- `Card`
+
+Out of scope for Wave A:
+
+- workflow-level compositions (`filters`, app-specific orchestration)
+- very large mixed-behavior surfaces (`sidebar`, `multi-select-combobox`, chart variants)
+
+## Human Workflow (Fast)
+
+Use this when adding or changing a shared component:
+
+1. Write a 1-2 sentence purpose and non-goals.
+2. List public props and slots.
+3. Confirm required states: `default`, `hover`, `focus-visible`, `disabled`.
+4. Add Storybook stories that prove those states.
+5. Add compatibility notes if API changed.
+
+If you cannot explain a prop in one sentence, the API is probably too broad.
+
+## AI Agent Workflow (Deterministic)
+
+When generating or editing a shared component, produce this structure first, then implement:
+
+1. `Component scope`
+2. `Public API`
+3. `State matrix`
+4. `Compatibility policy`
+5. `Deprecation plan` (if needed)
+
+Hard rules for agents:
+
+- Do not add product-specific props in shared `components`.
+- Do not skip required states.
+- Do not remove existing public API without compatibility notes.
+- If behavior is workflow-specific, move it to `patterns`.
+
+## Rules Template
+
+```md
+## Component scope
+- Purpose:
+- Non-goals:
+
+## Public API
+- Props:
+- Slots/subcomponents:
+- Variants:
+- Events/callbacks:
+
+## State matrix
+- default:
+- hover:
+- focus-visible:
+- disabled:
+- optional states (if applicable): active/loading/error/empty
+
+## Compatibility policy
+- Backward-compatible additions:
+- Breaking changes:
+- Migration notes:
+
+## Deprecation plan
+- Alias period:
+- Removal target:
+```
+
+## Good vs Bad Example
+
+Good:
+
+- `variant="destructive"`: visual intent is explicit and reusable.
+- `size="sm|md|lg"`: bounded scale.
+
+Bad:
+
+- `isMembersPage`: product-specific in a shared control.
+- `layoutMode="toolbarWithFilterAndStats"`: workflow logic leaking into base component.
+
+## Required State Coverage
+
+For each required state, define:
+
+- visuals (semantic tokens)
+- interaction behavior
+- accessibility semantics
+
+Missing required states is a blocker.
+
+## Ownership Rules
+
+Choose `components` when the abstraction is a generic reusable control.
+Choose `patterns` when the abstraction encodes product workflow semantics.
+
+If a shared control starts accumulating workflow props, stop and extract a pattern wrapper.
+
+## Review Checklist
+
+Before merge:
+
+- [ ] Rules and guarantees are documented and match implementation.
+- [ ] Required states are implemented and visible in stories.
+- [ ] API remains product-agnostic.
+- [ ] Compatibility/deprecation notes are present for API changes.
+
+</div>

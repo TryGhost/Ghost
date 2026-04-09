@@ -1,10 +1,7 @@
 import {MemberDetailsPage, MembersPage} from '@/helpers/pages';
 import {MemberFactory, createMemberFactory} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
-import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 import type {Page} from '@playwright/test';
-
-usePerTestIsolation();
 
 async function mockLargeMembersList(page: Page, members: Array<{id: string}>) {
     await page.route('**/ghost/api/admin/members/**', async (route) => {
@@ -70,7 +67,7 @@ test.describe('Ghost Admin - Members Virtual Window', () => {
 
         await mockLargeMembersList(page, members);
 
-        const membersPage = new MembersPage(page, {route: 'members-forward'});
+        const membersPage = new MembersPage(page, {route: 'members'});
         const memberDetailsPage = new MemberDetailsPage(page);
 
         await membersPage.goto();
@@ -80,15 +77,16 @@ test.describe('Ghost Admin - Members Virtual Window', () => {
 
         await expect.poll(async () => {
             const historyState = await page.evaluate(() => window.history.state);
-            return historyState?.ghostVirtualListWindow?.['/members-forward::'];
+            return historyState?.ghostVirtualListWindow?.['/members::'];
         }).toBe(2000);
 
+        const reactMemberRows = page.getByTestId('members-list').getByTestId('members-list-item');
         const maxRenderedIndex = await membersPage.scrollUntilMaxRenderedIndexAtLeast(1000);
 
         expect(maxRenderedIndex).toBeGreaterThan(1000);
 
-        const renderedCount = await membersPage.memberListItems.count();
-        const targetRowLocator = membersPage.memberListItems.nth(Math.max(0, renderedCount - 5));
+        const renderedCount = await reactMemberRows.count();
+        const targetRowLocator = reactMemberRows.nth(Math.max(0, renderedCount - 5));
         const targetRow = {
             index: Number(await targetRowLocator.getAttribute('data-index')),
             text: await targetRowLocator.textContent(),
@@ -97,13 +95,13 @@ test.describe('Ghost Admin - Members Virtual Window', () => {
 
         expect(targetRow.index).toBeGreaterThan(1000);
 
-        await targetRowLocator.click();
+        await targetRowLocator.getByRole('link').click();
 
         await expect(memberDetailsPage.nameInput).toBeVisible();
 
         await page.goBack();
-        await expect(page).toHaveURL(/\/ghost\/#\/members-forward$/);
-        await expect(membersPage.getMemberListItemByIndex(targetRow.index)).toContainText(targetRow.text ?? '');
+        await expect(page).toHaveURL(/\/ghost\/#\/members$/);
+        await expect(page.getByTestId('members-list').locator(`[data-testid="members-list-item"][data-index="${targetRow.index}"]`)).toContainText(targetRow.text ?? '');
 
         await expect.poll(async () => {
             const scrollTop = await membersPage.getScrollParentScrollTop();

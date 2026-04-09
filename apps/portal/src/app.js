@@ -7,16 +7,29 @@ import Notification from './components/notification';
 import PopupModal from './components/popup-modal';
 import setupGhostApi from './utils/api';
 import AppContext from './app-context';
-import NotificationParser from './utils/notifications';
+import NotificationParser, {clearURLParams} from './utils/notifications';
 import * as Fixtures from './utils/fixtures';
 import {hasMode} from './utils/check-mode';
 import {transformPortalAnchorToRelative} from './utils/transform-portal-anchor-to-relative';
 import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
+import {getGiftRedemptionErrorMessage} from './utils/gift-redemption-notification';
 import './app.css';
-import {hasRecommendations, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {hasRecommendations, hasGiftSubscriptions, createNotification, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {validateHexColor} from './utils/sanitize-html';
 import {handleDataAttributes} from './data-attributes';
+
+const safeDecodeURIComponent = (value) => {
+    try {
+        return decodeURIComponent(value);
+    } catch (error) {
+        return null;
+    }
+};
+
+const staleGiftRedemptionRequestResult = {
+    staleGiftRedemptionRequest: true
+};
 
 const DEV_MODE_DATA = {
     showPopup: true,
@@ -59,10 +72,15 @@ export default class App extends React.Component {
             actionErrorMessage: null,
             initStatus: 'running',
             lastPage: null,
+            notification: null,
+            notificationSequence: -1,
             customSiteUrl: props.customSiteUrl,
             locale: props.locale,
             scrollbarWidth: 0
         };
+
+        this._redemptionRequestId = 0;
+        this.currentRedemptionToken = null;
     }
 
     componentDidMount() {
@@ -161,12 +179,38 @@ export default class App extends React.Component {
     /** Setup custom trigger buttons handling on page */
     setupCustomTriggerButton() {
         // Handler for custom buttons
-        this.clickHandler = (event) => {
+        this.clickHandler = async (event) => {
             event.preventDefault();
             const target = event.currentTarget;
             const pagePath = (target && target.dataset.portal);
-            const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath) || {};
+            const linkData = this.getPageFromLinkPath(pagePath);
+            if (!linkData) {
+                return;
+            }
+            const {page, pageQuery, pageData} = linkData;
             if (this.state.initStatus === 'success') {
+                if (page === 'gift' && !hasGiftSubscriptions({site: this.state.site})) {
+                    this.invalidateGiftRedemptionRequest();
+                    removePortalLinkFromUrl();
+
+                    return;
+                }
+                if (page === 'giftRedemption' && pageData?.token) {
+                    const redemptionRequest = this.startGiftRedemptionRequest(pageData.token);
+                    const giftLinkData = await this.fetchGiftRedemptionData({
+                        site: this.state.site,
+                        token: pageData.token
+                    });
+
+                    if (!this.isCurrentGiftRedemptionRequest(redemptionRequest)) {
+                        return;
+                    }
+
+                    this.setState(giftLinkData);
+                    return;
+                }
+
+                this.invalidateGiftRedemptionRequest();
                 if (pageQuery && pageQuery !== 'free') {
                     this.handleSignupQuery({site: this.state.site, pageQuery});
                 } else {
@@ -197,11 +241,30 @@ export default class App extends React.Component {
         });
     }
 
+    startGiftRedemptionRequest(token) {
+        this._redemptionRequestId += 1;
+        this.currentRedemptionToken = token;
+
+        return {
+            requestId: this._redemptionRequestId,
+            token
+        };
+    }
+
+    invalidateGiftRedemptionRequest() {
+        this._redemptionRequestId += 1;
+        this.currentRedemptionToken = null;
+    }
+
+    isCurrentGiftRedemptionRequest({requestId, token}) {
+        return this._redemptionRequestId === requestId && this.currentRedemptionToken === token;
+    }
+
     /** Initialize portal setup on load, fetch data and setup state*/
     async initSetup() {
         try {
             // Fetch data from API, links, preview, dev sources
-            const {site, member, offers, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
+            const {site, member, offers, page, showPopup, popupNotification, notification, notificationSequence, lastPage, pageQuery, pageData} = await this.fetchData();
             const i18nLanguage = this.props.siteI18nEnabled ? this.props.locale || site.locale || 'en' : 'en';
             i18n.changeLanguage(i18nLanguage);
 
@@ -215,6 +278,8 @@ export default class App extends React.Component {
                 showPopup,
                 pageData,
                 popupNotification,
+                notification,
+                notificationSequence,
                 dir: i18n.dir() || 'ltr',
                 action: 'init:success',
                 initStatus: 'success',
@@ -261,7 +326,8 @@ export default class App extends React.Component {
     async fetchData() {
         const {site: apiSiteData, member, offers} = await this.fetchApiData();
         const {site: devSiteData, ...restDevData} = this.fetchDevData();
-        const {site: linkSiteData, ...restLinkData} = this.fetchLinkData(apiSiteData, member);
+        const linkData = await this.fetchLinkData(apiSiteData, member);
+        const {site: linkSiteData, ...restLinkData} = linkData?.staleGiftRedemptionRequest ? {} : linkData;
         const {site: previewSiteData, ...restPreviewData} = this.fetchPreviewData();
         const {site: notificationSiteData, ...restNotificationData} = this.fetchNotificationData();
         let page = '';
@@ -487,8 +553,65 @@ export default class App extends React.Component {
     }
 
     /** Fetch state from Portal Links */
-    fetchLinkData(site, member) {
+    async fetchGiftRedemptionData({site, token}) {
+        if (!hasGiftSubscriptions({site})) {
+            removePortalLinkFromUrl();
+
+            return {};
+        }
+
+        try {
+            const response = await this.GhostApi.gift.fetchRedemptionData({token});
+
+            return {
+                showPopup: true,
+                notification: null,
+                page: 'giftRedemption',
+                pageData: {
+                    token,
+                    gift: response?.gifts?.[0] || null
+                }
+            };
+        } catch (error) {
+            removePortalLinkFromUrl();
+
+            const notification = createNotification({
+                type: 'giftRedemption:failed',
+                status: 'error',
+                autoHide: false,
+                closeable: true,
+                state: this.state,
+                message: getGiftRedemptionErrorMessage(error)
+            });
+
+            return {
+                showPopup: false,
+                pageData: null,
+                notification,
+                notificationSequence: notification.count
+            };
+        }
+    }
+
+    async fetchLinkData(site, member) {
+        this.invalidateGiftRedemptionRequest();
+
         const qParams = new URLSearchParams(window.location.search);
+
+        if (qParams.get('stripe') === 'gift-purchase-success') {
+            const token = qParams.get('gift_token');
+            clearURLParams(['stripe', 'gift_token']);
+            if (token) {
+                return {
+                    showPopup: true,
+                    page: 'giftSuccess',
+                    pageData: {
+                        token
+                    }
+                };
+            }
+        }
+
         if (qParams.get('action') === 'unsubscribe') {
             // if the user is unsubscribing from a newsletter with an old unsubscribe link that we can't validate, push them to newsletter mgmt where they have to log in
             if (qParams.get('key') && qParams.get('uuid')) {
@@ -531,7 +654,9 @@ export default class App extends React.Component {
         const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
         const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/yearly$/;
         const offersRegex = /^offers\/(\w+?)\/?$/;
+        const giftRedemptionRegex = /^\/portal\/gift\/redeem\/([^/?#]+)\/?$/;
         const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
+        const shareRegex = /^\/share\/?$/;
         const feedbackRegex = /^\/feedback\/(\w+?)\/(\w+?)\/?$/;
 
         if (path && feedbackRegex.test(path)) {
@@ -561,8 +686,35 @@ export default class App extends React.Component {
                 }
             }
         }
+        if (path && giftRedemptionRegex.test(path)) {
+            const [, token] = path.match(giftRedemptionRegex);
+            const decodedToken = safeDecodeURIComponent(token);
+            if (!decodedToken) {
+                return {};
+            }
+
+            const redemptionRequest = this.startGiftRedemptionRequest(decodedToken);
+            const giftLinkData = await this.fetchGiftRedemptionData({
+                site,
+                token: decodedToken
+            });
+
+            if (!this.isCurrentGiftRedemptionRequest(redemptionRequest)) {
+                return staleGiftRedemptionRequestResult;
+            }
+
+            return giftLinkData;
+        }
+        if (path && shareRegex.test(path)) {
+            return {
+                showPopup: true,
+                page: 'share'
+            };
+        }
+
         if (path && linkRegex.test(path)) {
             const [,pagePath] = path.match(linkRegex);
+
             const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath, site) || {};
 
             // If user is not logged in and trying to access an account page,
@@ -575,6 +727,12 @@ export default class App extends React.Component {
                         redirect: site.url + `#/portal/${pagePath}/`
                     }
                 };
+            }
+
+            if (page === 'gift' && !hasGiftSubscriptions({site})) {
+                removePortalLinkFromUrl();
+
+                return {};
             }
 
             const lastPage = ['accountPlan', 'accountProfile'].includes(page) ? 'accountHome' : null;
@@ -761,9 +919,14 @@ export default class App extends React.Component {
     }
 
     /**Handle state update for preview url and Portal Link changes */
-    updateStateForPreviewLinks() {
+    async updateStateForPreviewLinks() {
         const {site: previewSite, ...restPreviewData} = this.fetchPreviewData();
-        const {site: linkSite, ...restLinkData} = this.fetchLinkData(this.state.site, this.state.member);
+        const linkData = await this.fetchLinkData(this.state.site, this.state.member);
+        if (linkData?.staleGiftRedemptionRequest) {
+            return;
+        }
+
+        const {site: linkSite, ...restLinkData} = linkData;
 
         const updatedState = {
             site: {
@@ -865,10 +1028,24 @@ export default class App extends React.Component {
         const customMonthlyProductSignup = /^signup\/?(?:\/(\w+?))\/monthly\/?$/;
         const customYearlyProductSignup = /^signup\/?(?:\/(\w+?))\/yearly\/?$/;
         const customOfferRegex = /^offers\/(\w+?)\/?$/;
+        const giftRedemptionRegex = /^gift\/redeem\/([^/?#]+)\/?$/;
 
         if (path === undefined || path === '') {
             return {
                 page: 'default'
+            };
+        } else if (giftRedemptionRegex.test(path)) {
+            const [, token] = path.match(giftRedemptionRegex);
+            const decodedToken = safeDecodeURIComponent(token);
+            if (!decodedToken) {
+                return null;
+            }
+
+            return {
+                page: 'giftRedemption',
+                pageData: {
+                    token: decodedToken
+                }
             };
         } else if (customOfferRegex.test(path)) {
             return {
@@ -949,6 +1126,14 @@ export default class App extends React.Component {
                 pageData: {
                     signup: false
                 }
+            };
+        } else if (path === 'gift') {
+            return {
+                page: 'gift'
+            };
+        } else if (path === 'share') {
+            return {
+                page: 'share'
             };
         } else if (path === 'account/newsletters/help') {
             return {
@@ -1052,7 +1237,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {site, member, offers, action, actionErrorMessage, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, dir, scrollbarWidth, otcRef, inboxLinks} = this.state;
+        const {site, member, offers, action, actionErrorMessage, page, lastPage, showPopup, pageQuery, pageData, popupNotification, notification, customSiteUrl, dir, scrollbarWidth, otcRef, inboxLinks} = this.state;
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({site, page: contextPage, member, offers, pageData, customSiteUrl});
         return {
@@ -1069,6 +1254,7 @@ export default class App extends React.Component {
             lastPage,
             showPopup,
             popupNotification,
+            notification,
             customSiteUrl,
             dir,
             scrollbarWidth,
@@ -1114,7 +1300,7 @@ export default class App extends React.Component {
      * portal. Especially useful for copy/pasted links from Admin screens.
      */
     transformPortalLinksToRelative() {
-        document.querySelectorAll('a[href*="#/portal"]').forEach(transformPortalAnchorToRelative);
+        document.querySelectorAll('a[href*="#/portal"], a[href*="#/share"]').forEach(transformPortalAnchorToRelative);
     }
 
     render() {

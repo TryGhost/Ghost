@@ -32,6 +32,12 @@ module.exports = {
         'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
             memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']
         }],
+        'no-restricted-imports': ['error', {
+            paths: [{
+                name: '@tryghost/shade',
+                message: 'Import from layered subpaths instead (components/primitives/patterns/utils/app/tokens).'
+            }]
+        }],
 
         // TODO: re-enable this (maybe fixed fast refresh?)
         'react-refresh/only-export-components': 'off',

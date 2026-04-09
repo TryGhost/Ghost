@@ -371,12 +371,6 @@ describe('External Request', function () {
     });
 
     describe('general behavior', function () {
-        beforeEach(function () {
-            sinon.stub(dnsPromises, 'lookup').callsFake(function () {
-                return Promise.resolve({address: '123.123.123.123'});
-            });
-        });
-
         afterEach(async function () {
             await configUtils.restore();
             sinon.restore();
@@ -477,8 +471,7 @@ describe('External Request', function () {
                 throw new Error('Request should have rejected with invalid url message');
             }, (err) => {
                 assertExists(err);
-                // got v11+ throws an error instead of the external requests lib
-                assert.equal(err.message, 'No URL protocol specified');
+                assert.equal(err.message, 'Invalid URL');
             });
         });
 
@@ -509,7 +502,9 @@ describe('External Request', function () {
                 headers: {
                     'User-Agent': 'Mozilla/5.0'
                 },
-                retry: 0
+                retry: {
+                    limit: 0
+                }
             };
 
             const requestMock = nock('http://nofilehere.com')

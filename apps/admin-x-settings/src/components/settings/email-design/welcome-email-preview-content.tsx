@@ -1,6 +1,6 @@
 import CoverImage from '../../../assets/images/email-design-user-image.jpg';
 import React from 'react';
-import {cn} from '@tryghost/shade';
+import {cn} from '@tryghost/shade/utils';
 import {resolveAllColors, resolveButtonCorners, resolveFontFamily, resolveImageCorners} from './design-utils';
 import {useEmailDesign} from './email-design-context';
 
@@ -15,7 +15,6 @@ const WelcomeEmailPreviewContent: React.FC = () => {
     const linkClasses = cn(
         'no-underline',
         settings.link_style === 'underline' && 'underline',
-        settings.link_style === 'regular' && 'italic',
         settings.link_style === 'bold' && 'font-bold'
     );
 
@@ -34,15 +33,10 @@ const WelcomeEmailPreviewContent: React.FC = () => {
     );
 
     return (
-        <div className='mx-auto w-full max-w-[600px] px-10'>
-            {/* Divider */}
-            <div className="my-5 py-4">
-                <hr className="m-0 border-0 border-t" style={{borderColor: colors.dividerColor}} />
-            </div>
-
+        <div className='mx-auto w-full max-w-[600px] px-10 pt-16'>
             <h3
                 className={titleFontClasses}
-                style={{color: colors.textColor}}
+                style={{color: colors.sectionTitleColor}}
             >
                 Your welcome email
             </h3>
@@ -68,20 +62,21 @@ const WelcomeEmailPreviewContent: React.FC = () => {
                         resolveImageCorners(settings.image_corners)
                     )} src={CoverImage} />
                 </div>
-                <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem]" style={{color: colors.secondaryTextColor}}>Image caption</div>
+                <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-body-sm" style={{color: colors.secondaryTextColor}}>Image caption</div>
 
                 <p className="mt-0 mb-6">
                     Welcome emails set the tone for your relationship with new members. We’ve optimized this template to look great across devices and inboxes, so your first impression lands exactly how you want it.
                 </p>
             </div>
 
+            {/* Divider */}
             <div className="my-5 py-4">
                 <hr className="m-0 border-0 border-t" style={{borderColor: colors.dividerColor}} />
             </div>
 
             <h3
                 className={titleFontClasses}
-                style={{color: colors.textColor}}
+                style={{color: colors.sectionTitleColor}}
             >
                 Need inspiration?
             </h3>

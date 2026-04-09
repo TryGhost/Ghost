@@ -3,8 +3,9 @@ import {t} from './i18n';
 
 export function removePortalLinkFromUrl() {
     const [path] = window.location.hash.substr(1).split('?');
-    const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
-    if (path && linkRegex.test(path)) {
+    const portalLinkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
+    const shareLinkRegex = /^\/share\/?$/;
+    if (path && (portalLinkRegex.test(path) || shareLinkRegex.test(path))) {
         window.history.pushState('', document.title, window.location.pathname + window.location.search);
     }
 }
@@ -250,6 +251,10 @@ export function hasAvailablePrices({site = {}, pageQuery = ''}) {
 
 export function hasRecommendations({site}) {
     return site?.recommendations_enabled === true;
+}
+
+export function hasGiftSubscriptions({site}) {
+    return site?.labs?.giftSubscriptions === true;
 }
 
 export function isSigninAllowed({site}) {
@@ -794,6 +799,23 @@ export const createPopupNotification = ({type, status, autoHide, duration = 2600
     };
 };
 
+export const createNotification = ({type, status, autoHide, duration = 2600, closeable, state, message}) => {
+    const previousCount = Number.isInteger(state?.notificationSequence)
+        ? state.notificationSequence
+        : state?.notification?.count;
+    const count = Number.isInteger(previousCount) ? previousCount + 1 : 0;
+
+    return {
+        type,
+        status,
+        autoHide,
+        closeable,
+        duration,
+        message,
+        count
+    };
+};
+
 export function isSameCurrency(currency1, currency2) {
     return currency1?.toLowerCase() === currency2?.toLowerCase();
 }
@@ -995,6 +1017,32 @@ export function isRecentMember({member}) {
     const diffHours = Math.round(diff / (1000 * 60 * 60));
 
     return diffHours < 24;
+}
+
+export function getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval}) {
+    if (selectedInterval === 'month' && portalPlans.includes('monthly')) {
+        return 'month';
+    }
+
+    if (selectedInterval === 'year' && portalPlans.includes('yearly')) {
+        return 'year';
+    }
+
+    if (portalDefaultPlan) {
+        if (portalDefaultPlan === 'monthly' && portalPlans.includes('monthly')) {
+            return 'month';
+        }
+    }
+
+    if (portalPlans.includes('yearly')) {
+        return 'year';
+    }
+
+    if (portalPlans.includes('monthly')) {
+        return 'month';
+    }
+
+    return undefined;
 }
 
 // Translate cadence to human readable string

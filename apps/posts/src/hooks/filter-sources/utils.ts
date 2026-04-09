@@ -1,4 +1,4 @@
-import {FilterOption} from '@tryghost/shade';
+import {FilterOption} from '@tryghost/shade/patterns';
 import {escapeNqlString} from '@src/views/filters/filter-normalization';
 
 export function buildQuotedListFilter(key: string, values: string[]): string | undefined {

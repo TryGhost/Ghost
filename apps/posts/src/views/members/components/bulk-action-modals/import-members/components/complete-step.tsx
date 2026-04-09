@@ -1,4 +1,4 @@
-import {Button, DialogFooter} from '@tryghost/shade';
+import {Button, DialogFooter} from '@tryghost/shade/components';
 import {ImportResponse} from '../state';
 
 interface CompleteStepProps {

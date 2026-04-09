@@ -1,8 +1,5 @@
 import React from "react";
-import {
-    SidebarInset,
-    SidebarProvider,
-} from "@tryghost/shade";
+import {SidebarInset, SidebarProvider} from "@tryghost/shade/components";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { isContributorUser } from "@tryghost/admin-x-framework/api/users";
 import { useSidebarVisibility } from "@/ember-bridge/ember-bridge";

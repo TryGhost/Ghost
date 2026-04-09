@@ -1,4 +1,4 @@
-import {FilterOption} from '@tryghost/shade';
+import {FilterOption} from '@tryghost/shade/patterns';
 import {PaginationState, ValueSourceHookOptions, createRemoteValueSource} from './create-remote-value-source';
 import {buildQuotedListFilter} from './utils';
 

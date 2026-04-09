@@ -1,13 +1,7 @@
-import {
-    Button,
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-    LucideIcon
-} from '@tryghost/shade';
+import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {Comment} from '@tryghost/admin-x-framework/api/comments';
 import {DisableCommentingDialog} from './disable-commenting-dialog';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {useDisableMemberCommenting, useEnableMemberCommenting} from '@tryghost/admin-x-framework/api/members';
 import {useState} from 'react';
 

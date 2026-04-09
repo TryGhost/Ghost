@@ -162,7 +162,14 @@ describe('Click Tracking', function () {
                         created_at: anyISODateTime,
                         id: anyObjectId,
                         last_seen_at: anyISODateTime,
-                        updated_at: anyISODateTime
+                        updated_at: anyISODateTime,
+                        tiers: [{
+                            id: anyObjectId,
+                            created_at: anyISODateTime,
+                            updated_at: anyISODateTime,
+                            monthly_price_id: anyObjectId,
+                            yearly_price_id: anyObjectId
+                        }]
                     },
                     previous: {
                         last_seen_at: null,

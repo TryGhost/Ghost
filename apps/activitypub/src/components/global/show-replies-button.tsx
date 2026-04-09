@@ -1,5 +1,5 @@
 import React, {useRef} from 'react';
-import {Button, LoadingIndicator} from '@tryghost/shade';
+import {Button, LoadingIndicator} from '@tryghost/shade/components';
 
 interface ShowRepliesButtonProps {
     count?: number;
