@@ -24,7 +24,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "archive": "GHOST_ARCHIVE=1 pnpm pack:standalone && pnpm pack:tarball",
+    "archive": "pnpm pack:standalone && pnpm pack:tarball",
     "pack:standalone": "rm -rf package; find . -maxdepth 1 -name 'ghost-*.tgz' -delete; npm pack && tar xzf ghost-*.tgz && cp ../../pnpm-lock.yaml ../../.npmrc package/ && rm ghost-*.tgz && rm -f pnpm-lock.yaml .npmrc",
     "pack:tarball": "tar czf ghost-$(node -p \"require('./package.json').version\").tgz package && rm -rf package",
     "dev": "nodemon index.js",

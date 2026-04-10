@@ -104,16 +104,6 @@ function getWorkspaces(from) {
 }
 
 (async () => {
-    // pnpm pack strips the "pnpm" field and "packageManager" from package.json,
-    // which breaks native dep builds (sqlite3, sharp) and loses dependency overrides.
-    // The archive script uses npm pack (which preserves these fields) and is the
-    // correct way to build a distributable tarball. See: https://github.com/pnpm/pnpm/issues/10195
-    if (!process.env.GHOST_ARCHIVE) {
-        console.error('\nError: Do not use `pnpm pack` directly — it strips critical pnpm config from the tarball.');
-        console.error('Use `pnpm archive` instead, which produces a correct distributable tarball.\n');
-        process.exit(1);
-    }
-
     const cwd = process.cwd();
     const nearestPkgJson = findRoot(cwd);
     console.log('nearestPkgJson', nearestPkgJson);
