@@ -10,8 +10,8 @@
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput --sourceMap",
     "build": "pnpm build:tsc",
-    "build:tsc": "tsc --types node",
-    "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --100 --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
+    "build:tsc": "tsc",
+    "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --lines 100 --functions 100 --statements 100 --branches 80 --reporter text --reporter cobertura mocha --node-option import=tsx './test/**/*.test.ts'",
     "test": "pnpm test:types && pnpm test:unit",
     "test:types": "tsc --noEmit",
     "lint:code": "eslint src/ --ext .ts --cache",
