@@ -17,8 +17,8 @@ Adds a new private feature flag to Ghost. Private flags appear in Labs settings 
    - Add a new entry to the `features` array with `title`, `description`, and `flag` (must match the string in `labs.js`).
 
 3. **Run tests and update the config API snapshot**
-   - Unit: `cd ghost/core && yarn test:single test/unit/shared/labs.test.js`
-   - Update snapshot and run e2e: `cd ghost/core && UPDATE_SNAPSHOTS=1 yarn test:single test/e2e-api/admin/config.test.js`
+   - Unit: `cd ghost/core && pnpm test:single test/unit/shared/labs.test.js`
+   - Update snapshot and run e2e: `cd ghost/core && UPDATE_SNAPSHOTS=1 pnpm test:single test/e2e-api/admin/config.test.js`
    - Review the diff of `ghost/core/test/e2e-api/admin/__snapshots__/config.test.js.snap` to confirm only your new flag was added.
 
 ## Notes

@@ -65,7 +65,7 @@ stories
 
 4. After installation, run:
    ```bash
-   yarn && yarn lint --fix
+   pnpm && pnpm lint --fix
    ```
 
 5. **Fix linter errors in component file:**
@@ -180,7 +180,7 @@ After creating the stories:
 
 1. Run linting:
    ```bash
-   yarn lint --fix
+   pnpm lint --fix
    ```
 
 2. **Fix linter errors in story file:**
@@ -203,7 +203,7 @@ Add the new component to `src/index.ts`:
 export * from './components/ui/{{component-name}}';
 ```
 
-Run `yarn lint --fix` again to ensure proper import sorting.
+Run `pnpm lint --fix` again to ensure proper import sorting.
 
 ## Step 8: Run Tests
 
@@ -212,7 +212,7 @@ Run `yarn lint --fix` again to ensure proper import sorting.
 Run the full test suite to ensure no regressions:
 
 ```bash
-yarn test
+pnpm test
 ```
 
 Fix any test failures before proceeding.
@@ -228,7 +228,7 @@ Use Puppeteer to verify the component renders correctly in Storybook:
 1. **Start Storybook in background:**
     Check if Storybook is running already on port 6006 and if not run:
    ```bash
-   yarn storybook
+   pnpm storybook
    ```
    Wait for it to be ready (usually runs on http://localhost:6006)
 

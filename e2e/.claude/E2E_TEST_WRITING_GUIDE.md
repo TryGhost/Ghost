@@ -11,22 +11,22 @@ This guide provides instructions for writing E2E tests in the `/e2e/` directory 
 cd e2e
 
 # Run all tests
-yarn test
+pnpm test
 
 # Run specific test file
-yarn test tests/admin/feature.test.ts
+pnpm test tests/admin/feature.test.ts
 
 # Run with visible browser (debugging)
-yarn test --debug
+pnpm test --debug
 
 # Run with specific timeout
-yarn test --timeout=60000
+pnpm test --timeout=60000
 
 # Keep environment running after test (useful for Playwright MCP exploration)
-PRESERVE_ENV=true yarn test
+PRESERVE_ENV=true pnpm test
 
 # Enable debug logging
-DEBUG=@tryghost/e2e:* yarn test
+DEBUG=@tryghost/e2e:* pnpm test
 ```
 
 ## Test Organization
@@ -378,7 +378,7 @@ When creating new Page Objects or discovering selectors for unfamiliar UI:
 ### 1. Start Ghost with Preserved Environment
 ```bash
 # Start Ghost and keep it running
-PRESERVE_ENV=true yarn test
+PRESERVE_ENV=true pnpm test
 
 # The test will output the Ghost instance URL (usually http://localhost:2369)
 ```
@@ -409,25 +409,25 @@ Based on your exploration, create the Page Object with discovered selectors:
 ### Debug Mode
 ```bash
 # See browser while test runs
-yarn test --debug
+pnpm test --debug
 
 # UI mode for interactive debugging
-yarn test --ui
+pnpm test --ui
 ```
 
 ### Debug Logging
 ```bash
 # Enable all e2e debug logs
-DEBUG=@tryghost/e2e:* yarn test
+DEBUG=@tryghost/e2e:* pnpm test
 
 # Specific debug namespace
-DEBUG=@tryghost/e2e:ghost-fixture yarn test
+DEBUG=@tryghost/e2e:ghost-fixture pnpm test
 ```
 
 ### Preserve Environment
 ```bash
 # Keep containers running after test
-PRESERVE_ENV=true yarn test
+PRESERVE_ENV=true pnpm test
 ```
 
 ### Test Artifacts
@@ -489,10 +489,10 @@ test.describe('Feature', () => {
 
 ### Run Commands
 ```bash
-yarn test                           # All tests
-yarn test path/to/test.ts          # Specific test
-yarn test --debug                   # With browser
-yarn test --grep "pattern"         # Pattern matching
-PRESERVE_ENV=true yarn test         # Keep environment
-DEBUG=@tryghost/e2e:* yarn test     # Debug logs
+pnpm test                           # All tests
+pnpm test path/to/test.ts          # Specific test
+pnpm test --debug                   # With browser
+pnpm test --grep "pattern"         # Pattern matching
+PRESERVE_ENV=true pnpm test         # Keep environment
+DEBUG=@tryghost/e2e:* pnpm test     # Debug logs
 ```

@@ -18,12 +18,12 @@
   "scripts": {
     "dev": "ember serve",
     "build": "ember build --environment=production --silent",
-    "build:dev": "yarn build --environment=development",
+    "build:dev": "pnpm build --environment=development",
     "test:unit": "true",
     "test": "ember exam --split 2 --parallel",
     "lint:js": "eslint . --cache",
     "lint:hbs": "ember-template-lint .",
-    "lint": "yarn lint:js && yarn lint:hbs"
+    "lint": "pnpm lint:js && pnpm lint:hbs"
   },
   "engines": {
     "node": "^22.13.1"
@@ -44,7 +44,8 @@
     "@sentry/ember": "7.120.3",
     "@sentry/integrations": "7.114.0",
     "@sentry/replay": "7.116.0",
-    "@tryghost/admin-x-framework": "0.0.0",
+    "@tryghost/admin-x-framework": "workspace:*",
+    "ghost": "workspace:*",
     "@tryghost/color-utils": "0.2.16",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.103",
@@ -111,7 +112,7 @@
     "ember-modifier": "4.2.0",
     "ember-moment": "10.0.1",
     "ember-one-way-select": "4.0.1",
-    "ember-power-datepicker": "cibernox/ember-power-datepicker",
+    "ember-power-datepicker": "0.8.1",
     "ember-power-select": "6.0.1",
     "ember-resolver": "8.1.0",
     "ember-simple-auth": "5.0.0",
@@ -122,6 +123,7 @@
     "ember-test-selectors": "6.0.0",
     "ember-tooltips": "3.6.0",
     "ember-truth-helpers": "3.1.1",
+    "eslint": "catalog:",
     "eslint-plugin-babel": "5.3.1",
     "flexsearch": "0.7.43",
     "fs-extra": "11.3.4",
@@ -160,12 +162,6 @@
       "lib/ember-power-calendar-moment",
       "lib/ember-power-calendar-utils"
     ]
-  },
-  "resolutions": {
-    "ember-basic-dropdown": "6.0.2",
-    "ember-in-viewport": "4.1.0",
-    "moment": "2.24.0",
-    "moment-timezone": "0.5.45"
   },
   "ember": {
     "edition": "octane"

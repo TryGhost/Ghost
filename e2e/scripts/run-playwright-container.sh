@@ -23,4 +23,4 @@ docker run --rm --network host --ipc host \
   -e GHOST_E2E_IMAGE="${GHOST_E2E_IMAGE:-ghost-e2e:local}" \
   -e GHOST_E2E_GATEWAY_IMAGE="${GHOST_E2E_GATEWAY_IMAGE:-caddy:2-alpine}" \
   "$PLAYWRIGHT_IMAGE" \
-  yarn test:all --shard="${SHARD_INDEX}/${SHARD_TOTAL}" --retries="${RETRIES}"
+  bash -c "corepack enable && pnpm test:all --shard=${SHARD_INDEX}/${SHARD_TOTAL} --retries=${RETRIES}"

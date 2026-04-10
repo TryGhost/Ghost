@@ -28,6 +28,12 @@ on:
 env:
   FORCE_COLOR: 1
   NODE_VERSION: 22.18.0
+  CACHED_DEPENDENCY_PATHS: |
+    ${{ github.workspace }}/node_modules
+    ${{ github.workspace }}/apps/*/node_modules
+    ${{ github.workspace }}/ghost/*/node_modules
+    ${{ github.workspace }}/e2e/node_modules
+    ~/.cache/ms-playwright/
 
 concurrency:
   group: ${{ github.workflow }}
@@ -54,13 +60,17 @@ jobs:
       # Ghost only and can't authenticate against Casper/Source over SSH
       - run: git submodule update --init
 
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - run: yarn --ignore-scripts
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: pnpm-dep-cache-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
 
       - name: Set up Git
         run: |

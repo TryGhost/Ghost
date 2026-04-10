@@ -1,6 +1,6 @@
 {
   "setup-worktree": [
     "git submodule update --init --recursive",
-    "yarn"
+    "pnpm"
   ]
 }

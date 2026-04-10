@@ -1,0 +1,15 @@
+packages:
+  - 'ghost/*'
+  - 'apps/*'
+  - 'e2e'
+
+strictDepBuilds: true
+
+catalog:
+  '@eslint/js': 8.57.1
+  eslint: 8.57.1
+
+catalogs:
+  eslint9:
+    '@eslint/js': 9.37.0
+    eslint: 9.37.0

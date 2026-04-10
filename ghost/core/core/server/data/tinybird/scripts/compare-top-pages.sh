@@ -4,7 +4,7 @@
 #
 # Usage: ./compare-top-pages.sh [-l limit] [-d days] [-t tolerance] [-v]
 #
-# Prerequisites: yarn dev:analytics
+# Prerequisites: pnpm dev:analytics
 #
 # Expected: v3 counts may be 1-2 lower for pages where sessions cross midnight
 # at date boundaries. This is correct behavior - v1 over-counts by including
@@ -56,7 +56,7 @@ echo "============================================"
 # Get token
 TB_TOKEN=$(docker run --rm -v ghost-dev_shared-config:/config alpine cat /config/.env.tinybird 2>/dev/null | grep TINYBIRD_ADMIN_TOKEN | cut -d= -f2)
 if [ -z "$TB_TOKEN" ]; then
-    echo "Error: Could not find Tinybird token. Is yarn dev:analytics running?"
+    echo "Error: Could not find Tinybird token. Is pnpm dev:analytics running?"
     exit 1
 fi
 

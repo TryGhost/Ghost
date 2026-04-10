@@ -233,7 +233,7 @@ function main() {
 
         if (compareSemver(prVersion, mainVersion) <= 0) {
             failedApps.push(
-                `${app.key} (${app.packageName}) was changed but version was not bumped above main (${prVersion} <= ${mainVersion}). Please run "yarn ship" in ${app.path} to bump the package version.`
+                `${app.key} (${app.packageName}) was changed but version was not bumped above main (${prVersion} <= ${mainVersion}). Please run "pnpm ship" in ${app.path} to bump the package version.`
             );
             continue;
         }
