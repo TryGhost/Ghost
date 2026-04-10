@@ -211,15 +211,18 @@ jobs:
           set -euo pipefail
 
           PLAYWRIGHT_VERSION="$(node -p "require('./e2e/package.json').devDependencies['@playwright/test']")"
-          BASE_PLAYWRIGHT_VERSION="$(git show "${NX_BASE}:e2e/package.json" | node -p "JSON.parse(require('fs').readFileSync(0, 'utf8')).devDependencies['@playwright/test']")"
-          PLAYWRIGHT_VERSION_CHANGED=false
-
-          if [ "$PLAYWRIGHT_VERSION" != "$BASE_PLAYWRIGHT_VERSION" ]; then
-            PLAYWRIGHT_VERSION_CHANGED=true
-          fi
-
           echo "version=$PLAYWRIGHT_VERSION" >> "$GITHUB_OUTPUT"
-          echo "version-changed=$PLAYWRIGHT_VERSION_CHANGED" >> "$GITHUB_OUTPUT"
+
+          # Check if the image already exists in GHCR (anonymous OCI registry check)
+          TOKEN="$(curl -sf "https://ghcr.io/token?service=ghcr.io&scope=repository:tryghost/playwright:pull" | jq -r .token)" || TOKEN=""
+          HTTP_CODE="$(curl -so /dev/null -w "%{http_code}" -H "Authorization: Bearer $TOKEN" \
+            "https://ghcr.io/v2/tryghost/playwright/manifests/v${PLAYWRIGHT_VERSION}-noble")"
+
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "image-exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "image-exists=false" >> "$GITHUB_OUTPUT"
+          fi
 
     outputs:
       affected_projects: ${{ steps.affected.outputs.affected_projects }}
@@ -247,13 +250,13 @@ jobs:
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
       nx_base: ${{ env.NX_BASE }}
       playwright_version: ${{ steps.playwright.outputs.version }}
-      playwright_version_changed: ${{ steps.playwright.outputs.version-changed }}
+      playwright_image_exists: ${{ steps.playwright.outputs.image-exists }}
 
   job_mirror_playwright_image:
     name: Mirror Playwright image
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag != 'true' && needs.job_setup.outputs.playwright_version_changed == 'true'
+    if: needs.job_setup.outputs.is_tag != 'true' && needs.job_setup.outputs.playwright_image_exists != 'true'
     permissions:
       contents: read
       packages: write
@@ -261,21 +264,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Check Playwright image in GHCR
-        id: playwright-image
-        env:
-          PLAYWRIGHT_IMAGE: ghcr.io/tryghost/playwright:v${{ needs.job_setup.outputs.playwright_version }}-noble
-        run: |
-          set -euo pipefail
-
-          if docker manifest inspect "$PLAYWRIGHT_IMAGE" > /dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Login to GHCR
-        if: steps.playwright-image.outputs.exists != 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
         with:
           registry: ghcr.io
@@ -283,14 +273,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Mirror Playwright image
-        if: steps.playwright-image.outputs.exists != 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: ./.github/actions/mirror-container-image
         with:
           source-image: mcr.microsoft.com/playwright:v${{ needs.job_setup.outputs.playwright_version }}-noble
           target-image: ghcr.io/tryghost/playwright:v${{ needs.job_setup.outputs.playwright_version }}-noble
 
       - name: Fail when Playwright image cannot be mirrored
-        if: steps.playwright-image.outputs.exists != 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
         run: |
           echo "::error::Playwright v${{ needs.job_setup.outputs.playwright_version }}-noble is not mirrored in GHCR yet. Publish ghcr.io/tryghost/playwright:v${{ needs.job_setup.outputs.playwright_version }}-noble before running E2E for this branch."
           exit 1
