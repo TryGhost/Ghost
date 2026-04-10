@@ -30,7 +30,7 @@ function buildScopedEslintCommand(workspace, files) {
         .map(shellQuote)
         .join(' ');
 
-    return `yarn --cwd ${shellQuote(workspace)} eslint --cache ${relativeFiles}`;
+    return `pnpm --dir ${shellQuote(workspace)} exec eslint --cache ${relativeFiles}`;
 }
 
 function buildRootEslintCommand(files) {

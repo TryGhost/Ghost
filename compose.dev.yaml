@@ -58,7 +58,7 @@ services:
       dockerfile: docker/ghost-dev/Dockerfile
     container_name: ghost-dev
     working_dir: /home/ghost/ghost/core
-    command: ["yarn", "dev"]
+    command: ["pnpm", "dev"]
     volumes:
       - ./ghost:/home/ghost/ghost
       # Mount specific content subdirectories to preserve themes/adapters from source

@@ -46,33 +46,33 @@ Refer the [docs](https://ghost.org/help/setup-members/#customize-portal-settings
 
 Portal runs automatically when using Ghost's development command from the monorepo root:
 ```
-yarn dev
+pnpm dev
 ```
 
 This starts all frontend apps (including Portal.)
 ---
 
-To run Portal in a standalone fashion, use `yarn start` and open [http://localhost:3000](http://localhost:3000).
+To run Portal in a standalone fashion, use `pnpm start` and open [http://localhost:3000](http://localhost:3000).
 
 ## Build
 
 To create a production minified bundle in `umd/portal.min.js`:
 ```
-yarn build
+pnpm build
 ```
 
 ## Test
 
 To run tests in watch mode:
 ```
-yarn test
+pnpm test
 ```
 
 ### Ghost e2e tests
 
 Portal is primarily tested via Ghost's e2e Playwright tests in the `e2e/` directory. Run them from the monorepo root:
 ```
-yarn test:e2e
+pnpm test:e2e
 ```
 
 ## Release
@@ -85,12 +85,12 @@ In order to have Ghost's e2e tests run against the new code on CI or to test the
 
 ### Patch release
 
-1. Run `yarn ship` and select a patch version when prompted
+1. Run `pnpm ship` and select a patch version when prompted
 2. Merge the release commit to `main`
 
 ### Minor / major release
 
-1. Run `yarn ship` and select a minor or major version when prompted
+1. Run `pnpm ship` and select a minor or major version when prompted
 2. Merge the release commit to `main`
 3. Wait until a new version of Ghost is released
 
