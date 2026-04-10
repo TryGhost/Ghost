@@ -452,9 +452,6 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Build TS packages
-        run: pnpm nx run-many -t build --exclude=ghost-admin
-
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
         with:
@@ -472,12 +469,10 @@ jobs:
           echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: E2E tests
-        working-directory: ghost/core
-        run: pnpm test:ci:e2e
+        run: pnpm nx run ghost:test:ci:e2e
 
       - name: Integration tests
-        working-directory: ghost/core
-        run: pnpm test:ci:integration
+        run: pnpm nx run ghost:test:ci:integration
 
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
@@ -543,9 +538,6 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Build TS packages
-        run: pnpm nx run-many -t build --exclude=ghost-admin
-
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
         run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
@@ -558,8 +550,7 @@ jobs:
           echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: Legacy tests
-        working-directory: ghost/core
-        run: pnpm test:ci:legacy
+        run: pnpm nx run ghost:test:ci:legacy
 
       - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
