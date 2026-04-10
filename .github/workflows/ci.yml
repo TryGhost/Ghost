@@ -1490,7 +1490,7 @@ jobs:
         job_build_e2e_public_apps,
         job_build_e2e_image,
         job_e2e_tests,
-        publish_packages_dry_run
+        publish_packages
       ]
     if: always()
     runs-on: ubuntu-latest
@@ -1507,45 +1507,6 @@ jobs:
         run: |
           echo "One of the dependent jobs have failed or been cancelled. You may need to re-run it." && exit 1
 
-  publish_packages_dry_run:
-    needs: [job_setup]
-    name: Publish dry-run ${{ matrix.package_name }}
-    runs-on: ubuntu-latest
-    if: >-
-      github.event_name == 'pull_request'
-      && (needs.job_setup.outputs.changed_activitypub == 'true'
-      || needs.job_setup.outputs.changed_portal == 'true'
-      || needs.job_setup.outputs.changed_sodo_search == 'true'
-      || needs.job_setup.outputs.changed_comments_ui == 'true'
-      || needs.job_setup.outputs.changed_signup_form == 'true'
-      || needs.job_setup.outputs.changed_announcement_bar == 'true')
-    strategy:
-      matrix:
-        include:
-          - package_name: '@tryghost/activitypub'
-          - package_name: '@tryghost/portal'
-          - package_name: '@tryghost/sodo-search'
-          - package_name: '@tryghost/comments-ui'
-          - package_name: '@tryghost/signup-form'
-          - package_name: '@tryghost/announcement-bar'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - name: Set up Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
-
-      - name: Build the package
-        run: pnpm nx build ${{ matrix.package_name }}
-
   publish_packages:
     needs: [
       job_setup,
@@ -1554,7 +1515,19 @@ jobs:
     ]
     name: Publish ${{ matrix.package_name }}
     runs-on: ubuntu-latest
-    if: always() && github.repository == 'TryGhost/Ghost' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    if: >-
+      always() && github.repository == 'TryGhost/Ghost'
+      && needs.job_setup.result == 'success'
+      && (
+        (needs.job_setup.outputs.is_main == 'true' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success')
+        || (github.event_name == 'pull_request'
+          && (needs.job_setup.outputs.changed_activitypub == 'true'
+          || needs.job_setup.outputs.changed_portal == 'true'
+          || needs.job_setup.outputs.changed_sodo_search == 'true'
+          || needs.job_setup.outputs.changed_comments_ui == 'true'
+          || needs.job_setup.outputs.changed_signup_form == 'true'
+          || needs.job_setup.outputs.changed_announcement_bar == 'true'))
+      )
     permissions:
       id-token: write
     strategy:
@@ -1596,6 +1569,7 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Check if version changed
+        if: needs.job_setup.outputs.is_main == 'true'
         id: version_check
         working-directory: ${{ matrix.package_path }}
         run: |
@@ -1620,7 +1594,7 @@ jobs:
           fi
 
       - name: Build the package
-        if: steps.version_check.outputs.version_changed == 'true'
+        if: steps.version_check.outputs.version_changed == 'true' || github.event_name == 'pull_request'
         run: pnpm nx build ${{ matrix.package_name }}
 
       - name: Configure .npmrc
