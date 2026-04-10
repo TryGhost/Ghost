@@ -61,7 +61,7 @@
     "lint:types": "eslint --ignore-path .eslintignore '**/*.ts' --cache && tsc --noEmit",
     "lint": "pnpm lint:server && pnpm lint:shared && pnpm lint:frontend && pnpm lint:test && pnpm lint:types",
     "prepack": "node monobundle.js",
-    "postpack": "cd ../.. && git checkout -- ghost/core/package.json ghost/i18n/package.json ghost/parse-email-address/package.json && rm -f ghost/core/pnpm-lock.yaml ghost/core/.npmrc && rm -rf ghost/core/components"
+    "postpack": "cd ../.. && git checkout -- ghost/core/package.json ghost/i18n/package.json ghost/parse-email-address/package.json && rm -f ghost/core/pnpm-lock.yaml ghost/core/pnpm-workspace.yaml ghost/core/.npmrc && rm -rf ghost/core/components"
   },
   "engines": {
     "node": "^22.13.1",

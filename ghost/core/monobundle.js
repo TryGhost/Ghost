@@ -234,6 +234,7 @@ function getWorkspaces(from) {
         'README.md',
         'LICENSE',
         'pnpm-lock.yaml',
+        'pnpm-workspace.yaml',
         '.npmrc'
     ];
 
