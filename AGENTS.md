@@ -157,11 +157,11 @@ pnpm dev:all                   # Include all optional services
 
 **Translation Workflow:**
 ```bash
-yarn workspace @tryghost/i18n translate   # Extract keys from source, update all locale files + context.json
-yarn workspace @tryghost/i18n lint:translations  # Validate interpolation variables across locales
+pnpm --filter @tryghost/i18n translate          # Extract keys from source, update all locale files + context.json
+pnpm --filter @tryghost/i18n lint:translations   # Validate interpolation variables across locales
 ```
 
-`yarn translate` is run as part of `yarn workspace @tryghost/i18n test`. In CI, it fails if translation keys or `context.json` are out of date (`failOnUpdate: process.env.CI`). Always run `yarn translate` after adding or changing `t()` calls.
+`translate` is run as part of `pnpm --filter @tryghost/i18n test`. In CI, it fails if translation keys or `context.json` are out of date (`failOnUpdate: process.env.CI`). Always run `pnpm --filter @tryghost/i18n translate` after adding or changing `t()` calls.
 
 **Rules for Translation Keys:**
 1. **Never split sentences across multiple `t()` calls.** Translators cannot reorder words across separate keys. Instead, use `@doist/react-interpolate` to embed React elements (links, bold, etc.) within a single translatable string.

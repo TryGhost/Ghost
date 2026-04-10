@@ -11,10 +11,10 @@ description: Create a database migration to add a table, add columns to an exist
 2. The above command will create a new directory in `ghost/core/core/server/data/migrations/versions` if needed, create the empty migration file with the appropriate name, and bump the core and admin package versions to RC if this is the first migration after a release.
 3. Update the migration file with the changes you want to make in the database, following the existing patterns in the codebase. Where appropriate, prefer to use the utility functions in `ghost/core/core/server/data/migrations/utils/*`.
 4. Update the schema definition file in `ghost/core/core/server/data/schema/schema.js`, and make sure it aligns with the latest changes from the migration.
-5. Test the migration manually: `pnpm knex-migrator migrate --v {version directory} --force`
+5. Test the migration manually: `cd ghost/core && pnpm knex-migrator migrate --v {version directory} --force`
 6. If adding or dropping a table, update `ghost/core/core/server/data/exporter/table-lists.js` as appropriate.
 7. If adding or dropping a table, also add or remove the table name from the expected tables list in `ghost/core/test/integration/exporter/exporter.test.js`. This test has a hardcoded alphabetically-sorted array of all database tables — it runs in CI integration tests (not unit tests) and will fail if the new table is missing.
-8. Run the schema integrity test, and update the hash: `pnpm test:single test/unit/server/data/schema/integrity.test.js`
+8. Run the schema integrity test, and update the hash: `cd ghost/core && pnpm test:single test/unit/server/data/schema/integrity.test.js`
 9. Run unit tests in Ghost core, and iterate until they pass: `cd ghost/core && pnpm test:unit`
 
 ## Examples

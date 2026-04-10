@@ -6,7 +6,7 @@ This test suite runs automated browser tests against a running Ghost instance to
 
 ### Prerequisites
 - Docker and Docker Compose installed
-- Node.js and Yarn installed
+- Node.js and pnpm installed
 
 ### Running Tests
 To run the test, within this `e2e` folder run:
@@ -35,7 +35,7 @@ pnpm dev
 pnpm test
 ```
 
-If infra is already running, `pnpm workspace @tryghost/e2e infra:up` is safe to run again.
+If infra is already running, `pnpm infra:up` is safe to run again.
 For dev-mode test runs, `infra:up` also ensures required local Ghost/gateway dev images exist.
 If you want to force a mode, set `GHOST_E2E_MODE=dev` or `GHOST_E2E_MODE=build` explicitly.
 
@@ -48,7 +48,7 @@ When working on analytics locally, use:
 pnpm dev:analytics
 
 # Terminal 2
-pnpm workspace @tryghost/e2e test:analytics
+pnpm test:analytics
 ```
 
 E2E test scripts automatically sync Tinybird tokens when Tinybird is running.
@@ -60,18 +60,18 @@ Use build mode when you don’t want to run dev servers. It uses a prebuilt Ghos
 ```bash
 # From repository root
 pnpm build
-pnpm workspace @tryghost/e2e build:apps
-GHOST_E2E_BASE_IMAGE=<ghost-image> pnpm workspace @tryghost/e2e build:docker
-GHOST_E2E_MODE=build pnpm workspace @tryghost/e2e infra:up
+pnpm --filter @tryghost/e2e build:apps
+GHOST_E2E_BASE_IMAGE=<ghost-image> pnpm --filter @tryghost/e2e build:docker
+GHOST_E2E_MODE=build pnpm --filter @tryghost/e2e infra:up
 
 # Run tests
-GHOST_E2E_MODE=build GHOST_E2E_IMAGE=ghost-e2e:local pnpm workspace @tryghost/e2e test
+GHOST_E2E_MODE=build GHOST_E2E_IMAGE=ghost-e2e:local pnpm --filter @tryghost/e2e test
 ```
 
 For a CI-like local preflight (pulls Playwright + gateway images and starts infra), run:
 
 ```bash
-pnpm workspace @tryghost/e2e preflight:build
+pnpm --filter @tryghost/e2e preflight:build
 ```
 
 
@@ -195,7 +195,7 @@ The fixture resolves isolation mode per test file:
 
 Test isolation is still automatic, but no longer always per-test.
 
-Infrastructure (MySQL, Redis, Mailpit, Tinybird) must already be running before tests start. Use `pnpm dev` or `pnpm workspace @tryghost/e2e infra:up`.
+Infrastructure (MySQL, Redis, Mailpit, Tinybird) must already be running before tests start. Use `pnpm dev` or `pnpm --filter @tryghost/e2e infra:up`.
 
 Global setup (`tests/global.setup.ts`) does:
 - Cleans up e2e containers and test databases
@@ -256,8 +256,8 @@ Tests run automatically in GitHub Actions on every PR and commit to `main`.
 
 1. **Setup**: Ubuntu runner with Node.js and Docker
 2. **Build Assets**: Build server/admin assets and public app UMD bundles
-3. **Build E2E Image**: `pnpm workspace @tryghost/e2e build:docker` (layers public apps into `/content/files`)
-4. **Prepare E2E Runtime**: Pull Playwright/gateway images in parallel, start infra, and sync Tinybird state (`pnpm workspace @tryghost/e2e preflight:build`)
+3. **Build E2E Image**: `pnpm --filter @tryghost/e2e build:docker` (layers public apps into `/content/files`)
+4. **Prepare E2E Runtime**: Pull Playwright/gateway images in parallel, start infra, and sync Tinybird state (`pnpm --filter @tryghost/e2e preflight:build`)
 5. **Test Execution**: Run Playwright E2E tests inside the official Playwright container
 6. **Artifacts**: Upload Playwright traces and reports on failure
 

@@ -52,7 +52,7 @@ pnpm dev
 This starts all frontend apps (including Portal.)
 ---
 
-To run Portal in a standalone fashion, use `pnpm start` and open [http://localhost:3000](http://localhost:3000).
+To run Portal in a standalone fashion, use `pnpm preview` and open [http://localhost:3000](http://localhost:3000).
 
 ## Build
 
