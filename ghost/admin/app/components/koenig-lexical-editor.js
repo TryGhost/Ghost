@@ -300,9 +300,20 @@ export default class KoenigLexicalEditor extends Component {
                 return [];
             };
 
+            const giftLink = () => {
+                if (this.feature.giftSubscriptions) {
+                    return [{
+                        label: 'Gift subscription',
+                        value: '#/portal/gift'
+                    }];
+                }
+
+                return [];
+            };
+
             const offersLinks = await offerUrls.call(this);
 
-            return [...defaults, ...memberLinks(), ...donationLink(), ...recommendationLink(), ...offersLinks];
+            return [...defaults, ...memberLinks(), ...donationLink(), ...recommendationLink(), ...giftLink(), ...offersLinks];
         };
 
         const fetchLabels = async () => {
