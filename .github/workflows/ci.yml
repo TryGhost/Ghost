@@ -1489,7 +1489,8 @@ jobs:
         job_tinybird-tests,
         job_build_e2e_public_apps,
         job_build_e2e_image,
-        job_e2e_tests
+        job_e2e_tests,
+        publish_packages_dry_run
       ]
     if: always()
     runs-on: ubuntu-latest
