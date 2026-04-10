@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/sodo-search",
-  "version": "1.8.9",
+  "version": "1.8.10",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -97,6 +97,8 @@
     "@testing-library/jest-dom": "5.17.0",
     "@testing-library/react": "12.1.5",
     "@vitejs/plugin-react": "4.7.0",
+    "@vitest/coverage-v8": "~1.6",
+    "cross-fetch": "4.1.0",
     "jsdom": "28.1.0",
     "nock": "13.5.6",
     "tailwindcss": "3.4.18",
