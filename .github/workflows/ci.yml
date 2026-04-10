@@ -1510,7 +1510,15 @@ jobs:
     needs: [job_setup]
     name: Publish dry-run ${{ matrix.package_name }}
     runs-on: ubuntu-latest
-    if: needs.job_setup.outputs.is_main != 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: >-
+      needs.job_setup.outputs.is_main != 'true'
+      && needs.job_setup.outputs.is_tag != 'true'
+      && (needs.job_setup.outputs.changed_activitypub == 'true'
+      || needs.job_setup.outputs.changed_portal == 'true'
+      || needs.job_setup.outputs.changed_sodo_search == 'true'
+      || needs.job_setup.outputs.changed_comments_ui == 'true'
+      || needs.job_setup.outputs.changed_signup_form == 'true'
+      || needs.job_setup.outputs.changed_announcement_bar == 'true')
     strategy:
       matrix:
         include:
