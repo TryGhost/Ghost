@@ -1,4 +1,4 @@
-FROM python:3.13-slim@sha256:32919c165487b858e003c8296c12920e8c94c243227f8546e23d4cc5aaa9e044
+FROM python:3.13-slim@sha256:eefe082c4b73082d83b8e7705ed999bc8a1dae57fe1ea723f907a0fc4b90f088
 
 # Install uv from Astral.sh
 COPY --from=ghcr.io/astral-sh/uv:0.11.6@sha256:b1e699368d24c57cda93c338a57a8c5a119009ba809305cc8e86986d4a006754 /uv /uvx /bin/
