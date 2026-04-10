@@ -24,7 +24,9 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "archive": "npm pack && tar xzf ghost-*.tgz && cp ../../pnpm-lock.yaml ../../.npmrc package/ && rm ghost-*.tgz && tar czf ghost-$(node -p \"require('./package.json').version\").tgz package && rm -rf package",
+    "archive": "pnpm pack:standalone && pnpm pack:tarball",
+    "pack:standalone": "rm -rf package ghost-*.tgz && npm pack && tar xzf ghost-*.tgz && cp ../../pnpm-lock.yaml ../../.npmrc package/ && rm ghost-*.tgz && rm -f pnpm-lock.yaml .npmrc",
+    "pack:tarball": "tar czf ghost-$(node -p \"require('./package.json').version\").tgz package && rm -rf package",
     "pack:tarball": "tar -czf ghost-$(node -p \"require('./package.json').version\").tgz package",
     "dev": "nodemon index.js",
     "build:assets": "pnpm build:assets:css && pnpm build:assets:js",
@@ -66,7 +68,7 @@
     "cli": "^1.29.1"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.1024.0",
+    "@aws-sdk/client-s3": "3.1025.0",
     "@extractus/oembed-extractor": "3.2.1",
     "@faker-js/faker": "7.6.0",
     "@isaacs/ttlcache": "1.4.1",
@@ -163,7 +165,7 @@
     "ghost-storage-base": "1.1.2",
     "glob": "8.1.0",
     "got": "13.0.0",
-    "gscan": "5.4.1",
+    "gscan": "5.4.3",
     "handlebars": "4.7.9",
     "heic-convert": "2.1.0",
     "html-to-text": "5.1.1",
