@@ -16,6 +16,11 @@ env:
   FORCE_COLOR: 1
   HEAD_COMMIT: ${{ github.sha }}
   NODE_VERSION: 22.18.0
+  CACHED_DEPENDENCY_PATHS: |
+    ${{ github.workspace }}/node_modules
+    ${{ github.workspace }}/apps/*/node_modules
+    ${{ github.workspace }}/ghost/*/node_modules
+    ${{ github.workspace }}/e2e/node_modules
   # Disable v8-compile-cache to prevent intermittent V8 deserializer crashes
   # when multiple parallel Nx workers race to read/write shared bytecode cache
   # files. The cache lives in /tmp and is discarded after each run anyway,
@@ -146,6 +151,10 @@ jobs:
             tinybird-datafiles:
               - 'ghost/core/core/server/data/tinybird/**'
               - '!ghost/core/core/server/data/tinybird/**/*.md'
+            ci:
+              - '.github/**'
+              - '.npmrc'
+              - 'pnpm-workspace.yaml'
             any-code:
               - '!**/*.md'
 
@@ -166,6 +175,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Save node_modules cache
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+          key: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}-${{ env.HEAD_COMMIT }}
 
     outputs:
       changed_admin: ${{ steps.changed.outputs.admin }}
@@ -179,6 +193,7 @@ jobs:
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
       changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_tinybird_datafiles: ${{ steps.changed.outputs.tinybird-datafiles }}
+      changed_ci: ${{ steps.changed.outputs.ci }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
@@ -229,15 +244,28 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
+      - name: Restore node_modules cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+          key: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - run: pnpm nx affected -t lint --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+      - name: Lint
+        run: |
+          if [ "${{ needs.job_setup.outputs.changed_ci }}" = "true" ]; then
+            pnpm nx run-many -t lint
+          else
+            pnpm nx affected -t lint --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+          fi
 
       - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -265,8 +293,15 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
+      - name: Restore node_modules cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+          key: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Run i18n tests
         run: pnpm nx run @tryghost/i18n:test
@@ -289,8 +324,15 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
+      - name: Restore node_modules cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+          key: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - run: pnpm nx run ghost-admin:test
         env:
@@ -332,8 +374,15 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: 'pnpm'
 
+      - name: Restore node_modules cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+          key: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -346,13 +395,22 @@ jobs:
           PROJECTS=$(pnpm --silent nx show projects --affected --withTarget=test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }} --sep=, | tr -d '\n')
           echo "projects=$PROJECTS" >> "$GITHUB_OUTPUT"
 
-      # Build only projects that will run unit tests
-      - name: Build assets for affected unit tests
-        if: steps.affected_unit_projects.outputs.projects != ''
-        run: pnpm nx run-many -t build --projects="${{ steps.affected_unit_projects.outputs.projects }}"
+      - name: Build assets for unit tests
+        if: steps.affected_unit_projects.outputs.projects != '' || needs.job_setup.outputs.changed_ci == 'true'
+        run: |
+          if [ "${{ needs.job_setup.outputs.changed_ci }}" = "true" ]; then
+            pnpm nx run-many -t build
+          else
+            pnpm nx run-many -t build --projects="${{ steps.affected_unit_projects.outputs.projects }}"
+          fi
 
       - name: Run unit tests
-        run: pnpm nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+        run: |
+          if [ "${{ needs.job_setup.outputs.changed_ci }}" = "true" ]; then
+            pnpm nx run-many -t test:unit
+          else
+            pnpm nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+          fi
         env:
           FORCE_COLOR: 0
           GHOST_UNIT_TEST_VARIANT: ci
@@ -415,8 +473,15 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: 'pnpm'
 
+      - name: Restore node_modules cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+          key: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Build TS packages
         run: pnpm nx run-many -t build --exclude=ghost-admin
@@ -505,8 +570,15 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: 'pnpm'
 
+      - name: Restore node_modules cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+          key: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Build TS packages
         run: pnpm nx run-many -t build --exclude=ghost-admin
@@ -550,8 +622,15 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
+      - name: Restore node_modules cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+          key: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
@@ -590,8 +669,15 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
+      - name: Restore node_modules cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+          key: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
@@ -630,8 +716,15 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
+      - name: Restore node_modules cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+          key: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
@@ -670,8 +763,15 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
+      - name: Restore node_modules cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+          key: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
@@ -751,8 +851,15 @@ jobs:
       - name: Install Ghost-CLI
         run: npm install -g ghost-cli@latest
 
+      - name: Restore node_modules cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+          key: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - run: node .github/scripts/bump-version.js canary
 
@@ -812,8 +919,15 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
+      - name: Restore node_modules cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+          key: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Build server and admin assets
         run: |
@@ -1071,8 +1185,15 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
+      - name: Restore node_modules cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+          key: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Build public apps for E2E
         run: pnpm --filter @tryghost/e2e build:apps
@@ -1247,8 +1368,15 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
+      - name: Restore node_modules cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+          key: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Prepare E2E CI job
         env:
@@ -1314,8 +1442,15 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
+      - name: Restore node_modules cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+          key: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Download blob reports from GitHub Actions Artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
@@ -1507,8 +1642,15 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
+      - name: Restore node_modules cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+          key: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: pnpm-node-modules-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Check if version changed
         id: version_check
