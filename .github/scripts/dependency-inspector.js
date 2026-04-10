@@ -12,7 +12,10 @@ const { execSync } = require('child_process');
  * [packageName, current, wanted, latest, dependencyType] tuples.
  *
  * pnpm's JSON output is an object keyed by package name:
- *   { "pkg": { "current": "1.0.0", "wanted": "1.0.1", "latest": "2.0.0", "dependencyType": "dependencies" } }
+ *   { "pkg": { "wanted": "1.0.1", "latest": "2.0.0", "dependencyType": "dependencies" } }
+ *
+ * pnpm's JSON output does not include a "current" field — "wanted"
+ * represents the lockfile-resolved version, so we use it as current.
  */
 function parsePnpmOutdatedOutput(stdout) {
   if (!stdout || !stdout.trim()) {
@@ -22,7 +25,7 @@ function parsePnpmOutdatedOutput(stdout) {
   const data = JSON.parse(stdout);
   return Object.entries(data).map(([name, info]) => [
     name,
-    info.current,
+    info.wanted,
     info.wanted,
     info.latest,
     info.dependencyType
@@ -632,7 +635,7 @@ With a severity flag, shows all packages with that update type.
   }
 
   /**
-   * Run yarn audit and display a vulnerability summary
+   * Run pnpm audit and display a vulnerability summary
    */
   displayAuditSummary() {
     console.log('🔒 SECURITY AUDIT:\n');
@@ -640,40 +643,36 @@ With a severity flag, shows all packages with that update type.
     try {
       let stdout = '';
       try {
-        stdout = execSync('yarn audit --json 2>/dev/null', {
+        stdout = execSync('pnpm audit --json', {
           encoding: 'utf8',
           maxBuffer: 10 * 1024 * 1024
         });
       } catch (error) {
-        // yarn audit exits with non-zero when vulnerabilities are found
+        // pnpm audit exits with non-zero when vulnerabilities are found
         stdout = error.stdout || '';
       }
 
-      // Find the auditSummary line
-      const lines = stdout.trim().split('\n');
-      for (const line of lines) {
-        try {
-          const data = JSON.parse(line);
-          if (data.type === 'auditSummary' && data.data && data.data.vulnerabilities) {
-            const v = data.data.vulnerabilities;
-            const total = v.info + v.low + v.moderate + v.high + v.critical;
-            console.log(`   Total vulnerabilities: ${total}`);
-            console.log(`   🔴 Critical: ${v.critical}`);
-            console.log(`   🟠 High:     ${v.high}`);
-            console.log(`   🟡 Moderate: ${v.moderate}`);
-            console.log(`   🟢 Low:      ${v.low}`);
-            if (v.info > 0) {
-              console.log(`   ℹ️  Info:     ${v.info}`);
-            }
-            console.log(`   Total dependencies scanned: ${data.data.totalDependencies}\n`);
-            return;
-          }
-        } catch (e) {
-          // Skip non-JSON lines
-        }
+      if (!stdout || !stdout.trim()) {
+        console.log('   ⚠️  Could not parse audit summary\n');
+        return;
       }
 
-      console.log('   ⚠️  Could not parse audit summary\n');
+      const data = JSON.parse(stdout);
+      if (data.metadata && data.metadata.vulnerabilities) {
+        const v = data.metadata.vulnerabilities;
+        const total = v.info + v.low + v.moderate + v.high + v.critical;
+        console.log(`   Total vulnerabilities: ${total}`);
+        console.log(`   🔴 Critical: ${v.critical}`);
+        console.log(`   🟠 High:     ${v.high}`);
+        console.log(`   🟡 Moderate: ${v.moderate}`);
+        console.log(`   🟢 Low:      ${v.low}`);
+        if (v.info > 0) {
+          console.log(`   ℹ️  Info:     ${v.info}`);
+        }
+        console.log(`   Total dependencies scanned: ${data.metadata.totalDependencies}\n`);
+      } else {
+        console.log('   ⚠️  Could not parse audit summary\n');
+      }
     } catch (error) {
       console.log(`   ⚠️  Audit failed: ${error.message}\n`);
     }
