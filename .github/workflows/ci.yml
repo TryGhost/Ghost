@@ -1506,6 +1506,38 @@ jobs:
         run: |
           echo "One of the dependent jobs have failed or been cancelled. You may need to re-run it." && exit 1
 
+  publish_packages_dry_run:
+    needs: [job_setup]
+    name: Publish dry-run ${{ matrix.package_name }}
+    runs-on: ubuntu-latest
+    if: needs.job_setup.outputs.is_main != 'true' && needs.job_setup.outputs.is_tag != 'true'
+    strategy:
+      matrix:
+        include:
+          - package_name: '@tryghost/activitypub'
+          - package_name: '@tryghost/portal'
+          - package_name: '@tryghost/sodo-search'
+          - package_name: '@tryghost/comments-ui'
+          - package_name: '@tryghost/signup-form'
+          - package_name: '@tryghost/announcement-bar'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - name: Set up Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Build the package
+        run: pnpm nx build ${{ matrix.package_name }}
+
   publish_packages:
     needs: [
       job_setup,
@@ -1581,7 +1613,7 @@ jobs:
 
       - name: Build the package
         if: steps.version_check.outputs.version_changed == 'true'
-        run: pnpm run nx build ${{ matrix.package_name }}
+        run: pnpm nx build ${{ matrix.package_name }}
 
       - name: Configure .npmrc
         if: steps.version_check.outputs.version_changed == 'true'
