@@ -12,11 +12,11 @@
 - Build artifacts: `es/` (compiled ESM) and `types/` (generated `.d.ts`). Storybook config lives in `.storybook/`.
 
 ## Build, Test, and Development Commands
-- `yarn build` — Type declarations + Vite library build to `es/`.
-- `yarn test` — Type-checks then runs Vitest with coverage.
-- `yarn test:unit` / `yarn test:types` — Run unit tests or TS type-checks only.
-- `yarn lint` — ESLint for source and tests (`tailwindcss` plugin enabled).
-- `yarn storybook` — Run Storybook locally. `yarn build-storybook` — static export.
+- `pnpm build` — Type declarations + Vite library build to `es/`.
+- `pnpm test` — Type-checks then runs Vitest with coverage.
+- `pnpm test:unit` / `pnpm test:types` — Run unit tests or TS type-checks only.
+- `pnpm lint` — ESLint for source and tests (`tailwindcss` plugin enabled).
+- `pnpm storybook` — Run Storybook locally. `pnpm build-storybook` — static export.
 
 ## Coding Style & Naming Conventions
 - React + TypeScript. Prefer composable components over heavy prop configuration.
@@ -36,8 +36,8 @@
 - Location & exports: place new UI components under `src/components/ui` and export them from `src/index.ts`.
 - Storybook: add a sibling `*.stories.tsx` file with an overview (what/why) and stories showing different use cases/variants (sizes, states, important props). If you've added a ShadCN component then copy the examples from the ShadCN component documentation at https://ui.shadcn.com/docs/components/[component name].
 - Implementation: forward `className` and merge with `cn(...)`; use CVA for variants where appropriate.
-- Verification: `yarn lint`, `yarn test`, plus `yarn storybook` to visually validate stories before opening a PR.
-- **Important**: Always run `yarn lint` after making changes to fix any ESLint errors and warnings before committing.
+- Verification: `pnpm lint`, `pnpm test`, plus `pnpm storybook` to visually validate stories before opening a PR.
+- **Important**: Always run `pnpm lint` after making changes to fix any ESLint errors and warnings before committing.
 
 ## Testing Guidelines (TBD)
 We are finalizing a formal testing strategy.
@@ -46,7 +46,7 @@ Interim expectations:
 - Use the existing setup (Vitest + Testing Library + jsdom) when adding tests.
 - Location/patterns: `test/unit/**/*.(test).(ts|tsx|js)`; use `test/unit/utils/test-utils.tsx`’s `render` when a wrapper is needed.
 - For new UI components, prioritize comprehensive Storybook stories; add focused unit tests where they provide real value (e.g., hooks, utils, logic-heavy parts).
-- No strict coverage threshold yet; run `yarn test` locally to ensure the suite passes.
+- No strict coverage threshold yet; run `pnpm test` locally to ensure the suite passes.
 
 ## Commit & Pull Request Guidelines
 - Commit messages are the release notes. Follow this structure:
@@ -75,4 +75,4 @@ Refer to “Adding New Components” for the process. Story content should:
 - Never overwrite existing Shade components during `npx shadcn@latest add <name>` prompts. Choose “No” when asked to overwrite.
 - Always work on a fresh branch and commit a clean baseline before running the installer so you can easily revert: `git checkout -b chore/shadcn-add-<name>`.
 - If a component already exists in `src/components/ui`, generate the new version in a temporary workspace (scratch repo), then manually diff and port only the desired changes into the existing Shade file.
-- After integrating, run `yarn lint`, `yarn test`, and verify in Storybook before merging.
+- After integrating, run `pnpm lint`, `pnpm test`, and verify in Storybook before merging.

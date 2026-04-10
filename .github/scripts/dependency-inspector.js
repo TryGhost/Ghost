@@ -8,8 +8,30 @@ const jsonc = require('jsonc-parser');
 const { execSync } = require('child_process');
 
 /**
+ * Parse pnpm outdated --json output into an array of
+ * [packageName, current, wanted, latest, dependencyType] tuples.
+ *
+ * pnpm's JSON output is an object keyed by package name:
+ *   { "pkg": { "current": "1.0.0", "wanted": "1.0.1", "latest": "2.0.0", "dependencyType": "dependencies" } }
+ */
+function parsePnpmOutdatedOutput(stdout) {
+  if (!stdout || !stdout.trim()) {
+    return [];
+  }
+
+  const data = JSON.parse(stdout);
+  return Object.entries(data).map(([name, info]) => [
+    name,
+    info.current,
+    info.wanted,
+    info.latest,
+    info.dependencyType
+  ]);
+}
+
+/**
  * Smart lockfile drift detector that focuses on actionable updates
- * and avoids API rate limits by using yarn's built-in commands where possible
+ * and avoids API rate limits by using pnpm's built-in commands where possible
  */
 
 class LockfileDriftDetector {
@@ -94,7 +116,30 @@ With a severity flag, shows all packages with that update type.
     // Read from project root (two levels up from .github/scripts/)
     const rootDir = path.join(__dirname, '../..');
     const rootPackage = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
-    const workspacePatterns = rootPackage.workspaces || [];
+
+    // Read workspace patterns from pnpm-workspace.yaml (primary) or package.json (fallback)
+    let workspacePatterns = [];
+    const pnpmWorkspacePath = path.join(rootDir, 'pnpm-workspace.yaml');
+    if (fs.existsSync(pnpmWorkspacePath)) {
+      const content = fs.readFileSync(pnpmWorkspacePath, 'utf8');
+      let inPackages = false;
+      for (const line of content.split('\n')) {
+        if (/^packages:/.test(line)) {
+          inPackages = true;
+          continue;
+        }
+        if (inPackages) {
+          const match = line.match(/^\s+-\s+['"]?([^'"]+)['"]?\s*$/);
+          if (match) {
+            workspacePatterns.push(match[1]);
+          } else if (/^\S/.test(line)) {
+            break;
+          }
+        }
+      }
+    } else {
+      workspacePatterns = rootPackage.workspaces || [];
+    }
 
     console.log('📦 Scanning workspaces...');
 
@@ -189,58 +234,29 @@ With a severity flag, shows all packages with that update type.
   }
 
   /**
-   * Use yarn outdated to get comprehensive outdated info
+   * Use pnpm outdated to get comprehensive outdated info
    * This is much faster and more reliable than manual API calls
    */
   async getOutdatedPackages() {
-    console.log('🔄 Running yarn outdated (this may take a moment)...');
+    console.log('🔄 Running pnpm outdated (this may take a moment)...');
 
+    let stdout;
     try {
-      // yarn outdated returns non-zero exit code when packages are outdated
-      // so we need to handle that
-      const result = execSync('yarn outdated --json', {
+      stdout = execSync('pnpm outdated --json', {
         encoding: 'utf8',
         maxBuffer: 10 * 1024 * 1024 // 10MB buffer for large output
       });
-
-      const lines = result.trim().split('\n');
-      const outdatedData = [];
-
-      for (const line of lines) {
-        try {
-          const data = JSON.parse(line);
-          if (data.type === 'table' && data.data && data.data.body) {
-            outdatedData.push(...data.data.body);
-          }
-        } catch (e) {
-          // Skip non-JSON lines
-        }
-      }
-
-      return outdatedData;
     } catch (error) {
-      // yarn outdated exits with code 1 when there are outdated packages
+      // pnpm outdated exits with code 1 when there are outdated packages
       if (error.status === 1 && error.stdout) {
-        const lines = error.stdout.trim().split('\n');
-        const outdatedData = [];
-
-        for (const line of lines) {
-          try {
-            const data = JSON.parse(line);
-            if (data.type === 'table' && data.data && data.data.body) {
-              outdatedData.push(...data.data.body);
-            }
-          } catch (e) {
-            // Skip non-JSON lines
-          }
-        }
-
-        return outdatedData;
+        stdout = error.stdout;
       } else {
-        console.error('Failed to run yarn outdated:', error.message);
+        console.error('Failed to run pnpm outdated:', error.message);
         return [];
       }
     }
+
+    return parsePnpmOutdatedOutput(stdout);
   }
 
   /**
@@ -441,7 +457,7 @@ With a severity flag, shows all packages with that update type.
       console.log('\n🚀 UPDATE COMMANDS:');
       console.log('─'.repeat(80));
       for (const pkg of filteredDirect) {
-        console.log(`   yarn upgrade ${pkg.name}@latest`);
+        console.log(`   pnpm update ${pkg.name}@latest`);
       }
     }
 
@@ -581,7 +597,7 @@ With a severity flag, shows all packages with that update type.
       console.log('🚀 SUGGESTED COMMANDS (highest impact first):');
       for (const pkg of topUpdates) {
         const impactNote = pkg.workspaceCount > 1 ? ` (affects ${pkg.workspaceCount} workspaces)` : '';
-        console.log(`   yarn upgrade ${pkg.name}@latest${impactNote}`);
+        console.log(`   pnpm update ${pkg.name}@latest${impactNote}`);
       }
       console.log('');
     }

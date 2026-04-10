@@ -59,8 +59,8 @@ typings/
 # Output of 'npm pack'
 *.tgz
 
-# Yarn Integrity file
-.yarn-integrity
+# pnpm store
+.pnpm-store
 
 # dotenv environment variables file
 .env
@@ -108,7 +108,7 @@ typings/
 /ghost/core/LICENSE
 /ghost/core/PRIVACY.md
 /ghost/core/README.md
-/ghost/core/yarn.lock
+/ghost/core/pnpm-lock.yaml
 
 # Test generated files
 test/functional/*.png
@@ -181,10 +181,8 @@ tsconfig.tsbuildinfo
 .diff_tmp
 temp*.sql
 
-# Docker Yarn Cache
-.yarncache
-.yarncachecopy
-.yarnhash
+# Docker pnpm Cache
+.pnpmhash
 
 # yalc — for linking local packages in a docker compatible way
 yalc.lock

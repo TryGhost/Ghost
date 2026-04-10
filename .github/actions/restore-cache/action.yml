@@ -38,6 +38,13 @@ runs:
         echo "::warning::Dependency cache could not be restored after retry - installing dependencies from scratch"
         bash .github/scripts/install-deps.sh
 
+    - name: Re-link dependencies after cache restore
+      if: steps.dep-cache.outputs.cache-hit == 'true' || steps.dep-cache-retry-attempt.outputs.cache-hit == 'true'
+      shell: bash
+      run: |
+        echo "::notice::Re-linking pnpm dependencies after cache restore"
+        bash .github/scripts/install-deps.sh --force
+
     - name: Set cache miss output
       id: check-cache
       shell: bash
