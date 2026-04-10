@@ -1512,8 +1512,7 @@ jobs:
     name: Publish dry-run ${{ matrix.package_name }}
     runs-on: ubuntu-latest
     if: >-
-      needs.job_setup.outputs.is_main != 'true'
-      && needs.job_setup.outputs.is_tag != 'true'
+      github.event_name == 'pull_request'
       && (needs.job_setup.outputs.changed_activitypub == 'true'
       || needs.job_setup.outputs.changed_portal == 'true'
       || needs.job_setup.outputs.changed_sodo_search == 'true'
