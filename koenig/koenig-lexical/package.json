@@ -109,7 +109,7 @@
     "jsdom": "29.0.2",
     "lexical": "0.13.1",
     "pluralize": "8.0.0",
-    "postcss": "8.5.8",
+    "postcss": "8.5.9",
     "postcss-import": "16.1.1",
     "prettier": "3.8.1",
     "prettier-plugin-organize-attributes": "1.0.0",
