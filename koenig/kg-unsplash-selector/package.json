@@ -51,7 +51,7 @@
     "postcss-import": "16.1.1",
     "tailwindcss": "3.4.19",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.58.0",
+    "typescript-eslint": "8.58.1",
     "vite": "8.0.5",
     "vite-plugin-css-injected-by-js": "4.0.1",
     "vite-plugin-dts": "4.5.4",
