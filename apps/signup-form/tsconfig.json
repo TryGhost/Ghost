@@ -4,7 +4,6 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "module": "ESNext",
     "skipLibCheck": true,
-    "types": [],
 
     /* Bundler mode */
     "moduleResolution": "bundler",

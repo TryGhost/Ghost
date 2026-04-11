@@ -127,7 +127,7 @@ export function renderHookWithProviders<TResult, TProps>(
 /**
  * Utility to wait for API calls to complete
  */
-export async function waitForApiCall(mockFn: jest.MockedFunction<(...args: unknown[]) => unknown>, timeout = 1000) {
+export async function waitForApiCall(mockFn: import('vitest').Mock, timeout = 1000) {
     const {waitFor} = await import('@testing-library/react');
     return waitFor(() => expect(mockFn).toHaveBeenCalled(), {timeout});
 }
@@ -135,7 +135,7 @@ export async function waitForApiCall(mockFn: jest.MockedFunction<(...args: unkno
 /**
  * Utility to wait for multiple API calls
  */
-export async function waitForApiCalls(mockFn: jest.MockedFunction<(...args: unknown[]) => unknown>, count: number, timeout = 1000) {
+export async function waitForApiCalls(mockFn: import('vitest').Mock, count: number, timeout = 1000) {
     const {waitFor} = await import('@testing-library/react');
     return waitFor(() => expect(mockFn).toHaveBeenCalledTimes(count), {timeout});
 }
