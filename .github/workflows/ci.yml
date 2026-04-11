@@ -94,6 +94,10 @@ jobs:
               - 'package.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
+            ci:
+              - '.github/workflows/**'
+              - '.github/actions/**'
+              - '.github/scripts/**'
             core:
               - *shared
               - 'ghost/**'
@@ -148,15 +152,26 @@ jobs:
         if: env.IS_TAG != 'true'
         id: affected
         run: |
-          AFFECTED_PROJECTS=$(pnpm -s nx show projects --affected --json | tr -d '\n')
-          echo "affected_projects=$AFFECTED_PROJECTS" >> "$GITHUB_OUTPUT"
+          # if the ci files have changed or we're in a tag, ensure we don't just look at affected
+          # projects and we run the necessary jobs on all projects
+          AFFECTED_ARG="--affected"
+          if [[ "${{ steps.changed.outputs.ci }}" == 'true' || "${{ env.IS_TAG }}" == 'true' ]]; then
+            AFFECTED_ARG=""
+          fi
 
-          I18N_PROJECTS=$(pnpm -s nx show projects --affected --projects 'tag:i18n' --sep=, | tr -d '\n')
+          AFFECTED_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --json | tr -d '\n')
+          echo "affected_projects=$AFFECTED_PROJECTS" >> "$GITHUB_OUTPUT"
+          # output string list for use in run-many commands
+          echo "affected_projects_str=$(echo $AFFECTED_PROJECTS | jq -r 'join(",")')" >> "$GITHUB_OUTPUT"
+
+          I18N_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --projects 'tag:i18n' --sep=, | tr -d '\n')
           echo "affected_i18n_projects=${I18N_PROJECTS}" >> "$GITHUB_OUTPUT"
 
     outputs:
       affected_projects: ${{ steps.affected.outputs.affected_projects }}
+      affected_projects_str: ${{ steps.affected.outputs.affected_projects_str }}
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
+      changed_ci: ${{ steps.changed.outputs.ci }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_admin_x_settings: ${{ steps.changed.outputs.admin-x-settings }}
       changed_activitypub: ${{ steps.changed.outputs.activitypub }}
@@ -199,7 +214,7 @@ jobs:
   job_lint:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_any_code == 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     name: Lint
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -221,13 +236,8 @@ jobs:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - name: Lint all (tags)
-        if: needs.job_setup.outputs.is_tag == 'true'
-        run: pnpm nx run-many -t lint
-
-      - name: Lint affected (branches)
-        if: needs.job_setup.outputs.is_tag != 'true'
-        run: pnpm nx affected -t lint
+      - name: Lint projects
+        run: pnpm nx run-many -t lint -p "${{ needs.job_setup.outputs.affected_projects_str }}"
         env:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
@@ -307,7 +317,7 @@ jobs:
   job_unit-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_any_code == 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     strategy:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
@@ -336,25 +346,13 @@ jobs:
         with:
           timezoneLinux: "America/New_York"
 
-      - name: Run unit tests (tags — all)
-        if: needs.job_setup.outputs.is_tag == 'true'
-        run: pnpm nx run-many -t test:unit
+      - name: Run unit tests
+        run: pnpm nx run-many -t test:unit -p "${{ needs.job_setup.outputs.affected_projects_str }}"
         env:
           FORCE_COLOR: 0
           GHOST_UNIT_TEST_VARIANT: ci
           NX_SKIP_LOG_GROUPING: true
           logging__level: fatal
-
-      - name: Run unit tests (branches — affected)
-        if: needs.job_setup.outputs.is_tag != 'true'
-        run: pnpm nx affected -t test:unit
-        env:
-          FORCE_COLOR: 0
-          GHOST_UNIT_TEST_VARIANT: ci
-          NX_SKIP_LOG_GROUPING: true
-          logging__level: fatal
-          NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
-          NX_HEAD: ${{ env.HEAD_COMMIT }}
 
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: matrix.node == env.NODE_VERSION
