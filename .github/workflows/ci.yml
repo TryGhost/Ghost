@@ -81,16 +81,6 @@ jobs:
             echo "is_member=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Determine added packages
-        if: env.IS_TAG != 'true'
-        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
-        id: added
-        with:
-          base: ${{ env.NX_BASE }}
-          filters: |
-            new-package:
-              - added: 'ghost/**/package.json'
-
       - name: Determine changed packages
         if: env.IS_TAG != 'true'
         uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
@@ -109,9 +99,6 @@ jobs:
               - 'ghost/**'
               - '!ghost/admin/**'
               - '!ghost/core/core/server/data/tinybird/**'
-            admin:
-              - *shared
-              - 'ghost/admin/**'
             admin-x-settings:
               - *shared
               - 'apps/admin-x-settings/**'
@@ -123,21 +110,12 @@ jobs:
               - 'apps/shade/**'
               - 'apps/admin-x-framework/**'
               - 'apps/activitypub/**'
-            announcement-bar:
-              - *shared
-              - 'apps/announcement-bar/**'
             comments-ui:
               - *shared
               - 'apps/comments-ui/**'
-            portal:
-              - *shared
-              - 'apps/portal/**'
             signup-form:
               - *shared
               - 'apps/signup-form/**'
-            sodo-search:
-              - *shared
-              - 'apps/sodo-search/**'
             tinybird:
               - '.github/workflows/ci.yml'
               - 'compose.dev.analytics.yaml'
@@ -173,21 +151,20 @@ jobs:
           AFFECTED_PROJECTS=$(pnpm -s nx show projects --affected --json | tr -d '\n')
           echo "affected_projects=$AFFECTED_PROJECTS" >> "$GITHUB_OUTPUT"
 
+          I18N_PROJECTS=$(pnpm -s nx show projects --affected --projects 'tag:i18n' --sep=, | tr -d '\n')
+          echo "affected_i18n_projects=${I18N_PROJECTS}" >> "$GITHUB_OUTPUT"
+
     outputs:
       affected_projects: ${{ steps.affected.outputs.affected_projects }}
-      changed_admin: ${{ steps.changed.outputs.admin }}
+      changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_admin_x_settings: ${{ steps.changed.outputs.admin-x-settings }}
       changed_activitypub: ${{ steps.changed.outputs.activitypub }}
-      changed_announcement_bar: ${{ steps.changed.outputs.announcement-bar }}
       changed_comments_ui: ${{ steps.changed.outputs.comments-ui }}
-      changed_portal: ${{ steps.changed.outputs.portal }}
       changed_signup_form: ${{ steps.changed.outputs.signup-form }}
-      changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
       changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_tinybird_datafiles: ${{ steps.changed.outputs.tinybird-datafiles }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
-      changed_new_package: ${{ steps.added.outputs.new-package }}
       is_main: ${{ env.IS_MAIN }}
       is_tag: ${{ env.IS_TAG }}
       is_development: ${{ env.IS_DEVELOPMENT }}
@@ -268,11 +245,8 @@ jobs:
     name: i18n
     if: |
         needs.job_setup.outputs.is_tag == 'true'
-        || needs.job_setup.outputs.changed_comments_ui == 'true'
-        || needs.job_setup.outputs.changed_signup_form == 'true'
-        || needs.job_setup.outputs.changed_sodo_search == 'true'
-        || needs.job_setup.outputs.changed_portal == 'true'
-        || needs.job_setup.outputs.changed_core == 'true'
+        || needs.job_setup.outputs.changed_i18n_apps == 'true'
+        || contains(fromJSON(needs.job_setup.outputs.affected_projects), '@tryghost/i18n')
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
@@ -290,7 +264,9 @@ jobs:
   job_admin-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_admin == 'true'
+    if: |
+      needs.job_setup.outputs.is_tag == 'true'
+      || contains(fromJSON(needs.job_setup.outputs.affected_projects), 'ghost-admin')
     name: Admin tests - Chrome
     env:
       MOZ_HEADLESS: 1
