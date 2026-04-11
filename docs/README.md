@@ -30,6 +30,7 @@ git remote add origin git@github.com:<YourUsername>/Ghost.git
 
 ```bash
 # Install dependencies and initialize submodules
+corepack enable pnpm
 pnpm run setup
 ```
 
