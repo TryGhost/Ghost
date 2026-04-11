@@ -1,5 +1,5 @@
 import { resolve } from "path";
-import { createRequire } from "module";
+import { createRequire } from "node:module";
 import { defineConfig } from "vitest/config";
 import type { PluginOption } from "vite";
 const require = createRequire(import.meta.url);

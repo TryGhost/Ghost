@@ -452,9 +452,6 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Build TS packages
-        run: pnpm nx run-many -t build --exclude=ghost-admin
-
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
         with:
@@ -472,12 +469,10 @@ jobs:
           echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: E2E tests
-        working-directory: ghost/core
-        run: pnpm test:ci:e2e
+        run: pnpm nx run ghost:test:ci:e2e
 
       - name: Integration tests
-        working-directory: ghost/core
-        run: pnpm test:ci:integration
+        run: pnpm nx run ghost:test:ci:integration
 
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
@@ -543,9 +538,6 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Build TS packages
-        run: pnpm nx run-many -t build --exclude=ghost-admin
-
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
         run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
@@ -558,8 +550,7 @@ jobs:
           echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: Legacy tests
-        working-directory: ghost/core
-        run: pnpm test:ci:legacy
+        run: pnpm nx run ghost:test:ci:legacy
 
       - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -754,7 +745,7 @@ jobs:
       - name: Test project
         run: tb test run
       - name: Trigger and watch traffic analytics infra Tinybird workflow
-        if: github.repository == 'TryGhost/Ghost'
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         env:
           GH_TOKEN: ${{ secrets.TRAFFIC_ANALYTICS_GITHUB_TOKEN }}
         uses: ./.github/actions/dispatch-workflow
@@ -1489,7 +1480,8 @@ jobs:
         job_tinybird-tests,
         job_build_e2e_public_apps,
         job_build_e2e_image,
-        job_e2e_tests
+        job_e2e_tests,
+        publish_packages
       ]
     if: always()
     runs-on: ubuntu-latest
@@ -1514,7 +1506,7 @@ jobs:
     ]
     name: Publish ${{ matrix.package_name }}
     runs-on: ubuntu-latest
-    if: always() && github.repository == 'TryGhost/Ghost' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    if: always() && github.repository == 'TryGhost/Ghost' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success'
     permissions:
       id-token: write
     strategy:
@@ -1556,6 +1548,7 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Check if version changed
+        if: needs.job_setup.outputs.is_main == 'true'
         id: version_check
         working-directory: ${{ matrix.package_path }}
         run: |
@@ -1580,28 +1573,28 @@ jobs:
           fi
 
       - name: Build the package
-        if: steps.version_check.outputs.version_changed == 'true'
-        run: pnpm run nx build ${{ matrix.package_name }}
+        if: steps.version_check.outputs.version_changed == 'true' || github.event_name == 'pull_request'
+        run: pnpm nx build ${{ matrix.package_name }}
 
       - name: Configure .npmrc
-        if: steps.version_check.outputs.version_changed == 'true'
+        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true'
         run: |
           echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
 
       # TODO: Check we can remove this once we update Node to v24
       - name: Install v11 of NPM # We need this to install packages via OIDC.
-        if: steps.version_check.outputs.version_changed == 'true'
+        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true'
         run: npm install -g npm@11
 
       - name: Publish to npm
-        if: steps.version_check.outputs.version_changed == 'true'
+        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true'
         working-directory: ${{ matrix.package_path }}
         run: |
           npm publish --access public
 
       - name: Replace version placeholders in cdn-paths
         id: cdn_paths
-        if: steps.version_check.outputs.version_changed == 'true'
+        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true'
         run: |
           cdn_paths="${{ matrix.cdn_paths }}"
           echo "cdn_paths<<EOF" >> $GITHUB_OUTPUT
@@ -1609,17 +1602,17 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Print cdn_paths
-        if: steps.version_check.outputs.version_changed == 'true'
+        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true'
         run: echo "${{ steps.cdn_paths.outputs.cdn_paths }}"
 
       - name: Wait before purging jsDelivr cache
-        if: steps.version_check.outputs.version_changed == 'true' && matrix.package_name == '@tryghost/activitypub'
+        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true' && matrix.package_name == '@tryghost/activitypub'
         run: |
           echo "Purging jsDelivr cache immediately after publishing a new version on NPM is unreliable. Waiting 1 minute before purging cache..."
           sleep 60
 
       - name: Purge jsDelivr cache
-        if: steps.version_check.outputs.version_changed == 'true'
+        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true'
         uses: gacts/purge-jsdelivr-cache@8d92aea944f1a3e8ad70505379e1a8ac72d56b73 # v1
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}

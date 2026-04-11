@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.68.5",
+  "version": "2.68.6",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -131,5 +131,8 @@
     "vite-plugin-css-injected-by-js": "3.5.2",
     "vite-plugin-svgr": "3.3.0",
     "vitest": "3.2.4"
+  },
+  "dependencies": {
+    "@tryghost/debug": "0.1.40"
   }
 }

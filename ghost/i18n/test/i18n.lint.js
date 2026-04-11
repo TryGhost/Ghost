@@ -375,8 +375,6 @@ function parseTranslationString(string) {
 }
 
 async function *getTranslationFiles() {
-    // TODO: use fs.glob when Node 22 is used in CI. Once it's available this function
-    // can be converted to an async function instead of async generator.
     const globs = await glob(`${LOCALES_ROOT}/*/*.json`);
     for (const translationFile of globs) {
         yield translationFile;

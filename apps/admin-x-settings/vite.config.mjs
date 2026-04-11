@@ -1,7 +1,7 @@
 import adminXViteConfig from '@tryghost/admin-x-framework/vite';
 import pkg from './package.json';
 import {resolve} from 'path';
-import {createRequire} from 'module';
+import {createRequire} from 'node:module';
 const require = createRequire(import.meta.url);
 
 // https://vitejs.dev/config/
