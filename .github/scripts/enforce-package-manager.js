@@ -16,7 +16,7 @@ Use one of these instead:
   pnpm install
 
 Common command replacements:
-  yarn setup   -> pnpm setup
+  yarn setup   -> pnpm run setup
   yarn dev     -> pnpm dev
   yarn test    -> pnpm test
   yarn lint    -> pnpm lint

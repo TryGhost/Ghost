@@ -4,5 +4,5 @@ name = "Ghost"
 
 [setup]
 script = '''
-pnpm setup
+pnpm run setup
 '''
