@@ -43,7 +43,7 @@ Two categories of apps:
 ### Development
 ```bash
 pnpm                           # Install dependencies
-pnpm setup                     # First-time setup (installs deps + submodules)
+pnpm run setup                 # First-time setup (installs deps + submodules)
 pnpm dev                       # Start development (Docker backend + host frontend dev servers)
 ```
 
