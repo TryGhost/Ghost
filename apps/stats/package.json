@@ -10,7 +10,8 @@
     "files": [
         "LICENSE",
         "README.md",
-        "dist/"
+        "dist/",
+        "src/"
     ],
     "main": "./dist/stats.umd.cjs",
     "module": "./dist/stats.js",

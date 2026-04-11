@@ -70,3 +70,4 @@ content/themes/casper/config.*.json
 content/themes/source/config.*.json
 config.*.json
 !core/shared/config/env/**
+.deploy/

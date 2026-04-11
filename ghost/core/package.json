@@ -24,9 +24,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "archive": "pnpm pack:standalone && pnpm pack:tarball",
-    "pack:standalone": "rm -rf package; find . -maxdepth 1 -name 'ghost-*.tgz' -delete; npm pack && tar xzf ghost-*.tgz && cp ../../pnpm-lock.yaml package/ && cp ../../.npmrc package/.npmrc && echo '\nfrozen-lockfile=false\nshamefully-hoist=true' >> package/.npmrc && rm ghost-*.tgz && rm -f pnpm-lock.yaml pnpm-workspace.yaml .npmrc",
-    "pack:tarball": "tar czf ghost-$(node -p \"require('./package.json').version\").tgz package",
+    "archive": "node scripts/pack.js",
     "dev": "nodemon index.js",
     "build:assets": "pnpm build:assets:css && pnpm build:assets:js",
     "build:assets:js": "node bin/minify-assets.js",
@@ -59,9 +57,7 @@
     "lint:test": "eslint -c test/.eslintrc.js --ignore-path test/.eslintignore 'test/**/*.js' --cache",
     "lint:code": "pnpm lint:server && pnpm lint:shared && pnpm lint:frontend",
     "lint:types": "eslint --ignore-path .eslintignore '**/*.ts' --cache && tsc --noEmit",
-    "lint": "pnpm lint:server && pnpm lint:shared && pnpm lint:frontend && pnpm lint:test && pnpm lint:types",
-    "prepack": "node monobundle.js",
-    "postpack": "cd ../.. && git checkout -- ghost/core/package.json ghost/i18n/package.json ghost/parse-email-address/package.json && rm -f ghost/core/pnpm-lock.yaml ghost/core/pnpm-workspace.yaml ghost/core/.npmrc && rm -rf ghost/core/components"
+    "lint": "pnpm lint:server && pnpm lint:shared && pnpm lint:frontend && pnpm lint:test && pnpm lint:types"
   },
   "engines": {
     "node": "^22.13.1",

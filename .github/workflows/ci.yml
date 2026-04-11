@@ -811,7 +811,7 @@ jobs:
 
       - run: node .github/scripts/bump-version.js canary
 
-      - run: pnpm archive
+      - run: pnpm --filter ghost archive
 
       - run: mv ghost-*.tgz ghost.tgz
         working-directory: ghost/core
@@ -891,12 +891,8 @@ jobs:
             exit 1
           fi
 
-      - name: Pack standalone distribution
-        run: pnpm --filter ghost pack:standalone
-
-      - name: Create npm tarball
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: pnpm --filter ghost pack:tarball
+      - name: Build standalone distribution
+        run: pnpm --filter ghost archive
 
       - name: Upload npm tarball
         if: startsWith(github.ref, 'refs/tags/v')
@@ -908,7 +904,7 @@ jobs:
           if-no-files-found: error
 
       - name: Prepare Docker build context
-        run: mv ghost/core/package/ /tmp/ghost-production/
+        run: mv ghost/core/.deploy /tmp/ghost-production
 
       - name: Determine push strategy
         id: strategy
