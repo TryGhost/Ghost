@@ -1,7 +1,15 @@
 {
     "$schema": "./node_modules/nx/schemas/nx-schema.json",
     "namedInputs": {
-        "default": ["{projectRoot}/**/*", "{workspaceRoot}/ghost/tsconfig.json"]
+        "default": [
+            "{projectRoot}/**/*",
+            "{workspaceRoot}/package.json",
+            "{workspaceRoot}/ghost/tsconfig.json",
+            "{workspaceRoot}/.github/workflows/**/*",
+            "{workspaceRoot}/.github/actions/**/*",
+            "{workspaceRoot}/.github/scripts/**/*",
+            "{workspaceRoot}/.npmrc"
+        ]
     },
     "parallel": 4,
     "targetDefaults": {
