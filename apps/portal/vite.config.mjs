@@ -55,6 +55,9 @@ export default defineConfig((config) => {
                 ]
             }
         },
+        resolve: {
+            dedupe: ['@tryghost/debug']
+        },
         build: {
             outDir: resolve(__dirname, 'umd'),
             emptyOutDir: true,

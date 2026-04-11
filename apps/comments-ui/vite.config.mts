@@ -62,7 +62,7 @@ export default (function viteConfig() {
             // comments-ui uses React 17 while the monorepo hoists React 18;
             // dedupe + alias ensures all deps (including @tiptap/react) use
             // the same React 17 instance from comments-ui's node_modules
-            dedupe: ['react', 'react-dom'],
+            dedupe: ['react', 'react-dom', '@tryghost/debug'],
             alias: {
                 'react': resolve(__dirname, 'node_modules/react'),
                 'react-dom': resolve(__dirname, 'node_modules/react-dom')
