@@ -45,14 +45,16 @@ jobs:
       IS_SIX: ${{ github.ref == 'refs/heads/6.x' }}
       IS_SIX_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == '6.x' }}
     permissions:
+      actions: read
       contents: read
-      pull-requests: read
     steps:
       - name: Checkout current commit
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ env.HEAD_COMMIT }}
-          fetch-depth: 2
+          fetch-depth: 0
+          # fetch a treeless clone to improve checkout speed, the job will fetch contents later if needed
+          filter: 'tree:0'
 
       - name: Output GitHub context
         if: env.RUNNER_DEBUG == '1'
@@ -60,19 +62,11 @@ jobs:
           echo "GITHUB_EVENT_NAME: ${{ github.event_name }}"
           echo "GITHUB_CONTEXT: ${{ toJson(github.event) }}"
 
-      - name: Get metadata (push)
-        if: github.event_name == 'push'
-        run: |
-          NUMBER_OF_COMMITS=$(printf "%s\n" '${{ toJson(github.event.commits.*.id) }}' | jq length)
-          echo "There are $NUMBER_OF_COMMITS commits in this push."
-          echo "BASE_COMMIT=$(git rev-parse HEAD~$NUMBER_OF_COMMITS)" >> $GITHUB_ENV
-
-      - name: Get metadata (pull_request)
-        if: github.event_name == 'pull_request'
-        run: |
-          BASE_COMMIT=$(curl --location --request GET 'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}' --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq -r .base.sha)
-          echo "Setting BASE_COMMIT to $BASE_COMMIT"
-          echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
+      - name: Set SHAs for Nx Commands
+        uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
+        with:
+          main-branch-name: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
+          error-on-no-successful-workflow: ${{ env.IS_MAIN == 'true' }}
 
       - name: Check user org membership
         id: check_user_org_membership
@@ -95,6 +89,7 @@ jobs:
         uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         id: added
         with:
+          base: ${{ env.NX_BASE }}
           filters: |
             new-package:
               - added: 'ghost/**/package.json'
@@ -103,6 +98,7 @@ jobs:
         uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
         id: changed
         with:
+          base: ${{ env.NX_BASE }}
           filters: |
             shared: &shared
               - '.github/**'
@@ -194,8 +190,14 @@ jobs:
       - name: Install dependencies
         run: bash .github/scripts/install-deps.sh
 
+      - name: Determine Affected Projects
+        id: affected
+        run: |
+          AFFECTED_PROJECTS=$(pnpm -s nx show projects --affected --json | tr -d '\n')
+          echo "affected_projects=$AFFECTED_PROJECTS" >> "$GITHUB_OUTPUT"
 
     outputs:
+      affected_projects: ${{ steps.affected.outputs.affected_projects }}
       changed_admin: ${{ steps.changed.outputs.admin }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_admin_x_settings: ${{ steps.changed.outputs.admin-x-settings }}
@@ -209,7 +211,6 @@ jobs:
       changed_tinybird_datafiles: ${{ steps.changed.outputs.tinybird-datafiles }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
-      base_commit: ${{ env.BASE_COMMIT }}
       is_main: ${{ env.IS_MAIN }}
       is_tag: ${{ env.IS_TAG }}
       is_development: ${{ env.IS_DEVELOPMENT }}
@@ -219,6 +220,7 @@ jobs:
       dependency_cache_key: ${{ env.cachekey }}
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
+      nx_base: ${{ env.NX_BASE }}
 
   job_app_version_bump_check:
     name: Check app version bump
@@ -267,7 +269,10 @@ jobs:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - run: pnpm nx affected -t lint --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+      - run: pnpm nx affected -t lint
+        env:
+          NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
+          NX_HEAD: ${{ env.HEAD_COMMIT }}
 
       - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -373,24 +378,15 @@ jobs:
         with:
           timezoneLinux: "America/New_York"
 
-      - name: Determine affected unit-test projects
-        id: affected_unit_projects
-        run: |
-          PROJECTS=$(pnpm --silent nx show projects --affected --withTarget=test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }} --sep=, | tr -d '\n')
-          echo "projects=$PROJECTS" >> "$GITHUB_OUTPUT"
-
-      # Build only projects that will run unit tests
-      - name: Build assets for affected unit tests
-        if: steps.affected_unit_projects.outputs.projects != ''
-        run: pnpm nx run-many -t build --projects="${{ steps.affected_unit_projects.outputs.projects }}"
-
       - name: Run unit tests
-        run: pnpm nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+        run: pnpm nx affected -t test:unit
         env:
           FORCE_COLOR: 0
           GHOST_UNIT_TEST_VARIANT: ci
           NX_SKIP_LOG_GROUPING: true
           logging__level: fatal
+          NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
+          NX_HEAD: ${{ env.HEAD_COMMIT }}
 
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: matrix.node == env.NODE_VERSION
