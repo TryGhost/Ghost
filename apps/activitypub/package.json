@@ -14,6 +14,13 @@
   ],
   "main": "./dist/activitypub.umd.cjs",
   "module": "./dist/activitypub.js",
+  "exports": {
+    ".": {
+      "import": "./dist/activitypub.js",
+      "require": "./dist/activitypub.umd.cjs"
+    },
+    "./api": "./src/index.tsx"
+  },
   "private": false,
   "scripts": {
     "dev": "vite build --watch",
