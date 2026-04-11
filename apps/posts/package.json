@@ -14,6 +14,14 @@
     ],
     "main": "./dist/posts.umd.cjs",
     "module": "./dist/posts.js",
+    "exports": {
+        ".": {
+            "import": "./dist/posts.js",
+            "require": "./dist/posts.umd.cjs"
+        },
+        "./api": "./src/api.ts",
+        "./members": "./src/views/members/members.tsx"
+    },
     "private": true,
     "scripts": {
         "dev": "vite build --watch",
