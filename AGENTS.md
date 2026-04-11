@@ -42,7 +42,7 @@ Two categories of apps:
 
 ### Development
 ```bash
-pnpm                           # Install dependencies
+corepack enable pnpm           # Enable corepack to use the correct pnpm version
 pnpm run setup                 # First-time setup (installs deps + submodules)
 pnpm dev                       # Start development (Docker backend + host frontend dev servers)
 ```

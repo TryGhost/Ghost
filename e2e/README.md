@@ -6,7 +6,7 @@ This test suite runs automated browser tests against a running Ghost instance to
 
 ### Prerequisites
 - Docker and Docker Compose installed
-- Node.js and pnpm installed
+- Node.js installed (pnpm is managed via corepack — run `corepack enable pnpm` first)
 
 ### Running Tests
 To run the test, within this `e2e` folder run:
