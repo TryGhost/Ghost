@@ -613,8 +613,8 @@ importers:
         specifier: 2.1.1
         version: 2.1.1
       lucide-react:
-        specifier: 0.553.0
-        version: 0.553.0(react@18.3.1)
+        specifier: 0.577.0
+        version: 0.577.0(react@18.3.1)
       mingo:
         specifier: 2.5.3
         version: 2.5.3
@@ -1119,8 +1119,8 @@ importers:
         specifier: ^5.0.3
         version: 5.0.3
       lucide-react:
-        specifier: 0.553.0
-        version: 0.553.0(react@18.3.1)
+        specifier: 0.577.0
+        version: 0.577.0(react@18.3.1)
       moment-timezone:
         specifier: 0.5.45
         version: 0.5.45
@@ -17458,8 +17458,8 @@ packages:
   ltgt@2.2.1:
     resolution: {integrity: sha512-AI2r85+4MquTw9ZYqabu4nMwy9Oftlfa/e/52t9IjtfG+mGBbTNdAoZ3RQKLHR6r0wQnwZnPIEh/Ya6XTWAKNA==}
 
-  lucide-react@0.553.0:
-    resolution: {integrity: sha512-BRgX5zrWmNy/lkVAe0dXBgd7XQdZ3HTf+Hwe3c9WK6dqgnj9h+hxV+MDncM88xDWlCq27+TKvHGE70ViODNILw==}
+  lucide-react@0.577.0:
+    resolution: {integrity: sha512-4LjoFv2eEPwYDPg/CUdBJQSDfPyzXCRrVW1X7jrx/trgxnxkHFjnVZINbzvzxjN70dxychOfg+FTYwBiS3pQ5A==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -43055,7 +43055,7 @@ snapshots:
 
   ltgt@2.2.1: {}
 
-  lucide-react@0.553.0(react@18.3.1):
+  lucide-react@0.577.0(react@18.3.1):
     dependencies:
       react: 18.3.1
 
