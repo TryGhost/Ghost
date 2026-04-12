@@ -2279,8 +2279,8 @@ importers:
         specifier: 2.0.10
         version: 2.0.10
       iconv-lite:
-        specifier: 0.6.3
-        version: 0.6.3
+        specifier: 0.7.2
+        version: 0.7.2
       image-size:
         specifier: 1.2.1
         version: 1.2.1
