@@ -348,7 +348,7 @@ importers:
         specifier: 6.4.11
         version: 6.4.11
       '@codemirror/state':
-        specifier: ^6.6.0
+        specifier: 6.6.0
         version: 6.6.0
       '@dnd-kit/utilities':
         specifier: ^3.2.2
