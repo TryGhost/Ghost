@@ -107,7 +107,7 @@
     "@tryghost/logging": "2.5.5",
     "@tryghost/members-csv": "2.0.5",
     "@tryghost/metrics": "1.0.43",
-    "@tryghost/mongo-utils": "^0.6.3",
+    "@tryghost/mongo-utils": "0.6.3",
     "@tryghost/mw-error-handler": "1.0.13",
     "@tryghost/mw-vhost": "1.0.6",
     "@tryghost/nodemailer": "0.3.48",
