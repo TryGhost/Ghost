@@ -30,7 +30,7 @@
     "@tanstack/react-query": "4.36.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "14.3.1",
-    "@types/node": "^25.6.0",
+    "@types/node": "25.6.0",
     "@types/react": "18.3.28",
     "@types/react-dom": "18.3.7",
     "@vitejs/plugin-react-swc": "4.1.0",
