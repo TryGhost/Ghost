@@ -904,7 +904,7 @@ jobs:
           if-no-files-found: error
 
       - name: Prepare Docker build context
-        run: mv ghost/core/.deploy /tmp/ghost-production
+        run: mv ghost/core/package /tmp/ghost-production
 
       - name: Determine push strategy
         id: strategy

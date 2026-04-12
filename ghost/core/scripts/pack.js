@@ -21,7 +21,7 @@ const {execSync} = require('node:child_process');
 
 const CORE_DIR = path.resolve(__dirname, '..');
 const ROOT_DIR = path.resolve(CORE_DIR, '../..');
-const DEPLOY_DIR = path.join(CORE_DIR, '.deploy');
+const DEPLOY_DIR = path.join(CORE_DIR, 'package');
 
 // 1. Run pnpm deploy
 // inject-workspace-packages is enabled only for deploy (not workspace-wide)
@@ -117,17 +117,11 @@ const tgzPath = path.join(CORE_DIR, `ghost-${version}.tgz`);
 // Remove node_modules — both the tarball and Docker build install their own
 execSync(`rm -rf ${path.join(DEPLOY_DIR, 'node_modules')}`);
 
-// Symlink .deploy → package so tar writes the correct prefix without moving files
-const packageLink = path.join(CORE_DIR, 'package');
-try { fs.unlinkSync(packageLink); } catch {}
-fs.symlinkSync('.deploy', packageLink);
-
 console.log(`\nCreating tarball: ghost-${version}.tgz`);
 execSync(
-    `tar czf ${tgzPath} -H package`,
+    `tar czf ${tgzPath} package`,
     {cwd: CORE_DIR, stdio: 'inherit'}
 );
-fs.unlinkSync(packageLink);
 
 const size = (fs.statSync(tgzPath).size / 1024 / 1024).toFixed(1);
 console.log(`\nDone: ${tgzPath} (${size} MB)`);

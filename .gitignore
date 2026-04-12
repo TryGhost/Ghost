@@ -117,7 +117,8 @@ test/functional/*.png
 /ghost/core/config.*.json
 /ghost/core/config.*.jsonc
 
-# Built asset files
+# Build/deploy outputs
+/ghost/core/package
 /ghost/core/core/built
 /ghost/core/core/frontend/public/ghost.min.css
 /ghost/core/core/frontend/public/comment-counts.min.js
@@ -209,4 +210,3 @@ yalc.lock
 .env.tinybird
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
-.deploy/
