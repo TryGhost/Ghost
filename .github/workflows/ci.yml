@@ -811,7 +811,7 @@ jobs:
 
       - run: node .github/scripts/bump-version.js canary
 
-      - run: pnpm --filter ghost archive
+      - run: pnpm archive
 
       - run: mv ghost-*.tgz ghost.tgz
         working-directory: ghost/core
@@ -826,23 +826,7 @@ jobs:
       - name: Clean Install
         run: |
           DIR=$(mktemp -d)
-          echo "GHOST_INSTALL_DIR=$DIR" >> $GITHUB_ENV
-          ghost install local -d $DIR --archive $(pwd)/ghost/core/ghost.tgz --no-start
-
-      - name: Boot Ghost
-        run: |
-          cd $GHOST_INSTALL_DIR/current
-          NODE_ENV=development node -e "
-            const boot = require('./core/boot');
-            boot().then(() => {
-              console.log('Ghost booted OK');
-              process.exit(0);
-            }).catch(err => {
-              console.error(err);
-              process.exit(1);
-            });
-            setTimeout(() => { console.log('Boot timed out'); process.exit(1); }, 30000);
-          "
+          ghost install local -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
 
       - name: Latest Release
         run: |
@@ -853,11 +837,7 @@ jobs:
       - name: Print debug logs
         if: failure()
         run: |
-          for f in ~/.ghost/logs/*.log; do [ -f "$f" ] && cat "$f"; done
-          if [ -d "$GHOST_INSTALL_DIR/current/content/logs" ]; then
-            echo "=== Ghost Application Logs ==="
-            cat "$GHOST_INSTALL_DIR/current/content/logs"/*.log 2>/dev/null || true
-          fi
+          [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
       - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
