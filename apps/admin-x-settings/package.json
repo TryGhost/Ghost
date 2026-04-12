@@ -52,7 +52,7 @@
     "@tryghost/timezone-data": "0.4.18",
     "@uiw/react-codemirror": "4.25.2",
     "clsx": "2.1.1",
-    "lucide-react": "0.553.0",
+    "lucide-react": "0.577.0",
     "mingo": "2.5.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",
