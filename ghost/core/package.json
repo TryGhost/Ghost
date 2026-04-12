@@ -243,9 +243,7 @@
     "xml": "1.0.1"
   },
   "overrides": {
-    "lodash.template": "4.5.0",
-    "moment": "2.24.0",
-    "moment-timezone": "0.5.45"
+    "lodash.template": "4.5.0"
   },
   "optionalDependencies": {
     "@tryghost/html-to-mobiledoc": "3.2.26",

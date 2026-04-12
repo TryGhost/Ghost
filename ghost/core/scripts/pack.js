@@ -77,6 +77,19 @@ for (const [key, val] of Object.entries(pkg.dependencies || {})) {
     pkg.dependencies[key] = `file:components/${tgzName}`;
 }
 
+// Merge root-level pnpm overrides into the deployed package.json.
+// In the workspace, the root package.json overrides apply globally (e.g., forcing
+// moment to 2.24.0 so moment-timezone doesn't pull in a separate copy). pnpm deploy
+// creates a standalone context where these root overrides don't apply, so we merge
+// the relevant ones into this package's overrides.
+const rootPkg = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'package.json'), 'utf8'));
+if (rootPkg.pnpm?.overrides || rootPkg.overrides) {
+    const rootOverrides = rootPkg.pnpm?.overrides || rootPkg.overrides;
+    pkg.pnpm = pkg.pnpm || {};
+    pkg.pnpm.overrides = {...rootOverrides, ...pkg.pnpm.overrides};
+    console.log(`  Merged ${Object.keys(rootOverrides).length} root overrides into package.json`);
+}
+
 fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
 
 // Copy .npmrc and pnpm-workspace.yaml for ghost-cli installs.
