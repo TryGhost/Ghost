@@ -78,12 +78,18 @@ for (const [key, val] of Object.entries(pkg.dependencies || {})) {
     pkg.dependencies[key] = `file:components/${tgzName}`;
 }
 
-// Merge root-level pnpm overrides into the deployed package.json.
-// In the workspace, the root package.json overrides apply globally (e.g., forcing
-// moment to 2.24.0 so moment-timezone doesn't pull in a separate copy). pnpm deploy
-// creates a standalone context where these root overrides don't apply, so we merge
-// the relevant ones into this package's overrides.
+// Carry over root-level fields that pnpm deploy doesn't preserve.
 const rootPkg = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'package.json'), 'utf8'));
+
+// packageManager — required by corepack (Dockerfile) and verified by CI release checks.
+if (rootPkg.packageManager) {
+    pkg.packageManager = rootPkg.packageManager;
+    console.log(`  Set packageManager: ${rootPkg.packageManager.split('+')[0]}`);
+}
+
+// pnpm overrides — the root overrides apply globally in the workspace (e.g., forcing
+// moment to 2.24.0 so moment-timezone doesn't pull in a separate copy). pnpm deploy
+// creates a standalone context where these don't apply, so we merge them in.
 if (rootPkg.pnpm?.overrides || rootPkg.overrides) {
     const rootOverrides = rootPkg.pnpm?.overrides || rootPkg.overrides;
     pkg.pnpm = pkg.pnpm || {};
