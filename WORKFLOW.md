@@ -1,7 +1,7 @@
 ---
 tracker:
   kind: linear
-  project_slug: "a58cd1f2af7b"
+  project_slug: "ghost-fork-a58cd1f2af7b"
   active_states:
     - Todo
     - In Progress
@@ -19,9 +19,8 @@ workspace:
   root: ~/code/workspaces
 hooks:
   after_create: |
-    git clone --depth 1 /Users/doronkatz/Development/Ghost .
-    corepack enable pnpm
-    pnpm run setup
+    git clone --depth 1 file:///Users/doronkatz/Development/Ghost .
+    /bin/zsh -lc 'cd "$PWD" && corepack enable pnpm && pnpm run setup'
   before_remove: |
     branch=$(git branch --show-current 2>/dev/null)
     if [ -n "$branch" ] && command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
