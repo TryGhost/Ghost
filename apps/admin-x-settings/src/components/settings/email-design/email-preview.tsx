@@ -15,6 +15,7 @@ interface EmailPreviewProps {
     showRecipientLine?: boolean;
     showSubjectLine?: boolean;
     headerImage?: string;
+    showPublicationIcon?: boolean;
     showPublicationTitle?: boolean;
     showBadge?: boolean;
     emailFooter?: string;
@@ -64,12 +65,14 @@ const EnvelopeHeader: React.FC<{
 };
 
 const PublicationHeader: React.FC<{
+    iconUrl?: string | null;
+    showIcon: boolean;
     showTitle: boolean;
     siteTitle?: string;
     backgroundColor?: string;
     textColor: string;
-}> = ({showTitle, siteTitle, backgroundColor, textColor}) => {
-    if (!showTitle || !siteTitle) {
+}> = ({iconUrl, showIcon, showTitle, siteTitle, backgroundColor, textColor}) => {
+    if (!showIcon && (!showTitle || !siteTitle)) {
         return null;
     }
 
@@ -78,12 +81,21 @@ const PublicationHeader: React.FC<{
             className="px-[7rem] py-3 text-center"
             style={{backgroundColor: backgroundColor === 'transparent' ? undefined : backgroundColor}}
         >
-            <h4
-                className="mb-1 text-[1.6rem] leading-tight font-bold tracking-tight uppercase"
-                style={{color: textColor}}
-            >
-                {siteTitle}
-            </h4>
+            {showIcon && iconUrl && (
+                <img
+                    alt={siteTitle || 'Publication icon'}
+                    className="mx-auto mb-3 h-12 w-12 rounded"
+                    src={iconUrl}
+                />
+            )}
+            {showTitle && siteTitle && (
+                <h4
+                    className="mb-1 text-[1.6rem] leading-tight font-bold tracking-tight uppercase"
+                    style={{color: textColor}}
+                >
+                    {siteTitle}
+                </h4>
+            )}
         </div>
     );
 };
@@ -115,9 +127,9 @@ const Footer: React.FC<{siteTitle?: string; footerLinkText?: string; emailFooter
 
 // --- Main component ---
 
-const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, senderEmail, replyToEmail, subject, showRecipientLine = true, showSubjectLine = true, headerImage, showPublicationTitle = true, showBadge = true, emailFooter, footerLinkText, children}) => {
+const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, senderEmail, replyToEmail, subject, showRecipientLine = true, showSubjectLine = true, headerImage, showPublicationIcon = false, showPublicationTitle = true, showBadge = true, emailFooter, footerLinkText, children}) => {
     const {settings: globalSettings, siteData} = useGlobalData();
-    const [siteTitle] = getSettingValues<string>(globalSettings, ['title']);
+    const [siteTitle, icon] = getSettingValues<string>(globalSettings, ['title', 'icon']);
     const accentColor = siteData.accent_color;
 
     const colors = resolveAllColors(settings, accentColor);
@@ -140,6 +152,8 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
 
                     <PublicationHeader
                         backgroundColor="transparent"
+                        iconUrl={icon}
+                        showIcon={showPublicationIcon && Boolean(icon)}
                         showTitle={showPublicationTitle}
                         siteTitle={siteTitle}
                         textColor={colors.headerTextColor}

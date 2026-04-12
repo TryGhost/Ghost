@@ -7,6 +7,15 @@ export default class AuthenticatedRoute extends Route {
     @service session;
 
     async beforeModel(transition) {
+        if (!this.session.isAuthenticated) {
+            const url = transition.intent?.url;
+            if (url) {
+                window.sessionStorage.setItem('ghost-signin-redirect', url);
+            }
+        } else {
+            window.sessionStorage.removeItem('ghost-signin-redirect');
+        }
+
         this.session.requireAuthentication(transition, () => {
             windowProxy.replaceLocation(AuthConfiguration.rootURL);
         });

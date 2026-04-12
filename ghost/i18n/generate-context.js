@@ -30,7 +30,7 @@ const CONTEXT_FILE = './locales/context.json';
 
     if (process.env.CI && newContent !== existingContent) {
         // eslint-disable-next-line no-console
-        console.error('context.json is out of date. Run `yarn translate` in ghost/i18n and commit the result.');
+        console.error('context.json is out of date. Run `pnpm translate` in ghost/i18n and commit the result.');
         process.exit(1);
     }
 

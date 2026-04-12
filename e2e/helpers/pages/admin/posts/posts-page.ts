@@ -44,6 +44,11 @@ export class PostsPage extends AdminPage {
         return this.postsListItem.filter({has: this.page.getByRole('heading', {name: title, exact: true, level: 3})});
     }
 
+    async waitForPageToFullyLoad() {
+        await this.page.waitForURL(this.pageUrl);
+        await this.postsList.waitFor({state: 'visible'});
+    }
+
     async refreshData() {
         await this.page.reload();
     }
