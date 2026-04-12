@@ -10,8 +10,7 @@
     "files": [
         "LICENSE",
         "README.md",
-        "dist/",
-        "src/"
+        "dist/"
     ],
     "main": "./dist/posts.umd.cjs",
     "module": "./dist/posts.js",

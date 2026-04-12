@@ -9,14 +9,15 @@
  *
  *  1. Strip peer dep suffixes from version strings (pnpm deploy artifact)
  *  2. Pack private workspace packages as component tarballs
- *  3. Create a ghost-cli compatible tarball (package/ prefix, no node_modules)
+ *  3. Merge root pnpm overrides so standalone installs resolve correctly
+ *  4. Create a ghost-cli compatible tarball (package/ prefix, no node_modules)
  */
 
 /* eslint-disable no-console */
 
-const fs = require('fs');
-const path = require('path');
-const {execSync} = require('child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const {execSync} = require('node:child_process');
 
 const CORE_DIR = path.resolve(__dirname, '..');
 const ROOT_DIR = path.resolve(CORE_DIR, '../..');
@@ -69,7 +70,7 @@ for (const [key, val] of Object.entries(pkg.dependencies || {})) {
     }
 
     const depPkg = JSON.parse(fs.readFileSync(path.join(depDir, 'package.json'), 'utf8'));
-    const slug = key.replace(/@/g, '').replace(/\//g, '-');
+    const slug = key.replaceAll('@', '').replaceAll('/', '-');
     const tgzName = `${slug}-${depPkg.version}.tgz`;
 
     console.log(`  Packing ${key} → components/${tgzName}`);
@@ -109,26 +110,24 @@ fs.copyFileSync(workspaceSrc, workspaceDst);
 console.log('Copied .npmrc (with frozen-lockfile=false) and pnpm-workspace.yaml');
 
 // 3. Create tarball
-// Rename .deploy → package for ghost-cli compatibility (expects package/ prefix)
+// ghost-cli expects a package/ prefix inside the tarball.
 const version = pkg.version;
 const tgzPath = path.join(CORE_DIR, `ghost-${version}.tgz`);
-const packageDir = path.join(CORE_DIR, 'package');
 
-execSync(`rm -rf ${packageDir}`);
-fs.renameSync(DEPLOY_DIR, packageDir);
+// Remove node_modules — both the tarball and Docker build install their own
+execSync(`rm -rf ${path.join(DEPLOY_DIR, 'node_modules')}`);
 
+// Symlink .deploy → package so tar writes the correct prefix without moving files
+const packageLink = path.join(CORE_DIR, 'package');
+try { fs.unlinkSync(packageLink); } catch {}
+fs.symlinkSync('.deploy', packageLink);
 
 console.log(`\nCreating tarball: ghost-${version}.tgz`);
 execSync(
-    `tar czf ${tgzPath} --exclude='node_modules' package`,
+    `tar czf ${tgzPath} -H package`,
     {cwd: CORE_DIR, stdio: 'inherit'}
 );
-
-// Move back for Docker build context (CI uses .deploy/)
-fs.renameSync(packageDir, DEPLOY_DIR);
-
-// Remove node_modules — Docker build installs its own
-execSync(`rm -rf ${path.join(DEPLOY_DIR, 'node_modules')}`);
+fs.unlinkSync(packageLink);
 
 const size = (fs.statSync(tgzPath).size / 1024 / 1024).toFixed(1);
 console.log(`\nDone: ${tgzPath} (${size} MB)`);
