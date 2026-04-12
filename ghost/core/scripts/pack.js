@@ -86,7 +86,7 @@ fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
 const npmrcSrc = path.join(ROOT_DIR, '.npmrc');
 const npmrcDst = path.join(DEPLOY_DIR, '.npmrc');
 let npmrc = fs.readFileSync(npmrcSrc, 'utf8');
-npmrc += '\nfrozen-lockfile=false\nshamefully-hoist=true\n';
+npmrc += '\nfrozen-lockfile=false\n';
 fs.writeFileSync(npmrcDst, npmrc);
 
 const workspaceSrc = path.join(ROOT_DIR, 'pnpm-workspace.yaml');

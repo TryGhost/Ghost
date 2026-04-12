@@ -826,6 +826,7 @@ jobs:
       - name: Clean Install
         run: |
           DIR=$(mktemp -d)
+          echo "GHOST_INSTALL_DIR=$DIR" >> $GITHUB_ENV
           ghost install local -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
 
       - name: Latest Release
@@ -837,7 +838,11 @@ jobs:
       - name: Print debug logs
         if: failure()
         run: |
-          [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
+          for f in ~/.ghost/logs/*.log; do [ -f "$f" ] && cat "$f"; done
+          if [ -d "$GHOST_INSTALL_DIR/current/content/logs" ]; then
+            echo "=== Ghost Application Logs ==="
+            cat "$GHOST_INSTALL_DIR/current/content/logs"/*.log 2>/dev/null || true
+          fi
 
       - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
