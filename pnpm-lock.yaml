@@ -2251,6 +2251,9 @@ importers:
       fs-extra:
         specifier: 11.3.4
         version: 11.3.4
+      getown:
+        specifier: 1.0.2
+        version: 1.0.2
       ghost-storage-base:
         specifier: 1.1.2
         version: 1.1.2
@@ -15133,6 +15136,10 @@ packages:
 
   getopts@2.3.0:
     resolution: {integrity: sha512-5eDf9fuSXwxBL6q5HX+dhDj+dslFGWzU5thZ9kNKUkcPtaPdatmUFKwHFrLb/uf/WpA4BHET+AX3Scl56cAjpA==}
+
+  getown@1.0.2:
+    resolution: {integrity: sha512-SFL/oWAzeEHlrZvoyVHpXg/kngYxNmT8QCh32PQ8XeKxlyJG+/0sQouEB+Bkq4VHsknQpGS0jYl5vDV6uKLsLA==}
+    engines: {node: '>=24.0.0', npm: '>=7.0.0'}
 
   getpass@0.1.7:
     resolution: {integrity: sha512-0fzj9JxOLfJ+XGLhR8ze3unN0KZCgZwiSSDz168VERjK8Wl8kVSdcu2kspd4s4wtAa1y/qrVRiAA0WclVsu0ng==}
@@ -40061,6 +40068,8 @@ snapshots:
   getopts@2.2.5: {}
 
   getopts@2.3.0: {}
+
+  getown@1.0.2: {}
 
   getpass@0.1.7:
     dependencies:
