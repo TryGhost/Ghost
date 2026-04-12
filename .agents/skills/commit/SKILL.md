@@ -1,61 +1,75 @@
 ---
 name: commit
-description: Commit message formatting and guidelines
+description:
+  Create a well-formed git commit from current changes using session history for
+  rationale and summary; use when asked to commit, prepare a commit message, or
+  finalize staged work.
 ---
 
 # Commit
 
-Use this skill whenever the user asks you to create a git commit for the current work.
+## Goals
 
-## Instructions
+- Produce a commit that reflects the actual code changes and the session
+  context.
+- Follow common git conventions (type prefix, short subject, wrapped body).
+- Include both summary and rationale in the body.
 
-1. Review the current git state before committing:
-   - `git status`
-   - `git diff`
-   - `git log -5 --oneline`
-2. Only stage files relevant to the requested change. Do not include unrelated untracked files, generated files, or likely-local artifacts.
-3. Always follow Ghost's commit conventions (see below) for commit messages
-4. Run `git status --short` after committing and confirm the result.
+## Inputs
 
-## Important
-- Do not push to remote unless the user explicitly asks
-- Keep commits focused and avoid bundling unrelated changes
-- If there are no relevant changes, do not create an empty commit
-- If hooks fail, fix the issue and create a new commit. Never bypass hooks.
+- Codex session history for intent and rationale.
+- `git status`, `git diff`, and `git diff --staged` for actual changes.
+- Repo-specific commit conventions if documented.
 
-## Commit message format
+## Steps
 
-We have a handful of simple standards for commit messages which help us to generate readable changelogs. Please follow this wherever possible and mention the associated issue number.
+1. Read session history to identify scope, intent, and rationale.
+2. Inspect the working tree and staged changes (`git status`, `git diff`,
+   `git diff --staged`).
+3. Stage intended changes, including new files (`git add -A`) after confirming
+   scope.
+4. Sanity-check newly added files; if anything looks random or likely ignored
+   (build artifacts, logs, temp files), flag it to the user before committing.
+5. If staging is incomplete or includes unrelated files, fix the index or ask
+   for confirmation.
+6. Choose a conventional type and optional scope that match the change (e.g.,
+   `feat(scope): ...`, `fix(scope): ...`, `refactor(scope): ...`).
+7. Write a subject line in imperative mood, <= 72 characters, no trailing
+   period.
+8. Write a body that includes:
+   - Summary of key changes (what changed).
+   - Rationale and trade-offs (why it changed).
+   - Tests or validation run (or explicit note if not run).
+9. Append a `Co-authored-by` trailer for Codex using `Codex <codex@openai.com>`
+   unless the user explicitly requests a different identity.
+10. Wrap body lines at 72 characters.
+11. Create the commit message with a here-doc or temp file and use
+    `git commit -F <file>` so newlines are literal (avoid `-m` with `\n`).
+12. Commit only when the message matches the staged changes: if the staged diff
+    includes unrelated files or the message describes work that isn't staged,
+    fix the index or revise the message before committing.
 
-- **1st line:** Max 80 character summary
-   - Written in past tense e.g. “Fixed the thing” not “Fixes the thing”
-   - Start with one of: Fixed, Changed, Updated, Improved, Added, Removed, Reverted, Moved, Released, Bumped, Cleaned
-- **2nd line:** [Always blank]
-- **3rd line:** `ref <issue link>`, `fixes <issue link>`, `closes <issue link>` or blank
-- **4th line:** Why this change was made - the code includes the what, the commit message should describe the context of why - why this, why now, why not something else?
+## Output
 
-If your change is **user-facing** please prepend the first line of your commit with **an emoji**.
+- A single commit created with `git commit` whose message reflects the session.
 
-Because emoji commits are the release notes, it's important that anything that gets an emoji is a user-facing change that's significant and relevant for end-users to see.
+## Template
 
-The first line of an emoji commit message should be from the perspective of the user. For example, 🐛 Fixed a race condition in the members service is technical and tells the user nothing, but 🐛 Fixed a bug causing active members to lose access to paid content tells the user reading the release notes “oh yeah, they fixed that bug I kept hitting.”
-
-###  Main emojis we are using:
-
-- ✨ Feature
-- 🎨 Improvement / change
-- 🐛 Bug Fix
-- 🌐 i18n (translation) submissions
-- 💡 Anything else flagged to users or whoever is writing release notes
-
-### Example
+Type and scope are examples only; adjust to fit the repo and changes.
 
 ```
-✨ Added config flag for disabling page analytics
+<type>(<scope>): <short summary>
 
-ref https://linear.app/tryghost/issue/ENG-1234/
+Summary:
+- <what changed>
+- <what changed>
 
-- analytics are brand new under development, therefore they need to be behind a flag
-- not using the developerExperiments flag as that is already in wide use and we aren't ready to deploy this anywhere yet
-- using the term `pageAnalytics` as this was discussed as best reflecting what this does
+Rationale:
+- <why>
+- <why>
+
+Tests:
+- <command or "not run (reason)">
+
+Co-authored-by: Codex <codex@openai.com>
 ```
