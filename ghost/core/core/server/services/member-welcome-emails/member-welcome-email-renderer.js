@@ -224,8 +224,8 @@ class MemberWelcomeEmailRenderer {
                 iconUrl: siteSettings.iconUrl || null,
                 title: siteSettings.title,
                 url: siteSettings.url,
-                locale: siteSettings.locale,
-                direction: (this.#dir && this.#dir(siteSettings.locale)) || 'ltr'
+                locale: siteSettings.locale || 'en',
+                direction: (this.#dir && this.#dir(siteSettings.locale || 'en')) || 'ltr'
             },
             siteTitle: siteSettings.title,
             siteUrl: siteSettings.url,
