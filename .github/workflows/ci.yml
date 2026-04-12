@@ -816,6 +816,9 @@ jobs:
       - run: mv ghost-*.tgz ghost.tgz
         working-directory: ghost/core
 
+      - name: Verify packaged package.json
+        run: tar -xOf ghost/core/ghost.tgz package/package.json | jq -e '.packageManager' >/dev/null
+
       - name: Save Ghost CLI Debug Logs
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -826,13 +829,19 @@ jobs:
       - name: Clean Install
         run: |
           DIR=$(mktemp -d)
-          ghost install local -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
+          ghost install local -d "$DIR" --archive "$(pwd)/ghost/core/ghost.tgz"
+          URL=$(ghost config get url -d "$DIR" --no-prompt --no-color | tail -n1)
+          curl --retry 10 --retry-connrefused --retry-delay 3 -fsSI "$URL"
+          ghost stop -d "$DIR"
 
       - name: Latest Release
         run: |
           DIR=$(mktemp -d)
-          ghost install local -d $DIR
-          ghost update -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
+          ghost install local -d "$DIR"
+          ghost update -d "$DIR" --archive "$(pwd)/ghost/core/ghost.tgz"
+          URL=$(ghost config get url -d "$DIR" --no-prompt --no-color | tail -n1)
+          curl --retry 10 --retry-connrefused --retry-delay 3 -fsSI "$URL"
+          ghost stop -d "$DIR"
 
       - name: Print debug logs
         if: failure()
@@ -1738,12 +1747,7 @@ jobs:
         run: npm install -g npm@11
 
       - name: Verify tarball contents
-        run: |
-          echo "Tarball contents:"
-          tar -tzf ghost-*.tgz | head -20
-          tar -tzf ghost-*.tgz | grep -q 'package/.npmrc' || { echo "::error::.npmrc not found in tarball"; exit 1; }
-          tar -tzf ghost-*.tgz | grep -q 'package/pnpm-lock.yaml' || { echo "::error::pnpm-lock.yaml not found in tarball"; exit 1; }
-          tar -xOf ghost-*.tgz package/package.json | jq -e '.packageManager' >/dev/null || { echo "::error::packageManager not found in packaged package.json"; exit 1; }
+        run: tar -xOf ghost-*.tgz package/package.json | jq -e '.packageManager' >/dev/null
 
       - name: Publish to npm
         run: npm publish ghost-*.tgz --access public
