@@ -35,8 +35,10 @@ const DEFAULT_DESIGN_SETTINGS = {
 
 class MemberWelcomeEmailRenderer {
     #wrapperTemplate;
+    #dir;
 
-    constructor({t}) {
+    constructor({t, dir}) {
+        this.#dir = dir;
         this.Handlebars = require('handlebars').create();
         const useDesignCustomization = labs.isSet('welcomeEmailsDesignCustomization');
 
@@ -221,7 +223,9 @@ class MemberWelcomeEmailRenderer {
             site: {
                 iconUrl: siteSettings.iconUrl || null,
                 title: siteSettings.title,
-                url: siteSettings.url
+                url: siteSettings.url,
+                locale: siteSettings.locale,
+                direction: (this.#dir && this.#dir(siteSettings.locale)) || 'ltr'
             },
             siteTitle: siteSettings.title,
             siteUrl: siteSettings.url,

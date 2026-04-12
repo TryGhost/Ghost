@@ -172,6 +172,7 @@ class EmailRenderer {
     #labs;
     #models;
     #t;
+    #dir;
 
     /** @type {undefined | Promise<TemplateDelegate>} */
     #compiledHandlebarsRendererPromise;
@@ -196,6 +197,7 @@ class EmailRenderer {
      * @param {object} dependencies.labs
      * @param {{Post: object}} dependencies.models
      * @param {Function} dependencies.t
+     * @param {Function} [dependencies.dir] Returns 'rtl' or 'ltr' for a given locale (i18next's `i18n.dir`)
      */
     constructor({
         settingsCache,
@@ -213,7 +215,8 @@ class EmailRenderer {
         outboundLinkTagger,
         labs,
         models,
-        t
+        t,
+        dir
     }) {
         this.#settingsCache = settingsCache;
         this.#settingsHelpers = settingsHelpers;
@@ -231,6 +234,7 @@ class EmailRenderer {
         this.#labs = labs;
         this.#models = models;
         this.#t = t;
+        this.#dir = dir;
     }
 
     getSubject(post, isTestEmail = false) {
@@ -1107,6 +1111,8 @@ class EmailRenderer {
         const titleAlignment = newsletter.get('title_alignment');
         const showFeatureImage = newsletter.get('show_feature_image') && !!postFeatureImage;
 
+        const direction = (this.#dir && this.#dir(locale)) || 'ltr';
+
         const data = {
             emailTitle: post.get('title'),
             site: {
@@ -1115,7 +1121,9 @@ class EmailRenderer {
                 iconUrl: this.#settingsCache.get('icon') ?
                     this.#urlUtils.urlFor('image', {
                         image: this.#settingsCache.get('icon')
-                    }, true) : null
+                    }, true) : null,
+                locale,
+                direction
             },
             preheader: this.#getEmailPreheader(post, segment, html),
             preheaderSpacing: `${'&#8199;&#847; '.repeat(150)}${'&shy; '.repeat(200)} &nbsp;`,
