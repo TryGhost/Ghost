@@ -65,6 +65,7 @@ module.exports = class MemberRepository {
      * @param {ITokenService} deps.tokenService
      * @param {any} deps.newslettersService
      * @param {any} deps.WelcomeEmailAutomation
+     * @param {any} deps.WelcomeEmailAutomationRun
      */
     constructor({
         Member,
@@ -84,7 +85,8 @@ module.exports = class MemberRepository {
         offersAPI,
         tokenService,
         newslettersService,
-        WelcomeEmailAutomation
+        WelcomeEmailAutomation,
+        WelcomeEmailAutomationRun
     }) {
         this._Member = Member;
         this._MemberNewsletter = MemberNewsletter;
@@ -104,6 +106,7 @@ module.exports = class MemberRepository {
         this.tokenService = tokenService;
         this._newslettersService = newslettersService;
         this._WelcomeEmailAutomation = WelcomeEmailAutomation;
+        this._WelcomeEmailAutomationRun = WelcomeEmailAutomationRun;
 
         DomainEvents.subscribe(OfferRedemptionEvent, async function (event) {
             if (!event.data.offerId) {

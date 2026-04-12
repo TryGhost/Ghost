@@ -66,6 +66,7 @@ module.exports = function MembersAPI({
         MemberFeedback,
         Outbox,
         WelcomeEmailAutomation,
+        WelcomeEmailAutomationRun,
         AutomatedEmailRecipient,
         Gift
     },
@@ -103,6 +104,7 @@ module.exports = function MembersAPI({
         newslettersService,
         productRepository,
         WelcomeEmailAutomation,
+        WelcomeEmailAutomationRun,
         Member,
         MemberNewsletter,
         MemberCancelEvent,
