@@ -2562,8 +2562,8 @@ importers:
         specifier: 11.0.1
         version: 11.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)
       rewire:
-        specifier: 8.0.0
-        version: 8.0.0
+        specifier: 9.0.1
+        version: 9.0.1(jiti@2.6.1)
       sinon:
         specifier: 18.0.1
         version: 18.0.1
@@ -20530,8 +20530,8 @@ packages:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
 
-  rewire@8.0.0:
-    resolution: {integrity: sha512-30aZREqOFlNkNFbv6aSen7TMaS+jAKh2O+EH8EB1/THhgzZ/vIwqh0cDgyud1v+fanFinxXF//Q9SJEBwc/mHg==}
+  rewire@9.0.1:
+    resolution: {integrity: sha512-dnbLeTwHpXvWJjswC6CshXUUnnpE5AVhlayVRvDJhJx5ejbO4nbj1IXqN2urErgB7TpHUAMpf6iPDhQIxeSQOQ==}
 
   rfdc@1.4.1:
     resolution: {integrity: sha512-q1b3N5QkRUWUl7iyylaaj3kOpIT0N2i9MqIEQXP73GVsN9cw3fdx8X63cEmWhJGi2PPCF23Ijp7ktmd39rawIA==}
@@ -46747,10 +46747,12 @@ snapshots:
 
   reusify@1.1.0: {}
 
-  rewire@8.0.0:
+  rewire@9.0.1(jiti@2.6.1):
     dependencies:
-      eslint: 8.57.1
+      eslint: 9.37.0(jiti@2.6.1)
+      pirates: 4.0.7
     transitivePeerDependencies:
+      - jiti
       - supports-color
 
   rfdc@1.4.1: {}
