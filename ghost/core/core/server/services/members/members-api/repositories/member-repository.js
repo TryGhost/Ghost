@@ -9,7 +9,7 @@ const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
 const hasActiveOffer = require('../utils/has-active-offer');
-const StartOutboxProcessingEvent = require('../../../outbox/events/start-outbox-processing-event');
+const StartAutomationsPollEvent = require('../../../welcome-email-automations/events/start-automations-poll-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
@@ -405,7 +405,7 @@ module.exports = class MemberRepository {
                 member = await this._Member.transaction(runMemberCreation);
             }
 
-            this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: member.id}), memberAddOptions);
+            this.dispatchEvent(StartAutomationsPollEvent.create(), memberAddOptions);
         } else {
             member = await this._Member.add({
                 ...memberData,
@@ -1504,7 +1504,7 @@ module.exports = class MemberRepository {
                     step_attempts: 0,
                     exit_reason: null
                 }, options);
-                this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: memberModel.id}), options);
+                this.dispatchEvent(StartAutomationsPollEvent.create(), options);
             }
         }
     }
