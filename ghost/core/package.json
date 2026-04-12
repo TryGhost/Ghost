@@ -23,6 +23,25 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
+  "files": [
+    "core/",
+    "!core/built/**/*.map",
+    "!core/built/**/test-*",
+    "!core/built/**/tests-*",
+    "content/*/README.md",
+    "content/themes/casper/",
+    "!content/themes/casper/pnpm-lock.yaml",
+    "content/themes/source/",
+    "!content/themes/source/pnpm-lock.yaml",
+    "bin/",
+    "types/",
+    "index.js",
+    "ghost.js",
+    "loggingrc.js",
+    "MigratorConfig.js",
+    "nodemon.json",
+    "tsconfig.json"
+  ],
   "scripts": {
     "archive": "node scripts/pack.js",
     "dev": "nodemon index.js",

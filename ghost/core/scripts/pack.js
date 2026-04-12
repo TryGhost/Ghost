@@ -104,19 +104,6 @@ const packageDir = path.join(CORE_DIR, 'package');
 execSync(`rm -rf ${packageDir}`);
 fs.renameSync(DEPLOY_DIR, packageDir);
 
-// Remove dev/local files that shouldn't ship (equivalent to .npmignore)
-const removePatterns = [
-    'config.*.json', 'config.*.jsonc',
-    'test', 'test-results',
-    '.eslintignore', '.eslintrc.*', '.c8rc*',
-    'playwright.config.*', 'jsconfig.json',
-    'tsconfig.*', 'monobundle.js',
-    'coverage', 'docs', '.git*'
-];
-for (const pattern of removePatterns) {
-    execSync(`rm -rf ${pattern}`, {cwd: packageDir, stdio: 'pipe'});
-}
-console.log('Removed dev/local files from package');
 
 console.log(`\nCreating tarball: ghost-${version}.tgz`);
 execSync(
