@@ -36,7 +36,7 @@
     "@types/node": "24.12.2",
     "c8": "11.0.0",
     "mocha": "11.7.5",
-    "sinon": "21.0.3",
+    "sinon": "21.1.0",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.58.1"

@@ -44,7 +44,7 @@
     "mocha": "11.7.5",
     "should": "13.2.3",
     "simple-dom": "1.4.0",
-    "sinon": "21.0.3",
+    "sinon": "21.1.0",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.58.1"
