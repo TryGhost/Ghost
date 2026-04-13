@@ -300,7 +300,7 @@ const ListHeader: ListHeaderComponent = Object.assign(
                 align='start'
                 as='header'
                 className={cn(
-                    'px-4 lg:px-8',
+                    'h-[72px] border-b py-5',
                     sticky && 'sticky top-0 z-50 -mb-4 lg:-mb-4',
                     blurredBackground && 'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black',
                     className
