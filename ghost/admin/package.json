@@ -177,6 +177,9 @@
     "webpack": "5.105.4"
   },
   "nx": {
+    "implicitDependencies": [
+      "!ghost"
+    ],
     "targets": {
       "build:dev": {
         "dependsOn": [
