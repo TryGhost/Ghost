@@ -26,8 +26,9 @@ COPY ghost/parse-email-address/package.json ghost/parse-email-address/package.js
 # Install dependencies
 # Note: Dependencies are installed at build time, but source code is mounted at runtime.
 
-# Copy the install helper script (pnpm install wrapper with retry logic)
-COPY .github/scripts/install-deps.sh .github/scripts/install-deps.sh
+# Copy root lifecycle scripts/hooks needed by `pnpm install`
+COPY .github/scripts .github/scripts
+COPY .github/hooks .github/hooks
 
 # Enable corepack so it can read packageManager from package.json and provide pnpm
 RUN corepack enable
