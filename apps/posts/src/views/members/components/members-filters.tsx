@@ -11,6 +11,7 @@ import {
 } from '../use-member-filter-fields';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
+import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
@@ -59,6 +60,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const {data: offersData} = useBrowseOffers({});
     const {data: newslettersData} = useBrowseNewsletters({searchParams: {limit: '100'}});
     const {data: settingsData} = useBrowseSettings({});
+    const {data: configData} = useBrowseConfig();
 
     const settings = settingsData?.settings || [];
     const paidMembersEnabled = getSettingValue<boolean>(settings, 'paid_members_enabled') === true;
@@ -67,6 +69,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const emailTrackOpens = getSettingValue<boolean>(settings, 'email_track_opens') === true;
     const emailTrackClicks = getSettingValue<boolean>(settings, 'email_track_clicks') === true;
     const siteTimezone = getSiteTimezone(settings);
+    const giftSubscriptionsEnabled = configData?.config?.labs?.giftSubscriptions === true;
 
     const tiers = tiersData?.tiers || [];
     const newsletters = newslettersData?.newsletters || [];
@@ -114,7 +117,8 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         membersTrackSources,
         emailTrackOpens,
         emailTrackClicks,
-        siteTimezone
+        siteTimezone,
+        giftSubscriptionsEnabled
     });
 
     const hasFilters = filters.length > 0;
