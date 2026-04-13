@@ -4,7 +4,5 @@ name = "Ghost"
 
 [setup]
 script = '''
-yarn setup
-(cd node_modules/sqlite3 && npm run install)
-(cd ghost/parse-email-address && yarn build)
+pnpm run setup
 '''

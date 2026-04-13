@@ -5,6 +5,7 @@ const logging = require('@tryghost/logging');
 const LimitService = require('@tryghost/limit-service');
 
 const WebhookTrigger = require('../../../../../core/server/services/webhooks/webhook-trigger');
+const configUtils = require('../../../../utils/config-utils');
 
 const SIGNATURE_HEADER = 'X-Ghost-Signature';
 const SIGNATURE_REGEX = /^sha256=[a-z0-9]+, t=\d+$/;
@@ -47,64 +48,25 @@ describe('Webhook Service', function () {
         sinon.stub(webhookTrigger, 'onError').callsFake(() => Promise.resolve());
     });
 
-    describe('onError', function () {
-        let loggingStub;
-        let errorTrigger;
+    afterEach(async function () {
+        await configUtils.restore();
+    });
 
-        beforeEach(function () {
-            loggingStub = sinon.stub(logging, 'error');
-            errorTrigger = new WebhookTrigger({models, payload, request, limitService});
+    describe('constructor', function () {
+        it('uses the external request library when internal IPs disabled in config', function () {
+            configUtils.set('security:allowWebhookInternalIPs', false);
+
+            const constructedWebhookTrigger = new WebhookTrigger({models, payload, limitService});
+
+            assert.equal(constructedWebhookTrigger.request, require('../../../../../core/server/lib/request-external'));
         });
 
-        afterEach(function () {
-            loggingStub.restore();
-        });
+        it('uses base request library when internal IPs enabled in config', function () {
+            configUtils.set('security:allowWebhookInternalIPs', true);
 
-        it('logs a structured error for failed webhook deliveries', function () {
-            const webhookModel = {
-                id: 'abc123',
-                get: sinon.stub()
-            };
-            webhookModel.get
-                .withArgs('event').returns('post.added')
-                .withArgs('target_url').returns('https://example.com/hook');
+            const constructedWebhookTrigger = new WebhookTrigger({models, payload, limitService});
 
-            const err = new Error('URL resolves to a non-permitted private IP block');
-            err.statusCode = 500;
-            err.code = 'URL_PRIVATE_INVALID';
-
-            errorTrigger.onError(webhookModel)(err);
-
-            sinon.assert.calledOnce(loggingStub);
-
-            // Example output:
-            // [WEBHOOK_DELIVERY_FAILURE] url=https://example.com/hook status=500 error_code=URL_PRIVATE_INVALID message=URL resolves to a non-permitted private IP block
-            const logLine = loggingStub.args[0][0];
-            assert.ok(logLine.startsWith('[WEBHOOK_DELIVERY_FAILURE]'), 'Log line must start with [WEBHOOK_DELIVERY_FAILURE] prefix');
-            assert.ok(logLine.includes('url=https://example.com/hook'));
-            assert.ok(logLine.includes('status=500'));
-            assert.ok(logLine.includes('error_code=URL_PRIVATE_INVALID'));
-            assert.ok(logLine.includes('message=URL resolves to a non-permitted private IP block'));
-            assert.equal(loggingStub.args[0][1], err, 'Error object must be passed as second argument for stack/metadata');
-        });
-
-        it('logs with fallback values when error properties are missing', function () {
-            const webhookModel = {
-                id: 'abc123',
-                get: sinon.stub()
-            };
-            webhookModel.get
-                .withArgs('event').returns('post.added')
-                .withArgs('target_url').returns(null);
-
-            const err = new Error();
-
-            errorTrigger.onError(webhookModel)(err);
-
-            const logLine = loggingStub.args[0][0];
-            assert.ok(logLine.includes('url=unknown'));
-            assert.ok(logLine.includes('status=none'));
-            assert.ok(logLine.includes('error_code=unknown'));
+            assert.equal(constructedWebhookTrigger.request, require('@tryghost/request'));
         });
     });
 
@@ -245,6 +207,67 @@ describe('Webhook Service', function () {
             assert.equal(expectedHeader, header);
 
             clock.restore();
+        });
+    });
+
+    describe('onError', function () {
+        let loggingStub;
+        let errorTrigger;
+
+        beforeEach(function () {
+            loggingStub = sinon.stub(logging, 'error');
+            errorTrigger = new WebhookTrigger({models, payload, request, limitService});
+        });
+
+        afterEach(function () {
+            loggingStub.restore();
+        });
+
+        it('logs a structured error for failed webhook deliveries', function () {
+            const webhookModel = {
+                id: 'abc123',
+                get: sinon.stub()
+            };
+            webhookModel.get
+                .withArgs('event').returns('post.added')
+                .withArgs('target_url').returns('https://example.com/hook');
+
+            const err = new Error('URL resolves to a non-permitted private IP block');
+            err.statusCode = 500;
+            err.code = 'URL_PRIVATE_INVALID';
+
+            errorTrigger.onError(webhookModel)(err);
+
+            sinon.assert.calledOnce(loggingStub);
+
+            // Example output:
+            // [WEBHOOK_DELIVERY_FAILURE] url=https://example.com/hook status=500 error_code=URL_PRIVATE_INVALID message=URL resolves to a non-permitted private IP block
+            const logLine = loggingStub.args[0][0];
+            assert.ok(logLine.startsWith('[WEBHOOK_DELIVERY_FAILURE]'), 'Log line must start with [WEBHOOK_DELIVERY_FAILURE] prefix');
+            assert.ok(logLine.includes('url=https://example.com/hook'));
+            assert.ok(logLine.includes('status=500'));
+            assert.ok(logLine.includes('error_code=URL_PRIVATE_INVALID'));
+            assert.ok(logLine.includes('message=URL resolves to a non-permitted private IP block'));
+            assert.equal(loggingStub.args[0][1], err, 'Error object must be passed as second argument for stack/metadata');
+        });
+
+        it('logs with fallback values when error properties are missing', function () {
+            const webhookModel = {
+                id: 'abc123',
+                get: sinon.stub()
+            };
+            webhookModel.get
+                .withArgs('event').returns('post.added')
+                .withArgs('target_url').returns(null);
+
+            const err = new Error();
+
+            errorTrigger.onError(webhookModel)(err);
+
+            const logLine = loggingStub.args[0][0];
+            assert.ok(logLine.includes('url=unknown'));
+            assert.ok(logLine.includes('status=none'));
+            assert.ok(logLine.includes('error_code=unknown'));
         });
     });
 });

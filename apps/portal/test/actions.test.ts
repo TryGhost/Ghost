@@ -88,6 +88,59 @@ describe('startSigninOTCFromCustomForm action', () => {
     });
 });
 
+describe('notification actions', () => {
+    test('increments notification count after a notification is dismissed', async () => {
+        const firstNotification = await ActionHandler({
+            action: 'openNotification',
+            data: {
+                action: 'giftRedemption:failed',
+                status: 'error',
+                autoHide: false,
+                message: 'Gift could not be redeemed'
+            },
+            state: {
+                notification: null,
+                notificationSequence: -1
+            },
+            api: {}
+        });
+
+        expect(firstNotification.notification.count).toBe(0);
+        expect(firstNotification.notificationSequence).toBe(0);
+
+        const dismissedNotification = await ActionHandler({
+            action: 'closeNotification',
+            data: {},
+            state: {
+                ...firstNotification
+            },
+            api: {}
+        });
+
+        expect(dismissedNotification).toEqual({
+            notification: null
+        });
+
+        const secondNotification = await ActionHandler({
+            action: 'openNotification',
+            data: {
+                action: 'giftRedemption:failed',
+                status: 'error',
+                autoHide: false,
+                message: 'Gift could not be redeemed'
+            },
+            state: {
+                ...firstNotification,
+                ...dismissedNotification
+            },
+            api: {}
+        });
+
+        expect(secondNotification.notification.count).toBe(1);
+        expect(secondNotification.notificationSequence).toBe(1);
+    });
+});
+
 describe('continueSubscription action', () => {
     test('returns reloadOnPopupClose on success', async () => {
         const mockApi = {

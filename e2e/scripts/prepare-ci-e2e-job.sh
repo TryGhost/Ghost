@@ -44,8 +44,8 @@ if [[ "$SKIP_IMAGE_BUILD" == "true" ]]; then
     echo "Using prebuilt E2E image; skipping app and Docker image build."
 else
     # Build the assets + E2E image layer while IO-heavy prep is running.
-    yarn workspace @tryghost/e2e build:apps
-    yarn workspace @tryghost/e2e build:docker
+    pnpm --filter @tryghost/e2e build:apps
+    pnpm --filter @tryghost/e2e build:docker
 fi
 
 for i in "${!pids[@]}"; do

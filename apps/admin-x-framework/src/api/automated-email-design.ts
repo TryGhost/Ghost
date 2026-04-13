@@ -6,6 +6,7 @@ export type AutomatedEmailDesign = {
     background_color: string;
     header_background_color: string;
     header_image: string | null;
+    show_header_icon: boolean;
     show_header_title: boolean;
     footer_content: string | null;
     button_color: string | null;
@@ -42,5 +43,9 @@ export const useEditAutomatedEmailDesign = createMutation<AutomatedEmailDesignRe
     method: 'PUT',
     path: () => '/automated_emails/design/',
     body: design => ({automated_email_design: [design]}),
-    invalidateQueries: {dataType}
+    updateQueries: {
+        emberUpdateType: 'skip',
+        dataType,
+        update: newData => newData
+    }
 });

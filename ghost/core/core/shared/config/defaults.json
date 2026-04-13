@@ -14,6 +14,7 @@
     },
     "privacy": false,
     "security": {
+        "allowWebhookInternalIPs": false,
         "staffDeviceVerification": true
     },
     "useMinFiles": true,
@@ -240,7 +241,7 @@
     },
     "portal": {
         "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
-        "version": "2.67"
+        "version": "2.68"
     },
     "sodoSearch": {
         "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",

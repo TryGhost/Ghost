@@ -167,6 +167,31 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         }
     };
 
+    api.gift = {
+        async fetchRedemptionData({token}) {
+            const url = endpointFor({type: 'members', resource: `gifts/${encodeURIComponent(token)}/redeem`});
+            const res = await makeRequest({
+                url,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            });
+
+            if (res.ok) {
+                return res.json();
+            }
+
+            const humanError = await HumanReadableError.fromApiResponse(res);
+            if (humanError) {
+                throw humanError;
+            }
+
+            throw new Error('Failed to load gift data');
+        }
+    };
+
     api.recommendations = {
         trackClicked({recommendationId}) {
             let url = endpointFor({type: 'members', resource: 'recommendations/' + recommendationId + '/clicked'});

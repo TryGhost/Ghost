@@ -52,6 +52,8 @@ function getStatusLabel(status: Member['status']): string {
         return 'Paid';
     case 'comped':
         return 'Complimentary';
+    case 'gift':
+        return 'Gift';
     default:
         return 'Free';
     }

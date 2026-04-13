@@ -14,13 +14,13 @@ if [[ "$GHOST_E2E_MODE" == "dev" ]]; then
   echo "E2E mode: dev (detected admin dev server at $LOCAL_ADMIN_DEV_SERVER_URL)"
 else
   echo "E2E mode: build (admin dev server not detected at $LOCAL_ADMIN_DEV_SERVER_URL)"
-  echo "  Tip: For local development, run 'yarn dev' first — dev mode is faster and doesn't require a pre-built Docker image."
+  echo "  Tip: For local development, run 'pnpm dev' first — dev mode is faster and doesn't require a pre-built Docker image."
 fi
 
 # Dev-mode E2E Ghost containers mount the local workspace package, which needs a
 # built entrypoint before Ghost can require it during boot.
 if [[ "$GHOST_E2E_MODE" == "dev" ]]; then
-  yarn workspace @tryghost/parse-email-address build >/dev/null
+  pnpm --filter @tryghost/parse-email-address build >/dev/null
 fi
 
 if [[ "${CI:-}" != "true" ]]; then

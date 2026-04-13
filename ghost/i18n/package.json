@@ -13,12 +13,12 @@
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "test:base": "NODE_ENV=testing c8 --include index.js --include lib --check-coverage --100  --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
-    "test": "yarn test:base && yarn translate",
+    "test": "pnpm test:base && pnpm translate",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
-    "lint": "yarn lint:code && yarn lint:test && yarn lint:translations",
+    "lint": "pnpm lint:code && pnpm lint:test && pnpm lint:translations",
     "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache",
     "lint:translations": "node ./test/i18n.lint.js",
-    "translate": "yarn translate:ghost && yarn translate:portal && yarn translate:signup-form && yarn translate:comments && yarn translate:search && node generate-context.js",
+    "translate": "pnpm translate:ghost && pnpm translate:portal && pnpm translate:signup-form && pnpm translate:comments && pnpm translate:search && node generate-context.js",
     "translate:ghost": "NAMESPACE=ghost i18next '../core/core/{frontend,server,shared}/**/*.{js,jsx}' '../core/core/server/services/email-rendering/partials/**/*.hbs' '../core/core/server/services/email-service/email-templates/**/*.hbs' '../core/core/server/services/comments/email-templates/**/*.hbs' '../core/core/server/services/member-welcome-emails/email-templates/**/*.hbs'",
     "translate:portal": "NAMESPACE=portal i18next '../../apps/portal/src/**/*.{js,jsx}'",
     "translate:signup-form": "NAMESPACE=signup-form i18next '../../apps/signup-form/src/**/*.{ts,tsx}'",
@@ -32,10 +32,12 @@
   ],
   "devDependencies": {
     "c8": "10.1.3",
+    "glob": "^13.0.6",
     "i18next-parser": "8.13.0",
-    "mocha": "11.7.3"
+    "mocha": "11.7.5"
   },
   "dependencies": {
+    "@tryghost/debug": "0.1.40",
     "i18next": "23.16.8"
   }
 }

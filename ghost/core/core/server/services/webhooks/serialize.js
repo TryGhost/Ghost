@@ -9,21 +9,34 @@ module.exports = (event, model) => {
 
     const POST_FORMATS = ['html', 'plaintext'];
     const POST_WITH_RELATED = ['tags', 'authors'];
+    const MEMBER_WITH_RELATED = [
+        'labels',
+        'products',
+        'newsletters'
+    ];
 
     const ops = [];
 
     if (Object.keys(model.attributes).length) {
-        ops.push(() => {
+        ops.push(async () => {
             let frame = {options: {previous: false, context: {user: true}}};
 
             // @NOTE: below options are lost during event processing, a more holistic approach would be
             //       to pass them somehow along with the model
-            if (['posts', 'pages'].includes(docName)) {
+            switch (docName) {
+            case 'posts':
+            case 'pages':
                 frame.options.formats = POST_FORMATS;
                 frame.options.withRelated = POST_WITH_RELATED;
                 model._originalOptions = {
                     withRelated: POST_WITH_RELATED
                 };
+                break;
+            case 'members':
+                await model.load(MEMBER_WITH_RELATED);
+                break;
+            default:
+                break;
             }
 
             return apiFramework
@@ -44,9 +57,14 @@ module.exports = (event, model) => {
         ops.push(() => {
             const frame = {options: {previous: true, context: {user: true}}};
 
-            if (['posts', 'pages'].includes(docName)) {
+            switch (docName) {
+            case 'posts':
+            case 'pages':
                 frame.options.formats = POST_FORMATS;
                 frame.options.withRelated = POST_WITH_RELATED;
+                break;
+            default:
+                break;
             }
 
             return apiFramework

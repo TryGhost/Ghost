@@ -19,7 +19,6 @@
     "Comment": "Yorum ekle",
     "Commenting disabled": "",
     "Complete your profile": "Profilinizi tamamlayın",
-    "Contact support": "",
     "Delete": "Sil",
     "Deleted": "Silindi",
     "Deleted member": "Silinen üye",
@@ -30,7 +29,6 @@
     "edited": "düzenlendi",
     "Enter your name": "Adınızı girin",
     "Expertise": "Uzmanlık",
-    "for more information.": "",
     "Founder @ Acme Inc": "Kurucu @ Firma Ünvan",
     "Full-time parent": "Tam zamanlı ebeveyn",
     "Head of Marketing at Acme, Inc": "Firma, Ünvan'da Pazarlama Müdürü",
@@ -76,5 +74,6 @@
     "View in admin": "",
     "Yesterday": "Dün",
     "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "Talebiniz bu sitenin sahibine gönderilecektir."
 }

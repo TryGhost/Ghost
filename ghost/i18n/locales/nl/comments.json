@@ -19,7 +19,6 @@
     "Comment": "Verstuur",
     "Commenting disabled": "",
     "Complete your profile": "Vervolledig jouw profiel",
-    "Contact support": "",
     "Delete": "Verwijderen",
     "Deleted": "Verwijderd",
     "Deleted member": "Verwijderd lid",
@@ -30,7 +29,6 @@
     "edited": "bewerkt",
     "Enter your name": "Vul je naam in",
     "Expertise": "Expertise",
-    "for more information.": "",
     "Founder @ Acme Inc": "Oprichter, Acme BV",
     "Full-time parent": "Full-time ouder",
     "Head of Marketing at Acme, Inc": "Acme BV, Hoofd Marketing",
@@ -76,5 +74,6 @@
     "View in admin": "",
     "Yesterday": "Gisteren",
     "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "Jouw melding zal worden verzonden naar de eigenaar van deze site."
 }

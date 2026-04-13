@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.27.0-rc.0",
+  "version": "6.29.0-rc.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -24,107 +24,110 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "archive": "npm pack",
-    "pack:standalone": "rm -rf package ghost-*.tgz && npm pack && tar -xzf ghost-*.tgz && cp ../../yarn.lock package/ && rm ghost-*.tgz",
-    "pack:tarball": "tar -czf ghost-$(node -p \"require('./package.json').version\").tgz package",
+    "archive": "pnpm pack:standalone && pnpm pack:tarball",
+    "pack:standalone": "rm -rf package; find . -maxdepth 1 -name 'ghost-*.tgz' -delete; npm pack && tar xzf ghost-*.tgz && cp ../../pnpm-lock.yaml package/ && cp ../../.npmrc package/.npmrc && echo '\nfrozen-lockfile=false\nshamefully-hoist=true' >> package/.npmrc && rm ghost-*.tgz && rm -f pnpm-lock.yaml pnpm-workspace.yaml .npmrc",
+    "pack:tarball": "tar czf ghost-$(node -p \"require('./package.json').version\").tgz package && rm -rf package",
     "dev": "nodemon index.js",
-    "build:assets": "yarn build:assets:css && yarn build:assets:js",
+    "build:assets": "pnpm build:assets:css && pnpm build:assets:js",
     "build:assets:js": "node bin/minify-assets.js",
     "generate-golden-email": "node bin/generate-golden-email.js",
     "migrate:create": "node bin/create-migration.js",
     "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "build:tsc": "tsc",
-    "pretest": "yarn build:assets",
-    "test": "yarn test:unit",
+    "pretest": "pnpm build:assets",
+    "test": "pnpm test:unit",
     "test:base": "mocha --reporter dot --node-option import=tsx --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js,test.ts",
-    "test:single": "f() { q=$(echo \"$1\" | sed 's/\\.test\\.[jt]s$//'); case \"$q\" in */*) yarn test:base --timeout=60000 \"$1\" ;; *) yarn test:base --timeout=60000 \"test/**/*$q*.test.{js,ts}\" ;; esac; }; f",
-    "test:all": "yarn test:unit && yarn test:integration && yarn test:e2e && yarn lint",
-    "test:debug": "DEBUG=ghost:test* yarn test",
-    "test:unit": "c8 yarn test:unit:${GHOST_UNIT_TEST_VARIANT:-base}",
-    "test:unit:base": "yarn test:base './test/unit' --timeout=2000",
-    "test:unit:ci": "yarn test:unit:base --reporter=min",
-    "test:integration": "yarn test:base './test/integration' --timeout=10000",
-    "test:e2e": "yarn test:base ./test/e2e-* --timeout=15000",
-    "test:legacy": "yarn test:base './test/legacy' --timeout=60000",
-    "test:ci:e2e": "c8 -c ./.c8rc.e2e.json -o coverage-e2e yarn test:e2e -b",
-    "test:ci:legacy": "yarn test:legacy -b",
-    "test:ci:integration": "c8 -c ./.c8rc.e2e.json -o coverage-integration --lines 52 --functions 47 --branches 73 --statements 52 yarn test:integration -b",
-    "test:unit:slow": "yarn test:unit --reporter=mocha-slow-test-reporter",
-    "test:int:slow": "yarn test:integration --reporter=mocha-slow-test-reporter",
-    "test:e2e:slow": "yarn test:e2e --reporter=mocha-slow-test-reporter",
+    "test:single": "f() { q=$(echo \"$1\" | sed 's/\\.test\\.[jt]s$//'); case \"$q\" in */*) pnpm test:base --timeout=60000 \"$1\" ;; *) pnpm test:base --timeout=60000 \"test/**/*$q*.test.{js,ts}\" ;; esac; }; f",
+    "test:all": "pnpm test:unit && pnpm test:integration && pnpm test:e2e && pnpm lint",
+    "test:debug": "DEBUG=ghost:test* pnpm test",
+    "test:unit": "c8 pnpm test:unit:${GHOST_UNIT_TEST_VARIANT:-base}",
+    "test:unit:base": "pnpm test:base './test/unit' --timeout=2000",
+    "test:unit:ci": "pnpm test:unit:base --reporter=min",
+    "test:integration": "pnpm test:base './test/integration' --timeout=10000",
+    "test:e2e": "pnpm test:base ./test/e2e-* --timeout=15000",
+    "test:legacy": "pnpm test:base './test/legacy' --timeout=60000",
+    "test:ci:e2e": "c8 -c ./.c8rc.e2e.json -o coverage-e2e pnpm test:e2e -b",
+    "test:ci:legacy": "pnpm test:legacy -b",
+    "test:ci:integration": "c8 -c ./.c8rc.e2e.json -o coverage-integration --lines 52 --functions 47 --branches 73 --statements 52 pnpm test:integration -b",
+    "test:unit:slow": "pnpm test:unit --reporter=mocha-slow-test-reporter",
+    "test:int:slow": "pnpm test:integration --reporter=mocha-slow-test-reporter",
+    "test:e2e:slow": "pnpm test:e2e --reporter=mocha-slow-test-reporter",
     "test:leg:slow": "mocha --reporter dot --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js  './test/legacy' --timeout=60000 --reporter=mocha-slow-test-reporter",
     "lint:server": "eslint --ignore-path .eslintignore 'core/server/**/*.js' 'core/*.js' '*.js' --cache",
     "lint:shared": "eslint --ignore-path .eslintignore 'core/shared/**/*.js' --cache",
     "lint:frontend": "eslint --ignore-path .eslintignore 'core/frontend/**/*.js' --cache",
     "lint:test": "eslint -c test/.eslintrc.js --ignore-path test/.eslintignore 'test/**/*.js' --cache",
-    "lint:code": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
+    "lint:code": "pnpm lint:server && pnpm lint:shared && pnpm lint:frontend",
     "lint:types": "eslint --ignore-path .eslintignore '**/*.ts' --cache && tsc --noEmit",
-    "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test && yarn lint:types",
-    "prepack": "node monobundle.js"
+    "lint": "pnpm lint:server && pnpm lint:shared && pnpm lint:frontend && pnpm lint:test && pnpm lint:types",
+    "prepack": "node monobundle.js",
+    "postpack": "cd ../.. && git checkout -- ghost/core/package.json ghost/i18n/package.json ghost/parse-email-address/package.json && rm -f ghost/core/pnpm-lock.yaml ghost/core/pnpm-workspace.yaml ghost/core/.npmrc && rm -rf ghost/core/components"
   },
   "engines": {
     "node": "^22.13.1",
-    "cli": "^1.27.0"
+    "cli": "^1.29.1"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.1023.0",
+    "@aws-sdk/client-s3": "3.1025.0",
     "@extractus/oembed-extractor": "3.2.1",
     "@faker-js/faker": "7.6.0",
     "@isaacs/ttlcache": "1.4.1",
     "@sentry/node": "7.120.4",
-    "@slack/webhook": "7.0.6",
-    "@tryghost/adapter-base-cache": "0.1.17",
-    "@tryghost/admin-api-schema": "4.5.10",
-    "@tryghost/api-framework": "1.0.3",
+    "@slack/webhook": "7.0.8",
+    "@tryghost/adapter-base-cache": "0.1.23",
+    "@tryghost/admin-api-schema": "4.7.2",
+    "@tryghost/api-framework": "1.0.7",
     "@tryghost/bookshelf-plugins": "2.0.3",
-    "@tryghost/color-utils": "0.2.10",
-    "@tryghost/config-url-helpers": "1.0.17",
-    "@tryghost/custom-fonts": "1.0.2",
-    "@tryghost/database-info": "0.3.30",
-    "@tryghost/debug": "0.1.35",
-    "@tryghost/domain-events": "1.0.2",
-    "@tryghost/email-mock-receiver": "0.3.11",
-    "@tryghost/errors": "1.3.8",
-    "@tryghost/helpers": "1.1.97",
-    "@tryghost/html-to-plaintext": "1.0.4",
-    "@tryghost/http-cache-utils": "0.1.20",
-    "@tryghost/i18n": "0.0.0",
+    "@tryghost/color-utils": "0.2.16",
+    "@tryghost/config-url-helpers": "1.0.23",
+    "@tryghost/custom-fonts": "1.0.8",
+    "@tryghost/database-info": "0.3.35",
+    "@tryghost/debug": "0.1.40",
+    "@tryghost/domain-events": "1.0.8",
+    "@tryghost/email-mock-receiver": "0.3.16",
+    "@tryghost/errors": "1.3.13",
+    "@tryghost/helpers": "1.1.103",
+    "@tryghost/html-to-plaintext": "1.0.8",
+    "@tryghost/http-cache-utils": "0.1.25",
+    "@tryghost/i18n": "workspace:*",
     "@tryghost/image-transform": "1.4.13",
-    "@tryghost/job-manager": "1.0.3",
-    "@tryghost/kg-card-factory": "5.1.13",
-    "@tryghost/kg-clean-basic-html": "4.2.21",
-    "@tryghost/kg-converters": "1.1.20",
-    "@tryghost/kg-default-atoms": "5.1.8",
-    "@tryghost/kg-default-cards": "10.2.11",
-    "@tryghost/kg-default-nodes": "2.0.17",
-    "@tryghost/kg-default-transforms": "1.2.40",
-    "@tryghost/kg-html-to-lexical": "1.2.41",
-    "@tryghost/kg-lexical-html-renderer": "1.3.40",
-    "@tryghost/kg-markdown-html-renderer": "7.1.16",
-    "@tryghost/kg-mobiledoc-html-renderer": "7.1.16",
-    "@tryghost/limit-service": "1.4.1",
-    "@tryghost/logging": "2.5.0",
-    "@tryghost/members-csv": "2.0.3",
-    "@tryghost/metrics": "1.0.38",
-    "@tryghost/mw-error-handler": "1.0.7",
-    "@tryghost/mw-vhost": "1.0.1",
+    "@tryghost/job-manager": "1.0.9",
+    "@tryghost/kg-card-factory": "5.1.14",
+    "@tryghost/kg-clean-basic-html": "4.2.23",
+    "@tryghost/kg-converters": "1.1.21",
+    "@tryghost/kg-default-atoms": "5.1.9",
+    "@tryghost/kg-default-cards": "10.2.13",
+    "@tryghost/kg-default-nodes": "2.0.21",
+    "@tryghost/kg-default-transforms": "1.2.44",
+    "@tryghost/kg-html-to-lexical": "1.2.45",
+    "@tryghost/kg-lexical-html-renderer": "1.3.44",
+    "@tryghost/kg-markdown-html-renderer": "7.1.18",
+    "@tryghost/kg-mobiledoc-html-renderer": "7.1.18",
+    "@tryghost/limit-service": "1.5.2",
+    "@tryghost/logging": "2.5.5",
+    "@tryghost/members-csv": "2.0.5",
+    "@tryghost/metrics": "1.0.43",
+    "@tryghost/mongo-utils": "0.6.3",
+    "@tryghost/mw-error-handler": "1.0.13",
+    "@tryghost/mw-vhost": "1.0.6",
     "@tryghost/nodemailer": "0.3.48",
     "@tryghost/nql": "0.12.10",
-    "@tryghost/parse-email-address": "0.0.0",
-    "@tryghost/pretty-cli": "1.2.47",
-    "@tryghost/prometheus-metrics": "1.0.2",
-    "@tryghost/promise": "0.3.15",
-    "@tryghost/referrer-parser": "0.1.8",
+    "@tryghost/nql-lang": "0.6.4",
+    "@tryghost/parse-email-address": "workspace:*",
+    "@tryghost/pretty-cli": "1.2.52",
+    "@tryghost/prometheus-metrics": "1.0.8",
+    "@tryghost/promise": "0.3.20",
+    "@tryghost/referrer-parser": "0.1.15",
     "@tryghost/request": "1.0.12",
-    "@tryghost/root-utils": "0.3.33",
-    "@tryghost/security": "1.0.1",
-    "@tryghost/social-urls": "0.1.54",
-    "@tryghost/string": "0.2.17",
-    "@tryghost/tpl": "0.1.35",
+    "@tryghost/root-utils": "0.3.38",
+    "@tryghost/security": "1.0.6",
+    "@tryghost/social-urls": "0.1.60",
+    "@tryghost/string": "0.3.2",
+    "@tryghost/tpl": "0.1.40",
     "@tryghost/url-utils": "5.1.2",
-    "@tryghost/validator": "0.2.17",
-    "@tryghost/version": "0.1.33",
-    "@tryghost/zip": "1.1.49",
+    "@tryghost/validator": "0.2.22",
+    "@tryghost/version": "0.1.38",
+    "@tryghost/zip": "1.1.54",
     "body-parser": "1.20.4",
     "bookshelf": "1.2.0",
     "bookshelf-relations": "2.8.0",
@@ -160,21 +163,22 @@
     "express-session": "1.19.0",
     "file-type": "16.5.4",
     "form-data": "4.0.5",
-    "fs-extra": "11.3.0",
+    "fs-extra": "11.3.4",
     "ghost-storage-base": "1.1.2",
     "glob": "8.1.0",
     "got": "13.0.0",
-    "gscan": "5.4.0",
+    "gscan": "5.4.3",
     "handlebars": "4.7.9",
     "heic-convert": "2.1.0",
     "html-to-text": "5.1.1",
     "html5parser": "2.0.2",
-    "human-number": "2.0.8",
-    "iconv-lite": "0.6.3",
+    "human-number": "2.0.10",
+    "iconv-lite": "0.7.2",
     "image-size": "1.2.1",
     "intl": "1.2.5",
     "intl-messageformat": "5.4.3",
     "js-yaml": "4.1.1",
+    "jsdom": "28.1.0",
     "jsonc-parser": "3.3.1",
     "jsonwebtoken": "8.5.1",
     "juice": "9.1.0",
@@ -182,7 +186,7 @@
     "knex": "2.4.2",
     "knex-migrator": "5.3.2",
     "leaky-bucket": "2.2.0",
-    "lodash": "4.17.21",
+    "lodash": "4.17.23",
     "luxon": "3.7.2",
     "mailgun.js": "10.4.0",
     "metascraper": "5.45.15",
@@ -195,6 +199,7 @@
     "metascraper-title": "5.45.10",
     "metascraper-url": "5.45.10",
     "mime-types": "2.1.35",
+    "mingo": "2.5.3",
     "moment": "2.24.0",
     "moment-timezone": "0.5.45",
     "multer": "2.0.2",
@@ -203,6 +208,7 @@
     "node-fetch": "2.7.0",
     "node-jose": "2.2.0",
     "nodemailer": "6.10.1",
+    "on-headers": "^1.1.0",
     "otplib": "12.0.1",
     "papaparse": "5.5.3",
     "path-match": "1.2.4",
@@ -221,22 +227,32 @@
     "ua-parser-js": "1.0.41",
     "xml": "1.0.1"
   },
+  "overrides": {
+    "lodash.template": "4.5.0"
+  },
   "optionalDependencies": {
-    "@tryghost/html-to-mobiledoc": "3.2.23",
+    "@tryghost/html-to-mobiledoc": "3.2.26",
     "sqlite3": "5.1.7"
   },
   "devDependencies": {
-    "@actions/core": "1.11.1",
+    "@actions/core": "3.0.0",
     "@prettier/sync": "0.6.1",
-    "@tryghost/express-test": "0.15.0",
-    "@tryghost/webhook-mock-receiver": "0.2.17",
+    "@tryghost/express-test": "0.15.5",
+    "@tryghost/webhook-mock-receiver": "0.2.22",
     "@types/bookshelf": "1.2.9",
     "@types/common-tags": "1.8.4",
+    "@types/express": "4.17.25",
+    "@types/jsdom": "28.0.1",
     "@types/jsonwebtoken": "9.0.10",
+    "@types/lodash": "4.17.24",
+    "@types/lodash-es": "4.17.12",
     "@types/mime-types": "3.0.1",
-    "@types/node": "22.18.10",
+    "@types/mocha": "10.0.10",
+    "@types/node": "22.19.17",
+    "@types/node-fetch": "2.6.13",
     "@types/node-jose": "1.1.13",
-    "@types/nodemailer": "6.4.20",
+    "@types/nodemailer": "6.4.23",
+    "@types/on-headers": "1.0.4",
     "@types/sinon": "17.0.4",
     "@types/supertest": "6.0.3",
     "c8": "10.1.3",
@@ -252,7 +268,8 @@
     "inquirer": "8.2.7",
     "jwk-to-pem": "2.0.7",
     "jwks-rsa": "3.2.0",
-    "mocha": "11.7.3",
+    "lodash-es": "4.17.23",
+    "mocha": "11.7.5",
     "mocha-slow-test-reporter": "0.1.2",
     "mock-knex": "TryGhost/mock-knex#68948e11b0ea4fe63456098dfdc169bea7f62009",
     "nock": "13.5.6",
@@ -261,31 +278,19 @@
     "parse-prometheus-text-format": "1.1.1",
     "postcss": "8.5.6",
     "postcss-cli": "11.0.1",
-    "rewire": "8.0.0",
+    "rewire": "9.0.1",
     "sinon": "18.0.1",
     "supertest": "6.3.4",
     "tmp": "0.2.5",
     "toml": "3.0.0",
     "tsx": "4.21.0",
-    "typescript": "5.8.3"
-  },
-  "resolutions": {
-    "@tryghost/errors": "1.3.8",
-    "@tryghost/logging": "2.5.0",
-    "jackspeak": "2.3.6",
-    "moment": "2.24.0",
-    "moment-timezone": "0.5.45"
+    "typescript": "5.9.3"
   },
   "nx": {
     "targets": {
       "build:tsc": {
         "dependsOn": [
-          {
-            "projects": [
-              "@tryghost/parse-email-address"
-            ],
-            "target": "build"
-          }
+          "^build"
         ]
       },
       "archive": {
@@ -307,12 +312,7 @@
       },
       "lint": {
         "dependsOn": [
-          {
-            "projects": [
-              "@tryghost/parse-email-address"
-            ],
-            "target": "build"
-          }
+          "^build"
         ]
       },
       "test:all": {
@@ -323,12 +323,22 @@
       "test:unit": {
         "dependsOn": [
           "build:assets",
-          {
-            "projects": [
-              "@tryghost/parse-email-address"
-            ],
-            "target": "build"
-          }
+          "^build"
+        ]
+      },
+      "test:ci:e2e": {
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "test:ci:legacy": {
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "test:ci:integration": {
+        "dependsOn": [
+          "^build"
         ]
       }
     }
