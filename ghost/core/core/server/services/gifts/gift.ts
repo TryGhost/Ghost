@@ -141,7 +141,7 @@ export class Gift {
         return {redeemable: true};
     }
 
-    markRefunded(): boolean {
+    refund(): boolean {
         if (this.isRefunded()) {
             return false;
         }

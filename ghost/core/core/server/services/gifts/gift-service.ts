@@ -174,7 +174,7 @@ export class GiftService {
             return false;
         }
 
-        const refunded = gift.markRefunded();
+        const refunded = gift.refund();
 
         if (!refunded) {
             return true;

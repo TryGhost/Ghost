@@ -109,12 +109,12 @@ describe('Gift', function () {
         });
     });
 
-    describe('markRefunded', function () {
-        it('sets status to refunded and refundedAt to now and returns true', function () {
+    describe('refund', function () {
+        it('updates the gift to reflect that it has been refunded', function () {
             const gift = buildGift();
             const before = new Date();
 
-            const result = gift.markRefunded();
+            const result = gift.refund();
 
             const after = new Date();
 
@@ -132,7 +132,7 @@ describe('Gift', function () {
                 refundedAt: originalRefundedAt
             });
 
-            const result = gift.markRefunded();
+            const result = gift.refund();
 
             assert.equal(result, false);
             assert.equal(gift.status, 'refunded');
