@@ -176,6 +176,23 @@ describe('Members Service Middleware', function () {
             assert.equal(res.redirect.firstCall.args[0], 'https://site.com/blah/my-post/?action=signup&success=true#comment-123');
         });
 
+        it('redirects member to referrer param path on failure if it is on the site', async function () {
+            req.url = '/members?token=test&action=subscribe&r=https%3A%2F%2Fsite.com%2Fblah%2F';
+            req.query = {
+                token: 'test',
+                action: 'subscribe',
+                r: 'https://site.com/blah/#/portal/account?giftRedemption=true'
+            };
+
+            membersService.ssr.exchangeTokenForSession.rejects();
+
+            await membersMiddleware.createSessionFromMagicLink(req, res, next);
+
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            assert.equal(res.redirect.firstCall.args[0], 'https://site.com/blah/?action=subscribe&success=false#/portal/account?giftRedemption=true');
+        });
+
         it('does not redirect to referrer param if it is external', async function () {
             req.url = '/members?token=test&action=signin&r=https%3A%2F%2Fexternal.com%2Fwhatever%2F';
             req.query = {token: 'test', action: 'signin', r: 'https://external.com/whatever/'};

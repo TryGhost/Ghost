@@ -253,9 +253,7 @@ test.describe('Ghost Admin - Welcome Email Customize Button - flag enabled', () 
         await expect(page).toHaveURL(/\/ghost\/#\/settings\/memberemails$/);
     });
 
-    // Skipped: Escape event from AlertDialog propagates to parent Dialog, closing both.
-    // Fix needed in EmailDesignModal to prevent Dialog from reacting when AlertDialog is open.
-    test.skip('Escape closes welcome email customization confirmation without closing the customize modal', async ({page}) => {
+    test('Escape closes welcome email customization confirmation without closing the customize modal', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
         await welcomeEmailsSection.goto();
@@ -273,9 +271,7 @@ test.describe('Ghost Admin - Welcome Email Customize Button - flag enabled', () 
         await expect(page).toHaveURL(/\/ghost\/#\/settings\/memberemails$/);
     });
 
-    // Skipped: Escape event from AlertDialog propagates to parent Dialog, closing both.
-    // Fix needed in EmailDesignModal to prevent Dialog from reacting when AlertDialog is open.
-    test.skip('Escape closes welcome email color picker without bypassing unsaved changes confirmation', async ({page}) => {
+    test('Escape closes welcome email color picker without bypassing unsaved changes confirmation', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
         await welcomeEmailsSection.goto();
@@ -303,9 +299,7 @@ test.describe('Ghost Admin - Welcome Email Customize Button - flag enabled', () 
         await expect(page).toHaveURL(/\/ghost\/#\/settings\/memberemails$/);
     });
 
-    // Skipped: Escape event from AlertDialog propagates to parent Dialog, closing both.
-    // Fix needed in EmailDesignModal to prevent Dialog from reacting when AlertDialog is open.
-    test.skip('Escape closes welcome email font select without bypassing unsaved changes confirmation', async ({page}) => {
+    test('Escape closes welcome email font select without bypassing unsaved changes confirmation', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
         await welcomeEmailsSection.goto();

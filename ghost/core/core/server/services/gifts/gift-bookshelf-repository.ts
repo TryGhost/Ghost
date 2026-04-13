@@ -1,15 +1,16 @@
 import {Gift, type GiftCadence, type GiftStatus} from './gift';
-import type {GiftRepository} from './gift-repository';
+import type {GiftRepository, RepositoryTransactionOptions} from './gift-repository';
 
 type BookshelfDocument<T> = {
+    save(data: Partial<T>, options?: unknown): Promise<unknown>;
+    set(data: Partial<T>): void;
     toJSON(): T;
 };
 
 type BookshelfModel<T> = {
     add(data: Partial<T>, unfilteredOptions?: unknown): Promise<T>;
-    edit(data: Partial<T>, unfilteredOptions?: unknown): Promise<BookshelfDocument<T>>;
-    findOne(data: Record<string, unknown>, options: {require: true}): Promise<BookshelfDocument<T>>;
-    findOne(data: Record<string, unknown>, options?: {require?: false}): Promise<BookshelfDocument<T> | null>;
+    transaction<R>(callback: (transacting: unknown) => Promise<R>): Promise<R>;
+    findOne(data: Record<string, unknown>, unfilteredOptions?: unknown): Promise<BookshelfDocument<T> | null>;
 };
 
 type GiftRow = {
@@ -52,27 +53,45 @@ export class GiftBookshelfRepository implements GiftRepository {
         return !!existing;
     }
 
-    async create(gift: Gift) {
-        await this.model.add(this.toRow(gift));
+    async create(gift: Gift, options: RepositoryTransactionOptions = {}) {
+        await this.model.add(this.toRow(gift), options);
     }
 
-    async update(gift: Gift): Promise<void> {
-        const existing = await this.model.findOne({token: gift.token}, {require: true});
-        const id = existing.toJSON().id;
+    async getByToken(token: string, options: RepositoryTransactionOptions = {}): Promise<Gift | null> {
+        const model = await this.model.findOne({
+            token
+        }, {require: false, ...options});
 
-        await this.model.edit(this.toRow(gift), {id});
-    }
-
-    async getByToken(token: string): Promise<Gift | null> {
-        return this.toGift(
-            await this.model.findOne({token}, {require: false})
-        );
+        return this.toGift(model);
     }
 
     async getByPaymentIntentId(paymentIntentId: string): Promise<Gift | null> {
-        return this.toGift(
-            await this.model.findOne({stripe_payment_intent_id: paymentIntentId}, {require: false})
-        );
+        const model = await this.model.findOne({
+            stripe_payment_intent_id: paymentIntentId
+        }, {require: false});
+
+        return this.toGift(model);
+    }
+
+    async save(gift: Gift, options: RepositoryTransactionOptions = {}) {
+        const existing = await this.model.findOne({
+            token: gift.token
+        }, {require: false, ...options});
+
+        if (!existing) {
+            return this.create(gift, options);
+        }
+
+        await existing.save(this.toRow(gift), {
+            autoRefresh: false,
+            method: 'update',
+            patch: true,
+            ...options
+        });
+    }
+
+    async transaction<T>(callback: (transacting: unknown) => Promise<T>): Promise<T> {
+        return await this.model.transaction(callback);
     }
 
     private toRow(gift: Gift): Omit<GiftRow, 'id'> {

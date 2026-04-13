@@ -377,11 +377,9 @@ async function initServices() {
         donationService.init(),
         recommendationsService.init(),
         statsService.init(),
-        explorePingService.init()
+        explorePingService.init(),
+        giftService.init()
     ]);
-
-    // Gift service depends on members, tiers, and staff services
-    await giftService.init();
 
     debug('End: Services');
 
