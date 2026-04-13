@@ -24,7 +24,7 @@ function hexToRgb(hex) {
 function getBackgroundColor(accentColor) {
     const {r, g, b} = hexToRgb(accentColor);
     const opacity = 0.06;
-    const blend = (c) => Math.round(255 + (c - 255) * opacity);
+    const blend = c => Math.round(255 + (c - 255) * opacity);
     return `rgb(${blend(r)}, ${blend(g)}, ${blend(b)})`;
 }
 
