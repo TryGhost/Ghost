@@ -2592,6 +2592,9 @@ importers:
 
   ghost/i18n:
     dependencies:
+      '@tryghost/debug':
+        specifier: 0.1.40
+        version: 0.1.40
       i18next:
         specifier: 23.16.8
         version: 23.16.8
