@@ -18,6 +18,7 @@ const DirtyConfirmModal: React.FC<DirtyConfirmModalProps> = ({
 }) => {
     const modal = useModal();
     const prevVisibleRef = useRef(modal.visible);
+    const shouldLeaveRef = useRef(false);
 
     useEffect(() => {
         if (prevVisibleRef.current && !modal.visible) {
@@ -28,17 +29,14 @@ const DirtyConfirmModal: React.FC<DirtyConfirmModalProps> = ({
         prevVisibleRef.current = modal.visible;
     }, [modal]);
 
-    const close = (shouldLeave: boolean) => {
-        modal.resolve(shouldLeave);
-        modal.hide();
-    };
-
     return (
         <AlertDialog
             open={modal.visible}
             onOpenChange={(isOpen) => {
                 if (!isOpen) {
-                    close(false);
+                    modal.resolve(shouldLeaveRef.current);
+                    shouldLeaveRef.current = false;
+                    modal.hide();
                 }
             }}
         >
@@ -56,10 +54,17 @@ const DirtyConfirmModal: React.FC<DirtyConfirmModalProps> = ({
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel asChild>
-                        <Button variant="outline" onClick={() => close(false)}>Stay</Button>
+                        <Button variant="outline">Stay</Button>
                     </AlertDialogCancel>
                     <AlertDialogAction asChild>
-                        <Button variant="destructive" onClick={() => close(true)}>Leave</Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                shouldLeaveRef.current = true;
+                            }}
+                        >
+                            Leave
+                        </Button>
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
