@@ -50,7 +50,7 @@ module.exports = class ChargeRefundedEventService {
      * @private
      */
     async handleGiftRefundEvent(paymentIntentId) {
-        const refunded = await this.deps.giftService.refundGift(paymentIntentId);
+        const refunded = await this.deps.giftService.refund(paymentIntentId);
 
         if (!refunded) {
             logging.info(`charge.refunded: no gift found for payment_intent ${paymentIntentId}, skipping`);

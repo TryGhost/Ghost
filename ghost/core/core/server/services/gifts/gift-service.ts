@@ -158,27 +158,6 @@ export class GiftService {
         return true;
     }
 
-    async refundGift(paymentIntentId: string): Promise<boolean> {
-        const gift = await this.deps.giftRepository.getByPaymentIntentId(paymentIntentId);
-
-        if (!gift) {
-            return false;
-        }
-
-        const refunded = gift.refund();
-
-        if (!refunded) {
-            return true;
-        }
-
-        await this.deps.giftRepository.save(refunded);
-
-        // TODO: if the gift was already redeemed/consumed, we should also
-        // downgrade the recipient member back to free.
-
-        return true;
-    }
-
     async getByToken(token: string): Promise<Gift> {
         const gift = await this.deps.giftRepository.getByToken(token);
 
@@ -271,5 +250,26 @@ export class GiftService {
 
             return redeemed;
         });
+    }
+
+    async refund(paymentIntentId: string): Promise<boolean> {
+        const gift = await this.deps.giftRepository.getByPaymentIntentId(paymentIntentId);
+
+        if (!gift) {
+            return false;
+        }
+
+        const refunded = gift.refund();
+
+        if (!refunded) {
+            return true;
+        }
+
+        await this.deps.giftRepository.save(refunded);
+
+        // TODO: if the gift was already redeemed/consumed, we should also
+        // downgrade the recipient member back to free.
+
+        return true;
     }
 }

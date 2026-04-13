@@ -146,18 +146,6 @@ export class Gift {
         return {redeemable: true};
     }
 
-    refund(): Gift | null {
-        if (this.isRefunded()) {
-            return null;
-        }
-
-        return new Gift({
-            ...this,
-            status: 'refunded',
-            refundedAt: new Date()
-        });
-    }
-
     redeem({memberId, redeemedAt = new Date()}: {memberId: string; redeemedAt?: Date}) {
         const consumesAt = new Date(redeemedAt);
 
@@ -173,6 +161,18 @@ export class Gift {
             redeemedAt,
             consumesAt,
             status: 'redeemed'
+        });
+    }
+
+    refund(): Gift | null {
+        if (this.isRefunded()) {
+            return null;
+        }
+
+        return new Gift({
+            ...this,
+            status: 'refunded',
+            refundedAt: new Date()
         });
     }
 }

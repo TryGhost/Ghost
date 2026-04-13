@@ -304,51 +304,6 @@ describe('GiftService', function () {
         });
     });
 
-    describe('refundGift', function () {
-        it('saves a refunded gift and returns true', async function () {
-            const gift = buildGift();
-
-            giftRepository.getByPaymentIntentId.resolves(gift);
-
-            const service = createService();
-            const result = await service.refundGift('pi_456');
-
-            assert.equal(result, true);
-            sinon.assert.calledOnce(giftRepository.save);
-
-            const saved = giftRepository.save.getCall(0).args[0];
-
-            assert.equal(saved.status, 'refunded');
-            assert.ok(saved.refundedAt);
-            assert.notEqual(saved, gift);
-        });
-
-        it('returns false when no gift matches the payment intent', async function () {
-            giftRepository.getByPaymentIntentId.resolves(null);
-
-            const service = createService();
-            const result = await service.refundGift('pi_unknown');
-
-            assert.equal(result, false);
-            sinon.assert.notCalled(giftRepository.save);
-        });
-
-        it('returns true without saving when gift is already refunded', async function () {
-            const gift = buildGift({
-                status: 'refunded',
-                refundedAt: new Date('2026-02-01T00:00:00.000Z')
-            });
-
-            giftRepository.getByPaymentIntentId.resolves(gift);
-
-            const service = createService();
-            const result = await service.refundGift('pi_456');
-
-            assert.equal(result, true);
-            sinon.assert.notCalled(giftRepository.save);
-        });
-    });
-
     describe('getRedeemable', function () {
         it('returns the gift when it exists and is redeemable', async function () {
             const gift = buildGift();
@@ -561,6 +516,51 @@ describe('GiftService', function () {
             );
 
             sinon.assert.notCalled(memberRepository.update);
+            sinon.assert.notCalled(giftRepository.save);
+        });
+    });
+
+    describe('refund', function () {
+        it('saves a refunded gift and returns true', async function () {
+            const gift = buildGift();
+
+            giftRepository.getByPaymentIntentId.resolves(gift);
+
+            const service = createService();
+            const result = await service.refund('pi_456');
+
+            assert.equal(result, true);
+            sinon.assert.calledOnce(giftRepository.save);
+
+            const saved = giftRepository.save.getCall(0).args[0];
+
+            assert.equal(saved.status, 'refunded');
+            assert.ok(saved.refundedAt);
+            assert.notEqual(saved, gift);
+        });
+
+        it('returns false when no gift matches the payment intent', async function () {
+            giftRepository.getByPaymentIntentId.resolves(null);
+
+            const service = createService();
+            const result = await service.refund('pi_unknown');
+
+            assert.equal(result, false);
+            sinon.assert.notCalled(giftRepository.save);
+        });
+
+        it('returns true without saving when gift is already refunded', async function () {
+            const gift = buildGift({
+                status: 'refunded',
+                refundedAt: new Date('2026-02-01T00:00:00.000Z')
+            });
+
+            giftRepository.getByPaymentIntentId.resolves(gift);
+
+            const service = createService();
+            const result = await service.refund('pi_456');
+
+            assert.equal(result, true);
             sinon.assert.notCalled(giftRepository.save);
         });
     });
