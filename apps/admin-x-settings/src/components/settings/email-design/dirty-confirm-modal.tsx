@@ -30,7 +30,7 @@ const DirtyConfirmModal: React.FC<DirtyConfirmModalProps> = ({
 
     const close = (shouldLeave: boolean) => {
         modal.resolve(shouldLeave);
-        void modal.hide();
+        modal.hide();
     };
 
     return (

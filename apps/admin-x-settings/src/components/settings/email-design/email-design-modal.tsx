@@ -75,7 +75,7 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
             open={open}
             onOpenChange={(isOpen) => {
                 if (!isOpen) {
-                    void handleClose();
+                    handleClose();
                 }
             }}
         >
@@ -87,7 +87,7 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
                 onEscapeKeyDown={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
-                    void handleClose();
+                    handleClose();
                 }}
             >
                 <div className="flex h-full min-h-0">
@@ -101,7 +101,7 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
                         <div className="flex items-center justify-between px-6 py-5">
                             <DialogTitle>{title}</DialogTitle>
                             <div className="flex items-center gap-2">
-                                <Button variant="outline" onClick={() => void handleClose()}>Close</Button>
+                                <Button variant="outline" onClick={() => handleClose()}>Close</Button>
                                 <Button
                                     className={okProps?.color === 'green' ? 'bg-green text-white hover:bg-green/90' : undefined}
                                     disabled={isLoading || okProps?.disabled}
