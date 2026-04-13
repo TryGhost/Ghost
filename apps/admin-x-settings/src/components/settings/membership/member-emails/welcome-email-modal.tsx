@@ -16,11 +16,12 @@ import {useGlobalData} from '../../../../components/providers/global-data-provid
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import type {AutomatedEmail, AutomatedEmailPreview} from '@tryghost/admin-x-framework/api/automated-emails';
 
-import {Button} from '@tryghost/shade/components';
+import {Button, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
 
 interface EmailPreviewModalContentProps {
     title: string;
+    centeredHeaderContent?: React.ReactNode;
     headerActions?: React.ReactNode;
     children: React.ReactNode;
     className?: string;
@@ -29,7 +30,7 @@ interface EmailPreviewModalContentProps {
 const EmailPreviewModalContent = React.forwardRef<
     HTMLDivElement,
     EmailPreviewModalContentProps
->(({title, headerActions, children, className}, ref) => (
+>(({title, centeredHeaderContent, headerActions, children, className}, ref) => (
     <div
         ref={ref}
         className={cn(
@@ -38,11 +39,14 @@ const EmailPreviewModalContent = React.forwardRef<
             className
         )}
     >
-        <div className="sticky top-0 flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-5 py-3 dark:border-gray-900 dark:bg-gray-975">
-            <h3 className="text-xl font-semibold">
+        <div className="sticky top-0 grid shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b border-gray-200 bg-white px-5 py-3 dark:border-gray-900 dark:bg-gray-975">
+            <h3 className="justify-self-start text-xl font-semibold">
                 {title}
             </h3>
-            <div className="flex items-center gap-2">
+            <div className="justify-self-center">
+                {centeredHeaderContent}
+            </div>
+            <div className="flex items-center justify-self-end gap-2">
                 {headerActions}
             </div>
         </div>
@@ -327,6 +331,19 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
         >
             <EmailPreviewModalContent
                 className='dark:bg-[#151719]'
+                centeredHeaderContent={
+                    <Tabs
+                        data-testid='welcome-email-mode-toggle'
+                        value={mode}
+                        variant='segmented-sm'
+                        onValueChange={value => value && handleModeChange(value as PreviewMode)}
+                    >
+                        <TabsList className='bg-gray-100 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)]'>
+                            <TabsTrigger data-testid='welcome-email-mode-edit' value='edit'>Edit</TabsTrigger>
+                            <TabsTrigger data-testid='welcome-email-mode-preview' value='preview'>Preview</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                }
                 headerActions={
                     <>
                         <Button variant="outline" onClick={handleClose}>Close</Button>
@@ -341,22 +358,6 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 title={modalTitle}
             >
                 <div className='flex grow flex-col items-center p-6'>
-                    <div className='mb-4 flex w-full max-w-[780px] items-center justify-end gap-2' data-testid='welcome-email-mode-toggle'>
-                        <Button
-                            data-testid='welcome-email-mode-edit'
-                            variant={mode === 'edit' ? 'default' : 'outline'}
-                            onClick={() => handleModeChange('edit')}
-                        >
-                            Edit
-                        </Button>
-                        <Button
-                            data-testid='welcome-email-mode-preview'
-                            variant={mode === 'preview' ? 'default' : 'outline'}
-                            onClick={() => handleModeChange('preview')}
-                        >
-                            Preview
-                        </Button>
-                    </div>
                     <EmailPreviewEmailHeader className='border-x-0 border-t-0 border-b'>
                         <div className='flex flex-col gap-2'>
                             <div className='flex items-center py-1'>
