@@ -108,6 +108,14 @@ const automatedEmailPreviewFixture = {
     }]
 };
 
+const longAutomatedEmailPreviewFixture = {
+    automated_emails: [{
+        html: `<!doctype html><html><body>${'<p>Long preview paragraph.</p>'.repeat(80)}</body></html>`,
+        plaintext: 'Long preview paragraph.',
+        subject: 'Long Preview Subject'
+    }]
+};
+
 const pasteText = async (page: Page, content: string) => {
     await page.evaluate((text: string) => {
         const dataTransfer = new DataTransfer();
@@ -201,6 +209,54 @@ test.describe('Member emails settings', async () => {
 
             await expect(subjectInput).toHaveValue('Unsaved welcome email subject');
             await expect(editor).toContainText('Draft note');
+        });
+
+        test('Preview iframe expands to document height so the modal body owns scrolling', async ({page}) => {
+            await mockApi({page, requests: {
+                ...globalDataRequests,
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
+                previewWelcomeEmail: {
+                    method: 'POST',
+                    path: '/automated_emails/free-welcome-email-id/preview/',
+                    response: longAutomatedEmailPreviewFixture
+                }
+            }});
+
+            await page.goto('/#/memberemails');
+            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByTestId('free-welcome-email-preview').click();
+
+            const modal = page.getByTestId('welcome-email-modal');
+            await expect(modal).toBeVisible();
+
+            await modal.getByTestId('welcome-email-mode-preview').click();
+
+            await expect(modal.getByTestId('welcome-email-preview-loading')).toBeVisible();
+
+            const previewIframe = modal.getByTestId('welcome-email-preview-iframe');
+            await expect(previewIframe).toBeVisible();
+            await expect(modal.getByTestId('welcome-email-preview-loading')).not.toBeVisible();
+
+            await expect.poll(async () => {
+                const {iframeHeight, documentHeight} = await previewIframe.evaluate((node: HTMLIFrameElement) => {
+                    const iframeHeight = node.clientHeight;
+                    const doc = node.contentDocument;
+                    const documentHeight = Math.max(
+                        doc?.documentElement?.scrollHeight || 0,
+                        doc?.body?.scrollHeight || 0
+                    );
+
+                    return {iframeHeight, documentHeight};
+                });
+
+                console.log('preview heights', {iframeHeight, documentHeight});
+                return iframeHeight === documentHeight && documentHeight > 600;
+            }).toBe(true);
         });
 
         test('Invalid draft shows preview inline error state', async ({page}) => {

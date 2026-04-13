@@ -50,7 +50,7 @@ const EmailPreviewModalContent = React.forwardRef<
                 {headerActions}
             </div>
         </div>
-        <div className="flex h-[clamp(0px,calc(100dvh-320px),82vh)] min-h-0 grow flex-col overflow-y-auto">
+        <div className="flex h-[clamp(0px,calc(100dvh-320px),82vh)] min-h-0 grow flex-col overflow-y-auto [scrollbar-gutter:stable]">
             {children}
         </div>
     </div>
@@ -148,7 +148,13 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const [showTestDropdown, setShowTestDropdown] = useState(false);
     const [mode, setMode] = useState<PreviewMode>('edit');
     const [previewState, setPreviewState] = useState<PreviewState>({status: 'idle'});
+    const [previewHeight, setPreviewHeight] = useState<number | null>(null);
+    const [isPreviewReady, setIsPreviewReady] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const previewIframeRef = useRef<HTMLIFrameElement>(null);
+    const previewResizeObserverRef = useRef<ResizeObserver | null>(null);
+    const previewMeasureFrameRef = useRef<number | null>(null);
+    const previewRevealFrameRef = useRef<number | null>(null);
     const previewCacheRef = useRef<{signature: string; preview: AutomatedEmailPreview} | null>(null);
     const normalizedLexical = useRef<string>(automatedEmail?.lexical || '');
     const hasEditorBeenFocused = useRef(false);
@@ -228,6 +234,101 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
         }
     }, [mode, formState.subject, formState.lexical]);
 
+    const cleanupPreviewMeasurement = useCallback(() => {
+        previewResizeObserverRef.current?.disconnect();
+        previewResizeObserverRef.current = null;
+
+        if (previewMeasureFrameRef.current !== null) {
+            window.cancelAnimationFrame(previewMeasureFrameRef.current);
+            previewMeasureFrameRef.current = null;
+        }
+
+        if (previewRevealFrameRef.current !== null) {
+            window.cancelAnimationFrame(previewRevealFrameRef.current);
+            previewRevealFrameRef.current = null;
+        }
+    }, []);
+
+    useEffect(() => {
+        cleanupPreviewMeasurement();
+
+        if (mode !== 'preview') {
+            setIsPreviewReady(false);
+            setPreviewHeight(null);
+            return;
+        }
+
+        setIsPreviewReady(false);
+        setPreviewHeight(null);
+    }, [cleanupPreviewMeasurement, mode, previewState.preview?.html]);
+
+    useEffect(() => cleanupPreviewMeasurement, [cleanupPreviewMeasurement]);
+
+    const syncPreviewHeight = useCallback(() => {
+        const iframe = previewIframeRef.current;
+        const doc = iframe?.contentDocument;
+
+        if (!iframe || !doc) {
+            return;
+        }
+
+        doc.documentElement.style.overflowY = 'hidden';
+        doc.body.style.overflowY = 'hidden';
+
+        const nextHeight = Math.max(
+            doc.documentElement?.scrollHeight || 0,
+            doc.body?.scrollHeight || 0,
+            doc.documentElement?.offsetHeight || 0,
+            doc.body?.offsetHeight || 0
+        );
+
+        if (nextHeight > 0) {
+            setPreviewHeight(previousHeight => previousHeight === nextHeight ? previousHeight : nextHeight);
+
+            if (!isPreviewReady && previewRevealFrameRef.current === null) {
+                previewRevealFrameRef.current = window.requestAnimationFrame(() => {
+                    previewRevealFrameRef.current = window.requestAnimationFrame(() => {
+                        previewRevealFrameRef.current = null;
+                        setIsPreviewReady(true);
+                    });
+                });
+            }
+        }
+    }, [isPreviewReady]);
+
+    const queuePreviewHeightSync = useCallback(() => {
+        if (previewMeasureFrameRef.current !== null) {
+            window.cancelAnimationFrame(previewMeasureFrameRef.current);
+        }
+
+        previewMeasureFrameRef.current = window.requestAnimationFrame(() => {
+            previewMeasureFrameRef.current = null;
+            syncPreviewHeight();
+        });
+    }, [syncPreviewHeight]);
+
+    const handlePreviewLoad = useCallback(() => {
+        const iframe = previewIframeRef.current;
+        const doc = iframe?.contentDocument;
+
+        if (!iframe || !doc) {
+            return;
+        }
+
+        cleanupPreviewMeasurement();
+        queuePreviewHeightSync();
+
+        if (typeof ResizeObserver !== 'undefined') {
+            const observer = new ResizeObserver(() => {
+                queuePreviewHeightSync();
+            });
+
+            observer.observe(doc.documentElement);
+            observer.observe(doc.body);
+            previewResizeObserverRef.current = observer;
+        }
+    }, [cleanupPreviewMeasurement, queuePreviewHeightSync]);
+
     const renderPreview = useCallback(async () => {
         const validationErrors = getWelcomeEmailValidationErrors(formState);
         setErrors(validationErrors);
@@ -291,6 +392,9 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
             void renderPreview();
         }
     }, [renderPreview]);
+
+    const showPreviewLoading = mode === 'preview' &&
+        (previewState.status === 'loading' || (previewState.status === 'success' && !isPreviewReady));
 
     // The editor normalizes content on mount (e.g., processing {name} templates),
     // which triggers onChange even without user edits. We track whether the editor
@@ -431,20 +535,35 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                             />
                         </div>
                         {mode === 'preview' && (
-                            <div className='mx-auto flex h-full w-full max-w-[740px] flex-col py-6' data-testid='welcome-email-preview'>
-                                {previewState.status === 'loading' && (
-                                    <div className='flex h-full items-center justify-center' data-testid='welcome-email-preview-loading'>
+                            <div className='relative mx-auto w-full max-w-[740px] py-6' data-testid='welcome-email-preview'>
+                                {showPreviewLoading && (
+                                    <div
+                                        className='flex min-h-full items-start justify-center pt-24'
+                                        data-testid='welcome-email-preview-loading'
+                                        style={previewHeight ? {height: `${previewHeight}px`} : undefined}
+                                    >
                                         <LoadingIndicator />
                                     </div>
                                 )}
                                 {previewState.status === 'success' && previewState.preview && (
-                                    <iframe
-                                        className='h-full w-full rounded border border-gray-200 bg-white'
-                                        data-testid='welcome-email-preview-iframe'
-                                        sandbox=""
-                                        srcDoc={previewState.preview.html}
-                                        title='Welcome email preview'
-                                    />
+                                    <div
+                                        aria-hidden={!isPreviewReady}
+                                        className={cn(
+                                            'w-full',
+                                            !isPreviewReady && 'pointer-events-none absolute left-0 top-6 opacity-0'
+                                        )}
+                                    >
+                                        <iframe
+                                            ref={previewIframeRef}
+                                            className='w-full rounded border border-gray-200 bg-white'
+                                            data-testid='welcome-email-preview-iframe'
+                                            sandbox="allow-same-origin"
+                                            srcDoc={previewState.preview.html}
+                                            style={{height: previewHeight ? `${previewHeight}px` : '600px'}}
+                                            title='Welcome email preview'
+                                            onLoad={handlePreviewLoad}
+                                        />
+                                    </div>
                                 )}
                                 {(previewState.status === 'error' || previewState.status === 'invalid') && (
                                     <div className='flex h-full items-center justify-center px-4' data-testid='welcome-email-preview-error'>
