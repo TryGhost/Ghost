@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import EmailFailedError from 'ghost-admin/errors/email-failed-error';
+import FirstNameReminderModal from './modals/first-name-reminder';
 import PreviewModal from './modals/preview';
 import PublicPreviewWarningModal from './modals/public-preview-warning';
 import PublishFlowModal from './modals/publish-flow';
@@ -69,6 +70,29 @@ export default class PublishManagement extends Component {
 
             if (ignorePublicPreviewWarning !== true) {
                 return;
+            }
+        }
+
+        // TK takes priority and is exclusive with {first_name} warnings
+        if (this.args.tkCount === 0) {
+            if (this.publishOptions.setupTask.isRunning) {
+                await this.publishOptions.setupTask.last;
+            }
+
+            if (!this.publishOptions.setupTask.lastSuccessful) {
+                await this.publishOptions.setupTask.perform();
+            }
+
+            const canSendEmail = !this.publishOptions.emailUnavailable && !this.publishOptions.emailDisabled;
+
+            if (canSendEmail && this.args.invalidFirstNameCount > 0) {
+                const ignoreInvalidFirstNames = await this.modals.open(FirstNameReminderModal, {
+                    invalidFirstNameCount: this.args.invalidFirstNameCount
+                });
+
+                if (ignoreInvalidFirstNames !== true) {
+                    return;
+                }
             }
         }
 
