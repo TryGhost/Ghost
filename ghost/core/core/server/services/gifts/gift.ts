@@ -147,16 +147,6 @@ export class Gift {
     }
 
     redeem({memberId, redeemedAt = new Date()}: {memberId: string; redeemedAt?: Date}) {
-        return new Gift({
-            ...this,
-            redeemerMemberId: memberId,
-            redeemedAt,
-            consumesAt: this.#calculateConsumesAt(redeemedAt),
-            status: 'redeemed'
-        });
-    }
-
-    #calculateConsumesAt(redeemedAt: Date) {
         const consumesAt = new Date(redeemedAt);
 
         if (this.cadence === 'year') {
@@ -165,6 +155,12 @@ export class Gift {
             consumesAt.setMonth(consumesAt.getMonth() + this.duration);
         }
 
-        return consumesAt;
+        return new Gift({
+            ...this,
+            redeemerMemberId: memberId,
+            redeemedAt,
+            consumesAt,
+            status: 'redeemed'
+        });
     }
 }

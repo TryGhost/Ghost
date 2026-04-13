@@ -53,7 +53,7 @@ export class GiftBookshelfRepository implements GiftRepository {
     }
 
     async create(gift: Gift, options: RepositoryTransactionOptions = {}) {
-        await this.model.add(this.mapToDatabaseRow(gift), options);
+        await this.model.add(this.toRow(gift), options);
     }
 
     async getByToken(token: string, options: RepositoryTransactionOptions = {}): Promise<Gift | null> {
@@ -96,11 +96,10 @@ export class GiftBookshelfRepository implements GiftRepository {
         }, {require: false, ...options});
 
         if (!existing) {
-            await this.create(gift, options);
-            return;
+            return this.create(gift, options);
         }
 
-        await existing.save(this.mapToDatabaseRow(gift), {
+        await existing.save(this.toRow(gift), {
             autoRefresh: false,
             method: 'update',
             patch: true,
@@ -112,7 +111,7 @@ export class GiftBookshelfRepository implements GiftRepository {
         return await this.model.transaction(callback);
     }
 
-    private mapToDatabaseRow(gift: Gift): GiftRow {
+    private toRow(gift: Gift): GiftRow {
         return {
             token: gift.token,
             buyer_email: gift.buyerEmail,

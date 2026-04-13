@@ -61,10 +61,6 @@ interface StaffServiceEmails {
     }): Promise<void>;
 }
 
-interface LabsService {
-    isSet(key: string): boolean;
-}
-
 export interface GiftPurchaseData {
     token: string;
     buyerEmail: string;
@@ -78,21 +74,19 @@ export interface GiftPurchaseData {
     stripePaymentIntentId: string;
 }
 
-export class GiftService {
-    private readonly giftRepository: GiftRepository;
-    private readonly memberRepository: MemberRepository;
-    private readonly tiersService: TiersService;
-    private readonly giftEmailService: GiftEmailService;
-    private readonly staffServiceEmails: StaffServiceEmails;
-    private readonly labsService: LabsService;
+interface GiftServiceDeps {
+    giftRepository: GiftRepository;
+    memberRepository: MemberRepository;
+    tiersService: TiersService;
+    giftEmailService: GiftEmailService;
+    staffServiceEmails: StaffServiceEmails;
+}
 
-    constructor({giftRepository, memberRepository, tiersService, giftEmailService, staffServiceEmails, labsService}: {giftRepository: GiftRepository; memberRepository: MemberRepository; tiersService: TiersService; giftEmailService: GiftEmailService; staffServiceEmails: StaffServiceEmails; labsService: LabsService}) {
-        this.giftRepository = giftRepository;
-        this.memberRepository = memberRepository;
-        this.tiersService = tiersService;
-        this.giftEmailService = giftEmailService;
-        this.staffServiceEmails = staffServiceEmails;
-        this.labsService = labsService;
+export class GiftService {
+    private readonly deps: GiftServiceDeps;
+
+    constructor(deps: GiftServiceDeps) {
+        this.deps = deps;
     }
 
     async recordPurchase(data: GiftPurchaseData): Promise<boolean> {
@@ -102,12 +96,12 @@ export class GiftService {
             throw new errors.ValidationError({message: `Invalid gift duration: ${data.duration}`});
         }
 
-        if (await this.giftRepository.existsByCheckoutSessionId(data.stripeCheckoutSessionId)) {
+        if (await this.deps.giftRepository.existsByCheckoutSessionId(data.stripeCheckoutSessionId)) {
             return false;
         }
 
         const member = data.stripeCustomerId
-            ? await this.memberRepository.get({customer_id: data.stripeCustomerId})
+            ? await this.deps.memberRepository.get({customer_id: data.stripeCustomerId})
             : null;
 
         const gift = Gift.fromPurchase({
@@ -123,16 +117,16 @@ export class GiftService {
             stripePaymentIntentId: data.stripePaymentIntentId
         });
 
-        await this.giftRepository.create(gift);
+        await this.deps.giftRepository.create(gift);
 
-        const tier = await this.tiersService.api.read(data.tierId);
+        const tier = await this.deps.tiersService.api.read(data.tierId);
 
         if (!tier) {
             throw new errors.NotFoundError({message: `Tier not found: ${data.tierId}`});
         }
 
         try {
-            await this.staffServiceEmails.notifyGiftReceived({
+            await this.deps.staffServiceEmails.notifyGiftReceived({
                 name: member?.get('name') ?? null,
                 email: member?.get('email') ?? data.buyerEmail,
                 memberId: member?.id ?? null,
@@ -147,7 +141,7 @@ export class GiftService {
         }
 
         try {
-            await this.giftEmailService.sendPurchaseConfirmation({
+            await this.deps.giftEmailService.sendPurchaseConfirmation({
                 buyerEmail: data.buyerEmail,
                 amount: data.amount,
                 currency: data.currency,
@@ -165,7 +159,7 @@ export class GiftService {
     }
 
     async getByToken(token: string): Promise<Gift> {
-        const gift = await this.giftRepository.getByToken(token);
+        const gift = await this.deps.giftRepository.getByToken(token);
 
         if (!gift) {
             throw new errors.NotFoundError({
@@ -215,7 +209,7 @@ export class GiftService {
     }
 
     async getRedeemable(token: string, memberStatus: string | null): Promise<Gift> {
-        const gift = await this.giftRepository.getByToken(token);
+        const gift = await this.deps.giftRepository.getByToken(token);
 
         if (!gift) {
             throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
@@ -227,14 +221,14 @@ export class GiftService {
     }
 
     async redeem({token, memberId}: {token: string; memberId: string}): Promise<Gift> {
-        return await this.giftRepository.transaction(async (transacting) => {
-            const member = await this.memberRepository.get({id: memberId}, {transacting, forUpdate: true});
+        return await this.deps.giftRepository.transaction(async (transacting) => {
+            const member = await this.deps.memberRepository.get({id: memberId}, {transacting, forUpdate: true});
 
             if (!member) {
                 throw new errors.NotFoundError({message: `Member not found: ${memberId}`});
             }
 
-            const gift = await this.giftRepository.getByToken(token, {transacting, forUpdate: true});
+            const gift = await this.deps.giftRepository.getByToken(token, {transacting, forUpdate: true});
 
             if (!gift) {
                 throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
@@ -244,7 +238,7 @@ export class GiftService {
 
             const redeemed = gift.redeem({memberId});
 
-            await this.memberRepository.update({
+            await this.deps.memberRepository.update({
                 products: [{
                     id: redeemed.tierId,
                     expiry_at: redeemed.consumesAt
@@ -252,7 +246,7 @@ export class GiftService {
                 status: 'gift'
             }, {id: memberId, transacting});
 
-            await this.giftRepository.save(redeemed, {transacting});
+            await this.deps.giftRepository.save(redeemed, {transacting});
 
             return redeemed;
         });

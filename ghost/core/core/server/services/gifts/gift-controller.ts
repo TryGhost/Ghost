@@ -80,7 +80,7 @@ export class GiftController {
 
         const gift = await this.service.getRedeemable(token, memberStatus);
 
-        return this.#serializeGift(gift);
+        return this.serializeGift(gift);
     }
 
     async redeem(frame: Frame) {
@@ -104,10 +104,10 @@ export class GiftController {
             memberId: member.id
         });
 
-        return this.#serializeGift(gift);
+        return this.serializeGift(gift);
     }
 
-    async #serializeGift(gift: Gift): Promise<GiftDTO> {
+    private async serializeGift(gift: Gift): Promise<GiftDTO> {
         const tier = await this.tiersService.api.read(gift.tierId);
 
         if (!tier) {

@@ -45,8 +45,7 @@ class GiftServiceWrapper {
             giftEmailService,
             get staffServiceEmails() {
                 return staffService.api.emails;
-            },
-            labsService
+            }
         });
 
         this.controller = new GiftController({

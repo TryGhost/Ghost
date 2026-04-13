@@ -30,9 +30,6 @@ describe('GiftService', function () {
             read: sinon.SinonStub;
         };
     };
-    let labsService: {
-        isSet: sinon.SinonStub;
-    };
     const purchaseData: GiftPurchaseData = {
         token: 'abc-123',
         buyerEmail: 'buyer@example.com',
@@ -76,9 +73,6 @@ describe('GiftService', function () {
                 })
             }
         };
-        labsService = {
-            isSet: sinon.stub().returns(true)
-        };
     });
 
     afterEach(function () {
@@ -91,8 +85,7 @@ describe('GiftService', function () {
             memberRepository,
             tiersService,
             giftEmailService,
-            staffServiceEmails,
-            labsService
+            staffServiceEmails
         });
     }
 
