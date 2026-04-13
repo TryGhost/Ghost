@@ -3,9 +3,10 @@ import AppContext from '../../app-context';
 import ActionButton from '../common/action-button';
 import CloseButton from '../common/close-button';
 import InputForm from '../common/input-form';
+import {ValidateInputForm} from '../../utils/form';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import {ReactComponent as GiftIcon} from '../../images/icons/gift.svg';
-import {getGiftRedemptionErrorMessage} from '../../utils/gift-redemption-notification';
+import {getGiftDurationLabel, getGiftRedemptionErrorMessage} from '../../utils/gift-redemption-notification';
 import {t} from '../../utils/i18n';
 import {hasGiftSubscriptions, removePortalLinkFromUrl} from '../../utils/helpers';
 
@@ -119,6 +120,11 @@ export const GiftRedemptionStyles = `
         margin: 20px auto 0;
     }
 
+    .gh-gift-redemption-inline-cta {
+        margin: 28px auto 0;
+        max-width: 400px;
+    }
+
     .gh-gift-redemption-benefit {
         display: flex;
         align-items: flex-start;
@@ -151,9 +157,12 @@ export const GiftRedemptionStyles = `
     .gh-gift-redemption-submit {
         width: 100%;
         height: 44px;
-        margin-top: 22px;
         font-size: 1.5rem;
         font-weight: 600;
+    }
+
+    .gh-gift-redemption-form .gh-gift-redemption-submit {
+        margin-top: 22px;
     }
 
     @media (max-width: 480px) {
@@ -180,27 +189,20 @@ export const GiftRedemptionStyles = `
     }
 `;
 
-function getGiftCadenceLabel(gift) {
-    const {cadence, duration} = gift;
-
-    if (cadence === 'year') {
-        return duration === 1 ? t('1 year') : t('{years} years', {years: duration});
-    }
-
-    return duration === 1 ? t('1 month') : t('{months} months', {months: duration});
-}
-
 // TODO: Add translation strings once copy has been finalised
 const GiftRedemptionPage = () => {
-    const {brandColor, doAction, member, pageData, site} = useContext(AppContext);
+    const {action, brandColor, doAction, member, pageData, site} = useContext(AppContext);
     const gift = pageData?.gift;
+    const isLoggedIn = !!member;
     const giftSubscriptionsEnabled = hasGiftSubscriptions({site});
     const [name, setName] = useState(member?.name || '');
     const [email, setEmail] = useState(member?.email || '');
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         setName(member?.name || '');
         setEmail(member?.email || '');
+        setErrors({});
     }, [member?.email, member?.name]);
 
     useEffect(() => {
@@ -238,9 +240,10 @@ const GiftRedemptionPage = () => {
             placeholder: t('Jamie Larson'),
             label: t('Your name'),
             name: 'name',
-            required: true,
+            required: false,
+            errorMessage: errors.name || '',
             tabIndex: 1,
-            autoFocus: true
+            autoFocus: !email
         },
         {
             type: 'email',
@@ -249,11 +252,18 @@ const GiftRedemptionPage = () => {
             label: t('Your email'),
             name: 'email',
             required: true,
-            tabIndex: 2
+            errorMessage: errors.email || '',
+            tabIndex: 2,
+            autoFocus: !!email
         }
     ];
 
     const handleFieldChange = (event, field) => {
+        setErrors(currentErrors => ({
+            ...currentErrors,
+            [field.name]: ''
+        }));
+
         if (field.name === 'name') {
             setName(event.target.value);
         }
@@ -263,9 +273,50 @@ const GiftRedemptionPage = () => {
         }
     };
 
+    const handleKeyDown = (event) => {
+        if (event.keyCode === 13) {
+            if (isRedeeming) {
+                return;
+            }
+
+            handleRedeemClick(event);
+        }
+    };
+
     const handleRedeemClick = (event) => {
         event.preventDefault();
+
+        if (isRedeeming) {
+            return;
+        }
+
+        if (isLoggedIn) {
+            doAction('redeemGift', {
+                giftToken: pageData?.token
+            });
+            return;
+        }
+
+        const formErrors = ValidateInputForm({fields: formFields});
+        const hasErrors = Object.values(formErrors).some(errorMessage => !!errorMessage);
+
+        setErrors(formErrors);
+
+        if (hasErrors) {
+            return;
+        }
+
+        doAction('redeemGift', {
+            email,
+            name,
+            giftToken: pageData?.token
+        });
     };
+
+    const isRedeeming = action === 'redeemGift:running';
+    const buttonLabel = isRedeeming
+        ? 'Redeeming gift...' // TODO: Add translation strings once copy has been finalised
+        : 'Redeem gift membership'; // TODO: Add translation strings once copy has been finalised
 
     return (
         <div className='gh-portal-content gh-portal-gift-redemption'>
@@ -280,7 +331,7 @@ const GiftRedemptionPage = () => {
                     <div className='gh-gift-redemption-plan'>
                         <span className='gh-gift-redemption-tier'>{gift.tier.name}</span>
                         <span>&nbsp;&middot;&nbsp;</span>
-                        <span className='gh-gift-redemption-cadence'>{getGiftCadenceLabel(gift)}</span>
+                        <span className='gh-gift-redemption-cadence'>{getGiftDurationLabel(gift)}</span>
                     </div>
 
                     {gift.tier.benefits.length > 0 && (
@@ -303,18 +354,36 @@ const GiftRedemptionPage = () => {
                         </div>
                     )}
 
+                    {isLoggedIn && (
+                        <div className='gh-gift-redemption-inline-cta'>
+                            <ActionButton
+                                brandColor={brandColor}
+                                classes='gh-gift-redemption-submit'
+                                label={buttonLabel}
+                                onClick={handleRedeemClick}
+                                style={{width: '100%'}}
+                                disabled={isRedeeming}
+                                isRunning={isRedeeming}
+                            />
+                        </div>
+                    )}
+
                 </div>
 
-                <div className='gh-gift-redemption-form'>
-                    <InputForm fields={formFields} onChange={handleFieldChange} />
-                    <ActionButton
-                        brandColor={brandColor}
-                        classes='gh-gift-redemption-submit'
-                        label={'Redeem gift membership'}
-                        onClick={handleRedeemClick}
-                        style={{width: '100%'}}
-                    />
-                </div>
+                {!isLoggedIn && (
+                    <div className='gh-gift-redemption-form'>
+                        <InputForm fields={formFields} onChange={handleFieldChange} onKeyDown={handleKeyDown} />
+                        <ActionButton
+                            brandColor={brandColor}
+                            classes='gh-gift-redemption-submit'
+                            label={buttonLabel}
+                            onClick={handleRedeemClick}
+                            style={{width: '100%'}}
+                            disabled={isRedeeming}
+                            isRunning={isRedeeming}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );

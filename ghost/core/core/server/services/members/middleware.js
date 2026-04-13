@@ -98,6 +98,22 @@ const loadMemberSession = async function loadMemberSession(req, res, next) {
     }
 };
 
+const getRedirectUrl = function getRedirectUrl({action, referrer, searchParams, success}) {
+    const redirectUrl = new URL(referrer);
+
+    searchParams.forEach((value, key) => {
+        redirectUrl.searchParams.set(key, value);
+    });
+    redirectUrl.searchParams.set('success', String(success));
+
+    if (action === 'signin') {
+        // Not sure if we can delete this, this is a legacy param
+        redirectUrl.searchParams.set('action', 'signin');
+    }
+
+    return redirectUrl.href;
+};
+
 /**
  * Require member authentication, and make it possible to authenticate via uuid + hashed key.
  * You can chain this after loadMemberSession to make it possible to authenticate via both the uuid and the session.
@@ -402,24 +418,11 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
             }
         }
 
-        // If a custom referrer/redirect was passed, redirect the user to that URL
         const referrer = req.query.r;
         const siteUrl = urlUtils.getSiteUrl();
-
         if (referrer && referrer.startsWith(siteUrl)) {
-            const redirectUrl = new URL(referrer);
-
-            // Copy search params
-            searchParams.forEach((value, key) => {
-                redirectUrl.searchParams.set(key, value);
-            });
-            redirectUrl.searchParams.set('success', 'true');
-
-            if (action === 'signin') {
-                // Not sure if we can delete this, this is a legacy param
-                redirectUrl.searchParams.set('action', 'signin');
-            }
-            return res.redirect(redirectUrl.href);
+            const redirectUrl = getRedirectUrl({action, referrer, searchParams, success: true});
+            return res.redirect(redirectUrl);
         }
 
         // Do a standard 302 redirect to the homepage, with success=true
@@ -427,6 +430,18 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
         res.redirect(`${urlUtils.getSubdir()}/?${searchParams.toString()}`);
     } catch (err) {
         logging.warn(err.message);
+
+        const referrer = req.query.r;
+        const siteUrl = urlUtils.getSiteUrl();
+        if (referrer && referrer.startsWith(siteUrl)) {
+            const redirectUrl = getRedirectUrl({
+                action: req.query.action,
+                referrer,
+                searchParams,
+                success: false
+            });
+            return res.redirect(redirectUrl);
+        }
 
         // Do a standard 302 redirect to the homepage, with success=false
         searchParams.set('success', false);

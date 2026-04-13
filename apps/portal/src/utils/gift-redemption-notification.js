@@ -1,15 +1,24 @@
-// TODO: Add translation strings once copy has been finalise
+import {t} from './i18n';
 
-const GIFT_REDEMPTION_ERROR_TITLE = 'Gift could not be redeemed';
-const INVALID_GIFT_LINK_MESSAGE = 'Gift link is not valid';
+export function getGiftDurationLabel({cadence, duration} = {}) {
+    if (cadence === 'year') {
+        return duration === 1
+            ? t('1 year')
+            : t('{years} years', {years: duration});
+    }
+
+    return duration === 1
+        ? t('1 month')
+        : t('{months} months', {months: duration});
+}
 
 export function getGiftRedemptionErrorMessage(error) {
     const subtitle = error?.message && error.message !== 'Failed to load gift data'
         ? error.message
-        : INVALID_GIFT_LINK_MESSAGE;
+        : 'Gift link is not valid'; // TODO: Add translation strings once copy has been finalised
 
     return {
-        title: GIFT_REDEMPTION_ERROR_TITLE,
+        title: 'Gift could not be redeemed', // TODO: Add translation strings once copy has been finalised
         subtitle
     };
 }

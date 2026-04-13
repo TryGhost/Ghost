@@ -167,6 +167,19 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         }
     };
 
+    const handleGiftResponse = async (res, fallbackMessage) => {
+        if (res.ok) {
+            return res.json();
+        }
+
+        const humanError = await HumanReadableError.fromApiResponse(res);
+        if (humanError) {
+            throw humanError;
+        }
+
+        throw new Error(fallbackMessage);
+    };
+
     api.gift = {
         async fetchRedemptionData({token}) {
             const url = endpointFor({type: 'members', resource: `gifts/${encodeURIComponent(token)}/redeem`});
@@ -179,16 +192,22 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 credentials: 'same-origin'
             });
 
-            if (res.ok) {
-                return res.json();
-            }
+            return handleGiftResponse(res, 'Failed to load gift data');
+        },
 
-            const humanError = await HumanReadableError.fromApiResponse(res);
-            if (humanError) {
-                throw humanError;
-            }
+        async redeem({token}) {
+            const url = endpointFor({type: 'members', resource: `gifts/${encodeURIComponent(token)}/redeem`});
+            const res = await makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({})
+            });
 
-            throw new Error('Failed to load gift data');
+            return handleGiftResponse(res, 'Failed to redeem gift');
         }
     };
 
@@ -300,7 +319,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
          *     otc_ref?: string;
          * }}
          */
-        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, phonenumber, customUrlHistory, token, autoRedirect = true, includeOTC}) {
+        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, phonenumber, customUrlHistory, token, giftToken, autoRedirect = true, includeOTC}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {
                 name,
@@ -315,6 +334,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 // we don't actually use a phone #, this is from a hidden field to prevent bot activity
                 honeypot: phonenumber,
                 token,
+                giftToken,
                 autoRedirect,
                 includeOTC
             };

@@ -633,8 +633,8 @@ module.exports = class MemberRepository {
                         throw new errors.BadRequestError({message: tpl(messages.addProductWithActiveSubscription)});
                     }
 
-                    // CASE: We are changing products & there were not active stripe subscriptions - the member is "comped"
-                    memberStatusData.status = 'comped';
+                    // CASE: We are changing products & there were no active stripe subscriptions - the member gets non-Stripe access
+                    memberStatusData.status = data.status || 'comped';
                 }
             }
         }

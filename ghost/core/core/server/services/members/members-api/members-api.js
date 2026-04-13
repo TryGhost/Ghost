@@ -81,7 +81,8 @@ module.exports = function MembersAPI({
     settingsHelpers,
     urlUtils,
     commentsService,
-    emailAddressService
+    emailAddressService,
+    giftService
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -257,21 +258,32 @@ module.exports = function MembersAPI({
     }
 
     async function getMemberDataFromMagicLinkToken(token, otcVerification) {
-        const {email, labels = [], name = '', oldEmail, newsletters, attribution, reqIp, type} = await getTokenDataFromMagicLinkToken(token, otcVerification);
+        const {email, labels = [], name = '', oldEmail, newsletters, attribution, reqIp, type, giftToken} = await getTokenDataFromMagicLinkToken(token, otcVerification);
         if (!email) {
             return null;
         }
 
-        const member = oldEmail ? await getMemberIdentityData(oldEmail) : await getMemberIdentityData(email);
+        const giftSubscriptionsEnabled = labsService.isSet('giftSubscriptions');
+
+        let member = oldEmail ? await getMemberIdentityData(oldEmail) : await getMemberIdentityData(email);
 
         if (member) {
-            await MemberLoginEvent.add({member_id: member.id});
             if (oldEmail && (!type || type === 'updateEmail')) {
                 // user exists but wants to change their email address
                 await users.update({email}, {id: member.id});
+                await MemberLoginEvent.add({member_id: member.id});
                 return getMemberIdentityData(email);
             }
-            return member;
+
+            if (giftToken && giftSubscriptionsEnabled) {
+                await giftService.service.redeem({
+                    token: giftToken,
+                    memberId: member.id
+                });
+            }
+
+            await MemberLoginEvent.add({member_id: member.id});
+            return getMemberIdentityData(member.email);
         }
 
         // Note: old tokens can still have a missing type (we can remove this after a couple of weeks)
@@ -293,6 +305,13 @@ module.exports = function MembersAPI({
         }
 
         const newMember = await users.create({name, email, labels, newsletters, attribution, geolocation});
+
+        if (giftToken && giftSubscriptionsEnabled) {
+            await giftService.service.redeem({
+                token: giftToken,
+                memberId: newMember.id
+            });
+        }
 
         await MemberLoginEvent.add({member_id: newMember.id});
         return getMemberIdentityData(email);

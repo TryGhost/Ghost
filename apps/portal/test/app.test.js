@@ -1,6 +1,6 @@
 import App from '../src/app';
 import setupGhostApi from '../src/utils/api';
-import {appRender} from './utils/test-utils';
+import {appRender, within} from './utils/test-utils';
 import {getPriceData, getProductData, getSiteData} from '../src/utils/fixtures-generator';
 import {site as FixtureSite, member as FixtureMember} from './utils/test-fixtures';
 import i18n from '../src/utils/i18n';
@@ -88,6 +88,38 @@ describe('App', function () {
         await utils.findByTitle(/portal-popup/i);
 
         expect(link.getAttribute('href')).toBe('#/share');
+    });
+
+    test('shows gift redemption success notification when popup is open on load', async () => {
+        window.location = new URL('http://example.com/?action=subscribe&success=true#/portal/account?giftRedemption=true');
+
+        const ghostApi = setupApi();
+        const utils = appRender(
+            <App siteUrl="http://example.com" api={ghostApi} />
+        );
+
+        const popupFrame = await utils.findByTitle(/portal-popup/i);
+        const notificationFrame = await utils.findByTitle(/portal-notification/i);
+
+        expect(popupFrame).toBeInTheDocument();
+        expect(notificationFrame).toBeInTheDocument();
+        expect(within(notificationFrame.contentDocument).getByText('Gift redeemed! You\'re all set.')).toBeInTheDocument();
+    });
+
+    test('shows gift redemption error notification when popup is open on load', async () => {
+        window.location = new URL('http://example.com/?action=subscribe&success=false#/portal/account?giftRedemption=true');
+
+        const ghostApi = setupApi();
+        const utils = appRender(
+            <App siteUrl="http://example.com" api={ghostApi} />
+        );
+
+        const popupFrame = await utils.findByTitle(/portal-popup/i);
+        const notificationFrame = await utils.findByTitle(/portal-notification/i);
+
+        expect(popupFrame).toBeInTheDocument();
+        expect(notificationFrame).toBeInTheDocument();
+        expect(within(notificationFrame.contentDocument).getByText('We couldn\'t redeem this gift for your account.')).toBeInTheDocument();
     });
 
     test('prefers locale prop over site locale for i18n language', async () => {

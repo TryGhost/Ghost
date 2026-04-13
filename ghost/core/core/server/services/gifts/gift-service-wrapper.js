@@ -1,4 +1,5 @@
 class GiftServiceWrapper {
+    controller;
     service;
 
     async init() {
@@ -10,6 +11,7 @@ class GiftServiceWrapper {
         const {GiftBookshelfRepository} = require('./gift-bookshelf-repository');
         const {GiftService} = require('./gift-service');
         const {GiftEmailService} = require('./gift-email-service');
+        const {GiftController} = require('./gift-controller');
         const membersService = require('../members');
         const tiersService = require('../tiers');
         const staffService = require('../staff');
@@ -43,8 +45,13 @@ class GiftServiceWrapper {
             giftEmailService,
             get staffServiceEmails() {
                 return staffService.api.emails;
-            },
-            labsService
+            }
+        });
+
+        this.controller = new GiftController({
+            service: this.service,
+            tiersService,
+            labsService: labsService
         });
     }
 }

@@ -4,8 +4,9 @@ import {t} from './i18n';
 export function removePortalLinkFromUrl() {
     const [path] = window.location.hash.substr(1).split('?');
     const portalLinkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
+    const giftRedemptionLinkRegex = /^\/portal\/gift\/redeem\/([^/?#]+)\/?$/;
     const shareLinkRegex = /^\/share\/?$/;
-    if (path && (portalLinkRegex.test(path) || shareLinkRegex.test(path))) {
+    if (path && (portalLinkRegex.test(path) || giftRedemptionLinkRegex.test(path) || shareLinkRegex.test(path))) {
         window.history.pushState('', document.title, window.location.pathname + window.location.search);
     }
 }

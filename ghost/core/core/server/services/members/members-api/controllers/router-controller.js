@@ -56,6 +56,14 @@ function extractRefererOrRedirect(req) {
     return req.get('referer') || null;
 }
 
+function extractGiftToken(input) {
+    if (!input || typeof input !== 'string' || input.length === 0) {
+        return null;
+    }
+
+    return input.trim();
+}
+
 module.exports = class RouterController {
     #inboxLinksDnsResolver = new dns.Resolver({maxTimeout: 1000});
 
@@ -766,6 +774,7 @@ module.exports = class RouterController {
         let {emailType} = req.body;
 
         const referrer = extractRefererOrRedirect(req);
+        const giftToken = extractGiftToken(req.body.giftToken);
 
         if (!email) {
             throw new errors.BadRequestError({
@@ -811,9 +820,9 @@ module.exports = class RouterController {
             const resBody = {};
 
             if (emailType === 'signup' || emailType === 'subscribe') {
-                await this._handleSignup(req, normalizedEmail, referrer);
+                await this._handleSignup(req, normalizedEmail, referrer, giftToken);
             } else {
-                const signIn = await this._handleSignin(req, normalizedEmail, referrer);
+                const signIn = await this._handleSignin(req, normalizedEmail, referrer, giftToken);
                 if (signIn.otcRef) {
                     resBody.otc_ref = signIn.otcRef;
                 }
@@ -911,7 +920,7 @@ module.exports = class RouterController {
         return `${timestamp}:${hash}`;
     }
 
-    async _handleSignup(req, normalizedEmail, referrer = null) {
+    async _handleSignup(req, normalizedEmail, referrer = null, giftToken = null) {
         if (!this._allowSelfSignup()) {
             if (this._settingsCache.get('members_signup_access') === 'paid') {
                 throw new errors.BadRequestError({
@@ -939,13 +948,14 @@ module.exports = class RouterController {
             name: req.body.name,
             reqIp: req.ip ?? undefined,
             newsletters: await this._validateNewsletters(req.body?.newsletters ?? []),
-            attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory)
+            attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory),
+            ...(giftToken ? {giftToken} : {})
         };
 
         return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer});
     }
 
-    async _handleSignin(req, normalizedEmail, referrer = null) {
+    async _handleSignin(req, normalizedEmail, referrer = null, giftToken = null) {
         const {emailType, includeOTC: reqIncludeOTC} = req.body;
 
         let includeOTC = false;
@@ -962,7 +972,12 @@ module.exports = class RouterController {
             return includeOTC ? {otcRef: crypto.randomUUID()} : {};
         }
 
-        const tokenData = {};
+        const {name} = req.body;
+
+        const tokenData = {
+            ...(name ? {name} : {}),
+            ...(giftToken ? {giftToken} : {})
+        };
         return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer, includeOTC});
     }
 

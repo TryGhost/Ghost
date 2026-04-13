@@ -43,12 +43,25 @@ const setup = async ({site, member = null, showPopup = true, giftResponse = defa
         return Promise.resolve();
     });
 
+    ghostApi.member.sessionData = vi.fn(() => {
+        return Promise.resolve(member);
+    });
+
     ghostApi.gift.fetchRedemptionData = vi.fn(() => {
         if (giftError) {
             return Promise.reject(giftError);
         }
 
         return Promise.resolve(giftResponse);
+    });
+
+    ghostApi.gift.redeem = vi.fn(() => {
+        return Promise.resolve({
+            gifts: [{
+                token: giftResponse.gifts[0].token,
+                status: 'redeemed'
+            }]
+        });
     });
 
     const utils = appRender(
@@ -513,7 +526,7 @@ describe('Portal Data links:', () => {
             });
         });
 
-        test('renders gift redemption popup when gift is valid', async () => {
+        test('renders gift redemption popup without name/email inputs for a logged-in free member', async () => {
             let {
                 ghostApi, popupFrame, triggerButtonFrame, ...utils
             } = await setupGiftRedemption();
@@ -528,12 +541,31 @@ describe('Portal Data links:', () => {
             expect(within(popupIframeDocument).queryByText(/Bronze/i)).toBeInTheDocument();
             expect(within(popupIframeDocument).queryByText(/1 year/i)).toBeInTheDocument();
             expect(within(popupIframeDocument).queryByText(/Five great stories to read every day/i)).toBeInTheDocument();
+            expect(within(popupIframeDocument).queryByLabelText(/your name/i)).not.toBeInTheDocument();
+            expect(within(popupIframeDocument).queryByLabelText(/your email/i)).not.toBeInTheDocument();
+            expect(popupIframeDocument.querySelector('.gh-gift-redemption-form')).not.toBeInTheDocument();
+            expect(ghostApi.gift.fetchRedemptionData).toHaveBeenCalledWith({token: 'gift-token-123'});
+        });
 
-            const nameInput = within(popupIframeDocument).getByLabelText(/your name/i);
-            const emailInput = within(popupIframeDocument).getByLabelText(/your email/i);
+        test('renders name/email inputs for an anonymous visitor', async () => {
+            window.location.hash = giftRedemptionHash;
 
-            expect(nameInput).toHaveValue('Jamie Larson');
-            expect(emailInput).toHaveValue('jamie@example.com');
+            let {
+                ghostApi, popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}},
+                member: null,
+                showPopup: false
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+
+            const popupIframeDocument = popupFrame.contentDocument;
+            expect(within(popupIframeDocument).getByLabelText(/your name/i)).toBeInTheDocument();
+            expect(within(popupIframeDocument).getByLabelText(/your email/i)).toBeInTheDocument();
             expect(ghostApi.gift.fetchRedemptionData).toHaveBeenCalledWith({token: 'gift-token-123'});
         });
 

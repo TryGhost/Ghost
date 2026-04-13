@@ -2,7 +2,8 @@ import {GIFT_EXPIRY_DAYS} from './constants';
 
 export type GiftStatus = 'purchased' | 'redeemed' | 'consumed' | 'expired' | 'refunded';
 export type GiftCadence = 'month' | 'year';
-export type RedeemableCheckFailureReason = 'redeemed' | 'consumed' | 'expired' | 'refunded';
+
+export type RedeemableCheckFailureReason = 'redeemed' | 'consumed' | 'expired' | 'refunded' | 'paid-member';
 export type RedeemableCheckResult =
     | {redeemable: true}
     | {redeemable: false; reason: RedeemableCheckFailureReason};
@@ -121,7 +122,7 @@ export class Gift {
         return this.consumedAt !== null;
     }
 
-    checkRedeemable(): RedeemableCheckResult {
+    checkRedeemable(memberStatus: string | null): RedeemableCheckResult {
         if (this.isRedeemed()) {
             return {redeemable: false, reason: 'redeemed'};
         }
@@ -138,6 +139,28 @@ export class Gift {
             return {redeemable: false, reason: 'refunded'};
         }
 
+        if (memberStatus && memberStatus !== 'free') {
+            return {redeemable: false, reason: 'paid-member'};
+        }
+
         return {redeemable: true};
+    }
+
+    redeem({memberId, redeemedAt = new Date()}: {memberId: string; redeemedAt?: Date}) {
+        const consumesAt = new Date(redeemedAt);
+
+        if (this.cadence === 'year') {
+            consumesAt.setFullYear(consumesAt.getFullYear() + this.duration);
+        } else {
+            consumesAt.setMonth(consumesAt.getMonth() + this.duration);
+        }
+
+        return new Gift({
+            ...this,
+            redeemerMemberId: memberId,
+            redeemedAt,
+            consumesAt,
+            status: 'redeemed'
+        });
     }
 }
