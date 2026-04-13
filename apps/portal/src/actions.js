@@ -216,6 +216,74 @@ async function signup({data, state, api}) {
     }
 }
 
+async function redeemGift({data, state, api}) {
+    try {
+        let {email, name, giftToken} = data;
+        name = name?.trim();
+
+        if (state.member) {
+            await api.gift.redeem({token: giftToken});
+            const member = await api.member.sessionData();
+            const notification = createNotification({
+                type: 'giftRedeem',
+                status: 'success',
+                autoHide: true,
+                closeable: true,
+                state
+            });
+
+            return {
+                action: 'redeemGift:success',
+                member,
+                page: 'accountHome',
+                notification,
+                notificationSequence: notification.count
+            };
+        }
+
+        const integrityToken = await api.member.getIntegrityToken();
+        const redirectUrl = new URL(state?.site?.url || window.location.href);
+        const hashParams = new URLSearchParams({
+            giftRedemption: 'true'
+        });
+        redirectUrl.hash = `/portal/account?${hashParams.toString()}`;
+
+        const {otc_ref: otcRef, inboxLinks} = await api.member.sendMagicLink({
+            email: (email || '').trim(),
+            emailType: 'subscribe',
+            integrityToken,
+            includeOTC: true,
+            redirect: redirectUrl.href,
+            giftToken,
+            ...(name ? {name} : {})
+        });
+
+        return {
+            page: 'magiclink',
+            lastPage: 'giftRedemption',
+            ...(otcRef ? {otcRef} : {}),
+            inboxLinks,
+            pageData: {
+                ...(state.pageData || {}),
+                email: (email || '').trim(),
+                redirect: redirectUrl.href
+            }
+        };
+    } catch (e) {
+        return {
+            action: 'redeemGift:failed',
+            popupNotification: createPopupNotification({
+                type: 'redeemGift:failed',
+                autoHide: false,
+                closeable: true,
+                state,
+                status: 'error',
+                message: chooseBestErrorMessage(e, 'Failed to redeem gift, please try again') // TODO: Add translation strings once copy has been finalised
+            })
+        };
+    }
+}
+
 async function checkoutPlan({data, state, api}) {
     try {
         let {plan, offerId, tierId, cadence} = data;
@@ -704,6 +772,7 @@ const Actions = {
     startSigninOTCFromCustomForm,
     verifyOTC,
     signup,
+    redeemGift,
     updateSubscription,
     cancelSubscription,
     continueSubscription,

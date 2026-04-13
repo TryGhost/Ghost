@@ -1097,6 +1097,65 @@ describe('RouterController', function () {
             });
         });
 
+        describe('gift token forwarding', function () {
+            let req, res, sendEmailWithMagicLinkStub, memberRepositoryStub;
+
+            const createRouterController = (deps = {}) => {
+                return new RouterController({
+                    allowSelfSignup: sinon.stub().returns(true),
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    },
+                    sendEmailWithMagicLink: sendEmailWithMagicLinkStub,
+                    settingsCache,
+                    settingsHelpers,
+                    emailAddressService,
+                    memberRepository: memberRepositoryStub,
+                    ...deps
+                });
+            };
+
+            beforeEach(function () {
+                req = {
+                    body: {
+                        email: 'jamie@example.com',
+                        emailType: 'subscribe',
+                        giftToken: 'gift-token-123'
+                    },
+                    get: sinon.stub()
+                };
+                res = {
+                    writeHead: sinon.stub(),
+                    end: sinon.stub()
+                };
+                sendEmailWithMagicLinkStub = sinon.stub().resolves({});
+                memberRepositoryStub = {
+                    get: sinon.stub().resolves({
+                        id: 'member_1'
+                    })
+                };
+            });
+
+            it('forwards giftToken for signup and subscribe flows', async function () {
+                const controller = createRouterController();
+
+                await controller.sendMagicLink(req, res);
+
+                sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
+                assert.equal(sendEmailWithMagicLinkStub.firstCall.args[0].tokenData.giftToken, 'gift-token-123');
+            });
+
+            it('forwards giftToken for signin flows', async function () {
+                req.body.emailType = 'signin';
+                const controller = createRouterController();
+
+                await controller.sendMagicLink(req, res);
+
+                sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
+                assert.equal(sendEmailWithMagicLinkStub.firstCall.args[0].tokenData.giftToken, 'gift-token-123');
+            });
+        });
+
         describe('honeypot', function () {
             let req, res, sendEmailWithMagicLinkStub;
 

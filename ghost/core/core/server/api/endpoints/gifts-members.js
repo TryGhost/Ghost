@@ -1,4 +1,4 @@
-const giftService = require('../../services/gifts');
+const gift = require('../../services/gifts');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 module.exports = {
@@ -21,10 +21,29 @@ module.exports = {
         },
         permissions: false,
         query(frame) {
-            return giftService.service.getRedeemableGiftByToken({
-                token: frame.data.token,
-                currentMember: frame.options.context.member
-            });
+            return gift.controller.isRedeemable(frame);
+        }
+    },
+
+    redeem: {
+        statusCode: 200,
+        headers: {
+            cacheInvalidate: false
+        },
+        data: [
+            'token'
+        ],
+        validation: {
+            data: {
+                token: {
+                    type: 'string',
+                    required: true
+                }
+            }
+        },
+        permissions: false,
+        query(frame) {
+            return gift.controller.redeem(frame);
         }
     }
 };

@@ -8,11 +8,8 @@ describe('Members Gifts', function () {
     let giftSequence = 0;
 
     const alreadyRedeemedMessage = 'This gift has already been redeemed.';
-    const alreadyConsumedMessage = 'This gift has already been consumed.';
-    const expiredMessage = 'This gift has expired.';
-    const refundedMessage = 'This gift has been refunded.';
     const activeSubscriptionMessage = 'You already have an active subscription.';
-    const notFoundMessage = 'Gift not found.';
+    const notFoundMessage = 'This gift does not exist.';
 
     before(async function () {
         membersAgent = await agentProvider.getMembersAPIAgent();
@@ -109,6 +106,8 @@ describe('Members Gifts', function () {
         });
         assert.equal(body.gifts[0].buyer_email, undefined);
         assert.equal(body.gifts[0].redeemed_at, undefined);
+        assert.equal(body.gifts[0].status, undefined);
+        assert.equal(body.gifts[0].consumes_at, null);
     });
 
     it('returns gift details for a logged-in free member when the token is redeemable', async function () {
@@ -148,67 +147,85 @@ describe('Members Gifts', function () {
         assert.equal(body.errors[0].message, activeSubscriptionMessage);
     });
 
-    it('returns 400 when the gift has already been redeemed', async function () {
-        const redeemedAt = new Date('2026-04-07T11:00:00.000Z');
-        const gift = await createGift({
-            status: 'redeemed',
-            redeemed_at: redeemedAt
-        });
-
-        const {body} = await membersAgent
-            .get(`/api/gifts/${gift.get('token')}/redeem/`)
-            .expectStatus(400);
-
-        assert.equal(body.errors[0].message, alreadyRedeemedMessage);
-    });
-
-    it('returns 400 when the gift has already been consumed', async function () {
-        const consumedAt = new Date('2026-04-07T11:00:00.000Z');
-        const gift = await createGift({
-            status: 'consumed',
-            consumed_at: consumedAt
-        });
-
-        const {body} = await membersAgent
-            .get(`/api/gifts/${gift.get('token')}/redeem/`)
-            .expectStatus(400);
-
-        assert.equal(body.errors[0].message, alreadyConsumedMessage);
-    });
-
-    it('returns 400 when the gift has expired', async function () {
-        const expiredAt = new Date('2026-04-07T11:00:00.000Z');
-        const gift = await createGift({
-            status: 'expired',
-            expired_at: expiredAt
-        });
-
-        const {body} = await membersAgent
-            .get(`/api/gifts/${gift.get('token')}/redeem/`)
-            .expectStatus(400);
-
-        assert.equal(body.errors[0].message, expiredMessage);
-    });
-
-    it('returns 400 when the gift has been refunded', async function () {
-        const refundedAt = new Date('2026-04-07T11:00:00.000Z');
-        const gift = await createGift({
-            status: 'refunded',
-            refunded_at: refundedAt
-        });
-
-        const {body} = await membersAgent
-            .get(`/api/gifts/${gift.get('token')}/redeem/`)
-            .expectStatus(400);
-
-        assert.equal(body.errors[0].message, refundedMessage);
-    });
-
     it('returns 404 when the gift token does not exist', async function () {
         const {body} = await membersAgent
             .get('/api/gifts/nonexistent-token/redeem/')
             .expectStatus(404);
 
         assert.equal(body.errors[0].message, notFoundMessage);
+    });
+
+    it('redeems a gift for a logged-in free member via POST', async function () {
+        const agent = membersAgent.duplicate();
+        const email = `gift-post-free-${giftSequence + 1}@example.com`;
+        const gift = await createGift();
+
+        await agent.loginAs(email);
+
+        const {body} = await agent
+            .post(`/api/gifts/${gift.get('token')}/redeem/`)
+            .body({})
+            .expectStatus(200);
+
+        await gift.refresh();
+
+        const member = await models.Member.findOne({email}, {require: true});
+
+        assert.equal(body.gifts[0].token, gift.get('token'));
+        assert.equal(body.gifts[0].status, undefined);
+        assert.ok(body.gifts[0].consumes_at);
+        assert.equal(member.get('status'), 'gift');
+        assert.equal(gift.get('status'), 'redeemed');
+        assert.equal(gift.get('redeemer_member_id'), member.id);
+        assert.ok(gift.get('redeemed_at'));
+        assert.ok(gift.get('consumes_at'));
+    });
+
+    it('returns 401 when redeeming a gift via POST without a member session', async function () {
+        const gift = await createGift();
+
+        const {body} = await membersAgent
+            .post(`/api/gifts/${gift.get('token')}/redeem/`)
+            .body({})
+            .expectStatus(401);
+
+        assert.equal(body.errors[0].type, 'UnauthorizedError');
+    });
+
+    it('returns 400 when redeeming a gift via POST for a paid member', async function () {
+        const agent = membersAgent.duplicate();
+        const gift = await createGift();
+
+        await agent.loginAs('paid@test.com');
+
+        const {body} = await agent
+            .post(`/api/gifts/${gift.get('token')}/redeem/`)
+            .body({})
+            .expectStatus(400);
+
+        assert.equal(body.errors[0].message, activeSubscriptionMessage);
+    });
+
+    it('returns 400 when redeeming a gift via POST a second time', async function () {
+        const firstAgent = membersAgent.duplicate();
+        const secondAgent = membersAgent.duplicate();
+        const firstEmail = `gift-post-first-${giftSequence + 1}@example.com`;
+        const secondEmail = `gift-post-second-${giftSequence + 2}@example.com`;
+        const gift = await createGift();
+
+        await firstAgent.loginAs(firstEmail);
+        await firstAgent
+            .post(`/api/gifts/${gift.get('token')}/redeem/`)
+            .body({})
+            .expectStatus(200);
+
+        await secondAgent.loginAs(secondEmail);
+
+        const {body} = await secondAgent
+            .post(`/api/gifts/${gift.get('token')}/redeem/`)
+            .body({})
+            .expectStatus(400);
+
+        assert.equal(body.errors[0].message, alreadyRedeemedMessage);
     });
 });

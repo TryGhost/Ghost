@@ -135,6 +135,12 @@ module.exports = function setupMembersApp() {
         middleware.loadMemberSession,
         http(api.giftsMembers.isRedeemable)
     );
+    membersApp.post(
+        '/api/gifts/:token/redeem',
+        bodyParser.json({limit: '50mb'}),
+        middleware.loadMemberSession,
+        http(api.giftsMembers.redeem)
+    );
 
     // Announcement
     membersApp.use(
