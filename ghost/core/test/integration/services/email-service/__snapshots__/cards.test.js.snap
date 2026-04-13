@@ -455,7 +455,7 @@ table.body .subscription-box p span {
 table.body .manage-subscription {
     display: inline-block;
     width: 100%;
-    text-align: left !important;
+    text-align: start !important;
     font-size: 13px !important;
   }
 
@@ -1324,7 +1324,7 @@ table.body .subscription-box p span {
 table.body .manage-subscription {
     display: inline-block;
     width: 100%;
-    text-align: left !important;
+    text-align: start !important;
     font-size: 13px !important;
   }
 
@@ -7989,7 +7989,7 @@ table.body .subscription-box p span {
 table.body .manage-subscription {
     display: inline-block;
     width: 100%;
-    text-align: left !important;
+    text-align: start !important;
     font-size: 13px !important;
   }
 
@@ -9524,7 +9524,7 @@ table.body .subscription-box p span {
 table.body .manage-subscription {
     display: inline-block;
     width: 100%;
-    text-align: left !important;
+    text-align: start !important;
     font-size: 13px !important;
   }
 

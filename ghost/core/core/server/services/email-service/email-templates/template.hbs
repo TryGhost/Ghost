@@ -63,7 +63,7 @@
                                                     <p>{{t 'Email'}}: <a href="#">%%{email}%%</a></p>
                                                     <p>{{t 'Member since'}}: %%{created_at}%%</p>
                                                 </td>
-                                                <td align="right" valign="bottom" class="manage-subscription">
+                                                <td align="{{#if (eq site.direction "rtl")}}left{{else}}right{{/if}}" valign="bottom" class="manage-subscription">
                                                     <a href="%%{manage_account_url}%%"> {{t 'Manage subscription'}}</a>
                                                 </td>
                                             </tr>
