@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 import type {Page} from '@playwright/test';
 
 /**
@@ -76,6 +76,7 @@ const automatedEmailDesignFixture = {
         background_color: 'light',
         header_background_color: 'transparent',
         header_image: null,
+        show_header_icon: true,
         show_header_title: true,
         footer_content: null,
         button_color: null,
@@ -94,6 +95,10 @@ const automatedEmailDesignFixture = {
         updated_at: null
     }]
 };
+
+const settingsWithPublicationIcon = updatedSettingsResponse([
+    {key: 'icon', value: 'https://example.com/content/images/icon.png'}
+]);
 
 const pasteText = async (page: Page, content: string) => {
     await page.evaluate((text: string) => {
@@ -630,6 +635,89 @@ test.describe('Member emails settings', async () => {
     });
 
     test.describe('Welcome email customize modal sender fields', async () => {
+        test('shows publication icon toggle, updates preview, and saves show_header_icon when an icon exists', async ({page}) => {
+            const addPaidResponse = {
+                automated_emails: [{
+                    id: 'paid-welcome-email-id',
+                    status: 'inactive',
+                    name: 'Welcome Email (Paid)',
+                    slug: 'member-welcome-email-paid',
+                    subject: 'Welcome to your paid subscription',
+                    lexical: '{"root":{"children":[]}}',
+                    sender_name: null,
+                    sender_email: null,
+                    sender_reply_to: null,
+                    created_at: '2024-01-01T00:00:00.000Z',
+                    updated_at: null
+                }]
+            };
+
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                browseSettings: {...globalDataRequests.browseSettings, response: settingsWithPublicationIcon},
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailCustomization},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
+                readAutomatedEmailDesign: {method: 'GET', path: '/automated_emails/design/', response: automatedEmailDesignFixture},
+                editAutomatedEmailDesign: {method: 'PUT', path: '/automated_emails/design/', response: automatedEmailDesignFixture},
+                addAutomatedEmail: {method: 'POST', path: '/automated_emails/', response: addPaidResponse},
+                editAutomatedEmailSenders: {
+                    method: 'PUT',
+                    path: /^\/automated_emails\/senders\/?$/,
+                    response: {automated_emails: automatedEmailsFixture.automated_emails}
+                }
+            }});
+
+            await page.goto('/#/memberemails');
+            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByRole('button', {name: 'Customize'}).click();
+
+            const modal = page.getByTestId('welcome-email-customize-modal');
+            await expect(modal).toBeVisible();
+
+            const publicationIconSwitch = modal.getByText('Publication icon').locator('..').getByRole('switch');
+            await expect(publicationIconSwitch).toBeVisible();
+            await expect(modal.locator('img[alt="Test Site"]').first()).toBeVisible();
+
+            await publicationIconSwitch.click();
+
+            await expect(modal.locator('img[alt="Test Site"]')).toHaveCount(0);
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect.poll(() => lastApiRequests.editAutomatedEmailDesign?.body).toMatchObject({
+                automated_email_design: [{
+                    show_header_icon: false
+                }]
+            });
+        });
+
+        test('hides publication icon toggle when no publication icon is set', async ({page}) => {
+            await mockApi({page, requests: {
+                ...globalDataRequests,
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailCustomization},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
+                readAutomatedEmailDesign: {method: 'GET', path: '/automated_emails/design/', response: automatedEmailDesignFixture}
+            }});
+
+            await page.goto('/#/memberemails');
+            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByRole('button', {name: 'Customize'}).click();
+
+            const modal = page.getByTestId('welcome-email-customize-modal');
+            await expect(modal).toBeVisible();
+
+            await expect(modal.getByText('Publication icon')).toHaveCount(0);
+            await expect(modal.locator('img[alt="Test Site"]')).toHaveCount(0);
+        });
+
         test('uses placeholders when no automated sender overrides exist', async ({page}) => {
             await mockApi({page, requests: {
                 ...globalDataRequests,

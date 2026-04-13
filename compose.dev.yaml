@@ -58,7 +58,7 @@ services:
       dockerfile: docker/ghost-dev/Dockerfile
     container_name: ghost-dev
     working_dir: /home/ghost/ghost/core
-    command: ["yarn", "dev"]
+    command: ["pnpm", "dev"]
     volumes:
       - ./ghost:/home/ghost/ghost
       # Mount specific content subdirectories to preserve themes/adapters from source
@@ -121,7 +121,7 @@ services:
         condition: service_healthy
 
   stripe:
-    image: stripe/stripe-cli:latest@sha256:a7a01c0e547c2835c7e2bc4f2ff2c1c9c4c947b305d39b33c345552d8e6abb5e
+    image: stripe/stripe-cli:latest@sha256:aa500a8812f08613296e322ce2dfccd02459273432fcc2e3a0b4f68919fce438
     container_name: ghost-dev-stripe
     entrypoint: ["/entrypoint.sh"]
     profiles: ["stripe"]

@@ -72,8 +72,7 @@ User = ghostBookshelf.Model.extend({
             recommendation_notifications: true,
             milestone_notifications: true,
             donation_notifications: true,
-            gift_subscription_purchase_notification: true,
-            gift_subscription_redemption_notification: true
+            gift_subscription_purchase_notification: true
         };
     },
 
@@ -514,6 +513,8 @@ User = ghostBookshelf.Model.extend({
             filter += '+donation_notifications:true';
         } else if (type === 'recommendation-received') {
             filter += '+recommendation_notifications:true';
+        } else if (type === 'gift-subscription-purchased') {
+            filter += '+gift_subscription_purchase_notification:true';
         }
         const updatedOptions = Object.assign({}, options, {filter, withRelated: ['roles']});
         return this.findAll(updatedOptions).then((users) => {

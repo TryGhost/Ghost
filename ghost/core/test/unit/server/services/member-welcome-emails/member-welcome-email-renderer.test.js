@@ -12,7 +12,8 @@ describe('MemberWelcomeEmailRenderer', function () {
     const defaultSiteSettings = {
         title: 'Test Site',
         url: 'https://example.com',
-        accentColor: '#ff0000'
+        accentColor: '#ff0000',
+        iconUrl: 'https://example.com/content/images/icon.png'
     };
 
     beforeEach(function () {
@@ -575,6 +576,69 @@ describe('MemberWelcomeEmailRenderer', function () {
                 assert(result.html.includes('src="https://example.com/header.png"'));
                 assert(result.html.includes('Custom footer</p>'));
                 assert(result.html.includes('https://ghost.org/?via=pbg-newsletter'));
+            });
+
+            it('renders the publication icon when enabled and a site icon exists', async function () {
+                lexicalRenderStub.resolves('<p>Content</p>');
+                const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+                const result = await renderer.render({
+                    lexical: '{}',
+                    subject: 'Test Subject',
+                    designSettings: {
+                        show_header_icon: true,
+                        show_header_title: false
+                    },
+                    member: {name: 'John', email: 'john@example.com'},
+                    siteSettings: defaultSiteSettings
+                });
+
+                assert(result.html.includes('class="header"'));
+                assert(result.html.includes('class="site-icon"'));
+                assert(result.html.includes('src="https://example.com/content/images/icon.png"'));
+            });
+
+            it('does not render the publication icon when disabled', async function () {
+                lexicalRenderStub.resolves('<p>Content</p>');
+                const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+                const result = await renderer.render({
+                    lexical: '{}',
+                    subject: 'Test Subject',
+                    designSettings: {
+                        show_header_icon: false,
+                        show_header_title: false
+                    },
+                    member: {name: 'John', email: 'john@example.com'},
+                    siteSettings: defaultSiteSettings
+                });
+
+                assert(!result.html.includes('class="header"'));
+                assert(!result.html.includes('class="site-icon"'));
+                assert(!result.html.includes('src="https://example.com/content/images/icon.png"'));
+            });
+
+            it('does not render the publication icon when the site icon is missing', async function () {
+                lexicalRenderStub.resolves('<p>Content</p>');
+                const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+                const result = await renderer.render({
+                    lexical: '{}',
+                    subject: 'Test Subject',
+                    designSettings: {
+                        show_header_icon: true,
+                        show_header_title: false
+                    },
+                    member: {name: 'John', email: 'john@example.com'},
+                    siteSettings: {
+                        ...defaultSiteSettings,
+                        iconUrl: null
+                    }
+                });
+
+                assert(!result.html.includes('class="header"'));
+                assert(!result.html.includes('class="site-icon"'));
+                assert(!result.html.includes('content/images/icon.png'));
             });
 
             it('uses the sans-serif content-shell class by default when design customization is enabled', async function () {

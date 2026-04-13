@@ -21,15 +21,15 @@ This lightweight image:
 - Only installs dependencies
 - No frontend builds or bundling
 - Source code mounted at runtime 
-- Used for: Local development with `yarn dev`
+- Used for: Local development with `pnpm dev`
 
 ## Usage
 
 This image is used automatically when running:
 
 ```bash
-yarn dev              # Starts Docker backend + frontend dev servers on host
-yarn dev:analytics    # Include Tinybird analytics
-yarn dev:storage      # Include MinIO S3-compatible object storage
-yarn dev:all          # Include all optional services
+pnpm dev              # Starts Docker backend + frontend dev servers on host
+pnpm dev:analytics    # Include Tinybird analytics
+pnpm dev:storage      # Include MinIO S3-compatible object storage
+pnpm dev:all          # Include all optional services
 ```

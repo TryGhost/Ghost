@@ -202,6 +202,7 @@ class MemberWelcomeEmailRenderer {
         const managePreferencesUrl = new URL('#/portal/account/newsletters', siteSettings.url).href;
         const year = new Date().getFullYear();
         const headerImage = useDesignCustomization ? (designSettings.header_image || null) : null;
+        const showHeaderIcon = useDesignCustomization ? designSettings.show_header_icon !== false && Boolean(siteSettings.iconUrl) : false;
         const showHeaderTitle = useDesignCustomization ? designSettings.show_header_title !== false : false;
         const showBadge = useDesignCustomization ? designSettings.show_badge !== false : false;
         const bodyFontCategory = designSettings.body_font_category === 'serif' ? 'serif' : 'sans_serif';
@@ -211,13 +212,14 @@ class MemberWelcomeEmailRenderer {
             emailTitle: subjectWithReplacements,
             subject: subjectWithReplacements,
             footerContent: useDesignCustomization ? designSettings.footer_content : null,
-            hasHeaderContent: Boolean(headerImage || showHeaderTitle),
+            hasHeaderContent: Boolean(headerImage || showHeaderIcon || showHeaderTitle),
             headerImage,
             showBadge,
-            showHeaderIcon: false,
+            showHeaderIcon,
             showHeaderName: false,
             showHeaderTitle,
             site: {
+                iconUrl: siteSettings.iconUrl || null,
                 title: siteSettings.title,
                 url: siteSettings.url
             },

@@ -10,6 +10,13 @@
     // Keep manually-closed immortal/grouped PRs closed unless explicitly
     // reopened from the Dependency Dashboard.
     "recreateWhen": "never",
+    // pnpm lockfile generation has been hitting Mend's 3GB memory ceiling.
+    // Renovate maintainers suggested starting with toolSettings.nodeMaxMemory
+    // set to 1024MB to reduce pnpm's Node heap usage and keep the overall job
+    // under the hosted runner limit.
+    "toolSettings": {
+        "nodeMaxMemory": 1024
+    },
     // We have to disable platform based automerge (forcing renovate to do it manually)
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,
@@ -184,14 +191,19 @@
             "automerge": true
         },
 
-        // Allow patch updates to the internal traffic analytics image to
-        // automerge once CI has gone green.
+        // Allow internal Docker digest pins to automerge once the relevant
+        // CI checks have gone green.
         {
+            "description": "Automerge internal Docker digest updates after CI passes",
             "matchDatasources": [
                 "docker"
             ],
             "matchPackageNames": [
-                "ghost/traffic-analytics"
+                "ghost/traffic-analytics",
+                "tinybirdco/tinybird-local"
+            ],
+            "matchUpdateTypes": [
+                "digest"
             ],
             "automerge": true,
             "automergeType": "pr"
