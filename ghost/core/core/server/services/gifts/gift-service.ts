@@ -1,24 +1,31 @@
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
-import tpl from '@tryghost/tpl';
 import {Gift} from './gift';
 import type {GiftRepository} from './gift-repository';
-import ObjectID from 'bson-objectid';
+import tpl from '@tryghost/tpl';
+
+const errorMessages = {
+    giftSubscriptionsNotEnabled: 'Gift subscriptions are not enabled on this site.',
+    giftNotFound: 'This gift does not exist.',
+    giftAlreadyRedeemed: 'This gift has already been redeemed.',
+    giftConsumed: 'This gift has already been consumed.',
+    giftExpired: 'This gift has expired.',
+    giftRefunded: 'This gift has been refunded.',
+    paidMember: 'You already have an active subscription.'
+};
 
 interface MemberRepository {
-    get(filter: Record<string, unknown>): Promise<{id: string; get(key: string): string | null} | null>;
+    get(filter: Record<string, unknown>, options?: Record<string, unknown>): Promise<{id: string; get(key: string): string | null} | null>;
+    update(data: Record<string, unknown>, options?: Record<string, unknown>): Promise<unknown>;
 }
 
 type Tier = {
-    id: ObjectID;
     name: string;
-    description: string | null;
-    benefits: string[] | null;
     toJSON?: () => {
         id: string;
         name: string;
         description: string | null;
-        benefits: string[] | null;
+        benefits: string[];
     };
 };
 
@@ -54,10 +61,6 @@ interface StaffServiceEmails {
     }): Promise<void>;
 }
 
-interface LabsService {
-    isSet(key: string): boolean;
-}
-
 export interface GiftPurchaseData {
     token: string;
     buyerEmail: string;
@@ -71,31 +74,19 @@ export interface GiftPurchaseData {
     stripePaymentIntentId: string;
 }
 
-const messages = {
-    giftSubscriptionsNotEnabled: 'Gift subscriptions are not enabled on this site.',
-    giftNotFound: 'Gift not found.',
-    giftAlreadyRedeemed: 'This gift has already been redeemed.',
-    giftConsumed: 'This gift has already been consumed.',
-    giftExpired: 'This gift has expired.',
-    giftRefunded: 'This gift has been refunded.',
-    memberAlreadySubscribed: 'You already have an active subscription.'
-};
+interface GiftServiceDeps {
+    giftRepository: GiftRepository;
+    memberRepository: MemberRepository;
+    tiersService: TiersService;
+    giftEmailService: GiftEmailService;
+    staffServiceEmails: StaffServiceEmails;
+}
 
 export class GiftService {
-    private readonly giftRepository: GiftRepository;
-    private readonly memberRepository: MemberRepository;
-    private readonly tiersService: TiersService;
-    private readonly giftEmailService: GiftEmailService;
-    private readonly staffServiceEmails: StaffServiceEmails;
-    private readonly labsService: LabsService;
+    private readonly deps: GiftServiceDeps;
 
-    constructor({giftRepository, memberRepository, tiersService, giftEmailService, staffServiceEmails, labsService}: {giftRepository: GiftRepository; memberRepository: MemberRepository; tiersService: TiersService; giftEmailService: GiftEmailService; staffServiceEmails: StaffServiceEmails; labsService: LabsService}) {
-        this.giftRepository = giftRepository;
-        this.memberRepository = memberRepository;
-        this.tiersService = tiersService;
-        this.giftEmailService = giftEmailService;
-        this.staffServiceEmails = staffServiceEmails;
-        this.labsService = labsService;
+    constructor(deps: GiftServiceDeps) {
+        this.deps = deps;
     }
 
     async recordPurchase(data: GiftPurchaseData): Promise<boolean> {
@@ -105,12 +96,12 @@ export class GiftService {
             throw new errors.ValidationError({message: `Invalid gift duration: ${data.duration}`});
         }
 
-        if (await this.giftRepository.existsByCheckoutSessionId(data.stripeCheckoutSessionId)) {
+        if (await this.deps.giftRepository.existsByCheckoutSessionId(data.stripeCheckoutSessionId)) {
             return false;
         }
 
         const member = data.stripeCustomerId
-            ? await this.memberRepository.get({customer_id: data.stripeCustomerId})
+            ? await this.deps.memberRepository.get({customer_id: data.stripeCustomerId})
             : null;
 
         const gift = Gift.fromPurchase({
@@ -126,16 +117,16 @@ export class GiftService {
             stripePaymentIntentId: data.stripePaymentIntentId
         });
 
-        await this.giftRepository.create(gift);
+        await this.deps.giftRepository.create(gift);
 
-        const tier = await this.tiersService.api.read(data.tierId);
+        const tier = await this.deps.tiersService.api.read(data.tierId);
 
         if (!tier) {
             throw new errors.NotFoundError({message: `Tier not found: ${data.tierId}`});
         }
 
         try {
-            await this.staffServiceEmails.notifyGiftReceived({
+            await this.deps.staffServiceEmails.notifyGiftReceived({
                 name: member?.get('name') ?? null,
                 email: member?.get('email') ?? data.buyerEmail,
                 memberId: member?.id ?? null,
@@ -150,7 +141,7 @@ export class GiftService {
         }
 
         try {
-            await this.giftEmailService.sendPurchaseConfirmation({
+            await this.deps.giftEmailService.sendPurchaseConfirmation({
                 buyerEmail: data.buyerEmail,
                 amount: data.amount,
                 currency: data.currency,
@@ -167,40 +158,42 @@ export class GiftService {
         return true;
     }
 
-    async getRedeemableGiftByToken({token, currentMember}: {token: string; currentMember?: {status: string} | null}) {
-        if (!this.labsService.isSet('giftSubscriptions')) {
-            throw new errors.BadRequestError({
-                message: tpl(messages.giftSubscriptionsNotEnabled)
-            });
-        }
-
-        const gift = await this.giftRepository.getByToken(token);
+    async getByToken(token: string): Promise<Gift> {
+        const gift = await this.deps.giftRepository.getByToken(token);
 
         if (!gift) {
             throw new errors.NotFoundError({
-                message: tpl(messages.giftNotFound)
+                message: tpl(errorMessages.giftNotFound)
             });
         }
 
-        const redeemableCheck = gift.checkRedeemable();
+        return gift;
+    }
+
+    async assertRedeemable(gift: Gift, memberStatus: string | null): Promise<Gift> {
+        const redeemableCheck = gift.checkRedeemable(memberStatus);
 
         if (!redeemableCheck.redeemable) {
             switch (redeemableCheck.reason) {
             case 'redeemed':
                 throw new errors.BadRequestError({
-                    message: tpl(messages.giftAlreadyRedeemed)
+                    message: tpl(errorMessages.giftAlreadyRedeemed)
                 });
             case 'consumed':
                 throw new errors.BadRequestError({
-                    message: tpl(messages.giftConsumed)
+                    message: tpl(errorMessages.giftConsumed)
                 });
             case 'expired':
                 throw new errors.BadRequestError({
-                    message: tpl(messages.giftExpired)
+                    message: tpl(errorMessages.giftExpired)
                 });
             case 'refunded':
                 throw new errors.BadRequestError({
-                    message: tpl(messages.giftRefunded)
+                    message: tpl(errorMessages.giftRefunded)
+                });
+            case 'paid-member':
+                throw new errors.BadRequestError({
+                    message: tpl(errorMessages.paidMember)
                 });
             default: {
                 const exhaustiveCheck: never = redeemableCheck.reason;
@@ -212,35 +205,50 @@ export class GiftService {
             }
         }
 
-        if (currentMember && currentMember.status !== 'free') {
-            throw new errors.BadRequestError({
-                message: tpl(messages.memberAlreadySubscribed)
-            });
+        return gift;
+    }
+
+    async getRedeemable(token: string, memberStatus: string | null): Promise<Gift> {
+        const gift = await this.deps.giftRepository.getByToken(token);
+
+        if (!gift) {
+            throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
         }
 
-        const tier = await this.tiersService.api.read(gift.tierId);
+        await this.assertRedeemable(gift, memberStatus);
 
-        if (!tier) {
-            throw new errors.NotFoundError({
-                message: tpl(messages.giftNotFound)
-            });
-        }
+        return gift;
+    }
 
-        const tierJSON = tier.toJSON ? tier.toJSON() : tier;
+    async redeem({token, memberId}: {token: string; memberId: string}): Promise<Gift> {
+        return await this.deps.giftRepository.transaction(async (transacting) => {
+            const member = await this.deps.memberRepository.get({id: memberId}, {transacting, forUpdate: true});
 
-        return {
-            token: gift.token,
-            cadence: gift.cadence,
-            duration: gift.duration,
-            currency: gift.currency,
-            amount: gift.amount,
-            expires_at: gift.expiresAt,
-            tier: {
-                id: tierJSON.id,
-                name: tierJSON.name,
-                description: tierJSON.description ?? null,
-                benefits: Array.isArray(tierJSON.benefits) ? tierJSON.benefits : []
+            if (!member) {
+                throw new errors.NotFoundError({message: `Member not found: ${memberId}`});
             }
-        };
+
+            const gift = await this.deps.giftRepository.getByToken(token, {transacting, forUpdate: true});
+
+            if (!gift) {
+                throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
+            }
+
+            await this.assertRedeemable(gift, member.get('status'));
+
+            const redeemed = gift.redeem({memberId});
+
+            await this.deps.memberRepository.update({
+                products: [{
+                    id: redeemed.tierId,
+                    expiry_at: redeemed.consumesAt
+                }],
+                status: 'gift'
+            }, {id: memberId, transacting});
+
+            await this.deps.giftRepository.save(redeemed, {transacting});
+
+            return redeemed;
+        });
     }
 }
