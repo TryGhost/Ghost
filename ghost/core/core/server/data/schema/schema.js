@@ -183,7 +183,6 @@ module.exports = {
         milestone_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         donation_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         gift_subscription_purchase_notification: {type: 'boolean', nullable: false, defaultTo: true},
-        gift_subscription_redemption_notification: {type: 'boolean', nullable: false, defaultTo: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
