@@ -65,7 +65,7 @@ export type Member = {
     name?: string;
     email?: string;
     avatar_image?: string;
-    status: 'free' | 'paid' | 'comped';
+    status: 'free' | 'paid' | 'comped' | 'gift';
     note?: string;
     subscribed: boolean;
     labels?: MemberLabel[];
