@@ -83,26 +83,15 @@ const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User)
                         setUserData?.({...user, donation_notifications: e.target.checked});
                     }}
                 />}
-                {hasStripeEnabled && hasGiftSubscriptions && <>
-                    <Toggle
-                        checked={user.gift_subscription_purchase_notification}
-                        direction='rtl'
-                        hint='Every time someone purchases a gift subscription'
-                        label='Gift subscription purchases'
-                        onChange={(e) => {
-                            setUserData?.({...user, gift_subscription_purchase_notification: e.target.checked});
-                        }}
-                    />
-                    <Toggle
-                        checked={user.gift_subscription_redemption_notification}
-                        direction='rtl'
-                        hint='Every time a gift subscription is redeemed'
-                        label='Gift subscription redemptions'
-                        onChange={(e) => {
-                            setUserData?.({...user, gift_subscription_redemption_notification: e.target.checked});
-                        }}
-                    />
-                </>}
+                {hasStripeEnabled && hasGiftSubscriptions && <Toggle
+                    checked={user.gift_subscription_purchase_notification}
+                    direction='rtl'
+                    hint='Every time someone purchases a gift subscription'
+                    label='Gift subscription purchases'
+                    onChange={(e) => {
+                        setUserData?.({...user, gift_subscription_purchase_notification: e.target.checked});
+                    }}
+                />}
             </>}
         </SettingGroupContent>
     );

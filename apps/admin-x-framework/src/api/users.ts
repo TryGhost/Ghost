@@ -42,7 +42,6 @@ export type User = {
     milestone_notifications: boolean;
     donation_notifications: boolean;
     gift_subscription_purchase_notification: boolean;
-    gift_subscription_redemption_notification: boolean;
     roles: UserRole[];
     url: string;
 }

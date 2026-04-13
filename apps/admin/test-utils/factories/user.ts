@@ -36,7 +36,6 @@ export const createMockUser = (overrides?: Partial<User>): User => ({
     milestone_notifications: true,
     donation_notifications: true,
     gift_subscription_purchase_notification: true,
-    gift_subscription_redemption_notification: true,
     roles: [
         {
             id: "1",
