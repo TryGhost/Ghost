@@ -214,15 +214,31 @@ export class GiftService {
         return gift;
     }
 
+    async getRedeemable(token: string, memberStatus: string | null): Promise<Gift> {
+        const gift = await this.giftRepository.getByToken(token);
+
+        if (!gift) {
+            throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
+        }
+
+        await this.assertRedeemable(gift, memberStatus);
+
+        return gift;
+    }
+
     async redeem({token, memberId}: {token: string; memberId: string}): Promise<Gift> {
         return await this.giftRepository.transaction(async (transacting) => {
-            const member = await this.memberRepository.get({id: memberId}, {transacting});
+            const member = await this.memberRepository.get({id: memberId}, {transacting, forUpdate: true});
 
             if (!member) {
                 throw new errors.NotFoundError({message: `Member not found: ${memberId}`});
             }
 
-            const gift = await this.getByToken(token);
+            const gift = await this.giftRepository.getByToken(token, {transacting, forUpdate: true});
+
+            if (!gift) {
+                throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
+            }
 
             await this.assertRedeemable(gift, member.get('status'));
 

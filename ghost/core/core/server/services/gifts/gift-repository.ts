@@ -2,6 +2,7 @@ import type {Gift} from './gift';
 
 export interface RepositoryTransactionOptions {
     transacting?: unknown;
+    forUpdate?: boolean;
 }
 
 export interface GiftRepository {

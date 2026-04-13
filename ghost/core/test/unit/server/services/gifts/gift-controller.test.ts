@@ -6,8 +6,7 @@ import {Gift} from '../../../../../core/server/services/gifts/gift';
 
 describe('GiftController', function () {
     let service: {
-        getByToken: sinon.SinonStub;
-        assertRedeemable: sinon.SinonStub;
+        getRedeemable: sinon.SinonStub;
         redeem: sinon.SinonStub;
     };
     let tiersService: {
@@ -44,19 +43,25 @@ describe('GiftController', function () {
         });
     }
 
+    function buildTierJSON(overrides: Partial<{id: string; name: string; description: string | null; benefits: string[]}> = {}) {
+        return {
+            id: 'tier_1',
+            name: 'Bronze',
+            description: 'Tier description',
+            benefits: ['Benefit 1', 'Benefit 2'],
+            ...overrides
+        };
+    }
+
     beforeEach(function () {
         service = {
-            getByToken: sinon.stub(),
-            assertRedeemable: sinon.stub(),
+            getRedeemable: sinon.stub(),
             redeem: sinon.stub()
         };
         tiersService = {
             api: {
                 read: sinon.stub().resolves({
-                    id: 'tier_1',
-                    name: 'Bronze',
-                    description: 'Tier description',
-                    benefits: ['Benefit 1', 'Benefit 2']
+                    toJSON: () => buildTierJSON()
                 })
             }
         };
@@ -77,20 +82,18 @@ describe('GiftController', function () {
         });
     }
 
-    describe('isRedeemable', function () {
+    describe('getRedeemable', function () {
         it('returns serialized gift for an anonymous visitor', async function () {
             const gift = buildGift();
 
-            service.getByToken.resolves(gift);
-            service.assertRedeemable.resolves(gift);
+            service.getRedeemable.resolves(gift);
 
             const controller = createController();
-            const result = await controller.isRedeemable({
+            const result = await controller.getRedeemable({
                 data: {token: 'gift-token'}
             });
 
-            sinon.assert.calledOnceWithExactly(service.getByToken, 'gift-token');
-            sinon.assert.calledOnceWithExactly(service.assertRedeemable, gift, null);
+            sinon.assert.calledOnceWithExactly(service.getRedeemable, 'gift-token', null);
             sinon.assert.calledOnceWithExactly(tiersService.api.read, 'tier_1');
             assert.deepEqual(result, {
                 token: 'gift-token',
@@ -112,12 +115,11 @@ describe('GiftController', function () {
         it('passes member status from frame context', async function () {
             const gift = buildGift();
 
-            service.getByToken.resolves(gift);
-            service.assertRedeemable.resolves(gift);
+            service.getRedeemable.resolves(gift);
 
             const controller = createController();
 
-            await controller.isRedeemable({
+            await controller.getRedeemable({
                 data: {token: 'gift-token'},
                 options: {
                     context: {
@@ -129,19 +131,17 @@ describe('GiftController', function () {
                 }
             });
 
-            sinon.assert.calledOnceWithExactly(service.getByToken, 'gift-token');
-            sinon.assert.calledOnceWithExactly(service.assertRedeemable, gift, 'free');
+            sinon.assert.calledOnceWithExactly(service.getRedeemable, 'gift-token', 'free');
         });
 
         it('passes null member status when member is null', async function () {
             const gift = buildGift();
 
-            service.getByToken.resolves(gift);
-            service.assertRedeemable.resolves(gift);
+            service.getRedeemable.resolves(gift);
 
             const controller = createController();
 
-            await controller.isRedeemable({
+            await controller.getRedeemable({
                 data: {token: 'gift-token'},
                 options: {
                     context: {
@@ -150,36 +150,28 @@ describe('GiftController', function () {
                 }
             });
 
-            sinon.assert.calledOnceWithExactly(service.getByToken, 'gift-token');
-            sinon.assert.calledOnceWithExactly(service.assertRedeemable, gift, null);
+            sinon.assert.calledOnceWithExactly(service.getRedeemable, 'gift-token', null);
         });
 
         it('passes null member status when context is absent', async function () {
             const gift = buildGift();
 
-            service.getByToken.resolves(gift);
-            service.assertRedeemable.resolves(gift);
+            service.getRedeemable.resolves(gift);
 
             const controller = createController();
 
-            await controller.isRedeemable({
+            await controller.getRedeemable({
                 data: {token: 'gift-token'}
             });
 
-            sinon.assert.calledOnceWithExactly(service.getByToken, 'gift-token');
-            sinon.assert.calledOnceWithExactly(service.assertRedeemable, gift, null);
+            sinon.assert.calledOnceWithExactly(service.getRedeemable, 'gift-token', null);
         });
 
-        it('uses tier.toJSON() when available', async function () {
+        it('serializes the tier using tier.toJSON()', async function () {
             const gift = buildGift();
 
-            service.getByToken.resolves(gift);
-            service.assertRedeemable.resolves(gift);
+            service.getRedeemable.resolves(gift);
             tiersService.api.read.resolves({
-                id: 'tier_1',
-                name: 'Gold',
-                description: 'Gold tier',
-                benefits: ['All access'],
                 toJSON: () => ({
                     id: 'tier_1',
                     name: 'Gold (JSON)',
@@ -189,7 +181,7 @@ describe('GiftController', function () {
             });
 
             const controller = createController();
-            const result = await controller.isRedeemable({
+            const result = await controller.getRedeemable({
                 data: {token: 'gift-token'}
             });
 
@@ -197,23 +189,24 @@ describe('GiftController', function () {
             assert.deepEqual(result.tier.benefits, ['All access (JSON)']);
         });
 
-        it('defaults tier description to null and benefits to empty array', async function () {
+        it('preserves tier data returned by toJSON()', async function () {
             const gift = buildGift();
 
-            service.getByToken.resolves(gift);
-            service.assertRedeemable.resolves(gift);
+            service.getRedeemable.resolves(gift);
             tiersService.api.read.resolves({
-                id: 'tier_1',
-                name: 'Basic',
-                description: null,
-                benefits: null
+                toJSON: () => buildTierJSON({
+                    name: 'Basic',
+                    description: null,
+                    benefits: []
+                })
             });
 
             const controller = createController();
-            const result = await controller.isRedeemable({
+            const result = await controller.getRedeemable({
                 data: {token: 'gift-token'}
             });
 
+            assert.equal(result.tier.name, 'Basic');
             assert.equal(result.tier.description, null);
             assert.deepEqual(result.tier.benefits, []);
         });
@@ -224,7 +217,7 @@ describe('GiftController', function () {
             const controller = createController();
 
             await assert.rejects(
-                () => controller.isRedeemable({data: {token: 'gift-token'}}),
+                () => controller.getRedeemable({data: {token: 'gift-token'}}),
                 (err: any) => {
                     assert.equal(err.errorType, 'BadRequestError');
                     assert.equal(err.message, 'Gift subscriptions are not enabled on this site.');
@@ -233,23 +226,20 @@ describe('GiftController', function () {
             );
 
             sinon.assert.calledOnceWithExactly(labsService.isSet, 'giftSubscriptions');
-            sinon.assert.notCalled(service.getByToken);
-            sinon.assert.notCalled(service.assertRedeemable);
+            sinon.assert.notCalled(service.getRedeemable);
         });
 
         it('passes through service errors unchanged', async function () {
-            const gift = buildGift();
             const serviceError = new errors.BadRequestError({
                 message: 'This gift has expired.'
             });
 
-            service.getByToken.resolves(gift);
-            service.assertRedeemable.rejects(serviceError);
+            service.getRedeemable.rejects(serviceError);
 
             const controller = createController();
 
             await assert.rejects(
-                () => controller.isRedeemable({data: {token: 'gift-token'}}),
+                () => controller.getRedeemable({data: {token: 'gift-token'}}),
                 serviceError
             );
         });
@@ -257,14 +247,13 @@ describe('GiftController', function () {
         it('throws InternalServerError when the tier cannot be loaded', async function () {
             const gift = buildGift();
 
-            service.getByToken.resolves(gift);
-            service.assertRedeemable.resolves(gift);
+            service.getRedeemable.resolves(gift);
             tiersService.api.read.resolves(null);
 
             const controller = createController();
 
             await assert.rejects(
-                () => controller.isRedeemable({data: {token: 'gift-token'}}),
+                () => controller.getRedeemable({data: {token: 'gift-token'}}),
                 (err: any) => {
                     assert.equal(err.errorType, 'InternalServerError');
                     assert.equal(err.message, 'Tier tier_1 not found for gift: gift-token');

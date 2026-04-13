@@ -228,4 +228,51 @@ describe('Members Gifts', function () {
 
         assert.equal(body.errors[0].message, alreadyRedeemedMessage);
     });
+
+    it('only redeems a gift once when two members redeem concurrently', async function () {
+        const firstAgent = membersAgent.duplicate();
+        const secondAgent = membersAgent.duplicate();
+        const firstEmail = `gift-concurrent-first-${giftSequence + 1}@example.com`;
+        const secondEmail = `gift-concurrent-second-${giftSequence + 2}@example.com`;
+        const gift = await createGift();
+        const redeemPath = `/api/gifts/${gift.get('token')}/redeem/`;
+
+        await firstAgent.loginAs(firstEmail);
+        await secondAgent.loginAs(secondEmail);
+
+        const settledResults = await Promise.allSettled([
+            firstAgent.post(redeemPath).body({}),
+            secondAgent.post(redeemPath).body({})
+        ]);
+
+        assert.equal(settledResults[0].status, 'fulfilled');
+        assert.equal(settledResults[1].status, 'fulfilled');
+
+        const responses = settledResults.map(result => result.value);
+        const statusCodes = responses.map(response => response.statusCode).sort((a, b) => a - b);
+        const successResponses = responses.filter(response => response.statusCode === 200);
+        const failureResponses = responses.filter(response => response.statusCode === 400);
+
+        assert.deepEqual(statusCodes, [200, 400]);
+        assert.equal(successResponses.length, 1);
+        assert.equal(failureResponses.length, 1);
+        assert.equal(failureResponses[0].body.errors[0].message, alreadyRedeemedMessage);
+
+        await gift.refresh();
+
+        const firstMember = await models.Member.findOne({email: firstEmail}, {require: true, withRelated: ['products']});
+        const secondMember = await models.Member.findOne({email: secondEmail}, {require: true, withRelated: ['products']});
+        const giftMembers = [firstMember, secondMember].filter(member => member.get('status') === 'gift');
+        const freeMembers = [firstMember, secondMember].filter(member => member.get('status') === 'free');
+
+        assert.equal(gift.get('status'), 'redeemed');
+        assert.ok(gift.get('redeemed_at'));
+        assert.ok(gift.get('consumes_at'));
+        assert.equal(giftMembers.length, 1);
+        assert.equal(freeMembers.length, 1);
+        assert.equal(giftMembers[0].related('products').length, 1);
+        assert.equal(giftMembers[0].related('products').models[0].id, paidProduct.id);
+        assert.equal(freeMembers[0].related('products').length, 0);
+        assert.equal(gift.get('redeemer_member_id'), giftMembers[0].id);
+    });
 });

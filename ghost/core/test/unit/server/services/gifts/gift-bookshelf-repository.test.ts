@@ -52,6 +52,21 @@ describe('GiftBookshelfRepository', function () {
         assert.equal(gift?.tierId, 'tier_1');
     });
 
+    it('forwards transaction locking options when fetching by token', async function () {
+        const GiftModel = {
+            add: sinon.stub(),
+            transaction: sinon.stub(),
+            findOne: sinon.stub().resolves(null)
+        };
+        const repository = new GiftBookshelfRepository({GiftModel});
+
+        await repository.getByToken('gift-token', {transacting: 'trx', forUpdate: true});
+
+        sinon.assert.calledOnceWithExactly(GiftModel.findOne, {
+            token: 'gift-token'
+        }, {require: false, transacting: 'trx', forUpdate: true});
+    });
+
     it('returns null when no gift matches the token', async function () {
         const GiftModel = {
             add: sinon.stub(),

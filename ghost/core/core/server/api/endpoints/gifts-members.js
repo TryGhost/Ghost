@@ -4,7 +4,7 @@ const gift = require('../../services/gifts');
 module.exports = {
     docName: 'gifts',
 
-    isRedeemable: {
+    getRedeemable: {
         headers: {
             cacheInvalidate: false
         },
@@ -21,7 +21,7 @@ module.exports = {
         },
         permissions: false,
         query(frame) {
-            return gift.controller.isRedeemable(frame);
+            return gift.controller.getRedeemable(frame);
         }
     },
 

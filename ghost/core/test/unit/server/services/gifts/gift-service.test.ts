@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import errors from '@tryghost/errors';
 import sinon from 'sinon';
 import {GiftService, type GiftPurchaseData} from '../../../../../core/server/services/gifts/gift-service';
 import {Gift} from '../../../../../core/server/services/gifts/gift';
@@ -8,7 +9,7 @@ describe('GiftService', function () {
     type GiftRepositoryStub = {
         create: sinon.SinonStub;
         existsByCheckoutSessionId: sinon.SinonStub<[string], Promise<boolean>>;
-        getByToken: sinon.SinonStub<[string], Promise<Gift | null>>;
+        getByToken: sinon.SinonStub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>;
         save: sinon.SinonStub;
         transaction: sinon.SinonStub<Parameters<GiftRepository['transaction']>, Promise<unknown>>;
     };
@@ -49,7 +50,7 @@ describe('GiftService', function () {
         giftRepository = {
             create: sinon.stub(),
             existsByCheckoutSessionId: sinon.stub<[string], Promise<boolean>>().resolves(false),
-            getByToken: sinon.stub<[string], Promise<Gift | null>>().resolves(null),
+            getByToken: sinon.stub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>().resolves(null),
             save: sinon.stub(),
             transaction: sinon.stub<Parameters<GiftRepository['transaction']>, Promise<unknown>>().callsFake(async (callback) => {
                 return await callback('trx');
@@ -332,6 +333,52 @@ describe('GiftService', function () {
         });
     });
 
+    describe('getRedeemable', function () {
+        it('returns the gift when it exists and is redeemable', async function () {
+            const gift = buildGift();
+            const service = createService();
+            const assertRedeemableStub = sinon.stub(service, 'assertRedeemable').resolves(gift);
+
+            giftRepository.getByToken.resolves(gift);
+
+            const result = await service.getRedeemable('gift-token', 'free');
+
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, 'gift-token');
+            sinon.assert.calledOnceWithExactly(assertRedeemableStub, gift, 'free');
+            assert.equal(result, gift);
+        });
+
+        it('throws NotFoundError when the token does not exist', async function () {
+            giftRepository.getByToken.resolves(null);
+
+            const service = createService();
+            await assert.rejects(
+                () => service.getRedeemable('missing-token', 'free'),
+                (err: any) => {
+                    assert.equal(err.errorType, 'NotFoundError');
+                    assert.equal(err.message, 'This gift does not exist.');
+                    return true;
+                }
+            );
+        });
+
+        it('passes through redeemability errors unchanged', async function () {
+            const gift = buildGift();
+            const serviceError = new errors.BadRequestError({message: 'This gift has expired.'});
+            const service = createService();
+            const assertRedeemableStub = sinon.stub(service, 'assertRedeemable').rejects(serviceError);
+
+            giftRepository.getByToken.resolves(gift);
+
+            await assert.rejects(
+                () => service.getRedeemable('gift-token', 'free'),
+                serviceError
+            );
+
+            sinon.assert.calledOnceWithExactly(assertRedeemableStub, gift, 'free');
+        });
+    });
+
     describe('assertRedeemable', function () {
         const testCases = [
             {
@@ -419,8 +466,8 @@ describe('GiftService', function () {
             });
 
             sinon.assert.calledOnce(giftRepository.transaction);
-            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, 'gift-token');
-            sinon.assert.calledOnceWithExactly(memberRepository.get, {id: 'member_1'}, {transacting: 'trx'});
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, 'gift-token', {transacting: 'trx', forUpdate: true});
+            sinon.assert.calledOnceWithExactly(memberRepository.get, {id: 'member_1'}, {transacting: 'trx', forUpdate: true});
             sinon.assert.calledOnceWithExactly(memberRepository.update, {
                 products: [{
                     id: 'tier_1',

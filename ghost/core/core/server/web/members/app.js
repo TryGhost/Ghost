@@ -133,7 +133,7 @@ module.exports = function setupMembersApp() {
     membersApp.get(
         '/api/gifts/:token/redeem',
         middleware.loadMemberSession,
-        http(api.giftsMembers.isRedeemable)
+        http(api.giftsMembers.getRedeemable)
     );
     membersApp.post(
         '/api/gifts/:token/redeem',

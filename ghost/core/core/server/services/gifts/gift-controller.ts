@@ -68,7 +68,7 @@ export class GiftController {
         this.labsService = labsService;
     }
 
-    async isRedeemable(frame: Frame) {
+    async getRedeemable(frame: Frame) {
         if (!this.labsService.isSet('giftSubscriptions')) {
             throw new errors.BadRequestError({
                 message: 'Gift subscriptions are not enabled on this site.'
@@ -78,9 +78,7 @@ export class GiftController {
         const token = frame.data.token;
         const memberStatus = frame.options?.context?.member?.status ?? null;
 
-        const gift = await this.service.getByToken(token);
-
-        await this.service.assertRedeemable(gift, memberStatus);
+        const gift = await this.service.getRedeemable(token, memberStatus);
 
         return this.#serializeGift(gift);
     }
