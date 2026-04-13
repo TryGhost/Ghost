@@ -100,6 +100,12 @@ module.exports = function handleImageSizes(req, res, next) {
         return redirectToOriginal();
     }
 
+    // CASE: do not resize GIFs when not converting to a different format
+    // Resizing animated GIFs causes them to lose their animation (only first frame is kept)
+    if (!format && requestUrlFileExtension === '.gif') {
+        return redirectToOriginal();
+    }
+
     const storageInstance = storage.getStorage('images');
     // CASE: unsupported storage adapter
     if (typeof storageInstance.saveRaw !== 'function') {

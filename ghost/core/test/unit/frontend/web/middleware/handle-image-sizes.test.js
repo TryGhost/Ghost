@@ -457,6 +457,35 @@ describe('handleImageSizes middleware', function () {
             });
         });
 
+        it('skips GIF if not formatted to preserve animation', function (done) {
+            dummyStorage.exists = async function () {
+                return false;
+            };
+
+            const fakeReq = {
+                url: '/size/w1000/animated.gif',
+                originalUrl: '/blog/content/images/size/w1000/animated.gif'
+            };
+            const fakeRes = {
+                redirect(url) {
+                    try {
+                        url.should.equal('/blog/content/images/animated.gif');
+                    } catch (e) {
+                        return done(e);
+                    }
+                    done();
+                },
+                setHeader() {}
+            };
+
+            handleImageSizes(fakeReq, fakeRes, function next(err) {
+                if (err) {
+                    return done(err);
+                }
+                done(new Error('Should not have called next'));
+            });
+        });
+
         it('skips formatting to ico', function (done) {
             dummyStorage.exists = async function () {
                 return false;
