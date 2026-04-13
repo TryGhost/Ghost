@@ -21,11 +21,17 @@ async function fetchGiftData(token) {
 }
 
 async function giftPreview(req, res) {
+    const labs = require('../../../shared/labs');
     const settingsCache = require('../../../shared/settings-cache');
     const urlUtils = require('../../../shared/url-utils');
 
-    const {token} = req.params;
     const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');
+
+    if (!labs.isSet('giftSubscriptions')) {
+        return res.redirect(302, siteUrl + '/');
+    }
+
+    const {token} = req.params;
     const siteTitle = settingsCache.get('title') || 'Ghost';
 
     let gift;
@@ -82,7 +88,13 @@ async function giftPreview(req, res) {
 }
 
 async function giftImage(req, res) {
+    const labs = require('../../../shared/labs');
     const settingsCache = require('../../../shared/settings-cache');
+
+    if (!labs.isSet('giftSubscriptions')) {
+        return res.sendStatus(404);
+    }
+
     const token = req.params.token;
 
     let gift;
