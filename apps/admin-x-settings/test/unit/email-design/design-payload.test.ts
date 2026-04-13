@@ -10,6 +10,7 @@ describe('Welcome email design payload helpers', function () {
             created_at: '2026-04-02T00:00:00.000Z',
             updated_at: '2026-04-02T00:00:00.000Z',
             header_image: null,
+            show_header_icon: true,
             show_header_title: true,
             show_badge: true,
             footer_content: null,
@@ -23,6 +24,7 @@ describe('Welcome email design payload helpers', function () {
         assert.equal('created_at' in result, false);
         assert.equal('updated_at' in result, false);
         assert.equal('header_image' in result, false);
+        assert.equal('show_header_icon' in result, false);
         assert.equal('show_header_title' in result, false);
         assert.equal('show_badge' in result, false);
         assert.equal('footer_content' in result, false);
@@ -59,8 +61,10 @@ describe('Welcome email design payload helpers', function () {
             },
             generalSettings: {
                 senderName: 'Ghost',
+                senderEmail: 'hello@example.com',
                 replyToEmail: 'support@example.com',
                 headerImage: '',
+                showPublicationIcon: true,
                 showPublicationTitle: true,
                 showBadge: false,
                 emailFooter: ''
@@ -69,6 +73,7 @@ describe('Welcome email design payload helpers', function () {
 
         const payload = buildAutomatedEmailDesignPayload(state as never) as typeof state.designSettings & {
             header_image: string | null;
+            show_header_icon: boolean;
             show_header_title: boolean;
             show_badge: boolean;
             footer_content: string | null;
@@ -81,5 +86,6 @@ describe('Welcome email design payload helpers', function () {
         assert.equal('updated_at' in payload, false);
         assert.equal('post_title_color' in payload, false);
         assert.equal('title_alignment' in payload, false);
+        assert.equal(payload.show_header_icon, true);
     });
 });

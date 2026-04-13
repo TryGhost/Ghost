@@ -14,7 +14,7 @@ export const GiftSuccessStyle = `
     }
 
     .gh-portal-gift-success .gh-gift-success-icon {
-        margin: 24px auto 0;
+        margin: 12px auto 0;
         text-align: center;
         color: var(--brandcolor);
         width: 56px;
@@ -28,27 +28,27 @@ export const GiftSuccessStyle = `
 
     .gh-portal-gift-success h1.gh-portal-main-title {
         font-size: 32px;
-        margin-top: 20px;
+        margin-top: 16px;
     }
 
-    .gh-portal-gift-success .gh-portal-text-center {
-        padding: 0 32px;
-        margin-top: 20px;
+    .gh-portal-gift-success .gh-portal-main-subtitle {
+        margin-top: 12px;
     }
 
     .gh-portal-gift-success .gh-gift-link-container {
         display: flex;
         align-items: center;
-        border: 1px solid var(--grey11);
+        height: 48px;
+        background-color: #f3f3f3;
         border-radius: 8px;
-        padding: 4px 4px 4px 16px;
-        margin: 20px 24px 0;
+        padding: 6px 6px 6px 12px;
+        margin-top: 24px;
         gap: 8px;
     }
 
     .gh-portal-gift-success .gh-gift-link-url {
         flex: 1;
-        font-size: 14px;
+        font-size: 1.5rem;
         color: var(--grey1);
         overflow: hidden;
         text-overflow: ellipsis;
@@ -60,33 +60,29 @@ export const GiftSuccessStyle = `
     .gh-portal-gift-success .gh-gift-copy-btn {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 4px;
+        height: 36px;
         background: var(--brandcolor);
         color: #fff;
         border: none;
         border-radius: 6px;
-        padding: 8px 16px;
+        padding: 8px 16px 8px 14px;
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 500;
         cursor: pointer;
         white-space: nowrap;
         flex-shrink: 0;
         transition: opacity 0.15s ease;
+        will-change: opacity;
     }
 
     .gh-portal-gift-success .gh-gift-copy-btn:hover {
         opacity: 0.9;
     }
 
-    .gh-portal-gift-success .gh-gift-copy-btn svg {
-        width: 14px;
-        height: 14px;
-    }
-
     .gh-portal-gift-success .gh-gift-footer-text {
-        padding: 0 32px;
-        margin-top: 20px;
-        font-size: 13px;
+        margin: 36px 0 0;
+        font-size: 1.3rem;
         color: var(--grey7);
         text-align: center;
         line-height: 1.5;
@@ -94,14 +90,14 @@ export const GiftSuccessStyle = `
 `;
 
 const CopyIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14">
         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
     </svg>
 );
 
 const CheckIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{margin: '1px -1px 0 -2px'}} width="16" height="16">
         <polyline points="20 6 9 17 4 12"/>
     </svg>
 );
@@ -112,7 +108,7 @@ const GiftSuccessPage = () => {
 
     const token = pageData?.token;
     const siteUrl = site?.url || '';
-    const redeemUrl = `${siteUrl.replace(/\/$/, '')}/gift/${token}`;
+    const redeemUrl = `${siteUrl.replace(/\/$/, '')}/#/portal/gift/redeem/${token}`;
 
     const handleCopy = () => {
         copyTextToClipboard(redeemUrl);
@@ -127,10 +123,10 @@ const GiftSuccessPage = () => {
             <div className="gh-portal-signup-header">
                 <div className="gh-gift-success-icon"><GiftIcon /></div>
                 <h1 className="gh-portal-main-title">Gift ready to share!</h1>
+                <p className="gh-portal-main-subtitle gh-portal-text-center">
+                    Share this link with the recipient to let them redeem their gift membership.
+                </p>
             </div>
-            <p className="gh-portal-text-center">
-                Share this link with the recipient to let them redeem their gift membership.
-            </p>
 
             <div className="gh-gift-link-container">
                 <span className="gh-gift-link-url">{redeemUrl}</span>

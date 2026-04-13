@@ -122,7 +122,7 @@ export const DEFAULT_I18N: FilterI18nConfig = {
     selectedCount: 'selected',
     percent: '%',
     defaultCurrency: '$',
-    defaultColor: '#000000',
+    defaultColor: 'currentColor',
     addFilterTitle: '',
 
     // Operators
@@ -221,8 +221,8 @@ const SEARCH_RESET_DELAY_MS = 200;
 const filterInputVariants = cva(
     [
         'relative flex shrink-0 items-center text-foreground outline-hidden transition',
-        'has-[[data-slot=filters-input]:focus-visible]:ring-ring/30',
-        'has-[[data-slot=filters-input]:focus-visible]:border-ring',
+        'has-[[data-slot=filters-input]:focus-visible]:ring-focus-ring/30',
+        'has-[[data-slot=filters-input]:focus-visible]:border-focus-ring',
         'has-[[data-slot=filters-input]:focus-visible]:outline-hidden',
         'has-[[data-slot=filters-input]:focus-visible]:ring-[3px]',
         'has-[[data-slot=filters-input]:focus-visible]:z-1',
@@ -241,7 +241,7 @@ const filterInputVariants = cva(
             },
             size: {
                 lg: 'h-10 px-2.5 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
-                md: 'h-[34px] px-2 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
+                md: 'h-(--control-height) px-2 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
                 sm: 'h-8 px-2 text-xs has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0'
             },
             cursorPointer: {
@@ -261,7 +261,7 @@ const filterInputVariants = cva(
 const filterRemoveButtonVariants = cva(
     [
         'inline-flex shrink-0 items-center justify-center text-muted-foreground transition hover:text-foreground',
-        'focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden'
+        'focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden'
     ],
     {
         variants: {
@@ -271,7 +271,7 @@ const filterRemoveButtonVariants = cva(
             },
             size: {
                 lg: 'size-10 [&_svg:not([class*=size-])]:size-4',
-                md: 'size-[34px] [&_svg:not([class*=size-])]:size-3.5',
+                md: 'size-(--control-height) [&_svg:not([class*=size-])]:size-3.5',
                 sm: 'size-8 [&_svg:not([class*=size-])]:size-3'
             },
             cursorPointer: {
@@ -296,7 +296,7 @@ const filterAddButtonVariants = cva(
     [
         'inline-flex shrink-0 items-center justify-center text-foreground transition',
         '[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]',
-        'focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden'
+        'focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden'
     ],
     {
         variants: {
@@ -306,7 +306,7 @@ const filterAddButtonVariants = cva(
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
-                md: 'h-[34px] gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
+                md: 'h-(--control-height) gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
                 sm: 'h-8 gap-1.5 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
             },
             radius: {
@@ -329,7 +329,7 @@ const filterAddButtonVariants = cva(
 const filterOperatorVariants = cva(
     [
         'relative flex shrink-0 items-center whitespace-nowrap text-muted-foreground transition hover:text-foreground focus-visible:z-1 data-[state=open]:text-foreground',
-        'focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden'
+        'focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden'
     ],
     {
         variants: {
@@ -339,7 +339,7 @@ const filterOperatorVariants = cva(
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm',
-                md: 'h-[34px] gap-0.5 px-3 text-sm',
+                md: 'h-(--control-height) gap-0.5 px-3 text-sm',
                 sm: 'h-8 gap-1 px-2.5 text-xs'
             },
             cursorPointer: {
@@ -368,7 +368,7 @@ const filterFieldLabelVariants = cva(
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
-                md: 'h-[34px] gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
+                md: 'h-(--control-height) gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
                 sm: 'h-8 gap-0.5 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
             },
             radius: {
@@ -386,7 +386,7 @@ const filterFieldLabelVariants = cva(
 const filterFieldValueVariants = cva(
     [
         'relative flex min-w-0 shrink items-center gap-1 text-foreground transition focus-visible:z-1',
-        'focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden'
+        'focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden'
     ],
     {
         variants: {
@@ -396,7 +396,7 @@ const filterFieldValueVariants = cva(
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
-                md: 'h-[34px] gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
+                md: 'h-(--control-height) gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
                 sm: 'h-8 gap-0.5 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
             },
             cursorPointer: {
@@ -420,7 +420,7 @@ const filterFieldAddonVariants = cva('flex shrink-0 items-center justify-center 
         },
         size: {
             lg: 'h-10 px-4 text-sm',
-            md: 'h-[34px] px-3 text-sm',
+            md: 'h-(--control-height) px-3 text-sm',
             sm: 'h-8 px-2.5 text-xs'
         }
     },
@@ -438,7 +438,7 @@ const filterFieldBetweenVariants = cva('flex shrink-0 items-center text-muted-fo
         },
         size: {
             lg: 'h-10 px-4 text-sm',
-            md: 'h-[34px] px-3 text-sm',
+            md: 'h-(--control-height) px-3 text-sm',
             sm: 'h-8 px-2.5 text-xs'
         }
     },
@@ -984,7 +984,7 @@ function FilterOperatorDropdown<T = unknown>({field, operator, values, onChange}
     // If hideOperatorSelect is true, just render the operator as plain text
     if (field.hideOperatorSelect) {
         return (
-            <div className="flex items-center self-stretch border border-r-[0px] px-3 text-sm whitespace-nowrap text-muted-foreground">
+            <div className="flex items-center self-stretch border border-r-0 px-3 text-sm whitespace-nowrap text-muted-foreground">
                 {operatorLabel}
             </div>
         );
@@ -1286,7 +1286,7 @@ function ResolvedSelectOptionsPopover<T = unknown>({
             <div className="w-full">
                 <Command shouldFilter={shouldClientFilter}>
                     <SelectOptionsSearchInput
-                        className="h-8.5 pr-8 text-sm"
+                        className="h-(--control-height) pr-8 text-sm"
                         isSearching={isSearching}
                         label={field.label}
                         searchable={field.searchable !== false}
@@ -1361,7 +1361,7 @@ function ResolvedSelectOptionsPopover<T = unknown>({
                     variant: context.variant,
                     size: context.size,
                     cursorPointer: context.cursorPointer
-                }), field.triggerClassName ?? 'max-w-[240px]')}
+                }), field.triggerClassName ?? 'max-w-60')}
             >
                 <div className="flex min-w-0 items-center gap-1.5">
                     {field.customValueRenderer ? (
@@ -1393,7 +1393,7 @@ function ResolvedSelectOptionsPopover<T = unknown>({
             >
                 <Command shouldFilter={shouldClientFilter}>
                     <SelectOptionsSearchInput
-                        className="h-[34px] pr-8 text-sm"
+                        className="h-(--control-height) pr-8 text-sm"
                         isSearching={isSearching}
                         label={field.label}
                         searchable={field.searchable !== false}
@@ -1886,7 +1886,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                 <Command>
                     {field.searchable !== false && (
                         <CommandInput
-                            className="h-[34px] text-sm"
+                            className="h-(--control-height) text-sm"
                             placeholder={context.i18n.placeholders.searchField(field.label || '')}
                             value={searchInput}
                             onValueChange={setSearchInput}
@@ -2439,7 +2439,7 @@ export function Filters<T = unknown>({
                             ) : (
                                 // Show field selection - needs Command wrapper for search/list
                                 <Command className='outline-hidden' tabIndex={showSearchInput ? undefined : 0}>
-                                    {showSearchInput && <CommandInput className="h-[34px]" placeholder={mergedI18n.searchFields} />}
+                                    {showSearchInput && <CommandInput className="h-(--control-height)" placeholder={mergedI18n.searchFields} />}
                                     <CommandList className="outline-hidden">
                                         <CommandEmpty>{mergedI18n.noFieldsFound}</CommandEmpty>
                                         {fields.map((item, index) => {

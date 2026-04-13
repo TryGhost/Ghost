@@ -1,6 +1,8 @@
 import { resolve } from "path";
+import { createRequire } from "node:module";
 import { defineConfig } from "vitest/config";
 import type { PluginOption } from "vite";
+const require = createRequire(import.meta.url);
 import tsconfigPaths from "vite-tsconfig-paths";
 import react from "@vitejs/plugin-react-swc";
 import tailwindcss from "@tailwindcss/vite";
@@ -56,7 +58,7 @@ export default defineConfig(({ command }) => ({
         alias: {
             "@ghost-cards": GHOST_CARDS_PATH,
             // TODO: Remove this when @tryghost/nql is updated
-            mingo: resolve(__dirname, "../../node_modules/mingo/dist/mingo.js"),
+            mingo: require.resolve("mingo/dist/mingo.js"),
         },
         // Shim node modules utilized by the @tryghost/nql package
         external: ["fs", "path", "util"],

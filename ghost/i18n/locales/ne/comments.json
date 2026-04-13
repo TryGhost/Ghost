@@ -19,7 +19,6 @@
     "Comment": "प्रतिक्रिया",
     "Commenting disabled": "",
     "Complete your profile": "आफ्नो प्रोफाइल पूरा गर्नुहोस्",
-    "Contact support": "",
     "Delete": "मेटाउनुहोस्",
     "Deleted": "मेटाइयो",
     "Deleted member": "मेटाइएको सदस्य",
@@ -30,7 +29,6 @@
     "edited": "सम्पादित",
     "Enter your name": "आफ्नो नाम प्रविष्ट गर्नुहोस्",
     "Expertise": "विशेषज्ञता",
-    "for more information.": "",
     "Founder @ Acme Inc": "संस्थापक @ Acme Inc",
     "Full-time parent": "पूर्ण-कालीन अभिभावक",
     "Head of Marketing at Acme, Inc": "Acme, Inc मा मार्केटिङ प्रमुख",
@@ -76,5 +74,6 @@
     "View in admin": "",
     "Yesterday": "हिजो",
     "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "तपाईंको अनुरोध यस साइटको मालिकलाई पठाइनेछ।"
 }

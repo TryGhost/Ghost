@@ -18,7 +18,9 @@ import SupportSuccess from './components/pages/support-success';
 import SupportError from './components/pages/support-error';
 import RecommendationsPage from './components/pages/recommendations-page';
 import GiftPage from './components/pages/gift-page';
+import GiftRedemptionPage from './components/pages/gift-redemption-page';
 import GiftSuccessPage from './components/pages/gift-success-page';
+import ShareModal from './components/pages/share/share-modal';
 
 /** List of all available pages in Portal, mapped to their UI component
  * Any new page added to portal needs to be mapped here
@@ -44,7 +46,9 @@ const Pages = {
     supportError: SupportError,
     recommendations: RecommendationsPage,
     gift: GiftPage,
-    giftSuccess: GiftSuccessPage
+    giftRedemption: GiftRedemptionPage,
+    giftSuccess: GiftSuccessPage,
+    share: ShareModal
 };
 
 /** Return page if valid, fallback to signup */

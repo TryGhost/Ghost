@@ -7,12 +7,15 @@ const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
 const mailService = require('../../../core/server/services/mail');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
+const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
 const processOutbox = require('../../../core/server/services/outbox/jobs/lib/process-outbox');
+const labs = require('../../../core/shared/labs');
 
 describe('Member Welcome Emails Integration', function () {
     let membersService;
     let defaultNewsletterSenderState = null;
     let defaultEmailDesignSettingId;
+    let originalLabsIsSet;
 
     before(async function () {
         await testUtils.setup('default')();
@@ -25,6 +28,15 @@ describe('Member Welcome Emails Integration', function () {
     });
 
     beforeEach(async function () {
+        originalLabsIsSet = labs.isSet;
+        sinon.stub(labs, 'isSet').callsFake((flag) => {
+            if (flag === 'welcomeEmailsDesignCustomization') {
+                return false;
+            }
+
+            return originalLabsIsSet(flag);
+        });
+
         const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
         if (defaultNewsletter) {
             defaultNewsletterSenderState = {
@@ -54,30 +66,46 @@ describe('Member Welcome Emails Integration', function () {
             }
         });
 
-        await db.knex('automated_emails').insert({
-            id: ObjectId().toHexString(),
-            email_design_setting_id: defaultEmailDesignSettingId,
+        const freeAutomationId = ObjectId().toHexString();
+        await db.knex('welcome_email_automations').insert({
+            id: freeAutomationId,
             status: 'active',
             name: 'Free Member Welcome Email',
             slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+            created_at: new Date()
+        });
+        await db.knex('welcome_email_automated_emails').insert({
+            id: ObjectId().toHexString(),
+            welcome_email_automation_id: freeAutomationId,
+            delay_days: 0,
             subject: 'Welcome to {site_title}',
             lexical,
+            email_design_setting_id: defaultEmailDesignSettingId,
             created_at: new Date()
         });
 
-        await db.knex('automated_emails').insert({
-            id: ObjectId().toHexString(),
-            email_design_setting_id: defaultEmailDesignSettingId,
+        const paidAutomationId = ObjectId().toHexString();
+        await db.knex('welcome_email_automations').insert({
+            id: paidAutomationId,
             status: 'active',
             name: 'Paid Member Welcome Email',
             slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
+            created_at: new Date()
+        });
+        await db.knex('welcome_email_automated_emails').insert({
+            id: ObjectId().toHexString(),
+            welcome_email_automation_id: paidAutomationId,
+            delay_days: 0,
             subject: 'Welcome paid member to {site_title}',
             lexical,
+            email_design_setting_id: defaultEmailDesignSettingId,
             created_at: new Date()
         });
     });
 
     afterEach(async function () {
+        sinon.restore();
+
         if (defaultNewsletterSenderState) {
             await db.knex('newsletters')
                 .where('id', defaultNewsletterSenderState.id)
@@ -91,8 +119,8 @@ describe('Member Welcome Emails Integration', function () {
         await db.knex('automated_email_recipients').del();
         await db.knex('outbox').del();
         await db.knex('members').del();
-        await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
-        await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
+        await db.knex('welcome_email_automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
+        await db.knex('welcome_email_automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
     });
 
     describe('Member creation with welcome emails', function () {
@@ -201,8 +229,15 @@ describe('Member Welcome Emails Integration', function () {
             await jobService.awaitCompletion(JOB_NAME);
         }
 
+        async function getAutomatedEmailBySlug(slug) {
+            return db.knex('welcome_email_automated_emails')
+                .join('welcome_email_automations', 'welcome_email_automated_emails.welcome_email_automation_id', 'welcome_email_automations.id')
+                .where('welcome_email_automations.slug', slug)
+                .first('welcome_email_automated_emails.*');
+        }
+
         it('does not send email when template is inactive', async function () {
-            await db.knex('automated_emails')
+            await db.knex('welcome_email_automations')
                 .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
                 .update({status: 'inactive'});
 
@@ -228,7 +263,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('does not send email when no template exists', async function () {
-            await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
+            await db.knex('welcome_email_automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
 
             await models.Outbox.add({
                 event_type: 'MemberCreatedEvent',
@@ -252,7 +287,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('does not send email when paid template is inactive but entry has status paid', async function () {
-            await db.knex('automated_emails')
+            await db.knex('welcome_email_automations')
                 .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid)
                 .update({status: 'inactive'});
 
@@ -278,7 +313,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('does not send email when no paid template exists but entry has status paid', async function () {
-            await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
+            await db.knex('welcome_email_automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
 
             await models.Outbox.add({
                 event_type: 'MemberCreatedEvent',
@@ -334,9 +369,10 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(record.member_email, memberEmail);
             assert.equal(record.member_name, memberName);
 
-            const automatedEmail = await db.knex('automated_emails')
-                .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
-                .first();
+            const automatedEmail = await db.knex('welcome_email_automated_emails')
+                .join('welcome_email_automations', 'welcome_email_automated_emails.welcome_email_automation_id', 'welcome_email_automations.id')
+                .where('welcome_email_automations.slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
+                .first('welcome_email_automated_emails.id');
             assert.equal(record.automated_email_id, automatedEmail.id);
         });
 
@@ -396,11 +432,49 @@ describe('Member Welcome Emails Integration', function () {
             assert.ok(sendCall.args[0].from.includes(senderEmail));
         });
 
-        it('uses mock member UUID when sending test welcome emails', async function () {
-            const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
-            memberWelcomeEmailService.init();
+        it('uses automated email sender overrides when configured', async function () {
+            const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
 
-            const automatedEmail = await db.knex('automated_emails')
+            await db.knex('newsletters')
+                .where('id', defaultNewsletter.id)
+                .update({
+                    sender_name: 'Newsletter Sender',
+                    sender_email: 'newsletter@example.com',
+                    sender_reply_to: 'newsletter-reply@example.com'
+                });
+
+            const automatedEmail = await getAutomatedEmailBySlug(MEMBER_WELCOME_EMAIL_SLUGS.free);
+
+            await db.knex('welcome_email_automated_emails')
+                .where('id', automatedEmail.id)
+                .update({
+                    sender_name: 'Automation Sender',
+                    sender_email: 'automation@example.com',
+                    sender_reply_to: 'automation-reply@example.com'
+                });
+
+            await models.Outbox.add({
+                event_type: 'MemberCreatedEvent',
+                payload: JSON.stringify({
+                    memberId: ObjectId().toHexString(),
+                    uuid: '88888888-8888-4888-8888-888888888888',
+                    email: 'automation-sender-test@example.com',
+                    name: 'Automation Sender Test',
+                    status: 'free'
+                }),
+                status: OUTBOX_STATUSES.PENDING
+            });
+
+            await scheduleInlineJob();
+
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            assert.ok(sendCall.args[0].from.includes('automation@example.com'));
+            assert.equal(sendCall.args[0].replyTo, 'automation-reply@example.com');
+        });
+
+        it('uses mock member UUID when sending test welcome emails', async function () {
+            const automation = await db.knex('welcome_email_automations')
                 .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
                 .first();
 
@@ -418,11 +492,14 @@ describe('Member Welcome Emails Integration', function () {
                 }
             });
 
+            memberWelcomeEmailService.api = null;
+            memberWelcomeEmailService.init();
+
             await memberWelcomeEmailService.api.sendTestEmail({
                 email: 'test-member@example.com',
                 subject: 'Welcome test',
                 lexical,
-                automatedEmailId: automatedEmail.id
+                automatedEmailId: automation.id
             });
 
             sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
@@ -430,6 +507,117 @@ describe('Member Welcome Emails Integration', function () {
             assert.ok(sendCall.args[0].html.includes('00000000-0000-4000-8000-000000000000'));
             assert(!sendCall.args[0].html.includes('{uuid}'));
             assert(!sendCall.args[0].html.includes('%7Buuid%7D'));
+        });
+
+        it('uses automated sender overrides for test welcome emails', async function () {
+            memberWelcomeEmailService.init();
+
+            const automation = await db.knex('welcome_email_automations')
+                .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
+                .first();
+            const automatedEmail = await getAutomatedEmailBySlug(MEMBER_WELCOME_EMAIL_SLUGS.free);
+
+            await db.knex('welcome_email_automated_emails')
+                .where('id', automatedEmail.id)
+                .update({
+                    sender_name: 'Automation Sender',
+                    sender_email: 'automation@example.com',
+                    sender_reply_to: 'automation-reply@example.com'
+                });
+
+            await memberWelcomeEmailService.api.sendTestEmail({
+                email: 'test-member@example.com',
+                subject: 'Welcome test',
+                lexical: JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'paragraph',
+                            children: [{type: 'text', text: 'Hello'}]
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                }),
+                automatedEmailId: automation.id
+            });
+
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            assert.ok(sendCall.args[0].from.includes('automation@example.com'));
+            assert.equal(sendCall.args[0].replyTo, 'automation-reply@example.com');
+        });
+    });
+
+    describe('labs flag on', function () {
+        beforeEach(function () {
+            labs.isSet.restore();
+            sinon.stub(labs, 'isSet').callsFake((flag) => {
+                if (flag === 'welcomeEmailsDesignCustomization') {
+                    return true;
+                }
+
+                return originalLabsIsSet(flag);
+            });
+            memberWelcomeEmailService.api = null;
+            memberWelcomeEmailService.init();
+            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
+        });
+
+        it('reinitializes the service when the labs mode changes', function () {
+            labs.isSet.restore();
+            sinon.stub(labs, 'isSet').callsFake((flag) => {
+                if (flag === 'welcomeEmailsDesignCustomization') {
+                    return false;
+                }
+
+                return originalLabsIsSet(flag);
+            });
+
+            memberWelcomeEmailService.api = null;
+            memberWelcomeEmailService.useDesignCustomization = undefined;
+            memberWelcomeEmailService.init();
+            const labsOffApi = memberWelcomeEmailService.api;
+
+            labs.isSet.restore();
+            sinon.stub(labs, 'isSet').callsFake((flag) => {
+                if (flag === 'welcomeEmailsDesignCustomization') {
+                    return true;
+                }
+
+                return originalLabsIsSet(flag);
+            });
+
+            memberWelcomeEmailService.init();
+
+            assert.notEqual(memberWelcomeEmailService.api, labsOffApi);
+        });
+
+        it('uses cached design settings after welcome emails are loaded', async function () {
+            await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
+
+            await db.knex('email_design_settings')
+                .where('id', defaultEmailDesignSettingId)
+                .update({
+                    footer_content: '<p>Fresh footer content</p>',
+                    show_badge: false
+                });
+
+            await memberWelcomeEmailService.api.send({
+                member: {
+                    email: 'fresh-design@example.com',
+                    name: 'Fresh Design',
+                    uuid: '77777777-7777-4777-8777-777777777777'
+                },
+                memberStatus: 'free'
+            });
+
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            assert.equal(sendCall.args[0].html.includes('Fresh footer content</p>'), false);
+            assert.equal(sendCall.args[0].html.includes('https://ghost.org/?via=pbg-newsletter'), true);
         });
     });
 });

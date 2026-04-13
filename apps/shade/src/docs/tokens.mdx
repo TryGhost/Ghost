@@ -56,6 +56,27 @@ Theme-aware colors using CSS variables:
 }
 ```
 
+### Semantic Contract
+
+The semantic visual rules and guarantees are defined in:
+
+- `theme-variables.css` (runtime values + dark mode overrides)
+- `tailwind.theme.css` (Tailwind aliases)
+
+Current semantic families:
+
+- Surface: `surface-page`, `surface-panel`, `surface-elevated`, `surface-overlay`, `surface-inverse`
+- Text: `text-primary`, `text-secondary`, `text-tertiary`, `text-inverse`
+- Border/focus: `border-subtle`, `border-default`, `border-strong`, `focus-ring`
+- State: `state-info`, `state-success`, `state-warning`, `state-danger`
+
+Semantic typography/radius/motion families:
+
+- Typography: `font-body`, `font-heading`, `font-code`, `text-body-{sm|md|lg}`, `leading-{body|heading}`
+- Sizing: `--control-height` (shared medium control height, currently `34px`)
+- Radius: `radius-control`, `radius-surface`, `radius-badge`, `radius-pill`
+- Motion: `duration-{fast|base|slow}`, `ease-{standard|emphasized}`
+
 ## Typography
 
 ### Font Families

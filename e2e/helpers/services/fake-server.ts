@@ -4,7 +4,7 @@ import http from 'http';
 
 export abstract class FakeServer {
     private server: http.Server | null = null;
-    protected readonly app = express();
+    protected readonly app: express.Express = express();
     private _port: number;
     protected readonly debug: (...args: unknown[]) => void;
 

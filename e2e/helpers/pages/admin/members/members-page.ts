@@ -2,11 +2,7 @@ import {AdminPage} from '@/admin-pages';
 import {BasePage} from '@/helpers/pages';
 import {Download, JSHandle, Locator, Page} from '@playwright/test';
 import {readFileSync} from 'fs';
-
-export interface ExportedFile {
-    suggestedFilename: string;
-    content: string
-}
+import type {ExportedFile, MembersListSurface} from './members-list-page';
 
 class FilterSection extends BasePage {
     readonly actionsButton: Locator;
@@ -104,7 +100,7 @@ class SettingsSection extends BasePage {
     }
 }
 
-export class MembersPage extends AdminPage {
+export class MembersPage extends AdminPage implements MembersListSurface {
     readonly newMemberButton: Locator;
     public readonly loadMoreButton: Locator;
     public readonly membersListScrollRoot: Locator;
@@ -136,6 +132,18 @@ export class MembersPage extends AdminPage {
 
     async clickMemberByEmail(email: string): Promise<void> {
         await this.memberListItems.filter({hasText: email}).click();
+    }
+
+    async openActionsMenu(): Promise<void> {
+        await this.membersActionsButton.click();
+    }
+
+    async applyLabelFilter(labelName: string): Promise<void> {
+        await this.filterSection.applyLabel(labelName);
+    }
+
+    async getVisibleMemberCount(): Promise<number> {
+        return await this.memberListItems.count();
     }
 
     async getMaxRenderedIndex(): Promise<number> {

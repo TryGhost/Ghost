@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1-labs
+# syntax=docker/dockerfile:1-labs@sha256:7eca9451d94f9b8ad22e44988b92d595d3e4d65163794237949a8c3413fbed5d
 
 # Production Dockerfile for Ghost
 # Two targets:
@@ -27,10 +27,12 @@ WORKDIR /home/ghost
 
 COPY --exclude=core/built/admin . .
 
-RUN --mount=type=cache,target=/usr/local/share/.cache/yarn/v6 \
+RUN corepack enable
+
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
     apt-get update && \
     apt-get install -y --no-install-recommends build-essential python3 && \
-    yarn install --ignore-scripts --production --prefer-offline && \
+    pnpm install --ignore-scripts --prod --prefer-offline && \
     (cd node_modules/sqlite3 && npm run install) && \
     apt-get purge -y build-essential python3 && \
     apt-get autoremove -y && \

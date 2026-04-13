@@ -26,7 +26,6 @@ describe('Exporter', function () {
                 'actions',
                 'api_keys',
                 'automated_email_recipients',
-                'automated_emails',
                 'benefits',
                 'brute',
                 'collections',
@@ -42,6 +41,7 @@ describe('Exporter', function () {
                 'email_recipients',
                 'email_spam_complaint_events',
                 'emails',
+                'gifts',
                 'integrations',
                 'invites',
                 'jobs',
@@ -100,7 +100,10 @@ describe('Exporter', function () {
                 'tags',
                 'tokens',
                 'users',
-                'webhooks'
+                'webhooks',
+                'welcome_email_automated_emails',
+                'welcome_email_automation_runs',
+                'welcome_email_automations'
             ];
 
             assertExists(exportData);
@@ -133,7 +136,8 @@ describe('Exporter', function () {
                 'members_status_events',
                 'members_paid_subscription_events',
                 'members_subscribe_events',
-                'outbox'
+                'outbox',
+                'gifts'
             ];
 
             excludedTables.forEach((tableName) => {
