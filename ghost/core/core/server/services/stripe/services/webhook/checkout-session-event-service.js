@@ -66,7 +66,7 @@ module.exports = class CheckoutSessionEventService {
     async handleGiftEvent(session) {
         await this.deps.giftService.recordPurchase({
             token: session.metadata?.gift_token,
-            buyerEmail: session.metadata?.buyer_email,
+            buyerEmail: session.customer_details?.email,
             stripeCustomerId: session.customer ?? null,
             tierId: session.metadata?.tier_id,
             cadence: session.metadata?.cadence,

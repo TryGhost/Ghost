@@ -534,7 +534,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async checkoutGift({tierId, cadence, email: customerEmail} = {}) {
+        async checkoutGift({tierId, cadence} = {}) {
             const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
 
             let identity = null;
@@ -551,8 +551,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 },
                 type: 'gift',
                 tierId,
-                cadence,
-                customerEmail
+                cadence
             };
 
             const response = await makeRequest({
