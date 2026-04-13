@@ -4,6 +4,7 @@ const models = require('../../../core/server/models');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const members = require('../../../core/server/services/members');
+const urlUtils = require('../../../core/shared/url-utils');
 
 let membersAgent, membersService, paidProduct;
 let giftSequence = 0;
@@ -175,39 +176,55 @@ describe('Members Signin', function () {
         });
     });
 
-    it('redeems a gift during magic link exchange and redirects to Portal account', async function () {
+    it('redeems a gift during magic link exchange and redirects to Portal account when no paid welcome page is configured', async function () {
         mockManager.mockLabsEnabled('giftSubscriptions');
 
         const email = 'gift-redemption-member@test.com';
         const gift = await createGift();
-        const redirectUrl = new URL('http://localhost:2368');
+        const originalWelcomePageUrl = paidProduct.get('welcome_page_url');
+        const redirectUrl = new URL(urlUtils.getSiteUrl());
         redirectUrl.hash = '#/portal/account?giftRedemption=true';
-        const magicLink = await membersService.api.getMagicLink(email, 'subscribe', {
-            giftToken: gift.get('token'),
-            name: 'Gift Receiver'
-        });
-        const token = new URL(magicLink).searchParams.get('token');
 
-        const res = await membersAgent.get(`/?token=${token}&action=subscribe&r=${encodeURIComponent(redirectUrl.href)}`)
-            .expectStatus(302)
-            .expectHeader('Set-Cookie', /members-ssr.*/);
+        try {
+            await models.Product.edit({
+                welcome_page_url: ''
+            }, {
+                id: paidProduct.id
+            });
 
-        const location = new URL(res.headers.location);
-        const member = await getMemberByEmail(email);
-        const [hashPath, hashQueryString] = location.hash.slice(1).split('?');
-        const hashParams = new URLSearchParams(hashQueryString);
+            const magicLink = await membersService.api.getMagicLink(email, 'subscribe', {
+                giftToken: gift.get('token'),
+                name: 'Gift Receiver'
+            });
+            const token = new URL(magicLink).searchParams.get('token');
 
-        await gift.refresh();
+            const res = await membersAgent.get(`/?token=${token}&action=subscribe&r=${encodeURIComponent(redirectUrl.href)}`)
+                .expectStatus(302)
+                .expectHeader('Set-Cookie', /members-ssr.*/);
 
-        assert.equal(location.searchParams.get('action'), 'subscribe');
-        assert.equal(location.searchParams.get('success'), 'true');
-        assert.equal(hashPath, '/portal/account');
-        assert.equal(hashParams.get('giftRedemption'), 'true');
-        assert.equal(member.get('status'), 'gift');
-        assert.equal(gift.get('status'), 'redeemed');
-        assert.equal(gift.get('redeemer_member_id'), member.id);
-        assert.ok(gift.get('redeemed_at'));
-        assert.ok(gift.get('consumes_at'));
+            const location = new URL(res.headers.location, urlUtils.getSiteUrl());
+            const member = await getMemberByEmail(email);
+            const [hashPath, hashQueryString] = location.hash.slice(1).split('?');
+            const hashParams = new URLSearchParams(hashQueryString);
+
+            await gift.refresh();
+
+            assert.equal(location.searchParams.get('action'), 'subscribe');
+            assert.equal(location.searchParams.get('success'), 'true');
+            assert.equal(hashPath, '/portal/account');
+            assert.equal(hashParams.get('giftRedemption'), 'true');
+            assert.equal(member.get('status'), 'gift');
+            assert.equal(gift.get('status'), 'redeemed');
+            assert.equal(gift.get('redeemer_member_id'), member.id);
+            assert.ok(gift.get('redeemed_at'));
+            assert.ok(gift.get('consumes_at'));
+        } finally {
+            await models.Product.edit({
+                welcome_page_url: originalWelcomePageUrl
+            }, {
+                id: paidProduct.id
+            });
+        }
     });
 
     it('fails gift redemption on a second magic link exchange attempt', async function () {
@@ -215,7 +232,7 @@ describe('Members Signin', function () {
 
         const email = 'gift-redemption-repeat@test.com';
         const gift = await createGift();
-        const redirectUrl = new URL('http://localhost:2368');
+        const redirectUrl = new URL(urlUtils.getSiteUrl());
         redirectUrl.hash = '#/portal/account?giftRedemption=true';
         const magicLink = await membersService.api.getMagicLink(email, 'subscribe', {
             giftToken: gift.get('token'),
@@ -228,7 +245,7 @@ describe('Members Signin', function () {
 
         const res = await membersAgent.get(`/?token=${token}&action=subscribe&r=${encodeURIComponent(redirectUrl.href)}`)
             .expectStatus(302);
-        const location = new URL(res.headers.location);
+        const location = new URL(res.headers.location, urlUtils.getSiteUrl());
 
         await gift.refresh();
 
