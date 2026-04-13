@@ -4,7 +4,7 @@ import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, A
 
 interface DirtyConfirmModalProps {
     title?: string;
-    description?: React.ReactNode;
+    description?: React.ReactElement;
 }
 
 const DirtyConfirmModal: React.FC<DirtyConfirmModalProps> = ({
