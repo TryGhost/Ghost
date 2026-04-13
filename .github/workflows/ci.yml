@@ -63,6 +63,7 @@ jobs:
           echo "GITHUB_CONTEXT: ${{ toJson(github.event) }}"
 
       - name: Set SHAs for Nx Commands
+        if: env.IS_TAG != 'true'
         uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
         with:
           main-branch-name: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
@@ -86,6 +87,7 @@ jobs:
           fi
 
       - name: Determine added packages
+        if: env.IS_TAG != 'true'
         uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         id: added
         with:
@@ -95,6 +97,7 @@ jobs:
               - added: 'ghost/**/package.json'
 
       - name: Determine changed packages
+        if: env.IS_TAG != 'true'
         uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
         id: changed
         with:
@@ -191,6 +194,7 @@ jobs:
         run: bash .github/scripts/install-deps.sh
 
       - name: Determine Affected Projects
+        if: env.IS_TAG != 'true'
         id: affected
         run: |
           AFFECTED_PROJECTS=$(pnpm -s nx show projects --affected --json | tr -d '\n')
