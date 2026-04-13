@@ -153,6 +153,10 @@ module.exports = {
         return apiFramework.pipeline(require('./slack'), localUtils);
     },
 
+    get x() {
+        return apiFramework.pipeline(require('./x'), localUtils);
+    },
+
     get config() {
         return apiFramework.pipeline(require('./config'), localUtils);
     },

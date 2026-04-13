@@ -96,6 +96,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     twitterImage: attr('string'),
     twitterTitle: attr('string'),
     twitterDescription: attr('string'),
+    xPostEnabled: attr('boolean', {defaultValue: true}),
     emailSubject: attr('string'),
     html: attr('string'),
     visibility: attr('string'),

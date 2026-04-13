@@ -469,6 +469,24 @@
             "type": "string"
         }
     },
+    "x": {
+        "x_access_token": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "x_access_token_secret": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "x_user_id": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "x_username": {
+            "defaultValue": null,
+            "type": "string"
+        }
+    },
     "unsplash": {
         "unsplash": {
             "defaultValue": "true",

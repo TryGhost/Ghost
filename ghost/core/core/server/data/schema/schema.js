@@ -119,7 +119,8 @@ module.exports = {
         frontmatter: {type: 'text', maxlength: 65535, nullable: true},
         feature_image_alt: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 191}}},
         feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
-        email_only: {type: 'boolean', nullable: false, defaultTo: false}
+        email_only: {type: 'boolean', nullable: false, defaultTo: false},
+        x_post_enabled: {type: 'boolean', nullable: false, defaultTo: true}
     },
     // NOTE: this is the staff table
     users: {
@@ -243,7 +244,8 @@ module.exports = {
                     'slack',
                     'theme',
                     'unsplash',
-                    'views'
+                    'views',
+                    'x'
                 ]]
             }
         },

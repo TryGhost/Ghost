@@ -13,7 +13,7 @@ const obfuscatedSetting = '••••••••';
  * @returns {Boolean}
  */
 function isSecretSetting(setting) {
-    return /secret|api_key/.test(setting.key);
+    return /secret|api_key|access_token/.test(setting.key);
 }
 
 /**

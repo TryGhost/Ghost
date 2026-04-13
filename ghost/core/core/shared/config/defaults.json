@@ -268,7 +268,9 @@
         "privateReadOnlyApiKey": null
     },
     "twitter": {
-        "privateReadOnlyToken": null
+        "privateReadOnlyToken": null,
+        "consumerKey": null,
+        "consumerSecret": null
     },
     "gravatar": {
         "url": "https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}"

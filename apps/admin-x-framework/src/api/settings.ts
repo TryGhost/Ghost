@@ -4,6 +4,9 @@ import {Config} from './config';
 // Types
 
 export type SettingValue = string | boolean | null;
+type XVerifyPayload = {
+    oauthVerifier: string;
+}
 
 export type Setting = {
     key: string;
@@ -31,7 +34,7 @@ export const useBrowseSettings = createQuery<SettingsResponseType>({
     dataType,
     path: '/settings/',
     defaultSearchParams: {
-        group: 'site,theme,private,members,portal,newsletter,email,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations,security,social_web,explore,transistor'
+        group: 'site,theme,private,members,portal,newsletter,email,labs,slack,x,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations,security,social_web,explore,transistor'
     }
 });
 
@@ -66,6 +69,26 @@ export const useDeleteStripeSettings = createMutation<unknown, null>({
     invalidateQueries: {dataType}
 });
 
+export const useDeleteXSettings = createMutation<unknown, null>({
+    method: 'DELETE',
+    path: () => '/x/',
+    invalidateQueries: {dataType}
+});
+
+export const useVerifyXSettings = createMutation<SettingsResponseType, XVerifyPayload>({
+    method: 'POST',
+    path: () => '/x/verify/',
+    body: payload => payload,
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'createOrUpdate',
+        update: newData => ({
+            ...newData,
+            settings: newData.settings
+        })
+    }
+});
+
 export const useTestSlack = createMutation<unknown, null>({
     method: 'POST',
     path: () => '/slack/test/'
@@ -91,7 +114,7 @@ export function getSettingValue<ValueType = SettingValue>(settings: Setting[] | 
         return null;
     }
     const setting = settings.find(d => d.key === key);
-    return setting?.value as ValueType || null;
+    return setting ? setting.value as ValueType : null;
 }
 
 export function isSettingReadOnly(settings: Setting[] | null | undefined, key: string): boolean | undefined {

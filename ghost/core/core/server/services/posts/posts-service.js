@@ -493,6 +493,7 @@ class PostsService {
                     'twitter_image',
                     'twitter_title',
                     'twitter_description',
+                    'x_post_enabled',
                     'meta_title',
                     'meta_description',
                     'frontmatter',

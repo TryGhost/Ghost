@@ -179,6 +179,7 @@ describe('Posts Service', function () {
                     post_id: POST_ID,
                     meta_title: 'Test Post',
                     meta_description: 'Test Post Description',
+                    x_post_enabled: 0,
                     email_only: 1,
                     email_subject: 'Test Email Subject'
                 },
@@ -193,7 +194,8 @@ describe('Posts Service', function () {
 
             assert.deepEqual(copiedPostData.posts_meta, {
                 meta_title: postMetaModel.attributes.meta_title,
-                meta_description: postMetaModel.attributes.meta_description
+                meta_description: postMetaModel.attributes.meta_description,
+                x_post_enabled: postMetaModel.attributes.x_post_enabled
             });
         });
     });

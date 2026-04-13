@@ -249,6 +249,22 @@
             "value": "Ghost"
         },
         {
+            "key": "x_access_token",
+            "value": null
+        },
+        {
+            "key": "x_access_token_secret",
+            "value": null
+        },
+        {
+            "key": "x_user_id",
+            "value": null
+        },
+        {
+            "key": "x_username",
+            "value": null
+        },
+        {
             "key": "unsplash",
             "value": true
         },
@@ -339,7 +355,7 @@
     ],
     "meta": {
         "filters": {
-            "group": "site,theme,private,members,portal,newsletter,email,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura"
+            "group": "site,theme,private,members,portal,newsletter,email,labs,slack,x,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura"
         }
     }
 }

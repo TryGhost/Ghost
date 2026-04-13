@@ -6,6 +6,7 @@ module.exports = async (model, frame, options) => {
     delete jsonModel.email_subject;
     delete jsonModel.email_segment;
     delete jsonModel.email_only;
+    delete jsonModel.x_post_enabled;
     delete jsonModel.newsletter_id;
 
     return jsonModel;

@@ -25,6 +25,7 @@ export const modalPaths: {[key: string]: ModalName} = {
     'integrations/zapier': 'ZapierModal',
     'integrations/transistor': 'TransistorModal',
     'integrations/slack': 'SlackModal',
+    'integrations/x': 'XModal',
     'integrations/unsplash': 'UnsplashModal',
     'integrations/firstpromoter': 'FirstPromoterModal',
     'integrations/pintura': 'PinturaModal',

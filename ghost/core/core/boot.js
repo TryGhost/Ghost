@@ -153,6 +153,11 @@ async function initCore({ghostServer, config, frontend}) {
         ghostServer.registerCleanupTask(async () => {
             await urlService.shutdown();
         });
+
+        debug('Begin: X');
+        const x = require('./server/services/x');
+        x.listen();
+        debug('End: X');
     }
 
     debug('End: initCore');

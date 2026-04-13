@@ -88,6 +88,7 @@ const post = (attrs, frame) => {
             delete attrs.status;
         }
         delete attrs.email_only;
+        delete attrs.x_post_enabled;
         delete attrs.newsletter;
         delete attrs.email_segment;
 

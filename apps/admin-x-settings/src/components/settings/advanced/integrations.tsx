@@ -94,11 +94,12 @@ const BuiltInIntegrations: React.FC = () => {
     const pinturaEditor = usePinturaEditor();
 
     const {settings} = useGlobalData();
-    const [unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername, transistorEnabled] = getSettingValues<boolean>(settings, [
+    const [unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername, xUsername, transistorEnabled] = getSettingValues<boolean>(settings, [
         'unsplash',
         'firstpromoter',
         'slack_url',
         'slack_username',
+        'x_username',
         'transistor'
     ]);
 
@@ -118,6 +119,14 @@ const BuiltInIntegrations: React.FC = () => {
             modal: 'integrations/slack',
             testId: 'slack-integration',
             title: 'Slack'
+        },
+        {
+            active: !!xUsername,
+            detail: 'Share newly published posts on X',
+            icon: <Icon name='twitter-x' size={32} />,
+            modal: 'integrations/x',
+            testId: 'x-integration',
+            title: 'X'
         },
         {
             active: !!unsplashEnabled,

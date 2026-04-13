@@ -238,6 +238,21 @@ export default class GhPostSettingsMenu extends Component {
     }
 
     @action
+    toggleXPostEnabled(event) {
+        this.post.xPostEnabled = event.target.checked;
+
+        // If this is a new post. Don't save the post yet.
+        if (this.post.isNew) {
+            return;
+        }
+
+        this.savePostTask.perform().catch((error) => {
+            this.showError(error);
+            this.post.rollbackAttributes();
+        });
+    }
+
+    @action
     openPostHistory() {
         this.showPostHistory = true;
     }

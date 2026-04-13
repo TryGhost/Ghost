@@ -679,6 +679,26 @@
                         <div class="settings-menu-content">
 
                             <form {{action "discardEnter" on="submit"}} class="gh-post-settings" aria-label="Twitter card settings">
+                                {{#unless this.post.isPage}}
+                                    <div class="form-group">
+                                        <div class="for-switch xs">
+                                            <label class="switch">
+                                                <span>Auto-post to X when published</span>
+                                                <div class="gh-toggle-featured">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={{this.post.xPostEnabled}}
+                                                        class="gh-input post-settings-featured gh-input-x"
+                                                        {{on "change" this.toggleXPostEnabled}}
+                                                        data-test-checkbox="x-post-enabled"
+                                                    >
+                                                    <span class="input-toggle-component"></span>
+                                                </div>
+                                            </label>
+                                        </div>
+                                        <p>Disable this if you don't want Ghost to share this post to your connected X account when it is published.</p>
+                                    </div>
+                                {{/unless}}
                                 <GhImageUploaderWithPreview
                                     @image={{this.post.twitterImage}}
                                     @text="Add X image"

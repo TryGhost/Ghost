@@ -15,6 +15,11 @@ describe('Unit: services/settings/settings-utils', function () {
             assert.equal(isSecretSetting({key: 'content_api_key'}), true);
         });
 
+        it('identifies X access tokens as secret', function () {
+            assert.equal(isSecretSetting({key: 'x_access_token'}), true);
+            assert.equal(isSecretSetting({key: 'x_access_token_secret'}), true);
+        });
+
         it('does not flag non-secret settings', function () {
             assert.equal(isSecretSetting({key: 'title'}), false);
             assert.equal(isSecretSetting({key: 'description'}), false);

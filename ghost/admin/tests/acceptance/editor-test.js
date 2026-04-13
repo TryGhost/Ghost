@@ -385,6 +385,18 @@ describe('Acceptance: Editor', function () {
             // open twitter data subview
             await click('[data-test-button="twitter-data"]');
 
+            expect(
+                this.server.db.posts.find(post.id).xPostEnabled,
+                'x posting starts enabled'
+            ).to.not.equal(false);
+
+            await click('[data-test-checkbox="x-post-enabled"]');
+
+            expect(
+                this.server.db.posts.find(post.id).xPostEnabled,
+                'saved x posting preference'
+            ).to.equal(false);
+
             // twitter title has validation
             await click('[data-test-field="twitter-title"]');
             await fillIn('[data-test-field="twitter-title"]', Array(302).join('a'));
