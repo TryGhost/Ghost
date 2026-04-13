@@ -204,33 +204,33 @@ describe('Gift', function () {
     });
 
     describe('refund', function () {
-        it('updates the gift to reflect that it has been refunded', function () {
+        it('returns a refunded gift without mutating the original', function () {
             const gift = buildGift();
             const before = new Date();
 
-            const result = gift.refund();
+            const refunded = gift.refund();
 
             const after = new Date();
 
-            assert.equal(result, true);
-            assert.equal(gift.status, 'refunded');
-            assert.ok(gift.refundedAt);
-            assert.ok(gift.refundedAt >= before);
-            assert.ok(gift.refundedAt <= after);
+            assert.ok(refunded);
+            assert.notEqual(refunded, gift);
+            assert.equal(gift.status, 'purchased');
+            assert.equal(gift.refundedAt, null);
+            assert.equal(refunded.status, 'refunded');
+            assert.ok(refunded.refundedAt);
+            assert.ok(refunded.refundedAt >= before);
+            assert.ok(refunded.refundedAt <= after);
         });
 
-        it('returns false without changing state if already refunded', function () {
-            const originalRefundedAt = new Date('2026-02-01T00:00:00.000Z');
+        it('returns null if already refunded', function () {
             const gift = buildGift({
                 status: 'refunded',
-                refundedAt: originalRefundedAt
+                refundedAt: new Date('2026-02-01T00:00:00.000Z')
             });
 
             const result = gift.refund();
 
-            assert.equal(result, false);
-            assert.equal(gift.status, 'refunded');
-            assert.equal(gift.refundedAt, originalRefundedAt);
+            assert.equal(result, null);
         });
     });
 });

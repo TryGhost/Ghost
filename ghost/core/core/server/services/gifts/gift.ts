@@ -146,15 +146,16 @@ export class Gift {
         return {redeemable: true};
     }
 
-    refund(): boolean {
+    refund(): Gift | null {
         if (this.isRefunded()) {
-            return false;
+            return null;
         }
 
-        this.status = 'refunded';
-        this.refundedAt = new Date();
-
-        return true;
+        return new Gift({
+            ...this,
+            status: 'refunded',
+            refundedAt: new Date()
+        });
     }
 
     redeem({memberId, redeemedAt = new Date()}: {memberId: string; redeemedAt?: Date}) {

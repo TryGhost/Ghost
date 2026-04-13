@@ -171,7 +171,7 @@ export class GiftService {
             return true;
         }
 
-        await this.deps.giftRepository.save(gift);
+        await this.deps.giftRepository.save(refunded);
 
         // TODO: if the gift was already redeemed/consumed, we should also
         // downgrade the recipient member back to free.
