@@ -11,6 +11,7 @@
                     @post={{this.post}}
                     @hasUnsavedChanges={{this.hasDirtyAttributes}}
                     @tkCount={{this.tkCount}}
+                    @invalidFirstNameCount={{this.invalidFirstNameCount}}
                     @beforePublish={{perform this.beforeSaveTask}}
                     @afterPublish={{this.afterSave}}
                     @saveTask={{this.saveTask}}
@@ -115,6 +116,7 @@
                 <Editor::PublishManagement
                     @post={{this.post}}
                     @hasUnsavedChanges={{this.hasDirtyAttributes}}
+                    @invalidFirstNameCount={{this.invalidFirstNameCount}}
                     @beforePublish={{perform this.beforeSaveTask}}
                     @afterPublish={{this.afterSave}}
                     @saveTask={{this.saveTask}}
