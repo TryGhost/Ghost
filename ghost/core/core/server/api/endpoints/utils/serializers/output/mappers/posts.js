@@ -8,6 +8,7 @@ const clean = require('../utils/clean');
 const date = require('../utils/date');
 const extraAttrs = require('../utils/extra-attrs');
 const gating = require('../utils/post-gating');
+const previewRendering = require('../utils/preview-rendering');
 const url = require('../utils/url');
 
 const utils = require('../../../index');
@@ -80,6 +81,7 @@ module.exports = async (model, frame, options = {}) => {
     if (utils.isContentAPI(frame)) {
         date.forPost(jsonModel);
         gating.forPost(jsonModel, frame);
+        previewRendering.forPost(jsonModel, frame);
 
         if (jsonModel.access) {
             if (commentsService?.api?.enabled !== 'off') {

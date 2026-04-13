@@ -14,16 +14,21 @@ const processOutbox = require('../../../core/server/services/outbox/jobs/lib/pro
 
 describe('Process Outbox Job', function () {
     let jobService;
+    let defaultEmailDesignSettingId;
 
     before(async function () {
         await testUtils.startGhost();
         jobService = require('../../../core/server/services/jobs/job-service');
+        defaultEmailDesignSettingId = await db.knex('email_design_settings')
+            .where('slug', 'default-automated-email')
+            .first('id')
+            .then(row => row.id);
     });
 
     afterEach(async function () {
         sinon.restore();
         await db.knex('outbox').del();
-        await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
+        await db.knex('welcome_email_automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
         try {
             await jobService.removeJob(JOB_NAME);
         } catch (err) {
@@ -59,13 +64,21 @@ describe('Process Outbox Job', function () {
                 }
             });
 
-            await db.knex('automated_emails').insert({
-                id: ObjectId().toHexString(),
+            const automationId = ObjectId().toHexString();
+            await db.knex('welcome_email_automations').insert({
+                id: automationId,
                 status: 'active',
                 name: 'Free Member Welcome Email',
                 slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+                created_at: new Date()
+            });
+            await db.knex('welcome_email_automated_emails').insert({
+                id: ObjectId().toHexString(),
+                welcome_email_automation_id: automationId,
+                delay_days: 0,
                 subject: 'Welcome to {site_title}',
                 lexical,
+                email_design_setting_id: defaultEmailDesignSettingId,
                 created_at: new Date()
             });
         });

@@ -34,7 +34,7 @@ class OffersAPI {
         const activeRetentionOffers = await this.repository.getAll({
             transacting: options.transacting,
             filter: 'status:active+redemption_type:retention'
-        });
+        }, {withRedemptionStats: false});
 
         for (const activeRetentionOffer of activeRetentionOffers) {
             if (activeRetentionOffer.id === offerId || activeRetentionOffer.cadence.value !== cadence) {
@@ -195,7 +195,7 @@ class OffersAPI {
             const allOffers = await this.repository.getAll({
                 transacting: transaction,
                 filter: 'status:active'
-            });
+            }, {withRedemptionStats: false});
 
             debug(`listOffersAvailableToSubscription: found ${allOffers.length} active offers`);
 

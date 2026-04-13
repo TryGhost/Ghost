@@ -1265,6 +1265,7 @@ describe('Email renderer', function () {
                 name: 'Test Newsletter',
                 show_badge: false,
                 feedback_enabled: true,
+                show_share_button: true,
                 show_post_title_section: true
             };
             postUrl = 'http://example.com';
@@ -1359,6 +1360,7 @@ describe('Email renderer', function () {
                 name: 'Test Newsletter',
                 show_badge: false,
                 feedback_enabled: true,
+                show_share_button: true,
                 show_post_title_section: true
             });
             const segment = null;
@@ -1379,6 +1381,7 @@ describe('Email renderer', function () {
                 name: 'Test Newsletter',
                 show_badge: false,
                 feedback_enabled: true,
+                show_share_button: true,
                 show_post_title_section: true
             });
             const segment = null;
@@ -1416,6 +1419,79 @@ describe('Email renderer', function () {
             // Test feedback buttons included
             assert(response.html.includes('http://feedback-link.com/?score=1'));
             assert(response.html.includes('http://feedback-link.com/?score=0'));
+        });
+
+        it('includes share links for public posts', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel({
+                header_image: null,
+                name: 'Test Newsletter',
+                show_badge: false,
+                feedback_enabled: true,
+                show_share_button: true,
+                show_post_title_section: true
+            });
+            const segment = null;
+            const options = {};
+
+            const response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            assert(response.html.includes('href="http://example.com/#/share"'));
+            assert(response.html.includes('>Share</p>'));
+        });
+
+        it('does not include share links for non-public posts', async function () {
+            const post = createModel({
+                ...basePost,
+                visibility: 'members'
+            });
+            const newsletter = createModel({
+                header_image: null,
+                name: 'Test Newsletter',
+                show_badge: false,
+                feedback_enabled: true,
+                show_share_button: true,
+                show_post_title_section: true
+            });
+            const segment = null;
+            const options = {};
+
+            const response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            assert(!response.html.includes('#/share'));
+        });
+
+        it('does not include share links when disabled in newsletter settings', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel({
+                header_image: null,
+                name: 'Test Newsletter',
+                show_badge: false,
+                feedback_enabled: true,
+                show_share_button: false,
+                show_post_title_section: true
+            });
+            const segment = null;
+            const options = {};
+
+            const response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            assert(!response.html.includes('#/share'));
         });
 
         it('uses custom excerpt as preheader', async function () {
@@ -1699,6 +1775,7 @@ describe('Email renderer', function () {
                 name: 'Test Newsletter',
                 show_badge: true,
                 feedback_enabled: true,
+                show_share_button: true,
                 show_post_title_section: true
             });
             const segment = null;
@@ -1748,6 +1825,7 @@ describe('Email renderer', function () {
                 '#',
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%`,
                 `http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded%23%2Fshare`,
                 `%%{unsubscribe_url}%%`,
                 `https://ghost.org/?via=pbg-newsletter&source_tracking=site`
             ]);
@@ -1770,6 +1848,7 @@ describe('Email renderer', function () {
                 name: 'Test Newsletter',
                 show_badge: true,
                 feedback_enabled: true,
+                show_share_button: true,
                 show_post_title_section: true
             });
             const segment = null;
@@ -1803,6 +1882,7 @@ describe('Email renderer', function () {
                 '#',
                 'http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%',
                 'http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%',
+                'http://example.com/#/share',
                 '%%{unsubscribe_url}%%',
                 'https://ghost.org/?via=pbg-newsletter'
             ]);
@@ -1815,6 +1895,7 @@ describe('Email renderer', function () {
                 name: 'Test Newsletter',
                 show_badge: true,
                 feedback_enabled: true,
+                show_share_button: true,
                 show_post_title_section: true
             });
             const segment = null;
@@ -1858,6 +1939,7 @@ describe('Email renderer', function () {
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexample.com%2F%3Fref%3D123%26source_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%`,
                 `http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%`,
+                `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded%23%2Fshare`,
                 `%%{unsubscribe_url}%%`,
                 `https://ghost.org/?via=pbg-newsletter&source_tracking=site`
             ]);
@@ -2175,9 +2257,7 @@ describe('Email renderer', function () {
             });
         });
 
-        const testLexicalRenderDesignOptions = async function ({expectedObject, labs}) {
-            labsEnabled = labs || false;
-
+        const testLexicalRenderDesignOptions = async function ({expectedObject}) {
             const post = createModel(basePost);
             const newsletter = createModel({
                 ...baseNewsletter,
@@ -2485,6 +2565,70 @@ describe('Email renderer', function () {
             const newsletter = createModel({});
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
             assert.equal(data.post.publishedAt, '1 Jan 1970');
+        });
+
+        it('includes share URL for public posts', async function () {
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                visibility: 'public'
+            });
+            const newsletter = createModel({
+                show_share_button: true
+            });
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.post.shareUrl, 'http://example.com/#/share');
+        });
+
+        it('calculates footer feedback button widths based on visible actions', async function () {
+            settings.comments_enabled = 'all';
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                visibility: 'public'
+            });
+            const newsletter = createModel({
+                feedback_enabled: true,
+                show_comment_cta: true,
+                show_share_button: true
+            });
+
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.feedbackButtonCellWidth, '25%');
+        });
+
+        it('does not include share URL when the newsletter share button is disabled', async function () {
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                visibility: 'public'
+            });
+            const newsletter = createModel({
+                show_share_button: false
+            });
+
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.post.shareUrl, null);
+        });
+
+        it('does not include share URL for non-public posts', async function () {
+            const html = '';
+            const newsletter = createModel({
+                show_share_button: true
+            });
+
+            for (const visibility of ['members', 'paid', 'tiers']) {
+                const post = createModel({
+                    posts_meta: createModel({}),
+                    loaded: ['posts_meta'],
+                    visibility
+                });
+                const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+                assert.equal(data.post.shareUrl, null, `Expected no share URL for "${visibility}" visibility`);
+            }
         });
 
         it('show feature image if post has feature image', async function () {

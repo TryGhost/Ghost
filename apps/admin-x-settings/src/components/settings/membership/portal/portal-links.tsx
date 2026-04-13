@@ -26,7 +26,7 @@ const PortalLink: React.FC<PortalLinkPrefs> = ({name, value}) => {
         >
             <div className='flex w-full grow flex-col py-3 lg:flex-row lg:items-center lg:gap-5'>
                 <label className='inline-block whitespace-nowrap lg:w-[180px] lg:min-w-[180px]' htmlFor={id}>{name}:</label>
-                <TextField className='border-b-500 grow bg-transparent py-1 text-grey-700 lg:p-1' id={id} value={value} disabled unstyled />
+                <TextField className='grow border-b-grey-500 bg-transparent py-1 text-grey-700 lg:p-1' id={id} value={value} disabled unstyled />
             </div>
         </ListItem>
     );

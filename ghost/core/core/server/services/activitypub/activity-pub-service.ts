@@ -17,12 +17,22 @@ interface Logger {
 }
 
 export class ActivityPubService {
+    private knex: Knex;
+    private siteUrl: URL;
+    private logging: Logger;
+    private identityTokenService: IdentityTokenService;
+
     constructor(
-        private knex: Knex,
-        private siteUrl: URL,
-        private logging: Logger,
-        private identityTokenService: IdentityTokenService
-    ) {}
+        knex: Knex,
+        siteUrl: URL,
+        logging: Logger,
+        identityTokenService: IdentityTokenService
+    ) {
+        this.knex = knex;
+        this.siteUrl = siteUrl;
+        this.logging = logging;
+        this.identityTokenService = identityTokenService;
+    }
 
     getExpectedWebhooks(secret: string): ExpectedWebhook[] {
         return [

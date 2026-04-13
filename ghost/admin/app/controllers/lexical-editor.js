@@ -160,6 +160,7 @@ export default class LexicalEditorController extends Controller {
     @service settings;
     @service ui;
     @service localRevisions;
+    @service('unsaved-changes') unsavedChanges;
 
     @inject config;
 
@@ -419,7 +420,8 @@ export default class LexicalEditorController extends Controller {
     openUpgradeModal(hostLimitError = {}) {
         this.modals.open(PublishLimitModal, {
             message: hostLimitError.message,
-            details: hostLimitError.details
+            details: hostLimitError.details,
+            code: hostLimitError.code
         });
     }
 
@@ -1102,11 +1104,18 @@ export default class LexicalEditorController extends Controller {
                 event.returnValue = true;
             }
         };
+
+        this._unregisterUnsavedChanges?.();
+        this._unregisterUnsavedChanges = this.unsavedChanges.register({
+            isDirty: () => this.hasDirtyAttributes,
+            confirmLeave: () => this._confirmLeave()
+        });
     }
 
     // called by editor route's willTransition hook, fires for editor.new->edit,
-    // editor.edit->edit, or editor->any. Will either finish autosave then retry
-    // transition or abort and show the "are you sure want to leave?" modal
+    // editor.edit->edit, or editor->any. Delegates the leave-confirmation
+    // logic to _confirmLeave via the unsaved-changes service so that
+    // intercepted hash link clicks follow exactly the same code path.
     async willTransition(transition) {
         let post = this.post;
 
@@ -1128,95 +1137,21 @@ export default class LexicalEditorController extends Controller {
             && transition.targetName === 'lexical-editor.edit'
             && transition.intent.contexts?.[0]?.id === post.id;
 
-        // clean up blank cards when leaving the editor if we have a draft post
-        // - blank cards could be left around due to autosave triggering whilst
-        //   a blank card is present then the user attempting to leave
-        // - will mark the post as dirty so it gets saved when transitioning
-        // TODO: not yet implemented in lexical editor
-        // if (this._koenig && post.isDraft) {
-        //     this._koenig.cleanup();
-        // }
+        let leaveState = this._getLeaveTransitionState({fromNewToEdit});
 
-        // if we need to save when leaving the editor, abort the transition, save,
-        // then retry. If a previous transition already performed a save, skip to
-        // avoid potential infinite transition+save loops
-
-        let hasDirtyAttributes = this.hasDirtyAttributes;
-        let state = post.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
-
-        if (state.isDeleted) {
-            // if the post is deleted, we don't need to save it
-            hasDirtyAttributes = false;
-        }
-
-        // Check if anything has changed since the last revision
-        let postRevisions = post.get('postRevisions').toArray();
-        let latestRevision = postRevisions[postRevisions.length - 1];
-        let hasChangedSinceLastRevision = !latestRevision || (!post.isNew && post.lexical.replaceAll(this.config.blogUrl, '') !== latestRevision.lexical.replaceAll(this.config.blogUrl, ''));
-
-        let deletedWithoutChanges = state.isDeleted
-                && (state.isSaving || !state.hasDirtyAttributes);
-
-        // If leaving the editor and the post has changed since we last saved a revision (and it's not deleted), always save a new revision
-        //  but we should never autosave when leaving published or soon-to-be published content (scheduled); this should require the user to intervene
-        if (!this._saveOnLeavePerformed && hasChangedSinceLastRevision && hasDirtyAttributes && !state.isDeleted && post.get('status') === 'draft') {
-            transition.abort();
-            if (this._autosaveRunning) {
-                this.cancelAutosave();
-                this.autosaveTask.cancelAll();
-            }
-            await this.autosaveTask.perform({leavingEditor: true, backgroundSave: false});
-            this._saveOnLeavePerformed = true;
-            return transition.retry();
-        }
-
-        // controller is dirty and we aren't in a new->edit or delete->index
-        // transition so show our "are you sure you want to leave?" modal
-        if (!this._leaveConfirmed && !fromNewToEdit && !deletedWithoutChanges && hasDirtyAttributes) {
+        if (leaveState.shouldAbort) {
             transition.abort();
 
-            // if a save is running, wait for it to finish then transition
-            if (this.saveTasks.isRunning) {
-                await this.saveTasks.last;
-                return transition.retry();
-            }
-
-            // if an autosave is scheduled, cancel it, save then transition
-            if (this._autosaveRunning) {
-                this.cancelAutosave();
-                this.autosaveTask.cancelAll();
-
-                // If leaving the editor, always save a revision
-                if (!this._saveOnLeavePerformed) {
-                    await this.autosaveTask.perform({leavingEditor: true});
-                    this._saveOnLeavePerformed = true;
+            this._confirmLeaveContext = {fromNewToEdit};
+            try {
+                if (!(await this.unsavedChanges.confirmLeave())) {
+                    return;
                 }
-                return transition.retry();
+            } finally {
+                this._confirmLeaveContext = null;
             }
 
-            // we genuinely have unsaved data, show the modal
-            if (this.post) {
-                Object.assign(this._leaveModalReason, {status: this.post.status});
-            }
-
-            if (this._leaveModalReason.code === 'SCRATCH_DIVERGED_FROM_SECONDARY') {
-                this._assignLexicalDiffToLeaveModalReason();
-            }
-
-            // don't push full lexical state to Sentry, it's too large, gets filtered often and not useful
-            const sentryContext = {...this._leaveModalReason.context, diff: JSON.stringify(this._leaveModalReason.context?.diff), secondaryLexical: undefined, scratch: undefined, lexical: undefined};
-            Sentry.captureMessage('showing leave editor modal', {extra: {...this._leaveModalReason, context: sentryContext}});
-
-            console.log('showing leave editor modal', this._leaveModalReason); // eslint-disable-line
-
-            const reallyLeave = await this.modals.open(ConfirmEditorLeaveModal);
-
-            if (reallyLeave !== true) {
-                return;
-            } else {
-                this._leaveConfirmed = true;
-                return transition.retry();
-            }
+            return transition.retry();
         }
 
         // Capture posts with untitled slugs and a title set; ref https://linear.app/ghost/issue/ONC-548/
@@ -1246,6 +1181,150 @@ export default class LexicalEditorController extends Controller {
         }
     }
 
+    // Contains all leave-confirmation logic extracted from willTransition:
+    // blank-card cleanup, save-on-leave for draft revisions, running/scheduled
+    // autosave handling, and the "are you sure?" modal. Returns true if leaving
+    // should proceed, false if the user chose to stay.
+    async _confirmLeave() {
+        let {fromNewToEdit = false} = this._confirmLeaveContext || {};
+        let post = this.post;
+        if (!post) {
+            return true;
+        }
+
+        // user can enter the slug name and then leave the post page,
+        // in such case we should wait until the slug would be saved on backend
+        if (this.updateSlugTask.isRunning) {
+            await this.updateSlugTask.last;
+        }
+
+        // clean up blank cards when leaving the editor if we have a draft post
+        // - blank cards could be left around due to autosave triggering whilst
+        //   a blank card is present then the user attempting to leave
+        // - will mark the post as dirty so it gets saved when transitioning
+        // TODO: not yet implemented in lexical editor
+        // if (this._koenig && post.isDraft) {
+        //     this._koenig.cleanup();
+        // }
+
+        // If we need to save when leaving the editor, save and then re-evaluate.
+        // If a previous call already performed a save, skip to avoid potential
+        // infinite save loops.
+        let leaveState = this._getLeaveTransitionState({fromNewToEdit});
+
+        if (leaveState.shouldSaveOnLeave) {
+            if (this._autosaveRunning) {
+                this.cancelAutosave();
+                this.autosaveTask.cancelAll();
+            }
+            await this.autosaveTask.perform({leavingEditor: true, backgroundSave: false});
+            this._saveOnLeavePerformed = true;
+            leaveState = this._getLeaveTransitionState({fromNewToEdit});
+        }
+
+        // No modal/save-task handling is needed when the transition doesn't
+        // enter the original "dirty leave" branch (eg delete->index, new->edit,
+        // already-confirmed, or no longer dirty after save-on-leave).
+        if (!leaveState.shouldConfirmFlow) {
+            return true;
+        }
+
+        // if a save is running, wait for it to finish then allow leave
+        if (this.saveTasks.isRunning) {
+            await this.saveTasks.last;
+            return true;
+        }
+
+        // if an autosave is scheduled, cancel it, save then allow leave
+        if (this._autosaveRunning) {
+            this.cancelAutosave();
+            this.autosaveTask.cancelAll();
+
+            // If leaving the editor, always save a revision
+            if (!this._saveOnLeavePerformed) {
+                await this.autosaveTask.perform({leavingEditor: true});
+                this._saveOnLeavePerformed = true;
+            }
+            return true;
+        }
+
+        // we genuinely have unsaved data, show the modal
+        if (this.post) {
+            Object.assign(this._leaveModalReason, {status: this.post.status});
+        }
+
+        if (this._leaveModalReason.code === 'SCRATCH_DIVERGED_FROM_SECONDARY') {
+            this._assignLexicalDiffToLeaveModalReason();
+        }
+
+        // don't push full lexical state to Sentry, it's too large, gets filtered often and not useful
+        const sentryContext = {...this._leaveModalReason.context, diff: JSON.stringify(this._leaveModalReason.context?.diff), secondaryLexical: undefined, scratch: undefined, lexical: undefined};
+        Sentry.captureMessage('showing leave editor modal', {extra: {...this._leaveModalReason, context: sentryContext}});
+
+        console.log('showing leave editor modal', this._leaveModalReason); // eslint-disable-line
+
+        const reallyLeave = await this.modals.open(ConfirmEditorLeaveModal);
+
+        if (reallyLeave === true) {
+            this._leaveConfirmed = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    _getLeaveTransitionState({fromNewToEdit = false} = {}) {
+        let post = this.post;
+
+        if (!post) {
+            return {
+                shouldAbort: false,
+                shouldConfirmFlow: false,
+                shouldSaveOnLeave: false
+            };
+        }
+
+        let hasDirtyAttributes = this.hasDirtyAttributes;
+        let state = post.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
+
+        if (state.isDeleted) {
+            // if the post is deleted, we don't need to save it
+            hasDirtyAttributes = false;
+        }
+
+        // Check if anything has changed since the last revision
+        let postRevisions = post.get('postRevisions').toArray();
+        let latestRevision = postRevisions[postRevisions.length - 1];
+        let hasChangedSinceLastRevision = !latestRevision || (!post.isNew && post.lexical.replaceAll(this.config.blogUrl, '') !== latestRevision.lexical.replaceAll(this.config.blogUrl, ''));
+
+        let deletedWithoutChanges = state.isDeleted
+                && (state.isSaving || !state.hasDirtyAttributes);
+
+        let shouldSaveOnLeave = !this._saveOnLeavePerformed
+            && hasChangedSinceLastRevision
+            && hasDirtyAttributes
+            && !state.isDeleted
+            && post.get('status') === 'draft';
+
+        let shouldConfirmFlow = !this._leaveConfirmed
+            && !fromNewToEdit
+            && !deletedWithoutChanges
+            && hasDirtyAttributes;
+
+        return {
+            shouldAbort: shouldSaveOnLeave || shouldConfirmFlow,
+            shouldConfirmFlow,
+            shouldSaveOnLeave
+        };
+    }
+
+    willDestroy() {
+        super.willDestroy(...arguments);
+        this._unregisterUnsavedChanges?.();
+        this._unregisterUnsavedChanges = null;
+        window.onbeforeunload = null;
+    }
+
     // called when the editor route is left or the post model is swapped
     reset() {
         let post = this.post;
@@ -1253,6 +1332,9 @@ export default class LexicalEditorController extends Controller {
         // make sure the save tasks aren't still running in the background
         // after leaving the edit route
         this.cancelAutosave();
+
+        this._unregisterUnsavedChanges?.();
+        this._unregisterUnsavedChanges = null;
 
         if (post) {
             // clear post of any unsaved, client-generated tags

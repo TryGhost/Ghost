@@ -25,7 +25,10 @@ export default (function viteConfig() {
             port: 6174
         },
         optimizeDeps: {
-            include: ['@tryghost/i18n']
+            include: ['@tryghost/i18n', '@tryghost/debug']
+        },
+        resolve: {
+            dedupe: ['@tryghost/debug']
         },
         build: {
             outDir: resolve(__dirname, 'umd'),

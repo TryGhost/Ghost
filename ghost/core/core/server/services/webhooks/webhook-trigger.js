@@ -1,6 +1,7 @@
 const debug = require('@tryghost/debug')('services:webhooks:trigger');
 const logging = require('@tryghost/logging');
 const ghostVersion = require('@tryghost/version');
+const config = require('../../../shared/config');
 const crypto = require('crypto');
 
 class WebhookTrigger {
@@ -16,7 +17,13 @@ class WebhookTrigger {
         this.models = models;
         this.payload = payload;
 
-        this.request = request ?? require('@tryghost/request');
+        if (request) {
+            this.request = request;
+        } else if (config.get('security:allowWebhookInternalIPs')) {
+            this.request = require('@tryghost/request');
+        } else {
+            this.request = require('../../lib/request-external');
+        }
         this.limitService = limitService;
     }
 
@@ -91,7 +98,7 @@ class WebhookTrigger {
                 error: `Request failed: ${err.code || 'unknown'}`
             });
 
-            logging.warn(`Request to ${webhook.get('target_url') || null} failed because of: ${err.code || ''}.`);
+            logging.error(`[WEBHOOK_DELIVERY_FAILURE] url=${webhook.get('target_url') || 'unknown'} status=${err.statusCode || 'none'} error_code=${err.code || 'unknown'} message=${err.message || ''}`, err);
         };
     }
 
@@ -124,6 +131,7 @@ class WebhookTrigger {
             }
 
             const opts = {
+                method: 'POST',
                 body: reqPayload,
                 headers,
                 timeout: {

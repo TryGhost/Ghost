@@ -52,6 +52,14 @@
             ]
         },
         {
+            "name": "EmailDesignSetting",
+            "entries": [
+                {
+                    "slug": "default-automated-email"
+                }
+            ]
+        },
+        {
             "name": "Tag",
             "entries": [
                 {
@@ -537,6 +545,31 @@
                     "object_type": "automated_email"
                 },
                 {
+                    "name": "Browse email design settings",
+                    "action_type": "browse",
+                    "object_type": "email_design_setting"
+                },
+                {
+                    "name": "Read email design settings",
+                    "action_type": "read",
+                    "object_type": "email_design_setting"
+                },
+                {
+                    "name": "Edit email design settings",
+                    "action_type": "edit",
+                    "object_type": "email_design_setting"
+                },
+                {
+                    "name": "Add email design settings",
+                    "action_type": "add",
+                    "object_type": "email_design_setting"
+                },
+                {
+                    "name": "Delete email design settings",
+                    "action_type": "destroy",
+                    "object_type": "email_design_setting"
+                },
+                {
                     "name": "Read member signin urls",
                     "action_type": "read",
                     "object_type": "member_signin_url"
@@ -892,6 +925,7 @@
                     "product": "all",
                     "label": "all",
                     "automated_email": "all",
+                    "email_design_setting": "all",
                     "email_preview": "all",
                     "email": "all",
                     "member_signin_url": "read",
@@ -941,6 +975,7 @@
                     "member": "all",
                     "label": "all",
                     "automated_email": "all",
+                    "email_design_setting": "all",
                     "email_preview": "all",
                     "email": "all",
                     "snippet": "all",

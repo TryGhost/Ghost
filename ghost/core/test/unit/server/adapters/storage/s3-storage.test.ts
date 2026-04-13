@@ -316,6 +316,28 @@ describe('S3Storage', function () {
         assert.equal(missing, false);
     });
 
+    it('exists works without targetDir parameter', async function () {
+        const {storage, sendStub} = createStorage();
+        const {HeadObjectCommand: HeadObjectCmd} = await import('@aws-sdk/client-s3');
+
+        // handle-image-sizes middleware calls exists(req.url) with a single path argument
+        sendStub.resolves({});
+        const exists = await storage.exists('/size/w1200/2024/06/photo.jpg');
+        assert.equal(exists, true, 'should resolve to true when object exists');
+
+        const command = sendStub.firstCall.args[0] as InstanceType<typeof HeadObjectCmd>;
+        assert.equal(
+            command.input.Key,
+            'configurable/prefix/content/files/size/w1200/2024/06/photo.jpg',
+            'should build key using fileName directly as relative path'
+        );
+
+        sendStub.resetHistory();
+        sendStub.rejects(createNotFoundError());
+        const missing = await storage.exists('/size/w1200/2024/06/missing.jpg');
+        assert.equal(missing, false, 'should resolve to false when object does not exist');
+    });
+
     it('delete removes objects using derived key', async function () {
         const {storage, sendStub} = createStorage();
 
@@ -445,6 +467,22 @@ describe('S3Storage', function () {
         assert.throws(() => {
             (storage as any).buildKey('');
         }, /requires a non-empty relativePath/);
+    });
+
+    it('buildKey throws when relative path resolves outside storagePath', function () {
+        const {storage} = createStorage();
+
+        assert.throws(() => {
+            (storage as any).buildKey('2024/06/../../../../../../etc/passwd');
+        }, /not a valid URL/);
+    });
+
+    it('urlToPath throws when relative segments resolve outside storagePath', function () {
+        const {storage} = createStorage();
+
+        assert.throws(() => {
+            storage.urlToPath('https://cdn.example.com/configurable/prefix/content/files/2024/06/../../../../../../etc/passwd');
+        }, /not a valid URL/);
     });
 
     it('read() throws as it is not supported', async function () {

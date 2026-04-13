@@ -633,5 +633,37 @@ describe('Acceptance: Publish flow', function () {
 
         it('handles server error when confirming');
         it('handles email sending error');
+
+        it('defaults to publish-only when default recipients is "Usually nobody"', async function () {
+            // Set default recipients to "Usually nobody" (filter with null filter)
+            this.server.db.settings.update({key: 'editor_default_email_recipients'}, {value: 'filter'});
+            this.server.db.settings.update({key: 'editor_default_email_recipients_filter'}, {value: null});
+
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {status: 'draft'});
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            // defaults to "Publish" (not "Publish and email")
+            expect(
+                find('[data-test-setting="publish-type"] [data-test-setting-title]'), 'publish type title'
+            ).to.have.trimmed.rendered.text('Publish');
+
+            // shows "Not sent as newsletter"
+            expect(
+                find('[data-test-setting="email-recipients"] [data-test-setting-title]'), 'email recipients title'
+            ).to.have.trimmed.rendered.text('Not sent as newsletter');
+
+            // email options are still available when switching
+            await click('[data-test-setting="publish-type"] [data-test-setting-title]');
+            expect(find('[data-test-publish-type="publish+send"]')).to.not.have.attribute('disabled');
+            expect(find('[data-test-publish-type="send"]')).to.not.have.attribute('disabled');
+
+            // switching to publish+send shows subscriber count
+            await click('[data-test-publish-type="publish+send"] + label');
+            expect(
+                find('[data-test-setting="email-recipients"] [data-test-setting-title]').textContent
+            ).to.match(/\d+\s*subscriber/);
+        });
     });
 });

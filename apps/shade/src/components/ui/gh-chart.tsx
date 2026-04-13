@@ -44,13 +44,13 @@ const GhCustomTooltipContent = ({active, payload, range, showHours, color}: Tool
                         {displayValue}
 
                         {diffValue ? diffValue < 0 && (
-                            <div className='flex items-center gap-0.5 text-red-600'>
+                            <div className='flex items-center gap-0.5 text-state-danger'>
                                 <TrendingDown size={14} strokeWidth={1.5} />
                                 <span>{formattedDiffValue}</span>
                             </div>
                         ) : <></>}
                         {diffValue ? diffValue > 0 && (
-                            <div className='flex items-center gap-0.5 text-green-600'>
+                            <div className='flex items-center gap-0.5 text-state-success'>
                                 <TrendingUp size={14} strokeWidth={1.5} />
                                 <span>{formattedDiffValue}</span>
                             </div>

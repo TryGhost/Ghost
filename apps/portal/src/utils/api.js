@@ -167,6 +167,31 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         }
     };
 
+    api.gift = {
+        async fetchRedemptionData({token}) {
+            const url = endpointFor({type: 'members', resource: `gifts/${encodeURIComponent(token)}/redeem`});
+            const res = await makeRequest({
+                url,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            });
+
+            if (res.ok) {
+                return res.json();
+            }
+
+            const humanError = await HumanReadableError.fromApiResponse(res);
+            if (humanError) {
+                throw humanError;
+            }
+
+            throw new Error('Failed to load gift data');
+        }
+    };
+
     api.recommendations = {
         trackClicked({recommendationId}) {
             let url = endpointFor({type: 'members', resource: 'recommendations/' + recommendationId + '/clicked'});
@@ -507,6 +532,60 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     }
                 });
             });
+        },
+
+        async checkoutGift({tierId, cadence, email: customerEmail} = {}) {
+            const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
+
+            let identity = null;
+            try {
+                identity = await api.member.identity();
+            } catch (e) {
+                // Not authenticated - that's fine for gift purchases
+            }
+
+            const body = {
+                identity,
+                metadata: {
+                    requestSrc: 'portal'
+                },
+                type: 'gift',
+                tierId,
+                cadence,
+                customerEmail
+            };
+
+            const response = await makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            let responseJson = {};
+            try {
+                responseJson = await response.json();
+            } catch (e) {
+                // response may not be JSON (e.g. HTML error page from proxy)
+            }
+
+            if (!response.ok) {
+                const error = responseJson?.errors?.[0];
+
+                if (error) {
+                    throw error;
+                }
+
+                throw new Error('Failed to process gift checkout, please try again.');
+            }
+
+            if (responseJson.url) {
+                return window.location.assign(responseJson.url);
+            }
+
+            throw new Error('Failed to process gift checkout, please try again.');
         },
 
         async checkoutDonation({successUrl, cancelUrl, metadata = {}, personalNote = ''} = {}) {

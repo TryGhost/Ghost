@@ -17,22 +17,24 @@ runs:
   steps:
     - name: Download image artifact (artifact)
       if: inputs.use-artifact == 'true'
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
       with:
         name: ${{ inputs.artifact-name }}
 
     - name: Load image from artifact (artifact)
       if: inputs.use-artifact == 'true'
       shell: bash
+      env:
+        ARTIFACT_NAME: ${{ inputs.artifact-name }}
       run: |
         echo "Loading Docker image from artifact..."
-        gunzip -c ${{ inputs.artifact-name }}.tar.gz | docker load
+        gunzip -c "${ARTIFACT_NAME}.tar.gz" | docker load
         echo "Available images after load:"
         docker images
 
     - name: Log in to GitHub Container Registry
       if: inputs.use-artifact == 'false'
-      uses: docker/login-action@v3
+      uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -41,18 +43,22 @@ runs:
     - name: Pull image from registry (main repo/branch)
       if: inputs.use-artifact == 'false'
       shell: bash
+      env:
+        IMAGE_TAGS: ${{ inputs.image-tags }}
       run: |
-        IMAGE_TAG=$(echo "${{ inputs.image-tags }}" | head -n1)
+        IMAGE_TAG=$(printf '%s\n' "$IMAGE_TAGS" | head -n1)
         echo "Pulling image from registry: $IMAGE_TAG"
         docker pull "$IMAGE_TAG"
 
     - name: Verify image is available
       id: verify
       shell: bash
+      env:
+        IMAGE_TAGS: ${{ inputs.image-tags }}
       run: |
-        IMAGE_TAG=$(echo "${{ inputs.image-tags }}" | head -n1)
+        IMAGE_TAG=$(printf '%s\n' "$IMAGE_TAGS" | head -n1)
         echo "Checking for image: $IMAGE_TAG"
-        echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+        echo "image-tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
 
         if docker inspect "$IMAGE_TAG" > /dev/null 2>&1; then
           echo "✅ Image $IMAGE_TAG is available"

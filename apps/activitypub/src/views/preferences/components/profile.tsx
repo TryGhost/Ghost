@@ -6,7 +6,9 @@ import ProfileCardShadow from '@assets/images/profile-card-shadow.png';
 import ProfileCardShadowSquare from '@assets/images/profile-card-shadow-square.png';
 import html2canvas from 'html2canvas-objectfit-fix';
 import {Account} from '@src/api/activitypub';
-import {Button, H2, LoadingIndicator, LucideIcon, Skeleton, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade';
+import {Button, LoadingIndicator, Skeleton, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {H2} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {imageUrlToDataUrl} from '@src/utils/image';
 import {toast} from 'sonner';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
@@ -130,7 +132,7 @@ const ProfileCard: React.FC<ProfileCardProps> = memo(({
                     </div>
                 }
                 {avatarImageSrc &&
-                    <div className='[&>div]:size-16! [&_img]:size-16! absolute bottom-0 left-1/2 -mb-8 -translate-x-1/2 rounded-full border-8' style={{borderColor: cardBackgroundColor}}>
+                    <div className='absolute bottom-0 left-1/2 -mb-8 -translate-x-1/2 rounded-full border-8 [&_img]:size-16! [&>div]:size-16!' style={{borderColor: cardBackgroundColor}}>
                         <APAvatar
                             author={
                                 {
@@ -150,7 +152,7 @@ const ProfileCard: React.FC<ProfileCardProps> = memo(({
                 <H2 className={`${isScreenshot && 'tracking-normal'}`} style={{color: textColor}}>{!isLoading ? account?.name : <Skeleton className='w-32' />}</H2>
                 <span className={`mt-1.5 leading-tight ${isScreenshot && 'tracking-normal'}`} style={{color: textColor}}>{!isLoading ? 'Available on Ghost, Flipboard, Threads, Bluesky, Mastodon, or wherever you get your social web feeds.' : <Skeleton className='w-28' />}</span>
                 <div
-                    className={`mt-auto flex max-h-[60px] min-h-12 w-full items-center justify-center break-all rounded-full border px-4 py-2 font-medium leading-tight ${isScreenshot && 'tracking-normal'}`}
+                    className={`mt-auto flex max-h-[60px] min-h-12 w-full items-center justify-center rounded-full border px-4 py-2 leading-tight font-medium break-all ${isScreenshot && 'tracking-normal'}`}
                     style={{
                         color: backgroundColor !== 'light' ? '#fff' : accentColor,
                         borderColor: accentColor ? hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor, backgroundColor !== 'light' ? 0.7 : 0.2) : undefined,
@@ -408,7 +410,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                         </Button>
                     </div>
                     {(account?.bannerImageUrl || coverImage) &&
-                    <DotsPattern className={`absolute left-1/2 top-1/2 h-[600px] w-[598px] -translate-x-1/2 -translate-y-1/2 ${backgroundColor === 'dark' && 'z-10'}`} style={{color: getDotsPatternColor()}} />
+                    <DotsPattern className={`absolute top-1/2 left-1/2 h-[600px] w-[598px] -translate-x-1/2 -translate-y-1/2 ${backgroundColor === 'dark' && 'z-10'}`} style={{color: getDotsPatternColor()}} />
                     }
                     <div className='absolute inset-0' style={{background: getGradient()}} />
                 </div>
@@ -416,7 +418,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                 {/* Hidden clone for screenshots */}
                 <div
                     ref={profileCardRef}
-                    className='fixed left-[-9999px] top-0 z-[-1] flex w-fit justify-center overflow-hidden rounded-2xl bg-gray-50'
+                    className='fixed top-0 left-[-9999px] z-[-1] flex w-fit justify-center overflow-hidden rounded-2xl bg-gray-50'
                     style={{
                         width: cardFormat === 'square' ? '518px' : '412px',
                         fontFamily: 'system-ui'
@@ -436,15 +438,15 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                         siteTitle={siteData?.site?.title}
                     />
                     {(account?.bannerImageUrl || coverImage) &&
-                    <DotsPattern className={`absolute left-[-62.5px] top-[-44px] h-[600px] w-[598px] ${backgroundColor === 'dark' && 'z-10'}`} style={{color: getDotsPatternColor()}} />
+                    <DotsPattern className={`absolute top-[-44px] left-[-62.5px] h-[600px] w-[598px] ${backgroundColor === 'dark' && 'z-10'}`} style={{color: getDotsPatternColor()}} />
                     }
                     <div
-                        className='absolute left-0 top-0 size-full'
+                        className='absolute top-0 left-0 size-full'
                         style={{
                             background: getGradient()
                         }}
                     />
-                    <img className='absolute left-1/2 top-12 mt-0.5 max-w-none -translate-x-1/2' src={cardFormat === 'square' ? ProfileCardShadowSquare : ProfileCardShadow} style={{width: cardFormat === 'square' ? '572px' : '466px'}} />
+                    <img className='absolute top-12 left-1/2 mt-0.5 max-w-none -translate-x-1/2' src={cardFormat === 'square' ? ProfileCardShadowSquare : ProfileCardShadow} style={{width: cardFormat === 'square' ? '572px' : '466px'}} />
                 </div>
             </div>
         </TooltipProvider>

@@ -1,6 +1,4 @@
-import {
-    SidebarContent,
-} from "@tryghost/shade"
+import {SidebarContent} from "@tryghost/shade/components"
 
 import AppSidebarBanner from "./app-sidebar-banner";
 import NavMain from "./nav-main";
@@ -22,7 +20,7 @@ function AppSidebarContent() {
     }
 
     return (
-        <SidebarContent className="px-3 pt-4 justify-between">
+        <SidebarContent className="justify-between px-3 pt-4">
             <div className="flex flex-col gap-2 sidebar:gap-4">
                 <NavMain />
                 <NavContent />

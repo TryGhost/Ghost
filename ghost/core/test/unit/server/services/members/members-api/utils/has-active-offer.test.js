@@ -41,6 +41,15 @@ describe('hasActiveOffer', function () {
         };
     }
 
+    function createOffer(overrides = {}) {
+        return {
+            duration: 'once',
+            duration_in_months: null,
+            redemption_type: 'signup',
+            ...overrides
+        };
+    }
+
     it('returns false when there is no trial and no offer', async function () {
         const model = createSubscriptionModel();
 
@@ -74,7 +83,7 @@ describe('hasActiveOffer', function () {
             offerId: 'offer_123',
             discountStart: new Date('2025-05-01T00:00:00.000Z')
         });
-        const offersAPI = createOffersAPI({duration: 'forever'});
+        const offersAPI = createOffersAPI(createOffer({duration: 'forever'}));
 
         const result = await hasActiveOffer(model, offersAPI);
 
@@ -88,7 +97,7 @@ describe('hasActiveOffer', function () {
             discountEnd: new Date('2025-08-01T00:00:00.000Z'),
             currentPeriodEnd: new Date('2025-06-01T00:00:00.000Z')
         });
-        const offersAPI = createOffersAPI({duration: 'repeating', duration_in_months: 3});
+        const offersAPI = createOffersAPI(createOffer({duration: 'repeating', duration_in_months: 3}));
 
         const result = await hasActiveOffer(model, offersAPI);
 
@@ -102,7 +111,7 @@ describe('hasActiveOffer', function () {
             discountEnd: new Date('2025-05-31T00:00:00.000Z'),
             currentPeriodEnd: new Date('2025-06-01T00:00:00.000Z')
         });
-        const offersAPI = createOffersAPI({duration: 'repeating', duration_in_months: 2});
+        const offersAPI = createOffersAPI(createOffer({duration: 'repeating', duration_in_months: 2}));
 
         const result = await hasActiveOffer(model, offersAPI);
 
@@ -117,11 +126,25 @@ describe('hasActiveOffer', function () {
             discountEnd: new Date('2025-06-01T00:00:00.000Z'),
             currentPeriodEnd: new Date('2025-06-01T00:00:00.000Z')
         });
-        const offersAPI = createOffersAPI({duration: 'repeating', duration_in_months: 1});
+        const offersAPI = createOffersAPI(createOffer({duration: 'repeating', duration_in_months: 1}));
 
         const result = await hasActiveOffer(model, offersAPI);
 
         assert.equal(result, false);
+    });
+
+    it('returns true for a synced once offer before the current billing date', async function () {
+        const model = createSubscriptionModel({
+            offerId: 'offer_123',
+            discountStart: new Date('2025-05-01T00:00:00.000Z'),
+            discountEnd: null,
+            currentPeriodEnd: new Date('2025-06-01T00:00:00.000Z')
+        });
+        const offersAPI = createOffersAPI(createOffer({duration: 'once'}));
+
+        const result = await hasActiveOffer(model, offersAPI);
+
+        assert.equal(result, true);
     });
 
     it('returns true for a legacy forever offer', async function () {
@@ -129,7 +152,7 @@ describe('hasActiveOffer', function () {
             offerId: 'offer_123',
             startDate: new Date('2025-01-01T00:00:00.000Z')
         });
-        const offersAPI = createOffersAPI({duration: 'forever'});
+        const offersAPI = createOffersAPI(createOffer({duration: 'forever'}));
 
         const result = await hasActiveOffer(model, offersAPI);
 
@@ -138,7 +161,7 @@ describe('hasActiveOffer', function () {
 
     it('returns false for a legacy once offer', async function () {
         const model = createSubscriptionModel({offerId: 'offer_123'});
-        const offersAPI = createOffersAPI({duration: 'once'});
+        const offersAPI = createOffersAPI(createOffer({duration: 'once'}));
 
         const result = await hasActiveOffer(model, offersAPI);
 
@@ -151,7 +174,7 @@ describe('hasActiveOffer', function () {
             startDate: new Date('2025-04-01T00:00:00.000Z'),
             currentPeriodEnd: new Date('2025-06-01T00:00:00.000Z')
         });
-        const offersAPI = createOffersAPI({duration: 'repeating', duration_in_months: 3});
+        const offersAPI = createOffersAPI(createOffer({duration: 'repeating', duration_in_months: 3}));
 
         const result = await hasActiveOffer(model, offersAPI);
 
@@ -164,7 +187,20 @@ describe('hasActiveOffer', function () {
             startDate: new Date('2025-01-01T00:00:00.000Z'),
             currentPeriodEnd: new Date('2025-06-01T00:00:00.000Z')
         });
-        const offersAPI = createOffersAPI({duration: 'repeating', duration_in_months: 3});
+        const offersAPI = createOffersAPI(createOffer({duration: 'repeating', duration_in_months: 3}));
+
+        const result = await hasActiveOffer(model, offersAPI);
+
+        assert.equal(result, false);
+    });
+
+    it('returns false for retention offers without discount dates (no legacy support)', async function () {
+        const model = createSubscriptionModel({
+            offerId: 'offer_123',
+            startDate: new Date('2025-04-01T00:00:00.000Z'),
+            currentPeriodEnd: new Date('2025-06-01T00:00:00.000Z')
+        });
+        const offersAPI = createOffersAPI(createOffer({duration: 'repeating', duration_in_months: 3, redemption_type: 'retention'}));
 
         const result = await hasActiveOffer(model, offersAPI);
 

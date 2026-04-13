@@ -1,4 +1,4 @@
-const cleanBasicHtml = require('@tryghost/kg-clean-basic-html');
+const {cleanBasicHtml} = require('@tryghost/kg-clean-basic-html');
 
 function buildCleanBasicHtmlForElement(domNode) {
     return function _cleanBasicHtml(html, additionalOptions = {}) {

@@ -1,4 +1,5 @@
 import React from 'react';
+import Interpolate from '@doist/react-interpolate';
 import Frame from './frame';
 import AppContext from '../app-context';
 import NotificationStyle from './notification.styles';
@@ -26,9 +27,25 @@ const Styles = () => {
     };
 };
 
-const NotificationText = ({type, status, context}) => {
+const NotificationText = ({type, status, message, context}) => {
     const signinPortalLink = getPortalLink({page: 'signin', siteUrl: context.site.url});
     const singupPortalLink = getPortalLink({page: 'signup', siteUrl: context.site.url});
+
+    if (message) {
+        if (typeof message === 'object') {
+            return (
+                <p>
+                    {message.title ? <strong>{message.title}</strong> : null}
+                    {message.title && message.subtitle ? <br /> : null}
+                    {message.subtitle || null}
+                </p>
+            );
+        }
+
+        return (
+            <p>{message}</p>
+        );
+    }
 
     if (type === 'signin' && status === 'success' && context.member) {
         const firstname = context.member.firstname || '';
@@ -46,13 +63,23 @@ const NotificationText = ({type, status, context}) => {
     } else if (type === 'signup' && status === 'success') {
         return (
             <p>
-                {t('You\'ve successfully subscribed to')} <br /><strong>{context.site.title}</strong>
+                <Interpolate
+                    mapping={{
+                        strong: <strong />
+                    }}
+                    string={t('You\'ve successfully subscribed to <strong>{siteTitle}</strong>', {siteTitle: context.site.title})}
+                />
             </p>
         );
     } else if (type === 'signup-paid' && status === 'success') {
         return (
             <p>
-                {t('You\'ve successfully subscribed to')} <br /><strong>{context.site.title}</strong>
+                <Interpolate
+                    mapping={{
+                        strong: <strong />
+                    }}
+                    string={t('You\'ve successfully subscribed to <strong>{siteTitle}</strong>', {siteTitle: context.site.title})}
+                />
             </p>
         );
     } else if (type === 'updateEmail' && status === 'success') {
@@ -170,7 +197,7 @@ class NotificationContent extends React.Component {
     }
 
     render() {
-        const {type, status} = this.props;
+        const {type, status, message} = this.props;
         const {className = ''} = this.state;
         const statusClass = status ? `  ${status}` : ' neutral';
         const slideClass = className ? ` ${className}` : '';
@@ -178,7 +205,7 @@ class NotificationContent extends React.Component {
             <div className='gh-portal-notification-wrapper'>
                 <div className={`gh-portal-notification${statusClass}${slideClass}`} onAnimationEnd={e => this.onAnimationEnd(e)}>
                     {(status === 'error' ? <WarningIcon className='gh-portal-notification-icon error' alt=''/> : <CheckmarkIcon className='gh-portal-notification-icon success' alt=''/>)}
-                    <NotificationText type={type} status={status} context={this.context} />
+                    <NotificationText type={type} status={status} message={message} context={this.context} />
                     <CloseIcon className='gh-portal-notification-closeicon' alt='Close' onClick={e => this.onNotificationClose(e)} />
                 </div>
             </div>
@@ -196,15 +223,20 @@ export default class Notification extends React.Component {
             active: true,
             type,
             status,
+            message: '',
             autoHide,
             duration,
-            className: ''
+            className: '',
+            source: type && status ? 'url' : null,
+            notificationCount: null
         };
     }
 
     componentDidMount() {
         const {showPopup} = this.context;
-        if (showPopup) {
+        if (this.context.notification) {
+            this.showNotification(this.context.notification, 'state');
+        } else if (showPopup) {
             // Don't show a notification if there is a popup visible on page load
             this.setState({
                 active: false
@@ -212,18 +244,49 @@ export default class Notification extends React.Component {
         }
     }
 
-    onHideNotification() {
-        const type = this.state.type;
-        const deleteParams = [];
-        if (['signin', 'signup'].includes(type)) {
-            deleteParams.push('action', 'success');
-        } else if (['stripe:checkout'].includes(type)) {
-            deleteParams.push('stripe');
+    componentDidUpdate() {
+        const {notification} = this.context;
+
+        if (notification && notification.count !== this.state.notificationCount) {
+            this.showNotification(notification, 'state');
         }
-        clearURLParams(deleteParams);
-        this.context.doAction('refreshMemberData');
+    }
+
+    showNotification(notification, source) {
+        clearTimeout(this.timeoutId);
+
         this.setState({
-            active: false
+            active: true,
+            className: '',
+            type: notification.type,
+            status: notification.status,
+            message: notification.message || '',
+            autoHide: notification.autoHide,
+            duration: notification.duration,
+            source,
+            notificationCount: notification.count || 0
+        });
+    }
+
+    onHideNotification() {
+        const {type, source} = this.state;
+
+        if (source === 'url') {
+            const deleteParams = [];
+            if (['signin', 'signup'].includes(type)) {
+                deleteParams.push('action', 'success');
+            } else if (['stripe:checkout'].includes(type)) {
+                deleteParams.push('stripe');
+            }
+            clearURLParams(deleteParams);
+            this.context.doAction('refreshMemberData');
+        } else if (source === 'state') {
+            this.context.doAction('closeNotification');
+        }
+
+        this.setState({
+            active: false,
+            source: null
         });
     }
 
@@ -245,11 +308,11 @@ export default class Notification extends React.Component {
         if (!this.state.active) {
             return null;
         }
-        const {type, status, autoHide, duration} = this.state;
+        const {type, status, message, autoHide, duration, notificationCount} = this.state;
         if (type && status) {
             return (
                 <Frame style={frameStyle} title="portal-notification" head={this.renderFrameStyles()} className='gh-portal-notification-iframe' data-testid="portal-notification-frame" >
-                    <NotificationContent {...{type, status, autoHide, duration}} onHideNotification={e => this.onHideNotification(e)} />
+                    <NotificationContent key={notificationCount} {...{type, status, message, autoHide, duration}} onHideNotification={e => this.onHideNotification(e)} />
                 </Frame>
             );
         }

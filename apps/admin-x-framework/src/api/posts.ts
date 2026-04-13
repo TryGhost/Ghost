@@ -1,4 +1,5 @@
-import {Meta, createQuery, createQueryWithId, createMutation} from '../utils/api/hooks';
+import {InfiniteData} from '@tanstack/react-query';
+import {Meta, createInfiniteQuery, createQuery, createQueryWithId, createMutation} from '../utils/api/hooks';
 
 export type Email = {
     opened_count: number;
@@ -41,6 +42,32 @@ const dataType = 'PostsResponseType';
 export const useBrowsePosts = createQuery<PostsResponseType>({
     dataType,
     path: '/posts/'
+});
+
+export const useBrowsePostsInfinite = createInfiniteQuery<PostsResponseType & {isEnd: boolean}>({
+    dataType,
+    path: '/posts/',
+    defaultNextPageParams: (lastPage, otherParams) => {
+        if (!lastPage.meta?.pagination.next) {
+            return undefined;
+        }
+
+        return {
+            ...otherParams,
+            page: lastPage.meta.pagination.next.toString()
+        };
+    },
+    returnData: (originalData) => {
+        const {pages} = originalData as InfiniteData<PostsResponseType>;
+        const posts = pages.flatMap(page => page.posts);
+        const meta = pages[pages.length - 1].meta;
+
+        return {
+            posts,
+            meta,
+            isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
+        };
+    }
 });
 
 export const getPost = createQueryWithId<PostsResponseType>({

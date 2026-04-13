@@ -1,21 +1,18 @@
 import NiceModal from '@ebay/nice-modal-react';
-import React from 'react';
+import React, {useEffect, useRef} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import WelcomeEmailCustomizeModal from './member-emails/welcome-email-customize-modal';
 import WelcomeEmailModal from './member-emails/welcome-email-modal';
 import useFeatureFlag from '../../../hooks/use-feature-flag';
-import {Button, Icon, Table, TableRow, Toggle, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import useQueryParams from '../../../hooks/use-query-params';
+import {APIError} from '@tryghost/admin-x-framework/errors';
+import {Button, ConfirmationModal, Icon, Table, TableRow, Toggle, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {WELCOME_EMAIL_SLUGS, type WelcomeEmailType, getDefaultWelcomeEmailRecord, getDefaultWelcomeEmailValues} from './member-emails/default-welcome-email-values';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
+import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail, useVerifyAutomatedEmailSender} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
-
-// Default welcome email content in Lexical JSON format
-// Uses __GHOST_URL__ placeholder which Ghost replaces with the actual site URL
-const DEFAULT_FREE_LEXICAL_CONTENT = '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Welcome! Thanks for subscribing — it\'s great to have you here.","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"You\'ll now receive new posts straight to your inbox. You can also log in any time to read the ","type":"extended-text","version":1},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"full archive","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":"noreferrer","target":null,"title":null,"url":"__GHOST_URL__/"},{"detail":0,"format":0,"mode":"normal","style":"","text":" or catch up on new posts as they go live.","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"A little housekeeping: If this email landed in spam or promotions, try moving it to your primary inbox and adding this address to your contacts. Small signals like that help your inbox recognize that these messages matter to you.","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Have questions or just want to say hi? Feel free to reply directly to this email or any newsletter in the future.","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}';
-
-const DEFAULT_PAID_LEXICAL_CONTENT = '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Welcome, and thank you for your support — it means a lot.","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"As a paid member, you now have full access to everything: the complete archive, and any paid-only content going forward. New posts will land straight to your inbox, and you can log in any time to ","type":"extended-text","version":1},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"catch up","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":"noreferrer","target":null,"title":null,"url":"__GHOST_URL__/"},{"detail":0,"format":0,"mode":"normal","style":"","text":" on anything you\'ve missed.","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"A little housekeeping: If this email landed in spam or promotions, try moving it to your primary inbox and adding this address to your contacts. Small signals like that help your inbox recognize that these messages matter to you.","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Have questions or just want to say hi? Feel free to reply directly to this email or any newsletter in the future.","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}';
 
 const EmailPreviewRow: React.FC<{
     automatedEmail: AutomatedEmail,
@@ -58,7 +55,7 @@ const EmailPreviewRow: React.FC<{
         >
             <div className='w-full'>
                 <button
-                    className='flex w-full min-w-0 items-center gap-3 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green focus-visible:ring-offset-2 dark:focus-visible:ring-offset-black'
+                    className='flex w-full min-w-0 items-center gap-3 py-3 text-left focus-visible:ring-2 focus-visible:ring-green focus-visible:ring-offset-2 focus-visible:outline-none dark:focus-visible:ring-offset-black'
                     data-testid={`${emailType}-welcome-email-preview`}
                     type='button'
                     onClick={onEdit}
@@ -67,7 +64,7 @@ const EmailPreviewRow: React.FC<{
                         <Icon colorClass='text-grey-700 dark:text-grey-600' name={icon} size='md' />
                     </div>
                     <div className='min-w-0 grow'>
-                        <div className='font-medium leading-tight' data-testid={`${emailType}-welcome-email-title`}>{title}</div>
+                        <div className='leading-tight font-medium' data-testid={`${emailType}-welcome-email-title`}>{title}</div>
                         <div className='mt-1 text-xs leading-[1.35] text-grey-700 dark:text-grey-600'>
                             {automatedEmail.subject}
                         </div>
@@ -139,53 +136,96 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const hasDesignCustomization = useFeatureFlag('welcomeEmailsDesignCustomization');
     const {settings, config} = useGlobalData();
     const [siteTitle] = getSettingValues<string>(settings, ['title']);
+    const verifyEmailToken = useQueryParams().getParam('verifyEmail');
 
     const {data: automatedEmailsData, isLoading} = useBrowseAutomatedEmails();
     const {mutateAsync: addAutomatedEmail, isLoading: isAddingAutomatedEmail} = useAddAutomatedEmail();
     const {mutateAsync: editAutomatedEmail, isLoading: isEditingAutomatedEmail} = useEditAutomatedEmail();
+    const {mutateAsync: verifySenderUpdate} = useVerifyAutomatedEmailSender();
     const handleError = useHandleError();
 
     const automatedEmails = automatedEmailsData?.automated_emails || [];
     const isMutating = isAddingAutomatedEmail || isEditingAutomatedEmail;
     const isBusy = isLoading || isMutating;
 
-    const freeWelcomeEmail = automatedEmails.find(email => email.slug === 'member-welcome-email-free');
-    const paidWelcomeEmail = automatedEmails.find(email => email.slug === 'member-welcome-email-paid');
+    const freeWelcomeEmail = automatedEmails.find(email => email.slug === WELCOME_EMAIL_SLUGS.free);
+    const paidWelcomeEmail = automatedEmails.find(email => email.slug === WELCOME_EMAIL_SLUGS.paid);
 
     const freeWelcomeEmailEnabled = freeWelcomeEmail?.status === 'active';
     const paidWelcomeEmailEnabled = paidWelcomeEmail?.status === 'active';
 
-    // Helper to get default values for an email type
-    const getDefaultEmailValues = (emailType: 'free' | 'paid') => ({
-        name: emailType === 'free' ? 'Welcome Email (Free)' : 'Welcome Email (Paid)',
-        slug: `member-welcome-email-${emailType}`,
-        subject: emailType === 'free'
-            ? `Welcome to ${siteTitle || 'our site'}`
-            : 'Welcome to your paid subscription',
-        lexical: emailType === 'free' ? DEFAULT_FREE_LEXICAL_CONTENT : DEFAULT_PAID_LEXICAL_CONTENT
-    });
-
-    // Create default email objects for display when no DB row exists
-    const getDefaultEmail = (emailType: 'free' | 'paid'): AutomatedEmail => ({
-        id: '',
-        status: 'inactive',
-        ...getDefaultEmailValues(emailType),
-        sender_name: null,
-        sender_email: null,
-        sender_reply_to: null,
-        created_at: '',
-        updated_at: null
-    });
-
     // Create a new automated email row with the given status
-    const createAutomatedEmail = async (emailType: 'free' | 'paid', status: 'active' | 'inactive') => {
-        const defaults = getDefaultEmailValues(emailType);
+    const createAutomatedEmail = async (emailType: WelcomeEmailType, status: 'active' | 'inactive') => {
+        const defaults = getDefaultWelcomeEmailValues(emailType, siteTitle);
         return addAutomatedEmail({...defaults, status});
     };
 
+    const submittedTokenRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        if (!verifyEmailToken || !window.location.href.includes('memberemails')) {
+            return;
+        }
+
+        if (submittedTokenRef.current === verifyEmailToken) {
+            return;
+        }
+        submittedTokenRef.current = verifyEmailToken;
+
+        const clearVerifyEmailFromRoute = () => {
+            const hash = window.location.hash.slice(1);
+            const url = new URL(hash || '/memberemails', window.location.origin);
+            url.searchParams.delete('verifyEmail');
+
+            const nextHash = url.search ? `#${url.pathname}${url.search}` : `#${url.pathname}`;
+            window.history.replaceState(null, '', `${window.location.pathname}${nextHash}`);
+        };
+
+        const verify = async () => {
+            try {
+                const {meta: {email_verified: emailVerified} = {}} = await verifySenderUpdate({token: verifyEmailToken});
+                clearVerifyEmailFromRoute();
+
+                let title = 'Sender email verified';
+                let prompt = <>Welcome email sender settings have been updated.</>;
+
+                if (emailVerified === 'sender_reply_to') {
+                    title = 'Reply-to address verified';
+                    prompt = <>Welcome email reply-to address has been verified and updated.</>;
+                }
+
+                NiceModal.show(ConfirmationModal, {
+                    title,
+                    prompt,
+                    okLabel: 'Close',
+                    cancelLabel: '',
+                    onOk: confirmModal => confirmModal?.remove()
+                });
+            } catch (e) {
+                let prompt = 'There was an error verifying your email address. Try again later.';
+
+                if (e instanceof APIError && e.message === 'Token expired') {
+                    prompt = 'Verification link has expired.';
+                }
+
+                clearVerifyEmailFromRoute();
+
+                NiceModal.show(ConfirmationModal, {
+                    title: 'Error verifying email address',
+                    prompt,
+                    okLabel: 'Close',
+                    cancelLabel: '',
+                    onOk: confirmModal => confirmModal?.remove()
+                });
+                handleError(e, {withToast: false});
+            }
+        };
+
+        verify();
+    }, [handleError, verifyEmailToken, verifySenderUpdate]);
+
     const handleToggle = async (emailType: 'free' | 'paid') => {
-        const slug = `member-welcome-email-${emailType}`;
-        const existing = automatedEmails.find(email => email.slug === slug);
+        const existing = automatedEmails.find(email => email.slug === WELCOME_EMAIL_SLUGS[emailType]);
         const label = emailType === 'free' ? 'Free members' : 'Paid members';
 
         if (isBusy) {
@@ -210,8 +250,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     // Handle Edit button click - creates inactive row if needed, then opens modal
     const handleEditClick = async (emailType: 'free' | 'paid') => {
-        const slug = `member-welcome-email-${emailType}`;
-        const existing = automatedEmails.find(email => email.slug === slug);
+        const existing = automatedEmails.find(email => email.slug === WELCOME_EMAIL_SLUGS[emailType]);
 
         if (isBusy) {
             return;
@@ -233,8 +272,8 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     // Get email to display (existing or default for preview)
-    const freeEmailForDisplay = freeWelcomeEmail || getDefaultEmail('free');
-    const paidEmailForDisplay = paidWelcomeEmail || getDefaultEmail('paid');
+    const freeEmailForDisplay = freeWelcomeEmail || getDefaultWelcomeEmailRecord('free', siteTitle);
+    const paidEmailForDisplay = paidWelcomeEmail || getDefaultWelcomeEmailRecord('paid', siteTitle);
     const customizeButton = hasDesignCustomization ? (
         <Button
             className='mt-[-5px]'

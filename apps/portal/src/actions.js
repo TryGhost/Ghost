@@ -1,6 +1,6 @@
 import setupGhostApi from './utils/api';
 import {chooseBestErrorMessage} from './utils/errors';
-import {createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
+import {createNotification, createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
 import {t} from './utils/i18n';
 
 function switchPage({data, state}) {
@@ -49,16 +49,35 @@ function closePopup({state}) {
     };
 }
 
-function openNotification({data}) {
+function openNotification({data, state}) {
+    const {
+        action = 'openNotification',
+        status = 'success',
+        autoHide = true,
+        closeable = true,
+        duration = 2600,
+        message = ''
+    } = data || {};
+
+    const notification = createNotification({
+        type: action,
+        status,
+        autoHide,
+        closeable,
+        duration,
+        state,
+        message
+    });
+
     return {
-        showNotification: true,
-        ...data
+        notification,
+        notificationSequence: notification.count
     };
 }
 
 function closeNotification() {
     return {
-        showNotification: false
+        notification: null
     };
 }
 
@@ -217,6 +236,24 @@ async function checkoutPlan({data, state, api}) {
             action: 'checkoutPlan:failed',
             popupNotification: createPopupNotification({
                 type: 'checkoutPlan:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: t('Failed to process checkout, please try again')
+            })
+        };
+    }
+}
+
+async function checkoutGift({data, state, api}) {
+    try {
+        const {tierId, cadence, email} = data;
+        await api.member.checkoutGift({tierId, cadence, email});
+        return {
+            action: 'checkoutGift:success'
+        };
+    } catch (e) {
+        return {
+            action: 'checkoutGift:failed',
+            popupNotification: createPopupNotification({
+                type: 'checkoutGift:failed', autoHide: false, closeable: true, state, status: 'error',
                 message: t('Failed to process checkout, please try again')
             })
         };
@@ -678,6 +715,7 @@ const Actions = {
     editBilling,
     manageBilling,
     checkoutPlan,
+    checkoutGift,
     updateNewsletterPreference,
     showPopupNotification,
     removeEmailFromSuppressionList,

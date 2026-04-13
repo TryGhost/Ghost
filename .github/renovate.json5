@@ -2,16 +2,50 @@
     "extends": [
         "github>tryghost/renovate-config"
     ],
-    // This reduces PR churn when managing lots of dependencies
-    "rebaseWhen": "never",
+    // Limit concurrent branches to keep Renovate runs within the 30-minute
+    // Mend timeout and avoid overwhelming CI with dozens of queued jobs.
+    // The shared preset disables rate limiting, but Ghost's monorepo is
+    // large enough that unlimited branches cause timeouts during rebasing.
+    "branchConcurrentLimit": 10,
+    // Keep manually-closed immortal/grouped PRs closed unless explicitly
+    // reopened from the Dependency Dashboard.
+    "recreateWhen": "never",
+    // pnpm lockfile generation has been hitting Mend's 3GB memory ceiling.
+    // Renovate maintainers suggested starting with toolSettings.nodeMaxMemory
+    // set to 1024MB to reduce pnpm's Node heap usage and keep the overall job
+    // under the hosted runner limit.
+    "toolSettings": {
+        "nodeMaxMemory": 1024
+    },
     // We have to disable platform based automerge (forcing renovate to do it manually)
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,
     "timezone": "Etc/UTC",
-    "automergeSchedule": [
-        // Allow automerge all weekend: Saturday, Sunday, and Monday morning
+    // Restrict Renovate runs to the automerge windows so branch updates
+    // (rebasing, force-pushes) happen around the same times automerge
+    // can actually complete, not during the working day when CI is busy.
+    // Each block starts one hour earlier than the matching automerge
+    // window so Renovate has time to rebase and open/refresh PRs before
+    // automerge is eligible to run.
+    "schedule": [
+        // Run all weekend
         "* * * * 0,6",
-        "* 0-12 * * 1"
+        // Run on Monday morning (Sun 23:00 is already covered by weekend)
+        "* 0-12 * * 1",
+        // Run on weekday evenings, starting 1 hour earlier than automerge
+        "* 21-23 * * 1-5",
+        // Run on early weekday mornings (previous day 23:00 is already
+        // covered by the evening block above)
+        "* 0-4 * * 2-6"
+    ],
+    "automergeSchedule": [
+        // Allow automerge all weekend
+        "* * * * 0,6",
+        // Allow automerge on Monday morning
+        "* 0-12 * * 1",
+        // Allow automerge overnight on weekday evenings (10pm-4:59am UTC)
+        "* 22-23 * * 1-5",
+        "* 0-4 * * 2-6"
     ],
     "ignoreDeps": [
         // https://github.com/TryGhost/Ghost/commit/2b9e494dfcb95c40f596ccf54ec3151c25d53601
@@ -80,6 +114,73 @@
             ]
         },
 
+        // Split the broad shared TryGhost group into smaller logical lanes so
+        // failures in one area (e.g. email rendering) don't block unrelated
+        // internal package updates from merging.
+        {
+            "groupName": "TryGhost runtime packages",
+            "matchPackageNames": [
+                "@tryghost/adapter-base-cache",
+                "@tryghost/admin-api-schema",
+                "@tryghost/api-framework",
+                "@tryghost/bookshelf-plugins",
+                "@tryghost/database-info",
+                "@tryghost/debug",
+                "@tryghost/domain-events",
+                "@tryghost/errors",
+                "@tryghost/http-cache-utils",
+                "@tryghost/job-manager",
+                "@tryghost/logging",
+                "@tryghost/metrics",
+                "@tryghost/mw-error-handler",
+                "@tryghost/mw-vhost",
+                "@tryghost/pretty-cli",
+                "@tryghost/prometheus-metrics",
+                "@tryghost/promise",
+                "@tryghost/referrer-parser",
+                "@tryghost/root-utils",
+                "@tryghost/security",
+                "@tryghost/social-urls",
+                "@tryghost/tpl",
+                "@tryghost/validator",
+                "@tryghost/version",
+                "@tryghost/zip"
+            ]
+        },
+        {
+            "groupName": "TryGhost admin support packages",
+            "matchPackageNames": [
+                "@tryghost/color-utils",
+                "@tryghost/custom-fonts",
+                "@tryghost/limit-service",
+                "@tryghost/members-csv",
+                "@tryghost/timezone-data"
+            ]
+        },
+        {
+            "groupName": "TryGhost content and email packages",
+            "matchPackageNames": [
+                "@tryghost/config-url-helpers",
+                "@tryghost/content-api",
+                "@tryghost/helpers",
+                "@tryghost/html-to-mobiledoc",
+                "@tryghost/html-to-plaintext",
+                "@tryghost/nodemailer",
+                "@tryghost/parse-email-address",
+                "@tryghost/request",
+                "@tryghost/string",
+                "@tryghost/url-utils"
+            ]
+        },
+        {
+            "groupName": "TryGhost test support packages",
+            "matchPackageNames": [
+                "@tryghost/email-mock-receiver",
+                "@tryghost/express-test",
+                "@tryghost/webhook-mock-receiver"
+            ]
+        },
+
         // Always automerge these packages:
         {
             "matchPackageNames": [
@@ -88,6 +189,24 @@
                 "lucide-react"
             ],
             "automerge": true
+        },
+
+        // Allow internal Docker digest pins to automerge once the relevant
+        // CI checks have gone green.
+        {
+            "description": "Automerge internal Docker digest updates after CI passes",
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchPackageNames": [
+                "ghost/traffic-analytics",
+                "tinybirdco/tinybird-local"
+            ],
+            "matchUpdateTypes": [
+                "digest"
+            ],
+            "automerge": true,
+            "automergeType": "pr"
         },
 
         // Ignore all ember-related packages in admin

@@ -11,6 +11,27 @@ export class MemberWelcomeEmailsSection extends BasePage {
     // Customize button and modal
     readonly customizeButton: Locator;
     readonly customizeModal: Locator;
+    readonly customizeModalSaveButton: Locator;
+    readonly customizeModalCloseButton: Locator;
+    readonly customizeModalUnsavedChangesDialog: Locator;
+    readonly customizeModalGeneralTab: Locator;
+    readonly customizeModalDesignTab: Locator;
+
+    // Customize modal — General tab locators
+    readonly customizeModalHeaderImageUpload: Locator;
+    readonly customizeModalPublicationTitleToggle: Locator;
+    readonly customizeModalFooterTextarea: Locator;
+    readonly customizeModalBadgeToggle: Locator;
+
+    // Customize modal — Design tab locators
+    readonly customizeModalButtonStyleFill: Locator;
+    readonly customizeModalButtonStyleOutline: Locator;
+    readonly customizeModalBodyFontSelect: Locator;
+    readonly customizeModalBodyFontSerifOption: Locator;
+    readonly customizeModalButtonColorField: Locator;
+    readonly customizeModalButtonColorPickerTrigger: Locator;
+    readonly customizeModalButtonColorAccentSwatch: Locator;
+    readonly customizeModalColorPickerPopover: Locator;
 
     // Modal locators
     readonly welcomeEmailModal: Locator;
@@ -31,6 +52,27 @@ export class MemberWelcomeEmailsSection extends BasePage {
         // Customize button and modal
         this.customizeButton = this.section.getByRole('button', {name: 'Customize'});
         this.customizeModal = page.getByTestId('welcome-email-customize-modal');
+        this.customizeModalSaveButton = this.customizeModal.getByRole('button', {name: 'Save'});
+        this.customizeModalCloseButton = this.customizeModal.getByRole('button', {name: 'Close'});
+        this.customizeModalUnsavedChangesDialog = page.getByRole('alertdialog', {name: 'Are you sure you want to leave this page?'});
+        this.customizeModalGeneralTab = this.customizeModal.getByRole('tab', {name: 'General'});
+        this.customizeModalDesignTab = this.customizeModal.getByRole('tab', {name: 'Design'});
+
+        // Customize modal — General tab
+        this.customizeModalPublicationTitleToggle = this.customizeModal.getByText('Publication title').locator('..').getByRole('switch');
+        this.customizeModalFooterTextarea = this.customizeModal.getByLabel('Email footer');
+        this.customizeModalHeaderImageUpload = this.customizeModal.getByTestId('header-image-field');
+        this.customizeModalBadgeToggle = this.customizeModal.getByText('Promote independent publishing').locator('../..').getByRole('switch');
+
+        // Customize modal — Design tab
+        this.customizeModalButtonStyleFill = this.customizeModal.getByLabel('Fill');
+        this.customizeModalButtonStyleOutline = this.customizeModal.getByLabel('Outline');
+        this.customizeModalBodyFontSelect = this.customizeModal.getByText('Body font').locator('..').getByRole('combobox');
+        this.customizeModalBodyFontSerifOption = page.getByRole('option', {name: 'Elegant serif', exact: true});
+        this.customizeModalButtonColorField = this.customizeModal.getByText('Button color').locator('..');
+        this.customizeModalButtonColorPickerTrigger = this.customizeModalButtonColorField.getByRole('button', {name: 'Pick color'});
+        this.customizeModalButtonColorAccentSwatch = this.customizeModal.getByRole('button', {name: 'Accent'});
+        this.customizeModalColorPickerPopover = page.locator('[data-radix-popper-content-wrapper]');
 
         // Modal locators
         this.welcomeEmailModal = page.getByTestId('welcome-email-modal');
@@ -120,5 +162,44 @@ export class MemberWelcomeEmailsSection extends BasePage {
         await editButton.click();
         await this.welcomeEmailModal.waitFor({state: 'visible'});
         await this.waitForWelcomeEmailEditor();
+    }
+
+    async openCustomizeModal(): Promise<void> {
+        await this.customizeButton.waitFor({state: 'visible'});
+        await this.customizeButton.click();
+        await this.customizeModal.waitFor({state: 'visible'});
+        await this.waitForCustomizeModalLoaded();
+    }
+
+    private async waitForCustomizeModalLoaded(): Promise<void> {
+        await this.customizeModalPublicationTitleToggle.waitFor({state: 'visible'});
+    }
+
+    async saveCustomizeModal(): Promise<void> {
+        const saveResponse = this.page.waitForResponse(
+            resp => resp.url().includes('/automated_emails/design') && resp.request().method() === 'PUT'
+        );
+        await this.customizeModalSaveButton.click();
+        await saveResponse;
+        await this.customizeModal.waitFor({state: 'visible'});
+        await this.customizeModalSaveButton.waitFor({state: 'visible'});
+    }
+
+    async closeCustomizeModal(): Promise<void> {
+        await this.customizeModalCloseButton.click();
+        await this.customizeModal.waitFor({state: 'hidden'});
+    }
+
+    async switchToDesignTab(): Promise<void> {
+        await this.customizeModalDesignTab.click();
+    }
+
+    async switchToGeneralTab(): Promise<void> {
+        await this.customizeModalGeneralTab.click();
+    }
+
+    async chooseBodyFont(optionName: 'Elegant serif' | 'Clean sans-serif'): Promise<void> {
+        await this.customizeModalBodyFontSelect.click();
+        await this.page.getByRole('option', {name: optionName, exact: true}).click();
     }
 }

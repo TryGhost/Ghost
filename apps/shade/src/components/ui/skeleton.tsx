@@ -29,7 +29,7 @@ function Skeleton({
                 const randomWidth = minWidth + (randomStep * 5);
                 widths.push(`${randomWidth}%`);
             }
-            uniqueKeys.push(`skeleton-${crypto.randomUUID()}`);
+            uniqueKeys.push(`skeleton-${i}`);
         }
 
         return {

@@ -5,10 +5,13 @@ import PostAnalyticsContent from '../components/post-analytics-content';
 import PostAnalyticsHeader from '../components/post-analytics-header';
 import Sources from './components/sources';
 import StatsFilter from '../components/stats-filter';
-import {BarChartLoadingIndicator, Card, CardContent, EmptyIndicator, LucideIcon, NavbarActions, createFilter, formatQueryDate, getRangeDates, getRangeForStartDate} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Card, CardContent, EmptyIndicator, NavbarActions} from '@tryghost/shade/components';
 import {BaseSourceData, useNavigate, useParams, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {STATS_RANGES, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
+import {createFilter} from '@tryghost/shade/patterns';
+import {formatQueryDate, getRangeDates, getRangeForStartDate} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/audience';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useCallback, useEffect, useMemo} from 'react';
@@ -213,7 +216,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
                     <DateRangeSelect />
                 </NavbarActions>
                 }
-                <NavbarActions className={`${hasFilters ? 'mt-0! lg:mt-[25px]! [grid-area:subactions]' : '[grid-area:actions]'}`}>
+                <NavbarActions className={`${hasFilters ? 'mt-0! [grid-area:subactions] lg:mt-[25px]!' : '[grid-area:actions]'}`}>
                     <StatsFilter
                         filters={analyticsFilters}
                         onChange={setAnalyticsFilters}

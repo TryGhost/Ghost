@@ -83,8 +83,8 @@ export class GhostManager {
         const gatewayName = `ghost-e2e-gateway-${this.config.workerIndex}`;
 
         // Try to reuse existing containers (handles process restarts after test failures)
-        this.ghostContainer = await this.getOrCreateContainer(ghostName, () => this.createGhostContainer(ghostName, database));
         this.gatewayContainer = await this.getOrCreateContainer(gatewayName, () => this.createGatewayContainer(gatewayName, ghostName));
+        this.ghostContainer = await this.getOrCreateContainer(ghostName, () => this.createGhostContainer(ghostName, database));
 
         debug(`Worker ${this.config.workerIndex} containers ready`);
     }
@@ -101,10 +101,13 @@ export class GhostManager {
         } catch {
             throw new Error(
                 `Build image not found: ${BUILD_IMAGE}\n\n` +
+                `You are running in "build" mode, which requires a pre-built Docker image.\n` +
+                `For local development, "dev" mode is recommended instead.\n\n` +
                 `To fix this, either:\n` +
-                `  1. Build locally: yarn workspace @tryghost/e2e build:docker (with GHOST_E2E_BASE_IMAGE set)\n` +
-                `  2. Pull from registry: docker pull ${BUILD_IMAGE}\n` +
-                `  3. Use a different image: GHOST_E2E_MODE=build GHOST_E2E_IMAGE=<image> yarn workspace @tryghost/e2e test`
+                `  1. (Recommended) Run "pnpm dev" first, then re-run tests — dev mode is auto-detected and doesn't need this image\n` +
+                `  2. Build locally: pnpm --filter @tryghost/e2e build:docker (with GHOST_E2E_BASE_IMAGE set)\n` +
+                `  3. Pull from registry: docker pull ${BUILD_IMAGE}\n` +
+                `  4. Use a different image: GHOST_E2E_MODE=build GHOST_E2E_IMAGE=<image> pnpm --filter @tryghost/e2e test`
             );
         }
 
@@ -117,7 +120,7 @@ export class GhostManager {
                 `Build gateway image not found: ${BUILD_GATEWAY_IMAGE}\n\n` +
                 `To fix this, either:\n` +
                 `  1. Pull gateway image: docker pull ${BUILD_GATEWAY_IMAGE}\n` +
-                `  2. Use a different gateway image: GHOST_E2E_MODE=build GHOST_E2E_GATEWAY_IMAGE=<image> yarn workspace @tryghost/e2e test`
+                `  2. Use a different gateway image: GHOST_E2E_MODE=build GHOST_E2E_GATEWAY_IMAGE=<image> pnpm --filter @tryghost/e2e test`
             );
         }
     }
@@ -201,7 +204,10 @@ export class GhostManager {
         await this.waitForHealthy(this.ghostContainer, timeoutMs);
     }
 
-    private async buildEnv(database: string = 'ghost_testing', extraConfig?: GhostEnvOverrides): Promise<string[]> {
+    private async buildEnvWithSchedulerUrl(
+        database: string = 'ghost_testing',
+        extraConfig?: GhostEnvOverrides
+    ): Promise<string[]> {
         const env = [
             ...BASE_GHOST_ENV,
             `database__connection__database=${database}`,
@@ -282,7 +288,7 @@ export class GhostManager {
         const config: ContainerCreateOptions = {
             name,
             Image: image,
-            Env: await this.buildEnv(database, extraConfig),
+            Env: await this.buildEnvWithSchedulerUrl(database, extraConfig),
             ExposedPorts: {[`${TEST_ENVIRONMENT.ghost.port}/tcp`]: {}},
             Healthcheck: {
                 // Same health check as compose.dev.yaml - Ghost is ready when it responds

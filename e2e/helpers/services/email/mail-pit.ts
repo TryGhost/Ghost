@@ -27,7 +27,7 @@ export interface EmailMessageSearchResult {
 }
 
 export type EmailSearchOptions = {
-    limit?: number, timeoutMs?: number, numberOfMessages?: number
+    limit?: number, timeoutMs?: number | null, numberOfMessages?: number
 }
 
 export interface EmailSearchQuery {
@@ -136,9 +136,9 @@ export class MailPit implements EmailClient{
         throw new Error(`Timeout after ${timeoutMs}ms waiting for search results`);
     }
 
-    private async delay(miliSeconds: number) {
+    private async delay(milliseconds: number) {
         await new Promise<void>((resolve) => {
-            setTimeout(resolve, miliSeconds);
+            setTimeout(resolve, milliseconds);
         });
     }
 

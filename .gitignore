@@ -59,8 +59,8 @@ typings/
 # Output of 'npm pack'
 *.tgz
 
-# Yarn Integrity file
-.yarn-integrity
+# pnpm store
+.pnpm-store
 
 # dotenv environment variables file
 .env
@@ -108,7 +108,7 @@ typings/
 /ghost/core/LICENSE
 /ghost/core/PRIVACY.md
 /ghost/core/README.md
-/ghost/core/yarn.lock
+/ghost/core/pnpm-lock.yaml
 
 # Test generated files
 test/functional/*.png
@@ -123,6 +123,7 @@ test/functional/*.png
 /ghost/core/core/frontend/public/comment-counts.min.js
 /ghost/core/core/frontend/public/member-attribution.min.js
 /ghost/core/core/frontend/public/ghost-stats.min.js
+/ghost/core/core/frontend/public/private.min.js
 # Caddyfile - for local development with ssl + caddy
 Caddyfile
 !docker/caddy/Caddyfile
@@ -180,10 +181,8 @@ tsconfig.tsbuildinfo
 .diff_tmp
 temp*.sql
 
-# Docker Yarn Cache
-.yarncache
-.yarncachecopy
-.yarnhash
+# Docker pnpm Cache
+.pnpmhash
 
 # yalc — for linking local packages in a docker compatible way
 yalc.lock

@@ -339,7 +339,7 @@ describe('PaidAccountActions', () => {
         test('displays discounted price with "Ends {date}" for once offers', () => {
             const products = getProductsData({numOfProducts: 1});
             const site = getSiteData({products, portalProducts: products.map(p => p.id)});
-            const currentPeriodEnd = new Date('2099-03-01T12:00:00.000Z');
+            const discountEnd = new Date('2099-03-01T12:00:00.000Z');
 
             const member = getMemberData({
                 paid: true,
@@ -354,8 +354,6 @@ describe('PaidAccountActions', () => {
                             amount: 20,
                             duration: 'once'
                         },
-                        currentPeriodEnd: currentPeriodEnd.toISOString(),
-
                         nextPayment: getNextPaymentData({
                             originalAmount: 500,
                             amount: 400,
@@ -365,7 +363,7 @@ describe('PaidAccountActions', () => {
                                 duration: 'once',
                                 type: 'percent',
                                 amount: 20,
-                                end: null
+                                end: discountEnd.toISOString()
                             })
                         })
                     })
@@ -378,7 +376,7 @@ describe('PaidAccountActions', () => {
             expect(queryByText('$5.00/month')).toBeInTheDocument();
             // Should have the offer label
             expect(queryByTestId('offer-label')).toBeInTheDocument();
-            // Should show the discounted price with end date from current period end
+            // Should show the discounted price with end date from next_payment.discount.end
             expect(queryByText('$4.00/month — Ends 1 Mar 2099')).toBeInTheDocument();
         });
 

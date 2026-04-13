@@ -1,4 +1,4 @@
-import {formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {useMemo} from 'react';
 import {useTopPostsStats} from '@tryghost/admin-x-framework/api/stats';
 

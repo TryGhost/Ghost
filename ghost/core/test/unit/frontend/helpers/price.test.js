@@ -102,6 +102,11 @@ describe('{{price}} helper', function () {
         assert.equal(rendered, '€5');
     });
 
+    it('will format with short number format preserving trailing zero', function () {
+        const rendered = price.call({}, 3540, {hash: {currency: 'USD', numberFormat: 'short'}});
+        assert.equal(rendered, '$35.40');
+    });
+
     it('will format with name currency format', function () {
         const rendered = price.call({}, 500, {hash: {currency: 'USD', currencyFormat: 'name'}});
         assert.equal(rendered, '5 US dollars');

@@ -4,7 +4,6 @@ import {authenticateSession} from 'ember-simple-auth/test-support';
 import {blur, click, currentURL, fillIn, find, findAll, focus} from '@ember/test-helpers';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../../helpers/mock-analytics-apps';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
-import {enableLabsFlag} from '../../helpers/labs-flag';
 import {enableNewsletters} from '../../helpers/newsletters';
 import {enablePaidMembers} from '../../helpers/members';
 import {enableStripe} from '../../helpers/stripe';
@@ -221,7 +220,6 @@ describe('Acceptance: Members filtering', function () {
 
         it('shows synthetic retention options instead of individual retention offers', async function () {
             const tier = this.server.create('tier');
-            enableLabsFlag(this.server, 'retentionOffers');
 
             this.server.create('offer', {
                 name: 'Welcome offer',
@@ -266,55 +264,8 @@ describe('Acceptance: Members filtering', function () {
             expect(offerOptions).to.not.include('Yearly retention v1');
         });
 
-        it('shows individual retention offers when retention offers feature flag is off', async function () {
-            const tier = this.server.create('tier');
-
-            this.server.create('offer', {
-                name: 'Welcome offer',
-                tier: {id: tier.id},
-                redemptionType: 'signup',
-                cadence: 'month'
-            });
-            this.server.create('offer', {
-                name: 'Monthly retention v1',
-                tier: null,
-                redemptionType: 'retention',
-                cadence: 'month'
-            });
-            this.server.create('offer', {
-                name: 'Monthly retention v2',
-                tier: null,
-                redemptionType: 'retention',
-                cadence: 'month'
-            });
-            this.server.create('offer', {
-                name: 'Yearly retention v1',
-                tier: null,
-                redemptionType: 'retention',
-                cadence: 'year'
-            });
-
-            this.server.createList('member', 2, {status: 'paid', tiers: [tier]});
-
-            await visit('/members');
-            await click('[data-test-button="members-filter-actions"]');
-            const filterSelector = `[data-test-members-filter="0"]`;
-            await fillIn(`${filterSelector} [data-test-select="members-filter"]`, 'offer_redemptions');
-            await click(`${filterSelector} [data-test-token-input]`);
-
-            const offerOptions = findAll(`${filterSelector} [data-test-offers-segment]`).map(node => node.textContent.trim());
-
-            expect(offerOptions).to.include('Welcome offer');
-            expect(offerOptions).to.include('Monthly retention v1');
-            expect(offerOptions).to.include('Monthly retention v2');
-            expect(offerOptions).to.include('Yearly retention v1');
-            expect(offerOptions).to.not.include('Monthly Retention');
-            expect(offerOptions).to.not.include('Yearly Retention');
-        });
-
         it('keeps specific retention offer URL filters without listing that version in dropdown', async function () {
             const tier = this.server.create('tier');
-            enableLabsFlag(this.server, 'retentionOffers');
             const monthlyRetentionV1 = this.server.create('offer', {
                 name: 'Monthly retention v1',
                 tier: null,

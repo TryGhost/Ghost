@@ -13,10 +13,10 @@ const EMPTY_KEYWORDS: string[] = [];
 
 const Page: React.FC<{children: ReactNode}> = ({children}) => {
     return <>
-        <div className='fixed right-0 top-2 z-50 m-8 flex justify-end bg-transparent tablet:fixed tablet:top-0' id="done-button-container">
+        <div className='fixed top-2 right-0 z-50 m-8 flex justify-end bg-transparent tablet:fixed tablet:top-0' id="done-button-container">
             <ExitSettingsButton />
         </div>
-        <div className="fixed left-0 top-0 flex size-full dark:bg-grey-975" id="admin-x-settings-content">
+        <div className="fixed top-0 left-0 flex size-full dark:bg-grey-975" id="admin-x-settings-content">
             {children}
         </div>
     </>;

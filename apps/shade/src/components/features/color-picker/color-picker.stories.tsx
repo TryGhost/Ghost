@@ -1,5 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
-import {fn} from '@storybook/test';
+import {fn} from 'storybook/test';
 import ColorPicker from './color-picker';
 
 import {Popover, PopoverTrigger, PopoverContent} from '@/components/ui/popover';
@@ -24,7 +24,7 @@ function ColorPickerDemo(args: Story['args']) {
         <Popover>
             <PopoverTrigger>
                 <div className="flex items-center gap-2">
-                    <div className="flex-0 aspect-square size-9 rounded-full p-1" style={{background: `conic-gradient(from 0deg, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%), hsl(360, 100%, 50%))`}}>
+                    <div className="aspect-square size-9 flex-0 rounded-full p-1" style={{background: `conic-gradient(from 0deg, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%), hsl(360, 100%, 50%))`}}>
                         <div className="size-full rounded-full border-2 border-white" style={{background: String(value || '#ffffff')}} />
                     </div>
                     <Input className="font-mono" size={8} type="text" value={value} onChange={e => setValue(e.target.value)} />

@@ -35,6 +35,7 @@ class EmailService {
     #verificationTrigger;
     #emailAnalyticsJobs;
     #domainWarmingService;
+    #config;
 
     /**
      *
@@ -51,6 +52,7 @@ class EmailService {
      * @param {VerificationTrigger} dependencies.verificationTrigger
      * @param {object} dependencies.emailAnalyticsJobs
      * @param {DomainWarmingService} dependencies.domainWarmingService
+     * @param {object} [dependencies.config] - Config service for reading host settings
      */
     constructor({
         batchSendingService,
@@ -63,7 +65,8 @@ class EmailService {
         membersRepository,
         verificationTrigger,
         emailAnalyticsJobs,
-        domainWarmingService
+        domainWarmingService,
+        config
     }) {
         this.#batchSendingService = batchSendingService;
         this.#models = models;
@@ -76,6 +79,7 @@ class EmailService {
         this.#verificationTrigger = verificationTrigger;
         this.#emailAnalyticsJobs = emailAnalyticsJobs;
         this.#domainWarmingService = domainWarmingService;
+        this.#config = config;
     }
 
     /**
@@ -95,8 +99,10 @@ class EmailService {
 
         // Check if email verification is required
         if (await this.#verificationTrigger.checkVerificationRequired()) {
+            const customMessage = this.#config?.get('hostSettings:emailVerification:emailSendingDisabledMessage');
             throw new errors.HostLimitError({
-                message: tpl(messages.emailSendingDisabled)
+                message: customMessage || tpl(messages.emailSendingDisabled),
+                code: 'EMAIL_VERIFICATION_NEEDED'
             });
         }
     }

@@ -1,4 +1,4 @@
-const got = require('got');
+const got = require('got').default;
 const validator = require('@tryghost/validator');
 const errors = require('@tryghost/errors');
 const ghostVersion = require('@tryghost/version');
@@ -173,7 +173,9 @@ class SlackNotifications {
         };
 
         if (process.env.NODE_ENV?.startsWith('test')) {
-            requestOptions.retry = 0;
+            requestOptions.retry = {
+                limit: 0
+            };
         }
 
         return await got.post(url, requestOptions);

@@ -199,7 +199,7 @@ describe('NextPaymentCalculator', function () {
             const offer = createOffer({type: 'percent', amount: 50, duration: 'once', redemption_type: 'retention'});
             const subscription = createSubscription({
                 discount_start: new Date('2025-01-01T00:00:00.000Z'),
-                discount_end: null // Once discounts don't have a discount_end (based on Stripe)
+                discount_end: null // Once discounts don't have a discount_end in Stripe
             }, offer);
 
             const result = nextPaymentCalculator.calculate(subscription);
@@ -208,7 +208,7 @@ describe('NextPaymentCalculator', function () {
             assert.equal(result.amount, 250); // 500 - 50% = 250
             assert.equal(result.discount.duration, 'once');
             assert.equal(result.discount.start, '2025-01-01T00:00:00.000Z');
-            assert.equal(result.discount.end, null);
+            assert.equal(result.discount.end, '2025-06-15T00:00:00.000Z'); // In the next payment object, we assign discount.end = current billing period end for once offers
             assert.equal(result.discount.amount, 50);
             assert.equal(result.discount.type, 'percent');
             assert.equal(result.discount.offer_id, 'offer_123');

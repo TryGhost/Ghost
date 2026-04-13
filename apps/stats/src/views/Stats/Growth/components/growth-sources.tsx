@@ -2,7 +2,9 @@ import DisabledSourcesIndicator from '../../components/disabled-sources-indicato
 import React, {useState} from 'react';
 import SortButton from '../../components/sort-button';
 import SourceIcon from '../../components/source-icon';
-import {Button, EmptyIndicator, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Skeleton, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, centsToDollars, formatNumber} from '@tryghost/shade';
+import {Button, EmptyIndicator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Skeleton, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
+import {centsToDollars} from '@tryghost/shade/app';
 import {getFaviconDomain, getSymbol, useAppContext} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/global-data-provider';
@@ -168,7 +170,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
         return (
             <TableBody>
                 <TableRow className='last:border-none'>
-                    <TableCell className='group-hover:bg-transparent! border-none py-12' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                    <TableCell className='border-none py-12 group-hover:bg-transparent!' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
                         <DisabledSourcesIndicator />
                     </TableCell>
                 </TableRow>
@@ -200,7 +202,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
             ) : (
                 <TableBody>
                     <TableRow className='last:border-none'>
-                        <TableCell className='group-hover:bg-transparent! border-none py-12' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                        <TableCell className='border-none py-12 group-hover:bg-transparent!' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
                             <EmptyIndicator
                                 description='Try adjusting your date range to see more data.'
                                 title={`No conversions ${getPeriodText(range)}`}
@@ -212,15 +214,15 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
                 </TableBody>
             )}
             {showViewAll && processedData.length > limit &&
-                <TableFooter className='hover:bg-transparent! border-none bg-transparent'>
+                <TableFooter className='border-none bg-transparent hover:bg-transparent!'>
                     <TableRow>
-                        <TableCell className='hover:bg-transparent! border-none bg-transparent px-0 pb-0' colSpan={4}>
+                        <TableCell className='border-none bg-transparent px-0 pb-0 hover:bg-transparent!' colSpan={4}>
                             <Sheet>
                                 <SheetTrigger asChild>
                                     <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                                 </SheetTrigger>
                                 <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                                    <SheetHeader className='bg-background/60 sticky top-0 z-40 -mx-6 p-6 backdrop-blur'>
+                                    <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
                                         <SheetTitle>{title}</SheetTitle>
                                         <SheetDescription>{description}</SheetDescription>
                                     </SheetHeader>

@@ -140,6 +140,10 @@ export default class ParseMemberEventHelper extends Helper {
             icon = 'subscriptions';
         }
 
+        if (event.type === 'gift_purchase_event') {
+            icon = 'subscriptions';
+        }
+
         if (event.type === 'email_change_event') {
             icon = 'email-changed';
         }
@@ -253,6 +257,16 @@ export default class ParseMemberEventHelper extends Helper {
 
         if (event.type === 'donation_event') {
             return 'Made a one-time payment';
+        }
+
+        if (event.type === 'gift_purchase_event') {
+            const symbol = getSymbol(event.data.currency);
+            const formattedAmount = symbol + getNonDecimal(event.data.amount, event.data.currency);
+            const tierName = event.data.tier_name;
+            const duration = event.data.duration;
+            const cadenceLabel = duration === 1 ? event.data.cadence : event.data.cadence + 's';
+
+            return `Purchased a gift subscription for ${formattedAmount} (${tierName}, ${duration} ${cadenceLabel})`;
         }
     }
 
@@ -374,20 +388,14 @@ export default class ParseMemberEventHelper extends Helper {
      */
     getRoute(event) {
         if (['click_event', 'feedback_event'].includes(event.type)) {
-            if (event.data.post) {
-                return {
-                    name: 'posts-x',
-                    model: event.data.post.id
-                };
+            if (event.data.post?.id) {
+                return `#/posts/analytics/${event.data.post.id}`;
             }
         }
 
         if (['signup_event', 'subscription_event'].includes(event.type)) {
-            if (event.data.attribution_type === 'post') {
-                return {
-                    name: 'posts-x',
-                    model: event.data.attribution_id
-                };
+            if (event.data.attribution_type === 'post' && event.data.attribution_id) {
+                return `#/posts/analytics/${event.data.attribution_id}`;
             }
         }
         return;

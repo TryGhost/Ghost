@@ -15,17 +15,16 @@ async function mockNotificationCount(page: Page, count: number) {
 
 test.describe('Ghost Admin - Sidebar Navigation', () => {
     test.describe('main navigation', () => {
-        NAV_ITEMS.forEach(({name, path}) => {
-            test(`clicking ${name} - navigates and shows active state`, async ({page}) => {
-                const sidebar = new SidebarPage(page);
+        test('clicking each nav item navigates and shows active state', async ({page}) => {
+            const sidebar = new SidebarPage(page);
 
+            for (const {name, path} of NAV_ITEMS) {
                 await sidebar.goto('/ghost');
-
                 await sidebar.getNavLink(name).click();
 
                 await expect(page).toHaveURL(path);
                 await expect(sidebar.getNavLink(name)).toHaveAttribute('aria-current', 'page');
-            });
+            }
         });
     });
 

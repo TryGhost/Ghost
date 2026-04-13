@@ -1,5 +1,7 @@
 import React, {useState} from 'react';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, PostShareModal, Skeleton, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, Skeleton} from '@tryghost/shade/components';
+import {LucideIcon, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade/utils';
+import {PostShareModal} from '@tryghost/shade/patterns';
 
 import {Post, getPostMetricsToDisplay} from '@tryghost/admin-x-framework';
 import {getPostDestination} from '@src/utils/url-helpers';
@@ -57,9 +59,9 @@ const LatestPost: React.FC<LatestPostProps> = ({
     const shouldGoToEditor = postDestination.startsWith('/editor/');
 
     return (
-        <Card className='group/card from-muted/40 to-muted/0 bg-gradient-to-tr to-50%' data-testid='latest-post'>
+        <Card className='group/card bg-gradient-to-tr from-muted/40 to-muted/0 to-50%' data-testid='latest-post'>
             <CardHeader>
-                <CardTitle className='flex items-baseline justify-between font-medium leading-snug text-muted-foreground'>
+                <CardTitle className='flex items-baseline justify-between leading-snug font-medium text-muted-foreground'>
                     Latest post performance
                 </CardTitle>
                 <CardDescription className='hidden'>How your last post did</CardDescription>
@@ -107,7 +109,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                     }}></div>
                             }
                             <div className='flex grow flex-col items-start justify-center self-stretch'>
-                                <div className='text-lg font-semibold leading-tighter tracking-tight hover:cursor-pointer hover:opacity-75' onClick={() => {
+                                <div className='text-lg leading-tighter font-semibold tracking-tight hover:cursor-pointer hover:opacity-75' onClick={() => {
                                     if (!isLoading && latestPostStats) {
                                         navigate(postDestination, {crossApp: true});
                                     }
@@ -152,12 +154,12 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         {shouldGoToEditor ? (
                                             <>
                                                 <LucideIcon.Pen />
-                                                <span className='md:visible! md:block! hidden'>Edit post</span>
+                                                <span className='hidden md:visible! md:block!'>Edit post</span>
                                             </>
                                         ) : (
                                             <>
                                                 <LucideIcon.ChartNoAxesColumn />
-                                                <span className='md:visible! md:block! hidden'>
+                                                <span className='hidden md:visible! md:block!'>
                                                     {!latestPostStats.email_only ? 'Analytics' : 'Post analytics'}
                                                 </span>
                                             </>
@@ -176,11 +178,11 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                     }}>
                                         <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                             <LucideIcon.Globe size={16} strokeWidth={1.25} />
-                                            <span className='md:visible! md:block! hidden'>
+                                            <span className='hidden md:visible! md:block!'>
                                                 Visitors
                                             </span>
                                         </div>
-                                        <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                        <span className='text-[2.2rem] leading-none font-semibold tracking-tighter'>
                                             {formatNumber(latestPostStats.visitors)}
                                         </span>
                                     </div>
@@ -200,9 +202,9 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                     }}>
                                         <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                             <LucideIcon.UserPlus size={16} strokeWidth={1.25} />
-                                            <span className='md:visible! md:block! hidden'>Members</span>
+                                            <span className='hidden md:visible! md:block!'>Members</span>
                                         </div>
-                                        <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                        <span className='text-[2.2rem] leading-none font-semibold tracking-tighter'>
                                             {latestPostStats.member_delta ?
                                                 <>
                                                     +{formatNumber(latestPostStats.member_delta)}
@@ -222,9 +224,9 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             }}>
                                                 <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                                     <LucideIcon.MailOpen size={16} strokeWidth={1.25} />
-                                                    <span className='md:visible! md:block! hidden whitespace-nowrap'>Opens</span>
+                                                    <span className='hidden whitespace-nowrap md:visible! md:block!'>Opens</span>
                                                 </div>
-                                                <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                                <span className='text-[2.2rem] leading-none font-semibold tracking-tighter'>
                                                     {latestPostStats.email.email_count ?
                                                         formatPercentage((latestPostStats.email.opened_count || 0) / latestPostStats.email.email_count)
                                                         : '0%'
@@ -238,9 +240,9 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             }}>
                                                 <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                                     <LucideIcon.MousePointerClick size={16} strokeWidth={1.25} />
-                                                    <span className='md:visible! md:block! hidden whitespace-nowrap'>Clicks</span>
+                                                    <span className='hidden whitespace-nowrap md:visible! md:block!'>Clicks</span>
                                                 </div>
-                                                <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                                <span className='text-[2.2rem] leading-none font-semibold tracking-tighter'>
                                                     {latestPostStats.email.email_count && latestPostStats.count?.clicks ?
                                                         formatPercentage((latestPostStats.count.clicks || 0) / latestPostStats.email.email_count)
                                                         : '0%'

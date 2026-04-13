@@ -300,9 +300,20 @@ export default class KoenigLexicalEditor extends Component {
                 return [];
             };
 
+            const giftLink = () => {
+                if (this.feature.giftSubscriptions) {
+                    return [{
+                        label: 'Gift subscription',
+                        value: '#/portal/gift'
+                    }];
+                }
+
+                return [];
+            };
+
             const offersLinks = await offerUrls.call(this);
 
-            return [...defaults, ...memberLinks(), ...donationLink(), ...recommendationLink(), ...offersLinks];
+            return [...defaults, ...memberLinks(), ...donationLink(), ...recommendationLink(), ...giftLink(), ...offersLinks];
         };
 
         const fetchLabels = async () => {
@@ -420,7 +431,7 @@ export default class KoenigLexicalEditor extends Component {
             fetchLabels,
             renderLabels: !this.session.user.isContributor,
             feature: {
-                transistor: this.feature.transistor
+                transistor: this.settings.transistor
             },
             deprecated: { // todo fix typo
                 headerV1: true // if false, shows header v1 in the menu

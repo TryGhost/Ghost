@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const SlackNotifications = require('../../../../../core/server/services/slack-notifications/slack-notifications');
 const nock = require('nock');
 const ObjectId = require('bson-objectid').default;
-const got = require('got');
+const got = require('got').default;
 const ghostVersion = require('@tryghost/version');
 
 describe('SlackNotifications', function () {
@@ -290,7 +290,9 @@ describe('SlackNotifications', function () {
                 {
                     body: '{"data":"test"}',
                     headers: {'user-agent': 'Ghost/5.0.0 (https://github.com/TryGhost/Ghost)'},
-                    retry: 0
+                    retry: {
+                        limit: 0
+                    }
                 }
             ];
 

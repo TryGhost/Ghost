@@ -1,4 +1,5 @@
 import NewSubscribersCadence from '@src/views/Stats/Growth/components/new-subscribers-cadence';
+import moment from 'moment';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {mockSuccess} from '@tryghost/admin-x-framework/test/hook-testing-utils';
 import {render, screen} from '@testing-library/react';
@@ -13,22 +14,29 @@ vi.mock('@tryghost/admin-x-framework/api/tiers', () => ({
     useBrowseTiers: vi.fn()
 }));
 
-// Mock @tryghost/shade components
-vi.mock('@tryghost/shade', async () => {
-    const actual = await vi.importActual('@tryghost/shade');
+// Mock date helpers from @tryghost/shade/app
+vi.mock('@tryghost/shade/app', async () => {
+    const actual = await vi.importActual('@tryghost/shade/app');
     return {
         ...actual,
-        formatNumber: vi.fn((value: number) => value.toString()),
         getRangeDates: vi.fn((range: number) => {
             // Mock date range calculation
-            const endDate = new Date('2024-01-31');
-            const startDate = new Date('2024-01-01');
+            const endDate = moment('2024-01-31');
+            const startDate = moment('2024-01-01');
             if (range === 30) {
-                startDate.setDate(endDate.getDate() - 30);
+                startDate.subtract(30, 'days');
             }
-            return {startDate, endDate};
+            return {startDate, endDate, timezone: 'UTC'};
         }),
-        formatQueryDate: vi.fn((date: Date) => date.toISOString().split('T')[0])
+        formatQueryDate: vi.fn(date => date.format('YYYY-MM-DD'))
+    };
+});
+
+vi.mock('@tryghost/shade/utils', async () => {
+    const actual = await vi.importActual('@tryghost/shade/utils');
+    return {
+        ...actual,
+        formatNumber: vi.fn((value: number) => value.toString())
     };
 });
 

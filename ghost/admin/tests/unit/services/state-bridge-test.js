@@ -62,6 +62,16 @@ describe('Unit: Service: state-bridge', function () {
             expect(store.pushPayload.called).to.be.false;
         });
 
+        it('skips processing for automated email design data type', function () {
+            const response = {automated_email_design: [{id: '1'}]};
+
+            run(() => {
+                service.onUpdate('AutomatedEmailDesignResponseType', response);
+            });
+
+            expect(store.pushPayload.called).to.be.false;
+        });
+
         it('pushes data to store for regular data types', function () {
             const response = {integrations: [{id: '1', name: 'Test Integration'}]};
 
@@ -247,6 +257,14 @@ describe('Unit: Service: state-bridge', function () {
         it('skips processing for null-mapped data types', function () {
             run(() => {
                 service.onInvalidate('CustomThemeSettingsResponseType');
+            });
+
+            expect(store.unloadAll.called).to.be.false;
+        });
+
+        it('skips processing for automated email design data type', function () {
+            run(() => {
+                service.onInvalidate('AutomatedEmailDesignResponseType');
             });
 
             expect(store.unloadAll.called).to.be.false;

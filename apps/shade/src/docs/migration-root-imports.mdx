@@ -1,0 +1,66 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Migration/Root Imports" />
+
+<div className="sb-doc">
+
+# Root Import Migration
+
+Use layer-specific subpaths instead of the root `@tryghost/shade` entrypoint.
+
+## Cutoff
+
+Cutoff: **April 2, 2026**.
+
+- Root `@tryghost/shade` is a compatibility lane for DS layers only.
+- `app` and `utils` lanes are no longer exported from root.
+- Consumer apps block new root imports with lint rules.
+
+## Old → New Mapping
+
+| Old import | New import |
+| --- | --- |
+| `@tryghost/shade` (UI controls/assets) | `@tryghost/shade/components` |
+| `@tryghost/shade` (layout/structure) | `@tryghost/shade/primitives` |
+| `@tryghost/shade` (feature rules/compositions) | `@tryghost/shade/patterns` |
+| `@tryghost/shade` (DS-safe helpers + `LucideIcon` + `Recharts`) | `@tryghost/shade/utils` |
+| `@tryghost/shade` (app shell + domain/transitional helpers) | `@tryghost/shade/app` |
+| `@tryghost/shade` token helpers | `@tryghost/shade/tokens` |
+| token CSS usage | `@tryghost/shade/tokens.css` |
+
+## Typical Rewrites
+
+```ts
+// Before
+import {Button, H1, createFilter, cn, formatQueryDate, ShadeApp} from '@tryghost/shade';
+
+// After
+import {Button} from '@tryghost/shade/components';
+import {H1} from '@tryghost/shade/primitives';
+import {createFilter} from '@tryghost/shade/patterns';
+import {cn} from '@tryghost/shade/utils';
+import {formatQueryDate, ShadeApp} from '@tryghost/shade/app';
+```
+
+## Primitive Composition Update
+
+`@tryghost/shade/primitives` now includes low-level composition primitives:
+
+- `Stack`
+- `Inline`
+- `Box`
+- `Container`
+- `Grid`
+- `Text`
+
+Legacy layout shells in `@tryghost/shade/primitives` (for example `Header`, `ListHeader`, `ViewHeader`, `Page`, and heading wrappers) remain available as a compatibility lane but are deprecated for new work.
+
+Prefer building new structures directly from primitives and shared components.
+
+```ts
+// Preferred for new composition
+import {Container, Stack, Inline, Text} from '@tryghost/shade/primitives';
+import {Button} from '@tryghost/shade/components';
+```
+
+</div>

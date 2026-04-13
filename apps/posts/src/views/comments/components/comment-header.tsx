@@ -1,14 +1,5 @@
-import {
-    Badge,
-    Button,
-    LucideIcon,
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-    cn,
-    formatTimestamp
-} from '@tryghost/shade';
+import {Badge, Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {LucideIcon, cn, formatTimestamp} from '@tryghost/shade/utils';
 
 function formatDate(dateString: string): string {
     const date = new Date(dateString);
@@ -80,7 +71,7 @@ export function CommentHeader({
                         </Tooltip>
                     </TooltipProvider>
                 )}
-                <LucideIcon.Dot className='text-muted-foreground/50 shrink-0' size={16} />
+                <LucideIcon.Dot className='shrink-0 text-muted-foreground/50' size={16} />
                 <div className='shrink-0 whitespace-nowrap'>
                     {createdAt && (
                         <TooltipProvider>

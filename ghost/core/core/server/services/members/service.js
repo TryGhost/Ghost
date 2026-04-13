@@ -17,6 +17,7 @@ const {GhostMailer} = require('../mail');
 const jobsService = require('../jobs');
 const tiersService = require('../tiers');
 const VerificationTrigger = require('../verification-trigger');
+const {verificationWebhookService} = require('../verification/verification-webhook-service');
 const DatabaseInfo = require('@tryghost/database-info');
 const settingsHelpers = require('../settings-helpers');
 const RequestIntegrityTokenProvider = require('./request-integrity-token-provider');
@@ -42,6 +43,7 @@ const membersStats = new MembersStats({
 });
 
 let membersApi;
+let verificationTrigger;
 
 const initMembersCSVImporter = ({stripeAPIService}) => {
     return makeMembersCSVImporter({
@@ -90,25 +92,8 @@ const initVerificationTrigger = () => {
         getImportTriggerThreshold: () => _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
         isVerified: () => config.get('hostSettings:emailVerification:verified') === true,
         isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
-        sendVerificationEmail: async ({subject, message, amountTriggered}) => {
-            const escalationAddress = config.get('hostSettings:emailVerification:escalationAddress');
-            const replyTo = config.get('user_email');
-            const fromAddress = settingsHelpers.getDefaultEmailAddress();
-
-            if (escalationAddress) {
-                await ghostMailer.send({
-                    subject,
-                    html: tpl(message, {
-                        amountTriggered: amountTriggered,
-                        siteUrl: urlUtils.getSiteUrl()
-                    }),
-                    forceTextContent: true,
-                    from: fromAddress,
-                    replyTo,
-                    to: escalationAddress
-                });
-            }
-        },
+        setVerificationRequired: value => settingsCache.set('email_verification_required', {value}),
+        sendVerificationWebhook: verificationWebhookService.sendVerificationWebhook.bind(verificationWebhookService),
         membersStats,
         Settings: models.Settings,
         eventRepository: membersApi.events
@@ -152,7 +137,9 @@ module.exports = {
             getMembersApi: () => module.exports.api
         });
 
-        const verificationTrigger = initVerificationTrigger();
+        if (!verificationTrigger) {
+            verificationTrigger = initVerificationTrigger();
+        }
         module.exports.verificationTrigger = verificationTrigger;
 
         const membersCSVImporter = initMembersCSVImporter({stripeAPIService: stripeService.api});

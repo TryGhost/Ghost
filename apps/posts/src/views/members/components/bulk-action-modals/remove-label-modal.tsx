@@ -1,11 +1,4 @@
-import {
-    Button,
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle
-} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@tryghost/shade/components';
 import {LabelPicker} from '@src/components/label-picker';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useCallback, useMemo, useState} from 'react';
@@ -15,6 +8,7 @@ interface RemoveLabelModalProps {
     open: boolean;
     memberCount: number;
     nql?: string;
+    search?: string;
     onOpenChange: (open: boolean) => void;
     onConfirm: (labelIds: string[]) => void;
     isLoading?: boolean;
@@ -24,6 +18,7 @@ export function RemoveLabelModal({
     open,
     memberCount,
     nql,
+    search,
     onOpenChange,
     onConfirm,
     isLoading = false
@@ -34,6 +29,7 @@ export function RemoveLabelModal({
     const {data: membersData, isLoading: isMembersLoading} = useBrowseMembers({
         searchParams: {
             ...(nql ? {filter: nql} : {}),
+            ...(search ? {search} : {}),
             include: 'labels',
             limit: 'all',
             fields: 'id'
@@ -89,9 +85,12 @@ export function RemoveLabelModal({
                     isDuplicateName={picker.isDuplicateName}
                     isLoading={picker.isLoading || isMembersLoading}
                     labels={availableLabels}
-                    selectedSlugs={picker.selectedSlugs}
+                    resolvedSelectedLabels={picker.resolvedSelectedLabels.filter(label => memberLabelSlugs.has(label.slug))}
+                    searchValue={picker.searchValue}
+                    selectedSlugs={selectedSlugs}
                     onDelete={picker.deleteLabel}
                     onEdit={picker.editLabel}
+                    onSearchChange={picker.onSearchChange}
                     onToggle={picker.toggleLabel}
                 />
 

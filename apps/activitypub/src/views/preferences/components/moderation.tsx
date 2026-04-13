@@ -4,7 +4,9 @@ import Layout from '@components/layout';
 import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-card';
 import React, {useState} from 'react';
 import {Account} from '@src/api/activitypub';
-import {Button, H2, LucideIcon, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade';
+import {Button, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {H2} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {toast} from 'sonner';
 import {useBlockDomainMutationForUser, useBlockMutationForUser, useBlockedAccountsForUser, useBlockedDomainsForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@hooks/use-activity-pub-queries';
@@ -124,7 +126,7 @@ const Moderation: React.FC = () => {
 
                                                 {unblockedAccountIds.has(account.apId) ? (
                                                     <Button
-                                                        className='hover:bg-red/5! ml-auto min-w-[90px] text-red hover:text-red-400'
+                                                        className='ml-auto min-w-[90px] text-red hover:bg-red/5! hover:text-red-400'
                                                         variant='outline'
                                                         onClick={(e) => {
                                                             e.stopPropagation();
@@ -176,7 +178,7 @@ const Moderation: React.FC = () => {
 
                                         {unblockedDomainIds.has(domain.url) ? (
                                             <Button
-                                                className='hover:bg-red/5! ml-auto min-w-[90px] text-red hover:text-red-400'
+                                                className='ml-auto min-w-[90px] text-red hover:bg-red/5! hover:text-red-400'
                                                 variant='outline'
                                                 onClick={() => handleDomainBlock(domain)}
                                             >

@@ -1,5 +1,4 @@
 import Pretender from 'pretender';
-import config from 'ghost-admin/config/environment';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {
@@ -37,19 +36,6 @@ describe('Integration: Service: ajax', function () {
 
     afterEach(function () {
         server.shutdown();
-    });
-
-    it('adds Ghost version header to requests', function (done) {
-        let {version} = config.APP;
-        let ajax = this.owner.lookup('service:ajax');
-
-        stubAjaxEndpoint(server, {});
-
-        ajax.request('/test/').then(() => {
-            let [request] = server.handledRequests;
-            expect(request.requestHeaders['X-Ghost-Version']).to.equal(version);
-            done();
-        });
     });
 
     it('correctly parses single message response text', function (done) {

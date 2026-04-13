@@ -110,7 +110,7 @@ const Toggle: React.FC<ToggleProps> = ({
                 <TogglePrimitive.Root className={clsx(
                     toggleBgClass,
                     'appearance-none rounded-full bg-grey-300 transition duration-100 dark:bg-grey-800',
-                    'enabled:hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 enabled:group-hover:opacity-80',
+                    'enabled:group-hover:opacity-80 enabled:hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-40',
                     sizeStyles,
                     direction === 'rtl' && ' order-2'
                 )} data-testid={testId} defaultChecked={checked} disabled={disabled} id={id} name={name} onCheckedChange={handleCheckedChange}>

@@ -2,9 +2,8 @@ import CustomTooltipContent from '@components/chart/custom-tooltip-content';
 import {describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 
-// Mock the formatDisplayDate function from @tryghost/shade
-vi.mock('@tryghost/shade', () => ({
-    formatDisplayDate: (date: string) => `Formatted: ${date}`,
+// Mock date formatter from @tryghost/shade/app
+vi.mock('@tryghost/shade/app', () => ({
     formatDisplayDateWithRange: (date: string) => `Formatted: ${date}`
 }));
 

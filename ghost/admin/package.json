@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "6.22.0",
+  "version": "6.29.0-rc.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -18,12 +18,12 @@
   "scripts": {
     "dev": "ember serve",
     "build": "ember build --environment=production --silent",
-    "build:dev": "yarn build --environment=development",
+    "build:dev": "pnpm build --environment=development",
     "test:unit": "true",
     "test": "ember exam --split 2 --parallel",
     "lint:js": "eslint . --cache",
     "lint:hbs": "ember-template-lint .",
-    "lint": "yarn lint:js && yarn lint:hbs"
+    "lint": "pnpm lint:js && pnpm lint:hbs"
   },
   "engines": {
     "node": "^22.13.1"
@@ -44,25 +44,26 @@
     "@sentry/ember": "7.120.3",
     "@sentry/integrations": "7.114.0",
     "@sentry/replay": "7.116.0",
-    "@tryghost/admin-x-framework": "0.0.0",
-    "@tryghost/color-utils": "0.2.10",
+    "@tryghost/admin-x-framework": "workspace:*",
+    "ghost": "workspace:*",
+    "@tryghost/color-utils": "0.2.16",
     "@tryghost/ember-promise-modals": "2.0.1",
-    "@tryghost/helpers": "1.1.97",
-    "@tryghost/kg-clean-basic-html": "4.2.18",
-    "@tryghost/kg-converters": "1.1.18",
-    "@tryghost/koenig-lexical": "1.7.21",
-    "@tryghost/limit-service": "1.4.1",
-    "@tryghost/members-csv": "2.0.3",
+    "@tryghost/helpers": "1.1.103",
+    "@tryghost/kg-clean-basic-html": "4.2.21",
+    "@tryghost/kg-converters": "1.1.20",
+    "@tryghost/koenig-lexical": "1.7.28",
+    "@tryghost/limit-service": "1.5.2",
+    "@tryghost/members-csv": "2.0.5",
     "@tryghost/nql": "0.12.10",
     "@tryghost/nql-lang": "0.6.4",
-    "@tryghost/string": "0.2.17",
-    "@tryghost/timezone-data": "0.4.12",
+    "@tryghost/string": "0.3.2",
+    "@tryghost/timezone-data": "0.4.18",
     "animejs": "3.2.2",
     "autoprefixer": "9.8.6",
     "babel-plugin-transform-class-properties": "6.24.1",
     "babel-plugin-transform-react-jsx": "6.24.1",
     "broccoli-asset-rev": "3.0.0",
-    "broccoli-concat": "4.2.5",
+    "broccoli-concat": "4.2.7",
     "broccoli-funnel": "3.0.8",
     "broccoli-merge-trees": "4.2.0",
     "broccoli-terser-sourcemap": "4.1.1",
@@ -111,7 +112,7 @@
     "ember-modifier": "4.2.0",
     "ember-moment": "10.0.1",
     "ember-one-way-select": "4.0.1",
-    "ember-power-datepicker": "cibernox/ember-power-datepicker",
+    "ember-power-datepicker": "0.8.1",
     "ember-power-select": "6.0.1",
     "ember-resolver": "8.1.0",
     "ember-simple-auth": "5.0.0",
@@ -122,9 +123,10 @@
     "ember-test-selectors": "6.0.0",
     "ember-tooltips": "3.6.0",
     "ember-truth-helpers": "3.1.1",
+    "eslint": "catalog:",
     "eslint-plugin-babel": "5.3.1",
     "flexsearch": "0.7.43",
-    "fs-extra": "11.3.0",
+    "fs-extra": "11.3.4",
     "glob": "8.1.0",
     "google-caja-bower": "https://github.com/acburdine/google-caja-bower#ghost",
     "keymaster": "https://github.com/madrobby/keymaster.git",
@@ -135,7 +137,7 @@
     "miragejs": "0.1.48",
     "moment-timezone": "0.5.45",
     "normalize.css": "3.0.3",
-    "papaparse": "5.3.2",
+    "papaparse": "5.5.3",
     "postcss-color-mod-function": "3.0.3",
     "postcss-custom-media": "7.0.8",
     "postcss-custom-properties": "10.0.0",
@@ -145,10 +147,10 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "reframe.js": "4.0.2",
-    "semver": "7.7.3",
+    "semver": "7.7.4",
     "sentry-testkit": "5.0.10",
     "sinon-chai": "4.0.1",
-    "testem": "3.16.0",
+    "testem": "3.19.1",
     "tracked-built-ins": "3.4.0",
     "util": "0.12.5",
     "validator": "13.12.0",
@@ -161,12 +163,6 @@
       "lib/ember-power-calendar-utils"
     ]
   },
-  "resolutions": {
-    "ember-basic-dropdown": "6.0.2",
-    "ember-in-viewport": "4.1.0",
-    "moment": "2.24.0",
-    "moment-timezone": "0.5.45"
-  },
   "ember": {
     "edition": "octane"
   },
@@ -178,7 +174,7 @@
     "i18n-iso-countries": "7.14.0",
     "lru-cache": "6.0.0",
     "path-browserify": "1.0.1",
-    "webpack": "5.102.1"
+    "webpack": "5.105.4"
   },
   "nx": {
     "targets": {

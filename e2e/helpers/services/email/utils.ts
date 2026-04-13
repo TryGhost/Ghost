@@ -38,3 +38,14 @@ export function extractPasswordResetLink(message: EmailMessageDetailed): string 
 
     return match[1];
 }
+
+export function extractInviteLink(message: EmailMessageDetailed): string {
+    const html = message.HTML || '';
+    const match = html.match(/href="([^"]*\/ghost\/signup\/[^"]+)"/);
+
+    if (!match) {
+        throw new Error('No invite URL found in email HTML');
+    }
+
+    return match[1];
+}

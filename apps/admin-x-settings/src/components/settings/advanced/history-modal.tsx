@@ -32,7 +32,7 @@ const HistoryAvatar: React.FC<{action: Action}> = ({action}) => {
                 labelColor='white'
                 size='md'
             />
-            <div className='absolute -bottom-1 -right-1 z-30 flex items-center justify-center rounded-full border border-grey-100 bg-white p-1 shadow-sm dark:border-grey-900 dark:bg-black'>
+            <div className='absolute -right-1 -bottom-1 z-30 flex items-center justify-center rounded-full border border-grey-100 bg-white p-1 shadow-sm dark:border-grey-900 dark:bg-black'>
                 <HistoryIcon action={action} />
             </div>
         </div>
@@ -258,7 +258,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                             </NoValueLabel>
                         )
                     ) : data === undefined ? (
-                        <div className="flex items-center justify-center px-5 pb-10 pt-12">
+                        <div className="flex items-center justify-center px-5 pt-12 pb-10">
                             <LoadingIndicator />
                         </div>
                     ) : (

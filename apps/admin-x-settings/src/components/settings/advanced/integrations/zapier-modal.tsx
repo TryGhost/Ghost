@@ -95,7 +95,7 @@ const ZapierModal = NiceModal.create(() => {
         >
             <IntegrationHeader
                 detail='Automation for your favorite apps'
-                extra={<div className='-mb-4 mt-1'><APIKeys keys={[
+                extra={<div className='mt-1 -mb-4'><APIKeys keys={[
                     {
                         label: 'Admin API key',
                         text: adminApiKey?.secret,
@@ -111,7 +111,7 @@ const ZapierModal = NiceModal.create(() => {
             <List>
                 {zapierTemplates.map(template => (
                     <ListItem
-                        action={<Button className='whitespace-nowrap text-sm font-semibold text-[#FF4A00]' href={template.url} label='Use this Zap' tag='a' target='_blank' link unstyled />}
+                        action={<Button className='text-sm font-semibold whitespace-nowrap text-[#FF4A00]' href={template.url} label='Use this Zap' tag='a' target='_blank' link unstyled />}
                         bgOnHover={false}
                         className='flex items-center gap-3 py-2 pl-3'
                         title={

@@ -1,3 +1,4 @@
+{{#unless this.feature.membersForward}}
 <section class="gh-canvas">
     <GhCanvasHeader class="gh-canvas-header break tablet members-header">
         <div class="flex flex-column">
@@ -7,9 +8,9 @@
                         Posts
                     </LinkTo>
                     {{svg-jar "arrow-right-small"}}
-                    <LinkTo @route="posts-x" @models={{this.fromAnalytics}}>
+                    <a href="#/posts/analytics/{{this.postAnalytics}}">
                         Analytics
-                    </LinkTo>
+                    </a>
                     {{svg-jar "arrow-right-small"}}Members
                 </div>
             {{/if}}
@@ -77,12 +78,12 @@
                                         {{#if this.showingAll}}
                                             <span>Export all members</span>
                                         {{else}}
-                                            <span>Export selected members ({{this.members.length}})</span>
+                                            <span>Export selected members ({{format-number this.members.length}})</span>
                                         {{/if}}
                                     </button>
                                 {{else}}
                                     <button class="mr2" disabled="true" type="button" data-test-button="export-members" data-testid="export-members">
-                                        <span>Export selected members (0)</span>
+                                        <span>Export selected members ({{format-number 0}})</span>
                                     </button>
                                 {{/if}}
                             </li>
@@ -90,18 +91,18 @@
                                 <li class="divider"></li>
                                 <li>
                                     <button class="mr2" data-test-button="add-label-selected" data-testid="add-label-selected" type="button" {{on "click" this.bulkAddLabel}}>
-                                        <span>Add label for selected members ({{this.members.length}})</span>
+                                        <span>Add label for selected members ({{format-number this.members.length}})</span>
                                     </button>
                                 </li>
                                 <li>
                                     <button class="mr2" data-test-button="remove-label-selected" data-testid="remove-label-selected" type="button" {{on "click" this.bulkRemoveLabel}}>
-                                        <span>Remove label from selected members ({{this.members.length}})</span>
+                                        <span>Remove label from selected members ({{format-number this.members.length}})</span>
                                     </button>
                                 </li>
                                 {{#if (not-eq this.settings.membersSignupAccess "none")}}
                                     <li>
                                         <button class="mr2" data-test-button="unsubscribe-selected" type="button" {{on "click" this.bulkUnsubscribe}}>
-                                            <span>Unsubscribe selected members ({{this.members.length}})</span>
+                                            <span>Unsubscribe selected members ({{format-number this.members.length}})</span>
                                         </button>
                                     </li>
                                 {{/if}}
@@ -109,7 +110,7 @@
                                     <li class="divider"></li>
                                     <li>
                                         <button class="mr2" data-test-button="delete-selected" type="button" {{on "click" this.bulkDelete}}>
-                                            <span class="red">Delete selected members ({{this.members.length}})</span>
+                                            <span class="red">Delete selected members ({{format-number this.members.length}})</span>
                                         </button>
                                     </li>
                                 {{/if}}
@@ -231,3 +232,4 @@
         @modifier="action wide"
     />
 {{/if}}
+{{/unless}}

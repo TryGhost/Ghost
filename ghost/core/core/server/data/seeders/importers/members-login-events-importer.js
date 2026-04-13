@@ -35,9 +35,10 @@ class MembersLoginEventsImporter extends TableImporter {
 
     setReferencedModel(model) {
         this.model = model;
+        const memberCreatedAt = dateToDatabaseString.parse(model.created_at);
 
         const endDate = new Date();
-        const daysBetween = Math.ceil((endDate.valueOf() - new Date(model.created_at).valueOf()) / (1000 * 60 * 60 * 24));
+        const daysBetween = Math.ceil((endDate.valueOf() - memberCreatedAt.valueOf()) / (1000 * 60 * 60 * 24));
 
         // Assuming most people either subscribe and lose interest, or maintain steady readership
         const shape = luck(40) ? 'ease-out' : 'flat';
@@ -47,7 +48,7 @@ class MembersLoginEventsImporter extends TableImporter {
             // Steady readers login more, readers who lose interest read less overall.
             // ceil because members will all have logged in at least once
             total: Math.min(5, shape === 'flat' ? Math.ceil(daysBetween / 3) : Math.ceil(daysBetween / 7)),
-            startTime: new Date(model.created_at),
+            startTime: memberCreatedAt,
             endTime: endDate
         });
     }

@@ -1,5 +1,4 @@
 const TableImporter = require('./table-importer');
-const {faker} = require('@faker-js/faker');
 const {luck} = require('../utils/random');
 const dateToDatabaseString = require('../utils/database-date');
 
@@ -25,10 +24,10 @@ class MembersFeedbackImporter extends TableImporter {
             return null;
         }
 
-        const openedAt = new Date(this.model.opened_at);
-        const laterOn = new Date(this.model.opened_at);
+        const openedAt = dateToDatabaseString.parse(this.model.opened_at);
+        const laterOn = dateToDatabaseString.parse(this.model.opened_at);
         laterOn.setMinutes(laterOn.getMinutes() + 60);
-        const feedbackTime = faker.date.between(openedAt, laterOn);
+        const feedbackTime = dateToDatabaseString.randomBetween(openedAt, laterOn);
 
         const postId = this.emails.find(email => email.id === this.model.email_id).post_id;
         return {

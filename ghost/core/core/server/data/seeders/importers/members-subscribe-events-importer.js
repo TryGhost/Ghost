@@ -1,5 +1,4 @@
 const TableImporter = require('./table-importer');
-const {faker} = require('@faker-js/faker');
 const {luck} = require('../utils/random');
 const dateToDatabaseString = require('../utils/database-date');
 
@@ -52,7 +51,7 @@ class MembersSubscribeEventsImporter extends TableImporter {
             return null;
         }
 
-        const createdAt = dateToDatabaseString(faker.date.between(new Date(this.model.created_at), new Date()));
+        const createdAt = dateToDatabaseString(dateToDatabaseString.randomBetween(this.model.created_at, new Date()));
         const newsletterId = this.newsletters[count % this.newsletters.length].id;
 
         return {

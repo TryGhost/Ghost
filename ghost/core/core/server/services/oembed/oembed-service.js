@@ -186,7 +186,9 @@ class OEmbedService {
                 headers: {
                     'user-agent': USER_AGENT
                 },
-                timeout: 2000,
+                timeout: {
+                    request: 2000
+                },
                 followRedirect: true,
                 ...options
             });
@@ -273,15 +275,22 @@ class OEmbedService {
      * }>}
      */
     async fetchBookmarkData(url, html, type) {
-        const got = require('got');
-        const gotOpts = got.mergeOptions(this.externalRequest.defaults?.options || {}, {
+        const requestOptions = this.externalRequest.defaults?.options || {};
+        const gotOpts = {
+            hooks: requestOptions.hooks,
+            retry: requestOptions.retry,
+            timeout: requestOptions.timeout,
+            ...requestOptions,
             headers: {
+                ...(requestOptions.headers || {}),
                 'User-Agent': USER_AGENT
             }
-        });
+        };
 
         if (process.env.NODE_ENV?.startsWith('test')) {
-            gotOpts.retry = 0;
+            gotOpts.retry = {
+                limit: 0
+            };
         }
 
         const pickFn = (sizes, pickDefault) => {
