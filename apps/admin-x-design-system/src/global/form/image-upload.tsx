@@ -101,14 +101,14 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
         if (!deleteButtonUnstyled) {
             deleteButtonClassName = clsx(
-                'absolute top-4 right-4 flex size-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] text-white group-hover:visible! hover:bg-black md:invisible',
+                'absolute top-4 right-4 flex size-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] text-white group-hover:visible! hover:bg-black md:invisible [@media(hover:none)]:visible!',
                 deleteButtonClassName
             );
         }
 
         if (!editButtonUnstyled) {
             editButtonClassName = clsx(
-                'absolute top-4 right-16 flex size-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] text-white group-hover:visible! hover:bg-black md:invisible',
+                'absolute top-4 right-16 flex size-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] text-white group-hover:visible! hover:bg-black md:invisible [@media(hover:none)]:visible!',
                 editButtonClassName
             );
         }
