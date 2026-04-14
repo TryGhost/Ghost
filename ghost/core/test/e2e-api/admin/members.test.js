@@ -1,5 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers, regexes} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyContentLength, anyErrorId, anyObject} = matchers;
+const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyContentLength, anyErrorId, anyObject, nullable} = matchers;
 const {queryStringToken} = regexes;
 const ObjectId = require('bson-objectid').default;
 
@@ -138,6 +138,7 @@ function buildMemberWithIncludesSnapshot(options) {
         attribution: attributionSnapshot,
         newsletters: new Array(options.newsletters).fill(newsletterSnapshot),
         subscriptions: anyArray,
+        current_subscription: nullable(anyObject),
         labels: anyArray,
         unsubscribe_url: anyString
     };
@@ -157,6 +158,7 @@ const memberMatcherShallowIncludes = {
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
     subscriptions: anyArray,
+    current_subscription: nullable(anyObject),
     labels: anyArray,
     unsubscribe_url: anyString
 };
@@ -728,6 +730,143 @@ describe('Members API', function () {
                 'content-version': anyContentVersion,
                 etag: anyEtag
             });
+    });
+
+    it('Can filter by subscription status for member with concurrent active and canceled subscriptions', async function () {
+        // Case 5: Member cancels, then re-subscribes before the cancellation period ends.
+        // They now have an active + canceled subscription concurrently.
+        // The subscription status filter should resolve to the "current" (best) subscription only.
+        const email = 'concurrent-sub-filter-test@example.com';
+
+        const customer = stripeMocker.createCustomer({email});
+        const price1 = await stripeMocker.getPriceForTier('default-product', 'month');
+        const price2 = await stripeMocker.getPriceForTier('default-product', 'year');
+
+        // Create two active subscriptions (simulates re-subscribe before period end)
+        await stripeMocker.createSubscription({customer, price: price1});
+        const subscription2 = await stripeMocker.createSubscription({customer, price: price2});
+        await DomainEvents.allSettled();
+
+        // Cancel one subscription — member still has the other active one
+        await stripeMocker.updateSubscription({
+            id: subscription2.id,
+            status: 'canceled',
+            cancel_at_period_end: false,
+            canceled_at: Date.now() / 1000
+        });
+        await DomainEvents.allSettled();
+
+        // Verify the member has one active and one canceled subscription via the API
+        const {body: memberBody} = await agent
+            .get(`/members/?filter=email:'${email}'&include=subscriptions`)
+            .expectStatus(200);
+
+        assert.equal(memberBody.members.length, 1, 'Member should exist');
+        const memberSubscriptions = memberBody.members[0].subscriptions;
+        assert.equal(memberSubscriptions.length, 2, 'Member should have 2 subscriptions');
+        const subStatuses = new Set(memberSubscriptions.map(s => s.status));
+        assert.ok(subStatuses.has('active'), 'One subscription should be active');
+        assert.ok(subStatuses.has('canceled'), 'One subscription should be canceled');
+
+        const activeSub = memberSubscriptions.find(s => s.status === 'active');
+        const canceledSub = memberSubscriptions.find(s => s.status === 'canceled');
+
+        // The whole point of the fix: the API surfaces the ACTIVE subscription as
+        // the resolved current one, not the canceled one. Assert the actual
+        // resolved object, not just that the field exists.
+        const currentSubscription = memberBody.members[0].current_subscription;
+        assert.ok(currentSubscription, 'current_subscription should be populated for a member with subscriptions');
+        assert.equal(currentSubscription.id, activeSub.id, 'current_subscription should resolve to the active subscription');
+        assert.equal(currentSubscription.status, 'active', 'current_subscription should be active, not canceled');
+        assert.notEqual(currentSubscription.id, canceledSub.id, 'current_subscription must not be the canceled subscription');
+
+        const memberId = memberBody.members[0].id;
+
+        // Filter by subscriptions.status:active should find this member
+        const {body: activeBody} = await agent
+            .get(`/members/?filter=subscriptions.status:active`)
+            .expectStatus(200);
+
+        const activeEmails = activeBody.members.map(m => m.email);
+        assert.ok(activeEmails.includes(email), 'Member with active+canceled subs should appear in subscriptions.status:active filter');
+
+        // Filter by subscriptions.status:canceled should NOT find this member
+        // because the resolved/current subscription is active (active beats canceled)
+        const {body: canceledBody} = await agent
+            .get(`/members/?filter=subscriptions.status:canceled`)
+            .expectStatus(200);
+
+        const canceledEmails = canceledBody.members.map(m => m.email);
+        assert.ok(!canceledEmails.includes(email), 'Member with active+canceled subs should NOT appear in subscriptions.status:canceled filter');
+
+        // Clean up: remove the test member so subsequent tests aren't affected
+        await agent
+            .delete(`/members/${memberId}/`)
+            .expectStatus(204);
+    });
+
+    it('Re-resolves the current subscription when a member re-subscribes after cancelling', async function () {
+        // Exercises the lookup-table UPDATE path: a member whose only sub is
+        // canceled resolves to that canceled sub, then re-subscribes and the
+        // resolved current subscription must flip to the new active one — moving
+        // them out of the canceled filter and into the active filter.
+        const email = 'resub-after-cancel@example.com';
+
+        const customer = stripeMocker.createCustomer({email});
+        const monthlyPrice = await stripeMocker.getPriceForTier('default-product', 'month');
+
+        // Subscribe, then cancel — the member's only subscription is now canceled
+        const firstSubscription = await stripeMocker.createSubscription({customer, price: monthlyPrice});
+        await DomainEvents.allSettled();
+        await stripeMocker.updateSubscription({
+            id: firstSubscription.id,
+            status: 'canceled',
+            cancel_at_period_end: false,
+            canceled_at: Date.now() / 1000
+        });
+        await DomainEvents.allSettled();
+
+        // The resolved current subscription is the canceled one (their only sub)
+        let {body: memberBody} = await agent
+            .get(`/members/?filter=email:'${email}'&include=subscriptions`)
+            .expectStatus(200);
+        const memberId = memberBody.members[0].id;
+        assert.equal(memberBody.members[0].current_subscription.status, 'canceled', 'current_subscription should be the canceled sub when it is the only one');
+
+        let {body: canceledBody} = await agent
+            .get(`/members/?filter=subscriptions.status:canceled`)
+            .expectStatus(200);
+        assert.ok(canceledBody.members.map(m => m.email).includes(email), 'member should be in the canceled filter while their only sub is canceled');
+
+        // Re-subscribe — a new active subscription on the same customer
+        const yearlyPrice = await stripeMocker.getPriceForTier('default-product', 'year');
+        await stripeMocker.createSubscription({customer, price: yearlyPrice});
+        await DomainEvents.allSettled();
+
+        // The resolved current subscription must now flip to the new active sub
+        ({body: memberBody} = await agent
+            .get(`/members/?filter=email:'${email}'&include=subscriptions`)
+            .expectStatus(200));
+        const newActiveSub = memberBody.members[0].subscriptions.find(s => s.status === 'active');
+        assert.ok(newActiveSub, 'member should now have an active subscription');
+        assert.equal(memberBody.members[0].current_subscription.id, newActiveSub.id, 'current_subscription should flip to the new active subscription');
+        assert.equal(memberBody.members[0].current_subscription.status, 'active');
+
+        // ...and the member leaves the canceled filter and enters the active filter
+        ({body: canceledBody} = await agent
+            .get(`/members/?filter=subscriptions.status:canceled`)
+            .expectStatus(200));
+        assert.ok(!canceledBody.members.map(m => m.email).includes(email), 'member should no longer be in the canceled filter after re-subscribing');
+
+        const {body: activeBody} = await agent
+            .get(`/members/?filter=subscriptions.status:active`)
+            .expectStatus(200);
+        assert.ok(activeBody.members.map(m => m.email).includes(email), 'member should be in the active filter after re-subscribing');
+
+        // Clean up: remove the test member so subsequent tests aren't affected
+        await agent
+            .delete(`/members/${memberId}/`)
+            .expectStatus(204);
     });
 
     it('Can filter using contains operators', async function () {
@@ -1701,6 +1840,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     tiers: new Array(1).fill({
                         id: anyObjectId,
                         monthly_price_id: anyObjectId,
@@ -1808,6 +1948,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     tiers: new Array(1).fill(tierMatcher),
                     newsletters: new Array(1).fill(newsletterSnapshot)
                 })
@@ -1923,6 +2064,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     tiers: new Array(1).fill(tierMatcher),
                     newsletters: new Array(1).fill(newsletterSnapshot)
                 })
@@ -2465,6 +2607,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: [subscriptionSnapshotWithTier],
+                    current_subscription: nullable(anyObject),
                     newsletters: new Array(1).fill(newsletterSnapshot),
                     tiers: [tierSnapshot]
                 })
@@ -2486,6 +2629,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: [subscriptionSnapshotWithTier],
+                    current_subscription: nullable(anyObject),
                     newsletters: new Array(1).fill(newsletterSnapshot),
                     tiers: [tierSnapshot]
                 })
@@ -2989,6 +3133,7 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     labels: anyArray,
                     newsletters: Array(1).fill(newsletterSnapshot)
                 }]
@@ -3016,6 +3161,7 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     labels: anyArray,
                     newsletters: Array(1).fill(newsletterSnapshot)
                 }]
@@ -3062,6 +3208,7 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     labels: anyArray,
                     newsletters: Array(2).fill(newsletterSnapshot)
                 }]
@@ -3090,6 +3237,7 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     labels: anyArray,
                     newsletters: Array(2).fill(newsletterSnapshot)
                 }]
@@ -3123,6 +3271,7 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     labels: anyArray,
                     newsletters: Array(0).fill(newsletterSnapshot)
                 }]
@@ -3156,6 +3305,7 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     labels: anyArray,
                     newsletters: Array(1).fill(newsletterSnapshot)
                 }]
@@ -3200,6 +3350,7 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     labels: anyArray,
                     newsletters: Array(1).fill(newsletterSnapshot)
                 }]
@@ -3248,6 +3399,7 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     labels: anyArray,
                     newsletters: new Array(0)
                 }]
