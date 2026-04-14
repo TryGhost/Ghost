@@ -1,7 +1,7 @@
+import {chooseOptionInSelect, globalDataRequests, mockApi, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
-test.describe('Site password settings', async () => {
+test.describe('Site visibility settings', async () => {
     test('Supports locking and unlocking the site', async ({page}) => {
         const mockLock = await mockApi({page, requests: {
             ...globalDataRequests,
@@ -13,22 +13,16 @@ test.describe('Site password settings', async () => {
 
         await page.goto('/');
 
-        const section = page.getByTestId('locksite');
+        const section = page.getByTestId('access');
 
-        await expect(section.getByText('Your site is not password protected')).toHaveCount(1);
+        await expect(section.getByTestId('site-visibility-select')).toContainText('Public');
 
-        // Add a site password
-
-        await section.getByRole('button', {name: 'Edit'}).click();
-
-        await section.getByLabel(/Enable password protection/).check();
-        await section.getByLabel('Site password').fill('password');
+        await chooseOptionInSelect(section.getByTestId('site-visibility-select'), 'Private');
+        await section.getByTestId('site-access-code').fill('password');
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        await expect(section.getByLabel('Site password')).toHaveCount(0);
-
-        await expect(section.getByText('Your site is password protected')).toHaveCount(1);
+        await expect(section.getByTestId('site-visibility-select')).toContainText('Private');
 
         expect(mockLock.lastApiRequests.editSettings?.body).toEqual({
             settings: [
@@ -46,13 +40,11 @@ test.describe('Site password settings', async () => {
             ])}
         }});
 
-        await section.getByRole('button', {name: 'Edit'}).click();
-
-        await section.getByLabel(/Enable password protection/).uncheck();
+        await chooseOptionInSelect(section.getByTestId('site-visibility-select'), 'Public');
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        await expect(section.getByText('Your site is not password protected')).toHaveCount(1);
+        await expect(section.getByTestId('site-visibility-select')).toContainText('Public');
 
         expect(mockUnlock.lastApiRequests.editSettings?.body).toEqual({
             settings: [

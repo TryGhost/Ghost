@@ -2,6 +2,38 @@ import {chooseOptionInSelect, getOptionsFromSelect, globalDataRequests, mockApi,
 import {expect, test} from '@playwright/test';
 
 test.describe('Access settings', async () => {
+    test('Shows site visibility controls at the top of the access section', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'is_private', value: true},
+                {key: 'password', value: 'secret'}
+            ])}
+        }});
+
+        await page.goto('/');
+
+        const accessSection = page.getByTestId('access');
+        const siteVisibilitySelect = accessSection.getByTestId('site-visibility-select');
+
+        await expect(accessSection).toBeVisible();
+        await expect(siteVisibilitySelect).toContainText('Public');
+
+        await chooseOptionInSelect(siteVisibilitySelect, 'Private');
+        await accessSection.getByTestId('site-access-code').fill('secret');
+        await expect(accessSection.getByText('A private RSS feed is available here')).toHaveCount(0);
+        await accessSection.getByRole('button', {name: 'Save'}).click();
+
+        await expect(accessSection.getByText('A private RSS feed is available here')).toHaveCount(1);
+
+        expect(lastApiRequests.editSettings?.body).toEqual({
+            settings: [
+                {key: 'is_private', value: true},
+                {key: 'password', value: 'secret'}
+            ]
+        });
+    });
+
     test('Supports editing access', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
@@ -17,7 +49,7 @@ test.describe('Access settings', async () => {
         const section = page.getByTestId('access');
 
         // Check current selected values
-        await expect(section.getByText('Anyone can sign up')).toHaveCount(1);
+        await expect(section.getByTestId('subscription-access-select')).toContainText('Public');
         await expect(section.getByText('Public')).toHaveCount(1);
         await expect(section.getByText('Nobody')).toHaveCount(1);
 
@@ -26,7 +58,7 @@ test.describe('Access settings', async () => {
         const commentingSelect = section.getByTestId('commenting-select');
 
         // Check available options
-        await expect(getOptionsFromSelect(subscriptionAccessSelect)).resolves.toEqual(['Anyone can sign up', 'Paid-members only', 'Invite-only', 'Nobody']);
+        await expect(getOptionsFromSelect(subscriptionAccessSelect)).resolves.toEqual(['Public', 'Paid-members only', 'Invite-only', 'Nobody']);
         await expect(getOptionsFromSelect(defaultPostAccessSelect)).resolves.toEqual(['Public', 'Members only', 'Paid-members only', 'Specific tiers']);
         await expect(getOptionsFromSelect(commentingSelect)).resolves.toEqual(['All members', 'Paid-members only', 'Nobody']);
 
