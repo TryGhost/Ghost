@@ -50,7 +50,7 @@
     "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && pnpm install",
     "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main\"",
     "preinstall": "node ./.github/scripts/enforce-package-manager.js",
-    "prepare": "husky install .github/hooks",
+    "prepare": "husky .github/hooks",
     "tb": "tb local start && cd ghost/core/core/server/data/tinybird && tb dev",
     "tb:install": "curl https://tinybird.co | sh",
     "data:analytics:generate": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
