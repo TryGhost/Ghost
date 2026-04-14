@@ -186,7 +186,6 @@ describe('Gift Subscriptions', function () {
                 type: 'gift',
                 tierId: paidTier.id,
                 cadence: 'month',
-                customerEmail: 'url-test-buyer@example.com',
                 metadata: {}
             })
             .expectStatus(200);
@@ -272,10 +271,6 @@ describe('Gift Subscriptions', function () {
         });
     });
 
-    it('Rejects purchase without a valid email', async function () {
-        await expectGiftCheckoutError({customerEmail: 'not-an-email'});
-    });
-
     it('Marks gift as refunded when Stripe charge.refunded webhook is received', async function () {
         const paidTier = await getPaidTier();
 
@@ -284,7 +279,6 @@ describe('Gift Subscriptions', function () {
                 type: 'gift',
                 tierId: paidTier.id,
                 cadence: 'month',
-                customerEmail: 'refund-buyer@example.com',
                 metadata: {}
             })
             .expectStatus(200);
