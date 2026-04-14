@@ -2,7 +2,19 @@ import * as React from 'react';
 
 import {cn} from '@/lib/utils';
 import {Button} from './button';
-import {cva, VariantProps} from 'class-variance-authority';
+import {cva} from 'class-variance-authority';
+
+type PreferredTableHeadVariant = 'default' | 'section';
+type DeprecatedTableHeadVariant = 'cardhead';
+type TableHeadVariant = PreferredTableHeadVariant | DeprecatedTableHeadVariant;
+
+const resolveTableHeadVariant = (variant?: TableHeadVariant): PreferredTableHeadVariant | undefined => {
+    if (variant === 'cardhead') {
+        return 'section';
+    }
+
+    return variant;
+};
 
 const Table = React.forwardRef<
     HTMLTableElement,
@@ -74,7 +86,7 @@ const headVariants = cva(
         variants: {
             variant: {
                 default: 'h-10 px-2 text-left text-xs font-medium tracking-wide text-text-secondary uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
-                cardhead: 'text-base font-normal [&>div]:px-0'
+                section: 'text-base font-normal [&>div]:px-0'
             }
         },
         defaultVariants: {
@@ -84,18 +96,22 @@ const headVariants = cva(
 );
 
 export interface TableHeadProps
-    extends React.ThHTMLAttributes<HTMLTableCellElement>,
-    VariantProps<typeof headVariants> {
+    extends React.ThHTMLAttributes<HTMLTableCellElement> {
+    variant?: TableHeadVariant
     asChild?: boolean
 }
 
-const TableHead = React.forwardRef<HTMLTableCellElement, TableHeadProps>(({className, variant, ...props}, ref) => (
-    <th
-        ref={ref}
-        className={cn(headVariants({variant, className}))}
-        {...props}
-    />
-));
+const TableHead = React.forwardRef<HTMLTableCellElement, TableHeadProps>(({className, variant, ...props}, ref) => {
+    const resolvedVariant = resolveTableHeadVariant(variant);
+
+    return (
+        <th
+            ref={ref}
+            className={cn(headVariants({variant: resolvedVariant, className}))}
+            {...props}
+        />
+    );
+});
 TableHead.displayName = 'TableHead';
 
 type TableHeadButtonProps = React.ComponentProps<typeof Button>;

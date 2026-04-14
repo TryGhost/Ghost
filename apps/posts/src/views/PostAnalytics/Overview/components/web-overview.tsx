@@ -1,6 +1,6 @@
 import React, {useMemo} from 'react';
 import Sources from '../../Web/components/sources';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, Separator} from '@tryghost/shade/components';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, MetricCardHeader, MetricCardHeaderLabel, MetricCardHeaderValue, Separator} from '@tryghost/shade/components';
 import {BaseSourceData, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {HTable} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
@@ -48,16 +48,16 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                 </div>
                 <CardContent>
                     <div>
-                        <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0' data-testid='unique-visitors'>
+                        <MetricCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0' data-testid='unique-visitors'>
                             <div className='flex grow flex-col gap-1.5 border-none pb-0'>
-                                <KpiCardHeaderLabel color='var(--chart-blue)'>
+                                <MetricCardHeaderLabel color='var(--chart-blue)'>
                             Unique visitors
-                                </KpiCardHeaderLabel>
-                                <KpiCardHeaderValue
+                                </MetricCardHeaderLabel>
+                                <MetricCardHeaderValue
                                     value={formatNumber(visitors)}
                                 />
                             </div>
-                        </KpiCardHeader>
+                        </MetricCardHeader>
                         <Separator />
                         <div className='max-h-[288px] py-6 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                             {isLoading ?

@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Card, CardContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Tabs, TabsList} from '@tryghost/shade/components';
+import {Card, CardContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, MetricDropdownButton, MetricTabTrigger, MetricTabValue, Tabs, TabsList} from '@tryghost/shade/components';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {formatDuration, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {sanitizeChartData} from '@tryghost/shade/app';
@@ -66,29 +66,29 @@ const Kpis:React.FC<KpisProps> = ({data, range}) => {
     return (
         <Card>
             <CardContent>
-                <Tabs defaultValue={currentTab} variant='kpis'>
+                <Tabs defaultValue={currentTab} variant='metrics'>
                     <TabsList className="-mx-6 hidden grid-cols-2 md:visible! md:grid!">
-                        <KpiTabTrigger value="visits" onClick={() => {
+                        <MetricTabTrigger value="visits" onClick={() => {
                             setCurrentTab('visits');
                         }}>
-                            <KpiTabValue color={KPI_METRICS.visits.color} label="Unique visitors" value={kpiValues.visits} />
-                        </KpiTabTrigger>
-                        <KpiTabTrigger value="views" onClick={() => {
+                            <MetricTabValue color={KPI_METRICS.visits.color} label="Unique visitors" value={kpiValues.visits} />
+                        </MetricTabTrigger>
+                        <MetricTabTrigger value="views" onClick={() => {
                             setCurrentTab('views');
                         }}>
-                            <KpiTabValue color={KPI_METRICS.views.color} label="Total views" value={kpiValues.views} />
-                        </KpiTabTrigger>
+                            <MetricTabValue color={KPI_METRICS.views.color} label="Total views" value={kpiValues.views} />
+                        </MetricTabTrigger>
                     </TabsList>
                     <DropdownMenu>
                         <DropdownMenuTrigger className='md:hidden' asChild>
-                            <KpiDropdownButton>
+                            <MetricDropdownButton>
                                 {currentTab === 'visits' &&
-                                    <KpiTabValue color='var(--chart-blue)' label="Unique visitors" value={kpiValues.visits} />
+                                    <MetricTabValue color='var(--chart-blue)' label="Unique visitors" value={kpiValues.visits} />
                                 }
                                 {currentTab === 'views' &&
-                                    <KpiTabValue color='var(--chart-teal)' label="Total views" value={kpiValues.views} />
+                                    <MetricTabValue color='var(--chart-teal)' label="Total views" value={kpiValues.views} />
                                 }
-                            </KpiDropdownButton>
+                            </MetricDropdownButton>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align='end' className="w-56">
                             <DropdownMenuItem onClick={() => setCurrentTab('visits')}>Unique visitors</DropdownMenuItem>

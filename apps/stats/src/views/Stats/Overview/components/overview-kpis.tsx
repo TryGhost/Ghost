@@ -1,5 +1,5 @@
 import React from 'react';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue} from '@tryghost/shade/components';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, MetricCardHeader, MetricCardHeaderLabel, MetricCardHeaderValue} from '@tryghost/shade/components';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars} from '@tryghost/shade/app';
@@ -75,14 +75,14 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
-            <KpiCardHeader className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-2 xl:pb-4'>
+            <MetricCardHeader className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-2 xl:pb-4'>
                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
-                    <KpiCardHeaderLabel className={onClick && 'transition-all group-hover:text-foreground'}>
+                    <MetricCardHeaderLabel className={onClick && 'transition-all group-hover:text-foreground'}>
                         {color && <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color}}></span>}
                         {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
                         {title}
-                    </KpiCardHeaderLabel>
-                    <KpiCardHeaderValue
+                    </MetricCardHeaderLabel>
+                    <MetricCardHeaderValue
                         diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : diffDirection}
                         diffTooltip={diffTooltip}
                         diffValue={diffValue}
@@ -92,7 +92,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
                 {onClick &&
                     <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={onClick}>View more</Button>
                 }
-            </KpiCardHeader>
+            </MetricCardHeader>
             <CardContent>
                 {children}
             </CardContent>

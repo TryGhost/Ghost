@@ -1,5 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
-import {Tabs, TabsContent, TabsList, TabsTrigger, KpiTabTrigger, KpiTabValue} from './tabs';
+import {Tabs, TabsContent, TabsList, TabsTrigger, MetricTabTrigger, MetricTabValue} from './tabs';
 
 const meta = {
     title: 'Components / Tabs',
@@ -55,33 +55,33 @@ export const Default: Story = {
 export const KPIBasic: Story = {
     args: {
         defaultValue: 'signups',
-        variant: 'kpis',
+        variant: 'metrics',
         children: [
             <TabsList key="list">
-                <KpiTabTrigger value="signups">
-                    <KpiTabValue
+                <MetricTabTrigger value="signups">
+                    <MetricTabValue
                         diffDirection="up"
                         diffValue="+12.5%"
                         label="Signups"
                         value="1,247"
                     />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="revenue">
-                    <KpiTabValue
+                </MetricTabTrigger>
+                <MetricTabTrigger value="revenue">
+                    <MetricTabValue
                         diffDirection="up"
                         diffValue="+8.2%"
                         label="Revenue"
                         value="$54,890"
                     />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="engagement">
-                    <KpiTabValue
+                </MetricTabTrigger>
+                <MetricTabTrigger value="engagement">
+                    <MetricTabValue
                         diffDirection="down"
                         diffValue="-2.1%"
                         label="Engagement"
                         value="68.4%"
                     />
-                </KpiTabTrigger>
+                </MetricTabTrigger>
             </TabsList>,
 
             <TabsContent key="signups" value="signups">
@@ -109,45 +109,45 @@ export const KPIBasic: Story = {
 export const KPIWithIcons: Story = {
     args: {
         defaultValue: 'users',
-        variant: 'kpis',
+        variant: 'metrics',
         children: [
             <TabsList key="list">
-                <KpiTabTrigger value="users">
-                    <KpiTabValue
+                <MetricTabTrigger value="users">
+                    <MetricTabValue
                         diffDirection="up"
                         diffValue="+15.3%"
                         icon="Users"
                         label="Active Users"
                         value="2,847"
                     />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="views">
-                    <KpiTabValue
+                </MetricTabTrigger>
+                <MetricTabTrigger value="views">
+                    <MetricTabValue
                         diffDirection="up"
                         diffValue="+22.1%"
                         icon="Eye"
                         label="Page Views"
                         value="18.2K"
                     />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="bounce">
-                    <KpiTabValue
+                </MetricTabTrigger>
+                <MetricTabTrigger value="bounce">
+                    <MetricTabValue
                         diffDirection="same"
                         diffValue="0%"
                         icon="MousePointerClick"
                         label="Bounce Rate"
                         value="34.2%"
                     />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="conversion">
-                    <KpiTabValue
+                </MetricTabTrigger>
+                <MetricTabTrigger value="conversion">
+                    <MetricTabValue
                         diffDirection="down"
                         diffValue="-0.5%"
                         icon="Target"
                         label="Conversion"
                         value="3.8%"
                     />
-                </KpiTabTrigger>
+                </MetricTabTrigger>
             </TabsList>,
 
             <TabsContent key="users" value="users">
@@ -179,45 +179,45 @@ export const KPIWithIcons: Story = {
 export const KPIWithColors: Story = {
     args: {
         defaultValue: 'organic',
-        variant: 'kpis',
+        variant: 'metrics',
         children: [
             <TabsList key="list">
-                <KpiTabTrigger value="organic">
-                    <KpiTabValue
+                <MetricTabTrigger value="organic">
+                    <MetricTabValue
                         color="#10B981"
                         diffDirection="up"
                         diffValue="+18.7%"
                         label="Organic Traffic"
                         value="45.2K"
                     />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="paid">
-                    <KpiTabValue
+                </MetricTabTrigger>
+                <MetricTabTrigger value="paid">
+                    <MetricTabValue
                         color="#3B82F6"
                         diffDirection="up"
                         diffValue="+5.3%"
                         label="Paid Traffic"
                         value="12.8K"
                     />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="social">
-                    <KpiTabValue
+                </MetricTabTrigger>
+                <MetricTabTrigger value="social">
+                    <MetricTabValue
                         color="#8B5CF6"
                         diffDirection="down"
                         diffValue="-3.2%"
                         label="Social Traffic"
                         value="8.4K"
                     />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="direct">
-                    <KpiTabValue
+                </MetricTabTrigger>
+                <MetricTabTrigger value="direct">
+                    <MetricTabValue
                         color="#F59E0B"
                         diffDirection="up"
                         diffValue="+9.1%"
                         label="Direct Traffic"
                         value="15.6K"
                     />
-                </KpiTabTrigger>
+                </MetricTabTrigger>
             </TabsList>,
 
             <TabsContent key="organic" value="organic">
@@ -249,33 +249,33 @@ export const KPIWithColors: Story = {
 export const KPIWithoutTrends: Story = {
     args: {
         defaultValue: 'subscribers',
-        variant: 'kpis',
+        variant: 'metrics',
         children: [
             <TabsList key="list">
-                <KpiTabTrigger value="subscribers">
-                    <KpiTabValue
+                <MetricTabTrigger value="subscribers">
+                    <MetricTabValue
                         diffDirection="hidden"
                         icon="UserPlus"
                         label="Total Subscribers"
                         value="12,847"
                     />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="posts">
-                    <KpiTabValue
+                </MetricTabTrigger>
+                <MetricTabTrigger value="posts">
+                    <MetricTabValue
                         diffDirection="hidden"
                         icon="FileText"
                         label="Published Posts"
                         value="89"
                     />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="comments">
-                    <KpiTabValue
+                </MetricTabTrigger>
+                <MetricTabTrigger value="comments">
+                    <MetricTabValue
                         diffDirection="hidden"
                         icon="MessageSquare"
                         label="Total Comments"
                         value="2,156"
                     />
-                </KpiTabTrigger>
+                </MetricTabTrigger>
             </TabsList>,
 
             <TabsContent key="subscribers" value="subscribers">
@@ -370,4 +370,3 @@ export const Underline: Story = {
         }
     }
 };
-

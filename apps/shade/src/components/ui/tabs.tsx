@@ -8,9 +8,23 @@ import {TrendingDown, TrendingUp, type LucideIcon} from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import {Button, ButtonProps} from './button';
 
-type TabsVariant = 'segmented' | 'segmented-sm' | 'button' | 'button-sm' | 'underline' | 'navbar' | 'pill' | 'kpis';
+type PreferredTabsVariant = 'segmented' | 'segmented-sm' | 'button' | 'button-sm' | 'underline' | 'navigation' | 'pill' | 'metrics';
+type DeprecatedTabsVariant = 'navbar' | 'kpis';
+type TabsVariant = PreferredTabsVariant | DeprecatedTabsVariant;
 
-const TabsVariantContext = React.createContext<TabsVariant>('segmented');
+const resolveTabsVariant = (variant: TabsVariant): PreferredTabsVariant => {
+    if (variant === 'navbar') {
+        return 'navigation';
+    }
+
+    if (variant === 'kpis') {
+        return 'metrics';
+    }
+
+    return variant;
+};
+
+const TabsVariantContext = React.createContext<PreferredTabsVariant>('segmented');
 
 export interface TabsProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root> {
     variant?: TabsVariant;
@@ -26,9 +40,9 @@ const tabsVariants = cva(
                 button: '',
                 'button-sm': '',
                 underline: '',
-                navbar: '',
+                navigation: '',
                 pill: '',
-                kpis: ''
+                metrics: ''
             }
         },
         defaultVariants: {
@@ -40,11 +54,15 @@ const tabsVariants = cva(
 const Tabs = React.forwardRef<
     React.ElementRef<typeof TabsPrimitive.Root>,
     TabsProps
->(({variant = 'segmented', ...props}, ref) => (
-    <TabsVariantContext.Provider value={variant}>
-        <TabsPrimitive.Root ref={ref} {...props} />
-    </TabsVariantContext.Provider>
-));
+>(({variant = 'segmented', ...props}, ref) => {
+    const resolvedVariant = resolveTabsVariant(variant);
+
+    return (
+        <TabsVariantContext.Provider value={resolvedVariant}>
+            <TabsPrimitive.Root ref={ref} {...props} />
+        </TabsVariantContext.Provider>
+    );
+});
 Tabs.displayName = TabsPrimitive.Root.displayName;
 
 const tabsListVariants = cva(
@@ -57,9 +75,9 @@ const tabsListVariants = cva(
                 button: 'gap-2',
                 'button-sm': 'gap-1',
                 underline: 'w-full gap-5 border-b border-border-default',
-                navbar: 'h-[52px] items-end gap-6',
+                navigation: 'h-[52px] items-end gap-6',
                 pill: '-ml-0.5 h-[30px] gap-px',
-                kpis: 'border-b ring-0'
+                metrics: 'border-b ring-0'
             }
         },
         defaultVariants: {
@@ -93,9 +111,9 @@ const tabsTriggerVariants = cva(
                 button: 'h-(--control-height) gap-1.5 rounded-md py-2 text-sm font-normal hover:bg-muted data-[state=active]:bg-muted-foreground/10 data-[state=active]:font-medium',
                 'button-sm': 'h-6 gap-1.5 rounded-md p-2 text-xs font-normal text-text-secondary hover:bg-muted data-[state=active]:bg-muted-foreground/10 data-[state=active]:font-medium data-[state=active]:text-foreground',
                 underline: 'relative h-9 px-0 text-md font-semibold text-text-secondary after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:opacity-100!',
-                navbar: 'relative h-[52px] px-px text-md font-semibold text-muted-foreground after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:opacity-100!',
+                navigation: 'relative h-[52px] px-px text-md font-semibold text-muted-foreground after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:opacity-100!',
                 pill: 'relative h-[30px] rounded-md px-3 text-md font-medium text-text-secondary hover:text-foreground data-[state=active]:bg-muted-foreground/10 data-[state=active]:font-semibold data-[state=active]:text-foreground',
-                kpis: 'relative h-full! items-start! rounded-none border-border bg-transparent px-6 py-5 text-foreground ring-0 transition-all after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] first:rounded-tl-md last:rounded-tr-md hover:bg-accent/50 data-[state=active]:bg-transparent data-[state=active]:after:opacity-100 [&:not(:last-child)]:border-r [&[data-state=active]_[data-type="value"]]:text-foreground'
+                metrics: 'relative h-full! items-start! rounded-none border-border bg-transparent px-6 py-5 text-foreground ring-0 transition-all after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] first:rounded-tl-md last:rounded-tr-md hover:bg-accent/50 data-[state=active]:bg-transparent data-[state=active]:after:opacity-100 [&:not(:last-child)]:border-r [&[data-state=active]_[data-type="value"]]:text-foreground'
             }
         },
         defaultVariants: {
@@ -141,9 +159,9 @@ const tabsContentVariants = cva(
                 button: '',
                 'button-sm': '',
                 underline: '',
-                navbar: '',
+                navigation: '',
                 pill: '',
-                kpis: 'ring-0'
+                metrics: 'ring-0'
             }
         },
         defaultVariants: {
@@ -167,19 +185,20 @@ const TabsContent = React.forwardRef<
 });
 TabsContent.displayName = TabsPrimitive.Content.displayName;
 
-interface KpiTabTriggerProps extends React.ComponentProps<typeof TabsTrigger> {
+interface MetricTabTriggerProps extends React.ComponentProps<typeof TabsTrigger> {
     children: React.ReactNode;
 }
 
-const KpiTabTrigger: React.FC<KpiTabTriggerProps> = ({children, ...props}) => {
+const MetricTabTrigger: React.FC<MetricTabTriggerProps> = ({children, ...props}) => {
     return (
         <TabsTrigger className='h-auto' {...props}>
             {children}
         </TabsTrigger>
     );
 };
+MetricTabTrigger.displayName = 'MetricTabTrigger';
 
-interface KpiTabValueProps {
+interface MetricTabValueProps {
     color?: string;
     icon?: keyof typeof LucideIcons;
     label: string;
@@ -190,7 +209,7 @@ interface KpiTabValueProps {
     'data-testid'?: string;
 }
 
-const KpiTabValue: React.FC<KpiTabValueProps> = ({
+const MetricTabValue: React.FC<MetricTabValueProps> = ({
     color,
     icon: iconName,
     label,
@@ -236,13 +255,14 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
         </div>
     );
 };
+MetricTabValue.displayName = 'MetricTabValue';
 
-interface KpiDropdownButtonProps extends ButtonProps {
+interface MetricDropdownButtonProps extends ButtonProps {
     className?: string;
     children: React.ReactNode;
 }
 
-const KpiDropdownButton = React.forwardRef<HTMLButtonElement, KpiDropdownButtonProps>(
+const MetricDropdownButton = React.forwardRef<HTMLButtonElement, MetricDropdownButtonProps>(
     ({variant = 'dropdown', className, ...props}, ref) => {
         return (
             <Button
@@ -259,7 +279,7 @@ const KpiDropdownButton = React.forwardRef<HTMLButtonElement, KpiDropdownButtonP
         );
     }
 );
-KpiDropdownButton.displayName = 'KpiDropdownButton';
+MetricDropdownButton.displayName = 'MetricDropdownButton';
 
 interface TabsDropdownTriggerProps extends Omit<React.ComponentProps<typeof TabsPrimitive.Trigger>, 'asChild'> {
     children: React.ReactNode;
@@ -294,12 +314,24 @@ const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTrig
 });
 TabsDropdownTrigger.displayName = 'TabsDropdownTrigger';
 
+/** @deprecated Use `MetricTabTrigger` instead. */
+const KpiTabTrigger = MetricTabTrigger;
+
+/** @deprecated Use `MetricTabValue` instead. */
+const KpiTabValue = MetricTabValue;
+
+/** @deprecated Use `MetricDropdownButton` instead. */
+const KpiDropdownButton = MetricDropdownButton;
+
 export {
     Tabs,
     TabsList,
     TabsTrigger,
     TabsTriggerCount,
     TabsContent,
+    MetricTabTrigger,
+    MetricTabValue,
+    MetricDropdownButton,
     KpiTabTrigger,
     KpiTabValue,
     KpiDropdownButton,

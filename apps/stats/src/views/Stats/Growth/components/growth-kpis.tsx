@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Separator, Tabs, TabsList} from '@tryghost/shade/components';
+import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, MetricDropdownButton, MetricTabTrigger, MetricTabValue, Separator, Tabs, TabsList} from '@tryghost/shade/components';
 import {DiffDirection} from '@hooks/use-growth-stats';
 import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars, formatDisplayDateWithRange} from '@tryghost/shade/app';
@@ -241,66 +241,66 @@ const GrowthKPIs: React.FC<{
     const areaChartClassname = '-mb-3 h-[16vw] max-h-[320px] w-full min-h-[180px]';
 
     return (
-        <Tabs defaultValue={validatedInitialTab} variant='kpis'>
+        <Tabs defaultValue={validatedInitialTab} variant='metrics'>
             <TabsList className={`-mx-6 ${appSettings?.paidMembersEnabled ? 'hidden grid-cols-4 lg:visible! lg:grid!' : 'grid grid-cols-4'}`}>
-                <KpiTabTrigger className={!appSettings?.paidMembersEnabled ? 'cursor-auto after:hidden' : ''} value="total-members" onClick={() => {
+                <MetricTabTrigger className={!appSettings?.paidMembersEnabled ? 'cursor-auto after:hidden' : ''} value="total-members" onClick={() => {
                     if (appSettings?.paidMembersEnabled) {
                         handleTabChange('total-members');
                     }
                 }}>
-                    <KpiTabValue
+                    <MetricTabValue
                         color='var(--chart-darkblue)'
                         diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
                         diffValue={percentChanges.total}
                         label="Total members"
                         value={formatNumber(totalMembers)}
                     />
-                </KpiTabTrigger>
+                </MetricTabTrigger>
                 {appSettings?.paidMembersEnabled &&
                 <>
 
-                    <KpiTabTrigger value="free-members" onClick={() => {
+                    <MetricTabTrigger value="free-members" onClick={() => {
                         handleTabChange('free-members');
                     }}>
-                        <KpiTabValue
+                        <MetricTabValue
                             color='var(--chart-blue)'
                             diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.free}
                             diffValue={percentChanges.free}
                             label="Free members"
                             value={formatNumber(freeMembers)}
                         />
-                    </KpiTabTrigger>
-                    <KpiTabTrigger value="paid-members" onClick={() => {
+                    </MetricTabTrigger>
+                    <MetricTabTrigger value="paid-members" onClick={() => {
                         handleTabChange('paid-members');
                     }}>
-                        <KpiTabValue
+                        <MetricTabValue
                             color='var(--chart-purple)'
                             diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.paid}
                             diffValue={percentChanges.paid}
                             label="Paid members"
                             value={formatNumber(paidMembers)}
                         />
-                    </KpiTabTrigger>
-                    <KpiTabTrigger value="mrr" onClick={() => {
+                    </MetricTabTrigger>
+                    <MetricTabTrigger value="mrr" onClick={() => {
                         handleTabChange('mrr');
                     }}>
-                        <KpiTabValue
+                        <MetricTabValue
                             color='var(--chart-teal)'
                             diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.mrr}
                             diffValue={percentChanges.mrr}
                             label="MRR"
                             value={`${currencySymbol}${formatNumber(centsToDollars(mrr))}`}
                         />
-                    </KpiTabTrigger>
+                    </MetricTabTrigger>
                 </>
                 }
             </TabsList>
             {appSettings?.paidMembersEnabled &&
                 <DropdownMenu>
                     <DropdownMenuTrigger className='lg:hidden' asChild>
-                        <KpiDropdownButton>
+                        <MetricDropdownButton>
                             {currentTab === 'total-members' &&
-                                <KpiTabValue
+                                <MetricTabValue
                                     color='var(--chart-darkblue)'
                                     diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
                                     diffValue={percentChanges.total}
@@ -309,7 +309,7 @@ const GrowthKPIs: React.FC<{
                                 />
                             }
                             {currentTab === 'free-members' &&
-                                <KpiTabValue
+                                <MetricTabValue
                                     color='var(--chart-blue)'
                                     diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.free}
                                     diffValue={percentChanges.free}
@@ -318,7 +318,7 @@ const GrowthKPIs: React.FC<{
                                 />
                             }
                             {currentTab === 'paid-members' &&
-                                <KpiTabValue
+                                <MetricTabValue
                                     color='var(--chart-purple)'
                                     diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.paid}
                                     diffValue={percentChanges.paid}
@@ -327,7 +327,7 @@ const GrowthKPIs: React.FC<{
                                 />
                             }
                             {currentTab === 'mrr' &&
-                                <KpiTabValue
+                                <MetricTabValue
                                     color='var(--chart-teal)'
                                     diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.mrr}
                                     diffValue={percentChanges.mrr}
@@ -335,7 +335,7 @@ const GrowthKPIs: React.FC<{
                                     value={`${currencySymbol}${formatNumber(centsToDollars(mrr))}`}
                                 />
                             }
-                        </KpiDropdownButton>
+                        </MetricDropdownButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align='end' className="w-56">
                         <DropdownMenuItem onClick={() => handleTabChange('total-members')}>Total members</DropdownMenuItem>

@@ -1,5 +1,5 @@
 import React, {useMemo} from 'react';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, ChartConfig, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, Separator} from '@tryghost/shade/components';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, ChartConfig, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, MetricCardHeader, MetricCardHeaderLabel, MetricCardHeaderValue, Separator} from '@tryghost/shade/components';
 import {HTable} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {NewsletterRadialChart, NewsletterRadialChartData} from '../../Newsletter/components/newsletter-radial-chart';
@@ -87,25 +87,25 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                 <CardContent className={`${fullWidth && 'grid grid-cols-2'}`}>
                     <div className={`${fullWidth && 'border-r pr-6'}`}>
                         <div className='grid grid-cols-2 gap-6'>
-                            <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0'>
+                            <MetricCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0'>
                                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
-                                    <KpiCardHeaderLabel color='var(--chart-blue)'>
+                                    <MetricCardHeaderLabel color='var(--chart-blue)'>
                                     Open rate
-                                    </KpiCardHeaderLabel>
-                                    <KpiCardHeaderValue
+                                    </MetricCardHeaderLabel>
+                                    <MetricCardHeaderValue
                                     // diffDirection={'up'}
                                     // diffTooltip={'Better than the average'}
                                     // diffValue={1.45}
                                         value={formatPercentage(stats.openedRate)}
                                     />
                                 </div>
-                            </KpiCardHeader>
-                            <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0'>
+                            </MetricCardHeader>
+                            <MetricCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0'>
                                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
-                                    <KpiCardHeaderLabel color='var(--chart-teal)'>
+                                    <MetricCardHeaderLabel color='var(--chart-teal)'>
                                     Click rate
-                                    </KpiCardHeaderLabel>
-                                    <KpiCardHeaderValue
+                                    </MetricCardHeaderLabel>
+                                    <MetricCardHeaderValue
                                     // diffDirection={'up'}
                                     // diffTooltip={'Better than the average'}
                                     // diffValue={1.45}
@@ -113,7 +113,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                                     />
                                 </div>
 
-                            </KpiCardHeader>
+                            </MetricCardHeader>
                         </div>
                         {!fullWidth && <Separator />}
                         <div className='mx-auto my-6 h-[240px]'>
