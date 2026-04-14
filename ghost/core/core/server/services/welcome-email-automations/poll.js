@@ -1,4 +1,3 @@
-const getOwn = require('getown');
 const logging = require('@tryghost/logging');
 const db = require('../../data/db');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../member-welcome-emails/constants');
@@ -38,7 +37,7 @@ const MAX_ATTEMPTS = 10;
 const RETRY_DELAY_MS = 10 * 60 * 1000;
 const LOCK_TIMEOUT = 30 * 60 * 1000;
 
-const slugToMemberStatus = Object.fromEntries(
+const slugToMemberStatus = new Map(
     Object.entries(MEMBER_WELCOME_EMAIL_SLUGS).map(([status, slug]) => [slug, status])
 );
 
@@ -165,7 +164,7 @@ async function processRun({
         return;
     }
 
-    const memberStatus = getOwn(slugToMemberStatus, run.automation_slug);
+    const memberStatus = slugToMemberStatus.get(run.automation_slug);
     if (!memberStatus) {
         await markExited(run.id, 'email send failed');
         logging.error(
