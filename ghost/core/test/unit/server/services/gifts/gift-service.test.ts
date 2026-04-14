@@ -599,6 +599,8 @@ describe('GiftService', function () {
                 () => service.refund('pi_456'),
                 {message: 'Cannot remove product with active subscription'}
             );
+
+            assert.equal(gift.status, 'redeemed');
         });
 
         it('returns true without saving when gift is already refunded', async function () {
