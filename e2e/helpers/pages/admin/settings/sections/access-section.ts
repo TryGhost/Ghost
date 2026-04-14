@@ -1,7 +1,7 @@
 import {BasePage} from '@/helpers/pages';
 import {Locator, Page} from '@playwright/test';
 
-export class PrivateSiteSection extends BasePage {
+export class AccessSection extends BasePage {
     readonly section: Locator;
     readonly saveButton: Locator;
     readonly visibilitySelect: Locator;
