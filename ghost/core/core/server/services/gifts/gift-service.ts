@@ -246,7 +246,7 @@ export class GiftService {
                 status: 'gift'
             }, {id: memberId, transacting});
 
-            await this.deps.giftRepository.save(redeemed, {transacting});
+            await this.deps.giftRepository.update(redeemed, {transacting});
 
             return redeemed;
         });
@@ -266,7 +266,7 @@ export class GiftService {
         }
 
         await this.deps.giftRepository.transaction(async (transacting) => {
-            await this.deps.giftRepository.save(refunded, {transacting});
+            await this.deps.giftRepository.update(refunded, {transacting});
 
             if (gift.redeemerMemberId) {
                 await this.deps.memberRepository.update({
