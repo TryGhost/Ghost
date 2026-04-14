@@ -128,6 +128,13 @@ module.exports = class MemberRepository {
         });
     }
 
+    /**
+     * @param {Parameters<typeof DomainEvents.dispatch>[0]} event
+     * @param {object} options
+     * @param {object} options.transacting
+     * @param {Promise<unknown>} options.transacting.executionPromise
+     * @returns {void}
+     */
     dispatchEvent(event, options) {
         if (options?.transacting) {
             // Only dispatch the event after the transaction has finished
@@ -135,9 +142,13 @@ module.exports = class MemberRepository {
                 DomainEvents.dispatch(event);
             }).catch((err) => {
                 // catches transaction errors/rollback to not dispatch event
+                let memberMessageFragment = '';
+                if (event.data && typeof event.data === 'object' && 'memberId' in event.data) {
+                    memberMessageFragment = `for member ${event.data.memberId} `;
+                }
                 logging.error({
                     err,
-                    message: `Error dispatching event ${event.constructor.name} for member ${event.data.memberId} after transaction finished`
+                    message: `Error dispatching event ${event.constructor.name} ${memberMessageFragment}after transaction finished`
                 });
             });
         } else {
