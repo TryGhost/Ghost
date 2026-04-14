@@ -76,13 +76,15 @@ const validatePreviewData = (frame) => {
 
     if (typeof subject !== 'string' || !subject.trim()) {
         throw new ValidationError({
-            message: tpl(messages.subjectRequired)
+            message: tpl(messages.subjectRequired),
+            property: 'subject'
         });
     }
 
     if (typeof lexical !== 'string' || !lexical.trim()) {
         throw new ValidationError({
-            message: tpl(messages.lexicalRequired)
+            message: tpl(messages.lexicalRequired),
+            property: 'lexical'
         });
     }
 
@@ -90,7 +92,8 @@ const validatePreviewData = (frame) => {
         JSON.parse(lexical);
     } catch (e) {
         throw new ValidationError({
-            message: tpl(messages.invalidLexical)
+            message: tpl(messages.invalidLexical),
+            property: 'lexical'
         });
     }
 };
