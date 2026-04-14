@@ -248,6 +248,122 @@ describe('Acceptance: Member details', function () {
         expect(amountElement.textContent.trim()).to.equal('5.90');
     });
 
+    it('renders "Gift subscription" label for gift subscriptions, with no action menu', async function () {
+        const expiryAt = '2026-05-14T13:21:31.000Z';
+        tier.update({expiry_at: expiryAt});
+
+        const member = this.server.create('member', {
+            status: 'gift',
+            subscriptions: [
+                this.server.create('subscription', {
+                    id: '',
+                    tier,
+                    customer: {
+                        id: '',
+                        name: 'Receiver',
+                        email: 'receiver@example.com'
+                    },
+                    plan: {
+                        id: '',
+                        nickname: 'Complimentary',
+                        amount: 0,
+                        interval: 'year',
+                        currency: 'USD'
+                    },
+                    status: 'active',
+                    start_date: '2026-04-14T13:21:31.000Z',
+                    default_payment_card_last4: '****',
+                    cancel_at_period_end: false,
+                    cancellation_reason: null,
+                    current_period_end: expiryAt,
+                    price: {
+                        id: '',
+                        price_id: '',
+                        nickname: 'Complimentary',
+                        amount: 0,
+                        interval: 'year',
+                        type: 'recurring',
+                        currency: 'USD',
+                        tier: {
+                            id: '',
+                            tier_id: tier.id
+                        }
+                    },
+                    offer: null
+                })
+            ],
+            tiers: [tier]
+        });
+
+        await visit(`/members/${member.id}`);
+
+        const subscriptionCard = find(`[data-test-tier="${tier.id}"]`);
+        expect(subscriptionCard.textContent).to.include('Gift subscription');
+        expect(subscriptionCard.textContent).to.include('Expires 14 May 2026');
+        expect(subscriptionCard.textContent).to.not.include('Complimentary');
+        expect(findAll(`[data-test-tier="${tier.id}"] [data-test-button="subscription-actions"]`).length).to.equal(0);
+    });
+
+    it('renders "Complimentary" label for comped subscriptions, with "Remove complimentary subscription" action', async function () {
+        const expiryAt = '2026-05-14T13:21:31.000Z';
+        tier.update({expiry_at: expiryAt});
+
+        const member = this.server.create('member', {
+            status: 'comped',
+            subscriptions: [
+                this.server.create('subscription', {
+                    id: '',
+                    tier,
+                    customer: {
+                        id: '',
+                        name: 'Comped member',
+                        email: 'comped@example.com'
+                    },
+                    plan: {
+                        id: '',
+                        nickname: 'Complimentary',
+                        amount: 0,
+                        interval: 'year',
+                        currency: 'USD'
+                    },
+                    status: 'active',
+                    start_date: '2026-04-14T13:21:31.000Z',
+                    default_payment_card_last4: '****',
+                    cancel_at_period_end: false,
+                    cancellation_reason: null,
+                    current_period_end: expiryAt,
+                    price: {
+                        id: '',
+                        price_id: '',
+                        nickname: 'Complimentary',
+                        amount: 0,
+                        interval: 'year',
+                        type: 'recurring',
+                        currency: 'USD',
+                        tier: {
+                            id: '',
+                            tier_id: tier.id
+                        }
+                    },
+                    offer: null
+                })
+            ],
+            tiers: [tier]
+        });
+
+        await visit(`/members/${member.id}`);
+
+        const subscriptionCard = find(`[data-test-tier="${tier.id}"]`);
+        expect(subscriptionCard.textContent).to.include('Complimentary');
+        expect(subscriptionCard.textContent).to.include('Expires 14 May 2026');
+        expect(subscriptionCard.textContent).to.not.include('Gift subscription');
+        expect(findAll(`[data-test-tier="${tier.id}"] [data-test-button="subscription-actions"]`).length).to.equal(1);
+
+        await click(`[data-test-tier="${tier.id}"] [data-test-button="subscription-actions"]`);
+
+        expect(find(`[data-test-tier="${tier.id}"] [data-test-button="remove-complimentary"]`)).to.exist;
+    });
+
     it('can add and remove complimentary subscription', async function () {
         const member = this.server.create('member', {name: 'Comp Member Test'});
 

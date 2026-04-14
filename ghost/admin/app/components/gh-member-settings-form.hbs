@@ -183,6 +183,8 @@
                                                     </li>
                                                 </GhDropdown>
                                             </span>
+                                        {{else if sub.isGift}}
+                                        {{! No action menu for gift subscriptions }}
                                         {{else}}
                                             <span class="action-menu">
                                                 <GhDropdownButton @dropdownName="subscription-menu-{{sub.id}}" @classNames="gh-btn gh-btn-outline gh-btn-icon fill gh-btn-subscription-action icon-only" @title="Actions">

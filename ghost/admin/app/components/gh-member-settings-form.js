@@ -61,7 +61,7 @@ export default class extends Component {
             });
 
         let subsWithPrice = subscriptions.filter(sub => !!sub.price);
-        let subscriptionData = subsWithPrice.map(sub => getSubscriptionData(sub));
+        let subscriptionData = subsWithPrice.map(sub => getSubscriptionData(sub, this.member.get('status')));
 
         return tiers.map((tier) => {
             let tierSubscriptions = subscriptionData.filter((subscription) => {

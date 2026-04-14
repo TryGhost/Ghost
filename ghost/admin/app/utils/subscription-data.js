@@ -1,7 +1,7 @@
 import moment from 'moment-timezone';
 import {getNonDecimal, getSymbol} from 'ghost-admin/utils/currency';
 
-export function getSubscriptionData(sub) {
+export function getSubscriptionData(sub, memberStatus) {
     const data = {
         ...sub,
         attribution: {
@@ -19,8 +19,10 @@ export function getSubscriptionData(sub) {
             currencySymbol: getSymbol(sub.price.currency),
             nonDecimalAmount: getNonDecimal(sub.price.amount)
         },
-        isComplimentary: isComplimentary(sub),
-        compExpiry: compExpiry(sub),
+        isGift: isGiftSubscription(memberStatus),
+        isComplimentary: isComplimentary(sub, memberStatus),
+        compExpiry: compExpiry(sub, memberStatus),
+        giftExpiry: giftExpiry(sub, memberStatus),
         trialUntil: trialUntil(sub)
     };
 
@@ -56,8 +58,12 @@ export function isActive(sub) {
     return ['active', 'trialing', 'past_due', 'unpaid'].includes(sub.status);
 }
 
-export function isComplimentary(sub) {
-    return !sub.id;
+export function isComplimentary(sub, memberStatus) {
+    return memberStatus === 'comped' && !sub.id;
+}
+
+export function isGiftSubscription(memberStatus) {
+    return memberStatus === 'gift';
 }
 
 export function isCanceled(sub) {
@@ -68,8 +74,24 @@ export function isSetToCancel(sub) {
     return sub.cancel_at_period_end && isActive(sub);
 }
 
-export function compExpiry(sub) {
-    if (!sub.id && sub.tier && sub.tier.expiry_at) {
+export function compExpiry(sub, memberStatus) {
+    if (!isComplimentary(sub, memberStatus)) {
+        return undefined;
+    }
+
+    if (sub.tier && sub.tier.expiry_at) {
+        return moment(sub.tier.expiry_at).utc().format('D MMM YYYY');
+    }
+
+    return undefined;
+}
+
+export function giftExpiry(sub, memberStatus) {
+    if (!isGiftSubscription(memberStatus)) {
+        return undefined;
+    }
+
+    if (sub.tier && sub.tier.expiry_at) {
         return moment(sub.tier.expiry_at).utc().format('D MMM YYYY');
     }
 
@@ -91,6 +113,14 @@ export function trialUntil(sub) {
 export function validityDetails(data, separatorNeeded = false) {
     const separator = separatorNeeded ? ' – ' : '';
     const space = data.validUntil ? ' ' : '';
+
+    if (data.isGift) {
+        if (data.giftExpiry) {
+            return `${separator}Expires ${data.giftExpiry}`;
+        } else {
+            return '';
+        }
+    }
 
     if (data.isComplimentary) {
         if (data.compExpiry) {
@@ -118,6 +148,10 @@ export function validityDetails(data, separatorNeeded = false) {
 export function priceLabel(data) {
     if (data.trialUntil) {
         return 'Free trial';
+    }
+
+    if (data.isGift) {
+        return 'Gift subscription';
     }
 
     if (data.price.nickname && data.price.nickname.length > 0 && data.price.nickname !== 'Monthly' && data.price.nickname !== 'Yearly') {
