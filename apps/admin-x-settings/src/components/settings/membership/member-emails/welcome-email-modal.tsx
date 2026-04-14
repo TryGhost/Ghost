@@ -46,7 +46,7 @@ const EmailPreviewModalContent = React.forwardRef<
             <div className="justify-self-center">
                 {centeredHeaderContent}
             </div>
-            <div className="flex items-center justify-self-end gap-2">
+            <div className="flex items-center gap-2 justify-self-end">
                 {headerActions}
             </div>
         </div>
@@ -283,7 +283,9 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
         );
 
         if (nextHeight > 0) {
-            setPreviewHeight(previousHeight => previousHeight === nextHeight ? previousHeight : nextHeight);
+            setPreviewHeight((previousHeight) => {
+                return previousHeight === nextHeight ? previousHeight : nextHeight;
+            });
 
             if (!isPreviewReady && previewRevealFrameRef.current === null) {
                 previewRevealFrameRef.current = window.requestAnimationFrame(() => {
@@ -434,7 +436,6 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
             width='full'
         >
             <EmailPreviewModalContent
-                className='dark:bg-[#151719]'
                 centeredHeaderContent={
                     <Tabs
                         data-testid='welcome-email-mode-toggle'
@@ -448,6 +449,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                         </TabsList>
                     </Tabs>
                 }
+                className='dark:bg-[#151719]'
                 headerActions={
                     <>
                         <Button variant="outline" onClick={handleClose}>Close</Button>
@@ -507,9 +509,14 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                             onChange={e => updateForm(state => ({...state, subject: e.target.value}))}
                                         />
                                     ) : (
-                                        <div className='py-1 text-sm' data-testid='welcome-email-preview-subject'>
-                                            {previewState.preview?.subject || formState.subject}
-                                        </div>
+                                        <TextField
+                                            className='w-full cursor-default caret-transparent'
+                                            data-testid='welcome-email-preview-subject'
+                                            tabIndex={-1}
+                                            value={previewState.preview?.subject || formState.subject}
+                                            readOnly
+                                            onFocus={e => e.currentTarget.blur()}
+                                        />
                                     )}
                                 </div>
                             </div>

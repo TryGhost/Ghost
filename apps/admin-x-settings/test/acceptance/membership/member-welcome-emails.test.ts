@@ -131,6 +131,23 @@ const pasteText = async (page: Page, content: string) => {
     }, content);
 };
 
+const getWelcomeEmailModalLayoutMetrics = async (page: Page, mode: 'edit' | 'preview') => {
+    return await page.getByTestId('welcome-email-modal').evaluate((node, currentMode) => {
+        const subject = currentMode === 'preview'
+            ? node.querySelector('[data-testid="welcome-email-preview-subject"]')
+            : node.querySelector('input');
+        const content = currentMode === 'preview'
+            ? node.querySelector('[data-testid="welcome-email-preview"]')
+            : node.querySelector('[data-testid="welcome-email-editor"]');
+        const body = content?.parentElement;
+
+        return {
+            bodyTop: body?.getBoundingClientRect().top ?? 0,
+            subjectHeight: subject?.getBoundingClientRect().height ?? 0
+        };
+    }, mode);
+};
+
 test.describe('Member emails settings', async () => {
     test.describe('Welcome email modal', async () => {
         test('Edit and Preview controls render; preview request only happens on Preview switch', async ({page}) => {
@@ -201,9 +218,16 @@ test.describe('Member emails settings', async () => {
             await editor.click({timeout: 5000});
             await page.keyboard.type(' Draft note');
 
+            const editLayout = await getWelcomeEmailModalLayoutMetrics(page, 'edit');
+
             await modal.getByTestId('welcome-email-mode-preview').click();
             await expect.poll(() => (lastApiRequests.previewWelcomeEmail?.body as {lexical?: string} | undefined)?.lexical || '').toContain('Draft note');
             await expect(modal.getByTestId('welcome-email-preview-iframe')).toBeVisible();
+            await expect(modal.getByTestId('welcome-email-preview-loading')).not.toBeVisible();
+
+            const previewLayout = await getWelcomeEmailModalLayoutMetrics(page, 'preview');
+            expect(Math.abs(previewLayout.bodyTop - editLayout.bodyTop)).toBeLessThan(1);
+            expect(previewLayout.subjectHeight).toBe(editLayout.subjectHeight);
 
             await modal.getByTestId('welcome-email-mode-edit').click();
 
@@ -243,18 +267,17 @@ test.describe('Member emails settings', async () => {
             await expect(modal.getByTestId('welcome-email-preview-loading')).not.toBeVisible();
 
             await expect.poll(async () => {
-                const {iframeHeight, documentHeight} = await previewIframe.evaluate((node: HTMLIFrameElement) => {
-                    const iframeHeight = node.clientHeight;
+                const {documentHeight, iframeHeight} = await previewIframe.evaluate((node: HTMLIFrameElement) => {
+                    const nextIframeHeight = node.clientHeight;
                     const doc = node.contentDocument;
-                    const documentHeight = Math.max(
+                    const nextDocumentHeight = Math.max(
                         doc?.documentElement?.scrollHeight || 0,
                         doc?.body?.scrollHeight || 0
                     );
 
-                    return {iframeHeight, documentHeight};
+                    return {documentHeight: nextDocumentHeight, iframeHeight: nextIframeHeight};
                 });
 
-                console.log('preview heights', {iframeHeight, documentHeight});
                 return iframeHeight === documentHeight && documentHeight > 600;
             }).toBe(true);
         });
