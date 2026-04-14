@@ -157,10 +157,10 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px] md:pt-3">What access code should visitors use?</div>
                     <div className="w-full md:flex-1">
                         <TextField
+                            data-testid='site-access-code'
                             error={!!errors.password}
                             hint={errors.password}
                             placeholder="Enter access code"
-                            testId='site-access-code'
                             title='Access code'
                             value={password || ''}
                             hideTitle
