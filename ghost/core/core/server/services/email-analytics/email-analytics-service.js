@@ -448,16 +448,17 @@ module.exports = class EmailAnalyticsService {
             }
         }
 
-        // Small trick: if reached the end of new events, we are going to keep
-        // fetching the same events because 'begin' won't change
-        // So if we didn't have errors while fetching, and total events < maxEvents, increase lastEventTimestamp with one second
+        // When we've consumed all available events (eventCount < maxEvents), advance the cursor by 1 second
+        // to avoid re-fetching the same batch on the next cycle. When we hit the maxEvents budget mid-second,
+        // do NOT advance — the next pass needs to re-cover that second to pick up any remaining events.
         if (!error && eventCount > 0 && fetchData.lastEventTimestamp && fetchData.lastEventTimestamp.getTime() < Date.now() - 2000) {
-            // set the data on the db so we can store it for fetching after reboot
+            // Persist cursor to DB so we can resume after reboot
             await this.queries.setJobTimestamp(fetchData.jobName, 'finished', new Date(fetchData.lastEventTimestamp.getTime()));
-            // increment and store in local memory
-            fetchData.lastEventTimestamp = new Date(fetchData.lastEventTimestamp.getTime() + 1000);
+            if (eventCount < maxEvents) {
+                // Consumed everything in the window — advance to avoid re-fetching same batch
+                fetchData.lastEventTimestamp = new Date(fetchData.lastEventTimestamp.getTime() + 1000);
+            }
         } else {
-            // set job status to finished
             await this.queries.setJobStatus(fetchData.jobName, 'finished');
         }
 
