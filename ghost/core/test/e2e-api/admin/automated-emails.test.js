@@ -469,6 +469,117 @@ describe('Automated Emails API', function () {
                 });
         });
     });
+
+    describe('Preview', function () {
+        let automatedEmailId;
+
+        const validLexical = JSON.stringify({
+            root: {
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        detail: 0,
+                        format: 0,
+                        mode: 'normal',
+                        style: '',
+                        text: 'Welcome!',
+                        type: 'text',
+                        version: 1
+                    }],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    version: 1
+                }],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        });
+
+        beforeEach(async function () {
+            const automatedEmail = await createAutomatedEmail({
+                status: 'active',
+                lexical: validLexical
+            });
+            automatedEmailId = automatedEmail.id;
+        });
+
+        it('Can render preview', async function () {
+            await agent
+                .post(`automated_emails/${automatedEmailId}/preview/`)
+                .body({
+                    subject: 'Test Subject',
+                    lexical: validLexical
+                })
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails.length, 1);
+                    assert.equal(typeof body.automated_emails[0].html, 'string');
+                    assert.equal(typeof body.automated_emails[0].plaintext, 'string');
+                    assert.equal(body.automated_emails[0].subject, 'Test Subject');
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Cannot preview for non-existent automated email', async function () {
+            await agent
+                .post('automated_emails/abcd1234abcd1234abcd1234/preview/')
+                .body({
+                    subject: 'Test Subject',
+                    lexical: validLexical
+                })
+                .expectStatus(404)
+                .expect(({body}) => {
+                    assert.equal(body.errors.length, 1);
+                    assert.equal(typeof body.errors[0].id, 'string');
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Cannot preview without subject', async function () {
+            await agent
+                .post(`automated_emails/${automatedEmailId}/preview/`)
+                .body({
+                    lexical: validLexical
+                })
+                .expectStatus(422)
+                .expect(({body}) => {
+                    assert.equal(body.errors.length, 1);
+                    assert.equal(typeof body.errors[0].id, 'string');
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Cannot preview without lexical', async function () {
+            await agent
+                .post(`automated_emails/${automatedEmailId}/preview/`)
+                .body({
+                    subject: 'Test Subject'
+                })
+                .expectStatus(422)
+                .expect(({body}) => {
+                    assert.equal(body.errors.length, 1);
+                    assert.equal(typeof body.errors[0].id, 'string');
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+    });
+
     describe('SendTestEmail', function () {
         let automatedEmailId;
 
