@@ -263,6 +263,8 @@ async function poll(options) {
 
     await Promise.allSettled(runs.map(run => processRun({run, ...options})));
 
+    // If the batch is full, we might have another batch to execute. (There's
+    // no way to know without trying.)
     if (runs.length >= MAX_RUNS_PER_BATCH) {
         enqueueAnotherPollNow();
     }
