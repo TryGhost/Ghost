@@ -246,7 +246,7 @@ export class GiftService {
                 status: 'gift'
             }, {id: memberId, transacting});
 
-            await this.deps.giftRepository.save(redeemed, {transacting});
+            await this.deps.giftRepository.update(redeemed, {transacting});
 
             return redeemed;
         });
@@ -265,10 +265,16 @@ export class GiftService {
             return true;
         }
 
-        await this.deps.giftRepository.save(refunded);
+        await this.deps.giftRepository.transaction(async (transacting) => {
+            await this.deps.giftRepository.update(refunded, {transacting});
 
-        // TODO: if the gift was already redeemed/consumed, we should also
-        // downgrade the recipient member back to free.
+            if (gift.redeemerMemberId) {
+                await this.deps.memberRepository.update({
+                    products: [],
+                    status: 'free'
+                }, {id: gift.redeemerMemberId, transacting});
+            }
+        });
 
         return true;
     }

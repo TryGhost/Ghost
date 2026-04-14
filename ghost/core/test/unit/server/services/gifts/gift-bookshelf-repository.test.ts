@@ -80,7 +80,7 @@ describe('GiftBookshelfRepository', function () {
         assert.equal(gift, null);
     });
 
-    it('updates an existing gift when saving', async function () {
+    it('updates an existing gift', async function () {
         const existing = {
             save: sinon.stub().resolves(undefined),
             set: sinon.stub(),
@@ -136,7 +136,7 @@ describe('GiftBookshelfRepository', function () {
             refundedAt: null
         });
 
-        await repository.save(gift, {transacting: 'trx'});
+        await repository.update(gift, {transacting: 'trx'});
 
         sinon.assert.calledOnceWithExactly(GiftModel.findOne, {
             token: 'gift-token'
@@ -149,9 +149,9 @@ describe('GiftBookshelfRepository', function () {
         assert.equal(existing.save.firstCall.args[1].patch, true);
     });
 
-    it('creates a new gift when saving and no row exists', async function () {
+    it('throws InternalServerError when updating a gift that does not exist', async function () {
         const GiftModel = {
-            add: sinon.stub().resolves(undefined),
+            add: sinon.stub(),
             transaction: sinon.stub(),
             findOne: sinon.stub().resolves(null)
         };
@@ -178,14 +178,14 @@ describe('GiftBookshelfRepository', function () {
             refundedAt: null
         });
 
-        await repository.save(gift, {transacting: 'trx'});
-
-        sinon.assert.calledOnceWithExactly(GiftModel.findOne, {
-            token: 'gift-token'
-        }, {require: false, transacting: 'trx'});
-        sinon.assert.calledOnce(GiftModel.add);
-        assert.equal(GiftModel.add.firstCall.args[0].status, 'purchased');
-        assert.equal(GiftModel.add.firstCall.args[1].transacting, 'trx');
+        await assert.rejects(
+            () => repository.update(gift, {transacting: 'trx'}),
+            (err: any) => {
+                assert.equal(err.errorType, 'InternalServerError');
+                assert.equal(err.message, 'Gift not found: gift-token');
+                return true;
+            }
+        );
     });
 
     it('delegates transaction callbacks to the model', async function () {

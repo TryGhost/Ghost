@@ -24,7 +24,7 @@ import {
     transformApiTiersData,
     isSigninAllowed,
     isSignupAllowed,
-    getCompExpiry,
+    getSubscriptionExpiry,
     isInThePast,
     hasNewsletterSendingEnabled,
     getUpdatedOfferPrice,
@@ -681,7 +681,7 @@ describe('Helpers - ', () => {
         });
     });
 
-    describe('getCompExpiry', () => {
+    describe('getSubscriptionExpiry', () => {
         let member = {};
 
         beforeEach(() => {
@@ -703,7 +703,7 @@ describe('Helpers - ', () => {
 
         it('returns the expiry date of a comped subscription', () => {
             const date = new Date('2023-10-13T00:00:00.000Z');
-            expect(getCompExpiry({member})).toEqual(date.toLocaleDateString('en-GB', {year: 'numeric', month: 'short', day: 'numeric'}));
+            expect(getSubscriptionExpiry({member})).toEqual(date.toLocaleDateString('en-GB', {year: 'numeric', month: 'short', day: 'numeric'}));
         });
 
         it('returns the expiry date of a comped subscription if the member has multiple subscriptions', () => {
@@ -717,13 +717,13 @@ describe('Helpers - ', () => {
                     expiry_at: '2023-10-14T00:00:00.000Z'
                 }
             });
-            expect(getCompExpiry({member})).toEqual(date.toLocaleDateString('en-GB', {year: 'numeric', month: 'short', day: 'numeric'}));
+            expect(getSubscriptionExpiry({member})).toEqual(date.toLocaleDateString('en-GB', {year: 'numeric', month: 'short', day: 'numeric'}));
         });
 
         it('returns an empty string if the subscription has no expiry date', () => {
             delete member.subscriptions[0].tier.expiry_at;
 
-            expect(getCompExpiry({member})).toEqual('');
+            expect(getSubscriptionExpiry({member})).toEqual('');
         });
     });
 

@@ -8,11 +8,11 @@ import {buildGift} from './utils';
 
 describe('GiftService', function () {
     type GiftRepositoryStub = {
-        create: sinon.SinonStub;
         existsByCheckoutSessionId: sinon.SinonStub<[string], Promise<boolean>>;
         getByToken: sinon.SinonStub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>;
         getByPaymentIntentId: sinon.SinonStub<[string], Promise<Gift | null>>;
-        save: sinon.SinonStub;
+        create: sinon.SinonStub;
+        update: sinon.SinonStub;
         transaction: sinon.SinonStub<Parameters<GiftRepository['transaction']>, Promise<unknown>>;
     };
 
@@ -47,11 +47,11 @@ describe('GiftService', function () {
 
     beforeEach(function () {
         giftRepository = {
-            create: sinon.stub(),
             existsByCheckoutSessionId: sinon.stub<[string], Promise<boolean>>().resolves(false),
             getByToken: sinon.stub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>().resolves(null),
             getByPaymentIntentId: sinon.stub<[string], Promise<Gift | null>>().resolves(null),
-            save: sinon.stub(),
+            create: sinon.stub(),
+            update: sinon.stub(),
             transaction: sinon.stub<Parameters<GiftRepository['transaction']>, Promise<unknown>>().callsFake(async (callback) => {
                 return await callback('trx');
             })
@@ -449,7 +449,7 @@ describe('GiftService', function () {
                 id: 'member_1',
                 transacting: 'trx'
             });
-            sinon.assert.calledOnceWithExactly(giftRepository.save, redeemed, {transacting: 'trx'});
+            sinon.assert.calledOnceWithExactly(giftRepository.update, redeemed, {transacting: 'trx'});
             assert.equal(redeemed.status, 'redeemed');
             assert.equal(redeemed.redeemerMemberId, 'member_1');
             assert.notEqual(redeemed.consumesAt, null);
@@ -472,7 +472,7 @@ describe('GiftService', function () {
             );
 
             sinon.assert.notCalled(memberRepository.update);
-            sinon.assert.notCalled(giftRepository.save);
+            sinon.assert.notCalled(giftRepository.update);
         });
 
         it('throws NotFoundError when the gift token does not exist', async function () {
@@ -492,7 +492,7 @@ describe('GiftService', function () {
             );
 
             sinon.assert.notCalled(memberRepository.update);
-            sinon.assert.notCalled(giftRepository.save);
+            sinon.assert.notCalled(giftRepository.update);
         });
 
         it('throws BadRequestError when the member is not eligible', async function () {
@@ -516,7 +516,7 @@ describe('GiftService', function () {
             );
 
             sinon.assert.notCalled(memberRepository.update);
-            sinon.assert.notCalled(giftRepository.save);
+            sinon.assert.notCalled(giftRepository.update);
         });
     });
 
@@ -530,13 +530,14 @@ describe('GiftService', function () {
             const result = await service.refund('pi_456');
 
             assert.equal(result, true);
-            sinon.assert.calledOnce(giftRepository.save);
+            sinon.assert.calledOnce(giftRepository.update);
 
-            const saved = giftRepository.save.getCall(0).args[0];
+            const [saved, options] = giftRepository.update.getCall(0).args;
 
             assert.equal(saved.status, 'refunded');
             assert.ok(saved.refundedAt);
             assert.notEqual(saved, gift);
+            assert.deepEqual(options, {transacting: 'trx'});
         });
 
         it('returns false when no gift matches the payment intent', async function () {
@@ -546,7 +547,60 @@ describe('GiftService', function () {
             const result = await service.refund('pi_unknown');
 
             assert.equal(result, false);
-            sinon.assert.notCalled(giftRepository.save);
+            sinon.assert.notCalled(giftRepository.update);
+        });
+
+        it('downgrades the redeemer to free when the gift was redeemed', async function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemerMemberId: 'redeemer_1',
+                redeemedAt: new Date('2026-02-01T00:00:00.000Z'),
+                consumesAt: new Date('2027-02-01T00:00:00.000Z')
+            });
+
+            giftRepository.getByPaymentIntentId.resolves(gift);
+
+            const service = createService();
+            const result = await service.refund('pi_456');
+
+            assert.equal(result, true);
+            sinon.assert.calledOnce(giftRepository.update);
+            sinon.assert.calledOnce(giftRepository.transaction);
+            sinon.assert.calledOnceWithExactly(memberRepository.update, {
+                products: [],
+                status: 'free'
+            }, {id: 'redeemer_1', transacting: 'trx'});
+        });
+
+        it('does not downgrade when the gift was not redeemed', async function () {
+            const gift = buildGift();
+
+            giftRepository.getByPaymentIntentId.resolves(gift);
+
+            const service = createService();
+            await service.refund('pi_456');
+
+            sinon.assert.notCalled(memberRepository.update);
+        });
+
+        it('throws when member downgrade fails', async function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemerMemberId: 'redeemer_1',
+                redeemedAt: new Date('2026-02-01T00:00:00.000Z'),
+                consumesAt: new Date('2027-02-01T00:00:00.000Z')
+            });
+
+            giftRepository.getByPaymentIntentId.resolves(gift);
+            memberRepository.update.rejects(new Error('Cannot remove product with active subscription'));
+
+            const service = createService();
+            await assert.rejects(
+                () => service.refund('pi_456'),
+                {message: 'Cannot remove product with active subscription'}
+            );
+
+            assert.equal(gift.status, 'redeemed');
         });
 
         it('returns true without saving when gift is already refunded', async function () {
@@ -561,7 +615,7 @@ describe('GiftService', function () {
             const result = await service.refund('pi_456');
 
             assert.equal(result, true);
-            sinon.assert.notCalled(giftRepository.save);
+            sinon.assert.notCalled(giftRepository.update);
         });
     });
 });

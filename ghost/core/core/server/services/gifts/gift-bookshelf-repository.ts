@@ -1,3 +1,4 @@
+import errors from '@tryghost/errors';
 import {Gift, type GiftCadence, type GiftStatus} from './gift';
 import type {GiftRepository, RepositoryTransactionOptions} from './gift-repository';
 
@@ -53,10 +54,6 @@ export class GiftBookshelfRepository implements GiftRepository {
         return !!existing;
     }
 
-    async create(gift: Gift, options: RepositoryTransactionOptions = {}) {
-        await this.model.add(this.toRow(gift), options);
-    }
-
     async getByToken(token: string, options: RepositoryTransactionOptions = {}): Promise<Gift | null> {
         const model = await this.model.findOne({
             token
@@ -73,13 +70,17 @@ export class GiftBookshelfRepository implements GiftRepository {
         return this.toGift(model);
     }
 
-    async save(gift: Gift, options: RepositoryTransactionOptions = {}) {
+    async create(gift: Gift, options: RepositoryTransactionOptions = {}) {
+        await this.model.add(this.toRow(gift), options);
+    }
+
+    async update(gift: Gift, options: RepositoryTransactionOptions = {}) {
         const existing = await this.model.findOne({
             token: gift.token
         }, {require: false, ...options});
 
         if (!existing) {
-            return this.create(gift, options);
+            throw new errors.InternalServerError({message: `Gift not found: ${gift.token}`});
         }
 
         await existing.save(this.toRow(gift), {

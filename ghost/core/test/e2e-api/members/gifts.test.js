@@ -179,6 +179,12 @@ describe('Members Gifts', function () {
         assert.equal(gift.get('redeemer_member_id'), member.id);
         assert.ok(gift.get('redeemed_at'));
         assert.ok(gift.get('consumes_at'));
+
+        const memberResponse = await agent
+            .get('/api/member/')
+            .expectStatus(200);
+
+        assert.equal(memberResponse.body.status, 'gift');
     });
 
     it('returns 401 when redeeming a gift via POST without a member session', async function () {
