@@ -624,6 +624,7 @@ describe('Automated Emails API', function () {
                 .expect(({body}) => {
                     assert.equal(body.errors.length, 1);
                     assert.equal(typeof body.errors[0].id, 'string');
+                    assert.equal(body.errors[0].property, 'subject');
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
@@ -641,6 +642,7 @@ describe('Automated Emails API', function () {
                 .expect(({body}) => {
                     assert.equal(body.errors.length, 1);
                     assert.equal(typeof body.errors[0].id, 'string');
+                    assert.equal(body.errors[0].property, 'lexical');
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
