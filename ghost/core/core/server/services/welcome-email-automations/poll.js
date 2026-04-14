@@ -43,17 +43,16 @@ const slugToMemberStatus = Object.fromEntries(
 );
 
 /**
- * @typedef {{runs: never[], nextFutureReadyAt: Date | null} | {runs: Run[]}} FetchAndLockRunsResult
- */
-
-/**
- * @returns {Promise<FetchAndLockRunsResult>}
+ * @returns {Promise<{
+ *     runs: Run[];
+ *     nextFutureReadyAt: null | Date;
+ * }>}
  */
 async function fetchAndLockRuns() {
     const now = new Date();
     const lockCutoff = new Date(now.getTime() - LOCK_TIMEOUT);
 
-    return db.knex.transaction(async (trx) => {
+    return await db.knex.transaction(async (trx) => {
         /** @type {Run[]} */
         const runs = await trx('welcome_email_automation_runs as r')
             .join('welcome_email_automations as a', 'r.welcome_email_automation_id', 'a.id')
@@ -73,7 +72,7 @@ async function fetchAndLockRuns() {
                 .select(db.knex.raw('MIN(ready_at) as next_ready_at'))
                 .first();
             const nextFutureReadyAt = result?.next_ready_at ? new Date(result.next_ready_at) : null;
-            return {runs: [], nextFutureReadyAt};
+            return {runs, nextFutureReadyAt};
         }
 
         /** @type {string[]} */ const ids = [];
