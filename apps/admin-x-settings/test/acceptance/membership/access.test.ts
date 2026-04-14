@@ -48,14 +48,14 @@ test.describe('Access settings', async () => {
 
         const section = page.getByTestId('access');
 
-        // Check current selected values
-        await expect(section.getByTestId('subscription-access-select')).toContainText('Public');
-        await expect(section.getByText('Public')).toHaveCount(1);
-        await expect(section.getByText('Nobody')).toHaveCount(1);
-
         const subscriptionAccessSelect = section.getByTestId('subscription-access-select');
         const defaultPostAccessSelect = section.getByTestId('default-post-access-select');
         const commentingSelect = section.getByTestId('commenting-select');
+
+        // Check current selected values
+        await expect(subscriptionAccessSelect).toContainText('Public');
+        await expect(defaultPostAccessSelect).toContainText('Public');
+        await expect(commentingSelect).toContainText('Nobody');
 
         // Check available options
         await expect(getOptionsFromSelect(subscriptionAccessSelect)).resolves.toEqual(['Public', 'Paid-members only', 'Invite-only', 'Nobody']);
