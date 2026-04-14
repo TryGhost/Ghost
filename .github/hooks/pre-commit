@@ -22,7 +22,7 @@ red='\033[0;31m'
 
 ROOT_DIR=$(git rev-parse --show-cdup)
 SUBMODULES=$(grep path ${ROOT_DIR}.gitmodules | sed 's/^.*path = //')
-MOD_SUBMODULES=$(git diff --cached --name-only --ignore-submodules=none | grep -F "$SUBMODULES")
+MOD_SUBMODULES=$(git diff --cached --name-only --ignore-submodules=none | grep -F "$SUBMODULES" || true)
 
 echo -e "Checking submodules ${grey}(pre-commit hook)${no_color} "
 
