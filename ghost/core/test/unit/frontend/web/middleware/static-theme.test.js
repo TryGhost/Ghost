@@ -117,6 +117,20 @@ describe('staticTheme', function () {
         });
     });
 
+    it('should enable fallthrough for generated llms files', function (done) {
+        req.path = '/llms.txt';
+
+        staticTheme()(req, res, function next() {
+            sinon.assert.calledTwice(activeThemeStub);
+            sinon.assert.called(expressStaticStub);
+
+            const options = expressStaticStub.firstCall.args[1];
+            assert.equal(options.fallthrough, true);
+
+            done();
+        });
+    });
+
     it('should call express.static for .js file', function (done) {
         req.path = 'myvalidfile.js';
 

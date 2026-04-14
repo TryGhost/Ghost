@@ -32,6 +32,7 @@ const _ = require('lodash');
  * @property {string|null} secondary_navigation - JSON string of secondary navigation items
  * @property {string|null} meta_title - Custom meta title
  * @property {string|null} meta_description - Custom meta description
+ * @property {boolean|null} llms_enabled - Whether llms.txt exports are enabled
  * @property {string|null} og_image - Open Graph image URL
  * @property {string|null} og_title - Open Graph title
  * @property {string|null} og_description - Open Graph description
