@@ -1,5 +1,5 @@
 import AppContext from '../../../../app-context';
-import {getCompExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
+import {getSubscriptionExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../../../images/icons/offer-tag.svg';
@@ -33,12 +33,20 @@ const PaidAccountActions = () => {
             label = `${Intl.NumberFormat('en', {currency, style: 'currency'}).format(amount / 100)}/${t(interval)}`;
         }
 
-        const compExpiry = getCompExpiry({member});
-        if (isComplimentary) {
-            if (compExpiry) {
-                label = `${t('Complimentary')} - ${t('Expires {expiryDate}', {expiryDate: compExpiry})}`;
+        const subscriptionExpiry = getSubscriptionExpiry({member});
+        const isGiftMember = member?.status === 'gift';
+
+        if (isGiftMember) {
+            if (subscriptionExpiry) {
+                label = `${t('Gift subscription')} - ${t('Expires {expiryDate}', {expiryDate: subscriptionExpiry})}`;
             } else {
-                label = label ? `${t('Complimentary')} (${label})` : t(`Complimentary`);
+                label = t('Gift subscription');
+            }
+        } else if (isComplimentary) {
+            if (subscriptionExpiry) {
+                label = `${t('Complimentary')} - ${t('Expires {expiryDate}', {expiryDate: subscriptionExpiry})}`;
+            } else {
+                label = t('Complimentary');
             }
         }
 

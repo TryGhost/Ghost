@@ -229,6 +229,7 @@ export const member = {
         firstname: 'Jamie',
         subscriptions: [],
         paid: false,
+        status: 'free',
         avatarImage: '',
         subscribed: true,
         newsletters: []
@@ -239,6 +240,7 @@ export const member = {
         firstname: 'Jimmie',
         subscriptions: [],
         paid: false,
+        status: 'free',
         avatarImage: '',
         subscribed: true
     }),
@@ -248,6 +250,7 @@ export const member = {
         firstname: 'Jamie',
         subscriptions: [],
         paid: false,
+        status: 'free',
         avatarImage: '',
         subscribed: true,
         email_suppression: {
@@ -260,6 +263,7 @@ export const member = {
     }),
     paid: getMemberData({
         paid: true,
+        status: 'paid',
         subscriptions: [
             getSubscriptionData({
                 status: 'active',
@@ -275,6 +279,7 @@ export const member = {
     }),
     paidWithCanceledSubscription: getMemberData({
         paid: true,
+        status: 'paid',
         subscriptions: [
             getSubscriptionData({
                 status: 'canceled',
@@ -300,6 +305,7 @@ export const member = {
     }),
     complimentary: getMemberData({
         paid: true,
+        status: 'comped',
         subscriptions: []
     }),
     altComplimentary: getMemberData({
@@ -307,10 +313,12 @@ export const member = {
         email: 'jimmie@example.com',
         firstname: 'Jimmie',
         paid: true,
+        status: 'comped',
         subscriptions: []
     }),
     complimentaryWithSubscription: getMemberData({
         paid: true,
+        status: 'comped',
         subscriptions: [
             getSubscriptionData({
                 amount: 0
@@ -322,6 +330,7 @@ export const member = {
         email: 'comped-former-paid@example.com',
         firstname: 'Comped',
         paid: true,
+        status: 'comped',
         subscriptions: [
             getSubscriptionData({
                 status: 'canceled',
@@ -337,6 +346,7 @@ export const member = {
     }),
     preview: getMemberData({
         paid: true,
+        status: 'paid',
         subscriptions: [
             getSubscriptionData({
                 amount: 1500,

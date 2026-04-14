@@ -93,7 +93,7 @@ export function hasNewsletterSendingEnabled({site}) {
     return site?.editor_default_email_recipients !== 'disabled';
 }
 
-export function getCompExpiry({member}) {
+export function getSubscriptionExpiry({member}) {
     const subscription = getMemberSubscription({member});
     if (subscription?.tier?.expiry_at) {
         return getDateString(subscription.tier.expiry_at);

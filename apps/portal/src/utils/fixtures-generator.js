@@ -164,6 +164,7 @@ export function getMemberData({
     firstname = 'Jamie',
     subscriptions = [],
     paid = false,
+    status,
     avatarImage: avatar_image = '',
     subscribed = true,
     email_suppression = {
@@ -172,7 +173,7 @@ export function getMemberData({
     },
     newsletters = []
 } = {}) {
-    return {
+    const member = {
         uuid: generateUuid(),
         email,
         name,
@@ -184,6 +185,12 @@ export function getMemberData({
         email_suppression,
         newsletters
     };
+
+    if (status !== undefined) {
+        member.status = status;
+    }
+
+    return member;
 }
 
 export function getNewsletterData({
