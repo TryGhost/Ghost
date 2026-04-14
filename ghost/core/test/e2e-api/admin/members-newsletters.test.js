@@ -1,5 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyArray} = matchers;
+const {anyContentVersion, anyContentLength, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyArray, anyObject, nullable} = matchers;
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
 const sinon = require('sinon');
 
@@ -9,6 +9,7 @@ const memberMatcherShallowIncludesForNewsletters = {
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
     subscriptions: anyArray,
+    current_subscription: nullable(anyObject),
     labels: anyArray,
     newsletters: anyArray
 };
@@ -41,6 +42,7 @@ describe('Members API - With Newsletters', function () {
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
+                'content-length': anyContentLength,
                 etag: anyEtag
             });
     });
@@ -54,6 +56,7 @@ describe('Members API - With Newsletters', function () {
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
+                'content-length': anyContentLength,
                 etag: anyEtag
             });
     });
@@ -85,6 +88,7 @@ describe('Members API - With Newsletters - compat mode', function () {
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
+                'content-length': anyContentLength,
                 etag: anyEtag
             });
     });
@@ -98,6 +102,7 @@ describe('Members API - With Newsletters - compat mode', function () {
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
+                'content-length': anyContentLength,
                 etag: anyEtag
             });
     });

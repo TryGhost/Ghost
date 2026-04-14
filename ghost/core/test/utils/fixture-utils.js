@@ -670,6 +670,15 @@ const fixtures = {
                     })}, {id: member.id});
                 }
             }
+
+            // Populate members_current_subscription lookup table for each member
+            // that has subscriptions (uses the VIEW as single source of truth
+            // for subscription priority resolution)
+            await models.Base.knex.raw(`
+                INSERT INTO members_current_subscription (member_id, subscription_id)
+                SELECT member_id, subscription_id
+                FROM members_resolved_subscription
+            `);
         }).then(async function () {
             for (const event of DataGenerator.forKnex.members_paid_subscription_events) {
                 await models.MemberPaidSubscriptionEvent.add(event);
@@ -943,7 +952,7 @@ const getFixtureOps = (toDos) => {
         fixtureOps.push(function initDB() {
             // skip adding all fixtures!
             if (tablesOnly) {
-                return knexMigrator.init({skip: 2});
+                return knexMigrator.init({skip: 3});
             }
 
             return knexMigrator.init();

@@ -339,6 +339,10 @@ module.exports = class MemberBREADService {
             'stripeSubscriptions.stripePrice',
             'stripeSubscriptions.stripePrice.stripeProduct',
             'stripeSubscriptions.stripePrice.stripeProduct.product',
+            // The resolved subscription itself — no nested loads, since the
+            // FE finds price/product details in the already-loaded
+            // `subscriptions` array via the matching id.
+            'currentSubscription',
             'products',
             'newsletters'
         ];
@@ -594,6 +598,10 @@ module.exports = class MemberBREADService {
             'stripeSubscriptions.stripePrice',
             'stripeSubscriptions.stripePrice.stripeProduct',
             'stripeSubscriptions.stripePrice.stripeProduct.product',
+            // The resolved subscription itself — no nested loads, since the
+            // FE finds price/product details in the already-loaded
+            // `subscriptions` array via the matching id.
+            'currentSubscription',
             'products',
             'newsletters'
         ];

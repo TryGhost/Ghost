@@ -23,6 +23,7 @@ Object {
       },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "current_subscription": null,
       "email": "with-product@test.com",
       "email_count": 0,
       "email_open_rate": null,

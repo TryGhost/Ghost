@@ -193,6 +193,8 @@ function serializeMember(member, options) {
         serialized.tiers = json.products;
     }
 
+    serialized.current_subscription = json.current_subscription || null;
+
     // Rename subscriptions.price.product to subscriptions.price.tier
     for (const subscription of serialized.subscriptions) {
         if (!subscription.price) {

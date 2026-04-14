@@ -9,7 +9,7 @@ const models = require('../../../core/server/models');
 const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils');
 const DomainEvents = require('@tryghost/domain-events');
-const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyString, anyArray, anyObject} = matchers;
+const {anyContentVersion, anyContentLength, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyString, anyArray, anyObject, nullable} = matchers;
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
 const sinon = require('sinon');
 
@@ -2569,6 +2569,7 @@ describe('Members API', function () {
             created_at: anyISODateTime,
             updated_at: anyISODateTime,
             subscriptions: anyArray,
+            current_subscription: nullable(anyObject),
             labels: anyArray,
             tiers: anyArray,
             attribution: anyObject,
@@ -2584,6 +2585,7 @@ describe('Members API', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
@@ -2741,6 +2743,7 @@ describe('Members API', function () {
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 })
                 .expect(({body: body3}) => {
@@ -3190,6 +3193,7 @@ describe('Members API', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 })
                 .expect(({body}) => {
