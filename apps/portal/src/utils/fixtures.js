@@ -211,6 +211,7 @@ export function paidMemberOnTier() {
     let price = site?.products?.[1].monthlyPrice;
     let updatedMember = getMemberData({
         paid: true,
+        status: 'paid',
         subscriptions: [
             getSubscriptionData({
                 offer: null,

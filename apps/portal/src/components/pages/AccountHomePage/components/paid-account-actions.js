@@ -36,12 +36,8 @@ const PaidAccountActions = () => {
         const subscriptionExpiry = getSubscriptionExpiry({member});
         const isGiftMember = member?.status === 'gift';
 
-        if (isGiftMember) {
-            if (subscriptionExpiry) {
-                label = `${t('Gift subscription')} - ${t('Expires {expiryDate}', {expiryDate: subscriptionExpiry})}`;
-            } else {
-                label = t('Gift subscription');
-            }
+        if (isGiftMember && subscriptionExpiry) {
+            label = `${t('Gift subscription')} - ${t('Expires {expiryDate}', {expiryDate: subscriptionExpiry})}`;
         } else if (isComplimentary) {
             if (subscriptionExpiry) {
                 label = `${t('Complimentary')} - ${t('Expires {expiryDate}', {expiryDate: subscriptionExpiry})}`;
