@@ -21,16 +21,19 @@ class WelcomeEmailAutomationsService {
             domainEvents.dispatch(StartAutomationsPollEvent.create());
         };
 
+        /**
+         * @param {Readonly<Date>} date
+         */
+        const enqueuePollAt = (date) => {
+            // TODO(NY-1191): Use Scheduler instead of `setTimeout`.
+            setTimeout(enqueuePollNow, date.getTime() - Date.now());
+        };
+
         domainEvents.subscribe(StartAutomationsPollEvent, oneAtATime(async () => {
             await poll({
                 memberWelcomeEmailService,
                 enqueueAnotherPollNow: enqueuePollNow,
-                enqueueAnotherPollAt: (date) => {
-                    // TODO(NY-1191): Use Scheduler instead of `setTimeout`.
-                    setTimeout(() => {
-                        enqueuePollNow();
-                    }, date.getTime() - Date.now());
-                }
+                enqueueAnotherPollAt: enqueuePollAt
             });
         }));
 
