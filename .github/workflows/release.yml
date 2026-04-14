@@ -28,13 +28,6 @@ on:
 env:
   FORCE_COLOR: 1
   NODE_VERSION: 22.18.0
-  CACHED_DEPENDENCY_PATHS: |
-    ${{ github.workspace }}/node_modules
-    ${{ github.workspace }}/apps/*/node_modules
-    ${{ github.workspace }}/ghost/*/node_modules
-    ${{ github.workspace }}/e2e/node_modules
-    ~/.cache/ms-playwright/
-
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
@@ -66,11 +59,10 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: pnpm-dep-cache-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Set up Git
         run: |
