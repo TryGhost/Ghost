@@ -296,6 +296,7 @@ describe('Gift Subscriptions', function () {
                     amount_total: paidTier.monthly_price,
                     currency: paidTier.currency.toLowerCase(),
                     customer: checkoutSession.customer,
+                    customer_details: {email: 'refund-buyer@example.com'},
                     metadata: toWebhookMetadata(checkoutSession.metadata),
                     payment_intent: paymentIntentId
                 }
