@@ -1,0 +1,19 @@
+name: CI (Release)
+on:
+  push:
+    tags:
+      - 'v[0-9]*'
+
+# Tags must never be cancelled — each is a public release
+concurrency:
+  group: ci-release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
