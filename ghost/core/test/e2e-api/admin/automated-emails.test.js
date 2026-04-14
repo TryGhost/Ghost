@@ -499,6 +499,10 @@ describe('Automated Emails API', function () {
             }
         });
 
+        beforeEach(function () {
+            sinon.stub(Date.prototype, 'getFullYear').returns(2025);
+        });
+
         beforeEach(async function () {
             await agent.loginAsOwner();
             const automatedEmail = await createAutomatedEmail({
@@ -506,6 +510,10 @@ describe('Automated Emails API', function () {
                 lexical: validLexical
             });
             automatedEmailId = automatedEmail.id;
+        });
+
+        afterEach(function () {
+            sinon.restore();
         });
 
         it('Can render preview', async function () {
@@ -516,12 +524,7 @@ describe('Automated Emails API', function () {
                     lexical: validLexical
                 })
                 .expectStatus(200)
-                .expect(({body}) => {
-                    assert.equal(body.automated_emails.length, 1);
-                    assert.equal(typeof body.automated_emails[0].html, 'string');
-                    assert.equal(typeof body.automated_emails[0].plaintext, 'string');
-                    assert.equal(body.automated_emails[0].subject, 'Test Subject');
-                })
+                .matchBodySnapshot()
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag
