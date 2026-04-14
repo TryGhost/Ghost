@@ -141,10 +141,14 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('creates automation run when member source is "member"', async function () {
+            const before = new Date(Date.now() - 1000);
+
             const member = await membersService.api.members.create({
                 email: 'welcome-test@example.com',
                 name: 'Welcome Test Member'
             }, {});
+
+            const after = new Date(Date.now() + 1000);
 
             const runs = await db.knex('welcome_email_automation_runs')
                 .where('member_id', member.id);
@@ -154,10 +158,13 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(run.member_id, member.id);
             assert.ok(run.welcome_email_automation_id);
             assert.ok(run.next_welcome_email_automated_email_id);
-            assert.ok(run.ready_at);
             assert.equal(run.step_started_at, null);
             assert.equal(run.step_attempts, 0);
             assert.equal(run.exit_reason, null);
+
+            const timestamp = parseDatabaseDate(run.ready_at);
+            assert(timestamp >= before);
+            assert(timestamp <= after);
         });
 
         it('does NOT create automation run when member is imported', async function () {
@@ -178,26 +185,6 @@ describe('Member Welcome Emails Integration', function () {
 
             const runs = await db.knex('welcome_email_automation_runs');
             assert.equal(runs.length, 0);
-        });
-
-        it('creates automation run with correct ready_at timestamp', async function () {
-            const beforeCreation = new Date(Date.now() - 1000);
-
-            const member = await membersService.api.members.create({
-                email: 'timestamp-test@example.com',
-                name: 'Timestamp Test'
-            }, {});
-
-            const afterCreation = new Date(Date.now() + 1000);
-
-            const runs = await db.knex('welcome_email_automation_runs')
-                .where('member_id', member.id);
-
-            assert.equal(runs.length, 1);
-
-            const timestamp = parseDatabaseDate(runs[0]?.ready_at);
-            assert.ok(timestamp >= beforeCreation);
-            assert.ok(timestamp <= afterCreation);
         });
     });
 
