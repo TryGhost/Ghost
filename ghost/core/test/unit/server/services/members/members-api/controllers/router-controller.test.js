@@ -724,14 +724,13 @@ describe('RouterController', function () {
                 const controller = createGiftController({tiersService: paidTierService()});
 
                 await controller.createCheckoutSession({
-                    body: {type: 'gift', tierId: 'tier_123', cadence: 'month', customerEmail: 'buyer@example.com', metadata: {}}
+                    body: {type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {}}
                 }, mockRes);
 
                 sinon.assert.calledOnce(getGiftLinkSpy);
                 sinon.assert.calledWith(getGiftLinkSpy, sinon.match({
                     successUrl: 'https://example.com/',
-                    cancelUrl: 'https://example.com/',
-                    email: 'buyer@example.com'
+                    cancelUrl: 'https://example.com/'
                 }));
             });
 
@@ -741,41 +740,12 @@ describe('RouterController', function () {
 
                 try {
                     await controller.createCheckoutSession({
-                        body: {type: 'gift', tierId: 'tier_123', cadence: 'month', customerEmail: 'buyer@example.com', metadata: {}}
-                    }, mockRes);
-
-                    assert.fail('Should have thrown');
-                } catch (error) {
-                    assert(error instanceof errors.BadRequestError);
-                }
-            });
-
-            it('rejects when customerEmail is not provided', async function () {
-                const controller = createGiftController({tiersService: paidTierService()});
-
-                try {
-                    await controller.createCheckoutSession({
                         body: {type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {}}
                     }, mockRes);
 
                     assert.fail('Should have thrown');
                 } catch (error) {
                     assert(error instanceof errors.BadRequestError);
-                    assert.equal(error.context, 'A valid email address is required to purchase a gift subscription');
-                }
-            });
-
-            it('rejects when customerEmail is invalid', async function () {
-                const controller = createGiftController({tiersService: paidTierService()});
-
-                try {
-                    await controller.createCheckoutSession({
-                        body: {type: 'gift', tierId: 'tier_123', cadence: 'month', customerEmail: 'not-an-email', metadata: {}}
-                    }, mockRes);
-                    assert.fail('Should have thrown');
-                } catch (error) {
-                    assert(error instanceof errors.BadRequestError);
-                    assert.equal(error.context, 'A valid email address is required to purchase a gift subscription');
                 }
             });
 
@@ -784,7 +754,7 @@ describe('RouterController', function () {
 
                 try {
                     await controller.createCheckoutSession({
-                        body: {type: 'gift', offerId: 'offer_123', customerEmail: 'buyer@example.com', metadata: {}}
+                        body: {type: 'gift', offerId: 'offer_123', metadata: {}}
                     }, mockRes);
                     assert.fail('Should have thrown');
                 } catch (error) {
@@ -811,7 +781,7 @@ describe('RouterController', function () {
                 });
 
                 await controller.createCheckoutSession({
-                    body: {type: 'gift', tierId: 'tier_123', cadence: 'month', customerEmail: 'buyer@example.com', identity: 'valid-token', metadata: {}}
+                    body: {type: 'gift', tierId: 'tier_123', cadence: 'month', identity: 'valid-token', metadata: {}}
                 }, mockRes);
 
                 sinon.assert.calledOnce(getGiftLinkSpy);
@@ -1094,6 +1064,65 @@ describe('RouterController', function () {
                     controller.sendMagicLink(req, res),
                     {message: `Cannot subscribe to archived newsletters Newsletter 2`}
                 );
+            });
+        });
+
+        describe('gift token forwarding', function () {
+            let req, res, sendEmailWithMagicLinkStub, memberRepositoryStub;
+
+            const createRouterController = (deps = {}) => {
+                return new RouterController({
+                    allowSelfSignup: sinon.stub().returns(true),
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    },
+                    sendEmailWithMagicLink: sendEmailWithMagicLinkStub,
+                    settingsCache,
+                    settingsHelpers,
+                    emailAddressService,
+                    memberRepository: memberRepositoryStub,
+                    ...deps
+                });
+            };
+
+            beforeEach(function () {
+                req = {
+                    body: {
+                        email: 'jamie@example.com',
+                        emailType: 'subscribe',
+                        giftToken: 'gift-token-123'
+                    },
+                    get: sinon.stub()
+                };
+                res = {
+                    writeHead: sinon.stub(),
+                    end: sinon.stub()
+                };
+                sendEmailWithMagicLinkStub = sinon.stub().resolves({});
+                memberRepositoryStub = {
+                    get: sinon.stub().resolves({
+                        id: 'member_1'
+                    })
+                };
+            });
+
+            it('forwards giftToken for signup and subscribe flows', async function () {
+                const controller = createRouterController();
+
+                await controller.sendMagicLink(req, res);
+
+                sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
+                assert.equal(sendEmailWithMagicLinkStub.firstCall.args[0].tokenData.giftToken, 'gift-token-123');
+            });
+
+            it('forwards giftToken for signin flows', async function () {
+                req.body.emailType = 'signin';
+                const controller = createRouterController();
+
+                await controller.sendMagicLink(req, res);
+
+                sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
+                assert.equal(sendEmailWithMagicLinkStub.firstCall.args[0].tokenData.giftToken, 'gift-token-123');
             });
         });
 

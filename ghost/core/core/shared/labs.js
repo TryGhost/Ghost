@@ -24,7 +24,8 @@ const GA_FEATURES = [
     'customFonts',
     'explore',
     'commentModeration',
-    'featurebaseFeedback'
+    'featurebaseFeedback',
+    'welcomeEmailsDesignCustomization'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -48,7 +49,6 @@ const PRIVATE_FEATURES = [
     'indexnow',
     'membersForward',
     'dripSequences',
-    'welcomeEmailsDesignCustomization',
     'pictureImageFormats',
     'smarterCounts',
     'giftSubscriptions'
