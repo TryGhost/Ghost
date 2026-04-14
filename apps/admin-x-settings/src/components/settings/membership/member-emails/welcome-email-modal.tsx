@@ -98,6 +98,22 @@ type PreviewState = {
     message?: string;
 };
 
+const preparePreviewHtml = (html: string) => {
+    if (typeof DOMParser === 'undefined') {
+        return html;
+    }
+
+    const parser = new DOMParser();
+    const parsed = parser.parseFromString(html, 'text/html');
+
+    parsed.querySelectorAll<HTMLAnchorElement>('a[href]').forEach((link) => {
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+    });
+
+    return `<!doctype html>${parsed.documentElement.outerHTML}`;
+};
+
 const isEmptyLexical = (lexical: string | null | undefined): boolean => {
     if (!lexical) {
         return true;
@@ -367,10 +383,15 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 throw new Error('Preview response was incomplete');
             }
 
-            previewCacheRef.current = {signature, preview};
+            const preparedPreview = {
+                ...preview,
+                html: preparePreviewHtml(preview.html)
+            };
+
+            previewCacheRef.current = {signature, preview: preparedPreview};
             setPreviewState({
                 status: 'success',
-                preview
+                preview: preparedPreview
             });
         } catch (error) {
             let message = 'Failed to render preview';
@@ -562,9 +583,9 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                     >
                                         <iframe
                                             ref={previewIframeRef}
-                                            className='w-full rounded border border-gray-200 bg-white'
+                                            className='w-full rounded bg-white'
                                             data-testid='welcome-email-preview-iframe'
-                                            sandbox="allow-same-origin"
+                                            sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
                                             srcDoc={previewState.preview.html}
                                             style={{height: previewHeight ? `${previewHeight}px` : '600px'}}
                                             title='Welcome email preview'

@@ -102,7 +102,7 @@ const settingsWithPublicationIcon = updatedSettingsResponse([
 
 const automatedEmailPreviewFixture = {
     automated_emails: [{
-        html: '<!doctype html><html><body><h1>Preview content</h1><p>Welcome preview body.</p></body></html>',
+        html: '<!doctype html><html><body><h1>Preview content</h1><p>Welcome preview body.</p><a href="https://example.com/preferences">Manage preferences</a></body></html>',
         plaintext: 'Preview content\nWelcome preview body.',
         subject: 'Preview Subject'
     }]
@@ -185,7 +185,23 @@ test.describe('Member emails settings', async () => {
 
             await expect.poll(() => (lastApiRequests.previewWelcomeEmail?.body as {subject?: string} | undefined)?.subject).toBe('Unsaved subject for preview');
             await expect.poll(() => (lastApiRequests.previewWelcomeEmail?.body as {lexical?: string} | undefined)?.lexical || '').toContain('Welcome');
-            await expect(modal.getByTestId('welcome-email-preview-iframe')).toBeVisible();
+            const previewIframe = modal.getByTestId('welcome-email-preview-iframe');
+            await expect(previewIframe).toBeVisible();
+            await expect(previewIframe).toHaveAttribute('sandbox', 'allow-same-origin allow-popups allow-popups-to-escape-sandbox');
+
+            await expect.poll(async () => {
+                return await previewIframe.evaluate((node: HTMLIFrameElement) => {
+                    const link = node.contentDocument?.querySelector('a[href]');
+
+                    return {
+                        rel: link?.getAttribute('rel'),
+                        target: link?.getAttribute('target')
+                    };
+                });
+            }).toEqual({
+                rel: 'noopener noreferrer',
+                target: '_blank'
+            });
         });
 
         test('Preview/Edit toggle preserves unsaved draft subject and lexical', async ({page}) => {
