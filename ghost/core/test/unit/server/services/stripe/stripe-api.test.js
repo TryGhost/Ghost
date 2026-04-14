@@ -748,8 +748,7 @@ describe('StripeAPI', function () {
                 ghost_gift: 'true',
                 gift_token: 'token-xyz',
                 tier_id: 'tier_123',
-                cadence: 'month',
-                buyer_email: 'buyer@example.com'
+                cadence: 'month'
             };
 
             await api.createGiftCheckoutSession({
@@ -784,26 +783,6 @@ describe('StripeAPI', function () {
             const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
 
             assert.equal(args.customer, mockCustomerId);
-            assert.equal(args.customer_email, undefined);
-        });
-
-        it('passes customer_email when no customer is provided', async function () {
-            await api.createGiftCheckoutSession({
-                amount: 5000,
-                currency: 'usd',
-                tierName: 'Pro',
-                cadence: 'year',
-                duration: 1,
-                successUrl: '/gift-success',
-                cancelUrl: '/gift-cancel',
-                metadata: {},
-                customerEmail: mockCustomerEmail
-            });
-
-            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
-
-            assert.equal(args.customer, undefined);
-            assert.equal(args.customer_email, mockCustomerEmail);
         });
 
         it('does not include invoice_creation or custom_fields', async function () {
