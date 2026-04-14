@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {Gift, type GiftFromPurchaseData} from '../../../../../core/server/services/gifts/gift';
 import {GIFT_EXPIRY_DAYS} from '../../../../../core/server/services/gifts/constants';
+import {buildGift} from './utils';
 
 describe('Gift', function () {
     const purchaseData: GiftFromPurchaseData = {
@@ -15,31 +16,6 @@ describe('Gift', function () {
         stripeCheckoutSessionId: 'cs_123',
         stripePaymentIntentId: 'pi_456'
     };
-
-    function buildGift(overrides: Partial<ConstructorParameters<typeof Gift>[0]> = {}) {
-        return new Gift({
-            token: 'gift-token',
-            buyerEmail: 'buyer@example.com',
-            buyerMemberId: 'buyer_member_1',
-            redeemerMemberId: null,
-            tierId: 'tier_1',
-            cadence: 'year',
-            duration: 1,
-            currency: 'usd',
-            amount: 5000,
-            stripeCheckoutSessionId: 'cs_123',
-            stripePaymentIntentId: 'pi_456',
-            consumesAt: null,
-            expiresAt: new Date('2030-01-01T00:00:00.000Z'),
-            status: 'purchased',
-            purchasedAt: new Date('2026-01-01T00:00:00.000Z'),
-            redeemedAt: null,
-            consumedAt: null,
-            expiredAt: null,
-            refundedAt: null,
-            ...overrides
-        });
-    }
 
     describe('fromPurchase', function () {
         it('sets status to purchased', function () {
@@ -224,6 +200,37 @@ describe('Gift', function () {
             });
 
             assert.equal(redeemed.consumesAt?.toISOString(), '2025-03-01T12:00:00.000Z');
+        });
+    });
+
+    describe('refund', function () {
+        it('returns a refunded gift without mutating the original', function () {
+            const gift = buildGift();
+            const before = new Date();
+
+            const refunded = gift.refund();
+
+            const after = new Date();
+
+            assert.ok(refunded);
+            assert.notEqual(refunded, gift);
+            assert.equal(gift.status, 'purchased');
+            assert.equal(gift.refundedAt, null);
+            assert.equal(refunded.status, 'refunded');
+            assert.ok(refunded.refundedAt);
+            assert.ok(refunded.refundedAt >= before);
+            assert.ok(refunded.refundedAt <= after);
+        });
+
+        it('returns null if already refunded', function () {
+            const gift = buildGift({
+                status: 'refunded',
+                refundedAt: new Date('2026-02-01T00:00:00.000Z')
+            });
+
+            const result = gift.refund();
+
+            assert.equal(result, null);
         });
     });
 });

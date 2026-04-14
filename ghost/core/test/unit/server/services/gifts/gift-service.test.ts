@@ -4,12 +4,14 @@ import sinon from 'sinon';
 import {GiftService, type GiftPurchaseData} from '../../../../../core/server/services/gifts/gift-service';
 import {Gift} from '../../../../../core/server/services/gifts/gift';
 import type {GiftRepository} from '../../../../../core/server/services/gifts/gift-repository';
+import {buildGift} from './utils';
 
 describe('GiftService', function () {
     type GiftRepositoryStub = {
         create: sinon.SinonStub;
         existsByCheckoutSessionId: sinon.SinonStub<[string], Promise<boolean>>;
         getByToken: sinon.SinonStub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>;
+        getByPaymentIntentId: sinon.SinonStub<[string], Promise<Gift | null>>;
         save: sinon.SinonStub;
         transaction: sinon.SinonStub<Parameters<GiftRepository['transaction']>, Promise<unknown>>;
     };
@@ -48,6 +50,7 @@ describe('GiftService', function () {
             create: sinon.stub(),
             existsByCheckoutSessionId: sinon.stub<[string], Promise<boolean>>().resolves(false),
             getByToken: sinon.stub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>().resolves(null),
+            getByPaymentIntentId: sinon.stub<[string], Promise<Gift | null>>().resolves(null),
             save: sinon.stub(),
             transaction: sinon.stub<Parameters<GiftRepository['transaction']>, Promise<unknown>>().callsFake(async (callback) => {
                 return await callback('trx');
@@ -86,31 +89,6 @@ describe('GiftService', function () {
             tiersService,
             giftEmailService,
             staffServiceEmails
-        });
-    }
-
-    function buildGift(overrides: Partial<ConstructorParameters<typeof Gift>[0]> = {}) {
-        return new Gift({
-            token: 'gift-token',
-            buyerEmail: 'buyer@example.com',
-            buyerMemberId: 'buyer_member_1',
-            redeemerMemberId: null,
-            tierId: 'tier_1',
-            cadence: 'year',
-            duration: 1,
-            currency: 'usd',
-            amount: 5000,
-            stripeCheckoutSessionId: 'cs_123',
-            stripePaymentIntentId: 'pi_456',
-            consumesAt: null,
-            expiresAt: new Date('2030-01-01T00:00:00.000Z'),
-            status: 'purchased',
-            purchasedAt: new Date('2026-01-01T00:00:00.000Z'),
-            redeemedAt: null,
-            consumedAt: null,
-            expiredAt: null,
-            refundedAt: null,
-            ...overrides
         });
     }
 
@@ -538,6 +516,51 @@ describe('GiftService', function () {
             );
 
             sinon.assert.notCalled(memberRepository.update);
+            sinon.assert.notCalled(giftRepository.save);
+        });
+    });
+
+    describe('refund', function () {
+        it('saves a refunded gift and returns true', async function () {
+            const gift = buildGift();
+
+            giftRepository.getByPaymentIntentId.resolves(gift);
+
+            const service = createService();
+            const result = await service.refund('pi_456');
+
+            assert.equal(result, true);
+            sinon.assert.calledOnce(giftRepository.save);
+
+            const saved = giftRepository.save.getCall(0).args[0];
+
+            assert.equal(saved.status, 'refunded');
+            assert.ok(saved.refundedAt);
+            assert.notEqual(saved, gift);
+        });
+
+        it('returns false when no gift matches the payment intent', async function () {
+            giftRepository.getByPaymentIntentId.resolves(null);
+
+            const service = createService();
+            const result = await service.refund('pi_unknown');
+
+            assert.equal(result, false);
+            sinon.assert.notCalled(giftRepository.save);
+        });
+
+        it('returns true without saving when gift is already refunded', async function () {
+            const gift = buildGift({
+                status: 'refunded',
+                refundedAt: new Date('2026-02-01T00:00:00.000Z')
+            });
+
+            giftRepository.getByPaymentIntentId.resolves(gift);
+
+            const service = createService();
+            const result = await service.refund('pi_456');
+
+            assert.equal(result, true);
             sinon.assert.notCalled(giftRepository.save);
         });
     });
