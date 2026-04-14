@@ -523,15 +523,14 @@ describe('checkoutGift action', () => {
 
         const result = await ActionHandler({
             action: 'checkoutGift',
-            data: {tierId: 'tier_123', cadence: 'month', email: 'buyer@example.com'},
+            data: {tierId: 'tier_123', cadence: 'month'},
             state: {},
             api: mockApi
         });
 
         expect(mockApi.member.checkoutGift).toHaveBeenCalledWith({
             tierId: 'tier_123',
-            cadence: 'month',
-            email: 'buyer@example.com'
+            cadence: 'month'
         });
         expect(result.action).toBe('checkoutGift:success');
     });
@@ -545,7 +544,7 @@ describe('checkoutGift action', () => {
 
         const result = await ActionHandler({
             action: 'checkoutGift',
-            data: {tierId: 'tier_123', cadence: 'month', email: 'buyer@example.com'},
+            data: {tierId: 'tier_123', cadence: 'month'},
             state: {},
             api: mockApi
         });

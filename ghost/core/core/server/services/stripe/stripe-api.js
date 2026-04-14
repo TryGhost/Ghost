@@ -695,11 +695,10 @@ module.exports = class StripeAPI {
      * @param {string} options.successUrl
      * @param {string} options.cancelUrl
      * @param {ICustomer|null} options.customer
-     * @param {string|null} options.customerEmail
      *
      * @returns {Promise<ICheckoutSession>}
      */
-    async createGiftCheckoutSession({amount, currency, tierName, cadence, duration, metadata, successUrl, cancelUrl, customer, customerEmail}) {
+    async createGiftCheckoutSession({amount, currency, tierName, cadence, duration, metadata, successUrl, cancelUrl, customer}) {
         await this._rateLimitBucket.throttle();
 
         const cadenceLabel = duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
@@ -713,7 +712,6 @@ module.exports = class StripeAPI {
             },
             metadata,
             customer: customer ? customer.id : undefined,
-            customer_email: !customer && customerEmail ? customerEmail : undefined,
             submit_type: 'pay',
             line_items: [{
                 price_data: {
