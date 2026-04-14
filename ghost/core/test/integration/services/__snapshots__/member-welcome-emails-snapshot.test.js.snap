@@ -130,7 +130,7 @@ table[class=body] a[class=small] {
   color: #15212A !important;
   font-family: inherit !important;
   font-size: 14px;
-  line-height: 1.3em;
+  line-height: 1.3;
   padding-top: 4px;
   padding-right: 20px;
   padding-left: 20px;
@@ -143,7 +143,7 @@ table[class=body] a[class=small] {
   font-family: inherit !important;
   font-size: 15px;
   padding: 8px;
-  line-height: 1.3em;
+  line-height: 1.3;
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #15212A !important;
@@ -264,7 +264,7 @@ table[class=body] a[class=small] {
   margin-top: 32px;
   color: #15212A;
   text-align: center;
-  line-height: 1.1em;
+  line-height: 1.1;
 }
 .post-title-link-left {
   text-align: left;
@@ -314,7 +314,7 @@ table.body td {
 
   table.body .kg-callout-text {
     font-size: 16px !important;
-    line-height: 1.5em !important;
+    line-height: 1.5 !important;
   }
 
   table.body pre {
@@ -360,7 +360,7 @@ table.header .header-main {
 table.header .post-meta-date {
     white-space: normal !important;
     font-size: 13px !important;
-    line-height: 1.2em;
+    line-height: 1.2;
   }
 
   table.header .post-meta,
@@ -404,7 +404,7 @@ table.body .footer a {
 
   table.header .post-title a {
     font-size: 26px !important;
-    line-height: 1.1em !important;
+    line-height: 1.1 !important;
   }
 
   table.feedback-buttons {
@@ -465,38 +465,38 @@ table.body .manage-subscription {
 
   table.body h1 {
     font-size: 32px !important;
-    line-height: 1.3em !important;
+    line-height: 1.3 !important;
   }
 
   table.body h2,
 table.body h2 span {
     font-size: 26px !important;
-    line-height: 1.22em !important;
+    line-height: 1.22 !important;
   }
 
   table.body h3 {
     font-size: 21px !important;
-    line-height: 1.25em !important;
+    line-height: 1.25 !important;
   }
 
   table.body h4 {
     font-size: 19px !important;
-    line-height: 1.3em !important;
+    line-height: 1.3 !important;
   }
 
   table.body h5 {
     font-size: 16px !important;
-    line-height: 1.4em !important;
+    line-height: 1.4 !important;
   }
 
   table.body h6 {
     font-size: 16px !important;
-    line-height: 1.4em !important;
+    line-height: 1.4 !important;
   }
 
   table.body blockquote {
     font-size: 16px !important;
-    line-height: 1.6em;
+    line-height: 1.6;
     margin-bottom: 0;
   }
 
@@ -509,7 +509,7 @@ table.body h2 span {
     border-left: 0 none !important;
     margin: 0 !important;
     font-size: 18px !important;
-    line-height: 1.4em !important;
+    line-height: 1.4 !important;
   }
 
   table.body blockquote.kg-blockquote-alt p {
@@ -618,8 +618,8 @@ table.body h2 span {
                                             <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                               <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                                 <tr class=\\"post-content-row\\">
-                                                  <td class=\\"post-content-sans-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 17px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
-                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A;\\">Welcome to our site!</p>
+                                                  <td class=\\"post-content-sans-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 17px; line-height: 1.5; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
+                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6; color: #15212A;\\">Welcome to our site!</p>
                                                   </td>
                                                 </tr>
                                               </table>
@@ -629,7 +629,7 @@ table.body h2 span {
                                             <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                               <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                                 <tr>
-                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
+                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
                                                     Test Site &copy; 2020 &mdash; <a href=\\"http://example.com/#/portal/account/newsletters\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\">Manage your preferences</a>
                                                   </td>
                                                 </tr>
@@ -899,7 +899,7 @@ table[class=body] a[class=small] {
   color: #15212A !important;
   font-family: inherit !important;
   font-size: 14px;
-  line-height: 1.3em;
+  line-height: 1.3;
   padding-top: 4px;
   padding-right: 20px;
   padding-left: 20px;
@@ -912,7 +912,7 @@ table[class=body] a[class=small] {
   font-family: inherit !important;
   font-size: 15px;
   padding: 8px;
-  line-height: 1.3em;
+  line-height: 1.3;
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #15212A !important;
@@ -1033,7 +1033,7 @@ table[class=body] a[class=small] {
   margin-top: 32px;
   color: #15212A;
   text-align: center;
-  line-height: 1.1em;
+  line-height: 1.1;
 }
 .post-title-link-left {
   text-align: left;
@@ -1083,7 +1083,7 @@ table.body td {
 
   table.body .kg-callout-text {
     font-size: 16px !important;
-    line-height: 1.5em !important;
+    line-height: 1.5 !important;
   }
 
   table.body pre {
@@ -1129,7 +1129,7 @@ table.header .header-main {
 table.header .post-meta-date {
     white-space: normal !important;
     font-size: 13px !important;
-    line-height: 1.2em;
+    line-height: 1.2;
   }
 
   table.header .post-meta,
@@ -1173,7 +1173,7 @@ table.body .footer a {
 
   table.header .post-title a {
     font-size: 26px !important;
-    line-height: 1.1em !important;
+    line-height: 1.1 !important;
   }
 
   table.feedback-buttons {
@@ -1234,38 +1234,38 @@ table.body .manage-subscription {
 
   table.body h1 {
     font-size: 32px !important;
-    line-height: 1.3em !important;
+    line-height: 1.3 !important;
   }
 
   table.body h2,
 table.body h2 span {
     font-size: 26px !important;
-    line-height: 1.22em !important;
+    line-height: 1.22 !important;
   }
 
   table.body h3 {
     font-size: 21px !important;
-    line-height: 1.25em !important;
+    line-height: 1.25 !important;
   }
 
   table.body h4 {
     font-size: 19px !important;
-    line-height: 1.3em !important;
+    line-height: 1.3 !important;
   }
 
   table.body h5 {
     font-size: 16px !important;
-    line-height: 1.4em !important;
+    line-height: 1.4 !important;
   }
 
   table.body h6 {
     font-size: 16px !important;
-    line-height: 1.4em !important;
+    line-height: 1.4 !important;
   }
 
   table.body blockquote {
     font-size: 16px !important;
-    line-height: 1.6em;
+    line-height: 1.6;
     margin-bottom: 0;
   }
 
@@ -1278,7 +1278,7 @@ table.body h2 span {
     border-left: 0 none !important;
     margin: 0 !important;
     font-size: 18px !important;
-    line-height: 1.4em !important;
+    line-height: 1.4 !important;
   }
 
   table.body blockquote.kg-blockquote-alt p {
@@ -1387,8 +1387,8 @@ table.body h2 span {
                                             <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                               <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                                 <tr class=\\"post-content-row\\">
-                                                  <td class=\\"post-content-sans-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 17px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
-                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A;\\">Hello friend, welcome!</p>
+                                                  <td class=\\"post-content-sans-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 17px; line-height: 1.5; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
+                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6; color: #15212A;\\">Hello friend, welcome!</p>
                                                   </td>
                                                 </tr>
                                               </table>
@@ -1398,7 +1398,7 @@ table.body h2 span {
                                             <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                               <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                                 <tr>
-                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
+                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
                                                     Test Site &copy; 2020 &mdash; <a href=\\"http://example.com/#/portal/account/newsletters\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\">Manage your preferences</a>
                                                   </td>
                                                 </tr>
@@ -1668,7 +1668,7 @@ table[class=body] a[class=small] {
   color: #15212A !important;
   font-family: inherit !important;
   font-size: 14px;
-  line-height: 1.3em;
+  line-height: 1.3;
   padding-top: 4px;
   padding-right: 20px;
   padding-left: 20px;
@@ -1681,7 +1681,7 @@ table[class=body] a[class=small] {
   font-family: inherit !important;
   font-size: 15px;
   padding: 8px;
-  line-height: 1.3em;
+  line-height: 1.3;
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #15212A !important;
@@ -1802,7 +1802,7 @@ table[class=body] a[class=small] {
   margin-top: 32px;
   color: #15212A;
   text-align: center;
-  line-height: 1.1em;
+  line-height: 1.1;
 }
 .post-title-link-left {
   text-align: left;
@@ -1852,7 +1852,7 @@ table.body td {
 
   table.body .kg-callout-text {
     font-size: 16px !important;
-    line-height: 1.5em !important;
+    line-height: 1.5 !important;
   }
 
   table.body pre {
@@ -1898,7 +1898,7 @@ table.header .header-main {
 table.header .post-meta-date {
     white-space: normal !important;
     font-size: 13px !important;
-    line-height: 1.2em;
+    line-height: 1.2;
   }
 
   table.header .post-meta,
@@ -1942,7 +1942,7 @@ table.body .footer a {
 
   table.header .post-title a {
     font-size: 26px !important;
-    line-height: 1.1em !important;
+    line-height: 1.1 !important;
   }
 
   table.feedback-buttons {
@@ -2003,38 +2003,38 @@ table.body .manage-subscription {
 
   table.body h1 {
     font-size: 32px !important;
-    line-height: 1.3em !important;
+    line-height: 1.3 !important;
   }
 
   table.body h2,
 table.body h2 span {
     font-size: 26px !important;
-    line-height: 1.22em !important;
+    line-height: 1.22 !important;
   }
 
   table.body h3 {
     font-size: 21px !important;
-    line-height: 1.25em !important;
+    line-height: 1.25 !important;
   }
 
   table.body h4 {
     font-size: 19px !important;
-    line-height: 1.3em !important;
+    line-height: 1.3 !important;
   }
 
   table.body h5 {
     font-size: 16px !important;
-    line-height: 1.4em !important;
+    line-height: 1.4 !important;
   }
 
   table.body h6 {
     font-size: 16px !important;
-    line-height: 1.4em !important;
+    line-height: 1.4 !important;
   }
 
   table.body blockquote {
     font-size: 16px !important;
-    line-height: 1.6em;
+    line-height: 1.6;
     margin-bottom: 0;
   }
 
@@ -2047,7 +2047,7 @@ table.body h2 span {
     border-left: 0 none !important;
     margin: 0 !important;
     font-size: 18px !important;
-    line-height: 1.4em !important;
+    line-height: 1.4 !important;
   }
 
   table.body blockquote.kg-blockquote-alt p {
@@ -2156,8 +2156,8 @@ table.body h2 span {
                                             <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                               <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                                 <tr class=\\"post-content-row\\">
-                                                  <td class=\\"post-content-sans-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 17px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
-                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A;\\">Hello Jamie, welcome to Test Site! Your email is jamie@example.com.</p>
+                                                  <td class=\\"post-content-sans-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 17px; line-height: 1.5; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
+                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6; color: #15212A;\\">Hello Jamie, welcome to Test Site! Your email is jamie@example.com.</p>
                                                   </td>
                                                 </tr>
                                               </table>
@@ -2167,7 +2167,7 @@ table.body h2 span {
                                             <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                               <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                                 <tr>
-                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
+                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
                                                     Test Site &copy; 2020 &mdash; <a href=\\"http://example.com/#/portal/account/newsletters\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\">Manage your preferences</a>
                                                   </td>
                                                 </tr>
@@ -2438,7 +2438,7 @@ table[class=body] a[class=small] {
   color: #15212A !important;
   font-family: inherit !important;
   font-size: 14px;
-  line-height: 1.3em;
+  line-height: 1.3;
   padding-top: 4px;
   padding-right: 20px;
   padding-left: 20px;
@@ -2451,7 +2451,7 @@ table[class=body] a[class=small] {
   font-family: inherit !important;
   font-size: 15px;
   padding: 8px;
-  line-height: 1.3em;
+  line-height: 1.3;
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF0000 !important;
@@ -2572,7 +2572,7 @@ table[class=body] a[class=small] {
   margin-top: 32px;
   color: #15212A;
   text-align: center;
-  line-height: 1.1em;
+  line-height: 1.1;
 }
 .post-title-link-left {
   text-align: left;
@@ -2622,7 +2622,7 @@ table.body td {
 
   table.body .kg-callout-text {
     font-size: 16px !important;
-    line-height: 1.5em !important;
+    line-height: 1.5 !important;
   }
 
   table.body pre {
@@ -2668,7 +2668,7 @@ table.header .header-main {
 table.header .post-meta-date {
     white-space: normal !important;
     font-size: 13px !important;
-    line-height: 1.2em;
+    line-height: 1.2;
   }
 
   table.header .post-meta,
@@ -2712,7 +2712,7 @@ table.body .footer a {
 
   table.header .post-title a {
     font-size: 26px !important;
-    line-height: 1.1em !important;
+    line-height: 1.1 !important;
   }
 
   table.feedback-buttons {
@@ -2773,38 +2773,38 @@ table.body .manage-subscription {
 
   table.body h1 {
     font-size: 32px !important;
-    line-height: 1.3em !important;
+    line-height: 1.3 !important;
   }
 
   table.body h2,
 table.body h2 span {
     font-size: 26px !important;
-    line-height: 1.22em !important;
+    line-height: 1.22 !important;
   }
 
   table.body h3 {
     font-size: 21px !important;
-    line-height: 1.25em !important;
+    line-height: 1.25 !important;
   }
 
   table.body h4 {
     font-size: 19px !important;
-    line-height: 1.3em !important;
+    line-height: 1.3 !important;
   }
 
   table.body h5 {
     font-size: 16px !important;
-    line-height: 1.4em !important;
+    line-height: 1.4 !important;
   }
 
   table.body h6 {
     font-size: 16px !important;
-    line-height: 1.4em !important;
+    line-height: 1.4 !important;
   }
 
   table.body blockquote {
     font-size: 16px !important;
-    line-height: 1.6em;
+    line-height: 1.6;
     margin-bottom: 0;
   }
 
@@ -2817,7 +2817,7 @@ table.body h2 span {
     border-left: 0 none !important;
     margin: 0 !important;
     font-size: 18px !important;
-    line-height: 1.4em !important;
+    line-height: 1.4 !important;
   }
 
   table.body blockquote.kg-blockquote-alt p {
@@ -2926,8 +2926,8 @@ table.body h2 span {
                                             <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                               <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                                 <tr class=\\"post-content-row\\">
-                                                  <td class=\\"post-content-sans-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 17px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
-                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A;\\">Welcome!</p>
+                                                  <td class=\\"post-content-sans-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 17px; line-height: 1.5; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
+                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6; color: #15212A;\\">Welcome!</p>
                                                   </td>
                                                 </tr>
                                               </table>
@@ -2937,7 +2937,7 @@ table.body h2 span {
                                             <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                               <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                                 <tr>
-                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
+                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
                                                     Test Site &copy; 2020 &mdash; <a href=\\"http://example.com/#/portal/account/newsletters\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\">Manage your preferences</a>
                                                   </td>
                                                 </tr>
@@ -3207,7 +3207,7 @@ table[class=body] a[class=small] {
   color: #15212A !important;
   font-family: inherit !important;
   font-size: 14px;
-  line-height: 1.3em;
+  line-height: 1.3;
   padding-top: 4px;
   padding-right: 20px;
   padding-left: 20px;
@@ -3220,7 +3220,7 @@ table[class=body] a[class=small] {
   font-family: inherit !important;
   font-size: 15px;
   padding: 8px;
-  line-height: 1.3em;
+  line-height: 1.3;
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #15212A !important;
@@ -3365,7 +3365,7 @@ table[class=body] a[class=small] {
                                               <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                                 <tr class=\\"post-content-row\\">
                                                   <td class=\\"post-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">Welcome to our site!</p>
+                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6;\\">Welcome to our site!</p>
                                                   </td>
                                                 </tr>
                                               </table>
@@ -3375,7 +3375,7 @@ table[class=body] a[class=small] {
                                             <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                               <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                                 <tr>
-                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
+                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
                                                     Test Site &copy; 2020 &mdash; <a href=\\"http://example.com/#/portal/account/newsletters\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\">Manage your preferences</a>
                                                   </td>
                                                 </tr>
@@ -3594,7 +3594,7 @@ table[class=body] a[class=small] {
   color: #15212A !important;
   font-family: inherit !important;
   font-size: 14px;
-  line-height: 1.3em;
+  line-height: 1.3;
   padding-top: 4px;
   padding-right: 20px;
   padding-left: 20px;
@@ -3607,7 +3607,7 @@ table[class=body] a[class=small] {
   font-family: inherit !important;
   font-size: 15px;
   padding: 8px;
-  line-height: 1.3em;
+  line-height: 1.3;
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #15212A !important;
@@ -3752,7 +3752,7 @@ table[class=body] a[class=small] {
                                               <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                                 <tr class=\\"post-content-row\\">
                                                   <td class=\\"post-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">Hello friend, welcome!</p>
+                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6;\\">Hello friend, welcome!</p>
                                                   </td>
                                                 </tr>
                                               </table>
@@ -3762,7 +3762,7 @@ table[class=body] a[class=small] {
                                             <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                               <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                                 <tr>
-                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
+                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
                                                     Test Site &copy; 2020 &mdash; <a href=\\"http://example.com/#/portal/account/newsletters\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\">Manage your preferences</a>
                                                   </td>
                                                 </tr>
@@ -3981,7 +3981,7 @@ table[class=body] a[class=small] {
   color: #15212A !important;
   font-family: inherit !important;
   font-size: 14px;
-  line-height: 1.3em;
+  line-height: 1.3;
   padding-top: 4px;
   padding-right: 20px;
   padding-left: 20px;
@@ -3994,7 +3994,7 @@ table[class=body] a[class=small] {
   font-family: inherit !important;
   font-size: 15px;
   padding: 8px;
-  line-height: 1.3em;
+  line-height: 1.3;
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #15212A !important;
@@ -4139,7 +4139,7 @@ table[class=body] a[class=small] {
                                               <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                                 <tr class=\\"post-content-row\\">
                                                   <td class=\\"post-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">Hello Jamie, welcome to Test Site! Your email is jamie@example.com.</p>
+                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6;\\">Hello Jamie, welcome to Test Site! Your email is jamie@example.com.</p>
                                                   </td>
                                                 </tr>
                                               </table>
@@ -4149,7 +4149,7 @@ table[class=body] a[class=small] {
                                             <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                               <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                                 <tr>
-                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
+                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
                                                     Test Site &copy; 2020 &mdash; <a href=\\"http://example.com/#/portal/account/newsletters\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\">Manage your preferences</a>
                                                   </td>
                                                 </tr>
@@ -4369,7 +4369,7 @@ table[class=body] a[class=small] {
   color: #15212A !important;
   font-family: inherit !important;
   font-size: 14px;
-  line-height: 1.3em;
+  line-height: 1.3;
   padding-top: 4px;
   padding-right: 20px;
   padding-left: 20px;
@@ -4382,7 +4382,7 @@ table[class=body] a[class=small] {
   font-family: inherit !important;
   font-size: 15px;
   padding: 8px;
-  line-height: 1.3em;
+  line-height: 1.3;
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF0000 !important;
@@ -4527,7 +4527,7 @@ table[class=body] a[class=small] {
                                               <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                                 <tr class=\\"post-content-row\\">
                                                   <td class=\\"post-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">Welcome!</p>
+                                                    <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6;\\">Welcome!</p>
                                                   </td>
                                                 </tr>
                                               </table>
@@ -4537,7 +4537,7 @@ table[class=body] a[class=small] {
                                             <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                               <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                                 <tr>
-                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
+                                                  <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">
                                                     Test Site &copy; 2020 &mdash; <a href=\\"http://example.com/#/portal/account/newsletters\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\">Manage your preferences</a>
                                                   </td>
                                                 </tr>
