@@ -43,7 +43,11 @@ const slugToMemberStatus = Object.fromEntries(
 );
 
 /**
- * @returns {Promise<Run[]>}
+ * @typedef {{runs: never[], nextFutureReadyAt: Date | null} | {runs: Run[]}} FetchAndLockRunsResult
+ */
+
+/**
+ * @returns {Promise<FetchAndLockRunsResult>}
  */
 async function fetchAndLockRuns() {
     const now = new Date();
@@ -63,7 +67,13 @@ async function fetchAndLockRuns() {
             .limit(MAX_RUNS_PER_BATCH);
 
         if (runs.length === 0) {
-            return runs;
+            const result = await trx('welcome_email_automation_runs')
+                .whereNotNull('next_welcome_email_automated_email_id')
+                .where('ready_at', '>', now)
+                .select(db.knex.raw('MIN(ready_at) as next_ready_at'))
+                .first();
+            const nextFutureReadyAt = result?.next_ready_at ? new Date(result.next_ready_at) : null;
+            return {runs: [], nextFutureReadyAt};
         }
 
         /** @type {string[]} */ const ids = [];
@@ -79,7 +89,7 @@ async function fetchAndLockRuns() {
             updated_at: now
         });
 
-        return runs;
+        return {runs, nextFutureReadyAt: null};
     });
 }
 
@@ -236,11 +246,15 @@ async function processRun({
 async function poll(options) {
     const {
         memberWelcomeEmailService,
-        enqueueAnotherPollNow
+        enqueueAnotherPollNow,
+        enqueueAnotherPollAt
     } = options;
-    const runs = await fetchAndLockRuns();
+    const {runs, nextFutureReadyAt} = await fetchAndLockRuns();
 
     if (runs.length === 0) {
+        if (nextFutureReadyAt) {
+            enqueueAnotherPollAt(nextFutureReadyAt);
+        }
         return;
     }
 

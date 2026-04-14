@@ -168,10 +168,11 @@ describe('welcome email automations poll', function () {
         sinon.assert.notCalled(options.memberWelcomeEmailService.api.loadMemberWelcomeEmails);
         sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
         sinon.assert.notCalled(options.enqueueAnotherPollNow);
+        sinon.assert.notCalled(options.enqueueAnotherPollAt);
         assert.deepEqual(await readTrackedRecipients(), []);
     });
 
-    it('does nothing if no relevant runs exist in database', async function () {
+    it('sends nothing but enqueues future poll if no runs are ready now', async function () {
         const automation = await createAutomation();
         const automatedEmail = await createAutomatedEmail({
             welcome_email_automation_id: automation.id
@@ -209,6 +210,7 @@ describe('welcome email automations poll', function () {
         sinon.assert.notCalled(options.memberWelcomeEmailService.api.loadMemberWelcomeEmails);
         sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
         sinon.assert.notCalled(options.enqueueAnotherPollNow);
+        sinon.assert.calledWith(options.enqueueAnotherPollAt, new Date(Date.now() + 60 * 1000));
         assert.deepEqual(await readTrackedRecipients(), []);
     });
 
