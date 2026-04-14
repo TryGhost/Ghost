@@ -70,10 +70,6 @@ jobs:
           main-branch-name: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
           error-on-no-successful-workflow: ${{ env.IS_MAIN == 'true' }}
 
-      - name: Fetch base commit
-        if: env.IS_TAG != 'true'
-        run: git fetch --no-tags --depth=1 origin "${NX_BASE}"
-
       - name: Check user org membership
         id: check_user_org_membership
         if: github.event_name == 'pull_request'
