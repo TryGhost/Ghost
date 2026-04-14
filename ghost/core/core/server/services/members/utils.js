@@ -25,6 +25,7 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
         unsubscribe_url: member.unsubscribe_url,
         subscribed: !!member.subscribed,
         subscriptions: member.subscriptions || [],
+        status: member.status,
         paid: member.status !== 'free',
         created_at: member.created_at,
         enable_comment_notifications: member.enable_comment_notifications,

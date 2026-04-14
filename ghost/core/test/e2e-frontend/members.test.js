@@ -911,6 +911,7 @@ describe('Front-end members behavior', function () {
                         'avatar_image',
                         'subscribed',
                         'subscriptions',
+                        'status',
                         'paid',
                         'created_at',
                         'enable_comment_notifications',

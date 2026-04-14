@@ -24,6 +24,7 @@ describe('PaidAccountActions', () => {
             const site = getSiteData({products, portalProducts: products.map(p => p.id)});
             const member = getMemberData({
                 paid: true,
+                status: 'comped',
                 subscriptions: [
                     getSubscriptionData({
                         status: 'active',
@@ -133,6 +134,7 @@ describe('PaidAccountActions', () => {
 
             const member = getMemberData({
                 paid: true,
+                status: 'comped',
                 subscriptions: [
                     getSubscriptionData({
                         status: 'active',
@@ -192,6 +194,43 @@ describe('PaidAccountActions', () => {
             // Should show "Complimentary" without expiry
             expect(queryByText(/Complimentary/)).toBeInTheDocument();
             expect(queryByText(/Expires/)).not.toBeInTheDocument();
+        });
+
+        test('displays "Gift subscription" with expiry date', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+
+            const expiryAt = new Date('2099-01-01T12:00:00.000Z');
+
+            const member = getMemberData({
+                paid: true,
+                status: 'gift',
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'active',
+                        amount: 0,
+                        currency: 'USD',
+                        interval: 'month',
+                        offer: null,
+                        tier: {
+                            expiry_at: expiryAt
+                        },
+                        nextPayment: getNextPaymentData({
+                            originalAmount: 0,
+                            amount: 0,
+                            interval: 'month',
+                            currency: 'USD',
+                            discount: null
+                        })
+                    })
+                ]
+            });
+
+            const {queryByText} = setup({site, member});
+
+            expect(queryByText(/Gift subscription/)).toBeInTheDocument();
+            expect(queryByText(/Expires/)).toBeInTheDocument();
+            expect(queryByText(/1 Jan 2099/)).toBeInTheDocument();
         });
 
         test('displays discounted price with "Forever" for forever offers', () => {
