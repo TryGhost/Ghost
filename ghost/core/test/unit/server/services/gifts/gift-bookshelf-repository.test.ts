@@ -38,7 +38,8 @@ describe('GiftBookshelfRepository', function () {
                         refunded_at: null
                     };
                 }
-            })
+            }),
+            findAll: sinon.stub()
         };
         const repository = new GiftBookshelfRepository({GiftModel});
 
@@ -56,7 +57,8 @@ describe('GiftBookshelfRepository', function () {
         const GiftModel = {
             add: sinon.stub(),
             transaction: sinon.stub(),
-            findOne: sinon.stub().resolves(null)
+            findOne: sinon.stub().resolves(null),
+            findAll: sinon.stub()
         };
         const repository = new GiftBookshelfRepository({GiftModel});
 
@@ -71,7 +73,8 @@ describe('GiftBookshelfRepository', function () {
         const GiftModel = {
             add: sinon.stub(),
             transaction: sinon.stub(),
-            findOne: sinon.stub().resolves(null)
+            findOne: sinon.stub().resolves(null),
+            findAll: sinon.stub()
         };
         const repository = new GiftBookshelfRepository({GiftModel});
 
@@ -111,7 +114,8 @@ describe('GiftBookshelfRepository', function () {
         const GiftModel = {
             add: sinon.stub(),
             transaction: sinon.stub(),
-            findOne: sinon.stub().resolves(existing)
+            findOne: sinon.stub().resolves(existing),
+            findAll: sinon.stub()
         };
         const repository = new GiftBookshelfRepository({GiftModel});
         const gift = new Gift({
@@ -153,7 +157,8 @@ describe('GiftBookshelfRepository', function () {
         const GiftModel = {
             add: sinon.stub(),
             transaction: sinon.stub(),
-            findOne: sinon.stub().resolves(null)
+            findOne: sinon.stub().resolves(null),
+            findAll: sinon.stub()
         };
         const repository = new GiftBookshelfRepository({GiftModel});
         const gift = new Gift({
@@ -194,7 +199,8 @@ describe('GiftBookshelfRepository', function () {
             transaction: sinon.stub().callsFake(async (callback) => {
                 return await callback('trx');
             }),
-            findOne: sinon.stub()
+            findOne: sinon.stub(),
+            findAll: sinon.stub()
         };
         const repository = new GiftBookshelfRepository({GiftModel});
 

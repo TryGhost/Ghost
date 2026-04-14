@@ -175,4 +175,16 @@ export class Gift {
             refundedAt: new Date()
         });
     }
+
+    consume(): Gift | null {
+        if (this.isConsumed()) {
+            return null;
+        }
+
+        return new Gift({
+            ...this,
+            status: 'consumed',
+            consumedAt: new Date()
+        });
+    }
 }
