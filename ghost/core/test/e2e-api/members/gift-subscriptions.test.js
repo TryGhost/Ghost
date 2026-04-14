@@ -56,7 +56,6 @@ describe('Gift Subscriptions', function () {
                 type: 'gift',
                 tierId: paidTier.id,
                 cadence: 'month',
-                customerEmail: 'gift-buyer@example.com',
                 metadata: {}
             })
             .expectStatus(200)
@@ -71,7 +70,6 @@ describe('Gift Subscriptions', function () {
         assert.equal(checkoutSession.metadata.tier_id, paidTier.id);
         assert.equal(checkoutSession.metadata.cadence, 'month');
         assert.equal(String(checkoutSession.metadata.duration), '1');
-        assert.equal(checkoutSession.metadata.buyer_email, 'gift-buyer@example.com');
         assert.ok(checkoutSession.metadata.gift_token, 'Should have a gift token');
 
         await stripeMocker.sendWebhook({
@@ -83,6 +81,7 @@ describe('Gift Subscriptions', function () {
                     amount_total: paidTier.monthly_price,
                     currency: paidTier.currency.toLowerCase(),
                     customer: checkoutSession.customer,
+                    customer_details: {email: 'gift-buyer@example.com'},
                     metadata: toWebhookMetadata(checkoutSession.metadata),
                     payment_intent: 'pi_gift_test_123'
                 }
@@ -138,7 +137,6 @@ describe('Gift Subscriptions', function () {
                 type: 'gift',
                 tierId: paidTier.id,
                 cadence: 'year',
-                customerEmail: email,
                 identity: token,
                 metadata: {}
             })
@@ -159,6 +157,7 @@ describe('Gift Subscriptions', function () {
                     amount_total: paidTier.yearly_price,
                     currency: paidTier.currency.toLowerCase(),
                     customer: checkoutSession.customer,
+                    customer_details: {email},
                     metadata: toWebhookMetadata(checkoutSession.metadata),
                     payment_intent: 'pi_gift_member_test_456'
                 }
@@ -208,7 +207,6 @@ describe('Gift Subscriptions', function () {
                 type: 'gift',
                 tierId: paidTier.id,
                 cadence: 'month',
-                customerEmail: 'idempotent-buyer@example.com',
                 metadata: {}
             })
             .expectStatus(200);
@@ -224,6 +222,7 @@ describe('Gift Subscriptions', function () {
                     amount_total: paidTier.monthly_price,
                     currency: paidTier.currency.toLowerCase(),
                     customer: checkoutSession.customer,
+                    customer_details: {email: 'idempotent-buyer@example.com'},
                     metadata: toWebhookMetadata(checkoutSession.metadata),
                     payment_intent: 'pi_idempotent_test'
                 }
@@ -252,7 +251,6 @@ describe('Gift Subscriptions', function () {
                 type: 'gift',
                 tierId: paidTier.id,
                 cadence: 'month',
-                customerEmail: 'test-buyer@example.com',
                 metadata: {},
                 ...bodyOverrides
             })
@@ -265,12 +263,11 @@ describe('Gift Subscriptions', function () {
     it('Rejects purchase when labs flag is disabled', async function () {
         mockManager.mockLabsDisabled('giftSubscriptions');
 
-        await expectGiftCheckoutError({customerEmail: 'rejected-buyer@example.com'});
+        await expectGiftCheckoutError();
     });
 
     it('Rejects purchase with an offer', async function () {
         await expectGiftCheckoutError({
-            customerEmail: 'offer-buyer@example.com',
             offerId: 'some-offer-id'
         });
     });

@@ -2,12 +2,10 @@ import {useContext, useState} from 'react';
 import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
 import SiteTitleBackButton from '../common/site-title-back-button';
-import InputForm from '../common/input-form';
 import ActionButton from '../common/action-button';
 import LoadingPage from './loading-page';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import {getAvailableProducts, getCurrencySymbol, formatNumber, getStripeAmount, isCookiesDisabled, getActiveInterval} from '../../utils/helpers';
-import {ValidateInputForm} from '../../utils/form';
 import calculateDiscount from '../../utils/discount';
 
 // TODO: wrap strings with t() once copy is finalised
@@ -134,9 +132,7 @@ function GiftPriceSwitch({selectedInterval, setSelectedInterval, products}) {
 }
 
 const GiftPage = () => {
-    const {site, member, brandColor, action, doAction} = useContext(AppContext);
-    const [email, setEmail] = useState(member?.email || '');
-    const [emailError, setEmailError] = useState('');
+    const {site, brandColor, action, doAction} = useContext(AppContext);
     const [selectedInterval, setSelectedInterval] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState(null);
 
@@ -182,35 +178,14 @@ const GiftPage = () => {
     const isPurchasing = action === 'checkoutGift:running';
     const isDisabled = isCookiesDisabled() || isPurchasing;
 
-    const emailField = [{
-        type: 'email',
-        value: email,
-        placeholder: 'jamie@example.com',
-        label: 'Your email',
-        name: 'email',
-        required: true,
-        tabIndex: 1,
-        autoFocus: true,
-        errorMessage: emailError
-    }];
-
     const handlePurchase = (e, product) => {
         e.preventDefault();
 
-        const errors = ValidateInputForm({fields: emailField});
-
-        if (errors.email) {
-            setEmailError(errors.email);
-            return;
-        }
-
-        setEmailError('');
         setSelectedProduct(product.id);
 
         doAction('checkoutGift', {
             tierId: product.id,
-            cadence: activeInterval,
-            email
+            cadence: activeInterval
         });
     };
 
@@ -231,18 +206,6 @@ const GiftPage = () => {
 
                 <section className="gh-portal-signup">
                     <div className='gh-portal-section'>
-                        <div className='gh-portal-logged-out-form-container'>
-                            <InputForm
-                                fields={emailField}
-                                onChange={(e) => {
-                                    setEmail(e.target.value);
-                                    if (emailError) {
-                                        setEmailError('');
-                                    }
-                                }}
-                            />
-                        </div>
-
                         <section className='gh-portal-products'>
                             <GiftPriceSwitch
                                 selectedInterval={activeInterval}

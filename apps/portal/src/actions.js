@@ -312,8 +312,8 @@ async function checkoutPlan({data, state, api}) {
 
 async function checkoutGift({data, state, api}) {
     try {
-        const {tierId, cadence, email} = data;
-        await api.member.checkoutGift({tierId, cadence, email});
+        const {tierId, cadence} = data;
+        await api.member.checkoutGift({tierId, cadence});
         return {
             action: 'checkoutGift:success'
         };
