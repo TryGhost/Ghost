@@ -193,6 +193,10 @@ module.exports = function apiRoutes() {
     router.put('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.edit));
     router.post('/automated_emails/:id/test', shared.middleware.brute.previewEmailLimiter, mw.authAdminApi, http(api.automatedEmails.sendTestEmail));
 
+    // ## Drip Sequences
+    router.get('/drip_sequences/:automation_slug', mw.authAdminApi, http(api.dripSequences.read));
+    router.put('/drip_sequences/:automation_slug', mw.authAdminApi, http(api.dripSequences.edit));
+
     // ## Roles
     router.get('/roles/', mw.authAdminApi, http(api.roles.browse));
 

@@ -85,6 +85,10 @@ module.exports = {
         return apiFramework.pipeline(require('./automated-emails'), localUtils);
     },
 
+    get dripSequences() {
+        return apiFramework.pipeline(require('./drip-sequences'), localUtils);
+    },
+
     get automatedEmailDesign() {
         return apiFramework.pipeline(require('./automated-email-design'), localUtils);
     },

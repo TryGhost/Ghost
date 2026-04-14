@@ -14,7 +14,20 @@ const WelcomeEmailAutomation = ghostBookshelf.Model.extend({
     },
 
     welcomeEmailAutomatedEmail() {
-        return this.hasOne('WelcomeEmailAutomatedEmail', 'welcome_email_automation_id');
+        const relation = this.hasOne('WelcomeEmailAutomatedEmail', 'welcome_email_automation_id');
+
+        relation.query((qb) => {
+            qb.whereNotExists(function () {
+                this.select(1)
+                    .from('welcome_email_automated_emails as previous_emails')
+                    .whereRaw('previous_emails.next_welcome_email_automated_email_id = welcome_email_automated_emails.id')
+                    .whereRaw('previous_emails.welcome_email_automation_id = welcome_email_automated_emails.welcome_email_automation_id');
+            });
+            qb.orderBy('welcome_email_automated_emails.created_at', 'asc');
+            qb.orderBy('welcome_email_automated_emails.id', 'asc');
+        });
+
+        return relation;
     },
 
     welcomeEmailAutomatedEmails() {

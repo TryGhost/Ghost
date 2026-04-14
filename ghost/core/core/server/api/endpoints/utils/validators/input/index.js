@@ -5,6 +5,10 @@
 /* eslint-disable max-lines */
 
 module.exports = {
+    get drip_sequences() {
+        return require('./drip_sequences');
+    },
+
     get automated_emails() {
         return require('./automated_emails');
     },
