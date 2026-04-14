@@ -1448,9 +1448,10 @@ describe('MemberRepository', function () {
         });
     });
 
-    describe('create - outbox integration', function () {
+    describe('create - automation run integration', function () {
         let Member;
         let Outbox;
+        let WelcomeEmailAutomationRun;
         let MemberStatusEvent;
         let MemberSubscribeEvent;
         let newslettersService;
@@ -1495,6 +1496,10 @@ describe('MemberRepository', function () {
                 add: sinon.stub().resolves()
             };
 
+            WelcomeEmailAutomationRun = {
+                add: sinon.stub().resolves()
+            };
+
             MemberStatusEvent = {
                 add: sinon.stub().resolves()
             };
@@ -1510,6 +1515,7 @@ describe('MemberRepository', function () {
 
             WelcomeEmailAutomation = {
                 findOne: sinon.stub().resolves({
+                    id: 'automation_id_free',
                     get: sinon.stub().callsFake((key) => {
                         const data = {status: 'active'};
                         return data[key];
@@ -1517,6 +1523,7 @@ describe('MemberRepository', function () {
                     related: sinon.stub().callsFake((relation) => {
                         assert.equal(relation, 'welcomeEmailAutomatedEmail');
                         return {
+                            id: 'automated_email_id_free',
                             get: sinon.stub().callsFake((key) => {
                                 const data = {lexical: '{"root":{}}'};
                                 return data[key];
@@ -1531,10 +1538,11 @@ describe('MemberRepository', function () {
             process.env.NODE_ENV = oldNodeEnv;
         });
 
-        it('creates outbox entry for allowed source', async function () {
+        it('creates automation run for allowed source', async function () {
             const repo = new MemberRepository({
                 Member,
                 Outbox,
+                WelcomeEmailAutomationRun,
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
@@ -1544,21 +1552,22 @@ describe('MemberRepository', function () {
 
             await repo.create({email: 'test@example.com', name: 'Test Member'}, {});
 
-            sinon.assert.calledOnce(Outbox.add);
-            const outboxCall = Outbox.add.firstCall.args[0];
-            assert.equal(outboxCall.event_type, 'MemberCreatedEvent');
-
-            const payload = JSON.parse(outboxCall.payload);
-            assert.equal(payload.memberId, 'member_id_123');
-            assert.equal(payload.email, 'test@example.com');
-            assert.equal(payload.name, 'Test Member');
-            assert.equal(payload.source, 'member');
+            sinon.assert.calledOnce(WelcomeEmailAutomationRun.add);
+            const runCall = WelcomeEmailAutomationRun.add.firstCall.args[0];
+            assert.equal(runCall.welcome_email_automation_id, 'automation_id_free');
+            assert.equal(runCall.member_id, 'member_id_123');
+            assert.equal(runCall.next_welcome_email_automated_email_id, 'automated_email_id_free');
+            assert.ok(runCall.ready_at);
+            assert.equal(runCall.step_started_at, null);
+            assert.equal(runCall.step_attempts, 0);
+            assert.equal(runCall.exit_reason, null);
         });
 
-        it('does not create outbox entry for disallowed sources', async function () {
+        it('does not create automation run for disallowed sources', async function () {
             const repo = new MemberRepository({
                 Member,
                 Outbox,
+                WelcomeEmailAutomationRun,
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
@@ -1573,16 +1582,17 @@ describe('MemberRepository', function () {
             ];
 
             for (const source of disallowedSources) {
-                Outbox.add.resetHistory();
+                WelcomeEmailAutomationRun.add.resetHistory();
                 await repo.create({email: 'test@example.com', name: 'Test Member'}, {context: source.context});
-                sinon.assert.notCalled(Outbox.add);
+                sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
             }
         });
 
-        it('includes timestamp in outbox payload', async function () {
+        it('passes transaction to automation run creation', async function () {
             const repo = new MemberRepository({
                 Member,
                 Outbox,
+                WelcomeEmailAutomationRun,
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
@@ -1592,29 +1602,11 @@ describe('MemberRepository', function () {
 
             await repo.create({email: 'test@example.com', name: 'Test Member'}, {});
 
-            const payload = JSON.parse(Outbox.add.firstCall.args[0].payload);
-            assert.ok(payload.timestamp);
-            assert.ok(new Date(payload.timestamp).getTime() > 0);
+            const runOptions = WelcomeEmailAutomationRun.add.firstCall.args[1];
+            assert.ok(runOptions.transacting);
         });
 
-        it('passes transaction to outbox entry creation', async function () {
-            const repo = new MemberRepository({
-                Member,
-                Outbox,
-                MemberStatusEvent,
-                MemberSubscribeEventModel: MemberSubscribeEvent,
-                newslettersService,
-                WelcomeEmailAutomation,
-                OfferRedemption: mockOfferRedemption
-            });
-
-            await repo.create({email: 'test@example.com', name: 'Test Member'}, {});
-
-            const outboxOptions = Outbox.add.firstCall.args[1];
-            assert.ok(outboxOptions.transacting);
-        });
-
-        it('does NOT create outbox entry when welcome email is inactive', async function () {
+        it('does NOT create automation run when welcome email is inactive', async function () {
             WelcomeEmailAutomation.findOne.resolves({
                 get: sinon.stub().callsFake((key) => {
                     const data = {status: 'inactive'};
@@ -1634,6 +1626,7 @@ describe('MemberRepository', function () {
             const repo = new MemberRepository({
                 Member,
                 Outbox,
+                WelcomeEmailAutomationRun,
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
@@ -1643,9 +1636,9 @@ describe('MemberRepository', function () {
 
             await repo.create({email: 'test@example.com', name: 'Test Member'}, {});
 
-            sinon.assert.notCalled(Outbox.add);
+            sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
         });
-        it('does NOT create outbox entry when member is signing up for a paid subscription (stripeCustomer is present)', async function () {
+        it('does NOT create automation run when member is signing up for a paid subscription (stripeCustomer is present)', async function () {
             const StripeCustomer = {
                 upsert: sinon.stub().resolves()
             };
@@ -1653,6 +1646,7 @@ describe('MemberRepository', function () {
             const repo = new MemberRepository({
                 Member,
                 Outbox,
+                WelcomeEmailAutomationRun,
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
@@ -1684,15 +1678,16 @@ describe('MemberRepository', function () {
             }, {});
 
             // The free welcome email should NOT be sent when stripeCustomer is present
-            sinon.assert.notCalled(Outbox.add);
+            sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
             sinon.assert.notCalled(WelcomeEmailAutomation.findOne);
             sinon.assert.notCalled(Member.transaction);
         });
     });
 
-    describe('linkSubscription - outbox integration', function () {
+    describe('linkSubscription - automation run integration', function () {
         let Member;
         let Outbox;
+        let WelcomeEmailAutomationRun;
         let MemberPaidSubscriptionEvent;
         let StripeCustomerSubscription;
         let MemberProductEvent;
@@ -1764,6 +1759,10 @@ describe('MemberRepository', function () {
                 add: sinon.stub().resolves()
             };
 
+            WelcomeEmailAutomationRun = {
+                add: sinon.stub().resolves()
+            };
+
             MemberPaidSubscriptionEvent = {
                 add: sinon.stub().resolves()
             };
@@ -1823,6 +1822,7 @@ describe('MemberRepository', function () {
 
             WelcomeEmailAutomation = {
                 findOne: sinon.stub().resolves({
+                    id: 'automation_id_paid',
                     get: sinon.stub().callsFake((key) => {
                         const data = {status: 'active'};
                         return data[key];
@@ -1830,6 +1830,7 @@ describe('MemberRepository', function () {
                     related: sinon.stub().callsFake((relation) => {
                         assert.equal(relation, 'welcomeEmailAutomatedEmail');
                         return {
+                            id: 'automated_email_id_paid',
                             get: sinon.stub().callsFake((key) => {
                                 const data = {lexical: '{"root":{}}'};
                                 return data[key];
@@ -1844,7 +1845,7 @@ describe('MemberRepository', function () {
             sinon.restore();
         });
 
-        it('creates outbox entry when member status changes to paid', async function () {
+        it('creates automation run when member status changes to paid', async function () {
             Member.edit.resolves({
                 attributes: {status: 'paid'},
                 _previousAttributes: {status: 'free'},
@@ -1857,6 +1858,7 @@ describe('MemberRepository', function () {
             const repo = new MemberRepository({
                 Member,
                 Outbox,
+                WelcomeEmailAutomationRun,
                 MemberPaidSubscriptionEvent,
                 StripeCustomerSubscription,
                 MemberProductEvent,
@@ -1879,17 +1881,18 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            sinon.assert.calledOnce(Outbox.add);
-            const payload = JSON.parse(Outbox.add.firstCall.args[0].payload);
-            assert.equal(payload.status, 'paid');
-            assert.equal(payload.memberId, 'member_id_123');
-            assert.equal(payload.email, 'test@example.com');
-            assert.equal(payload.name, 'Test Member');
-            assert.equal(payload.source, 'member');
-            assert.ok(payload.timestamp);
+            sinon.assert.calledOnce(WelcomeEmailAutomationRun.add);
+            const runCall = WelcomeEmailAutomationRun.add.firstCall.args[0];
+            assert.equal(runCall.welcome_email_automation_id, 'automation_id_paid');
+            assert.equal(runCall.member_id, 'member_id_123');
+            assert.equal(runCall.next_welcome_email_automated_email_id, 'automated_email_id_paid');
+            assert.ok(runCall.ready_at);
+            assert.equal(runCall.step_started_at, null);
+            assert.equal(runCall.step_attempts, 0);
+            assert.equal(runCall.exit_reason, null);
         });
 
-        it('does NOT create outbox entry for disallowed sources', async function () {
+        it('does NOT create automation run for disallowed sources', async function () {
             Member.edit.resolves({
                 attributes: {status: 'paid'},
                 _previousAttributes: {status: 'free'},
@@ -1902,6 +1905,7 @@ describe('MemberRepository', function () {
             const repo = new MemberRepository({
                 Member,
                 Outbox,
+                WelcomeEmailAutomationRun,
                 MemberPaidSubscriptionEvent,
                 StripeCustomerSubscription,
                 MemberProductEvent,
@@ -1921,7 +1925,7 @@ describe('MemberRepository', function () {
             ];
 
             for (const source of disallowedSources) {
-                Outbox.add.resetHistory();
+                WelcomeEmailAutomationRun.add.resetHistory();
                 await repo.linkSubscription({
                     id: 'member_id_123',
                     subscription: subscriptionData
@@ -1931,11 +1935,11 @@ describe('MemberRepository', function () {
                     },
                     context: source.context
                 });
-                sinon.assert.notCalled(Outbox.add);
+                sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
             }
         });
 
-        it('does NOT create outbox entry when paid welcome email is inactive', async function () {
+        it('does NOT create automation run when paid welcome email is inactive', async function () {
             Member.edit.resolves({
                 attributes: {status: 'paid'},
                 _previousAttributes: {status: 'free'},
@@ -1946,6 +1950,7 @@ describe('MemberRepository', function () {
             });
 
             WelcomeEmailAutomation.findOne.resolves({
+                id: 'automation_id_paid',
                 get: sinon.stub().callsFake((key) => {
                     const data = {status: 'inactive'};
                     return data[key];
@@ -1953,6 +1958,7 @@ describe('MemberRepository', function () {
                 related: sinon.stub().callsFake((relation) => {
                     assert.equal(relation, 'welcomeEmailAutomatedEmail');
                     return {
+                        id: 'automated_email_id_paid',
                         get: sinon.stub().callsFake((key) => {
                             const data = {lexical: '{"root":{}}'};
                             return data[key];
@@ -1964,6 +1970,7 @@ describe('MemberRepository', function () {
             const repo = new MemberRepository({
                 Member,
                 Outbox,
+                WelcomeEmailAutomationRun,
                 MemberPaidSubscriptionEvent,
                 StripeCustomerSubscription,
                 MemberProductEvent,
@@ -1986,7 +1993,7 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            sinon.assert.notCalled(Outbox.add);
+            sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
         });
     });
 
