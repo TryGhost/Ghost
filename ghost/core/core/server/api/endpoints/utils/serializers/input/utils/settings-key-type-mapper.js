@@ -26,6 +26,7 @@ const keyTypeMapping = {
     linkedin: 'string',
     meta_title: 'string',
     meta_description: 'string',
+    llms_enabled: 'boolean',
     og_image: 'string',
     og_title: 'string',
     og_description: 'string',

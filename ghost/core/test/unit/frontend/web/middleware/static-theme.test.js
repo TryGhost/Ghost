@@ -102,6 +102,17 @@ describe('staticTheme', function () {
         assert('maxAge' in options);
     });
 
+    it('should enable fallthrough for generated llms files', async function () {
+        req.path = '/llms.txt';
+
+        await callStaticTheme();
+        sinon.assert.calledTwice(activeThemeStub);
+        sinon.assert.called(expressStaticStub);
+
+        const options = expressStaticStub.firstCall.args[1];
+        assert.equal(options.fallthrough, true);
+    });
+
     it('should call express.static for .js file', async function () {
         req.path = 'myvalidfile.js';
 

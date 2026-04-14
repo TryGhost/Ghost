@@ -8,6 +8,7 @@ const urlUtils = require('../../../../../../core/shared/url-utils');
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const renderer = require('../../../../../../core/frontend/services/rendering');
 const dataService = require('../../../../../../core/frontend/services/data');
+const llmsService = require('../../../../../../core/frontend/services/llms/service');
 const EDITOR_URL = `/#/editor/post/`;
 
 describe('Unit - services/routing/controllers/entry', function () {
@@ -17,6 +18,7 @@ describe('Unit - services/routing/controllers/entry', function () {
     let renderStub;
     let urlUtilsRedirect301Stub;
     let urlUtilsRedirectToAdminStub;
+    let fetchPublicEntryStub;
     let post;
 
     beforeEach(function () {
@@ -36,11 +38,14 @@ describe('Unit - services/routing/controllers/entry', function () {
 
         urlUtilsRedirectToAdminStub = sinon.stub(urlUtils, 'redirectToAdmin');
         urlUtilsRedirect301Stub = sinon.stub(urlUtils, 'redirect301');
+        fetchPublicEntryStub = sinon.stub(llmsService, 'fetchPublicEntry');
 
         req = {
             path: '/',
             params: {},
-            route: {}
+            route: {},
+            get: sinon.stub(),
+            accepts: sinon.stub()
         };
 
         res = {
@@ -49,7 +54,13 @@ describe('Unit - services/routing/controllers/entry', function () {
             },
             render: sinon.spy(),
             redirect: sinon.spy(),
-            locals: {}
+            locals: {
+                member: {
+                    uuid: 'member-id'
+                }
+            },
+            send: sinon.spy(),
+            type: sinon.spy()
         };
     });
 
@@ -202,6 +213,51 @@ describe('Unit - services/routing/controllers/entry', function () {
                 done(err);
             });
             return promise;
+        });
+
+        it('serves markdown when text/markdown is preferred for a public post', function (done) {
+            req.path = post.url;
+            req.originalUrl = req.path;
+            req.get.withArgs('Accept').returns('text/markdown');
+            req.accepts.returns('text/markdown');
+            post.visibility = 'public';
+
+            routerManagerGetResourceByIdStub.withArgs(post.id).returns({
+                config: {
+                    type: 'posts'
+                }
+            });
+
+            entryLookUpStub.withArgs(req.path, res.routerOptions)
+                .resolves({
+                    entry: post
+                });
+
+            fetchPublicEntryStub.resolves({
+                title: 'Hello world',
+                url: 'https://example.com/hello-world/',
+                published_at: '2026-04-14T12:00:00.000Z',
+                updated_at: '2026-04-14T13:00:00.000Z',
+                custom_excerpt: 'Short summary',
+                visibility: 'public',
+                html: '<p>Hello <strong>world</strong></p>',
+                plaintext: 'Hello world'
+            });
+
+            controllers.entry(req, res, function (err) {
+                done(err || new Error('next should not be called'));
+            }).then(() => {
+                sinon.assert.calledOnceWithExactly(fetchPublicEntryStub, 'posts', post.id);
+                sinon.assert.calledOnceWithExactly(res.type, 'text/markdown');
+                sinon.assert.match(res.send.firstCall.args[0], /^> ## Content Index/m);
+                sinon.assert.match(res.send.firstCall.args[0], /Fetch the complete content index at: http:\/\/127\.0\.0\.1:\d+\/llms\.txt/);
+                sinon.assert.match(res.send.firstCall.args[0], /^# Hello world/m);
+                sinon.assert.match(res.send.firstCall.args[0], /- Published: 2026-04-14T12:00:00.000Z/);
+                assert.equal(res.send.firstCall.args[0].includes('- Visibility:'), false);
+                sinon.assert.match(res.send.firstCall.args[0], /Hello \*\*world\*\*/);
+                sinon.assert.notCalled(renderStub);
+                done();
+            }).catch(done);
         });
     });
 });

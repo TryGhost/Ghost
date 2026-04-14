@@ -3,7 +3,7 @@ import TopLevelGroup from '../../top-level-group';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {FacebookLogo, GoogleLogo, Icon, ImageUpload, SettingGroupContent, TabView, TextField, XLogo, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {FacebookLogo, GoogleLogo, Icon, ImageUpload, SettingGroupContent, TabView, TextField, Toggle, XLogo, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -79,19 +79,21 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     // Get all settings needed for all tabs
     const [
-        metaTitle,
-        metaDescription,
-        siteTitle,
-        siteDescription,
-        facebookTitle,
-        facebookDescription,
-        facebookImage,
-        twitterTitle,
-        twitterDescription,
-        twitterImage
+        metaTitleValue,
+        metaDescriptionValue,
+        llmsEnabledValue,
+        siteTitleValue,
+        siteDescriptionValue,
+        facebookTitleValue,
+        facebookDescriptionValue,
+        facebookImageValue,
+        twitterTitleValue,
+        twitterDescriptionValue,
+        twitterImageValue
     ] = getSettingValues(localSettings, [
         'meta_title',
         'meta_description',
+        'llms_enabled',
         'title',
         'description',
         'og_title',
@@ -100,7 +102,19 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
         'twitter_title',
         'twitter_description',
         'twitter_image'
-    ]).map(value => value || '') as string[];
+    ]);
+
+    const metaTitle = (metaTitleValue || '') as string;
+    const metaDescription = (metaDescriptionValue || '') as string;
+    const llmsEnabled = llmsEnabledValue !== false;
+    const siteTitle = (siteTitleValue || '') as string;
+    const siteDescription = (siteDescriptionValue || '') as string;
+    const facebookTitle = (facebookTitleValue || '') as string;
+    const facebookDescription = (facebookDescriptionValue || '') as string;
+    const facebookImage = (facebookImageValue || '') as string;
+    const twitterTitle = (twitterTitleValue || '') as string;
+    const twitterDescription = (twitterDescriptionValue || '') as string;
+    const twitterImage = (twitterImageValue || '') as string;
 
     // Tab management
     const [selectedTab, setSelectedTab] = useState('metadata');
@@ -136,6 +150,12 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     // Meta data handlers
+    const handleLlmsToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        updateSetting('llms_enabled', e.target.checked);
+        if (!isEditing) {
+            handleEditingChange(true);
+        }
+    };
     const handleMetaTitleChange = createSettingHandler('meta_title');
     const handleMetaDescriptionChange = createSettingHandler('meta_description');
 
@@ -155,6 +175,12 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const metadataTabContent = (
         <>
             <SettingGroupContent className="my-6 gap-3">
+                <Toggle
+                    checked={llmsEnabled}
+                    direction='rtl'
+                    label='Enable structured data for LLMs and AI search engines'
+                    onChange={handleLlmsToggleChange}
+                />
                 <TextField
                     hint="Recommended: 70 characters"
                     inputRef={focusRef}
