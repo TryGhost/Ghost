@@ -86,6 +86,7 @@ export const ShareModalStyles = `
     .gh-portal-share-preview-meta {
         display: flex;
         align-items: center;
+        gap: 4px;
         min-width: 0;
         color: var(--grey3);
         font-size: 1.35rem;
@@ -97,8 +98,13 @@ export const ShareModalStyles = `
 
     .gh-portal-share-preview-site,
     .gh-portal-share-preview-author {
+        min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    .gh-portal-share-preview-separator {
+        flex: 0 0 auto;
     }
 
     .gh-portal-share-preview-site {

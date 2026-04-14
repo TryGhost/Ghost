@@ -98,9 +98,12 @@ const ShareModal = () => {
                             )}
                             <div className='gh-portal-share-preview-meta'>
                                 {shareSiteName && <span className='gh-portal-share-preview-site'>{shareSiteName}</span>}
+                                {shareSiteName && shareAuthor && (
+                                    <span className='gh-portal-share-preview-separator' aria-hidden='true'>|</span>
+                                )}
                                 {shareAuthor && (
                                     <span className='gh-portal-share-preview-author'>
-                                        {shareSiteName ? `| ${shareAuthor}` : shareAuthor}
+                                        {shareAuthor}
                                     </span>
                                 )}
                             </div>
