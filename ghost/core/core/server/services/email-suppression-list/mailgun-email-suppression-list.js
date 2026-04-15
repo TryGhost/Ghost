@@ -133,7 +133,7 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
                     created_at: event.timestamp
                 });
             } catch (err) {
-                if (err.code !== 'ER_DUP_ENTRY') {
+                if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
                     logging.error(err);
                     return;
                 }
