@@ -5,8 +5,8 @@
   "repository": "https://github.com/TryGhost/Ghost/tree/main/ghost/parse-email-address",
   "author": "Ghost Foundation",
   "license": "MIT",
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput --sourceMap",
     "build": "pnpm build:tsc",
@@ -19,7 +19,7 @@
     "lint:test": "eslint -c test/.eslintrc.js test/ --ext .ts --cache"
   },
   "files": [
-    "build"
+    "dist"
   ],
   "publishConfig": {
     "access": "public"
