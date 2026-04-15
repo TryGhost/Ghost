@@ -42,6 +42,7 @@ const PRIVATE_FEATURES = [
     'importMemberTier',
     'urlCache',
     'lexicalIndicators',
+    'adminUIRefresh',
     'emailCustomization',
     'tagsX',
     'emailUniqueid',
