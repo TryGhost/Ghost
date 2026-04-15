@@ -142,6 +142,32 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
         });
     });
 
+    test('free welcome email preview renders edited subject and body', async ({page}) => {
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+        const customSubject = 'Preview subject from the browser test';
+        const customBody = 'Preview body content rendered from an unsaved draft.';
+
+        await welcomeEmailsSection.goto();
+        await welcomeEmailsSection.openFreeWelcomeEmailModal();
+
+        await welcomeEmailsSection.modalSubjectInput.clear();
+        await welcomeEmailsSection.modalSubjectInput.fill(customSubject);
+        await welcomeEmailsSection.replaceWelcomeEmailContent(customBody);
+
+        const previewResponse = page.waitForResponse(
+            response => response.url().includes('/ghost/api/admin/automated_emails/') &&
+                response.url().includes('/preview/') &&
+                response.request().method() === 'POST'
+        );
+
+        await welcomeEmailsSection.modalPreviewTab.click();
+        await previewResponse;
+
+        await expect(welcomeEmailsSection.modalPreviewSubjectInput).toHaveValue(customSubject);
+        await expect(welcomeEmailsSection.modalPreviewIframe).toBeVisible();
+        await expect(welcomeEmailsSection.modalPreviewFrame.locator('body')).toContainText(customBody);
+    });
+
     test('disabling free welcome email stops delivery', async ({page, browser, baseURL}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
         const emailClient = new MailPit();
