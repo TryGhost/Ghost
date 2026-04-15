@@ -12,7 +12,8 @@ const controller = require('../../../../../core/server/web/gift-preview/controll
 describe('Gift Preview Controller', function () {
     let req;
     let res;
-    let tiersServiceAPI;
+    let originalTiersServiceAPI;
+    let originalGiftService;
 
     beforeEach(function () {
         req = {
@@ -26,7 +27,8 @@ describe('Gift Preview Controller', function () {
             sendStatus: sinon.stub(),
             set: sinon.stub()
         };
-        tiersServiceAPI = tiersService.api;
+        originalTiersServiceAPI = tiersService.api;
+        originalGiftService = giftServiceWrapper.service;
 
         sinon.stub(urlUtils, 'getSiteUrl').returns('https://example.com/');
         sinon.stub(settingsCache, 'get');
@@ -35,7 +37,8 @@ describe('Gift Preview Controller', function () {
     });
 
     afterEach(function () {
-        tiersService.api = tiersServiceAPI;
+        tiersService.api = originalTiersServiceAPI;
+        giftServiceWrapper.service = originalGiftService;
 
         sinon.restore();
     });

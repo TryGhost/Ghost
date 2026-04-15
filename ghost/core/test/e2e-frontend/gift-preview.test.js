@@ -62,10 +62,18 @@ describe('Gift Preview Routes', function () {
 
     describe('GET /gift/:token', function () {
         it('returns HTML with OG meta tags for a valid gift', async function () {
-            const res = await request.get(`/gift/${giftToken}`)
-                .expect(200)
-                .expect('Content-Type', /text\/html/)
-                .expect('Cache-Control', /public, max-age=3600/);
+            const res = await request.get(`/gift/${giftToken}`);
+
+            // Debug: log response details if not 200
+            if (res.status !== 200) {
+                console.log(`[gift-preview debug] status=${res.status}, location=${res.headers.location}, token=${giftToken}, tierId=${tierId}`); // eslint-disable-line no-console
+                const giftRow = await models.Base.knex('gifts').where('token', giftToken).first();
+                console.log(`[gift-preview debug] gift in db:`, giftRow ? 'found' : 'NOT FOUND'); // eslint-disable-line no-console
+            }
+
+            assert.equal(res.status, 200, `Expected 200 but got ${res.status}`);
+            assert.match(res.headers['content-type'], /text\/html/);
+            assert.match(res.headers['cache-control'], /public, max-age=3600/);
 
             assert.ok(res.text.includes('<meta property="og:title"'), 'Should have og:title');
             assert.ok(res.text.includes('<meta property="og:image"'), 'Should have og:image');
