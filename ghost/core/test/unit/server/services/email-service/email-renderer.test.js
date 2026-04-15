@@ -1374,6 +1374,24 @@ describe('Email renderer', function () {
             );
         });
 
+        it('preserves multiline code block whitespace in the shared email wrapper', async function () {
+            renderedPost = '<pre><code>const firstLine = 1;\nconst secondLine = 2;</code></pre>';
+            const post = createModel(basePost);
+            const newsletter = createModel(baseNewsletter);
+
+            const response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                null,
+                {}
+            );
+
+            const codeBlockMatch = response.html.match(/<pre[^>]*><code[^>]*>([\s\S]*?)<\/code><\/pre>/);
+
+            assert(codeBlockMatch, 'Expected rendered email HTML to include a code block');
+            assert.equal(codeBlockMatch[1], 'const firstLine = 1;\nconst secondLine = 2;');
+        });
+
         it('returns feedback buttons and unsubscribe links', async function () {
             const post = createModel(basePost);
             const newsletter = createModel({

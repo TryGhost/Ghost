@@ -8,10 +8,15 @@ type BookshelfDocument<T> = {
     toJSON(): T;
 };
 
+type BookshelfCollection<T> = {
+    models: BookshelfDocument<T>[];
+};
+
 type BookshelfModel<T> = {
     add(data: Partial<T>, unfilteredOptions?: unknown): Promise<T>;
     transaction<R>(callback: (transacting: unknown) => Promise<R>): Promise<R>;
     findOne(data: Record<string, unknown>, unfilteredOptions?: unknown): Promise<BookshelfDocument<T> | null>;
+    findAll(unfilteredOptions?: unknown): Promise<BookshelfCollection<T>>;
 };
 
 type GiftRow = {
@@ -59,7 +64,7 @@ export class GiftBookshelfRepository implements GiftRepository {
             token
         }, {require: false, ...options});
 
-        return this.toGift(model);
+        return model ? this.toGift(model) : null;
     }
 
     async getByPaymentIntentId(paymentIntentId: string): Promise<Gift | null> {
@@ -67,7 +72,17 @@ export class GiftBookshelfRepository implements GiftRepository {
             stripe_payment_intent_id: paymentIntentId
         }, {require: false});
 
-        return this.toGift(model);
+        return model ? this.toGift(model) : null;
+    }
+
+    async findPendingConsumption(): Promise<Gift[]> {
+        const now = new Date();
+
+        const collection = await this.model.findAll({
+            filter: `status:redeemed+consumes_at:<'${now.toISOString()}'`
+        });
+
+        return collection.models.map(model => this.toGift(model));
     }
 
     async create(gift: Gift, options: RepositoryTransactionOptions = {}) {
@@ -119,11 +134,7 @@ export class GiftBookshelfRepository implements GiftRepository {
         };
     }
 
-    private toGift(model: BookshelfDocument<GiftRow> | null): Gift | null {
-        if (!model) {
-            return null;
-        }
-
+    private toGift(model: BookshelfDocument<GiftRow>): Gift {
         const json = model.toJSON();
 
         return new Gift({

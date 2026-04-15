@@ -281,6 +281,8 @@ test.describe('Ghost Admin - Welcome Email Customize Button - flag enabled', () 
         await welcomeEmailsSection.customizeModalButtonColorPickerTrigger.click();
         await expect(welcomeEmailsSection.customizeModalButtonColorAccentSwatch).toBeVisible();
         await welcomeEmailsSection.customizeModalButtonColorAccentSwatch.click();
+        await welcomeEmailsSection.customizeModalButtonColorPickerTrigger.click();
+        await welcomeEmailsSection.customizeModalButtonColorAutoSwatch.click();
 
         await welcomeEmailsSection.customizeModalButtonColorPickerTrigger.click();
         await expect(welcomeEmailsSection.customizeModalButtonColorAccentSwatch).toBeVisible();
