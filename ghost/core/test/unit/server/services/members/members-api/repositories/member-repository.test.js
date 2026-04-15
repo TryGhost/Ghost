@@ -1682,6 +1682,25 @@ describe('MemberRepository', function () {
             sinon.assert.notCalled(WelcomeEmailAutomation.findOne);
             sinon.assert.notCalled(Member.transaction);
         });
+
+        it('does NOT create automation run when member is created with a non-free status (e.g. gift)', async function () {
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                WelcomeEmailAutomationRun,
+                MemberStatusEvent,
+                MemberSubscribeEventModel: MemberSubscribeEvent,
+                newslettersService,
+                WelcomeEmailAutomation,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            await repo.create({email: 'test@example.com', name: 'Test Member', status: 'gift'}, {});
+
+            sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
+            sinon.assert.notCalled(WelcomeEmailAutomation.findOne);
+            sinon.assert.notCalled(Member.transaction);
+        });
     });
 
     describe('linkSubscription - automation run integration', function () {
@@ -1994,6 +2013,96 @@ describe('MemberRepository', function () {
             });
 
             sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
+        });
+    });
+
+    describe('create - status handling', function () {
+        let Member;
+        let MemberStatusEvent;
+        let MemberSubscribeEvent;
+        let newslettersService;
+        let WelcomeEmailAutomation;
+        let productRepository;
+        let memberAdd;
+
+        beforeEach(function () {
+            memberAdd = sinon.stub().resolves({
+                id: 'member_id_status',
+                get: sinon.stub().callsFake((key) => {
+                    const data = {
+                        email: 'test@example.com',
+                        status: 'free',
+                        created_at: new Date()
+                    };
+                    return data[key];
+                }),
+                related: sinon.stub().returns({models: []})
+            });
+
+            Member = {
+                transaction: sinon.stub().callsFake((callback) => {
+                    return callback({executionPromise: Promise.resolve()});
+                }),
+                add: memberAdd
+            };
+
+            MemberStatusEvent = {add: sinon.stub().resolves()};
+            MemberSubscribeEvent = {add: sinon.stub().resolves()};
+
+            newslettersService = {
+                getDefaultNewsletters: sinon.stub().resolves([]),
+                getAll: sinon.stub().resolves([])
+            };
+
+            WelcomeEmailAutomation = {
+                findOne: sinon.stub().resolves(null)
+            };
+
+            productRepository = {
+                get: sinon.stub().resolves({
+                    id: 'tier_1',
+                    get: sinon.stub().withArgs('active').returns(true)
+                })
+            };
+        });
+
+        const buildRepo = () => new MemberRepository({
+            Member,
+            MemberStatusEvent,
+            MemberSubscribeEventModel: MemberSubscribeEvent,
+            newslettersService,
+            WelcomeEmailAutomation,
+            productRepository,
+            OfferRedemption: mockOfferRedemption
+        });
+
+        it('defaults status to "free" when no status and no products are provided', async function () {
+            await buildRepo().create({email: 'test@example.com', name: 'Test Member'}, {});
+
+            sinon.assert.calledOnce(memberAdd);
+            assert.equal(memberAdd.firstCall.args[0].status, 'free');
+        });
+
+        it('defaults status to "comped" when no status is provided but a product is', async function () {
+            await buildRepo().create({
+                email: 'test@example.com',
+                name: 'Test Member',
+                products: [{id: 'tier_1'}]
+            }, {});
+
+            sinon.assert.calledOnce(memberAdd);
+            assert.equal(memberAdd.firstCall.args[0].status, 'comped');
+        });
+
+        it('respects the status passed in data instead of overriding it', async function () {
+            await buildRepo().create({
+                email: 'test@example.com',
+                name: 'Test Member',
+                status: 'gift'
+            }, {});
+
+            sinon.assert.calledOnce(memberAdd);
+            assert.equal(memberAdd.firstCall.args[0].status, 'gift');
         });
     });
 

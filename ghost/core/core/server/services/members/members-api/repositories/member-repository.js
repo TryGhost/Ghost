@@ -287,6 +287,7 @@ module.exports = class MemberRepository {
      * @param {Object[]} [data.newsletters]
      * @param {Object} [data.stripeCustomer]
      * @param {string} [data.offerId]
+     * @param {string} [data.status]
      * @param {import('@tryghost/member-attribution/lib/Attribution').AttributionResource} [data.attribution]
      * @param {boolean} [data.email_disabled]
      * @param {*} options
@@ -312,7 +313,7 @@ module.exports = class MemberRepository {
             });
         }
 
-        const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products', 'newsletters', 'email_disabled']);
+        const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products', 'newsletters', 'email_disabled', 'status']);
 
         // Generate a random transient_id
         memberData.transient_id = await this._generateTransientId();
@@ -340,12 +341,12 @@ module.exports = class MemberRepository {
             }
         }
 
-        const memberStatusData = {
-            status: 'free'
-        };
-
-        if (memberData.products && memberData.products.length === 1) {
-            memberStatusData.status = 'comped';
+        if (!memberData.status) {
+            if (memberData.products && memberData.products.length === 1) {
+                memberData.status = 'comped';
+            } else {
+                memberData.status = 'free';
+            }
         }
 
         // Subscribe members to default newsletters
@@ -369,7 +370,7 @@ module.exports = class MemberRepository {
         const memberAddOptions = {...(options || {}), withRelated};
         let member;
 
-        const isFreeSignup = !stripeCustomer;
+        const isFreeSignup = !stripeCustomer && memberData.status === 'free';
         const shouldCheckFreeWelcomeEmail = WELCOME_EMAIL_SOURCES.includes(source) && isFreeSignup;
         let isFreeWelcomeEmailActive = false;
         let freeWelcomeAutomation = null;
@@ -393,7 +394,6 @@ module.exports = class MemberRepository {
             const runMemberCreation = async (transacting) => {
                 const newMember = await this._Member.add({
                     ...memberData,
-                    ...memberStatusData,
                     labels
                 }, {...memberAddOptions, transacting});
 
@@ -420,7 +420,6 @@ module.exports = class MemberRepository {
         } else {
             member = await this._Member.add({
                 ...memberData,
-                ...memberStatusData,
                 labels
             }, memberAddOptions);
         }
