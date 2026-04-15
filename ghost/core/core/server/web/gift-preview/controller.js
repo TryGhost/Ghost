@@ -1,3 +1,4 @@
+const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const {generateGiftPreviewImage} = require('./image');
 
@@ -37,6 +38,10 @@ async function giftPreview(req, res) {
     try {
         gift = await giftService.getByToken(token);
         tier = await tiersService.api.read(gift.tierId);
+
+        if (!tier) {
+            throw new errors.NotFoundError({message: `Tier not found: ${gift.tierId}`});
+        }
     } catch (err) {
         logging.warn(`Gift preview: failed to load required gift data, redirecting to homepage`, err);
 
@@ -105,7 +110,13 @@ async function giftPreviewImage(req, res) {
     try {
         gift = await giftService.getByToken(token);
         tier = await tiersService.api.read(gift.tierId);
+
+        if (!tier) {
+            throw new errors.NotFoundError({message: `Tier not found: ${gift.tierId}`});
+        }
     } catch (err) {
+        logging.warn('Gift preview image: failed to load required gift data', err);
+
         return res.sendStatus(404);
     }
 
