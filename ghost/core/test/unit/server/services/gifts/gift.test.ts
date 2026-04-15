@@ -141,6 +141,52 @@ describe('Gift', function () {
         }
     });
 
+    describe('consume', function () {
+        it('returns a consumed gift without mutating the original gift', function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemerMemberId: 'member_2',
+                redeemedAt: new Date('2026-04-11T12:00:00.000Z'),
+                consumesAt: new Date('2027-04-11T12:00:00.000Z')
+            });
+            const before = new Date();
+            const consumed = gift.consume();
+            const after = new Date();
+
+            assert.notEqual(consumed, gift);
+            assert.equal(gift.status, 'redeemed');
+            assert.equal(gift.consumedAt, null);
+            assert.equal(consumed!.status, 'consumed');
+            assert.ok(consumed!.consumedAt! >= before);
+            assert.ok(consumed!.consumedAt! <= after);
+        });
+
+        it('preserves all other fields', function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemerMemberId: 'member_2',
+                redeemedAt: new Date('2026-04-11T12:00:00.000Z'),
+                consumesAt: new Date('2027-04-11T12:00:00.000Z')
+            });
+            const consumed = gift.consume();
+
+            assert.ok(consumed);
+            assert.equal(consumed!.token, gift.token);
+            assert.equal(consumed!.redeemerMemberId, gift.redeemerMemberId);
+            assert.equal(consumed!.tierId, gift.tierId);
+            assert.equal(consumed!.consumesAt?.toISOString(), gift.consumesAt?.toISOString());
+        });
+
+        it('returns null when the gift is already consumed', function () {
+            const gift = buildGift({
+                status: 'consumed',
+                consumedAt: new Date('2026-04-12T00:00:00.000Z')
+            });
+
+            assert.equal(gift.consume(), null);
+        });
+    });
+
     describe('redeem', function () {
         it('returns a redeemed gift for the member without mutating the original gift', function () {
             const gift = buildGift();

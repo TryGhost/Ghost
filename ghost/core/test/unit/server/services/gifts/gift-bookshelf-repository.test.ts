@@ -38,7 +38,8 @@ describe('GiftBookshelfRepository', function () {
                         refunded_at: null
                     };
                 }
-            })
+            }),
+            findAll: sinon.stub()
         };
         const repository = new GiftBookshelfRepository({GiftModel});
 
@@ -56,7 +57,8 @@ describe('GiftBookshelfRepository', function () {
         const GiftModel = {
             add: sinon.stub(),
             transaction: sinon.stub(),
-            findOne: sinon.stub().resolves(null)
+            findOne: sinon.stub().resolves(null),
+            findAll: sinon.stub()
         };
         const repository = new GiftBookshelfRepository({GiftModel});
 
@@ -71,7 +73,8 @@ describe('GiftBookshelfRepository', function () {
         const GiftModel = {
             add: sinon.stub(),
             transaction: sinon.stub(),
-            findOne: sinon.stub().resolves(null)
+            findOne: sinon.stub().resolves(null),
+            findAll: sinon.stub()
         };
         const repository = new GiftBookshelfRepository({GiftModel});
 
@@ -111,7 +114,8 @@ describe('GiftBookshelfRepository', function () {
         const GiftModel = {
             add: sinon.stub(),
             transaction: sinon.stub(),
-            findOne: sinon.stub().resolves(existing)
+            findOne: sinon.stub().resolves(existing),
+            findAll: sinon.stub()
         };
         const repository = new GiftBookshelfRepository({GiftModel});
         const gift = new Gift({
@@ -153,7 +157,8 @@ describe('GiftBookshelfRepository', function () {
         const GiftModel = {
             add: sinon.stub(),
             transaction: sinon.stub(),
-            findOne: sinon.stub().resolves(null)
+            findOne: sinon.stub().resolves(null),
+            findAll: sinon.stub()
         };
         const repository = new GiftBookshelfRepository({GiftModel});
         const gift = new Gift({
@@ -194,7 +199,8 @@ describe('GiftBookshelfRepository', function () {
             transaction: sinon.stub().callsFake(async (callback) => {
                 return await callback('trx');
             }),
-            findOne: sinon.stub()
+            findOne: sinon.stub(),
+            findAll: sinon.stub()
         };
         const repository = new GiftBookshelfRepository({GiftModel});
 
@@ -205,5 +211,62 @@ describe('GiftBookshelfRepository', function () {
 
         sinon.assert.calledOnce(GiftModel.transaction);
         assert.equal(result, 'done');
+    });
+
+    it('finds gifts pending consumption using current time', async function () {
+        const before = new Date();
+
+        const GiftModel = {
+            add: sinon.stub(),
+            transaction: sinon.stub(),
+            findOne: sinon.stub(),
+            findAll: sinon.stub().resolves({
+                models: [{
+                    toJSON() {
+                        return {
+                            token: 'gift-token',
+                            buyer_email: 'buyer@example.com',
+                            buyer_member_id: 'buyer_member_1',
+                            redeemer_member_id: 'member_2',
+                            tier_id: 'tier_1',
+                            cadence: 'year',
+                            duration: 1,
+                            currency: 'usd',
+                            amount: 5000,
+                            stripe_checkout_session_id: 'cs_123',
+                            stripe_payment_intent_id: 'pi_456',
+                            consumes_at: new Date('2026-01-01T00:00:00.000Z'),
+                            expires_at: new Date('2030-01-01T00:00:00.000Z'),
+                            status: 'redeemed',
+                            purchased_at: new Date('2025-01-01T00:00:00.000Z'),
+                            redeemed_at: new Date('2025-01-01T12:00:00.000Z'),
+                            consumed_at: null,
+                            expired_at: null,
+                            refunded_at: null
+                        };
+                    }
+                }]
+            })
+        };
+        const repository = new GiftBookshelfRepository({GiftModel});
+
+        const gifts = await repository.findPendingConsumption();
+
+        const after = new Date();
+
+        assert.equal(gifts.length, 1);
+        assert.equal(gifts[0].token, 'gift-token');
+        assert.equal(gifts[0].status, 'redeemed');
+
+        sinon.assert.calledOnce(GiftModel.findAll);
+
+        const filterArg = GiftModel.findAll.getCall(0).args[0].filter;
+        assert.ok(filterArg.startsWith('status:redeemed+consumes_at:<\''));
+
+        const dateStr = filterArg.match(/consumes_at:<'(.+)'/)[1];
+        const filterDate = new Date(dateStr);
+
+        assert.ok(filterDate >= before);
+        assert.ok(filterDate <= after);
     });
 });

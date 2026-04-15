@@ -269,13 +269,55 @@ export class GiftService {
             await this.deps.giftRepository.update(refunded, {transacting});
 
             if (gift.redeemerMemberId) {
-                await this.deps.memberRepository.update({
-                    products: [],
-                    status: 'free'
-                }, {id: gift.redeemerMemberId, transacting});
+                const member = await this.deps.memberRepository.get({id: gift.redeemerMemberId}, {transacting});
+
+                if (member?.get('status') === 'gift') {
+                    await this.deps.memberRepository.update({
+                        products: [],
+                        status: 'free'
+                    }, {id: gift.redeemerMemberId, transacting});
+                }
             }
         });
 
         return true;
+    }
+
+    async processConsumed(): Promise<{consumedCount: number; updatedMemberCount: number}> {
+        const toConsume = await this.deps.giftRepository.findPendingConsumption();
+
+        if (toConsume.length === 0) {
+            return {consumedCount: 0, updatedMemberCount: 0};
+        }
+
+        let consumedCount = 0;
+        let updatedMemberCount = 0;
+
+        for (const gift of toConsume) {
+            const consumed = gift.consume();
+
+            if (!consumed) {
+                continue;
+            }
+
+            await this.deps.giftRepository.transaction(async (transacting) => {
+                const member = await this.deps.memberRepository.get({id: gift.redeemerMemberId}, {transacting});
+
+                if (member && member.get('status') === 'gift') {
+                    await this.deps.memberRepository.update({
+                        products: [],
+                        status: 'free'
+                    }, {id: gift.redeemerMemberId, transacting});
+
+                    updatedMemberCount += 1;
+                }
+
+                await this.deps.giftRepository.update(consumed, {transacting});
+            });
+
+            consumedCount += 1;
+        }
+
+        return {consumedCount, updatedMemberCount};
     }
 }
