@@ -163,4 +163,16 @@ export class Gift {
             status: 'redeemed'
         });
     }
+
+    refund(): Gift | null {
+        if (this.isRefunded()) {
+            return null;
+        }
+
+        return new Gift({
+            ...this,
+            status: 'refunded',
+            refundedAt: new Date()
+        });
+    }
 }

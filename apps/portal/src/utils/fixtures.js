@@ -157,11 +157,13 @@ export const member = {
         firstname: 'Jamie',
         subscriptions: [],
         paid: false,
+        status: 'free',
         avatarImage: '',
         subscribed: true
     }),
     paid: getMemberData({
         paid: true,
+        status: 'paid',
         subscriptions: [
             getSubscriptionData({
                 status: 'active',
@@ -177,10 +179,12 @@ export const member = {
     }),
     complimentary: getMemberData({
         paid: true,
+        status: 'comped',
         subscriptions: []
     }),
     complimentaryWithSubscription: getMemberData({
         paid: true,
+        status: 'comped',
         subscriptions: [
             getSubscriptionData({
                 amount: 0
@@ -189,6 +193,7 @@ export const member = {
     }),
     preview: getMemberData({
         paid: true,
+        status: 'paid',
         subscriptions: [
             getSubscriptionData({
                 amount: 1500,
@@ -206,6 +211,7 @@ export function paidMemberOnTier() {
     let price = site?.products?.[1].monthlyPrice;
     let updatedMember = getMemberData({
         paid: true,
+        status: 'paid',
         subscriptions: [
             getSubscriptionData({
                 offer: null,

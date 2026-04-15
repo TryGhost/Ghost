@@ -246,9 +246,36 @@ export class GiftService {
                 status: 'gift'
             }, {id: memberId, transacting});
 
-            await this.deps.giftRepository.save(redeemed, {transacting});
+            await this.deps.giftRepository.update(redeemed, {transacting});
 
             return redeemed;
         });
+    }
+
+    async refund(paymentIntentId: string): Promise<boolean> {
+        const gift = await this.deps.giftRepository.getByPaymentIntentId(paymentIntentId);
+
+        if (!gift) {
+            return false;
+        }
+
+        const refunded = gift.refund();
+
+        if (!refunded) {
+            return true;
+        }
+
+        await this.deps.giftRepository.transaction(async (transacting) => {
+            await this.deps.giftRepository.update(refunded, {transacting});
+
+            if (gift.redeemerMemberId) {
+                await this.deps.memberRepository.update({
+                    products: [],
+                    status: 'free'
+                }, {id: gift.redeemerMemberId, transacting});
+            }
+        });
+
+        return true;
     }
 }

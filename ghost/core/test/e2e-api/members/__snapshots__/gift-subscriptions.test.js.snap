@@ -47,21 +47,3 @@ Object {
   ],
 }
 `;
-
-exports[`Gift Subscriptions Rejects purchase without a valid email 1: [body] 1`] = `
-Object {
-  "errors": Array [
-    Object {
-      "code": null,
-      "context": "A valid email address is required to purchase a gift subscription",
-      "details": null,
-      "ghostErrorCode": null,
-      "help": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Bad Request.",
-      "property": null,
-      "type": "BadRequestError",
-    },
-  ],
-}
-`;

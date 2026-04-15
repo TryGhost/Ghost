@@ -21,6 +21,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
 
     const showCommentCta = newsletter.show_comment_cta && commentsEnabled !== 'off';
     const showFeedback = newsletter.feedback_enabled;
+    const showShareButton = newsletter.show_share_button;
 
     const backgroundColor = () => {
         const value = newsletter.background_color;
@@ -207,6 +208,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         showFeedback={showFeedback}
         showLatestPosts={newsletter.show_latest_posts}
         showPostTitleSection={newsletter.show_post_title_section}
+        showShareButton={showShareButton}
         showSubscriptionDetails={newsletter.show_subscription_details}
         siteTitle={title}
         titleAlignment={newsletter.title_alignment}

@@ -7,18 +7,21 @@ module.exports = class WebhookController {
      * @param {import('./services/webhook/checkout-session-event-service')} deps.checkoutSessionEventService
      * @param {import('./services/webhook/subscription-event-service')} deps.subscriptionEventService
      * @param {import('./services/webhook/invoice-event-service')} deps.invoiceEventService
+     * @param {import('./services/webhook/charge-refunded-event-service')} deps.chargeRefundedEventService
      */
     constructor(deps) {
         this.checkoutSessionEventService = deps.checkoutSessionEventService;
         this.subscriptionEventService = deps.subscriptionEventService;
         this.invoiceEventService = deps.invoiceEventService;
+        this.chargeRefundedEventService = deps.chargeRefundedEventService;
         this.webhookManager = deps.webhookManager;
         this.handlers = {
             'customer.subscription.deleted': this.subscriptionEvent,
             'customer.subscription.updated': this.subscriptionEvent,
             'customer.subscription.created': this.subscriptionEvent,
             'invoice.payment_succeeded': this.invoiceEvent,
-            'checkout.session.completed': this.checkoutSessionEvent
+            'checkout.session.completed': this.checkoutSessionEvent,
+            'charge.refunded': this.chargeRefundedEvent
         };
     }
 
@@ -144,5 +147,14 @@ module.exports = class WebhookController {
      */
     async checkoutSessionEvent(session) {
         await this.checkoutSessionEventService.handleEvent(session);
+    }
+
+    /**
+     * Delegates `charge.refunded` events to the `chargeRefundedEventService`
+     * @param {import('stripe').Stripe.Charge} charge
+     * @private
+     */
+    async chargeRefundedEvent(charge) {
+        await this.chargeRefundedEventService.handleEvent(charge);
     }
 };

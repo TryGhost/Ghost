@@ -737,13 +737,6 @@ module.exports = class RouterController {
                 });
             }
 
-            if (typeof req.body.customerEmail !== 'string' || !isEmail(req.body.customerEmail)) {
-                throw new BadRequestError({
-                    message: tpl(messages.badRequest),
-                    context: 'A valid email address is required to purchase a gift subscription'
-                });
-            }
-
             if (req.body.offerId) {
                 throw new BadRequestError({
                     message: tpl(messages.badRequest),

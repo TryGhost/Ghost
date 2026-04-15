@@ -9,18 +9,13 @@ on:
       - main
       - 'v[0-9]+.*' # Matches any release branch, e.g. v6.0.3, v12.1.0
       - '[0-9]+.x' # Matches any major version branch, e.g. 5.x, 23.x
-    tags:
-      - 'v[0-9]*' # Version tags trigger release publishing (npm, GitHub Release)
+    tags-ignore:
+      - '**' # Tags handled by ci-release.yml
+  workflow_call: # Called by ci-release.yml for uninterruptible release CI
 
 env:
   FORCE_COLOR: 1
   HEAD_COMMIT: ${{ github.sha }}
-  CACHED_DEPENDENCY_PATHS: |
-    ${{ github.workspace }}/node_modules
-    ${{ github.workspace }}/apps/*/node_modules
-    ${{ github.workspace }}/ghost/*/node_modules
-    ${{ github.workspace }}/e2e/node_modules
-    ~/.cache/ms-playwright/
   NODE_VERSION: 22.18.0
   # Disable v8-compile-cache to prevent intermittent V8 deserializer crashes
   # when multiple parallel Nx workers race to read/write shared bytecode cache
@@ -154,29 +149,6 @@ jobs:
             any-code:
               - '!**/*.md'
 
-      - name: Compute lockfile hash
-        run: echo "hash=${{ hashFiles('pnpm-lock.yaml') }}" >> "$GITHUB_ENV"
-
-      - name: Compute dependency cache key
-        run: echo "cachekey=pnpm-dep-cache-${{ hashFiles('pnpm-lock.yaml') }}-${{ env.HEAD_COMMIT }}" >> "$GITHUB_ENV"
-
-      - name: Compute dependency cache restore key
-        run: |
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "DEPENDENCY_CACHE_RESTORE_KEYS<<$EOF" >> "$GITHUB_ENV"
-          echo "pnpm-dep-cache-${{ env.hash }}-${{ github.sha }}" >> "$GITHUB_ENV"
-          echo "pnpm-dep-cache-${{ env.hash }}" >> "$GITHUB_ENV"
-          echo "pnpm-dep-cache" >> "$GITHUB_ENV"
-          echo "$EOF" >> "$GITHUB_ENV"
-
-      - name: Check dependency cache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-        id: cache_dependencies
-        with:
-          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
-          key: ${{ env.cachekey }}
-          restore-keys: ${{ env.IS_DEVELOPMENT == 'false' && env.DEPENDENCY_CACHE_RESTORE_KEYS || 'dep-never-restore'}}
-
       - name: Define Node test matrix
         id: node_matrix
         run: |
@@ -189,9 +161,10 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
       - name: Install dependencies
-        run: bash .github/scripts/install-deps.sh
+        run: pnpm install --frozen-lockfile
 
       - name: Determine Affected Projects
         if: env.IS_TAG != 'true'
@@ -221,7 +194,6 @@ jobs:
       is_six: ${{ env.IS_SIX }}
       is_six_pr: ${{ env.IS_SIX_PR }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
-      dependency_cache_key: ${{ env.cachekey }}
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
       nx_base: ${{ env.NX_BASE }}
@@ -250,7 +222,7 @@ jobs:
   job_lint:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_any_code == 'true'
     name: Lint
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -262,18 +234,23 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - run: pnpm nx affected -t lint
+      - name: Lint all (tags)
+        if: needs.job_setup.outputs.is_tag == 'true'
+        run: pnpm nx run-many -t lint
+
+      - name: Lint affected (branches)
+        if: needs.job_setup.outputs.is_tag != 'true'
+        run: pnpm nx affected -t lint
         env:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
@@ -290,23 +267,22 @@ jobs:
     needs: [job_setup]
     name: i18n
     if: |
-        needs.job_setup.outputs.is_tag != 'true'
-        && (needs.job_setup.outputs.changed_comments_ui == 'true'
+        needs.job_setup.outputs.is_tag == 'true'
+        || needs.job_setup.outputs.changed_comments_ui == 'true'
         || needs.job_setup.outputs.changed_signup_form == 'true'
         || needs.job_setup.outputs.changed_sodo_search == 'true'
         || needs.job_setup.outputs.changed_portal == 'true'
-        || needs.job_setup.outputs.changed_core == 'true')
+        || needs.job_setup.outputs.changed_core == 'true'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Run i18n tests
         run: pnpm nx run @tryghost/i18n:test
@@ -314,7 +290,7 @@ jobs:
   job_admin-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_admin == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_admin == 'true'
     name: Admin tests - Chrome
     env:
       MOZ_HEADLESS: 1
@@ -327,11 +303,10 @@ jobs:
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - run: pnpm nx run ghost-admin:test
         env:
@@ -356,7 +331,7 @@ jobs:
   job_unit-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_any_code == 'true'
     strategy:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
@@ -371,18 +346,31 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ matrix.node }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        # sqlite3 is an optionalDependency. Without --force, pnpm may skip
+        # installing/linking it when restoring from a cached store. --force
+        # ensures all optional deps are installed regardless.
+        # (ghost core's test:unit job requires sqlite3)
+        run: pnpm install --frozen-lockfile --force
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
         with:
           timezoneLinux: "America/New_York"
 
-      - name: Run unit tests
+      - name: Run unit tests (tags — all)
+        if: needs.job_setup.outputs.is_tag == 'true'
+        run: pnpm nx run-many -t test:unit
+        env:
+          FORCE_COLOR: 0
+          GHOST_UNIT_TEST_VARIANT: ci
+          NX_SKIP_LOG_GROUPING: true
+          logging__level: fatal
+
+      - name: Run unit tests (branches — affected)
+        if: needs.job_setup.outputs.is_tag != 'true'
         run: pnpm nx affected -t test:unit
         env:
           FORCE_COLOR: 0
@@ -408,7 +396,7 @@ jobs:
   job_acceptance-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
       mysql:
         image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
@@ -446,11 +434,18 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ matrix.node }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        # sqlite3 is an optionalDependency. Without --force, pnpm may skip
+        # installing/linking it when restoring from a cached store. --force
+        # ensures all optional deps are installed regardless.
+        run: |
+          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
+            pnpm install --frozen-lockfile --force
+          else
+            pnpm install --frozen-lockfile
+          fi
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -492,7 +487,7 @@ jobs:
   job_legacy-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
       mysql:
         image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
@@ -532,11 +527,18 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ matrix.node }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        # sqlite3 is an optionalDependency. Without --force, pnpm may skip
+        # installing/linking it when restoring from a cached store. --force
+        # ensures all optional deps are installed regardless.
+        run: |
+          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
+            pnpm install --frozen-lockfile --force
+          else
+            pnpm install --frozen-lockfile
+          fi
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
@@ -562,7 +564,7 @@ jobs:
   job_admin_x_settings:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_admin_x_settings == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_admin_x_settings == 'true'
     name: Admin-X Settings tests
     env:
       CI: true
@@ -574,11 +576,10 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
@@ -603,7 +604,7 @@ jobs:
   job_activitypub:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_activitypub == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_activitypub == 'true'
     name: ActivityPub tests
     env:
       CI: true
@@ -615,11 +616,10 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
@@ -644,7 +644,7 @@ jobs:
   job_comments_ui:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_comments_ui == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_comments_ui == 'true'
     name: Comments-UI tests
     env:
       CI: true
@@ -656,11 +656,10 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
@@ -685,7 +684,7 @@ jobs:
   job_signup_form:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_signup_form == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_signup_form == 'true'
     name: Signup-form tests
     env:
       CI: true
@@ -697,11 +696,10 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
@@ -727,7 +725,7 @@ jobs:
     name: Tinybird Tests
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_tinybird == 'true'
     defaults:
         run:
           working-directory: ghost/core/core/server/data/tinybird
@@ -763,7 +761,7 @@ jobs:
   job_ghost-cli:
     name: Ghost-CLI tests
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -776,14 +774,13 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
       - name: Install Ghost-CLI
         run: npm install -g ghost-cli@latest
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - run: node .github/scripts/bump-version.js canary
 
@@ -841,11 +838,10 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Build server and admin assets
         run: |
@@ -1088,7 +1084,6 @@ jobs:
   job_build_e2e_public_apps:
     name: Build E2E Public App Assets
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -1101,11 +1096,10 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Build public apps for E2E
         run: pnpm --filter @tryghost/e2e build:apps
@@ -1130,7 +1124,6 @@ jobs:
   job_build_e2e_image:
     name: Build E2E Docker Image
     needs: [job_setup, job_build_e2e_public_apps, job_build_artifacts]
-    if: needs.job_setup.outputs.is_tag != 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -1238,7 +1231,6 @@ jobs:
     name: E2E Tests (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
     needs: [job_build_e2e_image, job_setup]
-    if: needs.job_setup.outputs.is_tag != 'true'
     strategy:
       fail-fast: true
       matrix:
@@ -1278,11 +1270,10 @@ jobs:
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Prepare E2E CI job
         env:
@@ -1346,11 +1337,10 @@ jobs:
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Download blob reports from GitHub Actions Artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
@@ -1489,12 +1479,8 @@ jobs:
       - name: Output needs
         run: echo "${{ toJson(needs) }}"
 
-      - name: Pass on tag pushes (tests already ran on branch)
-        if: needs.job_setup.outputs.is_tag == 'true'
-        run: echo "Tag push — tests skipped (already tested on branch commit)"
-
       - name: Check if any required jobs failed or been cancelled
-        if: needs.job_setup.outputs.is_tag != 'true' && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled'))
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
         run: |
           echo "One of the dependent jobs have failed or been cancelled. You may need to re-run it." && exit 1
 
@@ -1541,11 +1527,10 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Check if version changed
         if: needs.job_setup.outputs.is_main == 'true'
@@ -1665,6 +1650,9 @@ jobs:
           if [ "${{ needs.job_setup.outputs.is_main }}" = "true" ]; then
             echo "pr_number=" >> $GITHUB_OUTPUT
             echo "deploy=" >> $GITHUB_OUTPUT
+          elif [ "${{ needs.job_setup.outputs.is_tag }}" = "true" ]; then
+            echo "pr_number=" >> $GITHUB_OUTPUT
+            echo "deploy=" >> $GITHUB_OUTPUT
           elif [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
 
@@ -1720,6 +1708,7 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          package-manager-cache: false
 
       # TODO: Remove once Node v24 ships with npm >= 11
       - name: Install npm v11 (required for OIDC publishing)
