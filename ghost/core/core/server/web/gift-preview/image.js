@@ -35,8 +35,8 @@ function hexToRgb(hex) {
     };
 }
 
-// Blend accent color at 6% opacity over white, matching Portal's redemption modal
 function getBackgroundColor(accentColor) {
+    // Blend accent color at 6% opacity over white, matching Portal's redemption modal
     const {r, g, b} = hexToRgb(accentColor);
     const opacity = 0.06;
     const blend = c => Math.round(255 + (c - 255) * opacity);
@@ -45,7 +45,6 @@ function getBackgroundColor(accentColor) {
 }
 
 function buildSvg({tierName, cadenceLabel, accentColor}) {
-    // Truncate long tier names
     const displayTier = tierName.length > 30 ? tierName.slice(0, 28) + '...' : tierName;
     const bgColor = getBackgroundColor(accentColor);
 
