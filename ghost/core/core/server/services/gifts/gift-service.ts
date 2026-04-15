@@ -294,28 +294,35 @@ export class GiftService {
         let updatedMemberCount = 0;
 
         for (const gift of toConsume) {
-            const consumed = gift.consume();
-
-            if (!consumed) {
-                continue;
-            }
-
             await this.deps.giftRepository.transaction(async (transacting) => {
-                const member = await this.deps.memberRepository.get({id: gift.redeemerMemberId}, {transacting});
+                // Re-fetch with a row lock to prevent races with concurrent refunds
+                const locked = await this.deps.giftRepository.getByToken(gift.token, {transacting, forUpdate: true});
+
+                if (locked?.status !== 'redeemed') {
+                    return;
+                }
+
+                const consumed = locked.consume();
+
+                if (!consumed) {
+                    return;
+                }
+
+                const member = await this.deps.memberRepository.get({id: locked.redeemerMemberId}, {transacting});
 
                 if (member && member.get('status') === 'gift') {
                     await this.deps.memberRepository.update({
                         products: [],
                         status: 'free'
-                    }, {id: gift.redeemerMemberId, transacting});
+                    }, {id: locked.redeemerMemberId, transacting});
 
                     updatedMemberCount += 1;
                 }
 
                 await this.deps.giftRepository.update(consumed, {transacting});
-            });
 
-            consumedCount += 1;
+                consumedCount += 1;
+            });
         }
 
         return {consumedCount, updatedMemberCount};
@@ -331,15 +338,24 @@ export class GiftService {
         let expiredCount = 0;
 
         for (const gift of toExpire) {
-            const expired = gift.expire();
+            await this.deps.giftRepository.transaction(async (transacting) => {
+                // Re-fetch with a row lock to prevent races with concurrent redeems / refunds
+                const locked = await this.deps.giftRepository.getByToken(gift.token, {transacting, forUpdate: true});
 
-            if (!expired) {
-                continue;
-            }
+                if (locked?.status !== 'purchased') {
+                    return;
+                }
 
-            await this.deps.giftRepository.update(expired);
+                const expired = locked.expire();
 
-            expiredCount += 1;
+                if (!expired) {
+                    return;
+                }
+
+                await this.deps.giftRepository.update(expired, {transacting});
+
+                expiredCount += 1;
+            });
         }
 
         return {expiredCount};

@@ -446,6 +446,7 @@ describe('GiftService', function () {
             });
 
             giftRepository.findPendingConsumption.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
             memberRepository.get.resolves({
                 id: 'member_1',
                 get: sinon.stub().withArgs('status').returns('gift')
@@ -458,6 +459,7 @@ describe('GiftService', function () {
             assert.equal(result.updatedMemberCount, 1);
 
             sinon.assert.calledOnce(giftRepository.transaction);
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, gift.token, {transacting: 'trx', forUpdate: true});
             sinon.assert.calledOnceWithExactly(memberRepository.update, {
                 products: [],
                 status: 'free'
@@ -469,6 +471,29 @@ describe('GiftService', function () {
             assert.notEqual(savedGift.consumedAt, null);
         });
 
+        it('skips gifts that are no longer redeemed when re-loaded', async function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemerMemberId: 'member_1',
+                redeemedAt: new Date('2025-04-01T00:00:00.000Z'),
+                consumesAt: new Date('2026-04-01T00:00:00.000Z')
+            });
+
+            giftRepository.findPendingConsumption.resolves([gift]);
+            giftRepository.getByToken.resolves(buildGift({
+                status: 'refunded',
+                refundedAt: new Date()
+            }));
+
+            const service = createService();
+            const result = await service.processConsumed();
+
+            assert.equal(result.consumedCount, 0);
+            assert.equal(result.updatedMemberCount, 0);
+            sinon.assert.notCalled(giftRepository.update);
+            sinon.assert.notCalled(memberRepository.get);
+        });
+
         it('skips members that are no longer in gift status', async function () {
             const gift = buildGift({
                 status: 'redeemed',
@@ -478,6 +503,7 @@ describe('GiftService', function () {
             });
 
             giftRepository.findPendingConsumption.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
             memberRepository.get.resolves({
                 id: 'member_1',
                 get: sinon.stub().withArgs('status').returns('paid')
@@ -502,6 +528,7 @@ describe('GiftService', function () {
             });
 
             giftRepository.findPendingConsumption.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
             memberRepository.get.resolves(null);
 
             const service = createService();
@@ -529,6 +556,9 @@ describe('GiftService', function () {
             });
 
             giftRepository.findPendingConsumption.resolves([gift1, gift2]);
+            giftRepository.getByToken
+                .withArgs('gift-1', {transacting: 'trx', forUpdate: true}).resolves(gift1)
+                .withArgs('gift-2', {transacting: 'trx', forUpdate: true}).resolves(gift2);
             memberRepository.get
                 .withArgs({id: 'member_1'}, {transacting: 'trx'}).resolves({
                     id: 'member_1',
@@ -567,16 +597,41 @@ describe('GiftService', function () {
             });
 
             giftRepository.findPendingExpiration.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
 
             const service = createService();
             const result = await service.processExpired();
 
             assert.equal(result.expiredCount, 1);
 
+            sinon.assert.calledOnce(giftRepository.transaction);
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, gift.token, {transacting: 'trx', forUpdate: true});
+
             sinon.assert.calledOnce(giftRepository.update);
             const savedGift = giftRepository.update.getCall(0).args[0];
             assert.equal(savedGift.status, 'expired');
             assert.notEqual(savedGift.expiredAt, null);
+        });
+
+        it('skips gifts that are no longer purchased when re-loaded', async function () {
+            const gift = buildGift({
+                status: 'purchased',
+                expiresAt: new Date('2026-01-01T00:00:00.000Z')
+            });
+
+            giftRepository.findPendingExpiration.resolves([gift]);
+            giftRepository.getByToken.resolves(buildGift({
+                status: 'redeemed',
+                redeemedAt: new Date(),
+                redeemerMemberId: 'member_1',
+                consumesAt: new Date('2027-01-01T00:00:00.000Z')
+            }));
+
+            const service = createService();
+            const result = await service.processExpired();
+
+            assert.equal(result.expiredCount, 0);
+            sinon.assert.notCalled(giftRepository.update);
         });
 
         it('handles multiple expired gifts', async function () {
@@ -592,6 +647,9 @@ describe('GiftService', function () {
             });
 
             giftRepository.findPendingExpiration.resolves([gift1, gift2]);
+            giftRepository.getByToken
+                .withArgs('gift-1', {transacting: 'trx', forUpdate: true}).resolves(gift1)
+                .withArgs('gift-2', {transacting: 'trx', forUpdate: true}).resolves(gift2);
 
             const service = createService();
             const result = await service.processExpired();
