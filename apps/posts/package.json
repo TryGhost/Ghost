@@ -44,6 +44,7 @@
         "@testing-library/react": "14.3.1",
         "@types/jest": "29.5.14",
         "@types/react": "18.3.28",
+        "@vitest/coverage-v8": "^1.6.1",
         "msw": "2.12.14",
         "tailwindcss": "^4.2.2",
         "vite": "5.4.21",
