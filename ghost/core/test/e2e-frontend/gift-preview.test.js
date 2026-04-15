@@ -1,29 +1,19 @@
 const assert = require('node:assert/strict');
 const supertest = require('supertest');
-const sinon = require('sinon');
 const crypto = require('node:crypto');
 const ObjectId = require('bson-objectid').default;
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
-const labs = require('../../core/shared/labs');
+const {mockManager} = require('../utils/e2e-framework');
 const models = require('../../core/server/models');
 
 describe('Gift Preview Routes', function () {
     let request;
     let giftToken;
     let tierId;
-    let originalLabsIsSet;
 
     before(async function () {
         await testUtils.startGhost();
-
-        originalLabsIsSet = labs.isSet;
-        sinon.stub(labs, 'isSet').callsFake(function (flag) {
-            if (flag === 'giftSubscriptions') {
-                return true;
-            }
-            return originalLabsIsSet.call(labs, flag);
-        });
 
         request = supertest.agent(configUtils.config.get('url'));
 
@@ -62,8 +52,12 @@ describe('Gift Preview Routes', function () {
         });
     });
 
-    after(async function () {
-        sinon.restore();
+    afterEach(function () {
+        mockManager.restore();
+    });
+
+    beforeEach(function () {
+        mockManager.mockLabsEnabled('giftSubscriptions');
     });
 
     describe('GET /gift/:token', function () {
