@@ -59,6 +59,13 @@ interface StaffServiceEmails {
         cadence: 'month' | 'year';
         duration: number;
     }): Promise<void>;
+    notifyGiftSubscriptionStarted(data: {
+        memberId: string;
+        memberEmail: string;
+        memberName: string | null;
+        tierName: string;
+        buyerEmail: string;
+    }): Promise<void>;
 }
 
 export interface GiftPurchaseData {
@@ -221,10 +228,10 @@ export class GiftService {
     }
 
     async redeem({token, memberId}: {token: string; memberId: string}): Promise<Gift> {
-        return await this.deps.giftRepository.transaction(async (transacting) => {
-            const member = await this.deps.memberRepository.get({id: memberId}, {transacting, forUpdate: true});
+        const {redeemed, member} = await this.deps.giftRepository.transaction(async (transacting) => {
+            const _member = await this.deps.memberRepository.get({id: memberId}, {transacting, forUpdate: true});
 
-            if (!member) {
+            if (!_member) {
                 throw new errors.NotFoundError({message: `Member not found: ${memberId}`});
             }
 
@@ -234,22 +241,45 @@ export class GiftService {
                 throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
             }
 
-            await this.assertRedeemable(gift, member.get('status'));
+            await this.assertRedeemable(gift, _member.get('status'));
 
-            const redeemed = gift.redeem({memberId});
+            const _redeemed = gift.redeem({memberId});
 
             await this.deps.memberRepository.update({
                 products: [{
-                    id: redeemed.tierId,
-                    expiry_at: redeemed.consumesAt
+                    id: _redeemed.tierId,
+                    expiry_at: _redeemed.consumesAt
                 }],
                 status: 'gift'
             }, {id: memberId, transacting});
 
-            await this.deps.giftRepository.update(redeemed, {transacting});
+            await this.deps.giftRepository.update(_redeemed, {transacting});
 
-            return redeemed;
+            return {
+                redeemed: _redeemed,
+                member: _member
+            };
         });
+
+        try {
+            const tier = await this.deps.tiersService.api.read(redeemed.tierId);
+
+            if (!tier) {
+                throw new errors.NotFoundError({message: `Tier not found: ${redeemed.tierId}`});
+            }
+
+            await this.deps.staffServiceEmails.notifyGiftSubscriptionStarted({
+                memberId: member.id,
+                memberEmail: member.get('email')!,
+                memberName: member.get('name') ?? null,
+                tierName: tier.name,
+                buyerEmail: redeemed.buyerEmail
+            });
+        } catch (err) {
+            logging.error('Failed to notify staff of gift redemption', err);
+        }
+
+        return redeemed;
     }
 
     async refund(paymentIntentId: string): Promise<boolean> {

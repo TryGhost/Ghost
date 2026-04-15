@@ -218,6 +218,15 @@ describe('Members Signin', function () {
             assert.equal(gift.get('redeemer_member_id'), member.id);
             assert.ok(gift.get('redeemed_at'));
             assert.ok(gift.get('consumes_at'));
+
+            mockManager.assert.sentEmail({
+                subject: /Free member signup: Gift Receiver/,
+                to: 'jbloggs@example.com'
+            });
+            mockManager.assert.sentEmail({
+                subject: /New paid subscriber: Gift Receiver/,
+                to: 'jbloggs@example.com'
+            });
         } finally {
             await models.Product.edit({
                 welcome_page_url: originalWelcomePageUrl

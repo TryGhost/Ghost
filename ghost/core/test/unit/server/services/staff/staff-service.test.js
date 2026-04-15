@@ -1089,5 +1089,77 @@ describe('StaffService', function () {
                 sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('3 months')));
             });
         });
+
+        describe('notifyGiftSubscriptionStarted', function () {
+            it('sends gift subscription email with correct subject', async function () {
+                await service.emails.notifyGiftSubscriptionStarted({
+                    memberName: 'Jamie',
+                    memberEmail: 'jamie@example.com',
+                    memberId: 'abc',
+                    tierName: 'Premium',
+                    buyerEmail: 'gifter@example.com'
+                });
+
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'paid-started');
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('subject', sinon.match('New paid subscriber: Jamie')));
+            });
+
+            it('includes the tier in HTML and plain text', async function () {
+                await service.emails.notifyGiftSubscriptionStarted({
+                    memberName: 'Jamie',
+                    memberEmail: 'jamie@example.com',
+                    memberId: 'abc',
+                    tierName: 'Premium',
+                    buyerEmail: 'gifter@example.com'
+                });
+
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Premium')));
+                sinon.assert.calledWith(mailStub, sinon.match.has('text', sinon.match('Tier: Premium')));
+            });
+
+            it('includes the member name in HTML and plain text', async function () {
+                await service.emails.notifyGiftSubscriptionStarted({
+                    memberName: 'Jamie',
+                    memberEmail: 'jamie@example.com',
+                    memberId: 'abc',
+                    tierName: 'Premium',
+                    buyerEmail: 'gifter@example.com'
+                });
+
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Jamie')));
+                sinon.assert.calledWith(mailStub, sinon.match.has('text', sinon.match('Jamie')));
+            });
+
+            it('includes the source in HTML and plain text', async function () {
+                await service.emails.notifyGiftSubscriptionStarted({
+                    memberName: 'Jamie',
+                    memberEmail: 'jamie@example.com',
+                    memberId: 'abc',
+                    tierName: 'Premium',
+                    buyerEmail: 'gifter@example.com'
+                });
+
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Gift subscription')));
+                sinon.assert.calledWith(mailStub, sinon.match.has('text', sinon.match('Source: Gift subscription')));
+            });
+
+            it('includes the buyer email in HTML and plain text', async function () {
+                await service.emails.notifyGiftSubscriptionStarted({
+                    memberName: 'Jamie',
+                    memberEmail: 'jamie@example.com',
+                    memberId: 'abc',
+                    tierName: 'Premium',
+                    buyerEmail: 'gifter@example.com'
+                });
+
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('gifter@example.com')));
+                sinon.assert.calledWith(mailStub, sinon.match.has('text', sinon.match('Gifted by: gifter@example.com')));
+            });
+        });
     });
 });
