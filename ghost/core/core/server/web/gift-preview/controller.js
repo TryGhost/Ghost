@@ -17,7 +17,9 @@ function escapeHtml(str) {
 async function giftPreview(req, res) {
     const labs = require('../../../shared/labs');
     const giftService = require('../../services/gifts').service;
+    const tiersService = require('../../services/tiers');
     const urlUtils = require('../../../shared/url-utils');
+    const settingsCache = require('../../../shared/settings-cache');
 
     const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');
 
@@ -25,25 +27,24 @@ async function giftPreview(req, res) {
         return res.redirect(302, siteUrl + '/');
     }
 
-    const settingsCache = require('../../../shared/settings-cache');
-
     const {token} = req.params;
     const siteTitle = settingsCache.get('title') || 'Ghost';
 
     let gift;
+    let tier;
 
     try {
         gift = await giftService.getByToken(token);
+        tier = await tiersService.api.read(gift.tierId);
     } catch (err) {
-        logging.warn(`Gift preview: gift not found, redirecting to homepage`);
+        logging.warn(`Gift preview: failed to load required gift data, redirecting to homepage`, err);
 
         return res.redirect(302, siteUrl + '/');
     }
 
-    const tierName = gift.tier.name;
     const cadenceLabel = getCadenceLabel(gift.cadence, gift.duration);
     const ogTitle = `A gift membership to ${siteTitle}`;
-    const ogDescription = `${tierName} \u00B7 ${cadenceLabel}`;
+    const ogDescription = `${tier.name} \u00B7 ${cadenceLabel}`;
     const ogImage = `${siteUrl}/gift/${encodeURIComponent(token)}/image`;
     const ogUrl = `${siteUrl}/gift/${encodeURIComponent(token)}`;
     const redirectUrl = `${siteUrl}/#/portal/gift/redeem/${encodeURIComponent(token)}`;
@@ -85,42 +86,46 @@ async function giftPreview(req, res) {
     res.send(html);
 }
 
-async function giftImage(req, res) {
+async function giftPreviewImage(req, res) {
     const labs = require('../../../shared/labs');
     const giftService = require('../../services/gifts').service;
+    const tiersService = require('../../services/tiers');
+    const settingsCache = require('../../../shared/settings-cache');
 
     if (!labs.isSet('giftSubscriptions')) {
         return res.sendStatus(404);
     }
 
-    const settingsCache = require('../../../shared/settings-cache');
-
     const token = req.params.token;
 
     let gift;
+    let tier;
 
     try {
         gift = await giftService.getByToken(token);
+        tier = await tiersService.api.read(gift.tierId);
     } catch (err) {
         return res.sendStatus(404);
     }
 
-    const tierName = gift.tier.name;
+    const tierName = tier.name;
     const cadenceLabel = getCadenceLabel(gift.cadence, gift.duration);
     const accentColor = settingsCache.get('accent_color') || '#15171A';
 
     try {
         const png = await generateGiftOgImage({tierName, cadenceLabel, accentColor});
+
         res.set('Content-Type', 'image/png');
         res.set('Cache-Control', 'public, max-age=86400');
         res.send(png);
     } catch (err) {
         logging.error('Gift OG image generation failed', err);
+
         res.sendStatus(404);
     }
 }
 
 module.exports = {
     giftPreview,
-    giftImage
+    giftPreviewImage
 };
