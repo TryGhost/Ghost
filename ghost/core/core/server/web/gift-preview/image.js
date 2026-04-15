@@ -94,15 +94,16 @@ async function generateGiftPreviewImage({tierName, cadenceLabel, accentColor}) {
 
     const imageTransform = require('@tryghost/image-transform');
     const svg = buildSvg({tierName, cadenceLabel, accentColor});
-    const png = await imageTransform.resizeFromBuffer(Buffer.from(svg), {
+    const image = await imageTransform.resizeFromBuffer(Buffer.from(svg), {
         width: 1200,
         format: 'png',
-        withoutEnlargement: false
+        withoutEnlargement: false,
+        timeout: 10
     });
 
-    cacheResult(cacheKey, png);
+    cacheResult(cacheKey, image);
 
-    return png;
+    return image;
 }
 
 module.exports = {
