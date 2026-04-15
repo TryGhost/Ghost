@@ -471,9 +471,6 @@ module.exports = class EmailAnalyticsService {
             throw error;
         }
 
-        const totalTimeMs = Date.now() - fetchStartMs;
-        const apiPollingTimeMs = totalTimeMs - processingTimeMs - aggregationTimeMs;
-
         return {
             eventCount,
             apiPollingTimeMs,
