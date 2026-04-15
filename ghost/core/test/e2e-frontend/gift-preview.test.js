@@ -5,26 +5,25 @@ const crypto = require('node:crypto');
 const ObjectId = require('bson-objectid').default;
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
-const settingsCache = require('../../core/shared/settings-cache');
+const labs = require('../../core/shared/labs');
 const models = require('../../core/server/models');
 
 describe('Gift Preview Routes', function () {
     let request;
     let giftToken;
     let tierId;
+    let originalLabsIsSet;
 
     before(async function () {
-        const originalSettingsCacheGetFn = settingsCache.get;
-
-        sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
-            if (key === 'labs') {
-                return {giftSubscriptions: true};
-            }
-
-            return originalSettingsCacheGetFn(key, options);
-        });
-
         await testUtils.startGhost();
+
+        originalLabsIsSet = labs.isSet;
+        sinon.stub(labs, 'isSet').callsFake(function (flag) {
+            if (flag === 'giftSubscriptions') {
+                return true;
+            }
+            return originalLabsIsSet.call(labs, flag);
+        });
 
         request = supertest.agent(configUtils.config.get('url'));
 
