@@ -462,6 +462,11 @@ module.exports = class EmailAnalyticsService {
 
         fetchData.running = false;
 
+        const totalTimeMs = Date.now() - fetchStartMs;
+        // Derived by subtraction because fetchLatest() invokes processBatch internally,
+        // so directly timing fetchLatest() would double-count processing and aggregation time.
+        const apiPollingTimeMs = totalTimeMs - processingTimeMs - aggregationTimeMs;
+
         if (error) {
             throw error;
         }
