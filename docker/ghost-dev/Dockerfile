@@ -35,7 +35,7 @@ RUN corepack enable
 
 # Install deps with a persistent pnpm store cache to speed up rebuilds
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
-    bash .github/scripts/install-deps.sh
+    pnpm install --frozen-lockfile --prefer-offline
 
 # Copy entrypoint script that optionally loads Tinybird config
 COPY docker/ghost-dev/entrypoint.sh entrypoint.sh
