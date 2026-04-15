@@ -31,6 +31,7 @@ export class MemberWelcomeEmailsSection extends BasePage {
     readonly customizeModalButtonColorField: Locator;
     readonly customizeModalButtonColorPickerTrigger: Locator;
     readonly customizeModalButtonColorAccentSwatch: Locator;
+    readonly customizeModalButtonColorAutoSwatch: Locator;
     readonly customizeModalColorPickerPopover: Locator;
 
     // Modal locators
@@ -72,6 +73,7 @@ export class MemberWelcomeEmailsSection extends BasePage {
         this.customizeModalButtonColorField = this.customizeModal.getByText('Button color').locator('..');
         this.customizeModalButtonColorPickerTrigger = this.customizeModalButtonColorField.getByRole('button', {name: 'Pick color'});
         this.customizeModalButtonColorAccentSwatch = this.customizeModal.getByRole('button', {name: 'Accent'});
+        this.customizeModalButtonColorAutoSwatch = this.customizeModal.getByRole('button', {name: 'Auto'});
         this.customizeModalColorPickerPopover = page.locator('[data-radix-popper-content-wrapper]');
 
         // Modal locators
