@@ -7,9 +7,9 @@ export interface RepositoryTransactionOptions {
 
 export interface GiftRepository {
     existsByCheckoutSessionId(checkoutSessionId: string): Promise<boolean>;
-    create(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
     getByToken(token: string, options?: RepositoryTransactionOptions): Promise<Gift | null>;
     getByPaymentIntentId(paymentIntentId: string): Promise<Gift | null>;
-    save(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
+    create(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
+    update(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
     transaction<T>(callback: (transacting: unknown) => Promise<T>): Promise<T>;
 }
