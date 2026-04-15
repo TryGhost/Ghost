@@ -380,6 +380,15 @@ jobs:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
 
+      - name: Check for unexpected file changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Tests generated unexpected file changes. Commit them before merging:"
+            git status
+            git diff
+            exit 1
+          fi
+
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: matrix.node == env.NODE_VERSION
         with:
@@ -469,6 +478,15 @@ jobs:
       - name: Integration tests
         run: pnpm nx run ghost:test:ci:integration
 
+      - name: Check for unexpected file changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Tests generated unexpected file changes. Commit them before merging:"
+            git status
+            git diff
+            exit 1
+          fi
+
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
         with:
@@ -553,6 +571,15 @@ jobs:
 
       - name: Legacy tests
         run: pnpm nx run ghost:test:ci:legacy
+
+      - name: Check for unexpected file changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Tests generated unexpected file changes. Commit them before merging:"
+            git status
+            git diff
+            exit 1
+          fi
 
       - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
