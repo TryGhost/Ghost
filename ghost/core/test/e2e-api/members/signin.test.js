@@ -219,14 +219,26 @@ describe('Members Signin', function () {
             assert.ok(gift.get('redeemed_at'));
             assert.ok(gift.get('consumes_at'));
 
-            mockManager.assert.sentEmail({
-                subject: /Free member signup: Gift Receiver/,
-                to: 'jbloggs@example.com'
-            });
-            mockManager.assert.sentEmail({
-                subject: /New paid subscriber: Gift Receiver/,
-                to: 'jbloggs@example.com'
-            });
+            mockManager.assert.sentEmailCount(2);
+
+            const sentEmails = [
+                mockManager.assert.sentEmail({
+                    to: 'jbloggs@example.com'
+                }),
+                mockManager.assert.sentEmail({
+                    to: 'jbloggs@example.com'
+                })
+            ];
+            const sentSubjects = sentEmails.map(mail => mail.subject);
+
+            assert(
+                sentSubjects.some(subject => /Free member signup: Gift Receiver/.test(subject)),
+                `Expected one email subject to match /Free member signup: Gift Receiver/, got ${sentSubjects.join(', ')}`
+            );
+            assert(
+                sentSubjects.some(subject => /New paid subscriber: Gift Receiver/.test(subject)),
+                `Expected one email subject to match /New paid subscriber: Gift Receiver/, got ${sentSubjects.join(', ')}`
+            );
         } finally {
             await models.Product.edit({
                 welcome_page_url: originalWelcomePageUrl
