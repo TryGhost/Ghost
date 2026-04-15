@@ -14,15 +14,9 @@ function escapeHtml(str) {
         .replace(/>/g, '&gt;');
 }
 
-async function fetchGiftData(token) {
-    const giftServiceWrapper = require('../../services/gifts');
-    await giftServiceWrapper.init();
-    return await giftServiceWrapper.service.getRedeemableGiftByToken({token});
-}
-
 async function giftPreview(req, res) {
     const labs = require('../../../shared/labs');
-    const settingsCache = require('../../../shared/settings-cache');
+    const giftService = require('../../services/gifts').service;
     const urlUtils = require('../../../shared/url-utils');
 
     const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');
@@ -31,14 +25,18 @@ async function giftPreview(req, res) {
         return res.redirect(302, siteUrl + '/');
     }
 
+    const settingsCache = require('../../../shared/settings-cache');
+
     const {token} = req.params;
     const siteTitle = settingsCache.get('title') || 'Ghost';
 
     let gift;
+
     try {
-        gift = await fetchGiftData(token);
+        gift = await giftService.getByToken(token);
     } catch (err) {
-        logging.warn(`Gift preview: invalid token, redirecting to homepage`);
+        logging.warn(`Gift preview: gift not found, redirecting to homepage`);
+
         return res.redirect(302, siteUrl + '/');
     }
 
@@ -89,17 +87,20 @@ async function giftPreview(req, res) {
 
 async function giftImage(req, res) {
     const labs = require('../../../shared/labs');
-    const settingsCache = require('../../../shared/settings-cache');
+    const giftService = require('../../services/gifts').service;
 
     if (!labs.isSet('giftSubscriptions')) {
         return res.sendStatus(404);
     }
 
+    const settingsCache = require('../../../shared/settings-cache');
+
     const token = req.params.token;
 
     let gift;
+
     try {
-        gift = await fetchGiftData(token);
+        gift = await giftService.getByToken(token);
     } catch (err) {
         return res.sendStatus(404);
     }
