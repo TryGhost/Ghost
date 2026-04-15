@@ -322,6 +322,23 @@ describe('MemberWelcomeEmailRenderer', function () {
             assert(result.html.includes('https://example.com/#/portal/account'));
         });
 
+        it('preserves multiline code block whitespace in the shared email wrapper', async function () {
+            lexicalRenderStub.resolves('<pre><code>const firstLine = 1;\nconst secondLine = 2;</code></pre>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            const codeBlockMatch = result.html.match(/<pre[^>]*><code[^>]*>([\s\S]*?)<\/code><\/pre>/);
+
+            assert(codeBlockMatch, 'Expected rendered welcome email HTML to include a code block');
+            assert.equal(codeBlockMatch[1], 'const firstLine = 1;\nconst secondLine = 2;');
+        });
+
         it('resolves relative portal links to absolute URLs', async function () {
             lexicalRenderStub.resolves('<table class="kg-card kg-button-card"><tbody><tr><td><table class="btn"><tbody><tr><td align="center"><a href="#/portal/support">Support us</a></td></tr></tbody></table></td></tr></tbody></table>');
             const renderer = new MemberWelcomeEmailRenderer({t: key => key});
