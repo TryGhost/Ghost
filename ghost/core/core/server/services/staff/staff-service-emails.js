@@ -339,45 +339,25 @@ class StaffServiceEmails {
 
     async notifyGiftSubscriptionStarted({memberId, memberName, memberEmail, tierName, buyerEmail}, options = {}) {
         const users = await this.models.User.getEmailAlertUsers('paid-started', options);
+        const memberData = this.getMemberData({
+            id: memberId,
+            name: memberName ?? null,
+            email: memberEmail
+        });
+        const subject = `🎁 New paid subscriber: ${memberData.name}`;
 
-        for (const user of users) {
-            const to = user.email;
-            const memberData = this.getMemberData({
-                id: memberId,
-                name: memberName ?? null,
-                email: memberEmail
-            });
-
-            const subject = `🎁 New paid subscriber: ${memberData.name}`;
-            const tierData = {
-                name: tierName
-            };
-
-            let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}/email-notifications`);
-
-            const templateData = {
-                memberData,
-                tierData,
-                giftedByEmail: buyerEmail,
-                siteTitle: this.settingsCache.get('title'),
-                siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
-                siteUrl: this.urlUtils.getSiteUrl(),
-                siteDomain: this.siteDomain,
-                accentColor: this.settingsCache.get('accent_color'),
-                fromEmail: this.fromEmailAddress,
-                toEmail: to,
-                staffUrl: staffUrl
-            };
-
-            const {html, text} = await this.renderEmailTemplate('new-gift-subscription', templateData);
-
-            await this.sendMail({
-                to,
-                subject,
-                html,
-                text
-            });
-        }
+        await this.sendToStaff({
+            users,
+            subject,
+            template: 'new-gift-subscription',
+            memberData,
+            templateData: {
+                tierData: {
+                    name: tierName
+                },
+                giftedByEmail: buyerEmail
+            }
+        });
     }
 
     // Utils
