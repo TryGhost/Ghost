@@ -74,7 +74,8 @@
       "eslint-plugin-ghost>@typescript-eslint/utils": "8.49.0",
       "ember-svg-jar>cheerio": "1.0.0-rc.12",
       "juice>cheerio": "0.22.0",
-      "lodash.template": "4.5.0"
+      "lodash.template": "4.5.0",
+      "axios": "1.15.0"
     },
     "onlyBuiltDependencies": [
       "@swc/core",
@@ -157,8 +158,5 @@
         ]
       }
     }
-  },
-  "dependencies": {
-    "axios": "1.15.0"
   }
 }
