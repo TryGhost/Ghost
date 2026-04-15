@@ -24,14 +24,12 @@ describe('Scheduling: utils', function () {
     });
 
     describe('success', function () {
-        it('create good adapter', function (done) {
-            schedulingUtils.createAdapter().then(function (adapter) {
-                assertExists(adapter);
-                done();
-            }).catch(done);
+        it('create good adapter', function () {
+            const adapter = schedulingUtils.createAdapter();
+            assertExists(adapter);
         });
 
-        it('create good adapter from custom file', function (done) {
+        it('create good adapter from custom file', function () {
             scope.adapter = schedulingPath + 'another-scheduler.js';
 
             configUtils.set({
@@ -53,15 +51,13 @@ describe('Scheduling: utils', function () {
 
             fs.writeFileSync(scope.adapter, jsFile);
 
-            schedulingUtils.createAdapter().then(function (adapter) {
-                assertExists(adapter);
-                done();
-            }).catch(done);
+            const adapter = schedulingUtils.createAdapter();
+            assertExists(adapter);
         });
     });
 
     describe('error', function () {
-        it('create with adapter, but missing fn\'s', function (done) {
+        it('create with adapter, but missing fn\'s', function () {
             scope.adapter = schedulingPath + 'bad-adapter.js';
             const jsFile = '' +
                 'var util = require(\'util\');' +
@@ -78,11 +74,15 @@ describe('Scheduling: utils', function () {
                     active: 'bad-adapter'
                 }
             });
-            schedulingUtils.createAdapter().catch(function (err) {
-                assertExists(err);
-                assert.equal(err.errorType, 'IncorrectUsageError');
-                done();
-            });
+
+            assert.throws(
+                () => schedulingUtils.createAdapter(),
+                (err) => {
+                    assertExists(err);
+                    assert.equal(err.errorType, 'IncorrectUsageError');
+                    return true;
+                }
+            );
         });
     });
 });

@@ -1,6 +1,6 @@
 const adapterManager = require('../../services/adapter-manager');
 
-async function createAdapter() {
+function createAdapter() {
     return adapterManager.getAdapter('scheduling');
 }
 
