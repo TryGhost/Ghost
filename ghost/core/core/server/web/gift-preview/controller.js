@@ -1,8 +1,9 @@
 const logging = require('@tryghost/logging');
-const {generateGiftOgImage} = require('./og-image-generator');
+const {generateGiftPreviewImage} = require('./image');
 
 function getCadenceLabel(cadence, duration) {
     const unit = cadence === 'month' ? 'month' : 'year';
+
     return duration === 1 ? `1 ${unit}` : `${duration} ${unit}s`;
 }
 
@@ -113,7 +114,7 @@ async function giftPreviewImage(req, res) {
     const accentColor = settingsCache.get('accent_color') || '#15171A';
 
     try {
-        const png = await generateGiftOgImage({tierName, cadenceLabel, accentColor});
+        const png = await generateGiftPreviewImage({tierName, cadenceLabel, accentColor});
 
         res.set('Content-Type', 'image/png');
         res.set('Cache-Control', 'public, max-age=86400');

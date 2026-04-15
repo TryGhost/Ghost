@@ -78,7 +78,7 @@ function escapeXml(str) {
         .replace(/'/g, '&apos;');
 }
 
-async function generateGiftOgImage({tierName, cadenceLabel, accentColor}) {
+async function generateGiftPreviewImage({tierName, cadenceLabel, accentColor}) {
     const cacheKey = `${tierName}:${cadenceLabel}:${accentColor}`;
 
     if (cache.has(cacheKey)) {
@@ -100,5 +100,5 @@ async function generateGiftOgImage({tierName, cadenceLabel, accentColor}) {
 }
 
 module.exports = {
-    generateGiftOgImage
+    generateGiftPreviewImage
 };
