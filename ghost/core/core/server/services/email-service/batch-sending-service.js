@@ -2,8 +2,6 @@ const logging = require('@tryghost/logging');
 const ObjectID = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
-const EmailBodyCache = require('./email-body-cache');
-
 const messages = {
     emailErrorPartialFailure: 'An error occurred, and your newsletter was only partially sent. Please retry sending the remaining emails.',
     emailError: 'An unexpected error occurred, please retry sending your newsletter.'
@@ -435,7 +433,8 @@ class BatchSendingService {
             logging.info(`Delivery deadline for email ${email.id} is ${deadline}`);
         }
         // Reuse same HTML body if we send an email to the same segment
-        const emailBodyCache = new EmailBodyCache();
+        /** @type {Map<string, import('./email-renderer').EmailBody>} */
+        const emailBodyCache = new Map();
 
         // Calculate deliverytimes for the batches
         const deliveryTimes = this.calculateDeliveryTimes(email, batches.length);
@@ -481,7 +480,7 @@ class BatchSendingService {
 
     /**
      *
-     * @param {{email: Email, batch: EmailBatch, post: Post, newsletter: Newsletter, emailBodyCache: EmailBodyCache, deliveryTime:(Date|undefined) }} data
+     * @param {{email: Email, batch: EmailBatch, post: Post, newsletter: Newsletter, emailBodyCache: Map<string, import('./email-renderer').EmailBody>, deliveryTime:(Date|undefined) }} data
      * @returns {Promise<boolean>} True when succeeded, false when failed with an error
      */
     async sendBatch({email, batch: originalBatch, post, newsletter, emailBodyCache, deliveryTime}) {
