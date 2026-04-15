@@ -14,13 +14,13 @@ set -euo pipefail
         stored_hash=$(cat "$pnpm_lock_hash_file_path")
         if [ "$calculated_hash" != "$stored_hash" ]; then
             echo "INFO: pnpm-lock.yaml has changed. Running pnpm install..."
-            bash .github/scripts/install-deps.sh
+            pnpm install
             mkdir -p .pnpmhash
             echo "$calculated_hash" > "$pnpm_lock_hash_file_path"
         fi
     else
         echo "WARNING: pnpm-lock.yaml hash file ($pnpm_lock_hash_file_path) not found. Running pnpm install as a precaution."
-        bash .github/scripts/install-deps.sh
+        pnpm install
         mkdir -p .pnpmhash
         echo "$calculated_hash" > "$pnpm_lock_hash_file_path"
     fi
