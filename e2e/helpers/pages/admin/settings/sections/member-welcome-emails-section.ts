@@ -1,5 +1,5 @@
 import {BasePage} from '@/helpers/pages';
-import {Locator, Page} from '@playwright/test';
+import {FrameLocator, Locator, Page} from '@playwright/test';
 
 export class MemberWelcomeEmailsSection extends BasePage {
     readonly section: Locator;
@@ -41,6 +41,11 @@ export class MemberWelcomeEmailsSection extends BasePage {
     readonly modalSaveButton: Locator;
     readonly modalSavedButton: Locator;
     readonly modalLexicalEditor: Locator;
+    readonly modalEditTab: Locator;
+    readonly modalPreviewTab: Locator;
+    readonly modalPreviewSubjectInput: Locator;
+    readonly modalPreviewIframe: Locator;
+    readonly modalPreviewFrame: FrameLocator;
 
     constructor(page: Page) {
         super(page, '/ghost/#/settings/memberemails');
@@ -83,6 +88,11 @@ export class MemberWelcomeEmailsSection extends BasePage {
         this.modalSaveButton = this.welcomeEmailModal.getByRole('button', {name: 'Save'});
         this.modalSavedButton = this.welcomeEmailModal.getByRole('button', {name: 'Saved'});
         this.modalLexicalEditor = this.modalEditor.getByRole('textbox').first();
+        this.modalEditTab = this.welcomeEmailModal.getByTestId('welcome-email-mode-edit');
+        this.modalPreviewTab = this.welcomeEmailModal.getByTestId('welcome-email-mode-preview');
+        this.modalPreviewSubjectInput = this.welcomeEmailModal.getByTestId('welcome-email-preview-subject');
+        this.modalPreviewIframe = this.welcomeEmailModal.getByTestId('welcome-email-preview-iframe');
+        this.modalPreviewFrame = page.frameLocator('iframe[title="Welcome email preview"]');
     }
 
     async enableFreeWelcomeEmail(): Promise<void> {
