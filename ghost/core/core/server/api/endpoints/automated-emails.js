@@ -211,6 +211,36 @@ const controller = {
             };
         }
     },
+    preview: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        data: [
+            'subject',
+            'lexical'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            memberWelcomeEmailService.init();
+            return await memberWelcomeEmailService.api.previewEmail({
+                subject: frame.data.subject,
+                lexical: frame.data.lexical,
+                automatedEmailId: frame.options.id
+            });
+        }
+    },
     sendTestEmail: {
         statusCode: 204,
         headers: {
