@@ -348,6 +348,11 @@ module.exports = class MemberBREADService {
         let model;
 
         try {
+            if (data.email) {
+                const isSuppressed = (await this.emailSuppressionList.getSuppressionData(data.email))?.suppressed;
+                data.email_disabled = !!isSuppressed;
+            }
+
             const attribution = await this.memberAttributionService.getAttributionFromContext(options?.context);
             if (attribution) {
                 data.attribution = attribution;
