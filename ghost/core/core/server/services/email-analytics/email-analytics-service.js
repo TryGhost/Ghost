@@ -630,6 +630,13 @@ module.exports = class EmailAnalyticsService {
             await this.aggregateEmailStats(emailId, includeOpenedEvents);
         }
 
+        // Member stats (email_count, email_opened_count, email_open_rate) only depend on
+        // opened_at — they are unaffected by delivered/failed events. Skip the expensive
+        // member aggregation entirely when no opens were processed.
+        if (!includeOpenedEvents) {
+            return;
+        }
+
         // @ts-expect-error
         const memberMetric = this.prometheusClient?.getMetric('email_analytics_aggregate_member_stats_count');
 
