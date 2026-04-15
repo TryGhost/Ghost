@@ -1,18 +1,33 @@
-const LRU_MAX_SIZE = 100;
+const CACHE_MAX_SIZE = 100;
+
 const cache = new Map();
 
-function evictOldest() {
-    if (cache.size >= LRU_MAX_SIZE) {
+function cacheResult(key, value) {
+    if (cache.size >= CACHE_MAX_SIZE) {
         const firstKey = cache.keys().next().value;
+
         cache.delete(firstKey);
     }
+
+    cache.set(key, value);
+}
+
+function escapeXml(str) {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
 }
 
 function hexToRgb(hex) {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+
     if (!result) {
         return {r: 0, g: 0, b: 0};
     }
+
     return {
         r: parseInt(result[1], 16),
         g: parseInt(result[2], 16),
@@ -25,6 +40,7 @@ function getBackgroundColor(accentColor) {
     const {r, g, b} = hexToRgb(accentColor);
     const opacity = 0.06;
     const blend = c => Math.round(255 + (c - 255) * opacity);
+
     return `rgb(${blend(r)}, ${blend(g)}, ${blend(b)})`;
 }
 
@@ -69,15 +85,6 @@ function buildSvg({tierName, cadenceLabel, accentColor}) {
 </svg>`;
 }
 
-function escapeXml(str) {
-    return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&apos;');
-}
-
 async function generateGiftPreviewImage({tierName, cadenceLabel, accentColor}) {
     const cacheKey = `${tierName}:${cadenceLabel}:${accentColor}`;
 
@@ -93,8 +100,7 @@ async function generateGiftPreviewImage({tierName, cadenceLabel, accentColor}) {
         withoutEnlargement: false
     });
 
-    evictOldest();
-    cache.set(cacheKey, png);
+    cacheResult(cacheKey, png);
 
     return png;
 }
