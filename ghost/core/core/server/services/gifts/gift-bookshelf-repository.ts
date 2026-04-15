@@ -76,12 +76,10 @@ export class GiftBookshelfRepository implements GiftRepository {
     }
 
     async findPendingConsumption(): Promise<Gift[]> {
-        const today = new Date();
-
-        today.setUTCHours(0, 0, 0, 0);
+        const now = new Date();
 
         const collection = await this.model.findAll({
-            filter: `status:redeemed+consumes_at:<'${today.toISOString()}'`
+            filter: `status:redeemed+consumes_at:<'${now.toISOString()}'`
         });
 
         return collection.models.map(model => this.toGift(model));
