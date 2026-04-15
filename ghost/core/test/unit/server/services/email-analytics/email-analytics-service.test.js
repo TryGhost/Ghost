@@ -206,7 +206,7 @@ describe('EmailAnalyticsService', function () {
                     }]
                 });
                 processEventBatchStub = sinon.stub(service, 'processEventBatch').resolves();
-                aggregateStatsStub = sinon.stub(service, 'aggregateStats').resolves();
+                aggregateStatsStub = sinon.stub(service, 'aggregateStats').resolves({emailAggregationTimeMs: 0, memberAggregationTimeMs: 0});
             });
 
             afterEach(function () {
