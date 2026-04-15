@@ -320,7 +320,7 @@ module.exports = class EmailAnalyticsService {
         this.queries.setJobTimestamp(fetchData.jobName, 'started', begin);
 
         // Timing metrics
-        let apiPollingTimeMs = 0;
+        const fetchStartMs = Date.now();
         let processingTimeMs = 0;
         let aggregationTimeMs = 0;
 
@@ -386,9 +386,9 @@ module.exports = class EmailAnalyticsService {
                 // Aggregate and clear the processingResult
                 // We do this here because otherwise it could take a long time before the new events are visible in the stats
                 try {
-                    const aggregationStart = Date.now();
+                    const intermediateAggregationStart = Date.now();
                     await this.aggregateStats(processingResult, includeOpenedEvents);
-                    aggregationTimeMs += (Date.now() - aggregationStart);
+                    aggregationTimeMs += (Date.now() - intermediateAggregationStart);
                     lastAggregation = Date.now();
                     // Remove aggregated emailIds and memberIds from tracking sets to avoid re-aggregating at the end
                     processingResult.emailIds.forEach(id => allEmailIds.delete(id));
@@ -409,9 +409,7 @@ module.exports = class EmailAnalyticsService {
 
         try {
             for (const provider of this.providers) {
-                const apiStart = Date.now();
                 await provider.fetchLatest(processBatch, {begin, end, maxEvents, events: eventTypes});
-                apiPollingTimeMs += (Date.now() - apiStart);
             }
         } catch (err) {
             if (err.message !== 'Fetching canceled') {
@@ -463,6 +461,11 @@ module.exports = class EmailAnalyticsService {
         }
 
         fetchData.running = false;
+
+        const totalTimeMs = Date.now() - fetchStartMs;
+        // Derived by subtraction because fetchLatest() invokes processBatch internally,
+        // so directly timing fetchLatest() would double-count processing and aggregation time.
+        const apiPollingTimeMs = totalTimeMs - processingTimeMs - aggregationTimeMs;
 
         if (error) {
             throw error;
