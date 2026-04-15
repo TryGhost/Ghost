@@ -1,6 +1,7 @@
 const {assertArrayMatchesWithoutOrder} = require('../../utils/assertions');
 const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
+const DomainEvents = require('@tryghost/domain-events');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const members = require('../../../core/server/services/members');
@@ -218,6 +219,8 @@ describe('Members Signin', function () {
             assert.equal(gift.get('redeemer_member_id'), member.id);
             assert.ok(gift.get('redeemed_at'));
             assert.ok(gift.get('consumes_at'));
+
+            await DomainEvents.allSettled();
 
             mockManager.assert.sentEmailCount(2);
 
