@@ -349,7 +349,11 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        # sqlite3 is an optionalDependency. Without --force, pnpm may skip
+        # installing/linking it when restoring from a cached store. --force
+        # ensures all optional deps are installed regardless.
+        # (ghost core's test:unit job requires sqlite3)
+        run: pnpm install --frozen-lockfile --force
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
