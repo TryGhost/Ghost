@@ -1,7 +1,8 @@
 const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const sinon = require('sinon');
-const crypto = require('crypto');
+const crypto = require('node:crypto');
+const ObjectId = require('bson-objectid').default;
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
 const settingsCache = require('../../core/shared/settings-cache');
@@ -33,13 +34,13 @@ describe('Gift Preview Routes', function () {
         tierId = tier.get('id');
 
         // Create a gift record directly in the database
-        giftToken = crypto.randomUUID();
+        giftToken = crypto.randomBytes(6).toString('base64url');
         const now = new Date();
         const expiresAt = new Date(now);
         expiresAt.setDate(expiresAt.getDate() + 90);
 
         await models.Base.knex('gifts').insert({
-            id: crypto.randomUUID(),
+            id: ObjectId().toHexString(),
             token: giftToken,
             buyer_email: 'buyer@example.com',
             buyer_member_id: null,
@@ -49,8 +50,8 @@ describe('Gift Preview Routes', function () {
             duration: 1,
             currency: 'usd',
             amount: 5000,
-            stripe_checkout_session_id: `cs_test_${crypto.randomUUID()}`,
-            stripe_payment_intent_id: `pi_test_${crypto.randomUUID()}`,
+            stripe_checkout_session_id: `cs_test_${ObjectId().toHexString()}`,
+            stripe_payment_intent_id: `pi_test_${ObjectId().toHexString()}`,
             consumes_at: null,
             expires_at: expiresAt.toISOString(),
             status: 'purchased',
