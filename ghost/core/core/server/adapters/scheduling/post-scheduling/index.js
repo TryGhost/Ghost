@@ -32,7 +32,7 @@ const loadScheduledResources = async function () {
 
 const init = async (options) => {
     const integration = await getSchedulerIntegration();
-    const adapter = await localUtils.createAdapter();
+    const adapter = localUtils.createAdapter();
 
     let scheduledResources;
 
