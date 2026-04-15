@@ -12,6 +12,7 @@ describe('GiftService', function () {
         getByToken: sinon.SinonStub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>;
         getByPaymentIntentId: sinon.SinonStub<[string], Promise<Gift | null>>;
         findPendingConsumption: sinon.SinonStub<[], Promise<Gift[]>>;
+        findPendingExpiration: sinon.SinonStub<[], Promise<Gift[]>>;
         create: sinon.SinonStub;
         update: sinon.SinonStub;
         transaction: sinon.SinonStub<Parameters<GiftRepository['transaction']>, Promise<unknown>>;
@@ -52,6 +53,7 @@ describe('GiftService', function () {
             getByToken: sinon.stub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>().resolves(null),
             getByPaymentIntentId: sinon.stub<[string], Promise<Gift | null>>().resolves(null),
             findPendingConsumption: sinon.stub<[], Promise<Gift[]>>().resolves([]),
+            findPendingExpiration: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             create: sinon.stub(),
             update: sinon.stub(),
             transaction: sinon.stub<Parameters<GiftRepository['transaction']>, Promise<unknown>>().callsFake(async (callback) => {
@@ -543,6 +545,58 @@ describe('GiftService', function () {
             assert.equal(result.consumedCount, 2);
             assert.equal(result.updatedMemberCount, 2);
             assert.equal(memberRepository.update.callCount, 2);
+            assert.equal(giftRepository.update.callCount, 2);
+        });
+    });
+
+    describe('processExpired', function () {
+        it('returns zero count when no gifts are pending expiration', async function () {
+            giftRepository.findPendingExpiration.resolves([]);
+
+            const service = createService();
+            const result = await service.processExpired();
+
+            assert.deepEqual(result, {expiredCount: 0});
+            sinon.assert.notCalled(giftRepository.update);
+        });
+
+        it('marks purchased gifts past their expiry as expired', async function () {
+            const gift = buildGift({
+                status: 'purchased',
+                expiresAt: new Date('2026-01-01T00:00:00.000Z')
+            });
+
+            giftRepository.findPendingExpiration.resolves([gift]);
+
+            const service = createService();
+            const result = await service.processExpired();
+
+            assert.equal(result.expiredCount, 1);
+
+            sinon.assert.calledOnce(giftRepository.update);
+            const savedGift = giftRepository.update.getCall(0).args[0];
+            assert.equal(savedGift.status, 'expired');
+            assert.notEqual(savedGift.expiredAt, null);
+        });
+
+        it('handles multiple expired gifts', async function () {
+            const gift1 = buildGift({
+                token: 'gift-1',
+                status: 'purchased',
+                expiresAt: new Date('2025-06-01T00:00:00.000Z')
+            });
+            const gift2 = buildGift({
+                token: 'gift-2',
+                status: 'purchased',
+                expiresAt: new Date('2025-12-01T00:00:00.000Z')
+            });
+
+            giftRepository.findPendingExpiration.resolves([gift1, gift2]);
+
+            const service = createService();
+            const result = await service.processExpired();
+
+            assert.equal(result.expiredCount, 2);
             assert.equal(giftRepository.update.callCount, 2);
         });
     });

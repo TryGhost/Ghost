@@ -249,6 +249,37 @@ describe('Gift', function () {
         });
     });
 
+    describe('expire', function () {
+        it('returns an expired gift without mutating the original', function () {
+            const gift = buildGift();
+            const before = new Date();
+
+            const expired = gift.expire();
+
+            const after = new Date();
+
+            assert.ok(expired);
+            assert.notEqual(expired, gift);
+            assert.equal(gift.status, 'purchased');
+            assert.equal(gift.expiredAt, null);
+            assert.equal(expired.status, 'expired');
+            assert.ok(expired.expiredAt);
+            assert.ok(expired.expiredAt >= before);
+            assert.ok(expired.expiredAt <= after);
+        });
+
+        it('returns null if already expired', function () {
+            const gift = buildGift({
+                status: 'expired',
+                expiredAt: new Date('2026-02-01T00:00:00.000Z')
+            });
+
+            const result = gift.expire();
+
+            assert.equal(result, null);
+        });
+    });
+
     describe('refund', function () {
         it('returns a refunded gift without mutating the original', function () {
             const gift = buildGift();

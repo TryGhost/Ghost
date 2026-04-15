@@ -320,4 +320,28 @@ export class GiftService {
 
         return {consumedCount, updatedMemberCount};
     }
+
+    async processExpired(): Promise<{expiredCount: number}> {
+        const toExpire = await this.deps.giftRepository.findPendingExpiration();
+
+        if (toExpire.length === 0) {
+            return {expiredCount: 0};
+        }
+
+        let expiredCount = 0;
+
+        for (const gift of toExpire) {
+            const expired = gift.expire();
+
+            if (!expired) {
+                continue;
+            }
+
+            await this.deps.giftRepository.update(expired);
+
+            expiredCount += 1;
+        }
+
+        return {expiredCount};
+    }
 }
