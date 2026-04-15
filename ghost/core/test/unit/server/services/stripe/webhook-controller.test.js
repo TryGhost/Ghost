@@ -12,6 +12,7 @@ describe('WebhookController', function () {
             subscriptionEventService: {handleSubscriptionEvent: sinon.stub()},
             invoiceEventService: {handleInvoiceEvent: sinon.stub()},
             checkoutSessionEventService: {handleEvent: sinon.stub(), handleDonationEvent: sinon.stub()},
+            chargeRefundedEventService: {handleEvent: sinon.stub()},
             webhookManager: {parseWebhook: sinon.stub()}
         };
 
@@ -182,6 +183,24 @@ describe('WebhookController', function () {
         await controller.handle(req, res);
 
         sinon.assert.calledWith(res.writeHead, 500);
+        sinon.assert.called(res.end);
+    });
+
+    it('should handle charge.refunded event', async function () {
+        const event = {
+            type: 'charge.refunded',
+            data: {
+                object: {payment_intent: 'pi_123'}
+            }
+        };
+
+        deps.webhookManager.parseWebhook.returns(event);
+
+        await controller.handle(req, res);
+
+        sinon.assert.calledOnce(deps.chargeRefundedEventService.handleEvent);
+        sinon.assert.calledWith(deps.chargeRefundedEventService.handleEvent, {payment_intent: 'pi_123'});
+        sinon.assert.calledWith(res.writeHead, 200);
         sinon.assert.called(res.end);
     });
 

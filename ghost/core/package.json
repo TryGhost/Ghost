@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.30.0-rc.0",
+  "version": "6.31.0-rc.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -26,7 +26,7 @@
   "scripts": {
     "archive": "pnpm pack:standalone && pnpm pack:tarball",
     "pack:standalone": "rm -rf package; find . -maxdepth 1 -name 'ghost-*.tgz' -delete; npm pack && tar xzf ghost-*.tgz && cp ../../pnpm-lock.yaml package/ && cp ../../.npmrc package/.npmrc && echo '\nfrozen-lockfile=false\nshamefully-hoist=true' >> package/.npmrc && rm ghost-*.tgz && rm -f pnpm-lock.yaml pnpm-workspace.yaml .npmrc",
-    "pack:tarball": "tar czf ghost-$(node -p \"require('./package.json').version\").tgz package && rm -rf package",
+    "pack:tarball": "tar czf ghost-$(node -p \"require('./package.json').version\").tgz package",
     "dev": "nodemon index.js",
     "build:assets": "pnpm build:assets:css && pnpm build:assets:js",
     "build:assets:js": "node bin/minify-assets.js",

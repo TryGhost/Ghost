@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "test": "pnpm test:unit",
     "test:unit": "vitest run",
     "typecheck": "tsc -b"
   },

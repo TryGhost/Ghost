@@ -243,6 +243,7 @@ function createApiInstance(config) {
             EmailSpamComplaintEvent: models.EmailSpamComplaintEvent,
             Outbox: models.Outbox,
             WelcomeEmailAutomation: models.WelcomeEmailAutomation,
+            WelcomeEmailAutomationRun: models.WelcomeEmailAutomationRun,
             AutomatedEmailRecipient: models.AutomatedEmailRecipient,
             Gift: models.Gift
         },
