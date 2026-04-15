@@ -37,7 +37,7 @@ const logging = require('@tryghost/logging');
  * @prop {boolean} openTrackingEnabled
  * @prop {boolean} useFallbackAddress
  * @prop {Date} deliveryTime
- * @prop {{get(id: string): EmailBody | null, set(id: string, body: EmailBody): void}} [emailBodyCache]
+ * @prop {Map<string, EmailBody>} [emailBodyCache]
  */
 
 /**
@@ -112,9 +112,9 @@ class SendingService {
         const isTestEmail = options.isTestEmail ?? false;
 
         /**
-         * @type {EmailBody | null}
+         * @type {EmailBody | undefined}
          */
-        let emailBody = null;
+        let emailBody;
 
         if (options.emailBodyCache) {
             emailBody = options.emailBodyCache.get(cacheId);
