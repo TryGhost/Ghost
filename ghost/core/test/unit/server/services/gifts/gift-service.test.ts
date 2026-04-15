@@ -560,11 +560,11 @@ describe('GiftService', function () {
                 .withArgs('gift-1', {transacting: 'trx', forUpdate: true}).resolves(gift1)
                 .withArgs('gift-2', {transacting: 'trx', forUpdate: true}).resolves(gift2);
             memberRepository.get
-                .withArgs({id: 'member_1'}, {transacting: 'trx'}).resolves({
+                .withArgs({id: 'member_1'}, {transacting: 'trx', forUpdate: true}).resolves({
                     id: 'member_1',
                     get: sinon.stub().withArgs('status').returns('gift')
                 })
-                .withArgs({id: 'member_2'}, {transacting: 'trx'}).resolves({
+                .withArgs({id: 'member_2'}, {transacting: 'trx', forUpdate: true}).resolves({
                     id: 'member_2',
                     get: sinon.stub().withArgs('status').returns('gift')
                 });

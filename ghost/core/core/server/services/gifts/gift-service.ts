@@ -308,7 +308,7 @@ export class GiftService {
                     return;
                 }
 
-                const member = await this.deps.memberRepository.get({id: locked.redeemerMemberId}, {transacting});
+                const member = await this.deps.memberRepository.get({id: locked.redeemerMemberId}, {transacting, forUpdate: true});
 
                 if (member && member.get('status') === 'gift') {
                     await this.deps.memberRepository.update({
