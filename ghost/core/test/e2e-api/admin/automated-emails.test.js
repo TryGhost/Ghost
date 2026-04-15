@@ -469,6 +469,204 @@ describe('Automated Emails API', function () {
                 });
         });
     });
+
+    describe('Preview', function () {
+        let automatedEmailId;
+
+        const validLexical = JSON.stringify({
+            root: {
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        detail: 0,
+                        format: 0,
+                        mode: 'normal',
+                        style: '',
+                        text: 'Welcome!',
+                        type: 'text',
+                        version: 1
+                    }],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    version: 1
+                }],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        });
+
+        beforeEach(function () {
+            sinon.stub(Date.prototype, 'getFullYear').returns(2025);
+        });
+
+        beforeEach(async function () {
+            await agent.loginAsOwner();
+            const automatedEmail = await createAutomatedEmail({
+                status: 'active',
+                lexical: validLexical
+            });
+            automatedEmailId = automatedEmail.id;
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('Can render preview', async function () {
+            await agent
+                .post(`automated_emails/${automatedEmailId}/preview/`)
+                .body({
+                    subject: 'Test Subject',
+                    lexical: validLexical
+                })
+                .expectStatus(200)
+                .matchBodySnapshot()
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Can preview inactive automated email', async function () {
+            const automatedEmail = await createAutomatedEmail({
+                name: 'Welcome Email (Paid)',
+                slug: 'member-welcome-email-paid',
+                status: 'inactive',
+                lexical: validLexical
+            });
+
+            await agent
+                .post(`automated_emails/${automatedEmail.id}/preview/`)
+                .body({
+                    subject: 'Test Subject',
+                    lexical: validLexical
+                })
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails.length, 1);
+                    assert.equal(body.automated_emails[0].subject, 'Test Subject');
+                });
+        });
+
+        it('Renders template replacements in subject and content', async function () {
+            const lexicalWithReplacements = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'paragraph',
+                        children: [{
+                            detail: 0,
+                            format: 0,
+                            mode: 'normal',
+                            style: '',
+                            text: 'Hello {first_name}, your email is {email}.',
+                            type: 'text',
+                            version: 1
+                        }],
+                        direction: 'ltr',
+                        format: '',
+                        indent: 0,
+                        version: 1
+                    }],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            await agent
+                .post(`automated_emails/${automatedEmailId}/preview/`)
+                .body({
+                    subject: 'Welcome {first_name}',
+                    lexical: lexicalWithReplacements
+                })
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails.length, 1);
+                    assert.equal(body.automated_emails[0].subject, 'Welcome Jamie');
+                    assert.match(body.automated_emails[0].html, /Hello Jamie/);
+                    assert.match(body.automated_emails[0].html, /jamie@example\.com/);
+                    assert.match(body.automated_emails[0].plaintext, /Hello Jamie/);
+                    assert.match(body.automated_emails[0].plaintext, /jamie@example\.com/);
+                });
+        });
+
+        it('Cannot preview for non-existent automated email', async function () {
+            await agent
+                .post('automated_emails/abcd1234abcd1234abcd1234/preview/')
+                .body({
+                    subject: 'Test Subject',
+                    lexical: validLexical
+                })
+                .expectStatus(404)
+                .expect(({body}) => {
+                    assert.equal(body.errors.length, 1);
+                    assert.equal(typeof body.errors[0].id, 'string');
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Cannot preview without subject', async function () {
+            await agent
+                .post(`automated_emails/${automatedEmailId}/preview/`)
+                .body({
+                    lexical: validLexical
+                })
+                .expectStatus(422)
+                .expect(({body}) => {
+                    assert.equal(body.errors.length, 1);
+                    assert.equal(typeof body.errors[0].id, 'string');
+                    assert.equal(body.errors[0].property, 'subject');
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Cannot preview without lexical', async function () {
+            await agent
+                .post(`automated_emails/${automatedEmailId}/preview/`)
+                .body({
+                    subject: 'Test Subject'
+                })
+                .expectStatus(422)
+                .expect(({body}) => {
+                    assert.equal(body.errors.length, 1);
+                    assert.equal(typeof body.errors[0].id, 'string');
+                    assert.equal(body.errors[0].property, 'lexical');
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Cannot preview automated email without authentication', async function () {
+            agent.resetAuthentication();
+
+            await agent
+                .post(`automated_emails/${automatedEmailId}/preview/`)
+                .body({
+                    subject: 'Test Subject',
+                    lexical: validLexical
+                })
+                .expectStatus(403)
+                .expect(({body}) => {
+                    assert.equal(body.errors.length, 1);
+                    assert.equal(typeof body.errors[0].id, 'string');
+                });
+        });
+    });
+
     describe('SendTestEmail', function () {
         let automatedEmailId;
 
@@ -654,11 +852,43 @@ describe('Automated Emails API', function () {
     });
 
     describe('Permissions', function () {
+        let automatedEmailId;
+
+        beforeEach(async function () {
+            await agent.loginAsOwner();
+            const automatedEmail = await createAutomatedEmail({
+                status: 'active',
+                lexical: JSON.stringify({root: {children: []}})
+            });
+            automatedEmailId = automatedEmail.id;
+        });
+
         it('Cannot access automated emails as editor', async function () {
             await agent.loginAsEditor();
 
             await agent
                 .get('automated_emails')
+                .expectStatus(403)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Cannot preview automated emails as editor', async function () {
+            await agent.loginAsEditor();
+
+            await agent
+                .post(`automated_emails/${automatedEmailId}/preview/`)
+                .body({
+                    subject: 'Test Subject',
+                    lexical: JSON.stringify({root: {children: []}})
+                })
                 .expectStatus(403)
                 .matchBodySnapshot({
                     errors: [{
@@ -688,11 +918,53 @@ describe('Automated Emails API', function () {
                 });
         });
 
+        it('Cannot preview automated emails as author', async function () {
+            await agent.loginAsAuthor();
+
+            await agent
+                .post(`automated_emails/${automatedEmailId}/preview/`)
+                .body({
+                    subject: 'Test Subject',
+                    lexical: JSON.stringify({root: {children: []}})
+                })
+                .expectStatus(403)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
         it('Cannot access automated emails as contributor', async function () {
             await agent.loginAsContributor();
 
             await agent
                 .get('automated_emails')
+                .expectStatus(403)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Cannot preview automated emails as contributor', async function () {
+            await agent.loginAsContributor();
+
+            await agent
+                .post(`automated_emails/${automatedEmailId}/preview/`)
+                .body({
+                    subject: 'Test Subject',
+                    lexical: JSON.stringify({root: {children: []}})
+                })
                 .expectStatus(403)
                 .matchBodySnapshot({
                     errors: [{

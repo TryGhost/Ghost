@@ -442,7 +442,7 @@ class MemberWelcomeEmailService {
         return Boolean(email && email.get('lexical') && row.get('status') === 'active');
     }
 
-    async sendTestEmail({email, subject, lexical, automatedEmailId}) {
+    async #renderWelcomeEmailPreview({automatedEmailId, subject, lexical, memberEmail = 'jamie@example.com'}) {
         // Still validate the automated email exists (for permission purposes)
         const automation = await WelcomeEmailAutomation.findOne({id: automatedEmailId}, {
             withRelated: this.#useDesignCustomization()
@@ -457,13 +457,13 @@ class MemberWelcomeEmailService {
             });
         }
 
-        if (!lexical) {
+        if (typeof lexical !== 'string' || !lexical.trim()) {
             throw new errors.ValidationError({
                 message: MESSAGES.MISSING_EMAIL_CONTENT
             });
         }
 
-        if (!subject) {
+        if (typeof subject !== 'string' || !subject.trim()) {
             throw new errors.ValidationError({
                 message: MESSAGES.MISSING_EMAIL_SUBJECT
             });
@@ -471,18 +471,46 @@ class MemberWelcomeEmailService {
 
         const testMember = {
             name: 'Jamie Larson',
-            email: email,
+            email: memberEmail,
             uuid: '00000000-0000-4000-8000-000000000000'
         };
 
         const designSettings = this.#useDesignCustomization() ? automatedEmail.related('emailDesignSetting') : null;
 
-        const {html, text, subject: renderedSubject} = await this.#renderer.render({
+        const preview = await this.#renderer.render({
             lexical,
             subject,
             designSettings: designSettings?.id ? designSettings.toJSON() : null,
             member: testMember,
             siteSettings: this.#getSiteSettings()
+        });
+
+        return {
+            ...preview,
+            automatedEmail
+        };
+    }
+
+    async previewEmail({subject, lexical, automatedEmailId}) {
+        const {html, text, subject: renderedSubject} = await this.#renderWelcomeEmailPreview({
+            automatedEmailId,
+            subject,
+            lexical
+        });
+
+        return {
+            html,
+            plaintext: text,
+            subject: renderedSubject
+        };
+    }
+
+    async sendTestEmail({email, subject, lexical, automatedEmailId}) {
+        const {html, text, subject: renderedSubject, automatedEmail} = await this.#renderWelcomeEmailPreview({
+            automatedEmailId,
+            subject,
+            lexical,
+            memberEmail: email
         });
 
         // Test sends should always reflect latest newsletter fallback values.
