@@ -34,13 +34,13 @@ if (parentPort) {
         await giftService.init();
 
         const {consumedCount, updatedMemberCount} = await giftService.service.processConsumed();
-
         const cleanupEndDate = new Date();
+        const message = `Consumed ${consumedCount} gifts, updated ${updatedMemberCount} members in ${cleanupEndDate.valueOf() - cleanupStartDate.valueOf()}ms`;
 
-        debug(`Consumed ${consumedCount} gifts, updated ${updatedMemberCount} members in ${cleanupEndDate.valueOf() - cleanupStartDate.valueOf()}ms`);
+        debug(message);
 
         if (parentPort) {
-            parentPort.postMessage(`Consumed ${consumedCount} gifts, updated ${updatedMemberCount} members in ${cleanupEndDate.valueOf() - cleanupStartDate.valueOf()}ms`);
+            parentPort.postMessage(message);
             parentPort.postMessage('done');
         } else {
             setTimeout(() => {
