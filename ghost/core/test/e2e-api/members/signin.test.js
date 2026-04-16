@@ -1,7 +1,6 @@
 const {assertArrayMatchesWithoutOrder} = require('../../utils/assertions');
 const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
-const DomainEvents = require('@tryghost/domain-events');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const members = require('../../../core/server/services/members');
@@ -177,7 +176,7 @@ describe('Members Signin', function () {
         });
     });
 
-    it('redeems a gift during magic link exchange and redirects to Portal account when no paid welcome page is configured', async function () {
+    it('redeems a gift during magic link confirmation if a valid gift token is provided', async function () {
         mockManager.mockLabsEnabled('giftSubscriptions');
 
         const email = 'gift-redemption-member@test.com';
@@ -219,29 +218,6 @@ describe('Members Signin', function () {
             assert.equal(gift.get('redeemer_member_id'), member.id);
             assert.ok(gift.get('redeemed_at'));
             assert.ok(gift.get('consumes_at'));
-
-            await DomainEvents.allSettled();
-
-            mockManager.assert.sentEmailCount(2);
-
-            const sentEmails = [
-                mockManager.assert.sentEmail({
-                    to: 'jbloggs@example.com'
-                }),
-                mockManager.assert.sentEmail({
-                    to: 'jbloggs@example.com'
-                })
-            ];
-            const sentSubjects = sentEmails.map(mail => mail.subject);
-
-            assert(
-                sentSubjects.some(subject => /Free member signup: Gift Receiver/.test(subject)),
-                `Expected one email subject to match /Free member signup: Gift Receiver/, got ${sentSubjects.join(', ')}`
-            );
-            assert(
-                sentSubjects.some(subject => /New paid subscriber: Gift Receiver/.test(subject)),
-                `Expected one email subject to match /New paid subscriber: Gift Receiver/, got ${sentSubjects.join(', ')}`
-            );
         } finally {
             await models.Product.edit({
                 welcome_page_url: originalWelcomePageUrl

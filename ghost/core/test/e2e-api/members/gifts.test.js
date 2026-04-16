@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const {agentProvider, fixtureManager, mockManager, configUtils} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
+const DomainEvents = require('@tryghost/domain-events');
 
 describe('Members Gifts', function () {
     let membersAgent;
@@ -25,6 +26,7 @@ describe('Members Gifts', function () {
     });
 
     beforeEach(function () {
+        mockManager.mockMail();
         mockManager.mockLabsEnabled('giftSubscriptions');
     });
 
@@ -155,7 +157,7 @@ describe('Members Gifts', function () {
         assert.equal(body.errors[0].message, notFoundMessage);
     });
 
-    it('redeems a gift for a logged-in free member via POST', async function () {
+    it('redeems a gift for a logged-in free member', async function () {
         const agent = membersAgent.duplicate();
         const email = `gift-post-free-${giftSequence + 1}@example.com`;
         const gift = await createGift();
@@ -166,6 +168,8 @@ describe('Members Gifts', function () {
             .post(`/api/gifts/${gift.get('token')}/redeem/`)
             .body({})
             .expectStatus(200);
+
+        await DomainEvents.allSettled();
 
         await gift.refresh();
 
@@ -185,6 +189,12 @@ describe('Members Gifts', function () {
             .expectStatus(200);
 
         assert.equal(memberResponse.body.status, 'gift');
+
+        // Verify staff notification email was sent
+        mockManager.assert.sentEmail({
+            subject: /new paid subscriber/i,
+            to: 'jbloggs@example.com'
+        });
     });
 
     it('returns 401 when redeeming a gift via POST without a member session', async function () {
