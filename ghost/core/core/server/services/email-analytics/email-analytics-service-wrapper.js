@@ -3,6 +3,8 @@ const metrics = require('@tryghost/metrics');
 const config = require('../../../shared/config');
 
 class EmailAnalyticsServiceWrapper {
+    #restoredSchedule = false;
+
     init() {
         if (this.service) {
             return;
@@ -167,6 +169,11 @@ class EmailAnalyticsServiceWrapper {
     }
 
     async startFetch() {
+        if (!this.#restoredSchedule) {
+            this.#restoredSchedule = true;
+            await this.service.restoreScheduled();
+        }
+
         if (this.fetching) {
             logging.info('Email analytics fetch already running, skipping');
             return;
