@@ -225,8 +225,8 @@ async function initFrontend(dataService) {
  * What we want is to be able to optionally load various components and mount them
  * So eventually this function should go away
  * @param {Object} options
- * @param {Boolean} options.backend
- * @param {Boolean} options.frontend
+ * @param {boolean} options.backend
+ * @param {boolean} options.frontend
  * @param {Object} options.config
  */
 async function initExpressApps({frontend, backend, config}) {

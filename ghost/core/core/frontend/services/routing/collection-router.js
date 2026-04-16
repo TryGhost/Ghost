@@ -135,7 +135,7 @@ class CollectionRouter extends ParentRouter {
     /**
      * @description Get index route e.g. /, /blog/
      * @param {Object} options
-     * @returns {String}
+     * @returns {string}
      */
     getRoute(options) {
         options = options || {};
@@ -146,7 +146,7 @@ class CollectionRouter extends ParentRouter {
     /**
      * @description Generate rss url.
      * @param {Object} options
-     * @returns {String}
+     * @returns {string}
      */
     getRssUrl(options) {
         if (!this.rss) {

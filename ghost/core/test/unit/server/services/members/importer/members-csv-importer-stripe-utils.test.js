@@ -49,8 +49,8 @@ describe('MembersCSVImporterStripeUtils', function () {
      * Returns a stubbed Stripe API service
      *
      * @param {Object} options
-     * @param {Boolean} [options.configured] - Whether the Stripe API service is configured, defaults to true
-     * @param {Boolean} [options.resolveCustomer] - Whether the Stripe API service should resolve the customer, defaults to true
+     * @param {boolean} [options.configured] - Whether the Stripe API service is configured, defaults to true
+     * @param {boolean} [options.resolveCustomer] - Whether the Stripe API service should resolve the customer, defaults to true
      * @returns {Object}
      */
     const getStripeApiServiceStub = ({
@@ -76,9 +76,9 @@ describe('MembersCSVImporterStripeUtils', function () {
      * Returns a stubbed product repository
      *
      * @param {Object} options
-     * @param {String} [options.ghostProductStripePriceId] - The Stripe price ID of the Ghost product, defaults to the Stripe price ID of the Stripe customer's existing subscription
-     * @param {Boolean} [options.resolveGhostProductPrice] - Whether the product repository should resolve the Ghost product price, defaults to true
-     * @param {Boolean} [options.resolveStripeProduct] - Whether the product repository should resolve the Stripe product, defaults to true
+     * @param {string} [options.ghostProductStripePriceId] - The Stripe price ID of the Ghost product, defaults to the Stripe price ID of the Stripe customer's existing subscription
+     * @param {boolean} [options.resolveGhostProductPrice] - Whether the product repository should resolve the Ghost product price, defaults to true
+     * @param {boolean} [options.resolveStripeProduct] - Whether the product repository should resolve the Stripe product, defaults to true
      * @returns {Object}
      */
     const getProductRepositoryStub = ({

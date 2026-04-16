@@ -9,8 +9,8 @@ const obfuscatedSetting = '••••••••';
 /**
  * @description // The function used to decide whether a setting is write-only
  * @param {Object} setting setting record
- * @param {String} setting.key
- * @returns {Boolean}
+ * @param {string} setting.key
+ * @returns {boolean}
  */
 function isSecretSetting(setting) {
     return /secret|api_key/.test(setting.key);
@@ -19,8 +19,8 @@ function isSecretSetting(setting) {
 /**
  * @description The function that obfuscates a write-only setting
  * @param {Object} setting setting record
- * @param {String} setting.value
- * @param {String} setting.key
+ * @param {string} setting.value
+ * @param {string} setting.key
  * @returns {Object} settings record with obfuscated value if it's a secret
  */
 function hideValueIfSecret(setting) {
@@ -36,7 +36,7 @@ let SITE_UUID;
  * @description Get or generate a site UUID, used for seeding the site_uuid setting
  * Uses the configured site_uuid if valid, otherwise generates a new one
  * To get the `site_uuid` setting, use `settingsCache.get('site_uuid')` instead
- * @returns {String} lowercase UUID
+ * @returns {string} lowercase UUID
  */
 function getOrGenerateSiteUuid() {
     if (!SITE_UUID) {

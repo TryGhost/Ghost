@@ -34,14 +34,14 @@ const EXPANSIONS = [{
 class UrlGenerator {
     /**
      * @param {Object} options
-     * @param {String} options.identifier frontend router ID reference
-     * @param {String} options.filter NQL filter string
-     * @param {String} options.resourceType resource type (e.g. 'posts', 'tags')
-     * @param {String} options.permalink permalink string
+     * @param {string} options.identifier frontend router ID reference
+     * @param {string} options.filter NQL filter string
+     * @param {string} options.resourceType resource type (e.g. 'posts', 'tags')
+     * @param {string} options.permalink permalink string
      * @param {Object} options.queue instance of the backend Queue
      * @param {Object} options.resources instance of the backend Resources
      * @param {Object} options.urls instance of the backend URLs (used to store the urls)
-     * @param {Number} options.position an ID of the generator
+     * @param {number} options.position an ID of the generator
      */
     constructor({identifier, filter, resourceType, permalink, queue, resources, urls, position}) {
         this.identifier = identifier;
@@ -133,8 +133,8 @@ class UrlGenerator {
     /**
      * @description Listener which get's called when a resource was added on runtime.
      * @param {Object} event
-     * @param {String} event.type
-     * @param {String} event.id
+     * @param {string} event.type
+     * @param {string} event.id
      * @private
      */
     _onAdded(event) {
@@ -250,7 +250,7 @@ class UrlGenerator {
 
     /**
      * @description Figure out if this url generator own's a resource id.
-     * @param {String} id
+     * @param {string} id
      * @returns {boolean}
      */
     hasId(id) {

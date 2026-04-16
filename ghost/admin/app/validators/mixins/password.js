@@ -17,8 +17,8 @@ export default Mixin.create({
     /**
     * Counts repeated characters if a string. When 50% or more characters are the same,
     * we return false and therefore invalidate the string.
-    * @param {String} stringToTest The password string to check.
-    * @return {Boolean}
+    * @param {string} stringToTest The password string to check.
+    * @return {boolean}
     */
     _characterOccurance(stringToTest) {
         let chars = {};

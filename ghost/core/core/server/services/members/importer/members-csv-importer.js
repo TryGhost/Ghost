@@ -340,13 +340,13 @@ module.exports = class MembersCSVImporter {
      * Send email with attached CSV containing error rows info
      *
      * @param {Object} config
-     * @param {String} config.emailRecipient - email recipient for error file
-     * @param {String} config.emailSubject - email subject
-     * @param {String} config.emailContent - html content of email
-     * @param {String} config.errorCSV - error CSV content
+     * @param {string} config.emailRecipient - email recipient for error file
+     * @param {string} config.emailSubject - email subject
+     * @param {string} config.emailContent - html content of email
+     * @param {string} config.errorCSV - error CSV content
      * @param {Object} config.emailSubject - email subject
      * @param {Object} config.importLabel -
-     * @param {String} config.importLabel.name - label name
+     * @param {string} config.importLabel.name - label name
      */
     async sendErrorEmail({emailRecipient, emailSubject, emailContent, errorCSV, importLabel}) {
         await this._sendEmail({
@@ -368,15 +368,15 @@ module.exports = class MembersCSVImporter {
      * Processes CSV file and imports member&label records depending on the size of the imported set
      *
      * @param {Object} config
-     * @param {String} config.pathToCSV - path where imported csv with members records is stored
+     * @param {string} config.pathToCSV - path where imported csv with members records is stored
      * @param {Object} config.headerMapping - mapping of CSV headers to member record fields
      * @param {Object} [config.globalLabels] - labels to be applied to whole imported members set
      * @param {Object} config.importLabel -
-     * @param {String} config.importLabel.name - label name
+     * @param {string} config.importLabel.name - label name
      * @param {Object} config.user
-     * @param {String} config.user.email - calling user email
+     * @param {string} config.user.email - calling user email
      * @param {Object} config.LabelModel - instance of Ghosts Label model
-     * @param {Boolean} config.forceInline - allows to force performing imports not in a job (used in test environment)
+     * @param {boolean} config.forceInline - allows to force performing imports not in a job (used in test environment)
      * @param {{testImportThreshold: () => Promise<void>}} config.verificationTrigger
      */
     async process({pathToCSV, headerMapping, globalLabels, importLabel, user, LabelModel, forceInline, verificationTrigger}) {
