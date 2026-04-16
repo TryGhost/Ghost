@@ -130,4 +130,62 @@ describe('GiftEmailService', function () {
 
         sinon.assert.calledWith(mailer.send, sinon.match.has('text', sinon.match('gift subscription on example.com')));
     });
+
+    describe('sendReminder', function () {
+        const reminderData = {
+            memberEmail: 'member@example.com',
+            memberName: 'Member Name',
+            tierName: 'Gold',
+            cadence: 'year',
+            duration: 1,
+            consumesAt: new Date('2026-04-23T00:00:00.000Z')
+        };
+
+        it('sends to the redeemer with a site-scoped subject and from address', async function () {
+            await service.sendReminder(reminderData);
+
+            sinon.assert.calledOnce(mailer.send);
+            sinon.assert.calledWith(mailer.send, sinon.match({
+                to: 'member@example.com',
+                subject: 'Your gift subscription to Test Site is ending soon',
+                from: 'Test Site <noreply@example.com>'
+            }));
+        });
+
+        it('includes tier name, cadence, consumesAt, and manage subscription url in both HTML and text', async function () {
+            await service.sendReminder(reminderData);
+
+            const msg = mailer.send.getCall(0).args[0];
+
+            for (const field of ['html', 'text']) {
+                sinon.assert.match(msg[field], sinon.match('Gold'));
+                sinon.assert.match(msg[field], sinon.match('1 year'));
+                sinon.assert.match(msg[field], sinon.match('23 Apr 2026'));
+                sinon.assert.match(msg[field], sinon.match('https://example.com/#/portal/account'));
+            }
+        });
+
+        it('uses a generic greeting when the member has no name', async function () {
+            await service.sendReminder({...reminderData, memberName: null});
+
+            const msg = mailer.send.getCall(0).args[0];
+
+            sinon.assert.match(msg.text, sinon.match(/^Hi,/));
+        });
+
+        it('includes the member name when provided', async function () {
+            await service.sendReminder(reminderData);
+
+            const msg = mailer.send.getCall(0).args[0];
+
+            sinon.assert.match(msg.text, sinon.match('Hi Member Name,'));
+            sinon.assert.match(msg.html, sinon.match('Hi Member Name,'));
+        });
+
+        it('formats month cadence correctly', async function () {
+            await service.sendReminder({...reminderData, cadence: 'month', duration: 3});
+
+            sinon.assert.calledWith(mailer.send, sinon.match.has('html', sinon.match('3 months')));
+        });
+    });
 });

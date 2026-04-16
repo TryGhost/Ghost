@@ -3,6 +3,26 @@ import logging from '@tryghost/logging';
 import {Gift} from './gift';
 import type {GiftRepository} from './gift-repository';
 import tpl from '@tryghost/tpl';
+import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * Narrow a Bookshelf attribute value (`unknown` from `member.get()`) to `string | null`.
+ * Returns `null` for any value that isn't a string, so callers can safely pass the
+ * result to APIs expecting `string | null`.
+ */
+function asStringOrNull(value: unknown): string | null {
+    return typeof value === 'string' ? value : null;
+}
+
+/**
+ * Narrow a Bookshelf attribute value to a boolean. Bookshelf may return `0`/`1`
+ * for tinyint columns on some drivers, so coerce defensively.
+ */
+function asBoolean(value: unknown): boolean {
+    return value === true || value === 1;
+}
 
 const errorMessages = {
     giftSubscriptionsNotEnabled: 'Gift subscriptions are not enabled on this site.',
@@ -14,8 +34,15 @@ const errorMessages = {
     paidMember: 'You already have an active subscription.'
 };
 
+interface MemberModel {
+    id: string;
+    // Bookshelf's generic `get()` returns the raw column value, which is `unknown`
+    // at the type level. Callers narrow with `typeof` checks before use.
+    get(key: string): unknown;
+}
+
 interface MemberRepository {
-    get(filter: Record<string, unknown>, options?: Record<string, unknown>): Promise<{id: string; get(key: string): string | null} | null>;
+    get(filter: Record<string, unknown>, options?: Record<string, unknown>): Promise<MemberModel | null>;
     update(data: Record<string, unknown>, options?: Record<string, unknown>): Promise<unknown>;
 }
 
@@ -45,6 +72,14 @@ interface GiftEmailService {
         cadence: 'month' | 'year';
         duration: number;
         expiresAt: Date;
+    }): Promise<void>;
+    sendReminder(data: {
+        memberEmail: string;
+        memberName: string | null;
+        tierName: string;
+        cadence: 'month' | 'year';
+        duration: number;
+        consumesAt: Date;
     }): Promise<void>;
 }
 
@@ -88,6 +123,17 @@ interface GiftServiceDeps {
     giftEmailService: GiftEmailService;
     staffServiceEmails: StaffServiceEmails;
 }
+
+type ReminderResult =
+    | {outcome: 'skip'}
+    | {
+        outcome: 'send';
+        memberEmail: string;
+        memberName: string | null;
+        cadence: 'month' | 'year';
+        duration: number;
+        consumesAt: Date;
+    };
 
 export class GiftService {
     private readonly deps: GiftServiceDeps;
@@ -134,8 +180,8 @@ export class GiftService {
 
         try {
             await this.deps.staffServiceEmails.notifyGiftReceived({
-                name: member?.get('name') ?? null,
-                email: member?.get('email') ?? data.buyerEmail,
+                name: member ? asStringOrNull(member.get('name')) : null,
+                email: (member && asStringOrNull(member.get('email'))) ?? data.buyerEmail,
                 memberId: member?.id ?? null,
                 amount: data.amount,
                 currency: data.currency,
@@ -233,7 +279,7 @@ export class GiftService {
                 throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
             }
 
-            await this.assertRedeemable(gift, _member.get('status'));
+            await this.assertRedeemable(gift, asStringOrNull(_member.get('status')));
 
             const _redeemed = gift.redeem({memberId});
 
@@ -260,10 +306,16 @@ export class GiftService {
                 throw new errors.NotFoundError({message: `Tier not found: ${redeemed.tierId}`});
             }
 
+            const memberEmail = asStringOrNull(member.get('email'));
+
+            if (!memberEmail) {
+                throw new errors.InternalServerError({message: `Redeemer member ${member.id} has no email address`});
+            }
+
             await this.deps.staffServiceEmails.notifyGiftSubscriptionStarted({
                 memberId: member.id,
-                memberEmail: member.get('email')!,
-                memberName: member.get('name') ?? null,
+                memberEmail,
+                memberName: asStringOrNull(member.get('name')),
                 tierName: tier.name,
                 buyerEmail: redeemed.buyerEmail
             });
@@ -381,5 +433,123 @@ export class GiftService {
         }
 
         return {expiredCount};
+    }
+
+    async processReminders(): Promise<{remindedCount: number; skippedCount: number; failedCount: number}> {
+        const now = new Date();
+        const toRemind = await this.deps.giftRepository.findPendingReminder({
+            now,
+            reminderLeadMs: GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY,
+            reminderFloorMs: GIFT_REMINDER_FLOOR_DAYS * MS_PER_DAY
+        });
+
+        if (toRemind.length === 0) {
+            return {remindedCount: 0, skippedCount: 0, failedCount: 0};
+        }
+
+        let remindedCount = 0;
+        let skippedCount = 0;
+        let failedCount = 0;
+
+        for (const gift of toRemind) {
+            try {
+                const sent = await this.sendReminderForGift(gift.token);
+
+                if (sent) {
+                    remindedCount += 1;
+                } else {
+                    skippedCount += 1;
+                }
+            } catch (err) {
+                logging.error(err);
+
+                failedCount += 1;
+            }
+        }
+
+        return {remindedCount, skippedCount, failedCount};
+    }
+
+    private async sendReminderForGift(token: string): Promise<boolean> {
+        const gift = await this.deps.giftRepository.getByToken(token);
+
+        if (!gift) {
+            return false;
+        }
+
+        const tier = await this.deps.tiersService.api.read(gift.tierId);
+
+        if (!tier) {
+            throw new errors.NotFoundError({message: `Tier not found for gift: ${gift.tierId}`});
+        }
+
+        const result = await this.deps.giftRepository.transaction(async (transacting): Promise<ReminderResult> => {
+            const locked = await this.deps.giftRepository.getByToken(token, {transacting, forUpdate: true});
+
+            if (!locked) {
+                return {outcome: 'skip'};
+            }
+
+            if (
+                // Gift must still be active — a concurrent refund or early consume can happen
+                // between `findPendingReminder` and this re-read.
+                locked.status !== 'redeemed'
+                // Idempotency guard: another path (rerun, scheduler) may already have sent.
+                || locked.consumesSoonReminderSentAt !== null
+                // Narrows `redeemerMemberId` from `string | null` to `string` — always set for redeemed gifts.
+                || locked.redeemerMemberId === null
+                // Narrows `consumesAt` from `Date | null` to `Date` — always set for redeemed gifts.
+                || locked.consumesAt === null
+            ) {
+                return {outcome: 'skip'};
+            }
+
+            const member = await this.deps.memberRepository.get(
+                {id: locked.redeemerMemberId},
+                {transacting, forUpdate: true}
+            );
+
+            // Record the reminder as sent before any skip or send below so we don't
+            // re-try gifts with permanently unreachable redeemers on every poll.
+            await this.deps.giftRepository.update(locked.remind(), {transacting});
+
+            if (!member) {
+                return {outcome: 'skip'};
+            }
+
+            if (asBoolean(member.get('email_disabled'))) {
+                return {outcome: 'skip'};
+            }
+
+            const memberEmail = asStringOrNull(member.get('email'));
+
+            if (!memberEmail) {
+                return {outcome: 'skip'};
+            }
+
+            return {
+                outcome: 'send',
+                memberEmail,
+                memberName: asStringOrNull(member.get('name')),
+                cadence: locked.cadence,
+                duration: locked.duration,
+                consumesAt: locked.consumesAt
+            };
+        });
+
+        if (result.outcome === 'skip') {
+            return false;
+        }
+
+        await this.deps.giftEmailService.sendReminder({
+            memberEmail: result.memberEmail,
+            memberName: result.memberName,
+            tierName: tier.name,
+            cadence: result.cadence,
+            duration: result.duration,
+            consumesAt: result.consumesAt
+        });
+
+        return true;
     }
 }
