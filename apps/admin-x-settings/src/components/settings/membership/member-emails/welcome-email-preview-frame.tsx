@@ -36,9 +36,9 @@ const WelcomeEmailPreviewFrame: React.FC<WelcomeEmailPreviewFrameProps> = ({prev
         cleanupPreviewMeasurement();
         setIsPreviewReady(false);
         setPreviewHeight(null);
-    }, [cleanupPreviewMeasurement, previewHtml, previewState.status]);
 
-    useEffect(() => cleanupPreviewMeasurement, [cleanupPreviewMeasurement]);
+        return cleanupPreviewMeasurement;
+    }, [cleanupPreviewMeasurement, previewHtml, previewState.status]);
 
     const syncPreviewHeight = useCallback(() => {
         const iframe = previewIframeRef.current;
