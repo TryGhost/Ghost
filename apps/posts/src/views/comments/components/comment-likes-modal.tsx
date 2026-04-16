@@ -2,6 +2,7 @@ import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, 
 import {Comment, useBrowseCommentLikes} from '@tryghost/admin-x-framework/api/comments';
 import {CommentAvatar} from './comment-avatar';
 import {LucideIcon, formatTimestamp} from '@tryghost/shade/utils';
+import {formatMemberName} from '@tryghost/shade/app';
 
 interface CommentLikesModalProps {
     comment: Comment;
@@ -35,7 +36,7 @@ function CommentLikesModal({comment, open, onOpenChange}: CommentLikesModalProps
                         <div className="flex min-w-0 flex-col overflow-hidden">
                             <div className="flex min-w-0 items-center gap-1 text-sm">
                                 <span className="shrink-0 font-semibold">
-                                    {comment.member?.name || 'Unknown'}
+                                    {comment.member ? formatMemberName(comment.member) : 'Deleted member'}
                                 </span>
                                 <LucideIcon.Dot className="shrink-0 text-muted-foreground/50" size={16} />
                                 <span className="shrink-0 text-muted-foreground">
@@ -76,7 +77,7 @@ function CommentLikesModal({comment, open, onOpenChange}: CommentLikesModalProps
                                             </div>
                                         </div>
                                         <span className="font-medium">
-                                            {like.member?.name || 'Deleted member'}
+                                            {like.member ? formatMemberName(like.member) : 'Deleted member'}
                                         </span>
                                     </div>
                                     <span className="shrink-0 text-sm text-muted-foreground">

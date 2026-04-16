@@ -2,6 +2,7 @@ import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, 
 import {Comment, useBrowseCommentReports} from '@tryghost/admin-x-framework/api/comments';
 import {CommentAvatar} from './comment-avatar';
 import {LucideIcon, formatTimestamp} from '@tryghost/shade/utils';
+import {formatMemberName} from '@tryghost/shade/app';
 
 interface CommentReportsModalProps {
     comment: Comment;
@@ -34,7 +35,7 @@ function CommentReportsModal({comment, open, onOpenChange}: CommentReportsModalP
                         <div className="flex min-w-0 flex-col overflow-hidden">
                             <div className="flex min-w-0 items-center gap-1 text-sm">
                                 <span className="shrink-0 font-semibold">
-                                    {comment.member?.name || 'Unknown'}
+                                    {comment.member ? formatMemberName(comment.member) : 'Deleted member'}
                                 </span>
                                 <LucideIcon.Dot className="shrink-0 text-muted-foreground/50" size={16} />
                                 <span className="shrink-0 text-muted-foreground">
@@ -75,7 +76,7 @@ function CommentReportsModal({comment, open, onOpenChange}: CommentReportsModalP
                                             </div>
                                         </div>
                                         <span className="font-medium">
-                                            {report.member?.name || 'Deleted member'}
+                                            {report.member ? formatMemberName(report.member) : 'Deleted member'}
                                         </span>
                                     </div>
                                     <span className="shrink-0 text-sm text-muted-foreground">
