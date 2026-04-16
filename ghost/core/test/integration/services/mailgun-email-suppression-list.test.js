@@ -13,7 +13,7 @@ describe('MailgunEmailSuppressionList', function () {
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('newsletters', 'members:newsletters', 'members:emails');
+        await fixtureManager.init('newsletters', 'members:newsletters', 'members:emails:failed');
         await agent.loginAsOwner();
 
         sinon.stub(MailgunClient.prototype, 'fetchEvents').callsFake(async function (_, batchHandler) {

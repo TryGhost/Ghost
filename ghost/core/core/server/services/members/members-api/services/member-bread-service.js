@@ -348,7 +348,7 @@ module.exports = class MemberBREADService {
         let model;
 
         try {
-            if (data.email) {
+            if (data.email && data.email_disabled === undefined) {
                 const isSuppressed = (await this.emailSuppressionList.getSuppressionData(data.email))?.suppressed;
                 data.email_disabled = !!isSuppressed;
             }

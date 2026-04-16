@@ -180,6 +180,22 @@ describe('MemberBreadService', function () {
             const createdData = createStub.firstCall.args[0];
             assert.equal(createdData.email_disabled, false);
         });
+
+        it('preserves explicit email_disabled when the email is on the suppression list', async function () {
+            const {service, createStub, getSuppressionDataStub} = createService();
+            getSuppressionDataStub.resolves({suppressed: true, info: {reason: 'spam'}});
+
+            await service.add({
+                email: 'suppressed@example.com',
+                name: 'New Signup',
+                email_disabled: false
+            }, {});
+
+            assert.equal(getSuppressionDataStub.called, false);
+            assert.equal(createStub.calledOnce, true);
+            const createdData = createStub.firstCall.args[0];
+            assert.equal(createdData.email_disabled, false);
+        });
     });
 
     describe('edit', function () {
