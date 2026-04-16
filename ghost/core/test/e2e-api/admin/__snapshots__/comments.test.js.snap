@@ -685,46 +685,6 @@ Object {
       "count": Object {
         "direct_replies": Any<Number>,
         "likes": Any<Number>,
-        "replies": Any<Number>,
-        "reports": Any<Number>,
-      },
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "edited_at": Nullable<StringMatching>,
-      "html": "<p>Parent</p>",
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "in_reply_to_id": null,
-      "in_reply_to_snippet": null,
-      "member": Object {
-        "avatar_image": null,
-        "can_comment": true,
-        "commenting": Object {
-          "disabled": false,
-          "disabled_reason": null,
-          "disabled_until": null,
-        },
-        "email": "member1@test.com",
-        "expertise": null,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "name": "Mr Egg",
-        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      },
-      "parent_id": Nullable<StringMatching>,
-      "post": Object {
-        "excerpt": "HTML Ipsum Presents
-
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
-        "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "title": "Ghostly Kitchen Sink",
-        "url": Any<String>,
-        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      },
-      "status": "published",
-    },
-    Object {
-      "count": Object {
-        "direct_replies": Any<Number>,
-        "likes": Any<Number>,
         "replies": 0,
         "reports": Any<Number>,
       },
@@ -758,6 +718,46 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
         "member": null,
         "parent_id": Nullable<StringMatching>,
         "status": "published",
+      },
+      "parent_id": Nullable<StringMatching>,
+      "post": Object {
+        "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
+        "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "title": "Ghostly Kitchen Sink",
+        "url": Any<String>,
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "status": "published",
+    },
+    Object {
+      "count": Object {
+        "direct_replies": Any<Number>,
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+        "reports": Any<Number>,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "edited_at": Nullable<StringMatching>,
+      "html": "<p>Parent</p>",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "in_reply_to_id": null,
+      "in_reply_to_snippet": null,
+      "member": Object {
+        "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
+        "email": "member1@test.com",
+        "expertise": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Mr Egg",
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
