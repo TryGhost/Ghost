@@ -1363,14 +1363,20 @@ describe(`Admin Comments API`, function () {
             await dbFns.addCommentWithReplies({
                 member_id: fixtureManager.get('members', 0).id,
                 html: '<p>Parent</p>',
-                replies: [{member_id: fixtureManager.get('members', 1).id, html: '<p>Reply</p>'}]
+                created_at: new Date('2025-01-01T00:00:00.000Z'),
+                replies: [{
+                    member_id: fixtureManager.get('members', 1).id,
+                    html: '<p>Reply</p>',
+                    created_at: new Date('2025-01-01T00:00:01.000Z')
+                }]
             });
 
-            // Both parent and reply appear as separate items in flat list
+            // Both parent and reply appear as separate items in flat list,
+            // reply first because default order is `created_at desc`.
             await adminApi.get('/comments/')
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    comments: [commentMatcher, commentMatcherWithParent]
+                    comments: [commentMatcherWithParent, commentMatcher]
                 });
         });
 
