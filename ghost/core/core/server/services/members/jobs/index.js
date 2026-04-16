@@ -3,7 +3,7 @@ const jobsService = require('../../jobs');
 
 let hasScheduled = {
     expiredComped: false,
-    consumedGifts: false,
+    gifts: false,
     tokens: false
 };
 
@@ -32,8 +32,8 @@ module.exports = {
         return scheduleJob('expiredComped', 'clean-expired-comped', 'clean-expired-comped.js');
     },
 
-    async scheduleConsumedGiftCleanupJob() {
-        return scheduleJob('consumedGifts', 'clean-consumed-gifts', 'clean-consumed-gifts.js');
+    async scheduleGiftCleanupJob() {
+        return scheduleJob('gifts', 'clean-gifts', 'clean-gifts.js');
     },
 
     async scheduleTokenCleanupJob() {

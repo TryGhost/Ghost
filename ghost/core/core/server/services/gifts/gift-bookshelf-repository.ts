@@ -85,6 +85,16 @@ export class GiftBookshelfRepository implements GiftRepository {
         return collection.models.map(model => this.toGift(model));
     }
 
+    async findPendingExpiration(): Promise<Gift[]> {
+        const now = new Date();
+
+        const collection = await this.model.findAll({
+            filter: `status:purchased+expires_at:<'${now.toISOString()}'`
+        });
+
+        return collection.models.map(model => this.toGift(model));
+    }
+
     async create(gift: Gift, options: RepositoryTransactionOptions = {}) {
         await this.model.add(this.toRow(gift), options);
     }

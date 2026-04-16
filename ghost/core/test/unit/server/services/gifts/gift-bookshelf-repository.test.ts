@@ -269,4 +269,61 @@ describe('GiftBookshelfRepository', function () {
         assert.ok(filterDate >= before);
         assert.ok(filterDate <= after);
     });
+
+    it('finds gifts pending expiration using current time', async function () {
+        const before = new Date();
+
+        const GiftModel = {
+            add: sinon.stub(),
+            transaction: sinon.stub(),
+            findOne: sinon.stub(),
+            findAll: sinon.stub().resolves({
+                models: [{
+                    toJSON() {
+                        return {
+                            token: 'gift-token',
+                            buyer_email: 'buyer@example.com',
+                            buyer_member_id: 'buyer_member_1',
+                            redeemer_member_id: null,
+                            tier_id: 'tier_1',
+                            cadence: 'year',
+                            duration: 1,
+                            currency: 'usd',
+                            amount: 5000,
+                            stripe_checkout_session_id: 'cs_123',
+                            stripe_payment_intent_id: 'pi_456',
+                            consumes_at: null,
+                            expires_at: new Date('2025-01-01T00:00:00.000Z'),
+                            status: 'purchased',
+                            purchased_at: new Date('2024-01-01T00:00:00.000Z'),
+                            redeemed_at: null,
+                            consumed_at: null,
+                            expired_at: null,
+                            refunded_at: null
+                        };
+                    }
+                }]
+            })
+        };
+        const repository = new GiftBookshelfRepository({GiftModel});
+
+        const gifts = await repository.findPendingExpiration();
+
+        const after = new Date();
+
+        assert.equal(gifts.length, 1);
+        assert.equal(gifts[0].token, 'gift-token');
+        assert.equal(gifts[0].status, 'purchased');
+
+        sinon.assert.calledOnce(GiftModel.findAll);
+
+        const filterArg = GiftModel.findAll.getCall(0).args[0].filter;
+        assert.ok(filterArg.startsWith('status:purchased+expires_at:<\''));
+
+        const dateStr = filterArg.match(/expires_at:<'(.+)'/)[1];
+        const filterDate = new Date(dateStr);
+
+        assert.ok(filterDate >= before);
+        assert.ok(filterDate <= after);
+    });
 });

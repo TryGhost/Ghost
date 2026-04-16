@@ -187,4 +187,16 @@ export class Gift {
             consumedAt: new Date()
         });
     }
+
+    expire(): Gift | null {
+        if (this.isExpired()) {
+            return null;
+        }
+
+        return new Gift({
+            ...this,
+            status: 'expired',
+            expiredAt: new Date()
+        });
+    }
 }
