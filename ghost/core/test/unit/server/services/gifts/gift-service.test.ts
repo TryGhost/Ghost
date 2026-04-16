@@ -25,6 +25,7 @@ describe('GiftService', function () {
     };
     let staffServiceEmails: {
         notifyGiftReceived: sinon.SinonStub;
+        notifyGiftSubscriptionStarted: sinon.SinonStub;
     };
     let giftEmailService: {
         sendPurchaseConfirmation: sinon.SinonStub;
@@ -65,7 +66,8 @@ describe('GiftService', function () {
             update: sinon.stub().resolves(undefined)
         };
         staffServiceEmails = {
-            notifyGiftReceived: sinon.stub()
+            notifyGiftReceived: sinon.stub(),
+            notifyGiftSubscriptionStarted: sinon.stub()
         };
         giftEmailService = {
             sendPurchaseConfirmation: sinon.stub()
@@ -662,11 +664,16 @@ describe('GiftService', function () {
     describe('redeem', function () {
         it('redeems the gift, saves it, and grants gift access to the member', async function () {
             const gift = buildGift();
+            const memberGet = sinon.stub();
+
+            memberGet.withArgs('status').returns('free');
+            memberGet.withArgs('name').returns('Member Name');
+            memberGet.withArgs('email').returns('member@example.com');
 
             giftRepository.getByToken.resolves(gift);
             memberRepository.get.resolves({
                 id: 'member_1',
-                get: sinon.stub().withArgs('status').returns('free')
+                get: memberGet
             });
 
             const service = createService();
@@ -689,9 +696,42 @@ describe('GiftService', function () {
                 transacting: 'trx'
             });
             sinon.assert.calledOnceWithExactly(giftRepository.update, redeemed, {transacting: 'trx'});
+            sinon.assert.calledOnceWithExactly(tiersService.api.read, 'tier_1');
+            sinon.assert.calledOnceWithExactly(staffServiceEmails.notifyGiftSubscriptionStarted, {
+                memberId: 'member_1',
+                memberEmail: 'member@example.com',
+                memberName: 'Member Name',
+                tierName: 'Bronze',
+                buyerEmail: 'buyer@example.com'
+            });
             assert.equal(redeemed.status, 'redeemed');
             assert.equal(redeemed.redeemerMemberId, 'member_1');
             assert.notEqual(redeemed.consumesAt, null);
+        });
+
+        it('does not fail redemption when staff notification email throws', async function () {
+            const gift = buildGift();
+            const memberGet = sinon.stub();
+
+            memberGet.withArgs('status').returns('free');
+            memberGet.withArgs('name').returns('Member Name');
+            memberGet.withArgs('email').returns('member@example.com');
+
+            giftRepository.getByToken.resolves(gift);
+            memberRepository.get.resolves({
+                id: 'member_1',
+                get: memberGet
+            });
+            staffServiceEmails.notifyGiftSubscriptionStarted.rejects(new Error('SMTP error'));
+
+            const service = createService();
+            const redeemed = await service.redeem({
+                token: 'gift-token',
+                memberId: 'member_1'
+            });
+
+            assert.equal(redeemed.status, 'redeemed');
+            sinon.assert.calledOnce(staffServiceEmails.notifyGiftSubscriptionStarted);
         });
 
         it('throws NotFoundError when the member does not exist', async function () {
@@ -712,6 +752,7 @@ describe('GiftService', function () {
 
             sinon.assert.notCalled(memberRepository.update);
             sinon.assert.notCalled(giftRepository.update);
+            sinon.assert.notCalled(staffServiceEmails.notifyGiftSubscriptionStarted);
         });
 
         it('throws NotFoundError when the gift token does not exist', async function () {
@@ -732,6 +773,7 @@ describe('GiftService', function () {
 
             sinon.assert.notCalled(memberRepository.update);
             sinon.assert.notCalled(giftRepository.update);
+            sinon.assert.notCalled(staffServiceEmails.notifyGiftSubscriptionStarted);
         });
 
         it('throws BadRequestError when the member is not eligible', async function () {
@@ -756,6 +798,7 @@ describe('GiftService', function () {
 
             sinon.assert.notCalled(memberRepository.update);
             sinon.assert.notCalled(giftRepository.update);
+            sinon.assert.notCalled(staffServiceEmails.notifyGiftSubscriptionStarted);
         });
     });
 
