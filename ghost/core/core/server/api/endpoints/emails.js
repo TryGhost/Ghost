@@ -163,14 +163,15 @@ const controller = {
             'end'
         ],
         async query(frame) {
-            const model = await models.Email.findOne(frame.data, frame.options);
+            const {begin: beginParam, end: endParam, ...findOptions} = frame.options;
+            const model = await models.Email.findOne(frame.data, findOptions);
 
             // Use custom dates if provided, otherwise compute defaults from the email
-            const begin = frame.options.begin
-                ? new Date(frame.options.begin)
+            const begin = beginParam
+                ? new Date(beginParam)
                 : model.get('created_at');
-            const end = frame.options.end
-                ? new Date(frame.options.end)
+            const end = endParam
+                ? new Date(endParam)
                 : new Date(Math.min(Date.now() - 60 * 60 * 1000, model.get('created_at').getTime() + 24 * 60 * 60 * 1000 * 7));
 
             return emailAnalytics.service.schedule({begin, end});
