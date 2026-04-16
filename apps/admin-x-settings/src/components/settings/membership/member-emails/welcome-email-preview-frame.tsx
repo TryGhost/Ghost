@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Hint, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {cn} from '@tryghost/shade/utils';
-import type {WelcomeEmailPreviewFrameState} from '../../../../hooks/use-welcome-email-preview';
+import type {WelcomeEmailPreviewFrameState} from './use-welcome-email-preview';
 
 interface WelcomeEmailPreviewFrameProps {
     previewState: WelcomeEmailPreviewFrameState;
