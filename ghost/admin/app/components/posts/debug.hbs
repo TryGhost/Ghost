@@ -412,11 +412,11 @@
                         {{#if this.showCustomSchedule}}
                             <tr>
                                 <td><label for="custom-begin-date">Begin:</label></td>
-                                <td><input id="custom-begin-date" type="datetime-local" value={{this.customBeginDate}} {{on "input" this.updateCustomBeginDate}} /></td>
+                                <td><input id="custom-begin-date" type="datetime-local" value={{this.customBeginDate}} {{on "input" this.updateCustomBeginDate}} style="border: 1px solid #ddd; padding: 4px 8px; border-radius: 4px;" /></td>
                             </tr>
                             <tr>
                                 <td><label for="custom-end-date">End:</label></td>
-                                <td><input id="custom-end-date" type="datetime-local" value={{this.customEndDate}} {{on "input" this.updateCustomEndDate}} /></td>
+                                <td><input id="custom-end-date" type="datetime-local" value={{this.customEndDate}} {{on "input" this.updateCustomEndDate}} style="border: 1px solid #ddd; padding: 4px 8px; border-radius: 4px;" /></td>
                             </tr>
                             <tr>
                                 <td colspan="2">

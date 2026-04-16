@@ -342,7 +342,7 @@ export default class Debug extends Component {
         if (this.customEndDate) {
             payload.end = new Date(this.customEndDate).toISOString();
         }
-        yield this.ajax.put(statsUrl, {data: JSON.stringify(payload), contentType: 'application/json'});
+        yield this.ajax.put(statsUrl, {data: payload});
         yield this.fetchAnalyticsStatus();
         this.showCustomSchedule = false;
     }
