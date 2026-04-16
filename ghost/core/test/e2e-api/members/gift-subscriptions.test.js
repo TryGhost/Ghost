@@ -640,6 +640,31 @@ describe('Gift Subscriptions', function () {
                 });
             });
 
+            it('returns 401 when redeeming a gift without being logged in', async function () {
+                const gift = await createGift();
+
+                const {body} = await membersAgent
+                    .post(`/api/gifts/${gift.get('token')}/redeem/`)
+                    .body({})
+                    .expectStatus(401);
+
+                assert.equal(body.errors[0].type, 'UnauthorizedError');
+            });
+
+            it('returns 400 when redeeming a gift for a paid member', async function () {
+                const agent = membersAgent.duplicate();
+                const gift = await createGift();
+
+                await agent.loginAs('paid@test.com');
+
+                const {body} = await agent
+                    .post(`/api/gifts/${gift.get('token')}/redeem/`)
+                    .body({})
+                    .expectStatus(400);
+
+                assert.equal(body.errors[0].message, errorMessages.activeSubscription);
+            });
+
             it('returns 400 when redeeming a gift a second time', async function () {
                 const firstAgent = membersAgent.duplicate();
                 const secondAgent = membersAgent.duplicate();
