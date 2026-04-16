@@ -40,7 +40,6 @@ const author = (attrs, frame) => {
         delete attrs.milestone_notifications;
         delete attrs.donation_notifications;
         delete attrs.gift_subscription_purchase_notification;
-        delete attrs.gift_subscription_redemption_notification;
 
         // @NOTE: used for night shift
         delete attrs.accessibility;

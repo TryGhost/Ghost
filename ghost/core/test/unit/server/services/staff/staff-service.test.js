@@ -987,7 +987,7 @@ describe('StaffService', function () {
                     duration: 1
                 });
 
-                sinon.assert.calledWith(getEmailAlertUsersStub, 'gift-purchased');
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'gift-subscription-purchased');
                 sinon.assert.calledOnce(mailStub);
                 sinon.assert.calledWith(mailStub, sinon.match.has('subject', sinon.match('Gift subscription purchased: $60.00 from Alice')));
             });

@@ -9,8 +9,9 @@ on:
       - main
       - 'v[0-9]+.*' # Matches any release branch, e.g. v6.0.3, v12.1.0
       - '[0-9]+.x' # Matches any major version branch, e.g. 5.x, 23.x
-    tags:
-      - 'v[0-9]*' # Version tags trigger release publishing (npm, GitHub Release)
+    tags-ignore:
+      - '**' # Tags handled by ci-release.yml
+  workflow_call: # Called by ci-release.yml for uninterruptible release CI
 
 env:
   FORCE_COLOR: 1
@@ -63,6 +64,7 @@ jobs:
           echo "GITHUB_CONTEXT: ${{ toJson(github.event) }}"
 
       - name: Set SHAs for Nx Commands
+        if: env.IS_TAG != 'true'
         uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
         with:
           main-branch-name: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
@@ -86,6 +88,7 @@ jobs:
           fi
 
       - name: Determine added packages
+        if: env.IS_TAG != 'true'
         uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         id: added
         with:
@@ -95,6 +98,7 @@ jobs:
               - added: 'ghost/**/package.json'
 
       - name: Determine changed packages
+        if: env.IS_TAG != 'true'
         uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
         id: changed
         with:
@@ -191,6 +195,7 @@ jobs:
         run: bash .github/scripts/install-deps.sh
 
       - name: Determine Affected Projects
+        if: env.IS_TAG != 'true'
         id: affected
         run: |
           AFFECTED_PROJECTS=$(pnpm -s nx show projects --affected --json | tr -d '\n')
@@ -246,7 +251,7 @@ jobs:
   job_lint:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_any_code == 'true'
     name: Lint
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -269,7 +274,13 @@ jobs:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - run: pnpm nx affected -t lint
+      - name: Lint all (tags)
+        if: needs.job_setup.outputs.is_tag == 'true'
+        run: pnpm nx run-many -t lint
+
+      - name: Lint affected (branches)
+        if: needs.job_setup.outputs.is_tag != 'true'
+        run: pnpm nx affected -t lint
         env:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
@@ -286,12 +297,12 @@ jobs:
     needs: [job_setup]
     name: i18n
     if: |
-        needs.job_setup.outputs.is_tag != 'true'
-        && (needs.job_setup.outputs.changed_comments_ui == 'true'
+        needs.job_setup.outputs.is_tag == 'true'
+        || needs.job_setup.outputs.changed_comments_ui == 'true'
         || needs.job_setup.outputs.changed_signup_form == 'true'
         || needs.job_setup.outputs.changed_sodo_search == 'true'
         || needs.job_setup.outputs.changed_portal == 'true'
-        || needs.job_setup.outputs.changed_core == 'true')
+        || needs.job_setup.outputs.changed_core == 'true'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
@@ -310,7 +321,7 @@ jobs:
   job_admin-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_admin == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_admin == 'true'
     name: Admin tests - Chrome
     env:
       MOZ_HEADLESS: 1
@@ -352,7 +363,7 @@ jobs:
   job_unit-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_any_code == 'true'
     strategy:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
@@ -378,7 +389,17 @@ jobs:
         with:
           timezoneLinux: "America/New_York"
 
-      - name: Run unit tests
+      - name: Run unit tests (tags — all)
+        if: needs.job_setup.outputs.is_tag == 'true'
+        run: pnpm nx run-many -t test:unit
+        env:
+          FORCE_COLOR: 0
+          GHOST_UNIT_TEST_VARIANT: ci
+          NX_SKIP_LOG_GROUPING: true
+          logging__level: fatal
+
+      - name: Run unit tests (branches — affected)
+        if: needs.job_setup.outputs.is_tag != 'true'
         run: pnpm nx affected -t test:unit
         env:
           FORCE_COLOR: 0
@@ -404,7 +425,7 @@ jobs:
   job_acceptance-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
       mysql:
         image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
@@ -488,7 +509,7 @@ jobs:
   job_legacy-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
       mysql:
         image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
@@ -558,7 +579,7 @@ jobs:
   job_admin_x_settings:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_admin_x_settings == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_admin_x_settings == 'true'
     name: Admin-X Settings tests
     env:
       CI: true
@@ -599,7 +620,7 @@ jobs:
   job_activitypub:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_activitypub == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_activitypub == 'true'
     name: ActivityPub tests
     env:
       CI: true
@@ -640,7 +661,7 @@ jobs:
   job_comments_ui:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_comments_ui == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_comments_ui == 'true'
     name: Comments-UI tests
     env:
       CI: true
@@ -681,7 +702,7 @@ jobs:
   job_signup_form:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_signup_form == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_signup_form == 'true'
     name: Signup-form tests
     env:
       CI: true
@@ -723,7 +744,7 @@ jobs:
     name: Tinybird Tests
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_tinybird == 'true'
     defaults:
         run:
           working-directory: ghost/core/core/server/data/tinybird
@@ -759,7 +780,7 @@ jobs:
   job_ghost-cli:
     name: Ghost-CLI tests
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -1084,7 +1105,6 @@ jobs:
   job_build_e2e_public_apps:
     name: Build E2E Public App Assets
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -1126,7 +1146,6 @@ jobs:
   job_build_e2e_image:
     name: Build E2E Docker Image
     needs: [job_setup, job_build_e2e_public_apps, job_build_artifacts]
-    if: needs.job_setup.outputs.is_tag != 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -1234,7 +1253,6 @@ jobs:
     name: E2E Tests (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
     needs: [job_build_e2e_image, job_setup]
-    if: needs.job_setup.outputs.is_tag != 'true'
     strategy:
       fail-fast: true
       matrix:
@@ -1485,12 +1503,8 @@ jobs:
       - name: Output needs
         run: echo "${{ toJson(needs) }}"
 
-      - name: Pass on tag pushes (tests already ran on branch)
-        if: needs.job_setup.outputs.is_tag == 'true'
-        run: echo "Tag push — tests skipped (already tested on branch commit)"
-
       - name: Check if any required jobs failed or been cancelled
-        if: needs.job_setup.outputs.is_tag != 'true' && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled'))
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
         run: |
           echo "One of the dependent jobs have failed or been cancelled. You may need to re-run it." && exit 1
 
@@ -1659,6 +1673,9 @@ jobs:
         id: params
         run: |
           if [ "${{ needs.job_setup.outputs.is_main }}" = "true" ]; then
+            echo "pr_number=" >> $GITHUB_OUTPUT
+            echo "deploy=" >> $GITHUB_OUTPUT
+          elif [ "${{ needs.job_setup.outputs.is_tag }}" = "true" ]; then
             echo "pr_number=" >> $GITHUB_OUTPUT
             echo "deploy=" >> $GITHUB_OUTPUT
           elif [ "${{ github.event_name }}" = "pull_request" ]; then

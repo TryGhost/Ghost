@@ -1,16 +1,21 @@
+import errors from '@tryghost/errors';
 import {Gift, type GiftCadence, type GiftStatus} from './gift';
-import type {GiftRepository} from './gift-repository';
+import type {GiftRepository, RepositoryTransactionOptions} from './gift-repository';
 
 type BookshelfDocument<T> = {
+    save(data: Partial<T>, options?: unknown): Promise<unknown>;
+    set(data: Partial<T>): void;
     toJSON(): T;
 };
 
 type BookshelfModel<T> = {
     add(data: Partial<T>, unfilteredOptions?: unknown): Promise<T>;
+    transaction<R>(callback: (transacting: unknown) => Promise<R>): Promise<R>;
     findOne(data: Record<string, unknown>, unfilteredOptions?: unknown): Promise<BookshelfDocument<T> | null>;
 };
 
 type GiftRow = {
+    id: string;
     token: string;
     buyer_email: string;
     buyer_member_id: string | null;
@@ -49,8 +54,49 @@ export class GiftBookshelfRepository implements GiftRepository {
         return !!existing;
     }
 
-    async create(gift: Gift) {
-        await this.model.add({
+    async getByToken(token: string, options: RepositoryTransactionOptions = {}): Promise<Gift | null> {
+        const model = await this.model.findOne({
+            token
+        }, {require: false, ...options});
+
+        return this.toGift(model);
+    }
+
+    async getByPaymentIntentId(paymentIntentId: string): Promise<Gift | null> {
+        const model = await this.model.findOne({
+            stripe_payment_intent_id: paymentIntentId
+        }, {require: false});
+
+        return this.toGift(model);
+    }
+
+    async create(gift: Gift, options: RepositoryTransactionOptions = {}) {
+        await this.model.add(this.toRow(gift), options);
+    }
+
+    async update(gift: Gift, options: RepositoryTransactionOptions = {}) {
+        const existing = await this.model.findOne({
+            token: gift.token
+        }, {require: false, ...options});
+
+        if (!existing) {
+            throw new errors.InternalServerError({message: `Gift not found: ${gift.token}`});
+        }
+
+        await existing.save(this.toRow(gift), {
+            autoRefresh: false,
+            method: 'update',
+            patch: true,
+            ...options
+        });
+    }
+
+    async transaction<T>(callback: (transacting: unknown) => Promise<T>): Promise<T> {
+        return await this.model.transaction(callback);
+    }
+
+    private toRow(gift: Gift): Omit<GiftRow, 'id'> {
+        return {
             token: gift.token,
             buyer_email: gift.buyerEmail,
             buyer_member_id: gift.buyerMemberId,
@@ -70,14 +116,10 @@ export class GiftBookshelfRepository implements GiftRepository {
             consumed_at: gift.consumedAt,
             expired_at: gift.expiredAt,
             refunded_at: gift.refundedAt
-        });
+        };
     }
 
-    async getByToken(token: string): Promise<Gift | null> {
-        const model = await this.model.findOne({
-            token
-        }, {require: false});
-
+    private toGift(model: BookshelfDocument<GiftRow> | null): Gift | null {
         if (!model) {
             return null;
         }

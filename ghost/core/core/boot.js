@@ -377,11 +377,9 @@ async function initServices() {
         donationService.init(),
         recommendationsService.init(),
         statsService.init(),
-        explorePingService.init()
+        explorePingService.init(),
+        giftService.init()
     ]);
-
-    // Gift service depends on members, tiers, and staff services
-    await giftService.init();
 
     debug('End: Services');
 
@@ -422,8 +420,13 @@ async function initBackgroundServices({config}) {
     const milestonesService = require('./server/services/milestones');
     milestonesService.initAndRun();
 
+    // TODO(NY-1220): The outbox is deprecated and will soon be removed.
     const outboxService = require('./server/services/outbox');
     outboxService.init();
+
+    const domainEvents = require('@tryghost/domain-events');
+    const WelcomeEmailAutomationsService = require('./server/services/welcome-email-automations');
+    new WelcomeEmailAutomationsService().init(domainEvents);
 
     debug('End: initBackgroundServices');
 }
