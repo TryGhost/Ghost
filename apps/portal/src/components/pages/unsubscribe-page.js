@@ -266,7 +266,7 @@ export default function UnsubscribePage() {
                 await unsubscribeAll();
                 setHasInteracted(true);
             }}
-            isPaidMember={member?.status !== 'free'}
+            isPaidMember={member?.status === 'paid'}
             isCommentsEnabled={commentsEnabled !== 'off'}
             enableCommentNotifications={enableCommentNotifications}
         />

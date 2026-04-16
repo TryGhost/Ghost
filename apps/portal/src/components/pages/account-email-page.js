@@ -1,6 +1,6 @@
 import AppContext from '../../app-context';
 import {useContext, useEffect, useState} from 'react';
-import {isPaidMember, getSiteNewsletters, hasNewsletterSendingEnabled} from '../../utils/helpers';
+import {isPaidMember, isComplimentaryMember, getSiteNewsletters, hasNewsletterSendingEnabled} from '../../utils/helpers';
 import NewsletterManagement from '../common/newsletter-management';
 import Interpolate from '@doist/react-interpolate';
 import {t} from '../../utils/i18n';
@@ -115,7 +115,7 @@ export default function AccountEmailPage() {
                 }
                 doAction('updateNewsletterPreference', data);
             }}
-            isPaidMember={isPaidMember({member})}
+            isPaidMember={isPaidMember({member}) && !isComplimentaryMember({member})}
             isCommentsEnabled={commentsEnabled !== 'off'}
             enableCommentNotifications={enableCommentNotifications}
         />
