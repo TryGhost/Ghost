@@ -1,7 +1,7 @@
-import * as assert from 'assert/strict';
+import * as assert from 'node:assert/strict';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {act, renderHook, waitFor} from '@testing-library/react';
-import {useWelcomeEmailPreview} from '@src/hooks/use-welcome-email-preview';
+import {useWelcomeEmailPreview} from '@src/components/settings/membership/member-emails/use-welcome-email-preview';
 
 const validLexical = JSON.stringify({
     root: {
