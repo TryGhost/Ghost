@@ -197,7 +197,7 @@ class EmailRenderer {
      * @param {object} dependencies.labs
      * @param {{Post: object}} dependencies.models
      * @param {Function} dependencies.t
-     * @param {Function} [dependencies.dir] Returns 'rtl' or 'ltr' for a given locale (i18next's `i18n.dir`)
+     * @param {(locale: string) => 'rtl' | 'ltr'} dependencies.dir Returns 'rtl' or 'ltr' for a given locale (i18next's `i18n.dir`)
      */
     constructor({
         settingsCache,
@@ -1111,7 +1111,7 @@ class EmailRenderer {
         const titleAlignment = newsletter.get('title_alignment');
         const showFeatureImage = newsletter.get('show_feature_image') && !!postFeatureImage;
 
-        const direction = (this.#dir && this.#dir(locale)) || 'ltr';
+        const direction = this.#dir(locale);
 
         const data = {
             emailTitle: post.get('title'),
