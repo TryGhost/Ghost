@@ -785,18 +785,17 @@ describe('Gift Subscriptions', function () {
                         assert.ok(gift.get('redeemed_at'));
                         assert.ok(gift.get('consumes_at'));
 
-                        // Magic link exchange currently sends a "free member signup" staff notification for new members
-                        // This is unwanted behaviour and will be removed in a future PR
-                        mockManager.assert.sentEmail({
-                            subject: /Free member signup/i,
-                            to: 'jbloggs@example.com'
-                        });
-
-                        // Verify gift subscription started staff notification was sent
-                        mockManager.assert.sentEmail({
-                            subject: /new paid subscriber/i,
-                            to: 'jbloggs@example.com'
-                        });
+                        // Magic link exchange sends 2 staff emails for new members:
+                        // a "Free member signup" notification (unwanted, to be removed in a future PR)
+                        // and a "New paid subscriber" notification for the gift redemption.
+                        // The delivery order is non-deterministic, so we check subjects without assuming order.
+                        const email1 = mockManager.assert.sentEmail({to: 'jbloggs@example.com'});
+                        const email2 = mockManager.assert.sentEmail({to: 'jbloggs@example.com'});
+                        const subjects = [email1.subject, email2.subject];
+                        assert.ok(
+                            subjects.some(s => /new paid subscriber/i.test(s)),
+                            'Expected a "New paid subscriber" staff notification email'
+                        );
 
                         // Verify the redirect URL was used
                         assert.equal(location.searchParams.get('action'), 'subscribe');
