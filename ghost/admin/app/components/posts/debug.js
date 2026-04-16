@@ -299,11 +299,14 @@ export default class Debug extends Component {
     @action
     toggleCustomSchedule() {
         this.showCustomSchedule = !this.showCustomSchedule;
-        if (this.showCustomSchedule && !this.customBeginDate) {
+        if (this.showCustomSchedule) {
             this.customBeginDate = moment(this.email?.createdAtUTC).format('YYYY-MM-DDTHH:mm');
             const createdAt = moment(this.email?.createdAtUTC);
             const maxEnd = moment.min(moment().subtract(1, 'hour'), createdAt.clone().add(7, 'days'));
             this.customEndDate = maxEnd.format('YYYY-MM-DDTHH:mm');
+        } else {
+            this.customBeginDate = null;
+            this.customEndDate = null;
         }
     }
 
