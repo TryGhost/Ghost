@@ -159,8 +159,8 @@ module.exports = {
                     id: new ObjectID().toHexString(),
                     name: jobName,
                     metadata: value,
-                    updated_at: new Date().toISOString(),
-                    created_at: new Date().toISOString(),
+                    updated_at: new Date(),
+                    created_at: new Date(),
                     status: 'queued'
                 });
             }
