@@ -2,7 +2,7 @@ const moment = require('moment');
 const errors = require('@tryghost/errors');
 
 const urlUtils = require('../../../../shared/url-utils');
-const getSignedAdminToken = require('./scheduling-auth-token');
+const {getSignedAdminToken} = require('../utils');
 
 class PostScheduler {
     constructor({apiUrl, integration, adapter, scheduledResources, events} = {}) {
