@@ -108,7 +108,7 @@ const WelcomeEmailPreviewFrame: React.FC<WelcomeEmailPreviewFrameProps> = ({prev
     const showPreviewLoading = previewState.status === 'loading' || (previewState.status === 'success' && !isPreviewReady);
 
     return (
-        <div className='relative mx-auto w-full max-w-[740px] py-6' data-testid='welcome-email-preview'>
+        <div className='relative w-full' data-testid='welcome-email-preview'>
             {showPreviewLoading && (
                 <div
                     className='flex min-h-full items-start justify-center pt-24'
@@ -123,7 +123,7 @@ const WelcomeEmailPreviewFrame: React.FC<WelcomeEmailPreviewFrameProps> = ({prev
                     aria-hidden={!isPreviewReady}
                     className={cn(
                         'w-full',
-                        !isPreviewReady && 'pointer-events-none absolute left-0 top-6 opacity-0'
+                        !isPreviewReady && 'pointer-events-none absolute left-0 top-0 opacity-0'
                     )}
                 >
                     {/* Keep the iframe hidden until it has been measured to avoid a visible resize jump. */}
