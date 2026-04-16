@@ -2,18 +2,29 @@ const moment = require('moment');
 const jwt = require('jsonwebtoken');
 
 /**
+ * @internal
+ * @typedef {object} ApiKey
+ * @property {string} id
+ * @property {string} secret
+ */
+
+/**
  * @description Get signed admin token for making authenticated scheduling requests
  *
  * @param {Object} options
  * @param {string} options.publishedAt - ISO date
  * @param {string} options.apiUrl - url of the JWT's audience
- * @param {object} options.key - integration key
- * @param {string} options.key.id - key ID
- * @param {string} options.key.secret - key secret
+ * @param {object} options.integration - integration object containing the key to sign the token with
+ * @param {ApiKey[]} options.integration.api_keys - array of API keys for the integration
  *
  * @return {string} the JSON Web Token
  */
-const getSignedAdminToken = function ({publishedAt, apiUrl, key}) {
+const getSignedAdminToken = function ({publishedAt, apiUrl, integration}) {
+    const key = {
+        id: integration.api_keys[0].id,
+        secret: integration.api_keys[0].secret
+    };
+
     const JWT_OPTIONS = /** @type {const} */ ({
         keyid: key.id,
         algorithm: 'HS256',

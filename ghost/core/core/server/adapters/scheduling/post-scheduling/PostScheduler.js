@@ -56,10 +56,7 @@ class PostScheduler {
         const signedAdminToken = getSignedAdminToken({
             publishedAt,
             apiUrl,
-            key: {
-                id: integration.api_keys[0].id,
-                secret: integration.api_keys[0].secret
-            }
+            integration
         });
         let url = `${urlUtils.urlJoin(apiUrl, 'schedules', resource, model.get('id'))}/?token=${signedAdminToken}`;
 
