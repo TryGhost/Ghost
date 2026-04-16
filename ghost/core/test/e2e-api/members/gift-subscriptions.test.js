@@ -745,6 +745,8 @@ describe('Gift Subscriptions', function () {
                         const [hashPath, hashQueryString] = location.hash.slice(1).split('?');
                         const hashParams = new URLSearchParams(hashQueryString);
 
+                        await DomainEvents.allSettled();
+
                         // Verify a new member was created with status 'gift'
                         const member = await models.Member.findOne({email}, {require: true});
                         assert.equal(member.get('name'), 'Gift Receiver');
