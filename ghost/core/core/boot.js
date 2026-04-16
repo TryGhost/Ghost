@@ -340,14 +340,17 @@ async function initServices() {
     const statsService = require('./server/services/stats');
     const explorePingService = require('./server/services/explore-ping');
 
+    const {createAdapter: createSchedulerAdapter} = require('./server/adapters/scheduling/utils');
+    const getSchedulerIntegration = require('./server/adapters/scheduling/post-scheduling/scheduler-integration');
     const urlUtils = require('./shared/url-utils');
 
-    // NOTE: Members service depends on these
-    //       so they are initialized before it.
-    await stripe.init();
-
-    // NOTE: newsletter service and email service depend on email address service
-    await emailAddressService.init(),
+    // Initialize things that other services depend on first.
+    const schedulerAdapter = createSchedulerAdapter();
+    const [schedulerIntegration] = await Promise.all([
+        getSchedulerIntegration(),
+        stripe.init(),
+        emailAddressService.init()
+    ]);
 
     await Promise.all([
         identityTokens.init(),
@@ -367,7 +370,9 @@ async function initServices() {
         emailAnalytics.init(),
         webhooks.listen(),
         postScheduling.init({
-            apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true)
+            apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true),
+            adapter: schedulerAdapter,
+            integration: schedulerIntegration
         }),
         comments.init(),
         linkTracking.init(),
