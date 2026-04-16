@@ -176,7 +176,7 @@ describe('Members Signin', function () {
         });
     });
 
-    it('redeems a gift during magic link exchange and redirects to Portal account when no paid welcome page is configured', async function () {
+    it('redeems a gift during magic link confirmation if a valid gift token is provided', async function () {
         mockManager.mockLabsEnabled('giftSubscriptions');
 
         const email = 'gift-redemption-member@test.com';

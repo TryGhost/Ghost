@@ -337,6 +337,29 @@ class StaffServiceEmails {
         });
     }
 
+    async notifyGiftSubscriptionStarted({memberId, memberName, memberEmail, tierName, buyerEmail}, options = {}) {
+        const users = await this.models.User.getEmailAlertUsers('paid-started', options);
+        const memberData = this.getMemberData({
+            id: memberId,
+            name: memberName ?? null,
+            email: memberEmail
+        });
+        const subject = `🎁 New paid subscriber: ${memberData.name}`;
+
+        await this.sendToStaff({
+            users,
+            subject,
+            template: 'new-gift-subscription',
+            memberData,
+            templateData: {
+                tierData: {
+                    name: tierName
+                },
+                giftedByEmail: buyerEmail
+            }
+        });
+    }
+
     // Utils
 
     /** @private */
