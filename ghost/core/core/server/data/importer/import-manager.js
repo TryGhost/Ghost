@@ -139,7 +139,7 @@ class ImportManager {
     /**
      * Convert items into a glob string
      * @param {String[]} items
-     * @returns {String}
+     * @returns {string}
      */
     getGlobPattern(items) {
         return '+(' + _.reduce(items, function (memo, ext) {
@@ -149,8 +149,8 @@ class ImportManager {
 
     /**
      * @param {String[]} extensions
-     * @param {Number} [level]
-     * @returns {String}
+     * @param {number} [level]
+     * @returns {string}
      */
     getExtensionGlob(extensions, level) {
         const prefix = level === ALL_DIRS ? '**/*' :
@@ -162,8 +162,8 @@ class ImportManager {
     /**
      *
      * @param {String[]} directories
-     * @param {Number} [level]
-     * @returns {String}
+     * @param {number} [level]
+     * @returns {string}
      */
     getDirectoryGlob(directories, level) {
         const prefix = level === ALL_DIRS ? '**/' :
@@ -185,7 +185,7 @@ class ImportManager {
      * Importable content includes any files or directories which the handlers can process
      * Importable content must be found either in the root, or inside one base directory
      *
-     * @param {String} directory
+     * @param {string} directory
      * @returns {boolean}
      */
     isValidZip(directory) {
@@ -255,7 +255,7 @@ class ImportManager {
      * Use the handler extensions to get a globbing pattern, then use that to fetch all the files from the zip which
      * are relevant to the given handler, and return them as a name and path combo
      * @param {Object} handler
-     * @param {String} directory
+     * @param {string} directory
      * @returns {File[]} Files
      */
     getFilesFromZip(handler, directory) {
@@ -267,8 +267,8 @@ class ImportManager {
 
     /**
      * Get the name of the single base directory if there is one, else return an empty string
-     * @param {String} directory
-     * @returns {String}
+     * @param {string} directory
+     * @returns {string}
      */
     getBaseDirectory(directory) {
         // Globs match root level only

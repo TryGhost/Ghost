@@ -4,8 +4,8 @@ const Agent = require('@tryghost/express-test');
  * @constructor
  * @param {Object} app  Ghost express app instance
  * @param {Object} options
- * @param {String} options.apiURL
- * @param {String} options.originURL
+ * @param {string} options.apiURL
+ * @param {string} options.originURL
  */
 class TestAgent extends Agent {
     constructor(app, options) {

@@ -101,7 +101,7 @@ class SettingsBREADService {
 
     /**
      *
-     * @param {String} key setting key
+     * @param {string} key setting key
      * @param {Object} [context] API context instance
      * @returns {Object} an object with a filled out key that comes in a parameter
      */

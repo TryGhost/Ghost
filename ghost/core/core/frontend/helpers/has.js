@@ -101,8 +101,8 @@ function evaluateStringMatch(expr, str, ci) {
 
 /**
  *
- * @param {String} type - either some or every - the lodash function to use
- * @param {String} expr - the attribute value passed into {{#has}}
+ * @param {string} type - either some or every - the lodash function to use
+ * @param {string} expr - the attribute value passed into {{#has}}
  * @param {Object} obj - "this" context from the helper
  * @param {Object} data - global params
  */

@@ -129,7 +129,7 @@ class I18n {
     /**
      * Do the lookup within the translation strings
      *
-     * @param {String} msgPath
+     * @param {string} msgPath
      */
     _getCandidateString(msgPath) {
         let fallback = null;
@@ -208,7 +208,7 @@ class I18n {
 
     /**
      * Format the string using the correct locale and applying any bindings
-     * @param {String} string
+     * @param {string} string
      * @param {Object} bindings
      */
     _formatMessage(string, bindings) {
