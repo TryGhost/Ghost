@@ -1,5 +1,5 @@
 import {JSONError} from '@tryghost/admin-x-framework/errors';
-import {useCallback, useRef, useState} from 'react';
+import {useRef, useState} from 'react';
 
 import {type WelcomeEmailDraft, getWelcomeEmailValidationErrors} from './welcome-email-validation';
 
@@ -63,12 +63,12 @@ export const useWelcomeEmailPreview = ({automatedEmailId, previewWelcomeEmail, s
     const [previewState, setPreviewState] = useState<WelcomeEmailPreviewState>({status: 'idle'});
     const previewRequestIdRef = useRef(0);
 
-    const exitPreview = useCallback(() => {
+    const exitPreview = () => {
         previewRequestIdRef.current += 1;
         setPreviewState({status: 'idle'});
-    }, []);
+    };
 
-    const runPreview = useCallback(async (draft: WelcomeEmailDraft) => {
+    const enterPreview = async (draft: WelcomeEmailDraft) => {
         const requestId = previewRequestIdRef.current + 1;
         previewRequestIdRef.current = requestId;
 
@@ -121,11 +121,7 @@ export const useWelcomeEmailPreview = ({automatedEmailId, previewWelcomeEmail, s
                 message: getPreviewErrorMessage(error)
             });
         }
-    }, [automatedEmailId, previewWelcomeEmail, setErrors]);
-
-    const enterPreview = useCallback((draft: WelcomeEmailDraft) => {
-        runPreview(draft);
-    }, [runPreview]);
+    };
 
     return {
         previewFrameState:
