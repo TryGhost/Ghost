@@ -57,6 +57,22 @@ describe('Admin App', function () {
                 sinon.assert.called(next);
                 sinon.assert.notCalled(res.redirect);
             });
+
+            it('should strip a trailing slash before building the hash url', function () {
+                req.originalUrl = '/ghost/members/import/';
+
+                redirectAdminUrls(req, res, next);
+
+                sinon.assert.calledWith(res.redirect, '/ghost/#/members/import');
+            });
+
+            it('should strip a trailing slash before the query string', function () {
+                req.originalUrl = '/ghost/members/import/?source=link';
+
+                redirectAdminUrls(req, res, next);
+
+                sinon.assert.calledWith(res.redirect, '/ghost/#/members/import?source=link');
+            });
         });
     });
 });
