@@ -1,5 +1,5 @@
-const events = require('../../../lib/common/events');
-const PostScheduler = require('./PostScheduler');
+const events = require('../../lib/common/events');
+const PostSchedulerService = require('./post-scheduler-service');
 const {sequence} = require('@tryghost/promise');
 
 /**
@@ -7,7 +7,7 @@ const {sequence} = require('@tryghost/promise');
  * @return {Promise}
  */
 const loadScheduledResources = async function () {
-    const api = require('../../../api').endpoints;
+    const api = require('../../api').endpoints;
     const SCHEDULED_RESOURCES = ['post', 'page'];
 
     // Fetches all scheduled resources(posts/pages) with default API
@@ -37,7 +37,7 @@ const init = async ({adapter, apiUrl, integration}) => {
         scheduledResources = await loadScheduledResources();
     }
 
-    return new PostScheduler({
+    return new PostSchedulerService({
         apiUrl,
         integration,
         adapter,

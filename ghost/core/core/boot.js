@@ -318,7 +318,7 @@ async function initServices() {
     const indexnow = require('./server/services/indexnow');
     const slack = require('./server/services/slack');
     const webhooks = require('./server/services/webhooks');
-    const postScheduling = require('./server/adapters/scheduling/post-scheduling');
+    const postScheduling = require('./server/services/post-scheduling');
     const comments = require('./server/services/comments');
     const staffService = require('./server/services/staff');
     const memberAttribution = require('./server/services/member-attribution');
