@@ -182,6 +182,9 @@ module.exports = function apiRoutes() {
     router.put('/labels/:id', mw.authAdminApi, http(api.labels.edit));
     router.delete('/labels/:id', mw.authAdminApi, http(api.labels.destroy));
 
+    // ## Automations
+    router.put('/automations/poll', mw.authAdminApiWithUrl, http(api.automations.poll));
+
     // ## Automated Emails
     router.get('/automated_emails', mw.authAdminApi, http(api.automatedEmails.browse));
     router.get('/automated_emails/design', mw.authAdminApi, http(api.automatedEmailDesign.read));
