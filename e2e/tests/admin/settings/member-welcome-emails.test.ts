@@ -120,10 +120,13 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
         const customBody = 'This welcome body was edited through the admin UI.';
 
         await welcomeEmailsSection.goto();
+        await welcomeEmailsSection.enableFreeWelcomeEmail();
         await welcomeEmailsSection.openFreeWelcomeEmailModal();
+        await welcomeEmailsSection.replaceWelcomeEmailContent(customBody);
+        await welcomeEmailsSection.modalPreviewTab.click();
+        await expect(welcomeEmailsSection.modalSubjectInput).toBeVisible();
         await welcomeEmailsSection.modalSubjectInput.clear();
         await welcomeEmailsSection.modalSubjectInput.fill(customSubject);
-        await welcomeEmailsSection.replaceWelcomeEmailContent(customBody);
         await welcomeEmailsSection.saveWelcomeEmail();
 
         await withIsolatedPage(browser, {baseURL}, async ({page: signupPage}) => {
@@ -149,9 +152,6 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
 
         await welcomeEmailsSection.goto();
         await welcomeEmailsSection.openFreeWelcomeEmailModal();
-
-        await welcomeEmailsSection.modalSubjectInput.clear();
-        await welcomeEmailsSection.modalSubjectInput.fill(customSubject);
         await welcomeEmailsSection.replaceWelcomeEmailContent(customBody);
 
         const previewResponse = page.waitForResponse(
@@ -163,6 +163,8 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
         await welcomeEmailsSection.modalPreviewTab.click();
         await previewResponse;
 
+        await welcomeEmailsSection.modalSubjectInput.clear();
+        await welcomeEmailsSection.modalSubjectInput.fill(customSubject);
         await expect(welcomeEmailsSection.modalPreviewSubjectInput).toHaveValue(customSubject);
         await expect(welcomeEmailsSection.modalPreviewIframe).toBeVisible();
         await expect(welcomeEmailsSection.modalPreviewFrame.locator('body')).toContainText(customBody);

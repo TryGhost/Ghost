@@ -84,13 +84,13 @@ export class MemberWelcomeEmailsSection extends BasePage {
         // Modal locators
         this.welcomeEmailModal = page.getByTestId('welcome-email-modal');
         this.modalEditor = this.welcomeEmailModal.getByTestId('welcome-email-editor');
-        this.modalSubjectInput = this.welcomeEmailModal.locator('input').first();
-        this.modalSaveButton = this.welcomeEmailModal.getByRole('button', {name: 'Save'});
-        this.modalSavedButton = this.welcomeEmailModal.getByRole('button', {name: 'Saved'});
-        this.modalLexicalEditor = this.modalEditor.getByRole('textbox').first();
         this.modalEditTab = this.welcomeEmailModal.getByTestId('welcome-email-mode-edit');
         this.modalPreviewTab = this.welcomeEmailModal.getByTestId('welcome-email-mode-preview');
         this.modalPreviewSubjectInput = this.welcomeEmailModal.getByTestId('welcome-email-preview-subject');
+        this.modalSubjectInput = this.modalPreviewSubjectInput;
+        this.modalSaveButton = this.welcomeEmailModal.getByRole('button', {name: 'Save'});
+        this.modalSavedButton = this.welcomeEmailModal.getByRole('button', {name: 'Saved'});
+        this.modalLexicalEditor = this.modalEditor.getByRole('textbox').first();
         this.modalPreviewIframe = this.welcomeEmailModal.getByTestId('welcome-email-preview-iframe');
         this.modalPreviewFrame = page.frameLocator('iframe[title="Welcome email preview"]');
     }
