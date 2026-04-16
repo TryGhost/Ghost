@@ -219,7 +219,7 @@ module.exports = class EmailAnalyticsService {
      * @param {Date} options.end - The end date for the scheduled fetch.
      * @throws {errors.ValidationError} Throws an error if a fetch is already in progress.
      */
-    schedule({begin, end}) {
+    async schedule({begin, end}) {
         if (this.#fetchScheduledData && this.#fetchScheduledData.running) {
             throw new errors.ValidationError({
                 message: 'Already fetching scheduled events. Wait for it to finish before scheduling a new one.'
@@ -234,7 +234,7 @@ module.exports = class EmailAnalyticsService {
                 end
             }
         };
-        this.queries.setJobMetadata('email-analytics-scheduled', {
+        await this.queries.setJobMetadata('email-analytics-scheduled', {
             begin: begin.toISOString(),
             end: end.toISOString()
         });

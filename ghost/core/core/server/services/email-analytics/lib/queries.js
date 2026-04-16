@@ -139,7 +139,7 @@ module.exports = {
                 return JSON.parse(row.metadata);
             }
         } catch (err) {
-            debug(`Error reading metadata for job ${jobName}: ${err.message}`);
+            logging.error(`Error reading metadata for job ${jobName}: ${err.message}`);
         }
         return null;
     },
@@ -165,7 +165,7 @@ module.exports = {
                 });
             }
         } catch (err) {
-            debug(`Error setting metadata for job ${jobName}: ${err.message}`);
+            logging.error(`Error setting metadata for job ${jobName}: ${err.message}`);
         }
     },
 
