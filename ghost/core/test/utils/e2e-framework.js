@@ -53,9 +53,9 @@ let totalBoots = 0;
 
 /**
  * @param {Object} [options={}]
- * @param {Boolean} [options.backend] Boot the backend
- * @param {Boolean} [options.frontend] Boot the frontend
- * @param {Boolean} [options.server] Start a server
+ * @param {boolean} [options.backend] Boot the backend
+ * @param {boolean} [options.frontend] Boot the frontend
+ * @param {boolean} [options.server] Start a server
  * @returns {Promise<Express.Application>} ghost
  */
 const startGhost = async (options = {}) => {
@@ -221,7 +221,7 @@ const getContentAPIAgent = async () => {
  * agent.get('/posts/') without having to worry about URL paths
  *
  * @param {Object} [options={}]
- * @param {Boolean} [options.members] Include members in the boot process
+ * @param {boolean} [options.members] Include members in the boot process
  * @returns {Promise<InstanceType<AdminAPITestAgent>>} agent
  */
 const getAdminAPIAgent = async (options = {}) => {

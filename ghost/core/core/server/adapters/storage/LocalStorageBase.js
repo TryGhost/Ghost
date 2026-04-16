@@ -21,13 +21,13 @@ class LocalStorageBase extends StorageBase {
     /**
      *
      * @param {Object} options
-     * @param {String} options.storagePath
-     * @param {String} options.siteUrl
-     * @param {String} [options.staticFileURLPrefix]
+     * @param {string} options.storagePath
+     * @param {string} options.siteUrl
+     * @param {string} [options.staticFileURLPrefix]
      * @param {Object} [options.errorMessages]
-     * @param {String} [options.errorMessages.notFound]
-     * @param {String} [options.errorMessages.notFoundWithRef]
-     * @param {String} [options.errorMessages.cannotRead]
+     * @param {string} [options.errorMessages.notFound]
+     * @param {string} [options.errorMessages.notFoundWithRef]
+     * @param {string} [options.errorMessages.cannotRead]
      */
     constructor({storagePath, staticFileURLPrefix, siteUrl, errorMessages}) {
         super();
@@ -67,9 +67,9 @@ class LocalStorageBase extends StorageBase {
      * Supports relative paths (preferred) and absolute paths (legacy).
      * TODO: remove absolute path support once all callers pass relative paths
      *
-     * @param {String} [targetDir] absolute or relative directory
-     * @param {String} [fileName] file name to normalize and append
-     * @returns {String} resolved absolute path inside storagePath
+     * @param {string} [targetDir] absolute or relative directory
+     * @param {string} [fileName] file name to normalize and append
+     * @returns {string} resolved absolute path inside storagePath
      */
     _resolveAndValidateStoragePath(targetDir, fileName) {
         const resolvedRoot = path.resolve(this.storagePath);
@@ -113,7 +113,7 @@ class LocalStorageBase extends StorageBase {
      * - returns a promise which ultimately returns the full url to the uploaded file
      *
      * @param {StorageBase.Image} file
-     * @param {String} targetDir
+     * @param {string} targetDir
      * @returns {Promise<String>}
      */
     async save(file, targetDir) {
@@ -153,7 +153,7 @@ class LocalStorageBase extends StorageBase {
     /**
      * Saves a buffer in the targetPath
      * @param {Buffer} buffer is an instance of Buffer
-     * @param {String} targetPath relative path NOT including storage path to which the buffer should be written
+     * @param {string} targetPath relative path NOT including storage path to which the buffer should be written
      * @returns {Promise<String>} a URL to retrieve the data
      */
     async saveRaw(buffer, targetPath) {
@@ -174,8 +174,8 @@ class LocalStorageBase extends StorageBase {
     }
 
     /**
-     * @param {String} url full url under which the stored content is served, result of save method
-     * @returns {String} relative path under which the content is stored
+     * @param {string} url full url under which the stored content is served, result of save method
+     * @returns {string} relative path under which the content is stored
      */
     urlToPath(url) {
         let relativePath;
@@ -275,7 +275,7 @@ class LocalStorageBase extends StorageBase {
     }
 
     /**
-     * @param {String} filePath
+     * @param {string} filePath
      * @returns {Promise.<*>}
      */
     async delete(fileName, targetDir) {

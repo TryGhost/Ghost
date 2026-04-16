@@ -17,8 +17,8 @@ const messages = {
 /**
  * Redirect configuration object
  * @typedef {Object} RedirectConfig
- * @property {String} from - Defines the relative incoming URL or pattern (regex)
- * @property {String} to - Defines where the incoming traffic should be redirected to, which can be a static URL, or a dynamic value using regex (example: "to": "/$1/")
+ * @property {string} from - Defines the relative incoming URL or pattern (regex)
+ * @property {string} to - Defines where the incoming traffic should be redirected to, which can be a static URL, or a dynamic value using regex (example: "to": "/$1/")
  * @property {boolean} [permanent] - Can be defined with true for a permanent HTTP 301 redirect, or false for a temporary HTTP 302 redirect
  */
 
@@ -46,8 +46,8 @@ const readRedirectsFile = async (redirectsPath) => {
 
 /**
  *
- * @param {String} content serialized JSON or YAML configuration
- * @param {String} ext one of `.json` or `.yaml` extensions
+ * @param {string} content serialized JSON or YAML configuration
+ * @param {string} ext one of `.json` or `.yaml` extensions
  *
  * @returns {RedirectConfig[]} of parsed redirect config objects
  */

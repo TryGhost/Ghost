@@ -977,9 +977,9 @@ module.exports = class MemberRepository {
     /**
      *
      * @param {Object} data
-     * @param {String} data.id - member ID
+     * @param {string} data.id - member ID
      * @param {Object} data.subscription
-     * @param {String} data.offerId
+     * @param {string} data.offerId
      * @param {import('@tryghost/member-attribution/lib/Attribution').AttributionResource} [data.attribution]
      * @param {*} options
      * @returns
@@ -1888,7 +1888,7 @@ module.exports = class MemberRepository {
     /**
      *
      * @param {Object} data
-     * @param {String} data.id - member ID
+     * @param {string} data.id - member ID
      * @param {Object} options
      * @param {Object} [options.transacting]
      */
@@ -2025,7 +2025,7 @@ module.exports = class MemberRepository {
     /**
      *
      * @param {Object} data
-     * @param {String} data.id - member ID
+     * @param {string} data.id - member ID
      * @param {Object} options
      * @param {Object} [options.transacting]
      */

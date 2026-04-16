@@ -134,7 +134,7 @@ class OEmbedService {
 
     /**
      * Fetches the image buffer from a URL using this.externalRequest
-     * @param {String} imageUrl - URL of the image to fetch
+     * @param {string} imageUrl - URL of the image to fetch
      * @returns {Promise<Buffer>} - Promise resolving to the image buffer
      */
     async fetchImageBuffer(imageUrl) {
@@ -144,8 +144,8 @@ class OEmbedService {
 
     /**
      * Process and store image from a URL
-     * @param {String} imageUrl - URL of the image to process
-     * @param {String} imageType - What is the image used for. Example - icon, thumbnail
+     * @param {string} imageUrl - URL of the image to process
+     * @param {string} imageType - What is the image used for. Example - icon, thumbnail
      * @returns {Promise<String>} - URL where the image is stored
      */
     async processImageFromUrl(imageUrl, imageType) {

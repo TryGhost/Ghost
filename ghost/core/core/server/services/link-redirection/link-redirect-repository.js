@@ -7,7 +7,7 @@ module.exports = class LinkRedirectRepository {
     #LinkRedirect;
     /** @type {Object} */
     #urlUtils;
-    /** @type {Boolean} */
+    /** @type {boolean} */
     #cacheEnabled;
     /** @type {Object} */
     #cache;

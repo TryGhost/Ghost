@@ -14,9 +14,9 @@ class PostSchedulingService {
     /**
      * Publishes scheduled resource (a post or a page at the moment of writing)
      *
-     * @param {String} resourceType one of 'post' or 'page' resources
-     * @param {String} id resource id
-     * @param {Boolean} force force publish flag
+     * @param {string} resourceType one of 'post' or 'page' resources
+     * @param {string} id resource id
+     * @param {boolean} force force publish flag
      * @param {Object} options api query options
      * @returns {Promise<Object, Object>}
      */

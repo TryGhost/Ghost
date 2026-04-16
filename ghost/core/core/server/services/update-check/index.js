@@ -15,9 +15,9 @@ const UpdateCheckService = require('./update-check-service');
 /**
  * Initializes and triggers update check
  * @param {Object} [options]
- * @param {Boolean} [options.rethrowErrors] - if true, errors will be thrown instead of logged
- * @param {Boolean} [options.forceUpdate] - if true, the update check will be triggered regardless of the environment or scheudle, defaults to config if no value provided
- * @param {String} [options.updateCheckUrl] - the url to check for updates against, defaults to config if no value provided
+ * @param {boolean} [options.rethrowErrors] - if true, errors will be thrown instead of logged
+ * @param {boolean} [options.forceUpdate] - if true, the update check will be triggered regardless of the environment or scheudle, defaults to config if no value provided
+ * @param {string} [options.updateCheckUrl] - the url to check for updates against, defaults to config if no value provided
  * @returns {Promise<any>}
  */
 module.exports = async ({
