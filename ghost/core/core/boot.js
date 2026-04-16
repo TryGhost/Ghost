@@ -340,8 +340,10 @@ async function initServices() {
     const statsService = require('./server/services/stats');
     const explorePingService = require('./server/services/explore-ping');
 
-    const {createAdapter: createSchedulerAdapter} = require('./server/adapters/scheduling/utils');
-    const getSchedulerIntegration = require('./server/adapters/scheduling/post-scheduling/scheduler-integration');
+    const {
+        createAdapter: createSchedulerAdapter,
+        getSchedulerIntegration
+    } = require('./server/adapters/scheduling/utils');
     const urlUtils = require('./shared/url-utils');
 
     // Initialize things that other services depend on first.
