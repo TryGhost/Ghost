@@ -3,9 +3,7 @@ const logging = require('@tryghost/logging');
 const {generateGiftPreviewImage} = require('./image');
 
 function getCadenceLabel(cadence, duration) {
-    const unit = cadence === 'month' ? 'month' : 'year';
-
-    return duration === 1 ? `1 ${unit}` : `${duration} ${unit}s`;
+    return duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
 }
 
 function escapeHtml(str) {
