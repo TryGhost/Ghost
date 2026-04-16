@@ -131,23 +131,6 @@ const pasteText = async (page: Page, content: string) => {
     }, content);
 };
 
-const getWelcomeEmailModalLayoutMetrics = async (page: Page, mode: 'edit' | 'preview') => {
-    return await page.getByTestId('welcome-email-modal').evaluate((node, currentMode) => {
-        const subject = currentMode === 'preview'
-            ? node.querySelector('[data-testid="welcome-email-preview-subject"]')
-            : node.querySelector('input');
-        const content = currentMode === 'preview'
-            ? node.querySelector('[data-testid="welcome-email-preview"]')
-            : node.querySelector('[data-testid="welcome-email-editor"]');
-        const body = content?.parentElement;
-
-        return {
-            bodyTop: body?.getBoundingClientRect().top ?? 0,
-            subjectHeight: subject?.getBoundingClientRect().height ?? 0
-        };
-    }, mode);
-};
-
 test.describe('Member emails settings', async () => {
     test.describe('Welcome email modal', async () => {
         test('Edit and Preview controls render; preview request only happens on Preview switch', async ({page}) => {
@@ -175,18 +158,21 @@ test.describe('Member emails settings', async () => {
 
             await expect(modal.getByTestId('welcome-email-mode-edit')).toBeVisible();
             await expect(modal.getByTestId('welcome-email-mode-preview')).toBeVisible();
+            await expect(modal.getByTestId('welcome-email-preview-subject')).not.toBeVisible();
 
-            const subjectInput = modal.locator('input').first();
-            await subjectInput.fill('Unsaved subject for preview');
+            const editor = modal.locator('[data-kg="editor"] div[contenteditable="true"]').first();
+            await editor.click({timeout: 5000});
+            await page.keyboard.type(' Draft note');
 
             expect(lastApiRequests.previewWelcomeEmail).toBeUndefined();
 
             await modal.getByTestId('welcome-email-mode-preview').click();
 
-            await expect.poll(() => (lastApiRequests.previewWelcomeEmail?.body as {subject?: string} | undefined)?.subject).toBe('Unsaved subject for preview');
-            await expect.poll(() => (lastApiRequests.previewWelcomeEmail?.body as {lexical?: string} | undefined)?.lexical || '').toContain('Welcome');
+            await expect.poll(() => (lastApiRequests.previewWelcomeEmail?.body as {subject?: string} | undefined)?.subject).toBeTruthy();
+            await expect.poll(() => (lastApiRequests.previewWelcomeEmail?.body as {lexical?: string} | undefined)?.lexical || '').toContain('Draft note');
             const previewIframe = modal.getByTestId('welcome-email-preview-iframe');
             await expect(previewIframe).toBeVisible();
+            await expect(modal.getByTestId('welcome-email-preview-subject')).toBeVisible();
             await expect(previewIframe).toHaveAttribute('sandbox', 'allow-same-origin allow-popups allow-popups-to-escape-sandbox');
 
             await expect.poll(async () => {
@@ -205,17 +191,30 @@ test.describe('Member emails settings', async () => {
         });
 
         test('Preview/Edit toggle preserves unsaved draft subject and lexical', async ({page}) => {
-            const {lastApiRequests} = await mockApi({page, requests: {
+            await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
                 browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
-                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
-                previewWelcomeEmail: {
-                    method: 'POST',
-                    path: '/automated_emails/free-welcome-email-id/preview/',
-                    response: automatedEmailPreviewFixture
-                }
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
             }});
+
+            const previewRequests: Array<{subject?: string; lexical?: string}> = [];
+
+            await page.route(/\/ghost\/api\/admin\/automated_emails\/free-welcome-email-id\/preview\/$/, async (route) => {
+                const body = JSON.parse(route.request().postData() || '{}') as {subject?: string; lexical?: string};
+                previewRequests.push(body);
+
+                await route.fulfill({
+                    status: 200,
+                    body: JSON.stringify({
+                        automated_emails: [{
+                            html: '<!doctype html><html><body><p>Preview</p></body></html>',
+                            plaintext: 'Preview',
+                            subject: body.subject || 'Preview Subject'
+                        }]
+                    })
+                });
+            });
 
             await page.goto('/#/memberemails');
             await page.waitForLoadState('networkidle');
@@ -227,28 +226,22 @@ test.describe('Member emails settings', async () => {
             const modal = page.getByTestId('welcome-email-modal');
             await expect(modal).toBeVisible();
 
-            const subjectInput = modal.locator('input').first();
-            await subjectInput.fill('Unsaved welcome email subject');
-
             const editor = modal.locator('[data-kg="editor"] div[contenteditable="true"]').first();
             await editor.click({timeout: 5000});
             await page.keyboard.type(' Draft note');
 
-            const editLayout = await getWelcomeEmailModalLayoutMetrics(page, 'edit');
-
             await modal.getByTestId('welcome-email-mode-preview').click();
-            await expect.poll(() => (lastApiRequests.previewWelcomeEmail?.body as {lexical?: string} | undefined)?.lexical || '').toContain('Draft note');
             await expect(modal.getByTestId('welcome-email-preview-iframe')).toBeVisible();
             await expect(modal.getByTestId('welcome-email-preview-loading')).not.toBeVisible();
-
-            const previewLayout = await getWelcomeEmailModalLayoutMetrics(page, 'preview');
-            expect(Math.abs(previewLayout.bodyTop - editLayout.bodyTop)).toBeLessThan(1);
-            expect(previewLayout.subjectHeight).toBe(editLayout.subjectHeight);
+            const previewSubject = modal.getByTestId('welcome-email-preview-subject');
+            await previewSubject.fill('Unsaved welcome email subject');
 
             await modal.getByTestId('welcome-email-mode-edit').click();
-
-            await expect(subjectInput).toHaveValue('Unsaved welcome email subject');
             await expect(editor).toContainText('Draft note');
+
+            await modal.getByTestId('welcome-email-mode-preview').click();
+            await expect.poll(() => previewRequests.at(-1)?.subject).toBe('Unsaved welcome email subject');
+            await expect(previewSubject).toBeVisible();
         });
 
         test('Preview refetches when re-entering Preview mode', async ({page}) => {
@@ -370,7 +363,7 @@ test.describe('Member emails settings', async () => {
                     }]
                 };
 
-                if (previewIndex === 1) {
+                if (previewIndex === 2) {
                     await firstPreviewReleased;
                 }
 
@@ -390,25 +383,27 @@ test.describe('Member emails settings', async () => {
             const modal = page.getByTestId('welcome-email-modal');
             await expect(modal).toBeVisible();
 
-            const subjectInput = modal.locator('input').first();
-            await subjectInput.fill('First unsaved subject');
             await modal.getByTestId('welcome-email-mode-preview').click();
-            await expect(modal.getByTestId('welcome-email-preview-loading')).toBeVisible();
+            const previewSubject = modal.getByTestId('welcome-email-preview-subject');
+            await expect(previewSubject).toBeVisible();
+            await previewSubject.fill('First unsaved subject');
 
             await modal.getByTestId('welcome-email-mode-edit').click();
-            await subjectInput.fill('Second unsaved subject');
+            await modal.getByTestId('welcome-email-mode-preview').click();
+            await previewSubject.fill('Second unsaved subject');
+            await modal.getByTestId('welcome-email-mode-edit').click();
             await modal.getByTestId('welcome-email-mode-preview').click();
 
-            const previewSubject = modal.getByTestId('welcome-email-preview-subject');
-            await expect(previewSubject).toHaveValue('Preview Subject 2');
+            await expect(previewSubject).toHaveValue('Preview Subject 3');
 
             releaseFirstPreview();
 
             await expect.poll(() => previewRequests.map(request => request.subject)).toEqual([
+                automatedEmailsFixture.automated_emails[0].subject,
                 'First unsaved subject',
                 'Second unsaved subject'
             ]);
-            await expect(previewSubject).toHaveValue('Preview Subject 2');
+            await expect(previewSubject).toHaveValue('Preview Subject 3');
         });
 
         test('Invalid draft shows preview inline error state', async ({page}) => {
@@ -434,14 +429,17 @@ test.describe('Member emails settings', async () => {
             const modal = page.getByTestId('welcome-email-modal');
             await expect(modal).toBeVisible();
 
-            const subjectInput = modal.locator('input').first();
-            await subjectInput.fill('   ');
-
+            await modal.getByTestId('welcome-email-mode-preview').click();
+            const previewSubject = modal.getByTestId('welcome-email-preview-subject');
+            await expect(previewSubject).toBeVisible();
+            const initialPreviewRequest = lastApiRequests.previewWelcomeEmail?.body;
+            await previewSubject.fill('   ');
+            await modal.getByTestId('welcome-email-mode-edit').click();
             await modal.getByTestId('welcome-email-mode-preview').click();
 
             await expect(modal.getByTestId('welcome-email-preview-error')).toBeVisible();
             await expect(modal.getByTestId('welcome-email-preview-error')).toContainText('A subject is required');
-            expect(lastApiRequests.previewWelcomeEmail).toBeUndefined();
+            expect(lastApiRequests.previewWelcomeEmail?.body).toEqual(initialPreviewRequest);
         });
 
         test('Escape key closes test email dropdown without closing modal', async ({page}) => {
@@ -466,6 +464,8 @@ test.describe('Member emails settings', async () => {
 
             const modal = page.getByTestId('welcome-email-modal');
             await expect(modal).toBeVisible();
+
+            await modal.getByTestId('welcome-email-mode-preview').click();
 
             // Click the Test button to open the dropdown
             await modal.getByRole('button', {name: 'Test'}).click();
@@ -545,16 +545,14 @@ test.describe('Member emails settings', async () => {
             await section.getByTestId('free-welcome-email-preview').click();
             await expect(modal).toBeVisible();
 
-            // Edit subject to mark dirty
-            const subjectInput = modal.locator('input').first();
-            await expect(subjectInput).toHaveValue('Welcome to Test Site');
-            await subjectInput.fill('Updated subject');
-            await expect(subjectInput).toHaveValue('Updated subject');
+            // Edit lexical content to mark dirty
+            const editor = modal.locator('[data-kg="editor"] div[contenteditable="true"]').first();
+            await editor.click({timeout: 5000});
+            await page.keyboard.type(' Updated');
+            await expect(editor).toContainText('Updated');
 
             // Close with unsaved changes - should show confirmation modal
-            // First Escape blurs the input, second triggers modal close
-            await page.keyboard.press('Escape');
-            await page.keyboard.press('Escape');
+            await modal.getByRole('button', {name: 'Close'}).click();
             const confirmationModal = page.getByTestId('confirmation-modal');
             await expect(confirmationModal).toBeVisible();
             await confirmationModal.getByRole('button', {name: 'Stay'}).click();
@@ -879,6 +877,7 @@ test.describe('Member emails settings', async () => {
 
             const modal = page.getByTestId('welcome-email-modal');
             await expect(modal).toBeVisible();
+            await modal.getByTestId('welcome-email-mode-preview').click();
             await expect(modal).toContainText('Automated Sender');
             await expect(modal).toContainText('automated@example.com');
             await expect(modal).toContainText('reply-automated@example.com');
@@ -921,6 +920,7 @@ test.describe('Member emails settings', async () => {
 
             const modal = page.getByTestId('welcome-email-modal');
             await expect(modal).toBeVisible();
+            await modal.getByTestId('welcome-email-mode-preview').click();
             await expect(modal).toContainText('Newsletter Sender');
             await expect(modal).toContainText('newsletter@example.com');
             await expect(modal).toContainText('support@example.com');
