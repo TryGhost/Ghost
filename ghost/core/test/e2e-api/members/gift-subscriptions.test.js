@@ -39,12 +39,18 @@ function toWebhookMetadata(metadata) {
     return result;
 }
 
+function addYears(date, years) {
+    const nextDate = new Date(date);
+    nextDate.setFullYear(nextDate.getFullYear() + years);
+    return nextDate;
+}
+
 async function createGift(overrides = {}) {
     giftSequence += 1;
 
     const sequence = giftSequence;
     const now = new Date('2026-04-07T10:00:00.000Z');
-    const expiresAt = new Date('2030-01-01T00:00:00.000Z');
+    const expiresAt = addYears(now, 10);
 
     return await models.Gift.add({
         token: `gift-token-${sequence}`,
@@ -421,7 +427,7 @@ describe('Gift Subscriptions', function () {
                 amount: 500,
                 stripe_checkout_session_id: 'cs_ignore_non_gift',
                 stripe_payment_intent_id: 'pi_ignore_non_gift',
-                expires_at: new Date('2030-01-01T00:00:00.000Z'),
+                expires_at: addYears(new Date(), 10),
                 status: 'purchased',
                 purchased_at: new Date()
             });
@@ -459,7 +465,7 @@ describe('Gift Subscriptions', function () {
                 amount: 500,
                 stripe_checkout_session_id: 'cs_ignore_sub',
                 stripe_payment_intent_id: 'pi_ignore_sub',
-                expires_at: new Date('2030-01-01T00:00:00.000Z'),
+                expires_at: addYears(new Date(), 10),
                 status: 'purchased',
                 purchased_at: new Date()
             });
@@ -498,7 +504,7 @@ describe('Gift Subscriptions', function () {
             assert.equal(body.gifts[0].duration, 1);
             assert.equal(body.gifts[0].currency, 'usd');
             assert.equal(body.gifts[0].amount, 5000);
-            assert.equal(body.gifts[0].expires_at, '2030-01-01T00:00:00.000Z');
+            assert.equal(body.gifts[0].expires_at, new Date(gift.get('expires_at')).toISOString());
             assert.deepEqual(body.gifts[0].tier, {
                 id: paidProduct.id,
                 name: paidProduct.get('name'),
