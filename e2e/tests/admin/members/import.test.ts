@@ -51,4 +51,14 @@ test.describe('Ghost Admin - Members Import', () => {
         await expect(membersPage.getMemberByName('Bob Test')).toBeVisible();
         await expect(membersPage.getMemberByName('Carol Test')).toBeVisible();
     });
+
+    test('opens import modal on direct URL navigation without errors', async ({page}) => {
+        await page.goto('/ghost/#/members/import');
+
+        await expect(page.getByRole('dialog', {name: 'Import members'})).toBeVisible();
+
+        // Regression guard: the bug surfaced as an Ember alert like
+        // "Validation (matches) failed for id undefined.id" via #ember-alerts-wormhole
+        await expect(page.getByText(/Validation.*failed for id/i)).toHaveCount(0);
+    });
 });
