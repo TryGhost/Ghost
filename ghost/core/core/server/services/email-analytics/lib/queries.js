@@ -83,7 +83,7 @@ module.exports = {
      * @returns {Promise<Object|null>} The job data, or null if no job data is found.
      */
     async getJobData(jobName) {
-        return await db.knex('jobs').select('finished_at', 'started_at').where('name', jobName).first();
+        return await db.knex('jobs').select('finished_at', 'started_at', 'metadata').where('name', jobName).first();
     },
 
     /**
@@ -124,6 +124,49 @@ module.exports = {
             }
         } catch (err) {
             debug(`Error setting ${field} timestamp for job ${jobName}: ${err.message}`);
+        }
+    },
+
+    /**
+     * Retrieves and parses the metadata JSON for the specified job.
+     * @param {EmailAnalyticsJobName} jobName - The name of the job.
+     * @returns {Promise<Object|null>} The parsed metadata object, or null.
+     */
+    async getJobMetadata(jobName) {
+        try {
+            const row = await db.knex('jobs').select('metadata').where('name', jobName).first();
+            if (row && row.metadata) {
+                return JSON.parse(row.metadata);
+            }
+        } catch (err) {
+            logging.error(`Error reading metadata for job ${jobName}: ${err.message}`);
+        }
+        return null;
+    },
+
+    /**
+     * Writes metadata JSON for the specified job.
+     * @param {EmailAnalyticsJobName} jobName - The name of the job.
+     * @param {Object|null} metadata - The metadata to store, or null to clear.
+     * @returns {Promise<void>}
+     */
+    async setJobMetadata(jobName, metadata) {
+        try {
+            const value = metadata ? JSON.stringify(metadata) : null;
+            await db.knex.transaction(async (trx) => {
+                const result = await trx('jobs').update({metadata: value, updated_at: new Date()}).where('name', jobName);
+                if (result === 0 && metadata) {
+                    await trx('jobs').insert({
+                        id: new ObjectID().toHexString(),
+                        name: jobName,
+                        metadata: value,
+                        created_at: new Date(),
+                        status: 'queued'
+                    });
+                }
+            });
+        } catch (err) {
+            logging.error(`Error setting metadata for job ${jobName}: ${err.message}`);
         }
     },
 
