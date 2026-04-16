@@ -32,6 +32,7 @@ describe('GiftService', function () {
         existsByCheckoutSessionId: sinon.SinonStub<[string], Promise<boolean>>;
         getByToken: sinon.SinonStub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>;
         getByPaymentIntentId: sinon.SinonStub<[string], Promise<Gift | null>>;
+        getRedeemedByMember: sinon.SinonStub<[string], Promise<Gift | null>>;
         findPendingConsumption: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingExpiration: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingReminder: sinon.SinonStub<[FindPendingReminderOptions], Promise<Gift[]>>;
@@ -76,6 +77,7 @@ describe('GiftService', function () {
             existsByCheckoutSessionId: sinon.stub<[string], Promise<boolean>>().resolves(false),
             getByToken: sinon.stub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>().resolves(null),
             getByPaymentIntentId: sinon.stub<[string], Promise<Gift | null>>().resolves(null),
+            getRedeemedByMember: sinon.stub<[string], Promise<Gift | null>>().resolves(null),
             findPendingConsumption: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingExpiration: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingReminder: sinon.stub<[FindPendingReminderOptions], Promise<Gift[]>>().resolves([]),
@@ -1311,6 +1313,34 @@ describe('GiftService', function () {
 
             assert.equal(result, true);
             sinon.assert.notCalled(giftRepository.update);
+        });
+    });
+
+    describe('getRedeemedByMember', function () {
+        it('returns the redeemed gift from the repository', async function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemerMemberId: 'member_1',
+                redeemedAt: new Date('2026-06-01T00:00:00.000Z'),
+                consumesAt: new Date('2027-06-01T00:00:00.000Z')
+            });
+
+            giftRepository.getRedeemedByMember.resolves(gift);
+
+            const service = createService();
+            const result = await service.getRedeemedByMember('member_1');
+
+            assert.equal(result, gift);
+            sinon.assert.calledOnceWithExactly(giftRepository.getRedeemedByMember, 'member_1');
+        });
+
+        it('returns null when the repository has no redeemed gift for the member', async function () {
+            giftRepository.getRedeemedByMember.resolves(null);
+
+            const service = createService();
+            const result = await service.getRedeemedByMember('member_without_gift');
+
+            assert.equal(result, null);
         });
     });
 });

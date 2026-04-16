@@ -5,7 +5,7 @@ import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
 import {MultipleProductsPlansSection} from '../common/plans-section';
 import {getDateString} from '../../utils/date-time';
-import {addMonths, formatNumber, formatPrice, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
+import {addMonths, formatNumber, formatPrice, getAvailablePrices, getCurrencySymbol, getFilteredPrices, getSubscriptionExpiry, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import {t} from '../../utils/i18n';
 import {translateCadence} from '../../utils/helpers';
@@ -91,6 +91,41 @@ const Header = ({showConfirmation, confirmationType, pendingOffer}) => {
         <header className='gh-portal-detail-header'>
             <h3 className='gh-portal-main-title'>{title}</h3>
         </header>
+    );
+};
+
+const GiftTrialBanner = () => {
+    const {member} = useContext(AppContext);
+    const isGift = member?.status === 'gift';
+    const subscriptionExpiry = getSubscriptionExpiry({member});
+
+    if (!isGift || !subscriptionExpiry) {
+        return null;
+    }
+
+    return (
+        <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            margin: '8px 0 32px'
+        }}>
+            <div style={{
+                background: '#FEF3C7',
+                borderRadius: '5px',
+                padding: '16px 24px',
+                maxWidth: '420px',
+                fontSize: '1.35rem',
+                lineHeight: '1.5em',
+                color: '#1d1d1d',
+                textAlign: 'center'
+            }}>
+                {/* TODO: Add translation strings once copy has been finalised */}
+                {/* eslint-disable i18next/no-literal-string */}
+                <p>
+                    Your gift subscription is valid until <strong>{subscriptionExpiry}</strong>. If you continue with a paid subscription, the remaining days will be added as a free trial.
+                </p>
+            </div>
+        </div>
     );
 };
 
@@ -750,6 +785,7 @@ export default class AccountPlanPage extends React.Component {
                         pendingOffer={pendingOffer}
                         showConfirmation={showConfirmation}
                     />
+                    {!showConfirmation && <GiftTrialBanner />}
                     <PlansContainer
                         {...{plans, selectedPlan, showConfirmation, confirmationPlan, confirmationType, pendingOffer}}
                         onConfirm={(...args) => this.onConfirm(...args)}

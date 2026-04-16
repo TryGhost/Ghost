@@ -92,6 +92,20 @@ class PaymentsService {
             }
         }
 
+        // If active gift subscription, add remaining days as trial
+        if (trialDays === null && member) {
+            const gift = await this.giftService.service.getRedeemedByMember(member.id);
+
+            if (gift && gift.consumesAt) {
+                const now = new Date();
+                const diffMs = gift.consumesAt.getTime() - now.getTime();
+                const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                if (diffDays > 0) {
+                    trialDays = Math.min(diffDays, 730); // Stripe max trial period
+                }
+            }
+        }
+
         let customer = null;
         if (member) {
             customer = await this.getCustomerForMember(member);

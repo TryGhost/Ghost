@@ -991,4 +991,75 @@ describe('Gift Subscriptions', function () {
             });
         });
     });
+
+    describe('Continue a gift subscription as paid subscription', function () {
+        it('Passes remaining gift days as trial_period_days when gift member upgrades', async function () {
+            const paidTier = await getPaidTier();
+            const email = 'gift-upgrade-trial@example.com';
+
+            // Create a member and redeem a gift for them
+            const member = await membersService.api.members.create({email, name: 'Gift Upgrader'});
+            const identityToken = await membersService.api.getMemberIdentityToken(member.get('transient_id'));
+
+            // Create a redeemed gift that expires 30 days from now
+            const now = new Date();
+            const consumesAt = new Date(now);
+            consumesAt.setDate(consumesAt.getDate() + 30);
+
+            const gift = await models.Gift.add({
+                token: 'gift-upgrade-trial-token',
+                buyer_email: 'gift-buyer-upgrade@example.com',
+                redeemer_member_id: member.id,
+                tier_id: paidTier.id,
+                cadence: 'year',
+                duration: 1,
+                currency: 'usd',
+                amount: 5000,
+                stripe_checkout_session_id: 'cs_gift_upgrade_trial',
+                stripe_payment_intent_id: 'pi_gift_upgrade_trial',
+                consumes_at: consumesAt,
+                expires_at: new Date('2030-01-01T00:00:00.000Z'),
+                status: 'redeemed',
+                purchased_at: now,
+                redeemed_at: now
+            });
+
+            // Set the member as a gift member with the product
+            await models.Member.edit({
+                status: 'gift',
+                products: [{
+                    id: paidTier.id,
+                    expiry_at: consumesAt
+                }]
+            }, {id: member.id});
+
+            await DomainEvents.allSettled();
+
+            // Create a subscription checkout session as the gift member
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({
+                    type: 'subscription',
+                    tierId: paidTier.id,
+                    cadence: 'year',
+                    identity: identityToken,
+                    metadata: {
+                        checkoutType: 'upgrade'
+                    }
+                })
+                .expectStatus(200);
+
+            const checkoutSession = getLatestCheckoutSession();
+
+            assert.ok(checkoutSession, 'Checkout session should be created');
+
+            // Verify that trial_period_days is set to approximately 30 days
+            const trialDays = checkoutSession.subscription_data?.trial_period_days;
+            assert.ok(trialDays, 'Should have trial_period_days set');
+            assert.ok(trialDays >= 29 && trialDays <= 31, `Trial days should be approximately 30, got ${trialDays}`);
+
+            // Verify the gift is still in redeemed state (not yet consumed)
+            const giftRecord = await models.Gift.findOne({token: gift.get('token')}, {require: true});
+            assert.equal(giftRecord.get('status'), 'redeemed');
+        });
+    });
 });

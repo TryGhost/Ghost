@@ -19,6 +19,7 @@ export interface GiftRepository {
     findPendingConsumption(): Promise<Gift[]>;
     findPendingExpiration(): Promise<Gift[]>;
     findPendingReminder(options: FindPendingReminderOptions): Promise<Gift[]>;
+    getRedeemedByMember(memberId: string): Promise<Gift | null>;
     create(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
     update(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
     transaction<T>(callback: (transacting: unknown) => Promise<T>): Promise<T>;

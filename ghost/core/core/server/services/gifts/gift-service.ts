@@ -335,6 +335,16 @@ export class GiftService {
         return redeemed;
     }
 
+    async getRedeemedByMember(memberId: string): Promise<Gift | null> {
+        const gift = await this.deps.giftRepository.getRedeemedByMember(memberId);
+
+        if (!gift) {
+            return null;
+        }
+
+        return gift;
+    }
+
     async refund(paymentIntentId: string): Promise<boolean> {
         const gift = await this.deps.giftRepository.getByPaymentIntentId(paymentIntentId);
 

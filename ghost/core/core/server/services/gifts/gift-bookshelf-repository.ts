@@ -76,6 +76,18 @@ export class GiftBookshelfRepository implements GiftRepository {
         return model ? this.toGift(model) : null;
     }
 
+    async getRedeemedByMember(memberId: string): Promise<Gift | null> {
+        const collection = await this.model.findAll({
+            filter: `redeemer_member_id:'${memberId}'+status:redeemed`,
+            order: 'redeemed_at DESC',
+            limit: 1
+        });
+
+        const model = collection.models[0];
+
+        return model ? this.toGift(model) : null;
+    }
+
     async findPendingConsumption(): Promise<Gift[]> {
         const now = new Date();
 

@@ -450,6 +450,70 @@ describe('GiftBookshelfRepository', function () {
         assert.equal(savedRow.consumes_soon_reminder_sent_at, reminderSentAt);
     });
 
+    describe('getRedeemedByMember', function () {
+        function stubGiftModel({models}: {models: unknown[]}) {
+            return {
+                add: sinon.stub(),
+                transaction: sinon.stub(),
+                findOne: sinon.stub(),
+                findAll: sinon.stub().resolves({models})
+            };
+        }
+
+        it('returns the most recently redeemed gift for a member', async function () {
+            const GiftModel = stubGiftModel({
+                models: [{
+                    toJSON() {
+                        return {
+                            token: 'gift-token',
+                            buyer_email: 'buyer@example.com',
+                            buyer_member_id: 'buyer_member_1',
+                            redeemer_member_id: 'member_2',
+                            tier_id: 'tier_1',
+                            cadence: 'year',
+                            duration: 1,
+                            currency: 'usd',
+                            amount: 5000,
+                            stripe_checkout_session_id: 'cs_123',
+                            stripe_payment_intent_id: 'pi_456',
+                            consumes_at: new Date('2027-01-01T00:00:00.000Z'),
+                            expires_at: new Date('2030-01-01T00:00:00.000Z'),
+                            status: 'redeemed',
+                            purchased_at: new Date('2026-01-01T00:00:00.000Z'),
+                            redeemed_at: new Date('2026-06-01T00:00:00.000Z'),
+                            consumed_at: null,
+                            expired_at: null,
+                            refunded_at: null
+                        };
+                    }
+                }]
+            });
+            const repository = new GiftBookshelfRepository({GiftModel});
+
+            const gift = await repository.getRedeemedByMember('member_2');
+
+            assert.ok(gift instanceof Gift);
+            assert.equal(gift?.token, 'gift-token');
+            assert.equal(gift?.status, 'redeemed');
+
+            sinon.assert.calledOnce(GiftModel.findAll);
+
+            const callArgs = GiftModel.findAll.getCall(0).args[0];
+            assert.equal(callArgs.filter, 'redeemer_member_id:\'member_2\'+status:redeemed');
+            assert.equal(callArgs.order, 'redeemed_at DESC');
+            assert.equal(callArgs.limit, 1);
+        });
+
+        it('returns null when no redeemed gift exists for the member', async function () {
+            const GiftModel = stubGiftModel({models: []});
+            const repository = new GiftBookshelfRepository({GiftModel});
+
+            const gift = await repository.getRedeemedByMember('member_without_gift');
+
+            assert.equal(gift, null);
+        });
+    });
+
     it('finds gifts pending expiration using current time', async function () {
         const before = new Date();
 
