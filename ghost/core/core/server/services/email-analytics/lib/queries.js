@@ -153,17 +153,18 @@ module.exports = {
     async setJobMetadata(jobName, metadata) {
         try {
             const value = metadata ? JSON.stringify(metadata) : null;
-            const result = await db.knex('jobs').update({metadata: value, updated_at: new Date()}).where('name', jobName);
-            if (result === 0 && metadata) {
-                await db.knex('jobs').insert({
-                    id: new ObjectID().toHexString(),
-                    name: jobName,
-                    metadata: value,
-                    updated_at: new Date(),
-                    created_at: new Date(),
-                    status: 'queued'
-                });
-            }
+            await db.knex.transaction(async (trx) => {
+                const result = await trx('jobs').update({metadata: value, updated_at: new Date()}).where('name', jobName);
+                if (result === 0 && metadata) {
+                    await trx('jobs').insert({
+                        id: new ObjectID().toHexString(),
+                        name: jobName,
+                        metadata: value,
+                        created_at: new Date(),
+                        status: 'queued'
+                    });
+                }
+            });
         } catch (err) {
             logging.error(`Error setting metadata for job ${jobName}: ${err.message}`);
         }

@@ -334,18 +334,14 @@ export default class Debug extends Component {
 
     @task
     *_scheduleAnalytics() {
-        let statsUrl = this.ghostPaths.url.api(`/emails/${this.post.email.id}/analytics`);
-        if (this.customBeginDate || this.customEndDate) {
-            const params = new URLSearchParams();
-            if (this.customBeginDate) {
-                params.set('begin', new Date(this.customBeginDate).toISOString());
-            }
-            if (this.customEndDate) {
-                params.set('end', new Date(this.customEndDate).toISOString());
-            }
-            statsUrl = `${statsUrl}?${params.toString()}`;
+        const url = new URL(this.ghostPaths.url.api(`/emails/${this.post.email.id}/analytics`), window.location.origin);
+        if (this.customBeginDate) {
+            url.searchParams.set('begin', new Date(this.customBeginDate).toISOString());
         }
-        yield this.ajax.put(statsUrl, {});
+        if (this.customEndDate) {
+            url.searchParams.set('end', new Date(this.customEndDate).toISOString());
+        }
+        yield this.ajax.put(url.pathname + url.search, {});
         yield this.fetchAnalyticsStatus();
         this.showCustomSchedule = false;
     }

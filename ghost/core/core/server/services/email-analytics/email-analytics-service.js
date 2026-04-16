@@ -118,6 +118,14 @@ module.exports = class EmailAnalyticsService {
         }
     }
 
+    #clearScheduledData() {
+        this.#fetchScheduledData = {
+            running: false,
+            jobName: 'email-analytics-scheduled'
+        };
+        this.queries.setJobMetadata('email-analytics-scheduled', null);
+    }
+
     getStatus() {
         return {
             latest: this.#fetchLatestNonOpenedData,
@@ -249,28 +257,20 @@ module.exports = class EmailAnalyticsService {
     cancelScheduled() {
         if (this.#fetchScheduledData) {
             if (this.#fetchScheduledData.running) {
-                // Cancel the running fetch
                 this.#fetchScheduledData.canceled = true;
+                // Clear metadata eagerly; fetchScheduled() will clear in-memory state next cycle
+                this.queries.setJobMetadata('email-analytics-scheduled', null);
             } else {
-                this.#fetchScheduledData = {
-                    running: false,
-                    jobName: 'email-analytics-scheduled'
-                };
+                this.#clearScheduledData();
             }
-            this.queries.setJobMetadata('email-analytics-scheduled', null);
         }
     }
 
     /**
      * Restores a previously persisted scheduled fetch from the database.
-     * Called once on startup to resume an in-progress backfill after a restart.
+     * Must only be called once on startup (caller guards against repeated calls).
      */
     async restoreScheduled() {
-        if (this.#fetchScheduledData && this.#fetchScheduledData.schedule) {
-            // Already have an active schedule, don't overwrite
-            return;
-        }
-
         try {
             const jobData = await this.queries.getJobData('email-analytics-scheduled');
             if (!jobData || !jobData.metadata) {
@@ -314,9 +314,7 @@ module.exports = class EmailAnalyticsService {
         }
 
         if (this.#fetchScheduledData.canceled) {
-            // Skip for now
-            this.#fetchScheduledData = null;
-            this.queries.setJobMetadata('email-analytics-scheduled', null);
+            this.#clearScheduledData();
             return createEmptyResult();
         }
 
@@ -329,24 +327,14 @@ module.exports = class EmailAnalyticsService {
         }
 
         if (end <= begin) {
-            // Skip for now
             logging.info('[EmailAnalytics] Ending fetchScheduled because end is before begin');
-            this.#fetchScheduledData = {
-                running: false,
-                jobName: 'email-analytics-scheduled'
-            };
-            this.queries.setJobMetadata('email-analytics-scheduled', null);
+            this.#clearScheduledData();
             return createEmptyResult();
         }
 
         const fetchResult = await this.#fetchEvents(this.#fetchScheduledData, {begin, end, maxEvents});
         if (fetchResult.eventCount === 0 || this.#fetchScheduledData.canceled) {
-            // Reset the scheduled fetch
-            this.#fetchScheduledData = {
-                running: false,
-                jobName: 'email-analytics-scheduled'
-            };
-            this.queries.setJobMetadata('email-analytics-scheduled', null);
+            this.#clearScheduledData();
         }
 
         this.queries.setJobTimestamp(this.#fetchScheduledData.jobName, 'finished', this.#fetchScheduledData.lastEventTimestamp);

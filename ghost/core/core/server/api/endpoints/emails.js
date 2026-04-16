@@ -166,7 +166,6 @@ const controller = {
             const {begin: beginParam, end: endParam, ...findOptions} = frame.options;
             const model = await models.Email.findOne(frame.data, findOptions);
 
-            // Use custom dates if provided, otherwise compute defaults from the email
             const begin = beginParam
                 ? new Date(beginParam)
                 : model.get('created_at');
