@@ -123,13 +123,16 @@ export const useWelcomeEmailPreview = ({automatedEmailId, previewWelcomeEmail, s
         }
     };
 
+    let previewFrameState: WelcomeEmailPreviewFrameState = {status: 'loading'};
+
+    if (previewState.status === 'success') {
+        previewFrameState = {status: 'success', html: previewState.preview.html};
+    } else if (previewState.status === 'error' || previewState.status === 'invalid') {
+        previewFrameState = {status: previewState.status, message: previewState.message};
+    }
+
     return {
-        previewFrameState:
-            previewState.status === 'success'
-                ? {status: 'success' as const, html: previewState.preview.html}
-                : previewState.status === 'error' || previewState.status === 'invalid'
-                    ? {status: previewState.status, message: previewState.message}
-                    : {status: 'loading' as const},
+        previewFrameState,
         previewState,
         enterPreview,
         exitPreview
