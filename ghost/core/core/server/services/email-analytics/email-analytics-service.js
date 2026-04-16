@@ -234,6 +234,10 @@ module.exports = class EmailAnalyticsService {
                 end
             }
         };
+        this.queries.setJobMetadata('email-analytics-scheduled', {
+            begin: begin.toISOString(),
+            end: end.toISOString()
+        });
     }
 
     /**
@@ -253,6 +257,46 @@ module.exports = class EmailAnalyticsService {
                     jobName: 'email-analytics-scheduled'
                 };
             }
+            this.queries.setJobMetadata('email-analytics-scheduled', null);
+        }
+    }
+
+    /**
+     * Restores a previously persisted scheduled fetch from the database.
+     * Called once on startup to resume an in-progress backfill after a restart.
+     */
+    async restoreScheduled() {
+        if (this.#fetchScheduledData && this.#fetchScheduledData.schedule) {
+            // Already have an active schedule, don't overwrite
+            return;
+        }
+
+        try {
+            const jobData = await this.queries.getJobData('email-analytics-scheduled');
+            if (!jobData || !jobData.metadata) {
+                return;
+            }
+
+            const metadata = JSON.parse(jobData.metadata);
+            if (metadata.begin && metadata.end) {
+                const begin = new Date(metadata.begin);
+                const end = new Date(metadata.end);
+
+                this.#fetchScheduledData = {
+                    running: false,
+                    jobName: 'email-analytics-scheduled',
+                    schedule: {begin, end}
+                };
+
+                // Use finished_at as the resume cursor if available
+                if (jobData.finished_at) {
+                    this.#fetchScheduledData.lastEventTimestamp = new Date(jobData.finished_at);
+                }
+
+                logging.info('[EmailAnalytics] Restored scheduled fetch: ' + begin.toISOString() + ' to ' + end.toISOString());
+            }
+        } catch (e) {
+            logging.error('[EmailAnalytics] Failed to restore scheduled fetch', e);
         }
     }
 
@@ -272,6 +316,7 @@ module.exports = class EmailAnalyticsService {
         if (this.#fetchScheduledData.canceled) {
             // Skip for now
             this.#fetchScheduledData = null;
+            this.queries.setJobMetadata('email-analytics-scheduled', null);
             return createEmptyResult();
         }
 
@@ -290,6 +335,7 @@ module.exports = class EmailAnalyticsService {
                 running: false,
                 jobName: 'email-analytics-scheduled'
             };
+            this.queries.setJobMetadata('email-analytics-scheduled', null);
             return createEmptyResult();
         }
 
@@ -300,6 +346,7 @@ module.exports = class EmailAnalyticsService {
                 running: false,
                 jobName: 'email-analytics-scheduled'
             };
+            this.queries.setJobMetadata('email-analytics-scheduled', null);
         }
 
         this.queries.setJobTimestamp(this.#fetchScheduledData.jobName, 'finished', this.#fetchScheduledData.lastEventTimestamp);

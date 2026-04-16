@@ -156,14 +156,22 @@ const controller = {
             method: 'browse'
         },
         data: [
-            'id'
+            'id',
+            'begin',
+            'end'
         ],
         async query(frame) {
-            const model = await models.Email.findOne(frame.data, frame.options);
-            return emailAnalytics.service.schedule({
-                begin: model.get('created_at'),
-                end: new Date(Math.min(Date.now() - 60 * 60 * 1000, model.get('created_at').getTime() + 24 * 60 * 60 * 1000 * 7))
-            });
+            const model = await models.Email.findOne({id: frame.data.id}, frame.options);
+
+            // Use custom dates if provided, otherwise compute defaults from the email
+            const begin = frame.data.begin
+                ? new Date(frame.data.begin)
+                : model.get('created_at');
+            const end = frame.data.end
+                ? new Date(frame.data.end)
+                : new Date(Math.min(Date.now() - 60 * 60 * 1000, model.get('created_at').getTime() + 24 * 60 * 60 * 1000 * 7));
+
+            return emailAnalytics.service.schedule({begin, end});
         }
     },
 
