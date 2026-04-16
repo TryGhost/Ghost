@@ -6,10 +6,11 @@ import MemberEmailEditor from './member-email-editor';
 import WelcomeEmailPreviewFrame from './welcome-email-preview-frame';
 import {Hint, Button as LegacyButton, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {confirmIfDirty} from '@tryghost/admin-x-design-system';
-import {getWelcomeEmailValidationErrors, useWelcomeEmailPreview} from '../../../../hooks/use-welcome-email-preview';
+import {getWelcomeEmailValidationErrors} from './welcome-email-validation';
 import {useBrowseAutomatedEmails, useEditAutomatedEmail, usePreviewWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useWelcomeEmailPreview} from './use-welcome-email-preview';
 import {useWelcomeEmailSenderDetails} from '../../../../hooks/use-welcome-email-sender-details';
 
 import TestEmailDropdown from './test-email-dropdown';
