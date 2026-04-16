@@ -51,4 +51,4 @@ const init = async (options) => {
     });
 };
 
-module.exports = init;
+exports.init = init;
