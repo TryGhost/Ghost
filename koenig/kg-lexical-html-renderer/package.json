@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@eslint/js": "9.39.4",
-    "@types/jsdom": "21.1.7",
+    "@types/jsdom": "28.0.1",
     "@types/mocha": "10.0.10",
     "@types/should": "13.0.0",
     "@types/sinon": "21.0.1",
