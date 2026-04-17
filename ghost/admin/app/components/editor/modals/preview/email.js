@@ -46,7 +46,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
     @tracked subject = '';
     @tracked previewEmailAddress = this.session.user.email;
     @tracked sendPreviewEmailError = '';
-    @tracked newsletter = this.args.post.newsletter || this.args.newsletter;
+    @tracked newsletter = this.args.initialPreviewNewsletter || this.args.post.newsletter || this.args.newsletter;
     @tracked newslettersList;
 
     segments = SEGMENT_OPTIONS;
@@ -174,11 +174,23 @@ export default class ModalPostPreviewEmailComponent extends Component {
         const newslettersList = yield this.store.query('newsletter', {filter: 'status:active'});
 
         this.newslettersList = newslettersList;
+
+        const selectedNewsletter = this.newsletter && newslettersList.findBy('id', this.newsletter.id);
+        if (selectedNewsletter) {
+            this.newsletter = selectedNewsletter;
+            return;
+        }
+
+        const fallbackNewsletter = newslettersList.findBy('id', this.args.newsletter?.id) || newslettersList[0];
+        if (fallbackNewsletter) {
+            this.setNewsletter(fallbackNewsletter);
+        }
     }
 
     @action
     setNewsletter(newsletter) {
         this.newsletter = newsletter;
+        this.args.changePreviewNewsletter?.(newsletter);
 
         if (this._previewIframe) {
             this.renderEmailPreview(this._previewIframe);

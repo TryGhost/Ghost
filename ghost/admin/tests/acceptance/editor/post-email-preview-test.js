@@ -58,6 +58,13 @@ describe('Acceptance: Post email preview', function () {
         expect(options[1]).to.have.rendered.text('Awesome newsletter <awesome@example.com>');
 
         await selectChoose('[data-test-email-preview-newsletter-select]', 'Awesome newsletter');
+        expect(find('[data-test-email-preview-newsletter-select-section]')).to.contain.rendered.text('Awesome newsletter');
+
+        // selected newsletter should persist when preview modal is closed/reopened
+        await click('[data-test-modal="preview-email"] .gh-editor-preview-trigger');
+        await click('[data-test-button="publish-preview"]');
+        await click('[data-test-button="email-preview"]');
+        expect(find('[data-test-email-preview-newsletter-select-section]')).to.contain.rendered.text('Awesome newsletter');
 
         // send chosen newsletter type on backend
         await click(find('[data-test-button="post-preview-test-email"]'));
