@@ -1,6 +1,6 @@
 export default {
     import: {
-        br: (node) => {
+        br: (node: HTMLElement) => {
             const isGoogleDocs = !!node.closest('[id^="docs-internal-guid-"]');
             const previousNodeName = node.previousElementSibling?.nodeName;
             const nextNodeName = node.nextElementSibling?.nodeName;
@@ -16,8 +16,8 @@ export default {
                 if (
                     (previousNodeName === 'P' && nextNodeName === 'P') ||
                     (previousNodeName === 'BR' || nextNodeName === 'BR') ||
-                    ([...headings, ...lists].includes(previousNodeName) && nextNodeName === 'P') ||
-                    (previousNodeName === 'P' && [...headings, ...lists].includes(nextNodeName))
+                    (previousNodeName && [...headings, ...lists].includes(previousNodeName) && nextNodeName === 'P') ||
+                    (previousNodeName === 'P' && nextNodeName && [...headings, ...lists].includes(nextNodeName))
                 ) {
                     return {
                         conversion: () => null,

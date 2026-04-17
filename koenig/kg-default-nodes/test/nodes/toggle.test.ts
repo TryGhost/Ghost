@@ -1,20 +1,21 @@
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$getRoot} = require('lexical');
-const {createDocument, dom, html} = require('../test-utils');
-const {ToggleNode, $createToggleNode, $isToggleNode} = require('../../');
-const {$generateNodesFromDOM} = require('@lexical/html');
+import {createHeadlessEditor} from '@lexical/headless';
+import {$getRoot} from 'lexical';
+import type {LexicalEditor} from 'lexical';
+import {createDocument, dom, html} from '../test-utils/index.js';
+import {ToggleNode, $createToggleNode, $isToggleNode} from '../../src/index.js';
+import {$generateNodesFromDOM} from '@lexical/html';
 
 const editorNodes = [ToggleNode];
 
 describe('ToggleNode', function () {
-    let editor;
-    let dataset;
-    let exportOptions;
+    let editor: LexicalEditor;
+    let dataset: {heading: string; content: string};
+    let exportOptions: Record<string, unknown>;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -86,7 +87,7 @@ describe('ToggleNode', function () {
         it('returns a copy of the current node', editorTest(function () {
             const toggleNode = $createToggleNode(dataset);
             const toggleNodeDataset = toggleNode.getDataset();
-            const clone = ToggleNode.clone(toggleNode);
+            const clone = ToggleNode.clone(toggleNode) as ToggleNode;
             const cloneDataset = clone.getDataset();
 
             cloneDataset.should.deepEqual({...toggleNodeDataset});
@@ -144,7 +145,7 @@ describe('ToggleNode', function () {
 
             editor.getEditorState().read(() => {
                 try {
-                    const [toggleNode] = $getRoot().getChildren();
+                    const [toggleNode] = $getRoot().getChildren() as ToggleNode[];
 
                     toggleNode.heading.should.equal(dataset.heading);
                     toggleNode.content.should.equal(dataset.content);
@@ -164,7 +165,8 @@ describe('ToggleNode', function () {
                 content: 'Content'
             };
             const toggleNode = $createToggleNode(payload);
-            const {element} = toggleNode.exportDOM(exportOptions);
+            const result = toggleNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(html`
             <div class="kg-card kg-toggle-card" data-kg-toggle-state="close">
@@ -192,7 +194,8 @@ describe('ToggleNode', function () {
                 postUrl: 'https://example.com/my-post'
             };
             const toggleNode = $createToggleNode(payload);
-            const {element} = toggleNode.exportDOM({...exportOptions, ...options});
+            const result = toggleNode.exportDOM({...exportOptions, ...options});
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(html`
                 <div style="background: transparent;
@@ -217,7 +220,8 @@ describe('ToggleNode', function () {
                 }
             };
             const toggleNode = $createToggleNode(payload);
-            const {element} = toggleNode.exportDOM({...exportOptions, ...options});
+            const result = toggleNode.exportDOM({...exportOptions, ...options});
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(html`
                 <table cellspacing="0" cellpadding="0" border="0" width="100%" class="kg-toggle-card">
@@ -244,7 +248,8 @@ describe('ToggleNode', function () {
             };
 
             const toggleNode = $createToggleNode(payload);
-            const {element} = toggleNode.exportDOM(exportOptions);
+            const result = toggleNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             element.outerHTML.should.containEql('<h4 class="kg-toggle-heading-text">Heading</h4>');
         }));
 
@@ -255,7 +260,8 @@ describe('ToggleNode', function () {
             };
 
             const toggleNode = $createToggleNode(payload);
-            const {element} = toggleNode.exportDOM(exportOptions);
+            const result = toggleNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             element.outerHTML.should.containEql('<div class="kg-toggle-content">Content</div>');
         }));
     });
@@ -265,7 +271,7 @@ describe('ToggleNode', function () {
             const document = createDocument(html`
                 <div class="kg-card kg-toggle-card" data-kg-toggle-state="close"><div class="kg-toggle-heading"><h4 class="kg-toggle-heading-text">Heading</h4><button class="kg-toggle-card-icon" aria-label="Expand toggle to read content"><svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path class="cls-1" d="M23.25,7.311,12.53,18.03a.749.749,0,0,1-1.06,0L.75,7.311"></path></svg></button></div><div class="kg-toggle-content">Content</div></div>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as ToggleNode[];
             nodes.length.should.equal(1);
             nodes[0].heading.should.equal('Heading');
             nodes[0].content.should.equal('Content');

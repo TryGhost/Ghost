@@ -1,20 +1,21 @@
-const {createDocument, dom, html} = require('../test-utils');
-const {$getRoot} = require('lexical');
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$generateNodesFromDOM} = require('@lexical/html');
-const {HorizontalRuleNode, $createHorizontalRuleNode, $isHorizontalRuleNode} = require('../../');
+import {createDocument, dom, html} from '../test-utils/index.js';
+import {$getRoot} from 'lexical';
+import {createHeadlessEditor} from '@lexical/headless';
+import {$generateNodesFromDOM} from '@lexical/html';
+import {HorizontalRuleNode, $createHorizontalRuleNode, $isHorizontalRuleNode} from '../../src/index.js';
+import type {LexicalEditor} from 'lexical';
 
 const editorNodes = [HorizontalRuleNode];
 
 describe('HorizontalNode', function () {
-    let editor;
-    let dataset;
-    let exportOptions;
+    let editor: LexicalEditor;
+    let dataset: Record<string, unknown>;
+    let exportOptions: {dom: typeof dom};
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -45,7 +46,7 @@ describe('HorizontalNode', function () {
             const hrNode = $createHorizontalRuleNode();
             const {element} = hrNode.exportDOM(exportOptions);
 
-            element.outerHTML.should.prettifyTo(html`
+            (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <hr />
             `);
         }));
@@ -67,7 +68,7 @@ describe('HorizontalNode', function () {
         it('contains all data', editorTest(function () {
             dataset.cardWidth = 'wide';
 
-            const asideNode = $createHorizontalRuleNode(dataset);
+            const asideNode = $createHorizontalRuleNode();
             const json = asideNode.exportJSON();
 
             json.should.deepEqual({

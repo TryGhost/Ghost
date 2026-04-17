@@ -1,20 +1,9 @@
-const {JSDOM} = require('jsdom');
+import {JSDOM} from 'jsdom';
+import './overrides.js';
+import './assertions.js';
+import Prettier from '@prettier/sync';
 
-/**
- * Test Utilities
- *
- * Shared utils for writing tests
- */
-
-// Require overrides - these add globals for tests
-require('./overrides');
-
-// Require assertions - adds custom should assertions
-require('./assertions');
-
-const Prettier = require('@prettier/sync');
-
-module.exports.html = function html(partials, ...params) {
+export function html(partials: TemplateStringsArray, ...params: unknown[]) {
     let output = '';
     for (let i = 0; i < partials.length; i++) {
         output += partials[i];
@@ -24,12 +13,11 @@ module.exports.html = function html(partials, ...params) {
     }
 
     return Prettier.format(output, {parser: 'html'});
-};
+}
 
-const dom = new JSDOM();
-module.exports.dom = new JSDOM();
+export const dom = new JSDOM();
 
 const parser = new dom.window.DOMParser();
-module.exports.createDocument = function createDocument(html) {
-    return parser.parseFromString(html, 'text/html');
-};
+export function createDocument(htmlString: string) {
+    return parser.parseFromString(htmlString, 'text/html');
+}

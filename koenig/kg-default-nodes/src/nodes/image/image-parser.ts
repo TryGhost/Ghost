@@ -1,12 +1,13 @@
+import type {LexicalNode} from 'lexical';
 import {readCaptionFromElement} from '../../utils/read-caption-from-element.js';
 import {readImageAttributesFromElement} from '../../utils/read-image-attributes-from-element.js';
 
-export function parseImageNode(ImageNode) {
+export function parseImageNode(ImageNode: new (data: Record<string, unknown>) => LexicalNode) {
     return {
         img: () => ({
-            conversion(domNode) {
+            conversion(domNode: HTMLElement) {
                 if (domNode.tagName === 'IMG') {
-                    const {src, width, height, alt, title, href} = readImageAttributesFromElement(domNode);
+                    const {src, width, height, alt, title, href} = readImageAttributesFromElement(domNode as HTMLImageElement);
 
                     const node = new ImageNode({alt, src, title, width, height, href});
                     return {node};
@@ -14,13 +15,13 @@ export function parseImageNode(ImageNode) {
 
                 return null;
             },
-            priority: 1
+            priority: 1 as const
         }),
-        figure: (nodeElem) => {
+        figure: (nodeElem: HTMLElement) => {
             const img = nodeElem.querySelector('img');
             if (img) {
                 return {
-                    conversion(domNode) {
+                    conversion(domNode: HTMLElement) {
                         const kgClass = domNode.className.match(/kg-width-(wide|full)/);
                         const grafClass = domNode.className.match(/graf--layout(FillWidth|OutsetCenter)/);
 
@@ -36,13 +37,13 @@ export function parseImageNode(ImageNode) {
                             payload.cardWidth = grafClass[1] === 'FillWidth' ? 'full' : 'wide';
                         }
 
-                        payload.caption = readCaptionFromElement(domNode);
+                        payload.caption = readCaptionFromElement(domNode) ?? '';
 
                         const {src, width, height, alt, title, caption, cardWidth, href} = payload;
                         const node = new ImageNode({alt, src, title, width, height, caption, cardWidth, href});
                         return {node};
                     },
-                    priority: 0 // since we are generically parsing figure elements, we want this to run after others (like the gallery)
+                    priority: 0 as const // since we are generically parsing figure elements, we want this to run after others (like the gallery)
                 };
             }
             return null;

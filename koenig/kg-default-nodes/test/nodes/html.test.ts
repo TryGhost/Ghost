@@ -1,21 +1,22 @@
-const {createDocument, dom, html} = require('../test-utils');
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$getRoot} = require('lexical');
-const {HtmlNode, $createHtmlNode, $isHtmlNode, utils} = require('../../');
-const {$generateNodesFromDOM} = require('@lexical/html');
+import 'should';
+import {createDocument, dom, html} from '../test-utils/index.js';
+import {createHeadlessEditor} from '@lexical/headless';
+import {$getRoot, type LexicalEditor} from 'lexical';
+import {HtmlNode, $createHtmlNode, $isHtmlNode, type ExportDOMOptions, utils} from '../../src/index.js';
+import {$generateNodesFromDOM} from '@lexical/html';
 
 const editorNodes = [HtmlNode];
 const {ALL_MEMBERS_SEGMENT, NO_MEMBERS_SEGMENT} = utils.visibility;
 
 describe('HtmlNode', function () {
-    let editor;
-    let dataset;
-    let exportOptions;
+    let editor: LexicalEditor;
+    let dataset: Record<string, unknown>;
+    let exportOptions: ExportDOMOptions;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -27,7 +28,7 @@ describe('HtmlNode', function () {
     };
 
     beforeEach(function () {
-        editor = createHeadlessEditor({nodes: editorNodes, onError: (e) => {
+        editor = createHeadlessEditor({nodes: editorNodes, onError: (e: Error) => {
             throw e;
         }});
 
@@ -126,7 +127,7 @@ describe('HtmlNode', function () {
         it('returns a copy of the current node', editorTest(function () {
             const htmlNode = $createHtmlNode(dataset);
             const htmlNodeDataset = htmlNode.getDataset();
-            const clone = HtmlNode.clone(htmlNode);
+            const clone = HtmlNode.clone(htmlNode) as HtmlNode;
             const cloneDataset = clone.getDataset();
 
             cloneDataset.should.deepEqual({...htmlNodeDataset});
@@ -151,8 +152,9 @@ describe('HtmlNode', function () {
     describe('exportDOM', function () {
         it('creates a html card', editorTest(function () {
             const htmlNode = $createHtmlNode(dataset);
-            const {element, type} = htmlNode.exportDOM(exportOptions);
-            type.should.equal('value');
+            const result = htmlNode.exportDOM(exportOptions);
+            result.type.should.equal('value');
+            const element = result.element as HTMLTextAreaElement;
             element.value.should.prettifyTo(html`
                 <!--kg-card-begin: html-->
                 <p>Paragraph with:</p>
@@ -166,16 +168,18 @@ describe('HtmlNode', function () {
 
         it('renders an empty span with missing html', editorTest(function () {
             const htmlNode = $createHtmlNode();
-            const {element, type} = htmlNode.exportDOM(exportOptions);
-            type.should.equal('inner');
+            const result = htmlNode.exportDOM(exportOptions);
+            result.type.should.equal('inner');
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.equal('<span></span>');
         }));
 
         it('renders unclosed tags', editorTest(function () {
             const htmlNode = $createHtmlNode({html: '<div style="color:red">'});
-            const {element, type} = htmlNode.exportDOM(exportOptions);
-            type.should.equal('value');
+            const result = htmlNode.exportDOM(exportOptions);
+            result.type.should.equal('value');
+            const element = result.element as HTMLTextAreaElement;
 
             // do not prettify, it will add a closing tag to the compared string causing a false pass
             element.value.should.equal('\n<!--kg-card-begin: html-->\n<div style="color:red">\n<!--kg-card-end: html-->\n');
@@ -183,47 +187,53 @@ describe('HtmlNode', function () {
 
         it('renders html entities', editorTest(function () {
             const htmlNode = $createHtmlNode({html: '<p>&lt;pre&gt;Test&lt;/pre&gt;</p>'});
-            const {element, type} = htmlNode.exportDOM(exportOptions);
-            type.should.equal('value');
+            const result = htmlNode.exportDOM(exportOptions);
+            result.type.should.equal('value');
+            const element = result.element as HTMLTextAreaElement;
 
             element.value.should.equal('\n<!--kg-card-begin: html-->\n<p>&lt;pre&gt;Test&lt;/pre&gt;</p>\n<!--kg-card-end: html-->\n');
         }));
 
         it('handles single-quote attributes', editorTest(function () {
             const htmlNode = $createHtmlNode({html: '<div data-graph-name=\'The "all-in" cost of a grant\'>Test</div>'});
-            const {element, type} = htmlNode.exportDOM(exportOptions);
-            type.should.equal('value');
+            const result = htmlNode.exportDOM(exportOptions);
+            result.type.should.equal('value');
+            const element = result.element as HTMLTextAreaElement;
 
             element.value.should.equal('\n<!--kg-card-begin: html-->\n<div data-graph-name=\'The "all-in" cost of a grant\'>Test</div>\n<!--kg-card-end: html-->\n');
         }));
 
         describe('visibility rendering', function () {
             describe('with old visibility settings', function () {
-                function testWebRender(visibility) {
+                function testWebRender(visibility: Record<string, unknown>) {
                     const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});
-                    const {element, type} = htmlNode.exportDOM(exportOptions);
-                    type.should.equal('value');
+                    const result = htmlNode.exportDOM(exportOptions);
+                    result.type.should.equal('value');
+                    const element = result.element as HTMLTextAreaElement;
                     element.value.should.equal('\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n');
                 }
 
-                function testEmailRender(visibility) {
+                function testEmailRender(visibility: Record<string, unknown>) {
                     const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});
-                    const {element, type} = htmlNode.exportDOM({...exportOptions, target: 'email'});
+                    const result = htmlNode.exportDOM({...exportOptions, target: 'email'});
                     const expectedContents = '<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->';
 
                     if (visibility.segment) {
-                        type.should.equal('html');
+                        result.type.should.equal('html');
+                        const element = result.element as HTMLElement;
                         element.outerHTML.should.equal(`<div data-gh-segment="${visibility.segment}">\n${expectedContents}\n</div>`);
                     } else {
-                        type.should.equal('value');
+                        result.type.should.equal('value');
+                        const element = result.element as HTMLTextAreaElement;
                         element.value.should.equal(`\n${expectedContents}\n`);
                     }
                 }
 
-                function testBlankRender(visibility, target) {
+                function testBlankRender(visibility: Record<string, unknown>, target: string) {
                     const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});
-                    const {element, type} = htmlNode.exportDOM({...exportOptions, target});
-                    type.should.equal('inner');
+                    const result = htmlNode.exportDOM({...exportOptions, target});
+                    result.type.should.equal('inner');
+                    const element = result.element as HTMLElement;
                     element.innerHTML.should.equal('');
                 }
 
@@ -247,32 +257,36 @@ describe('HtmlNode', function () {
             });
 
             describe('with new visibility settings', function () {
-                function testWebRender(visibility, expectedGateParams) {
+                function testWebRender(visibility: Record<string, unknown>, expectedGateParams?: string | null) {
                     const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});
-                    const {element, type} = htmlNode.exportDOM(exportOptions);
-                    type.should.equal('value');
+                    const result = htmlNode.exportDOM(exportOptions);
+                    result.type.should.equal('value');
+                    const element = result.element as HTMLTextAreaElement;
                     const baseExpectedContents = '\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n';
                     element.value.should.equal(expectedGateParams ? `\n<!--kg-gated-block:begin ${expectedGateParams} -->${baseExpectedContents}<!--kg-gated-block:end-->\n` : baseExpectedContents);
                 }
 
-                function testEmailRender(visibility, expectedSegment) {
+                function testEmailRender(visibility: Record<string, unknown>, expectedSegment: string) {
                     const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});
-                    const {element, type} = htmlNode.exportDOM({...exportOptions, target: 'email'});
+                    const result = htmlNode.exportDOM({...exportOptions, target: 'email'});
                     const expectedContents = '<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->';
 
                     if (!expectedSegment) {
-                        type.should.equal('value');
+                        result.type.should.equal('value');
+                        const element = result.element as HTMLTextAreaElement;
                         element.value.should.equal(`\n${expectedContents}\n`);
                     } else {
-                        type.should.equal('html');
+                        result.type.should.equal('html');
+                        const element = result.element as HTMLElement;
                         element.outerHTML.should.equal(`<div data-gh-segment="${expectedSegment}" class="kg-visibility-wrapper">\n${expectedContents}\n</div>`);
                     }
                 }
 
-                function testBlankRender(visibility, target) {
+                function testBlankRender(visibility: Record<string, unknown>, target: string) {
                     const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});
-                    const {element, type} = htmlNode.exportDOM({...exportOptions, target});
-                    type.should.equal('inner');
+                    const result = htmlNode.exportDOM({...exportOptions, target});
+                    result.type.should.equal('inner');
+                    const element = result.element as HTMLElement;
                     element.innerHTML.should.equal('');
                 }
 
@@ -344,6 +358,34 @@ describe('HtmlNode', function () {
             nodes[0].should.be.instanceof(HtmlNode);
         }));
 
+        it('removes the html end comment from the DOM after parsing', editorTest(function () {
+            const document = createDocument(html`
+                <span><!--kg-card-begin: html--><p>here's html</p><!--kg-card-end: html--></span>
+            `);
+
+            $generateNodesFromDOM(editor, document);
+
+            const hasEndComment = Array.from(document.querySelector('span')?.childNodes || []).some((node) => {
+                return node.nodeType === 8 && node.nodeValue?.trim() === 'kg-card-end: html';
+            });
+
+            hasEndComment.should.be.false();
+        }));
+
+        it('does not consume sibling nodes when the html end comment is missing', editorTest(function () {
+            const document = createDocument(html`
+                <span><!--kg-card-begin: html--><p>here's html</p><div>keep me</div></span>
+            `);
+
+            const nodes = $generateNodesFromDOM(editor, document) as HtmlNode[];
+            const htmlNodes = nodes.filter(node => node instanceof HtmlNode);
+
+            htmlNodes.length.should.equal(1);
+            htmlNodes[0].html.should.equal('');
+            document.querySelector('p')?.outerHTML.should.equal('<p>here\'s html</p>');
+            document.querySelector('div')?.outerHTML.should.equal('<div>keep me</div>');
+        }));
+
         it('parses html table', editorTest(function () {
             const document = createDocument(html`
                 <table style="float:right"><tr><th>Month</th><th>Savings</th></tr><tr><td>January</td><td>$100</td></tr><tr><td>February</td><td>$80</td></tr></table>
@@ -386,7 +428,7 @@ describe('HtmlNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done) {
+        it('imports all data', function (done: (err?: unknown) => void) {
             const serializedState = JSON.stringify({
                 root: {
                     children: [{
@@ -406,7 +448,7 @@ describe('HtmlNode', function () {
 
             editor.getEditorState().read(() => {
                 try {
-                    const [htmlNode] = $getRoot().getChildren();
+                    const [htmlNode] = $getRoot().getChildren() as HtmlNode[];
 
                     htmlNode.html.should.equal('<p>Paragraph with:</p><ul><li>list</li><li>items</li></ul>');
 
@@ -417,7 +459,7 @@ describe('HtmlNode', function () {
             });
         });
 
-        it('updates old visibility format to new format', function (done) {
+        it('updates old visibility format to new format', function (done: (err?: unknown) => void) {
             const serializedState = JSON.stringify({
                 root: {
                     children: [{
@@ -441,9 +483,9 @@ describe('HtmlNode', function () {
 
             editor.getEditorState().read(() => {
                 try {
-                    const [htmlNode] = $getRoot().getChildren();
+                    const [htmlNode] = $getRoot().getChildren() as HtmlNode[];
 
-                    htmlNode.visibility.should.deepEqual({
+                    (htmlNode.visibility as Record<string, unknown>).should.deepEqual({
                         showOnWeb: true,
                         showOnEmail: true,
                         web: {
@@ -475,7 +517,7 @@ describe('HtmlNode', function () {
     });
 
     describe('getIsVisibilityActive', function () {
-        function testIsVisibilityActive(expected, visibility) {
+        function testIsVisibilityActive(expected: boolean, visibility: Record<string, unknown>) {
             const node = $createHtmlNode();
             node.visibility = visibility;
             node.getIsVisibilityActive().should.equal(expected);

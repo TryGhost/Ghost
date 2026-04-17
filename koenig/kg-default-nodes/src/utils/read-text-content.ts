@@ -2,7 +2,7 @@ import {$getRoot} from 'lexical';
 
 // when used nodes are used client-side their data attributes may be an editor
 // instance rather than a string in the case of nested editors
-export default function readTextContent(node, property) {
+export default function readTextContent(node: Record<string, unknown>, property: string) {
     const propertyName = `__${property}`;
     const propertyEditorName = `${propertyName}Editor`;
 
@@ -21,10 +21,10 @@ export default function readTextContent(node, property) {
         return value.toString();
     }
 
-    if (typeof value.getEditorState === 'function') {
+    if (typeof value === 'object' && value !== null && 'getEditorState' in value && typeof (value as {getEditorState: unknown}).getEditorState === 'function') {
         let text = '';
 
-        value.getEditorState().read(() => {
+        (value as {getEditorState: () => {read: (fn: () => void) => void}}).getEditorState().read(() => {
             text = $getRoot().getTextContent();
         });
 

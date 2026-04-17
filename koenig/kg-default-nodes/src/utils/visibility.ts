@@ -1,4 +1,5 @@
-import {renderEmptyContainer} from './render-empty-container';
+import type {ExportDOMOutput} from '../export-dom.js';
+import {renderEmptyContainer} from './render-empty-container.js';
 
 export const ALL_MEMBERS_SEGMENT = 'status:free,status:-free';
 export const PAID_MEMBERS_SEGMENT = 'status:-free'; // paid + comped
@@ -15,7 +16,7 @@ const DEFAULT_VISIBILITY = {
     }
 };
 
-function isNullish(value) {
+function isNullish(value: unknown) {
     return value === null || value === undefined;
 }
 
@@ -24,25 +25,35 @@ export function buildDefaultVisibility() {
     return JSON.parse(JSON.stringify(DEFAULT_VISIBILITY));
 }
 
-export function isOldVisibilityFormat(visibility) {
-    return !Object.prototype.hasOwnProperty.call(visibility, 'web')
-        || !Object.prototype.hasOwnProperty.call(visibility, 'email')
-        || !Object.prototype.hasOwnProperty.call(visibility.web, 'nonMember')
-        || isNullish(visibility.web.memberSegment)
-        || isNullish(visibility.email.memberSegment);
+// Visibility can be in old or new format
+export interface Visibility {
+    web?: { nonMember?: boolean; memberSegment?: string };
+    email?: { memberSegment?: string };
+    showOnEmail?: boolean;
+    showOnWeb?: boolean;
+    emailOnly?: boolean;
+    segment?: string;
+    [key: string]: unknown;
 }
 
-export function isVisibilityRestricted(visibility) {
+export type RenderOutput = ExportDOMOutput<Element>;
+
+export function isOldVisibilityFormat(visibility: Visibility) {
+    return !Object.prototype.hasOwnProperty.call(visibility, 'web')
+        || !Object.prototype.hasOwnProperty.call(visibility, 'email')
+        || !Object.prototype.hasOwnProperty.call(visibility.web ?? {}, 'nonMember')
+        || isNullish(visibility.web?.memberSegment)
+        || isNullish(visibility.email?.memberSegment);
+}
+
+export function isVisibilityRestricted(visibility: Visibility) {
     if (isOldVisibilityFormat(visibility)) {
-        return visibility.showOnEmail === false
-            || visibility.showOnWeb === false
-            || visibility.emailOnly === true
-            || visibility.segment !== '';
-    } else {
-        return visibility.web.nonMember === false
-            || visibility.web.memberSegment !== ALL_MEMBERS_SEGMENT
-            || visibility.email.memberSegment !== ALL_MEMBERS_SEGMENT;
+        visibility = migrateOldVisibilityFormat(visibility);
     }
+
+    return visibility.web?.nonMember === false
+        || visibility.web?.memberSegment !== ALL_MEMBERS_SEGMENT
+        || visibility.email?.memberSegment !== ALL_MEMBERS_SEGMENT;
 }
 
 // old formats...
@@ -73,7 +84,7 @@ export function isVisibilityRestricted(visibility) {
 // memberSegment: 'status:free,status:-free' = everyone
 // memberSegment: 'status:free' = free members
 // memberSegment: 'status:-free' = paid + comped members
-export function migrateOldVisibilityFormat(visibility) {
+export function migrateOldVisibilityFormat(visibility: Visibility) {
     if (!visibility || !isOldVisibilityFormat(visibility)) {
         return visibility;
     }
@@ -114,38 +125,45 @@ export function migrateOldVisibilityFormat(visibility) {
     return newVisibility;
 }
 
-export function renderWithVisibility(originalRenderOutput, visibility, options) {
+export function renderWithVisibility(originalRenderOutput: RenderOutput, visibility: Visibility | undefined, options: {target?: string}) {
+    if (!visibility) {
+        return originalRenderOutput;
+    }
+
     const document = originalRenderOutput.element.ownerDocument;
     const content = _getRenderContent(originalRenderOutput);
 
-    visibility = migrateOldVisibilityFormat(visibility);
+    const migrated = migrateOldVisibilityFormat(visibility);
+
+    const email = migrated.email ?? {memberSegment: ALL_MEMBERS_SEGMENT};
+    const web = migrated.web ?? {nonMember: true, memberSegment: ALL_MEMBERS_SEGMENT};
 
     if (options.target === 'email') {
-        if (visibility.email.memberSegment === NO_MEMBERS_SEGMENT) {
+        if (email.memberSegment === NO_MEMBERS_SEGMENT) {
             return renderEmptyContainer(document);
         }
 
-        if (visibility.email.memberSegment === ALL_MEMBERS_SEGMENT) {
+        if (email.memberSegment === ALL_MEMBERS_SEGMENT) {
             return originalRenderOutput;
         }
 
-        return _renderWithEmailVisibility(document, content, visibility.email);
+        return _renderWithEmailVisibility(document, content, email as {memberSegment: string});
     }
 
     const isNotVisibleOnWeb =
-        visibility.web.nonMember === false &&
-        visibility.web.memberSegment === NO_MEMBERS_SEGMENT;
+        web.nonMember === false &&
+        web.memberSegment === NO_MEMBERS_SEGMENT;
 
     if (isNotVisibleOnWeb) {
         return renderEmptyContainer(document);
     }
 
     const hasWebVisibilityRestrictions =
-        visibility.web.nonMember !== true ||
-        visibility.web.memberSegment !== ALL_MEMBERS_SEGMENT;
+        web.nonMember !== true ||
+        web.memberSegment !== ALL_MEMBERS_SEGMENT;
 
     if (hasWebVisibilityRestrictions) {
-        return _renderWithWebVisibility(document, content, visibility.web);
+        return _renderWithWebVisibility(document, content, web as {nonMember: boolean; memberSegment: string});
     }
 
     return originalRenderOutput;
@@ -153,12 +171,12 @@ export function renderWithVisibility(originalRenderOutput, visibility, options) 
 
 /* Private functions -------------------------------------------------------- */
 
-function _getRenderContent({element, type}) {
+function _getRenderContent({element, type}: RenderOutput) {
     if (type === 'inner') {
         return element.innerHTML;
     } else if (type === 'value') {
         if ('value' in element) {
-            return element.value;
+            return element.value as string;
         }
         return '';
     } else {
@@ -166,19 +184,19 @@ function _getRenderContent({element, type}) {
     }
 }
 
-function _renderWithEmailVisibility(document, content, emailVisibility) {
+function _renderWithEmailVisibility(document: Document, content: string, emailVisibility: {memberSegment: string}): ExportDOMOutput<HTMLDivElement, 'html'> {
     const {memberSegment} = emailVisibility;
     const container = document.createElement('div');
     container.innerHTML = content;
     container.setAttribute('data-gh-segment', memberSegment);
     container.classList.add('kg-visibility-wrapper');
-    return {element: container, type: 'html'};
+    return {element: container, type: 'html' as const};
 }
 
-function _renderWithWebVisibility(document, content, webVisibility) {
+function _renderWithWebVisibility(document: Document, content: string, webVisibility: {nonMember: boolean; memberSegment: string}): ExportDOMOutput<HTMLTextAreaElement, 'value'> {
     const {nonMember, memberSegment} = webVisibility;
     const wrappedContent = `\n<!--kg-gated-block:begin nonMember:${nonMember} memberSegment:"${memberSegment}" -->${content}<!--kg-gated-block:end-->\n`;
     const textarea = document.createElement('textarea');
     textarea.value = wrappedContent;
-    return {element: textarea, type: 'value'};
+    return {element: textarea, type: 'value' as const};
 }

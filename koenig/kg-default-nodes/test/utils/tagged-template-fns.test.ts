@@ -1,4 +1,4 @@
-import {oneline} from '../../lib/utils/tagged-template-fns.mjs';
+import {oneline} from '../../src/utils/tagged-template-fns.js';
 
 describe('Internal utils: oneline', function () {
     it('removes indentation and normalizes whitespace', function () {

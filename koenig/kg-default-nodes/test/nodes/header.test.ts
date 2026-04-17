@@ -1,18 +1,20 @@
-const {createDocument, dom, html} = require('../test-utils');
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$generateNodesFromDOM} = require('@lexical/html');
-const {HeaderNode, $createHeaderNode, $isHeaderNode} = require('../../');
-const {_} = require('lodash');
+import 'should';
+import {createDocument, dom, html} from '../test-utils/index.js';
+import {createHeadlessEditor} from '@lexical/headless';
+import {$generateNodesFromDOM} from '@lexical/html';
+import {HeaderNode, $createHeaderNode, $isHeaderNode} from '../../src/index.js';
+import _ from 'lodash';
+import type {LexicalEditor} from 'lexical';
 
 const editorNodes = [HeaderNode];
 
 describe('HeaderNode', function () {
     describe('v1', function () {
-        let editor;
-        let dataset;
-        let exportOptions;
+        let editor: LexicalEditor;
+        let dataset: Record<string, unknown>;
+        let exportOptions: Record<string, unknown>;
 
-        const editorTest = testFn => function (done) {
+        const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
             editor.update(() => {
                 try {
                     testFn();
@@ -107,7 +109,7 @@ describe('HeaderNode', function () {
             it('returns a copy of the current node', editorTest(function () {
                 const headerNode = $createHeaderNode(dataset);
                 const headerNodeDataset = headerNode.getDataset();
-                const clone = HeaderNode.clone(headerNode);
+                const clone = HeaderNode.clone(headerNode) as HeaderNode;
                 const cloneDataset = clone.getDataset();
 
                 cloneDataset.should.deepEqual({...headerNodeDataset});
@@ -143,20 +145,21 @@ describe('HeaderNode', function () {
                     <a class="kg-header-card-button" href="https://example.com/">The button</a>
                 </div>
         `;
-                element.outerHTML.should.prettifyTo(expectedElement);
+                (element as HTMLElement).outerHTML.should.prettifyTo(expectedElement);
             }));
 
             it('renders nothing when header and subheader is undefined and the button is disabled', editorTest(function () {
                 const node = $createHeaderNode(dataset);
-                node.header = null;
-                node.subheader = null;
+                node.header = null as unknown as string;
+                node.subheader = null as unknown as string;
                 node.buttonEnabled = false;
-                const {element} = node.exportDOM(exportOptions);
-                element.should.be.null;
+                const result = node.exportDOM(exportOptions);
+                should.equal((result as unknown as {type?: string}).type, 'inner');
+                (result.element as HTMLElement).innerHTML.should.equal('');
             }));
 
             it('renders a minimal header card', editorTest(function () {
-                let payload = {
+                const payload = {
                     version: 1,
                     backgroundImageSrc: '',
                     buttonEnabled: false,
@@ -171,11 +174,11 @@ describe('HeaderNode', function () {
 
                 const {element} = node.exportDOM(exportOptions);
                 const expectedElement = `<div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-dark" data-kg-background-image="" style=""><h2 class="kg-header-card-header" id="hello-world">hello world</h2><h3 class="kg-header-card-subheader" id="hello-sub-world">hello sub world</h3></div>`;
-                element.outerHTML.should.equal(expectedElement);
+                (element as HTMLElement).outerHTML.should.equal(expectedElement);
             }));
 
             it('renders without subheader', editorTest(function () {
-                let payload = {
+                const payload = {
                     version: 1,
                     backgroundImageSrc: '',
                     buttonEnabled: false,
@@ -190,7 +193,26 @@ describe('HeaderNode', function () {
 
                 const {element} = node.exportDOM(exportOptions);
                 const expectedElement = `<div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-dark" data-kg-background-image="" style=""><h2 class="kg-header-card-header" id="hello-world">hello world</h2></div>`;
-                element.outerHTML.should.equal(expectedElement);
+                (element as HTMLElement).outerHTML.should.equal(expectedElement);
+            }));
+
+            it('renders without subheader when it only contains trailing BR variants', editorTest(function () {
+                const payload = {
+                    version: 1,
+                    backgroundImageSrc: '',
+                    buttonEnabled: false,
+                    buttonText: 'The button',
+                    buttonUrl: 'https://example.com/',
+                    header: 'hello world',
+                    size: 'small',
+                    style: 'dark',
+                    subheader: '<BR /><br/>'
+                };
+                const node = $createHeaderNode(payload);
+
+                const {element} = node.exportDOM(exportOptions);
+                const expectedElement = `<div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-dark" data-kg-background-image="" style=""><h2 class="kg-header-card-header" id="hello-world">hello world</h2></div>`;
+                (element as HTMLElement).outerHTML.should.equal(expectedElement);
             }));
         });
         describe('importDOM', function () {
@@ -202,7 +224,7 @@ describe('HeaderNode', function () {
                 <a class="kg-header-card-button" href="https://example.com">Button</a>
             </div>`;
                 const document = createDocument(htmlstring);
-                const nodes = $generateNodesFromDOM(editor, document);
+                const nodes = $generateNodesFromDOM(editor, document) as HeaderNode[];
                 nodes.length.should.equal(1);
                 const node = nodes[0];
                 node.size.should.equal('large');
@@ -224,7 +246,7 @@ describe('HeaderNode', function () {
             </div>`;
 
                 const document = createDocument(htmlstring);
-                const nodes = $generateNodesFromDOM(editor, document);
+                const nodes = $generateNodesFromDOM(editor, document) as HeaderNode[];
                 nodes.length.should.equal(1);
                 const node = nodes[0];
                 node.version.should.equal(2);
@@ -246,11 +268,11 @@ describe('HeaderNode', function () {
     });
 
     describe('v2', function () {
-        let editor;
-        let dataset;
-        let exportOptions;
+        let editor: LexicalEditor;
+        let dataset: Record<string, unknown>;
+        let exportOptions: Record<string, unknown>;
 
-        const editorTest = testFn => function (done) {
+        const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
             editor.update(() => {
                 try {
                     testFn();
@@ -369,7 +391,7 @@ describe('HeaderNode', function () {
                         </div>
                     </div>`;
                 const document = createDocument(htmlstring);
-                const nodes = $generateNodesFromDOM(editor, document);
+                const nodes = $generateNodesFromDOM(editor, document) as HeaderNode[];
                 nodes.length.should.equal(1);
                 const node = nodes[0];
                 node.backgroundColor.should.equal('accent');
@@ -395,7 +417,7 @@ describe('HeaderNode', function () {
             </div>`;
 
                 const document = createDocument(htmlstring);
-                const nodes = $generateNodesFromDOM(editor, document);
+                const nodes = $generateNodesFromDOM(editor, document) as HeaderNode[];
                 nodes.length.should.equal(1);
                 const node = nodes[0];
                 node.version.should.equal(1);
@@ -413,7 +435,7 @@ describe('HeaderNode', function () {
             it('returns a copy of the current node', editorTest(function () {
                 const headerNode = $createHeaderNode(dataset);
                 const headerNodeDataset = headerNode.getDataset();
-                const clone = HeaderNode.clone(headerNode);
+                const clone = HeaderNode.clone(headerNode) as HeaderNode;
                 const cloneDataset = clone.getDataset();
                 cloneDataset.should.deepEqual({...headerNodeDataset});
             }));
@@ -441,9 +463,10 @@ describe('HeaderNode', function () {
             it('renders version 2 html', editorTest(function () {
                 const headerNode = $createHeaderNode(dataset);
                 const {element} = headerNode.exportDOM(exportOptions);
+                const el = element as HTMLElement;
 
                 // Assuming outerHTML gets the full HTML string of the element
-                const renderedHtml = _.replace(element.outerHTML, /\s/g, '');
+                const renderedHtml = _.replace(el.outerHTML, /\s/g, '');
                 const expectedHtml = `
                 <div class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide " data-background-color="#F0F0F0">
                 <picture><img class="kg-header-card-image" src="https://example.com/image.jpg" loading="lazy" alt=""></picture>
@@ -460,17 +483,21 @@ describe('HeaderNode', function () {
                 renderedHtml.should.equal(cleanedExpectedHtml);
             }));
 
-            it('renders nothing when header and subheader is undefined and the button is disabled', editorTest(function () {
+            it('renders empty card when header and subheader is undefined and the button is disabled', editorTest(function () {
                 const node = $createHeaderNode(dataset);
-                node.header = null;
-                node.subheader = null;
+                node.header = null as unknown as string;
+                node.subheader = null as unknown as string;
                 node.buttonEnabled = false;
                 const {element} = node.exportDOM(exportOptions);
-                element.should.be.null;
+                // v2 renderer has no empty check — it always returns a card element
+                should.exist(element);
+                should.not.exist((element as HTMLElement).querySelector('.kg-header-card-heading'));
+                should.not.exist((element as HTMLElement).querySelector('.kg-header-card-subheading'));
+                should.not.exist((element as HTMLElement).querySelector('.kg-header-card-button'));
             }));
 
             it('renders without subheader', editorTest(function () {
-                let payload = {
+                const payload = {
                     version: 2,
                     backgroundImageSrc: '',
                     buttonEnabled: false,
@@ -484,7 +511,8 @@ describe('HeaderNode', function () {
                 const node = $createHeaderNode(payload);
 
                 const {element} = node.exportDOM(exportOptions);
-                const renderedHtml = _.replace(element.outerHTML, /\s/g, '');
+                const el = element as HTMLElement;
+                const renderedHtml = _.replace(el.outerHTML, /\s/g, '');
                 const expectedHtml = `
                 <div class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide " style="background-color: #000000;" data-background-color="#000000">
                     <div class="kg-header-card-content">
@@ -500,7 +528,7 @@ describe('HeaderNode', function () {
             }));
 
             it('renders with srcset', editorTest(function () {
-                let payload = {
+                const payload = {
                     version: 2,
                     backgroundImageSrc: '/content/images/2022/11/koenig-lexical.jpg',
                     backgroundImageWidth: 3840,
@@ -516,7 +544,8 @@ describe('HeaderNode', function () {
                 const node = $createHeaderNode(payload);
 
                 const {element} = node.exportDOM(exportOptions);
-                const renderedHtml = _.replace(element.outerHTML, /\s/g, '');
+                const el = element as HTMLElement;
+                const renderedHtml = _.replace(el.outerHTML, /\s/g, '');
                 const expectedHtml = `
                 <div class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide " data-background-color="#000000">
                     <picture><img class="kg-header-card-image" src="/content/images/2022/11/koenig-lexical.jpg" srcset="/content/images/size/w600/2022/11/koenig-lexical.jpg 600w, /content/images/size/w1000/2022/11/koenig-lexical.jpg 1000w, /content/images/size/w1600/2022/11/koenig-lexical.jpg 1600w, /content/images/size/w2400/2022/11/koenig-lexical.jpg 2400w" loading="lazy" alt=""></picture>

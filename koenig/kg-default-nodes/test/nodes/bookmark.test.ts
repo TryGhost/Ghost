@@ -1,22 +1,24 @@
-const {createDocument, dom, html} = require('../test-utils');
-const {$getRoot} = require('lexical');
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$generateNodesFromDOM} = require('@lexical/html');
-const Prettier = require('@prettier/sync');
+import 'should';
+import {createDocument, dom, html} from '../test-utils/index.js';
+import {$getRoot} from 'lexical';
+import type {LexicalEditor} from 'lexical';
+import {createHeadlessEditor} from '@lexical/headless';
+import {$generateNodesFromDOM} from '@lexical/html';
+import Prettier from '@prettier/sync';
 
-const {BookmarkNode, $createBookmarkNode, $isBookmarkNode} = require('../../');
+import {BookmarkNode, $createBookmarkNode, $isBookmarkNode, type BookmarkData} from '../../src/index.js';
 
 const editorNodes = [BookmarkNode];
 
 describe('BookmarkNode', function () {
-    let editor;
-    let dataset;
-    let exportOptions;
+    let editor: LexicalEditor;
+    let dataset: BookmarkData;
+    let exportOptions: Record<string, unknown>;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -57,13 +59,14 @@ describe('BookmarkNode', function () {
         it('has getters for all properties', editorTest(function () {
             const bookmarkNode = $createBookmarkNode(dataset);
 
+            const metadata = dataset.metadata as Record<string, unknown>;
             bookmarkNode.url.should.equal(dataset.url);
-            bookmarkNode.icon.should.equal(dataset.metadata.icon);
-            bookmarkNode.title.should.equal(dataset.metadata.title);
-            bookmarkNode.description.should.equal(dataset.metadata.description);
-            bookmarkNode.author.should.equal(dataset.metadata.author);
-            bookmarkNode.publisher.should.equal(dataset.metadata.publisher);
-            bookmarkNode.thumbnail.should.equal(dataset.metadata.thumbnail);
+            bookmarkNode.icon.should.equal(metadata.icon);
+            bookmarkNode.title.should.equal(metadata.title);
+            bookmarkNode.description.should.equal(metadata.description);
+            bookmarkNode.author.should.equal(metadata.author);
+            bookmarkNode.publisher.should.equal(metadata.publisher);
+            bookmarkNode.thumbnail.should.equal(metadata.thumbnail);
             bookmarkNode.caption.should.equal(dataset.caption);
         }));
 
@@ -123,7 +126,7 @@ describe('BookmarkNode', function () {
         it('returns a copy of the current node', editorTest(function () {
             const bookmarkNode = $createBookmarkNode(dataset);
             const bookmarkNodeDataset = bookmarkNode.getDataset();
-            const clone = BookmarkNode.clone(bookmarkNode);
+            const clone = BookmarkNode.clone(bookmarkNode) as BookmarkNode;
             const cloneDataset = clone.getDataset();
 
             cloneDataset.should.deepEqual({...bookmarkNodeDataset});
@@ -160,22 +163,24 @@ describe('BookmarkNode', function () {
     describe('exportDOM', function () {
         it('creates an bookmark card', editorTest(function () {
             const bookmarkNode = $createBookmarkNode(dataset);
-            const {element} = bookmarkNode.exportDOM(exportOptions);
+            const result = bookmarkNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
+            const metadata = dataset.metadata as Record<string, unknown>;
 
             const expectedHtml = `
                 <figure class="kg-card kg-bookmark-card kg-card-hascaption">
                     <a class="kg-bookmark-container" href="${dataset.url}">
                         <div class="kg-bookmark-content">
-                            <div class="kg-bookmark-title">${dataset.metadata.title}</div>
-                            <div class="kg-bookmark-description">${dataset.metadata.description}</div>
+                            <div class="kg-bookmark-title">${metadata.title}</div>
+                            <div class="kg-bookmark-description">${metadata.description}</div>
                             <div class="kg-bookmark-metadata">
-                                <img class="kg-bookmark-icon" src="${dataset.metadata.icon}" alt="">
-                                <span class="kg-bookmark-author">${dataset.metadata.publisher}</span>
-                                <span class="kg-bookmark-publisher">${dataset.metadata.author}</span>
+                                <img class="kg-bookmark-icon" src="${metadata.icon}" alt="">
+                                <span class="kg-bookmark-author">${metadata.publisher}</span>
+                                <span class="kg-bookmark-publisher">${metadata.author}</span>
                             </div>
                         </div>
                         <div class="kg-bookmark-thumbnail">
-                            <img src="${dataset.metadata.thumbnail}" alt="" onerror="this.style.display = 'none'">
+                            <img src="${metadata.thumbnail}" alt="" onerror="this.style.display = 'none'">
                         </div>
                     </a>
                     <figcaption>${dataset.caption}</figcaption>
@@ -192,7 +197,8 @@ describe('BookmarkNode', function () {
                 target: 'email'
             };
             const bookmarkNode = $createBookmarkNode(dataset);
-            const {element} = bookmarkNode.exportDOM({...exportOptions, ...options});
+            const result = bookmarkNode.exportDOM({...exportOptions, ...options});
+            const element = result.element as HTMLElement;
 
             element.innerHTML.should.containEql('<!--[if !mso !vml]-->');
             element.innerHTML.should.containEql('<figure class="kg-card kg-bookmark-card');
@@ -202,7 +208,8 @@ describe('BookmarkNode', function () {
 
         it('renders an empty span with a missing src', editorTest(function () {
             const bookmarkNode = $createBookmarkNode();
-            const {element} = bookmarkNode.exportDOM(exportOptions);
+            const result = bookmarkNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.equal('<span></span>');
         }));
@@ -221,7 +228,8 @@ describe('BookmarkNode', function () {
                 caption: '<p dir="ltr"><span style="white-space: pre-wrap;">This is a </span><b><strong style="white-space: pre-wrap;">caption</strong></b></p>'
             };
             const bookmarkNode = $createBookmarkNode(dataset);
-            const {element} = bookmarkNode.exportDOM(exportOptions);
+            const result = bookmarkNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             // Check that text fields are escaped
             element.innerHTML.should.containEql('Ghost: Independent technology &lt;script&gt;alert("XSS")&lt;/script&gt; for modern publishing.');
@@ -250,7 +258,8 @@ describe('BookmarkNode', function () {
                 caption: '<p dir="ltr"><span style="white-space: pre-wrap;">This is a </span><b><strong style="white-space: pre-wrap;">caption</strong></b></p>'
             };
             const bookmarkNode = $createBookmarkNode(dataset);
-            const {element} = bookmarkNode.exportDOM({...exportOptions, ...options});
+            const result = bookmarkNode.exportDOM({...exportOptions, ...options});
+            const element = result.element as HTMLElement;
 
             // Check that email template is used
             element.innerHTML.should.containEql('<!--[if !mso !vml]-->');
@@ -270,18 +279,19 @@ describe('BookmarkNode', function () {
         it('contains all data', editorTest(function () {
             const bookmarkNode = $createBookmarkNode(dataset);
             const json = bookmarkNode.exportJSON();
+            const metadata = dataset.metadata as Record<string, unknown>;
 
             json.should.deepEqual({
                 type: 'bookmark',
                 version: 1,
                 url: dataset.url,
                 metadata: {
-                    icon: dataset.metadata.icon,
-                    title: dataset.metadata.title,
-                    description: dataset.metadata.description,
-                    author: dataset.metadata.author,
-                    publisher: dataset.metadata.publisher,
-                    thumbnail: dataset.metadata.thumbnail
+                    icon: metadata.icon,
+                    title: metadata.title,
+                    description: metadata.description,
+                    author: metadata.author,
+                    publisher: metadata.publisher,
+                    thumbnail: metadata.thumbnail
                 },
                 caption: dataset.caption
             });
@@ -309,15 +319,15 @@ describe('BookmarkNode', function () {
 
             editor.getEditorState().read(() => {
                 try {
-                    const [bookmarkNode] = $getRoot().getChildren();
+                    const [bookmarkNode] = $getRoot().getChildren() as BookmarkNode[];
 
                     bookmarkNode.url.should.equal(dataset.url);
-                    bookmarkNode.icon.should.equal(dataset.metadata.icon);
-                    bookmarkNode.title.should.equal(dataset.metadata.title);
-                    bookmarkNode.description.should.equal(dataset.metadata.description);
-                    bookmarkNode.author.should.equal(dataset.metadata.author);
-                    bookmarkNode.publisher.should.equal(dataset.metadata.publisher);
-                    bookmarkNode.thumbnail.should.equal(dataset.metadata.thumbnail);
+                    bookmarkNode.icon.should.equal((dataset.metadata as Record<string, unknown>).icon);
+                    bookmarkNode.title.should.equal((dataset.metadata as Record<string, unknown>).title);
+                    bookmarkNode.description.should.equal((dataset.metadata as Record<string, unknown>).description);
+                    bookmarkNode.author.should.equal((dataset.metadata as Record<string, unknown>).author);
+                    bookmarkNode.publisher.should.equal((dataset.metadata as Record<string, unknown>).publisher);
+                    bookmarkNode.thumbnail.should.equal((dataset.metadata as Record<string, unknown>).thumbnail);
                     bookmarkNode.caption.should.equal(dataset.caption);
 
                     done();
@@ -344,20 +354,21 @@ describe('BookmarkNode', function () {
 
     describe('importDOM', function () {
         it('parses bookmark card', editorTest(function () {
+            const metadata = dataset.metadata as Record<string, unknown>;
             const document = createDocument(html`
                 <figure class="kg-card kg-bookmark-card kg-card-hascaption">
                     <a class="kg-bookmark-container" href="${dataset.url}">
                         <div class="kg-bookmark-content">
-                            <div class="kg-bookmark-title">${dataset.metadata.title}</div>
-                            <div class="kg-bookmark-description">${dataset.metadata.description}</div>
+                            <div class="kg-bookmark-title">${metadata.title}</div>
+                            <div class="kg-bookmark-description">${metadata.description}</div>
                             <div class="kg-bookmark-metadata">
-                                <img class="kg-bookmark-icon" src="${dataset.metadata.icon}" alt="">
-                                <span class="kg-bookmark-author">${dataset.metadata.publisher}</span>
-                                <span class="kg-bookmark-publisher">${dataset.metadata.author}</span>
+                                <img class="kg-bookmark-icon" src="${metadata.icon}" alt="">
+                                <span class="kg-bookmark-author">${metadata.publisher}</span>
+                                <span class="kg-bookmark-publisher">${metadata.author}</span>
                             </div>
                         </div>
                         <div class="kg-bookmark-thumbnail">
-                            <img src="${dataset.metadata.thumbnail}" alt="" onerror="this.style.display = 'none'">
+                            <img src="${metadata.thumbnail}" alt="" onerror="this.style.display = 'none'">
                         </div>
                     </a>
                     <figcaption>${dataset.caption}</figcaption>
@@ -366,14 +377,15 @@ describe('BookmarkNode', function () {
             const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
-            nodes[0].url.should.equal(dataset.url);
-            nodes[0].icon.should.equal(dataset.metadata.icon);
-            nodes[0].title.should.equal(dataset.metadata.title);
-            nodes[0].description.should.equal(dataset.metadata.description);
-            nodes[0].author.should.equal(dataset.metadata.author);
-            nodes[0].publisher.should.equal(dataset.metadata.publisher);
-            nodes[0].thumbnail.should.equal(dataset.metadata.thumbnail);
-            nodes[0].caption.should.equal(dataset.caption);
+            const node = nodes[0] as BookmarkNode;
+            node.url.should.equal(dataset.url);
+            node.icon.should.equal((dataset.metadata as Record<string, unknown>).icon);
+            node.title.should.equal((dataset.metadata as Record<string, unknown>).title);
+            node.description.should.equal((dataset.metadata as Record<string, unknown>).description);
+            node.author.should.equal((dataset.metadata as Record<string, unknown>).author);
+            node.publisher.should.equal((dataset.metadata as Record<string, unknown>).publisher);
+            node.thumbnail.should.equal((dataset.metadata as Record<string, unknown>).thumbnail);
+            node.caption.should.equal(dataset.caption);
         }));
 
         // mixtape embeds parse into bookmark cards
@@ -387,11 +399,13 @@ describe('BookmarkNode', function () {
                 const nodes = $generateNodesFromDOM(editor, document);
 
                 nodes.length.should.equal(1);
-                nodes[0].url.should.equal('https://slack.engineering/typescript-at-slack-a81307fa288d');
-                nodes[0].title.should.equal('TypeScript at Slack');
-                nodes[0].description.should.equal('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
-                nodes[0].publisher.should.equal('slack.engineering');
-                nodes[0].thumbnail.should.equal('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
+                const bookmarkNode = nodes[0] as BookmarkNode;
+
+                bookmarkNode.url.should.equal('https://slack.engineering/typescript-at-slack-a81307fa288d');
+                bookmarkNode.title.should.equal('TypeScript at Slack');
+                bookmarkNode.description.should.equal('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
+                bookmarkNode.publisher.should.equal('slack.engineering');
+                bookmarkNode.thumbnail.should.equal('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
             }));
 
             it('parses mixtape with missing title', editorTest(function () {
@@ -399,11 +413,27 @@ describe('BookmarkNode', function () {
                 const nodes = $generateNodesFromDOM(editor, document);
 
                 nodes.length.should.equal(1);
-                nodes[0].url.should.equal('https://slack.engineering/typescript-at-slack-a81307fa288d');
-                nodes[0].title.should.equal('');
-                nodes[0].description.should.equal('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
-                nodes[0].publisher.should.equal('slack.engineering');
-                nodes[0].thumbnail.should.equal('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
+                const bookmarkNode = nodes[0] as BookmarkNode;
+
+                bookmarkNode.url.should.equal('https://slack.engineering/typescript-at-slack-a81307fa288d');
+                bookmarkNode.title.should.equal('');
+                bookmarkNode.description.should.equal('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
+                bookmarkNode.publisher.should.equal('slack.engineering');
+                bookmarkNode.thumbnail.should.equal('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
+            }));
+
+            it('parses mixtape when title and description are nested descendants', editorTest(function () {
+                const document = createDocument(html`<div class="graf graf--mixtapeEmbed graf-after--p"><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" data-href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="markup--anchor markup--mixtapeEmbed-anchor" title="https://slack.engineering/typescript-at-slack-a81307fa288d"><span><strong class="markup--strong markup--mixtapeEmbed-strong">TypeScript at Slack</strong></span><br><span><em class="markup--em markup--mixtapeEmbed-em">Or, How I Learned to Stop Worrying &amp; Trust the Compiler</em></span>slack.engineering</a><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="js-mixtapeImage mixtapeImage u-ignoreBlock" data-media-id="abc123" data-thumbnail-img-id="1*-h1bH8gB3I7gPh5AG1HmsQ.png" style="background-image: url(https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png);"></a></div>`);
+                const nodes = $generateNodesFromDOM(editor, document);
+
+                nodes.length.should.equal(1);
+                const bookmarkNode = nodes[0] as BookmarkNode;
+
+                bookmarkNode.url.should.equal('https://slack.engineering/typescript-at-slack-a81307fa288d');
+                bookmarkNode.title.should.equal('TypeScript at Slack');
+                bookmarkNode.description.should.equal('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
+                bookmarkNode.publisher.should.containEql('slack.engineering');
+                bookmarkNode.thumbnail.should.equal('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
             }));
         });
     });

@@ -1,10 +1,18 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {removeSpaces, removeCodeWrappersFromHelpers, wrapReplacementStrings} from '../../utils/replacement-strings';
-import {renderEmptyContainer} from '../../utils/render-empty-container';
+import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
+import type {ExportDOMOptions, ExportDOMOutput} from '../../export-dom.js';
+import {removeSpaces, removeCodeWrappersFromHelpers, wrapReplacementStrings} from '../../utils/replacement-strings.js';
+import {renderEmptyContainer} from '../../utils/render-empty-container.js';
+import type {EmptyContainerOutput} from '../../utils/render-empty-container.js';
 
-export function renderEmailNode(node, options = {}) {
+interface EmailNodeData {
+    html: string;
+}
+
+interface RenderOptions extends ExportDOMOptions {}
+
+export function renderEmailNode(node: EmailNodeData, options: RenderOptions = {}): EmptyContainerOutput | ExportDOMOutput<HTMLDivElement, 'inner'> {
     addCreateDocumentOption(options);
-    const document = options.createDocument();
+    const document = options.createDocument!();
 
     const html = node.html;
 
@@ -19,5 +27,5 @@ export function renderEmailNode(node, options = {}) {
 
     // `type: 'inner'` will render only the innerHTML of the element
     // @see @tryghost/kg-lexical-html-renderer package
-    return {element, type: 'inner'};
+    return {element, type: 'inner' as const};
 }

@@ -1,12 +1,14 @@
-const {createDocument} = require('../test-utils');
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$generateNodesFromDOM} = require('@lexical/html');
-const {DEFAULT_CONFIG, DEFAULT_NODES} = require('../../cjs/kg-default-nodes');
+import should from 'should';
+import {createDocument} from '../test-utils/index.js';
+import {createHeadlessEditor} from '@lexical/headless';
+import {$generateNodesFromDOM} from '@lexical/html';
+import {DEFAULT_CONFIG, DEFAULT_NODES} from '../../src/index.js';
+import type {HTMLConfig, LexicalEditor} from 'lexical';
 
-describe('Serializers: linebreak', function () {
-    let editor;
+describe('Serializers: paragraph', function () {
+    let editor: LexicalEditor;
 
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -18,7 +20,7 @@ describe('Serializers: linebreak', function () {
     };
 
     beforeEach(function () {
-        editor = createHeadlessEditor({nodes: DEFAULT_NODES, html: DEFAULT_CONFIG.html});
+        editor = createHeadlessEditor({nodes: DEFAULT_NODES, html: DEFAULT_CONFIG.html as HTMLConfig});
     });
 
     describe('import', function () {

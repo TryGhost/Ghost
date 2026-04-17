@@ -1,12 +1,19 @@
-import {generateDecoratorNode} from '../../generate-decorator-node';
-import {parseGalleryNode} from './gallery-parser';
-import {renderGalleryNode} from './gallery-renderer';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {parseGalleryNode} from './gallery-parser.js';
+import {renderGalleryNode} from './gallery-renderer.js';
+
+const galleryProperties = [
+    {name: 'images', default: [] as unknown[]},
+    {name: 'caption', default: '', wordCount: true}
+] as const satisfies readonly DecoratorNodeProperty[];
+
+export type GalleryData = DecoratorNodeData<typeof galleryProperties>;
+
+export interface GalleryNode extends DecoratorNodeValueMap<typeof galleryProperties> {}
+
 export class GalleryNode extends generateDecoratorNode({
     nodeType: 'gallery',
-    properties: [
-        {name: 'images', default: []},
-        {name: 'caption', default: '', wordCount: true}
-    ],
+    properties: galleryProperties,
     defaultRenderFn: renderGalleryNode
 }) {
     /* override */
@@ -29,10 +36,10 @@ export class GalleryNode extends generateDecoratorNode({
     }
 }
 
-export const $createGalleryNode = (dataset) => {
+export const $createGalleryNode = (dataset?: GalleryData) => {
     return new GalleryNode(dataset);
 };
 
-export function $isGalleryNode(node) {
+export function $isGalleryNode(node: unknown): node is GalleryNode {
     return node instanceof GalleryNode;
 }

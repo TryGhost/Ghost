@@ -1,7 +1,8 @@
 import cloneDeep from 'lodash/cloneDeep';
-import {generateDecoratorNode} from '../../generate-decorator-node';
-import {renderTransistorNode} from './transistor-renderer';
-import {ALL_MEMBERS_SEGMENT} from '../../utils/visibility';
+import {generateDecoratorNode, type DecoratorNodeProperty} from '../../generate-decorator-node.js';
+import {renderTransistorNode} from './transistor-renderer.js';
+import {ALL_MEMBERS_SEGMENT} from '../../utils/visibility.js';
+import type {Visibility} from '../../utils/visibility.js';
 
 // Default visibility for Transistor: members only (no public visitors)
 // since the embed requires a member UUID to function
@@ -15,16 +16,30 @@ const TRANSISTOR_DEFAULT_VISIBILITY = {
     }
 };
 
+export interface TransistorNode {
+    accentColor: string;
+    backgroundColor: string;
+    visibility: Visibility;
+}
+
+export interface TransistorData {
+    accentColor?: string;
+    backgroundColor?: string;
+    visibility?: Visibility;
+}
+
+const transistorProperties = [
+    {name: 'accentColor', default: ''},
+    {name: 'backgroundColor', default: ''}
+] as const satisfies readonly DecoratorNodeProperty[];
+
 export class TransistorNode extends generateDecoratorNode({
     nodeType: 'transistor',
     hasVisibility: true,
-    properties: [
-        {name: 'accentColor', default: ''}, // Player accent color (text/buttons) - hex value
-        {name: 'backgroundColor', default: ''} // Player background color - hex value
-    ],
+    properties: transistorProperties,
     defaultRenderFn: renderTransistorNode
 }) {
-    constructor(data = {}, key) {
+    constructor(data: TransistorData = {}, key?: string) {
         super(data, key);
         if (!data.visibility) {
             this.__visibility = cloneDeep(TRANSISTOR_DEFAULT_VISIBILITY);
@@ -46,10 +61,10 @@ export class TransistorNode extends generateDecoratorNode({
     }
 }
 
-export const $createTransistorNode = (dataset) => {
+export const $createTransistorNode = (dataset?: TransistorData) => {
     return new TransistorNode(dataset);
 };
 
-export const $isTransistorNode = (node) => {
+export const $isTransistorNode = (node: unknown): node is TransistorNode => {
     return node instanceof TransistorNode;
 };

@@ -1,19 +1,19 @@
-const {createDocument, html} = require('../test-utils');
-const {$getRoot, $createParagraphNode, $createTextNode} = require('lexical');
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$generateNodesFromDOM} = require('@lexical/html');
-const {AsideNode, $createAsideNode, $isAsideNode} = require('../../');
+import {createDocument, html} from '../test-utils/index.js';
+import {$getRoot, $createParagraphNode, $createTextNode} from 'lexical';
+import {createHeadlessEditor} from '@lexical/headless';
+import {$generateNodesFromDOM} from '@lexical/html';
+import {AsideNode, $createAsideNode, $isAsideNode} from '../../src/index.js';
+import type {LexicalEditor} from 'lexical';
 
 const editorNodes = [AsideNode];
 
 describe('AsideNode', function () {
-    let editor;
-    let dataset;
+    let editor: LexicalEditor;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -26,8 +26,6 @@ describe('AsideNode', function () {
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
-
-        dataset = {};
     });
 
     it('matches node with $isAsideNode', editorTest(function () {
@@ -49,9 +47,7 @@ describe('AsideNode', function () {
 
     describe('exportJSON', function () {
         it('contains all data', editorTest(function () {
-            dataset.cardWidth = 'wide';
-
-            const asideNode = $createAsideNode(dataset);
+            const asideNode = $createAsideNode();
             const json = asideNode.exportJSON();
 
             json.should.deepEqual({

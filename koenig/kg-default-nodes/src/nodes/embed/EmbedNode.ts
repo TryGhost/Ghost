@@ -1,16 +1,27 @@
-import {generateDecoratorNode} from '../../generate-decorator-node';
-import {parseEmbedNode} from './embed-parser';
-import {renderEmbedNode} from './embed-renderer';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {parseEmbedNode} from './embed-parser.js';
+import {renderEmbedNode} from './embed-renderer.js';
+
+const embedProperties = [
+    {name: 'url', default: '', urlType: 'url'},
+    {name: 'embedType', default: ''},
+    {name: 'html', default: ''},
+    {
+        name: 'metadata',
+        get default() {
+            return {} as Record<string, unknown>;
+        }
+    },
+    {name: 'caption', default: '', wordCount: true}
+] as const satisfies readonly DecoratorNodeProperty[];
+
+export type EmbedData = DecoratorNodeData<typeof embedProperties>;
+
+export interface EmbedNode extends DecoratorNodeValueMap<typeof embedProperties> {}
 
 export class EmbedNode extends generateDecoratorNode({
     nodeType: 'embed',
-    properties: [
-        {name: 'url', default: '', urlType: 'url'},
-        {name: 'embedType', default: ''},
-        {name: 'html', default: ''},
-        {name: 'metadata', default: {}},
-        {name: 'caption', default: '', wordCount: true}
-    ],
+    properties: embedProperties,
     defaultRenderFn: renderEmbedNode
 }) {
     static importDOM() {
@@ -22,10 +33,10 @@ export class EmbedNode extends generateDecoratorNode({
     }
 }
 
-export const $createEmbedNode = (dataset) => {
+export const $createEmbedNode = (dataset: EmbedData = {}) => {
     return new EmbedNode(dataset);
 };
 
-export function $isEmbedNode(node) {
+export function $isEmbedNode(node: unknown): node is EmbedNode {
     return node instanceof EmbedNode;
 }

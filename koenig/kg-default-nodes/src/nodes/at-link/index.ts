@@ -1,4 +1,4 @@
 /* c8 ignore start */
-export * from './AtLinkNode';
-export * from './AtLinkSearchNode';
+export * from './AtLinkNode.js';
+export * from './AtLinkSearchNode.js';
 /* c8 ignore end */

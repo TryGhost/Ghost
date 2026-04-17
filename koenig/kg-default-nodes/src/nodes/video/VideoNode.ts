@@ -1,23 +1,30 @@
-import {generateDecoratorNode} from '../../generate-decorator-node';
-import {parseVideoNode} from './video-parser';
-import {renderVideoNode} from './video-renderer';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {parseVideoNode} from './video-parser.js';
+import {renderVideoNode} from './video-renderer.js';
+
+const videoProperties = [
+    {name: 'src', default: '', urlType: 'url'},
+    {name: 'caption', default: '', urlType: 'html', wordCount: true},
+    {name: 'fileName', default: ''},
+    {name: 'mimeType', default: ''},
+    {name: 'width', default: null as number | null},
+    {name: 'height', default: null as number | null},
+    {name: 'duration', default: 0},
+    {name: 'thumbnailSrc', default: '', urlType: 'url'},
+    {name: 'customThumbnailSrc', default: '', urlType: 'url'},
+    {name: 'thumbnailWidth', default: null as number | null},
+    {name: 'thumbnailHeight', default: null as number | null},
+    {name: 'cardWidth', default: 'regular'},
+    {name: 'loop', default: false}
+] as const satisfies readonly DecoratorNodeProperty[];
+
+export type VideoData = DecoratorNodeData<typeof videoProperties>;
+
+export interface VideoNode extends DecoratorNodeValueMap<typeof videoProperties> {}
+
 export class VideoNode extends generateDecoratorNode({
     nodeType: 'video',
-    properties: [
-        {name: 'src', default: '', urlType: 'url'},
-        {name: 'caption', default: '', urlType: 'html', wordCount: true},
-        {name: 'fileName', default: ''},
-        {name: 'mimeType', default: ''},
-        {name: 'width', default: null},
-        {name: 'height', default: null},
-        {name: 'duration', default: 0},
-        {name: 'thumbnailSrc', default: '', urlType: 'url'},
-        {name: 'customThumbnailSrc', default: '', urlType: 'url'},
-        {name: 'thumbnailWidth', default: null},
-        {name: 'thumbnailHeight', default: null},
-        {name: 'cardWidth', default: 'regular'},
-        {name: 'loop', default: false}
-    ],
+    properties: videoProperties,
     defaultRenderFn: renderVideoNode
 }) {
     /* override */
@@ -59,10 +66,10 @@ export class VideoNode extends generateDecoratorNode({
     }
 }
 
-export const $createVideoNode = (dataset) => {
+export const $createVideoNode = (dataset?: VideoData) => {
     return new VideoNode(dataset);
 };
 
-export function $isVideoNode(node) {
+export function $isVideoNode(node: unknown): node is VideoNode {
     return node instanceof VideoNode;
 }

@@ -1,13 +1,14 @@
-import {readCaptionFromElement} from '../../utils/read-caption-from-element';
+import type {LexicalNode} from 'lexical';
+import {readCaptionFromElement} from '../../utils/read-caption-from-element.js';
 
-export function parseVideoNode(VideoNode) {
+export function parseVideoNode(VideoNode: new (data: Record<string, unknown>) => LexicalNode) {
     return {
-        figure: (nodeElem) => {
+        figure: (nodeElem: HTMLElement) => {
             const isKgVideoCard = nodeElem.classList?.contains('kg-video-card');
             if (nodeElem.tagName === 'FIGURE' && isKgVideoCard) {
                 return {
-                    conversion(domNode) {
-                        const videoNode = domNode.querySelector('.kg-video-container video');
+                    conversion(domNode: HTMLElement) {
+                        const videoNode = domNode.querySelector('.kg-video-container video') as HTMLVideoElement | null;
                         const durationNode = domNode.querySelector('.kg-video-duration');
                         const videoSrc = videoNode && videoNode.src;
                         const videoWidth = videoNode && videoNode.width;
@@ -19,18 +20,19 @@ export function parseVideoNode(VideoNode) {
                             return null;
                         }
 
-                        const payload = {
+                        const payload: Record<string, unknown> = {
                             src: videoSrc,
                             loop: !!videoNode.loop,
-                            cardWidth: getCardWidth(videoNode)
+                            cardWidth: getCardWidth(domNode)
                         };
 
                         if (durationText) {
-                            const [minutes, seconds] = durationText.split(':');
-                            try {
-                                payload.duration = parseInt(minutes) * 60 + parseInt(seconds);
-                            } catch (e) {
-                                // ignore duration
+                            const [rawMinutes, rawSeconds = '0'] = durationText.split(':');
+                            const minutes = Number.parseInt(rawMinutes.trim(), 10);
+                            const seconds = Number.parseInt(rawSeconds.trim(), 10);
+
+                            if (Number.isFinite(minutes) && Number.isFinite(seconds)) {
+                                payload.duration = minutes * 60 + seconds;
                             }
                         }
 
@@ -57,7 +59,7 @@ export function parseVideoNode(VideoNode) {
                         const node = new VideoNode(payload);
                         return {node};
                     },
-                    priority: 1
+                    priority: 1 as const
                 };
             }
             return null;
@@ -65,7 +67,7 @@ export function parseVideoNode(VideoNode) {
     };
 }
 
-function getCardWidth(domNode) {
+function getCardWidth(domNode: Element) {
     if (domNode.classList.contains('kg-width-full')) {
         return 'full';
     } else if (domNode.classList.contains('kg-width-wide')) {

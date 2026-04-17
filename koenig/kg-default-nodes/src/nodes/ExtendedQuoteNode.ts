@@ -1,5 +1,7 @@
 import {QuoteNode} from '@lexical/rich-text';
+import type {SerializedQuoteNode} from '@lexical/rich-text';
 import {$createLineBreakNode, $isParagraphNode} from 'lexical';
+import type {LexicalNode} from 'lexical';
 
 // Since the QuoteNode is foundational to Lexical rich-text, only using a
 // custom QuoteNode is undesirable as it means every package would need to
@@ -12,7 +14,7 @@ import {$createLineBreakNode, $isParagraphNode} from 'lexical';
 export const extendedQuoteNodeReplacement = {replace: QuoteNode, with: () => new ExtendedQuoteNode()};
 
 export class ExtendedQuoteNode extends QuoteNode {
-    constructor(key) {
+    constructor(key?: string) {
         super(key);
     }
 
@@ -20,7 +22,7 @@ export class ExtendedQuoteNode extends QuoteNode {
         return 'extended-quote';
     }
 
-    static clone(node) {
+    static clone(node: ExtendedQuoteNode) {
         return new ExtendedQuoteNode(node.__key);
     }
 
@@ -32,7 +34,7 @@ export class ExtendedQuoteNode extends QuoteNode {
         };
     }
 
-    static importJSON(serializedNode) {
+    static importJSON(serializedNode: SerializedQuoteNode) {
         return QuoteNode.importJSON(serializedNode);
     }
 
@@ -55,14 +57,14 @@ function convertBlockquoteElement() {
             const node = new ExtendedQuoteNode();
             return {
                 node,
-                after: (childNodes) => {
+                after: (childNodes: LexicalNode[]) => {
                     // Blockquotes can have nested paragraphs. In our original mobiledoc
                     // editor we parsed all of the nested paragraphs into a single blockquote
                     // separating each paragraph with two line breaks. We replicate that
                     // here so we don't have a breaking change in conversion behaviour.
-                    const newChildNodes = [];
+                    const newChildNodes: LexicalNode[] = [];
 
-                    childNodes.forEach((child) => {
+                    childNodes.forEach((child: LexicalNode) => {
                         if ($isParagraphNode(child)) {
                             if (newChildNodes.length > 0) {
                                 newChildNodes.push($createLineBreakNode());
@@ -79,6 +81,6 @@ function convertBlockquoteElement() {
                 }
             };
         },
-        priority: 1
+        priority: 1 as const
     };
 }

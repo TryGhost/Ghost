@@ -1,12 +1,15 @@
-const {createDocument} = require('../test-utils');
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$generateNodesFromDOM} = require('@lexical/html');
-const {DEFAULT_CONFIG, DEFAULT_NODES} = require('../../');
+import should from 'should';
+import {createDocument} from '../test-utils/index.js';
+import {createHeadlessEditor} from '@lexical/headless';
+import {$generateNodesFromDOM} from '@lexical/html';
+import {DEFAULT_CONFIG, DEFAULT_NODES} from '../../src/index.js';
+import type {HTMLConfig, LexicalEditor} from 'lexical';
+import type {ElementNode} from 'lexical';
 
 describe('Serializers: linebreak', function () {
-    let editor;
+    let editor: LexicalEditor;
 
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -18,7 +21,7 @@ describe('Serializers: linebreak', function () {
     };
 
     beforeEach(function () {
-        editor = createHeadlessEditor({nodes: DEFAULT_NODES, html: DEFAULT_CONFIG.html});
+        editor = createHeadlessEditor({nodes: DEFAULT_NODES, html: DEFAULT_CONFIG.html as HTMLConfig});
     });
 
     describe('import', function () {
@@ -41,10 +44,10 @@ describe('Serializers: linebreak', function () {
 
                 should.equal(nodes.length, 1);
                 should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[0].getChildren().length, 3);
-                should.equal(nodes[0].getChildren()[0].getType(), 'extended-text');
-                should.equal(nodes[0].getChildren()[1].getType(), 'linebreak');
-                should.equal(nodes[0].getChildren()[2].getType(), 'extended-text');
+                should.equal((nodes[0] as ElementNode).getChildren().length, 3);
+                should.equal((nodes[0] as ElementNode).getChildren()[0].getType(), 'extended-text');
+                should.equal((nodes[0] as ElementNode).getChildren()[1].getType(), 'linebreak');
+                should.equal((nodes[0] as ElementNode).getChildren()[2].getType(), 'extended-text');
             }));
         });
 
@@ -57,16 +60,16 @@ describe('Serializers: linebreak', function () {
                 should.equal(nodes.length, 3);
 
                 should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[0].getChildren().length, 1);
-                should.equal(nodes[0].getChildren()[0].getType(), 'extended-text');
-                should.equal(nodes[0].getChildren()[0].getTextContent(), 'Before');
+                should.equal((nodes[0] as ElementNode).getChildren().length, 1);
+                should.equal((nodes[0] as ElementNode).getChildren()[0].getType(), 'extended-text');
+                should.equal((nodes[0] as ElementNode).getChildren()[0].getTextContent(), 'Before');
 
                 should.equal(nodes[1].getType(), 'linebreak');
 
                 should.equal(nodes[2].getType(), 'paragraph');
-                should.equal(nodes[2].getChildren().length, 1);
-                should.equal(nodes[2].getChildren()[0].getType(), 'extended-text');
-                should.equal(nodes[2].getChildren()[0].getTextContent(), 'After');
+                should.equal((nodes[2] as ElementNode).getChildren().length, 1);
+                should.equal((nodes[2] as ElementNode).getChildren()[0].getType(), 'extended-text');
+                should.equal((nodes[2] as ElementNode).getChildren()[0].getTextContent(), 'After');
             }));
 
             it('(GDoc) no conversion for breaks between paragraphs', editorTest(function () {
@@ -76,14 +79,14 @@ describe('Serializers: linebreak', function () {
 
                 should.equal(nodes.length, 2);
                 should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[0].getChildren().length, 1);
-                should.equal(nodes[0].getChildren()[0].getType(), 'extended-text');
-                should.equal(nodes[0].getChildren()[0].getTextContent(), 'Before');
+                should.equal((nodes[0] as ElementNode).getChildren().length, 1);
+                should.equal((nodes[0] as ElementNode).getChildren()[0].getType(), 'extended-text');
+                should.equal((nodes[0] as ElementNode).getChildren()[0].getTextContent(), 'Before');
 
                 should.equal(nodes[1].getType(), 'paragraph');
-                should.equal(nodes[1].getChildren().length, 1);
-                should.equal(nodes[1].getChildren()[0].getType(), 'extended-text');
-                should.equal(nodes[1].getChildren()[0].getTextContent(), 'After');
+                should.equal((nodes[1] as ElementNode).getChildren().length, 1);
+                should.equal((nodes[1] as ElementNode).getChildren()[0].getType(), 'extended-text');
+                should.equal((nodes[1] as ElementNode).getChildren()[0].getTextContent(), 'After');
             }));
         });
 

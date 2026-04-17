@@ -1,23 +1,26 @@
-const {createDocument, dom, html} = require('../test-utils');
-const {$getRoot} = require('lexical');
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$generateNodesFromDOM} = require('@lexical/html');
-const {GalleryNode, $createGalleryNode, $isGalleryNode} = require('../../');
-const {ImageNode} = require('../../');
+import should from 'should';
+import {createDocument, dom, html} from '../test-utils/index.js';
+import {$getRoot, LexicalEditor} from 'lexical';
+import {createHeadlessEditor} from '@lexical/headless';
+import {$generateNodesFromDOM} from '@lexical/html';
+import {GalleryNode, $createGalleryNode, $isGalleryNode} from '../../src/index.js';
+import {ImageNode} from '../../src/index.js';
 
 // include ImageNode so we can make sure imported sibling nodes do not get
 // processed by other lower priority nodes when skipped with dataset.hasBeenProcessed
 const editorNodes = [GalleryNode, ImageNode];
 
+void should;
+
 describe('GalleryNode', function () {
-    let editor;
-    let dataset;
-    let exportOptions;
+    let editor: LexicalEditor;
+    let dataset: Record<string, unknown>;
+    let exportOptions: Record<string, unknown>;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -124,8 +127,17 @@ describe('GalleryNode', function () {
             galleryNode.caption.should.equal(dataset.caption);
         }));
 
-        it('has setters for all properties', editorTest(function () {
+        it('can be created without a dataset', editorTest(function () {
             const galleryNode = $createGalleryNode();
+
+            galleryNode.getDataset().should.deepEqual({
+                images: [],
+                caption: ''
+            });
+        }));
+
+        it('has setters for all properties', editorTest(function () {
+            const galleryNode = $createGalleryNode({} as Record<string, unknown>);
 
             galleryNode.images.should.deepEqual([]);
             galleryNode.images = [{src: 'image1.jpg'}];
@@ -153,7 +165,7 @@ describe('GalleryNode', function () {
         it('returns a copy of the current node', editorTest(function () {
             const galleryNode = $createGalleryNode(dataset);
             const galleryNodeDataset = galleryNode.getDataset();
-            const clone = GalleryNode.clone(galleryNode);
+            const clone = GalleryNode.clone(galleryNode) as GalleryNode;
             const cloneDataset = clone.getDataset();
 
             cloneDataset.should.deepEqual({...galleryNodeDataset});
@@ -200,7 +212,7 @@ describe('GalleryNode', function () {
 
             editor.getEditorState().read(() => {
                 try {
-                    const [galleryNode] = $getRoot(editor).getChildren();
+                    const [galleryNode] = $getRoot().getChildren() as GalleryNode[];
 
                     galleryNode.images.should.deepEqual(dataset.images);
                     galleryNode.caption.should.equal(dataset.caption);
@@ -257,7 +269,7 @@ describe('GalleryNode', function () {
                 <!--kg-card-end: gallery-->
             `);
 
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as GalleryNode[];
             nodes.length.should.equal(1);
 
             nodes[0].images.should.deepEqual([
@@ -325,7 +337,7 @@ describe('GalleryNode', function () {
                 </div>
             `);
 
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as GalleryNode[];
             nodes.length.should.equal(1);
 
             nodes[0].images.should.deepEqual([
@@ -392,7 +404,7 @@ describe('GalleryNode', function () {
                 </div>
             `);
 
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as GalleryNode[];
             nodes.length.should.equal(1);
 
             nodes[0].caption.should.equal('First Caption / End Caption');
@@ -432,7 +444,7 @@ describe('GalleryNode', function () {
                     </div>
                 `);
 
-                const nodes = $generateNodesFromDOM(editor, document);
+                const nodes = $generateNodesFromDOM(editor, document) as GalleryNode[];
                 nodes.length.should.equal(1);
 
                 nodes[0].getType().should.equal('gallery');
@@ -485,7 +497,7 @@ describe('GalleryNode', function () {
                     </div>
                 `);
 
-                const nodes = $generateNodesFromDOM(editor, document);
+                const nodes = $generateNodesFromDOM(editor, document) as GalleryNode[];
                 nodes.length.should.equal(1);
 
                 const images = nodes[0].images;
@@ -529,7 +541,7 @@ describe('GalleryNode', function () {
                     </div>
                 `);
 
-                const nodes = $generateNodesFromDOM(editor, document);
+                const nodes = $generateNodesFromDOM(editor, document) as GalleryNode[];
                 nodes.length.should.equal(1);
 
                 const images = nodes[0].images;
@@ -578,7 +590,7 @@ describe('GalleryNode', function () {
                     </div>
                 `);
 
-                const nodes = $generateNodesFromDOM(editor, document);
+                const nodes = $generateNodesFromDOM(editor, document) as GalleryNode[];
                 nodes.length.should.equal(1);
 
                 const images = nodes[0].images;
@@ -621,33 +633,32 @@ describe('GalleryNode', function () {
                     </div>
                 `);
 
-                const nodes = $generateNodesFromDOM(editor, document);
-                nodes.length.should.not.equal(1);
-                nodes[0].getType().should.not.equal('gallery');
+                const nodes = $generateNodesFromDOM(editor, document) as GalleryNode[];
+                nodes.some(node => node.getType() === 'gallery').should.be.false();
             }));
         });
     });
 
     describe('exportDOM', function () {
         it('renders empty span with no images', editorTest(function () {
-            const galleryNode = $createGalleryNode({images: [], caption: null});
+            const galleryNode = $createGalleryNode({images: [], caption: null as unknown as string});
             const {element} = galleryNode.exportDOM(exportOptions);
 
-            element.outerHTML.should.equal('<span></span>');
+            (element as HTMLElement).outerHTML.should.equal('<span></span>');
         }));
 
         it('renders empty span no valid images', editorTest(function () {
-            const galleryNode = $createGalleryNode({images: [{src: 'undefined'}], caption: null});
+            const galleryNode = $createGalleryNode({images: [{src: 'undefined'}], caption: null as unknown as string});
             const {element} = galleryNode.exportDOM(exportOptions);
 
-            element.outerHTML.should.equal('<span></span>');
+            (element as HTMLElement).outerHTML.should.equal('<span></span>');
         }));
 
         it('renders', editorTest(function () {
             const galleryNode = $createGalleryNode(dataset);
             const {element} = galleryNode.exportDOM({...exportOptions, canTransformImage: () => false});
 
-            element.outerHTML.should.prettifyTo(html`
+            (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption">
                     <div class="kg-gallery-container">
                         <div class="kg-gallery-row">
@@ -688,7 +699,7 @@ describe('GalleryNode', function () {
             });
             const {element} = galleryNode.exportDOM({...exportOptions, canTransformImage: () => false});
 
-            element.outerHTML.should.prettifyTo(html`
+            (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption">
                     <div class="kg-gallery-container">
                         <div class="kg-gallery-row">
@@ -715,7 +726,7 @@ describe('GalleryNode', function () {
             });
             const {element} = galleryNode.exportDOM({...exportOptions, canTransformImage: () => false});
 
-            element.outerHTML.should.prettifyTo(html`
+            (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption">
                     <div class="kg-gallery-container">
                         <div class="kg-gallery-row">
@@ -742,6 +753,50 @@ describe('GalleryNode', function () {
                         fileName: 'NatGeo02.jpg',
                         src: '/content/images/2018/08/NatGeo02-10.jpg'
                     },
+                    null as unknown,
+                    7 as unknown,
+                    {
+                        row: 0,
+                        fileName: 'NatGeoBad.jpg',
+                        src: '/content/images/2018/08/NatGeoBad.jpg',
+                        width: '3200',
+                        height: 1600
+                    } as unknown,
+                    {
+                        row: '0',
+                        fileName: 'NatGeoRowBad.jpg',
+                        src: '/content/images/2018/08/NatGeoRowBad.jpg',
+                        width: 3200,
+                        height: 1600
+                    } as unknown,
+                    {
+                        row: -1,
+                        fileName: 'NatGeoNegativeRow.jpg',
+                        src: '/content/images/2018/08/NatGeoNegativeRow.jpg',
+                        width: 3200,
+                        height: 1600
+                    } as unknown,
+                    {
+                        row: 0.5,
+                        fileName: 'NatGeoFractionalRow.jpg',
+                        src: '/content/images/2018/08/NatGeoFractionalRow.jpg',
+                        width: 3200,
+                        height: 1600
+                    } as unknown,
+                    {
+                        row: 0,
+                        fileName: 'NatGeoZeroWidth.jpg',
+                        src: '/content/images/2018/08/NatGeoZeroWidth.jpg',
+                        width: 0,
+                        height: 1600
+                    } as unknown,
+                    {
+                        row: 0,
+                        fileName: 'NatGeoZeroHeight.jpg',
+                        src: '/content/images/2018/08/NatGeoZeroHeight.jpg',
+                        width: 3200,
+                        height: 0
+                    } as unknown,
                     {
                         row: 0,
                         fileName: 'NatGeo03.jpg',
@@ -754,7 +809,7 @@ describe('GalleryNode', function () {
             });
             const {element} = galleryNode.exportDOM({...exportOptions, canTransformImage: () => false});
 
-            element.outerHTML.should.prettifyTo(html`
+            (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption">
                     <div class="kg-gallery-container">
                         <div class="kg-gallery-row">
@@ -789,7 +844,7 @@ describe('GalleryNode', function () {
 
             const {element} = galleryNode.exportDOM(exportOptions);
 
-            const output = element.outerHTML;
+            const output = (element as HTMLElement).outerHTML;
 
             // local is resized
             output.should.match(/width="2000"/);
@@ -804,8 +859,6 @@ describe('GalleryNode', function () {
 
         it('renders all 9 images in a 3x3 grid', editorTest(function () {
             const galleryNode = $createGalleryNode({
-                type: 'gallery',
-                version: 1,
                 images: [
                     {
                         row: 0,
@@ -875,10 +928,10 @@ describe('GalleryNode', function () {
             });
 
             // skip srcset
-            delete exportOptions.imageOptimization.contentImageSizes;
+            delete (exportOptions.imageOptimization as Record<string, unknown>).contentImageSizes;
             const {element} = galleryNode.exportDOM(exportOptions);
 
-            element.outerHTML.should.prettifyTo(html`
+            (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-gallery-card kg-width-wide">
                     <div class="kg-gallery-container">
                         <div class="kg-gallery-row">
@@ -925,10 +978,10 @@ describe('GalleryNode', function () {
                     }]
                 });
 
-                delete exportOptions.imageOptimization.defaultMaxWidth;
+                delete (exportOptions.imageOptimization as Record<string, unknown>).defaultMaxWidth;
                 const {element} = galleryNode.exportDOM(exportOptions);
 
-                element.outerHTML.should.prettifyTo(html`
+                (element as HTMLElement).outerHTML.should.prettifyTo(html`
                     <figure class="kg-card kg-gallery-card kg-width-wide">
                         <div class="kg-gallery-container">
                             <div class="kg-gallery-row">
@@ -958,11 +1011,11 @@ describe('GalleryNode', function () {
                     }]
                 });
 
-                delete exportOptions.imageOptimization.defaultMaxWidth;
+                delete (exportOptions.imageOptimization as Record<string, unknown>).defaultMaxWidth;
                 exportOptions.siteUrl = 'https://localhost:2368';
                 const {element} = galleryNode.exportDOM(exportOptions);
 
-                element.outerHTML.should.prettifyTo(html`
+                (element as HTMLElement).outerHTML.should.prettifyTo(html`
                     <figure class="kg-card kg-gallery-card kg-width-wide">
                         <div class="kg-gallery-container">
                             <div class="kg-gallery-row">
@@ -985,11 +1038,11 @@ describe('GalleryNode', function () {
                     }]
                 });
 
-                delete exportOptions.imageOptimization.defaultMaxWidth;
+                delete (exportOptions.imageOptimization as Record<string, unknown>).defaultMaxWidth;
                 exportOptions.target = 'email';
                 const {element} = galleryNode.exportDOM(exportOptions);
 
-                element.outerHTML.should.not.containEql('srcset=');
+                (element as HTMLElement).outerHTML.should.not.containEql('srcset=');
             }));
 
             it('is omitted when no contentImageSizes are passed as options', editorTest(function () {
@@ -1003,10 +1056,10 @@ describe('GalleryNode', function () {
                     }]
                 });
 
-                delete exportOptions.imageOptimization.contentImageSizes;
+                delete (exportOptions.imageOptimization as Record<string, unknown>).contentImageSizes;
                 const {element} = galleryNode.exportDOM(exportOptions);
 
-                element.outerHTML.should.not.containEql('srcset=');
+                (element as HTMLElement).outerHTML.should.not.containEql('srcset=');
             }));
 
             it('is omitted when `srcsets: false` is passed as an options', editorTest(function () {
@@ -1020,10 +1073,10 @@ describe('GalleryNode', function () {
                     }]
                 });
 
-                exportOptions.imageOptimization.srcsets = false;
+                (exportOptions.imageOptimization as Record<string, unknown>).srcsets = false;
                 const {element} = galleryNode.exportDOM(exportOptions);
 
-                element.outerHTML.should.not.containEql('srcset=');
+                (element as HTMLElement).outerHTML.should.not.containEql('srcset=');
             }));
         });
 
@@ -1053,10 +1106,10 @@ describe('GalleryNode', function () {
 
                 const {element} = galleryNode.exportDOM(exportOptions);
 
-                const output = element.outerHTML;
+                const output = (element as HTMLElement).outerHTML;
                 const sizes = output.match(/sizes="(.*?)"/g);
 
-                sizes.length.should.equal(2);
+                sizes!.length.should.equal(2);
 
                 output.should.match(/standard\.jpg 720w" sizes="\(min-width: 720px\) 720px"/);
                 output.should.match(/photo\?w=2000 2000w" sizes="\(min-width: 720px\) 720px"/);
@@ -1075,7 +1128,7 @@ describe('GalleryNode', function () {
 
                 const {element} = galleryNode.exportDOM(exportOptions);
 
-                element.outerHTML.should.match(/standard\.jpg 2000w" sizes="\(min-width: 1200px\) 1200px"/);
+                (element as HTMLElement).outerHTML.should.match(/standard\.jpg 2000w" sizes="\(min-width: 1200px\) 1200px"/);
             }));
 
             it('uses "standard" media query for medium single-image galleries', editorTest(function () {
@@ -1091,7 +1144,7 @@ describe('GalleryNode', function () {
 
                 const {element} = galleryNode.exportDOM(exportOptions);
 
-                element.outerHTML.should.match(/standard\.jpg 1000w" sizes="\(min-width: 720px\) 720px"/);
+                (element as HTMLElement).outerHTML.should.match(/standard\.jpg 1000w" sizes="\(min-width: 720px\) 720px"/);
             }));
 
             it('is omitted when srcsets are not available', editorTest(function () {
@@ -1117,10 +1170,10 @@ describe('GalleryNode', function () {
                     }]
                 });
 
-                exportOptions.imageOptimization.srcsets = false;
+                (exportOptions.imageOptimization as Record<string, unknown>).srcsets = false;
                 const {element} = galleryNode.exportDOM(exportOptions);
 
-                const output = element.outerHTML;
+                const output = (element as HTMLElement).outerHTML;
                 const sizes = output.match(/sizes="(.*?)"/g);
 
                 should.not.exist(sizes);
@@ -1162,10 +1215,10 @@ describe('GalleryNode', function () {
                 });
 
                 const {element} = galleryNode.exportDOM(exportOptions);
-                const output = element.outerHTML;
+                const output = (element as HTMLElement).outerHTML;
 
                 // 3 images wider than 600px template width resized to fit
-                output.match(/width="600"/g).length.should.equal(3);
+                output.match(/width="600"/g)!.length.should.equal(3);
                 // 1 image smaller than template width
                 output.should.match(/width="300"/);
 
@@ -1197,7 +1250,7 @@ describe('GalleryNode', function () {
                 exportOptions.canTransformImage = () => false;
 
                 const {element} = galleryNode.exportDOM(exportOptions);
-                const output = element.outerHTML;
+                const output = (element as HTMLElement).outerHTML;
 
                 output.should.not.match(/width="3000"/);
                 output.should.match(/width="600"/);
@@ -1211,7 +1264,7 @@ describe('GalleryNode', function () {
 
     describe('getTextContent', function () {
         it('returns contents', editorTest(function () {
-            const node = $createGalleryNode();
+            const node = $createGalleryNode({} as Record<string, unknown>);
             node.getTextContent().should.equal('');
 
             node.caption = 'Test caption';

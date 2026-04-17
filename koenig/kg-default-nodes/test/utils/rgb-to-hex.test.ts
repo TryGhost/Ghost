@@ -1,6 +1,5 @@
-// // import {rgbToHex} from '../../lib/utils/rgb-to-hex';
-const {utils} = require('../../');
-const rgbToHex = utils.rgbToHex;
+import should from 'should';
+import {rgbToHex} from '../../src/utils/rgb-to-hex.js';
 
 describe('rgbToHex', function () {
     it('should convert RGB to HEX', function () {

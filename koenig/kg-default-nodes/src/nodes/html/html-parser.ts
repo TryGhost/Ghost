@@ -1,39 +1,63 @@
-export function parseHtmlNode(HtmlNode) {
-    return {
-        '#comment': (nodeElem) => {
-            if (nodeElem.nodeType === 8 && nodeElem.nodeValue.trim().match(/^kg-card-begin:\s?html$/)) {
-                return {
-                    conversion(domNode) {
-                        let html = [];
-                        let nextNode = domNode.nextSibling;
+import type {LexicalNode} from 'lexical';
 
-                        while (nextNode && !isHtmlEndComment(nextNode)) {
-                            let currentNode = nextNode;
-                            html.push(currentNode.outerHTML);
-                            nextNode = currentNode.nextSibling;
-                            // remove nodes as we go so that they don't go through the parser
-                            currentNode.remove();
+export function parseHtmlNode(HtmlNode: new (data: Record<string, unknown>) => LexicalNode) {
+    return {
+        '#comment': (nodeElem: Node) => {
+            if (nodeElem.nodeType === 8 && nodeElem.nodeValue?.trim().match(/^kg-card-begin:\s?html$/)) {
+                return {
+                    conversion(domNode: Node) {
+                        const html = [];
+                        let nextNode = domNode.nextSibling;
+                        let hasEndComment = false;
+
+                        while (nextNode) {
+                            if (isHtmlEndComment(nextNode)) {
+                                hasEndComment = true;
+                                break;
+                            }
+
+                            nextNode = nextNode.nextSibling;
                         }
 
-                        let payload = {html: html.join('\n').trim()};
+                        nextNode = domNode.nextSibling;
+
+                        if (hasEndComment) {
+                            while (nextNode && !isHtmlEndComment(nextNode)) {
+                                const currentNode = nextNode;
+                                nextNode = currentNode.nextSibling;
+                                if (currentNode.nodeType === 1) {
+                                    html.push((currentNode as Element).outerHTML);
+                                } else if (currentNode.nodeType === 3 && currentNode.textContent) {
+                                    html.push(currentNode.textContent);
+                                }
+                                // remove nodes as we go so that they don't go through the parser
+                                currentNode.remove();
+                            }
+
+                            if (nextNode && isHtmlEndComment(nextNode)) {
+                                nextNode.remove();
+                            }
+                        }
+
+                        const payload: Record<string, unknown> = {html: html.join('\n').trim()};
                         const node = new HtmlNode(payload);
                         return {node};
                     },
-                    priority: 0
+                    priority: 0 as const
                 };
             }
 
             return null;
         },
-        table: (nodeElem) => {
-            if (nodeElem.nodeType === 1 && nodeElem.tagName === 'TABLE' && nodeElem.parentNode.tagName !== 'TABLE') {
+        table: (nodeElem: HTMLElement) => {
+            if (nodeElem.nodeType === 1 && nodeElem.tagName === 'TABLE' && (nodeElem.parentNode as HTMLElement)?.tagName !== 'TABLE') {
                 return {
-                    conversion(domNode) {
-                        const payload = {html: domNode.outerHTML};
+                    conversion(domNode: HTMLElement) {
+                        const payload: Record<string, unknown> = {html: domNode.outerHTML};
                         const node = new HtmlNode(payload);
                         return {node};
                     },
-                    priority: 0
+                    priority: 0 as const
                 };
             }
 
@@ -42,6 +66,6 @@ export function parseHtmlNode(HtmlNode) {
     };
 }
 
-function isHtmlEndComment(node) {
-    return node && node.nodeType === 8 && node.nodeValue.trim().match(/^kg-card-end:\s?html$/);
+function isHtmlEndComment(node: Node) {
+    return node && node.nodeType === 8 && node.nodeValue?.trim().match(/^kg-card-end:\s?html$/);
 }

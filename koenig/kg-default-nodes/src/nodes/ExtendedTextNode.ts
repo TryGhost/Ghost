@@ -1,4 +1,5 @@
 import {$isTextNode, TextNode} from 'lexical';
+import type {DOMConversion, DOMConversionOutput, LexicalNode, SerializedTextNode} from 'lexical';
 
 // Since the TextNode is foundational to all Lexical packages, including the
 // plain text use case. Handling any rich text logic is undesirable. This creates
@@ -7,10 +8,10 @@ import {$isTextNode, TextNode} from 'lexical';
 //
 // https://lexical.dev/docs/concepts/serialization#handling-extended-html-styling
 
-export const extendedTextNodeReplacement = {replace: TextNode, with: node => new ExtendedTextNode(node.__text)};
+export const extendedTextNodeReplacement = {replace: TextNode, with: (node: TextNode) => new ExtendedTextNode(node.__text)};
 
 export class ExtendedTextNode extends TextNode {
-    constructor(text, key) {
+    constructor(text: string, key?: string) {
         super(text, key);
     }
 
@@ -18,7 +19,7 @@ export class ExtendedTextNode extends TextNode {
         return 'extended-text';
     }
 
-    static clone(node) {
+    static clone(node: ExtendedTextNode) {
         return new ExtendedTextNode(node.__text, node.__key);
     }
 
@@ -28,13 +29,18 @@ export class ExtendedTextNode extends TextNode {
             ...importers,
             span: () => ({
                 conversion: patchConversion(importers?.span, convertSpanElement),
-                priority: 1
+                priority: 1 as const
             })
         };
     }
 
-    static importJSON(serializedNode) {
-        return TextNode.importJSON(serializedNode);
+    static importJSON(serializedNode: SerializedTextNode): ExtendedTextNode {
+        const node = new ExtendedTextNode(serializedNode.text);
+        node.setFormat(serializedNode.format);
+        node.setDetail(serializedNode.detail);
+        node.setMode(serializedNode.mode);
+        node.setStyle(serializedNode.style);
+        return node;
     }
 
     exportJSON() {
@@ -43,7 +49,7 @@ export class ExtendedTextNode extends TextNode {
         return json;
     }
 
-    isSimpleText() {
+    isSimpleText(): boolean {
         return (
             (this.__type === 'text' || this.__type === 'extended-text') &&
             this.__mode === 0
@@ -55,13 +61,15 @@ export class ExtendedTextNode extends TextNode {
     }
 }
 
-function patchConversion(originalDOMConverter, convertFn) {
-    return (node) => {
+type DOMConverterFn = ((node: HTMLElement) => DOMConversion | null) | undefined;
+
+function patchConversion(originalDOMConverter: DOMConverterFn, convertFn: (lexicalNode: TextNode, domNode: HTMLElement) => TextNode) {
+    return (node: HTMLElement) => {
         const original = originalDOMConverter?.(node);
         if (!original) {
             return null;
         }
-        const originalOutput = original.conversion(node);
+        const originalOutput = original.conversion(node) as DOMConversionOutput;
 
         if (!originalOutput) {
             return originalOutput;
@@ -69,8 +77,8 @@ function patchConversion(originalDOMConverter, convertFn) {
 
         return {
             ...originalOutput,
-            forChild: (lexicalNode, parent) => {
-                const originalForChild = originalOutput?.forChild ?? (x => x);
+            forChild: (lexicalNode: LexicalNode, parent: LexicalNode | null | undefined) => {
+                const originalForChild = originalOutput?.forChild ?? ((x: LexicalNode) => x);
                 const result = originalForChild(lexicalNode, parent);
                 if ($isTextNode(result)) {
                     return convertFn(result, node);
@@ -81,7 +89,7 @@ function patchConversion(originalDOMConverter, convertFn) {
     };
 }
 
-function convertSpanElement(lexicalNode, domNode) {
+function convertSpanElement(lexicalNode: TextNode, domNode: HTMLElement) {
     const span = domNode;
 
     // Word uses span tags + font-weight for bold text

@@ -1,16 +1,22 @@
-import {generateDecoratorNode} from '../../generate-decorator-node';
-import {parseAudioNode} from './audio-parser';
-import {renderAudioNode} from './audio-renderer';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {parseAudioNode} from './audio-parser.js';
+import {renderAudioNode} from './audio-renderer.js';
+
+const audioProperties = [
+    {name: 'duration', default: 0},
+    {name: 'mimeType', default: ''},
+    {name: 'src', default: '', urlType: 'url'},
+    {name: 'title', default: ''},
+    {name: 'thumbnailSrc', default: ''}
+] as const satisfies readonly DecoratorNodeProperty[];
+
+export type AudioData = DecoratorNodeData<typeof audioProperties>;
+
+export interface AudioNode extends DecoratorNodeValueMap<typeof audioProperties> {}
 
 export class AudioNode extends generateDecoratorNode({
     nodeType: 'audio',
-    properties: [
-        {name: 'duration', default: 0},
-        {name: 'mimeType', default: ''},
-        {name: 'src', default: '', urlType: 'url'},
-        {name: 'title', default: ''},
-        {name: 'thumbnailSrc', default: ''}
-    ],
+    properties: audioProperties,
     defaultRenderFn: renderAudioNode
 }) {
     static importDOM() {
@@ -18,10 +24,10 @@ export class AudioNode extends generateDecoratorNode({
     }
 }
 
-export const $createAudioNode = (dataset) => {
+export const $createAudioNode = (dataset: AudioData = {}) => {
     return new AudioNode(dataset);
 };
 
-export function $isAudioNode(node) {
+export function $isAudioNode(node: unknown): node is AudioNode {
     return node instanceof AudioNode;
 }

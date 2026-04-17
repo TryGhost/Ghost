@@ -1,5 +1,5 @@
-export function readImageAttributesFromElement(element) {
-    const attrs = {};
+export function readImageAttributesFromElement(element: HTMLImageElement) {
+    const attrs: Record<string, string | number> = {};
 
     if (element.src) {
         attrs.src = element.src;
@@ -18,9 +18,12 @@ export function readImageAttributesFromElement(element) {
     }
 
     if ((!element.width && !element.height) && element.getAttribute('data-image-dimensions')) {
-        const [, width, height] = (/^(\d*)x(\d*)$/gi).exec(element.getAttribute('data-image-dimensions'));
-        attrs.width = parseInt(width, 10);
-        attrs.height = parseInt(height, 10);
+        const match = (/^(\d*)x(\d*)$/gi).exec(element.getAttribute('data-image-dimensions')!);
+        if (match) {
+            const [, width, height] = match;
+            attrs.width = parseInt(width, 10);
+            attrs.height = parseInt(height, 10);
+        }
     }
 
     if (element.alt) {
@@ -31,8 +34,8 @@ export function readImageAttributesFromElement(element) {
         attrs.title = element.title;
     }
 
-    if (element.parentNode.tagName === 'A') {
-        const href = element.parentNode.href;
+    if (element.parentNode && (element.parentNode as HTMLElement).tagName === 'A') {
+        const href = (element.parentNode as HTMLAnchorElement).href;
 
         if (href !== attrs.src) {
             attrs.href = href;

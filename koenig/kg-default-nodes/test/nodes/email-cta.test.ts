@@ -1,16 +1,17 @@
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$getRoot} = require('lexical');
-const {dom, html} = require('../test-utils');
-const {EmailCtaNode, $createEmailCtaNode, $isEmailCtaNode} = require('../../');
+import 'should';
+import {createHeadlessEditor} from '@lexical/headless';
+import {$getRoot, type LexicalEditor} from 'lexical';
+import {dom, html} from '../test-utils/index.js';
+import {EmailCtaNode, $createEmailCtaNode, $isEmailCtaNode} from '../../src/index.js';
 
 const editorNodes = [EmailCtaNode];
 
 describe('EmailCtaNode', function () {
-    let editor;
-    let dataset;
-    let exportOptions;
+    let editor: LexicalEditor;
+    let dataset: Record<string, unknown>;
+    let exportOptions: Record<string, unknown>;
 
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -112,7 +113,7 @@ describe('EmailCtaNode', function () {
         it('returns a copy of the current node', editorTest(function () {
             const emailCtaNode = $createEmailCtaNode(dataset);
             const emailCtaNodeDataset = emailCtaNode.getDataset();
-            const clone = EmailCtaNode.clone(emailCtaNode);
+            const clone = EmailCtaNode.clone(emailCtaNode) as EmailCtaNode;
             const cloneDataset = clone.getDataset();
 
             cloneDataset.should.deepEqual({...emailCtaNodeDataset});
@@ -155,7 +156,7 @@ describe('EmailCtaNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done) {
+        it('imports all data', function (done: (err?: unknown) => void) {
             const serializedState = JSON.stringify({
                 root: {
                     children: [{
@@ -175,7 +176,7 @@ describe('EmailCtaNode', function () {
 
             editor.getEditorState().read(() => {
                 try {
-                    const [emailNode] = $getRoot().getChildren();
+                    const [emailNode] = $getRoot().getChildren() as EmailCtaNode[];
 
                     emailNode.alignment.should.equal(dataset.alignment);
                     emailNode.buttonText.should.equal(dataset.buttonText);
@@ -210,8 +211,9 @@ describe('EmailCtaNode', function () {
             };
             const emailNode = $createEmailCtaNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.outerHTML.should.prettifyTo(html`
+            el.outerHTML.should.prettifyTo(html`
                 <div data-gh-segment="status:free">
                     <hr>
                     <p>Hello World</p>
@@ -236,8 +238,9 @@ describe('EmailCtaNode', function () {
             };
             const emailNode = $createEmailCtaNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.outerHTML.should.equal('<span></span>');
+            el.outerHTML.should.equal('<span></span>');
         }));
 
         it('does not render if all empty', editorTest(function () {
@@ -257,8 +260,9 @@ describe('EmailCtaNode', function () {
             };
             const emailNode = $createEmailCtaNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.outerHTML.should.equal('<span></span>');
+            el.outerHTML.should.equal('<span></span>');
         }));
 
         it('does not render if button text empty', editorTest(function () {
@@ -278,8 +282,9 @@ describe('EmailCtaNode', function () {
             };
             const emailNode = $createEmailCtaNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.outerHTML.should.equal('<span></span>');
+            el.outerHTML.should.equal('<span></span>');
         }));
 
         it('does not render button if button text empty', editorTest(function () {
@@ -299,8 +304,9 @@ describe('EmailCtaNode', function () {
             };
             const emailNode = $createEmailCtaNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.outerHTML.should.prettifyTo(html`
+            el.outerHTML.should.prettifyTo(html`
                 <div data-gh-segment="status:free">
                     <hr>
                     <p>Hello World</p>
@@ -326,8 +332,9 @@ describe('EmailCtaNode', function () {
             };
             const emailNode = $createEmailCtaNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.outerHTML.should.prettifyTo(html`
+            el.outerHTML.should.prettifyTo(html`
                 <div data-gh-segment="status:free">
                     <hr>
                     <p>Hello World</p>
@@ -353,8 +360,9 @@ describe('EmailCtaNode', function () {
             };
             const emailNode = $createEmailCtaNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.outerHTML.should.prettifyTo(html`
+            el.outerHTML.should.prettifyTo(html`
                 <div data-gh-segment="status:free">
                     <hr>
                     <p>Hello World</p>
@@ -392,8 +400,9 @@ describe('EmailCtaNode', function () {
             };
             const emailNode = $createEmailCtaNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.outerHTML.should.prettifyTo(html`
+            el.outerHTML.should.prettifyTo(html`
                 <div data-gh-segment="status:free">
                     <p>Hello World</p>
                     <div class="btn btn-accent">
@@ -429,8 +438,9 @@ describe('EmailCtaNode', function () {
             };
             const emailNode = $createEmailCtaNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.outerHTML.should.prettifyTo(html`
+            el.outerHTML.should.prettifyTo(html`
                 <div data-gh-segment="status:free">
                     <div class="btn btn-accent">
                         <table border="0" cellspacing="0" cellpadding="0" align="left">
@@ -465,8 +475,9 @@ describe('EmailCtaNode', function () {
             };
             const emailNode = $createEmailCtaNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.outerHTML.should.prettifyTo(html`
+            el.outerHTML.should.prettifyTo(html`
                 <div data-gh-segment="status:free" class="align-center">
                     <hr>
                     <p>Hello World</p>

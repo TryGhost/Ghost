@@ -1,8 +1,47 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
+import type {ExportDOMOptions} from '../../export-dom.js';
 
 // ref https://ghost.org/docs/themes/members#signup-forms
 
-function cardTemplate(nodeData) {
+interface SignupNodeData {
+    alignment: string;
+    buttonText: string;
+    header: string;
+    subheader: string;
+    disclaimer: string;
+    backgroundImageSrc: string;
+    backgroundSize: string;
+    backgroundColor: string;
+    buttonColor: string;
+    labels: string[];
+    layout: string;
+    textColor: string;
+    buttonTextColor: string;
+    successMessage: string;
+    swapped: boolean;
+}
+
+interface SignupDatasetNode {
+    __alignment: string;
+    __buttonText: string;
+    __header: string;
+    __subheader: string;
+    __disclaimer: string;
+    __backgroundImageSrc: string;
+    __backgroundSize: string;
+    __backgroundColor: string;
+    __buttonColor: string;
+    __labels: string[];
+    __layout: string;
+    __textColor: string;
+    __buttonTextColor: string;
+    __successMessage: string;
+    __swapped: boolean;
+}
+
+interface SignupRenderOptions extends ExportDOMOptions {}
+
+function cardTemplate(nodeData: SignupNodeData) {
     const cardClasses = getCardClasses(nodeData).join(' ');
 
     const backgroundAccent = getAccentClass(nodeData); // don't apply accent style if there's a background image
@@ -17,7 +56,7 @@ function cardTemplate(nodeData) {
 
     const formTemplate = `
         <form class="kg-signup-card-form" data-members-form="signup">
-            ${nodeData.labels.map(label => `<input data-members-label type="hidden" value="${label}" />`).join('\n')}
+            ${nodeData.labels.map((label: string) => `<input data-members-label type="hidden" value="${label}" />`).join('\n')}
             <div class="kg-signup-card-fields">
                 <input class="kg-signup-card-input" id="email" data-members-email="" type="email" required="true" placeholder="Your email" />
                 <button class="kg-signup-card-button ${buttonAccent}" style="${buttonStyle}color: ${nodeData.buttonTextColor};" type="submit">
@@ -68,9 +107,9 @@ function loadingIcon() {
     </svg>`;
 }
 
-export function renderSignupCardToDOM(dataset, options = {}) {
+export function renderSignupCardToDOM(dataset: SignupDatasetNode, options: SignupRenderOptions = {}) {
     addCreateDocumentOption(options);
-    const document = options.createDocument();
+    const document = options.createDocument!();
 
     const node = {
         alignment: dataset.__alignment,
@@ -91,7 +130,7 @@ export function renderSignupCardToDOM(dataset, options = {}) {
     };
 
     if (options.target === 'email') {
-        return {element: document.createElement('div')}; // Return an empty element since we don't want to render the card in email
+        return {element: document.createElement('div'), type: 'outer' as const}; // Return an empty element since we don't want to render the card in email
     }
 
     const htmlString = cardTemplate(node);
@@ -119,11 +158,11 @@ export function renderSignupCardToDOM(dataset, options = {}) {
             pElement.remove();
         }
     }
-    return {element: element.firstElementChild};
+    return {element: element.firstElementChild, type: 'outer' as const};
 }
 
-export function getCardClasses(nodeData) {
-    let cardClasses = ['kg-card kg-signup-card'];
+export function getCardClasses(nodeData: SignupNodeData) {
+    const cardClasses = ['kg-card kg-signup-card'];
 
     if (nodeData.layout && nodeData.layout !== 'split') {
         cardClasses.push(`kg-width-${nodeData.layout}`);
@@ -152,7 +191,7 @@ export function getCardClasses(nodeData) {
 
 // In general, we don't want to apply the accent style if there's a background image
 //  but with the split format we display both an image and a background color
-const getAccentClass = (nodeData) => {
+const getAccentClass = (nodeData: SignupNodeData) => {
     if (nodeData.layout === 'split' && nodeData.backgroundColor === 'accent') {
         return 'kg-style-accent';
     } else if (nodeData.layout !== 'split' && !nodeData.backgroundImageSrc && nodeData.backgroundColor === 'accent') {

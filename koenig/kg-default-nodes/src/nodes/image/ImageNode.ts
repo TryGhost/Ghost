@@ -1,18 +1,25 @@
-import {generateDecoratorNode} from '../../generate-decorator-node';
-import {parseImageNode} from './image-parser';
-import {renderImageNode} from './image-renderer';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {parseImageNode} from './image-parser.js';
+import {renderImageNode} from './image-renderer.js';
+
+const imageProperties = [
+    {name: 'src', default: '', urlType: 'url'},
+    {name: 'caption', default: '', urlType: 'html', wordCount: true},
+    {name: 'title', default: ''},
+    {name: 'alt', default: ''},
+    {name: 'cardWidth', default: 'regular'},
+    {name: 'width', default: null as number | null},
+    {name: 'height', default: null as number | null},
+    {name: 'href', default: '', urlType: 'url'}
+] as const satisfies readonly DecoratorNodeProperty[];
+
+export type ImageData = DecoratorNodeData<typeof imageProperties>;
+
+export interface ImageNode extends DecoratorNodeValueMap<typeof imageProperties> {}
+
 export class ImageNode extends generateDecoratorNode({
     nodeType: 'image',
-    properties: [
-        {name: 'src', default: '', urlType: 'url'},
-        {name: 'caption', default: '', urlType: 'html', wordCount: true},
-        {name: 'title', default: ''},
-        {name: 'alt', default: ''},
-        {name: 'cardWidth', default: 'regular'},
-        {name: 'width', default: null},
-        {name: 'height', default: null},
-        {name: 'href', default: '', urlType: 'url'}
-    ],
+    properties: imageProperties,
     defaultRenderFn: renderImageNode
 }) {
     /* @override */
@@ -45,10 +52,10 @@ export class ImageNode extends generateDecoratorNode({
     }
 }
 
-export const $createImageNode = (dataset) => {
+export const $createImageNode = (dataset?: ImageData) => {
     return new ImageNode(dataset);
 };
 
-export function $isImageNode(node) {
+export function $isImageNode(node: unknown): node is ImageNode {
     return node instanceof ImageNode;
 }

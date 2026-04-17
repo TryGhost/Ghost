@@ -1,19 +1,20 @@
-const {dom, html} = require('../test-utils');
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$getRoot} = require('lexical');
-const {MarkdownNode, $createMarkdownNode, $isMarkdownNode} = require('../../');
+import {dom, html} from '../test-utils/index.js';
+import {createHeadlessEditor} from '@lexical/headless';
+import {$getRoot} from 'lexical';
+import type {LexicalEditor} from 'lexical';
+import {MarkdownNode, $createMarkdownNode, $isMarkdownNode} from '../../src/index.js';
 
 const editorNodes = [MarkdownNode];
 
 describe('MarkdownNode', function () {
-    let editor;
-    let dataset;
-    let exportOptions;
+    let editor: LexicalEditor;
+    let dataset: {markdown: string};
+    let exportOptions: Record<string, unknown>;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -86,7 +87,7 @@ describe('MarkdownNode', function () {
         it('returns a copy of the current node', editorTest(function () {
             const markdownNode = $createMarkdownNode(dataset);
             const markdownNodeDataset = markdownNode.getDataset();
-            const clone = MarkdownNode.clone(markdownNode);
+            const clone = MarkdownNode.clone(markdownNode) as MarkdownNode;
             const cloneDataset = clone.getDataset();
 
             cloneDataset.should.deepEqual({...markdownNodeDataset});
@@ -111,8 +112,10 @@ describe('MarkdownNode', function () {
     describe('exportDOM', function () {
         it('creates a markdown card', editorTest(function () {
             const markdownNode = $createMarkdownNode(dataset);
-            const {element, type} = markdownNode.exportDOM(exportOptions);
-            type.should.equal('inner');
+            const result = markdownNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
+
+            result.type.should.equal('inner');
             element.innerHTML.should.prettifyTo(html`
                 <h1 id="heading">HEADING</h1>
                 <ul>
@@ -124,9 +127,18 @@ describe('MarkdownNode', function () {
 
         it('renders an empty div with a missing src', editorTest(function () {
             const markdownNode = $createMarkdownNode();
-            const {element} = markdownNode.exportDOM(exportOptions);
+            const result = markdownNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.equal('<div></div>');
+        }));
+
+        it('throws a clear error when createDocument is not callable', editorTest(function () {
+            const markdownNode = $createMarkdownNode(dataset);
+
+            (() => markdownNode.exportDOM({createDocument: true as unknown as () => Document})).should.throw(
+                'renderMarkdownNode requires options.createDocument to be a function'
+            );
         }));
     });
 
@@ -164,7 +176,7 @@ describe('MarkdownNode', function () {
 
             editor.getEditorState().read(() => {
                 try {
-                    const [markdownNode] = $getRoot().getChildren();
+                    const [markdownNode] = $getRoot().getChildren() as MarkdownNode[];
 
                     markdownNode.markdown.should.equal('#HEADING\r\n- list\r\n- items');
 

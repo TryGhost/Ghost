@@ -1,6 +1,6 @@
-import {generateDecoratorNode} from '../../generate-decorator-node';
-import {renderHorizontalRuleNode} from './horizontalrule-renderer';
-import {parseHorizontalRuleNode} from './horizontalrule-parser';
+import {generateDecoratorNode} from '../../generate-decorator-node.js';
+import {renderHorizontalRuleNode} from './horizontalrule-renderer.js';
+import {parseHorizontalRuleNode} from './horizontalrule-parser.js';
 
 export class HorizontalRuleNode extends generateDecoratorNode({
     nodeType: 'horizontalrule',
@@ -23,6 +23,6 @@ export function $createHorizontalRuleNode() {
     return new HorizontalRuleNode();
 }
 
-export function $isHorizontalRuleNode(node) {
+export function $isHorizontalRuleNode(node: unknown): node is HorizontalRuleNode {
     return node instanceof HorizontalRuleNode;
 }

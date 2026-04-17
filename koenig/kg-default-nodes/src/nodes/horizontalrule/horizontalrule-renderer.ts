@@ -1,9 +1,12 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
+import type {ExportDOMOptions} from '../../export-dom.js';
 
-export function renderHorizontalRuleNode(_, options = {}) {
+interface RenderOptions extends ExportDOMOptions {}
+
+export function renderHorizontalRuleNode(_: unknown, options: RenderOptions = {}) {
     addCreateDocumentOption(options);
-    const document = options.createDocument();
+    const document = options.createDocument!();
 
     const element = document.createElement('hr');
-    return {element};
+    return {element, type: 'outer' as const};
 }

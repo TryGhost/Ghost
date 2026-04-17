@@ -3,7 +3,7 @@
  * @param {string} unsafe
  * @returns string
  */
-export function escapeHtml(unsafe) {
+export function escapeHtml(unsafe: string) {
     return unsafe
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')

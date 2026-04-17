@@ -1,16 +1,17 @@
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$getRoot} = require('lexical');
-const {dom, html} = require('../test-utils');
-const {EmailNode, $createEmailNode, $isEmailNode} = require('../../');
+import 'should';
+import {createHeadlessEditor} from '@lexical/headless';
+import {$getRoot, type LexicalEditor} from 'lexical';
+import {dom, html} from '../test-utils/index.js';
+import {EmailNode, $createEmailNode, $isEmailNode} from '../../src/index.js';
 
 const editorNodes = [EmailNode];
 
 describe('EmailNode', function () {
-    let editor;
-    let dataset;
-    let exportOptions;
+    let editor: LexicalEditor;
+    let dataset: Record<string, unknown>;
+    let exportOptions: Record<string, unknown>;
 
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -76,7 +77,7 @@ describe('EmailNode', function () {
         it('returns a copy of the current node', editorTest(function () {
             const emailNode = $createEmailNode(dataset);
             const emailNodeDataset = emailNode.getDataset();
-            const clone = EmailNode.clone(emailNode);
+            const clone = EmailNode.clone(emailNode) as EmailNode;
             const cloneDataset = clone.getDataset();
 
             cloneDataset.should.deepEqual({...emailNodeDataset});
@@ -112,7 +113,7 @@ describe('EmailNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done) {
+        it('imports all data', function (done: (err?: unknown) => void) {
             const serializedState = JSON.stringify({
                 root: {
                     children: [{
@@ -132,7 +133,7 @@ describe('EmailNode', function () {
 
             editor.getEditorState().read(() => {
                 try {
-                    const [emailNode] = $getRoot().getChildren();
+                    const [emailNode] = $getRoot().getChildren() as EmailNode[];
 
                     emailNode.html.should.equal(dataset.html);
                     done();
@@ -155,8 +156,9 @@ describe('EmailNode', function () {
             };
             const emailNode = $createEmailNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.innerHTML.should.prettifyTo(html`
+            el.innerHTML.should.prettifyTo(html`
                 <p>Hello World</p>
             `);
         }));
@@ -168,7 +170,7 @@ describe('EmailNode', function () {
             const emailNode = $createEmailNode(payload);
             const {element} = emailNode.exportDOM(exportOptions);
 
-            element.should.be.empty();
+            (element as HTMLElement).innerHTML.should.equal('');
         }));
 
         it('renders nothing if the `html` payload is empty', editorTest(function () {
@@ -183,7 +185,7 @@ describe('EmailNode', function () {
             const emailNode = $createEmailNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
 
-            element.should.be.empty();
+            (element as HTMLElement).innerHTML.should.equal('');
         }));
 
         it('removes any extra consecutives whitespaces', editorTest(function () {
@@ -197,8 +199,9 @@ describe('EmailNode', function () {
             };
             const emailNode = $createEmailNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.innerHTML.should.prettifyTo(html`
+            el.innerHTML.should.prettifyTo(html`
                 <p><span>Hey you</span></p>
             `);
         }));
@@ -214,8 +217,9 @@ describe('EmailNode', function () {
             };
             const emailNode = $createEmailNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.innerHTML.should.prettifyTo(html`
+            el.innerHTML.should.prettifyTo(html`
                 <p><span>Hey you</span></p>
             `);
         }));
@@ -231,8 +235,9 @@ describe('EmailNode', function () {
             };
             const emailNode = $createEmailNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.innerHTML.should.prettifyTo(html`
+            el.innerHTML.should.prettifyTo(html`
                 <p>Hey %%{foo}%%</p>
             `);
         }));
@@ -248,8 +253,9 @@ describe('EmailNode', function () {
             };
             const emailNode = $createEmailNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.innerHTML.should.prettifyTo(html`
+            el.innerHTML.should.prettifyTo(html`
                 <p>Hey %%{foo, "default"}%%</p>
             `);
         }));
@@ -265,8 +271,9 @@ describe('EmailNode', function () {
             };
             const emailNode = $createEmailNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.innerHTML.should.prettifyTo(html`
+            el.innerHTML.should.prettifyTo(html`
                 <p>Hey %%{foo,  "default"}%%</p>
             `);
         }));
@@ -282,8 +289,9 @@ describe('EmailNode', function () {
             };
             const emailNode = $createEmailNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.innerHTML.should.prettifyTo(html`
+            el.innerHTML.should.prettifyTo(html`
                 <p>Hey %%{foo "default"}%%</p>
             `);
         }));
@@ -299,8 +307,9 @@ describe('EmailNode', function () {
             };
             const emailNode = $createEmailNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.innerHTML.should.prettifyTo(html`
+            el.innerHTML.should.prettifyTo(html`
                 <p>Hey %%{foo  "default"}%%</p>
             `);
         }));
@@ -316,8 +325,9 @@ describe('EmailNode', function () {
             };
             const emailNode = $createEmailNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.innerHTML.should.prettifyTo(html`
+            el.innerHTML.should.prettifyTo(html`
                 <p>Hey %%{foo}%%, you are {invalid }</p>
             `);
         }));
@@ -333,8 +343,9 @@ describe('EmailNode', function () {
             };
             const emailNode = $createEmailNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.innerHTML.should.prettifyTo(html`
+            el.innerHTML.should.prettifyTo(html`
                 <p>Hey %%{foo}%%, you are { invalid}</p>
             `);
         }));
@@ -350,8 +361,9 @@ describe('EmailNode', function () {
             };
             const emailNode = $createEmailNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.innerHTML.should.prettifyTo(html`
+            el.innerHTML.should.prettifyTo(html`
                 <p>Hey {foo invalid}</p>
             `);
         }));
@@ -367,8 +379,9 @@ describe('EmailNode', function () {
             };
             const emailNode = $createEmailNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.innerHTML.should.prettifyTo(html`
+            el.innerHTML.should.prettifyTo(html`
                 <p>First paragraph</p>
                 <p>Second paragraph</p>
                 <p>Third paragraph</p>
@@ -387,8 +400,9 @@ describe('EmailNode', function () {
 
             const emailNode = $createEmailNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.innerHTML.should.prettifyTo(html`
+            el.innerHTML.should.prettifyTo(html`
                 <p>First paragraph</p>
                 %%{placeholder}%%
                 <p>Third paragraph</p>
@@ -407,8 +421,9 @@ describe('EmailNode', function () {
 
             const emailNode = $createEmailNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const el = element as HTMLElement;
 
-            element.innerHTML.should.prettifyTo(html`
+            el.innerHTML.should.prettifyTo(html`
                 <p>First paragraph</p>
                 <code>Some code</code>
                 <p>Third paragraph</p>

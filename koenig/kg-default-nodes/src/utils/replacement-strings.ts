@@ -1,9 +1,7 @@
 /**
  * Removes consecutive whitespaces and newlines
- * @param {string} html
- * @returns {string}
  */
-export function removeSpaces(html) {
+export function removeSpaces(html: string) {
     return html.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
@@ -11,10 +9,8 @@ export function removeSpaces(html) {
  * Wraps replacement strings with %%
  * This helps to prevent conflicts between code samples and our replacement strings
  * Example: {foo} -> %%{foo}%%
- * @param {string} html
- * @returns {string}
  */
-export function wrapReplacementStrings(html) {
+export function wrapReplacementStrings(html: string) {
     return html.replace(/\{(\w*?)(?:,? *"(.*?)")?\}/g, '%%$&%%');
 }
 
@@ -22,10 +18,8 @@ export function wrapReplacementStrings(html) {
  * Removes any <code> wrappers around replacement strings {foo}
  * Example input:  <code><span>{foo}</span></code>
  * Example output:       <span>{foo}</span>
- * @param {string} html
- * @returns {string}
  */
-export function removeCodeWrappersFromHelpers(html,document) {
+export function removeCodeWrappersFromHelpers(html: string, document: Document) {
     // parse html to make patterns easier to match
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
@@ -34,9 +28,9 @@ export function removeCodeWrappersFromHelpers(html,document) {
     codeElements.forEach((codeElement) => {
         const codeTextContent = codeElement.textContent;
         // extract the content of the code element if it follows the helper pattern (e.g. {foo})
-        if (codeTextContent.match(/((.*?){.*?}(.*?))/gi)) {
-            const codeContent = codeElement.innerHTML; 
-            codeElement.parentNode.replaceChild(document.createRange().createContextualFragment(codeContent), codeElement);
+        if (codeTextContent?.match(/((.*?){.*?}(.*?))/gi)) {
+            const codeContent = codeElement.innerHTML;
+            codeElement.parentNode?.replaceChild(document.createRange().createContextualFragment(codeContent), codeElement);
         }
     });
 

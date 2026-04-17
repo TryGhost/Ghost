@@ -1,6 +1,6 @@
 export default {
     import: {
-        p: (node) => {
+        p: (node: HTMLElement) => {
             const isGoogleDocs = !!node.closest('[id^="docs-internal-guid-"]');
 
             // Google docs wraps dividers in paragraphs, without text content

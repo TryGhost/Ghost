@@ -1,12 +1,13 @@
 import {ElementNode} from 'lexical';
-import {AsideParser} from './AsideParser';
+import type {EditorConfig, LexicalEditor, SerializedElementNode} from 'lexical';
+import {AsideParser} from './AsideParser.js';
 
 export class AsideNode extends ElementNode {
     static getType() {
         return 'aside';
     }
 
-    static clone(node) {
+    static clone(node: AsideNode) {
         return new this(
             node.__key
         );
@@ -16,11 +17,11 @@ export class AsideNode extends ElementNode {
         return {};
     }
 
-    constructor(key) {
+    constructor(key?: string) {
         super(key);
     }
 
-    static importJSON(serializedNode) {
+    static importJSON(serializedNode: SerializedElementNode) {
         const node = new this();
         node.setFormat(serializedNode.format);
         node.setIndent(serializedNode.indent);
@@ -43,7 +44,7 @@ export class AsideNode extends ElementNode {
     }
 
     /* c8 ignore start */
-    createDOM() {
+    createDOM(_config?: EditorConfig, _editor?: LexicalEditor): HTMLElement {
         return document.createElement('div');
     }
 
@@ -65,6 +66,6 @@ export function $createAsideNode() {
     return new AsideNode();
 }
 
-export function $isAsideNode(node) {
+export function $isAsideNode(node: unknown): node is AsideNode {
     return node instanceof AsideNode;
 }

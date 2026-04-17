@@ -1,12 +1,41 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {renderWithVisibility} from '../../utils/visibility';
-import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions';
-import {isLocalContentImage} from '../../utils/is-local-content-image';
-import {buildCleanBasicHtmlForElement} from '../../utils/build-clean-basic-html-for-element';
+import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
+import type {ExportDOMOptions} from '../../export-dom.js';
+import {renderWithVisibility, type RenderOutput, type Visibility} from '../../utils/visibility.js';
+import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions.js';
+import {isLocalContentImage} from '../../utils/is-local-content-image.js';
+import {buildCleanBasicHtmlForElement} from '../../utils/build-clean-basic-html-for-element.js';
 
-const showButton = dataset => dataset.showButton && dataset.buttonUrl && dataset.buttonText;
+interface CTADataset {
+    layout: string;
+    alignment: string;
+    textValue: string;
+    showButton: boolean;
+    showDividers: boolean;
+    buttonText: string;
+    buttonUrl: string;
+    buttonColor: string;
+    buttonTextColor: string;
+    hasSponsorLabel: boolean;
+    backgroundColor: string;
+    sponsorLabel: string;
+    imageUrl: string;
+    imageWidth: number;
+    imageHeight: number;
+    linkColor: string;
+}
 
-const wrapWithLink = (dataset, content) => {
+interface CTARenderOptions extends ExportDOMOptions {
+    design?: { buttonStyle?: string };
+    imageOptimization?: { internalImageSizes?: Record<string, { width: number; height: number }> };
+}
+
+interface CTANodeData extends CTADataset {
+    visibility?: Visibility;
+}
+
+const showButton = (dataset: CTADataset) => dataset.showButton && dataset.buttonUrl && dataset.buttonText;
+
+const wrapWithLink = (dataset: CTADataset, content: string) => {
     if (!showButton(dataset)) {
         return content;
     }
@@ -14,9 +43,9 @@ const wrapWithLink = (dataset, content) => {
     return `<a href="${dataset.buttonUrl}">${content}</a>`;
 };
 
-function ctaCardTemplate(dataset) {
+function ctaCardTemplate(dataset: CTADataset) {
     // Add validation for buttonColor
-    if (!dataset.buttonColor || !dataset.buttonColor.match(/^[a-zA-Z\d-]+|#([a-fA-F\d]{3}|[a-fA-F\d]{6})$/)) {
+    if (!dataset.buttonColor || !dataset.buttonColor.match(/^(?:[a-zA-Z\d-]+|#(?:[a-fA-F\d]{3}|[a-fA-F\d]{6}))$/)) {
         dataset.buttonColor = 'accent';
     }
     const buttonAccent = dataset.buttonColor === 'accent' ? 'kg-style-accent' : '';
@@ -58,7 +87,7 @@ function ctaCardTemplate(dataset) {
     `;
 }
 
-function emailCTATemplate(dataset, options = {}) {
+function emailCTATemplate(dataset: CTADataset, options: CTARenderOptions = {}) {
     // accent button color backgrounds are set in main template styles,
     // for other button colors we need to set the background color explicitly
     let buttonStyle = dataset.buttonColor === 'accent'
@@ -85,7 +114,7 @@ function emailCTATemplate(dataset, options = {}) {
         `;
     }
 
-    let imageDimensions;
+    let imageDimensions: { width: number; height: number } | undefined;
 
     if (dataset.imageUrl && dataset.imageWidth && dataset.imageHeight) {
         imageDimensions = {
@@ -100,9 +129,12 @@ function emailCTATemplate(dataset, options = {}) {
 
     if (dataset.layout === 'minimal' && dataset.imageUrl) {
         if (isLocalContentImage(dataset.imageUrl, options.siteUrl) && options.canTransformImage?.(dataset.imageUrl)) {
-            const [, imagesPath, filename] = dataset.imageUrl.match(/(.*\/content\/images)\/(.*)/);
-            const iconSize = options?.imageOptimization?.internalImageSizes?.['email-cta-minimal-image'] || {width: 256, height: 256}; // default to 256 since we know the image is a square
-            dataset.imageUrl = `${imagesPath}/size/w${iconSize.width}h${iconSize.height}/${filename}`;
+            const match = dataset.imageUrl.match(/(.*\/content\/images)\/(.*)/);
+            if (match) {
+                const [, imagesPath, filename] = match;
+                const iconSize = options?.imageOptimization?.internalImageSizes?.['email-cta-minimal-image'] || {width: 256, height: 256}; // default to 256 since we know the image is a square
+                dataset.imageUrl = `${imagesPath}/size/w${iconSize.width}h${iconSize.height}/${filename}`;
+            }
         }
     }
 
@@ -335,9 +367,9 @@ function emailCTATemplate(dataset, options = {}) {
     }
 }
 
-export function renderCallToActionNode(node, options = {}) {
+export function renderCallToActionNode(node: CTANodeData, options: CTARenderOptions = {}) {
     addCreateDocumentOption(options);
-    const document = options.createDocument();
+    const document = options.createDocument!();
     const dataset = {
         layout: node.layout,
         alignment: node.alignment,
@@ -364,24 +396,24 @@ export function renderCallToActionNode(node, options = {}) {
     }
 
     if (options.target === 'email') {
-        const emailDoc = options.createDocument();
+        const emailDoc = options.createDocument!();
         const emailDiv = emailDoc.createElement('div');
 
         emailDiv.innerHTML = emailCTATemplate(dataset, options);
 
-        return renderWithVisibility({element: emailDiv.firstElementChild}, node.visibility, options);
+        return renderWithVisibility({element: emailDiv.firstElementChild as RenderOutput['element'], type: 'outer' as const}, node.visibility, options);
+    }
+
+    if (dataset.hasSponsorLabel) {
+        const cleanBasicHtml = buildCleanBasicHtmlForElement(document.createElement('div'));
+        const cleanedHtml = cleanBasicHtml(dataset.sponsorLabel, {firstChildInnerContent: true});
+        dataset.sponsorLabel = cleanedHtml || '';
     }
 
     const element = document.createElement('div');
-
-    if (dataset.hasSponsorLabel) {
-        const cleanBasicHtml = buildCleanBasicHtmlForElement(element);
-        const cleanedHtml = cleanBasicHtml(dataset.sponsorLabel, {firstChildInnerContent: true});
-        dataset.sponsorLabel = cleanedHtml;
-    }
     const htmlString = ctaCardTemplate(dataset);
 
     element.innerHTML = htmlString?.trim();
 
-    return renderWithVisibility({element: element.firstElementChild}, node.visibility, options);
+    return renderWithVisibility({element: element.firstElementChild as RenderOutput['element'], type: 'outer' as const}, node.visibility, options);
 }

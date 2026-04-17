@@ -1,4 +1,9 @@
-export const getResizedImageDimensions = function (image, {width: desiredWidth, height: desiredHeight} = {}) {
+interface ImageDimensions {
+    width: number;
+    height: number;
+}
+
+export const getResizedImageDimensions = function (image: ImageDimensions, {width: desiredWidth, height: desiredHeight}: {width?: number; height?: number} = {}): ImageDimensions {
     const {width, height} = image;
     const ratio = width / height;
 
@@ -19,4 +24,6 @@ export const getResizedImageDimensions = function (image, {width: desiredWidth, 
             height: desiredHeight
         };
     }
+
+    return {width, height};
 };

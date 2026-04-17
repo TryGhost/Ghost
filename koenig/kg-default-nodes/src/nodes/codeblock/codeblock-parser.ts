@@ -1,52 +1,53 @@
-import {readCaptionFromElement} from '../../utils/read-caption-from-element';
+import type {LexicalNode} from 'lexical';
+import {readCaptionFromElement} from '../../utils/read-caption-from-element.js';
 
-export function parseCodeBlockNode(CodeBlockNode) {
+export function parseCodeBlockNode(CodeBlockNode: new (data: Record<string, unknown>) => LexicalNode) {
     return {
-        figure: (nodeElem) => {
+        figure: (nodeElem: HTMLElement) => {
             const pre = nodeElem.querySelector('pre');
             if (nodeElem.tagName === 'FIGURE' && pre) {
                 return {
-                    conversion(domNode) {        
-                        let code = pre.querySelector('code');
-                        let figcaption = domNode.querySelector('figcaption');
-    
+                    conversion(domNode: HTMLElement) {
+                        const code = pre.querySelector('code');
+                        const figcaption = domNode.querySelector('figcaption');
+
                         // if there's no caption the pre key should pick it up
                         if (!code || !figcaption) {
                             return null;
                         }
-    
-                        let payload = {
+
+                        const payload: Record<string, unknown> = {
                             code: code.textContent,
                             caption: readCaptionFromElement(domNode)
                         };
-    
-                        let preClass = pre.getAttribute('class') || '';
-                        let codeClass = code.getAttribute('class') || '';
-                        let langRegex = /lang(?:uage)?-(.*?)(?:\s|$)/i;
-                        let languageMatches = preClass.match(langRegex) || codeClass.match(langRegex);
+
+                        const preClass = pre.getAttribute('class') || '';
+                        const codeClass = code.getAttribute('class') || '';
+                        const langRegex = /lang(?:uage)?-(.*?)(?:\s|$)/i;
+                        const languageMatches = preClass.match(langRegex) || codeClass.match(langRegex);
                         if (languageMatches) {
                             payload.language = languageMatches[1].toLowerCase();
                         }
-    
+
                         const node = new CodeBlockNode(payload);
                         return {node};
                     },
-                    priority: 2 // falls back to pre if no caption
+                    priority: 2 as const // falls back to pre if no caption
                 };
             }
             return null;
         },
         pre: () => ({
-            conversion(domNode) {
+            conversion(domNode: HTMLElement) {
                 if (domNode.tagName === 'PRE') {
-                    let [codeElement] = domNode.children;
+                    const [codeElement] = domNode.children;
 
                     if (codeElement && codeElement.tagName === 'CODE') {
-                        let payload = {code: codeElement.textContent};
-                        let preClass = domNode.getAttribute('class') || '';
-                        let codeClass = codeElement.getAttribute('class') || '';
-                        let langRegex = /lang(?:uage)?-(.*?)(?:\s|$)/i;
-                        let languageMatches = preClass.match(langRegex) || codeClass.match(langRegex);
+                        const payload: Record<string, unknown> = {code: codeElement.textContent};
+                        const preClass = domNode.getAttribute('class') || '';
+                        const codeClass = codeElement.getAttribute('class') || '';
+                        const langRegex = /lang(?:uage)?-(.*?)(?:\s|$)/i;
+                        const languageMatches = preClass.match(langRegex) || codeClass.match(langRegex);
                         if (languageMatches) {
                             payload.language = languageMatches[1].toLowerCase();
                         }
@@ -57,7 +58,7 @@ export function parseCodeBlockNode(CodeBlockNode) {
 
                 return null;
             },
-            priority: 1
+            priority: 1 as const
         })
     };
 }

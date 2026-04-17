@@ -1,20 +1,21 @@
-const {createDocument, dom, html} = require('../test-utils');
-const {$getRoot} = require('lexical');
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$generateNodesFromDOM} = require('@lexical/html');
-const {CalloutNode, $createCalloutNode, $isCalloutNode} = require('../../');
+import {createDocument, dom, html} from '../test-utils/index.js';
+import {$getRoot} from 'lexical';
+import type {LexicalEditor} from 'lexical';
+import {createHeadlessEditor} from '@lexical/headless';
+import {$generateNodesFromDOM} from '@lexical/html';
+import {CalloutNode, $createCalloutNode, $isCalloutNode} from '../../src/index.js';
 
 const editorNodes = [CalloutNode];
 
 describe('CalloutNode', function () {
-    let editor;
-    let dataset;
-    let exportOptions;
+    let editor: LexicalEditor;
+    let dataset: {calloutText: string; calloutEmoji: string; backgroundColor: string};
+    let exportOptions: Record<string, unknown>;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -31,7 +32,7 @@ describe('CalloutNode', function () {
         });
         dataset = {
             calloutText: '<p dir="ltr"><b><strong>Hello!</strong></b><span> Check </span><i><em class="italic">this</em></i> <a href="https://ghost.org" rel="noopener"><span>out</span></a><span>.</span></p>',
-            calloutEmoji: '💡',
+            calloutEmoji: '\u{1F4A1}',
             backgroundColor: 'blue'
         };
 
@@ -60,8 +61,8 @@ describe('CalloutNode', function () {
             node.calloutText.should.equal('new text');
             node.backgroundColor = 'red';
             node.backgroundColor.should.equal('red');
-            node.calloutEmoji = '👍';
-            node.calloutEmoji.should.equal('👍');
+            node.calloutEmoji = '\u{1F44D}';
+            node.calloutEmoji.should.equal('\u{1F44D}');
         }));
 
         it('has getDataset() method', editorTest(function () {
@@ -81,7 +82,7 @@ describe('CalloutNode', function () {
         it('returns a copy of the current node', editorTest(function () {
             const calloutNode = $createCalloutNode(dataset);
             const calloutNodeDataset = calloutNode.getDataset();
-            const clone = CalloutNode.clone(calloutNode);
+            const clone = CalloutNode.clone(calloutNode) as CalloutNode;
             const cloneDataset = clone.getDataset();
 
             cloneDataset.should.deepEqual({...calloutNodeDataset});
@@ -117,10 +118,11 @@ describe('CalloutNode', function () {
     describe('exportDOM', function () {
         it('can render to HTML', editorTest(function () {
             const node = $createCalloutNode(dataset);
-            const {element} = node.exportDOM(exportOptions);
+            const result = node.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-callout-card kg-callout-card-blue">
-                    <div class="kg-callout-emoji">💡</div>
+                    <div class="kg-callout-emoji">\u{1F4A1}</div>
                     <div class="kg-callout-text">
                         <b><strong>Hello!</strong></b
                         >Check<i><em class="italic">this</em></i
@@ -137,7 +139,8 @@ describe('CalloutNode', function () {
                 backgroundColor: 'blue'
             };
             const node = $createCalloutNode(dataset2);
-            const {element} = node.exportDOM(exportOptions);
+            const result = node.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-callout-card kg-callout-card-blue">
                     <div class="kg-callout-text">
@@ -153,11 +156,12 @@ describe('CalloutNode', function () {
             dataset.backgroundColor = 'rgba(124, 139, 154, 0.13)';
 
             const node = $createCalloutNode(dataset);
-            const {element} = node.exportDOM(exportOptions);
+            const result = node.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-callout-card kg-callout-card-white">
-                    <div class="kg-callout-emoji">💡</div>
+                    <div class="kg-callout-emoji">\u{1F4A1}</div>
                     <div class="kg-callout-text">
                         <b><strong>Hello!</strong></b
                         >Check<i><em class="italic">this</em></i
@@ -171,11 +175,12 @@ describe('CalloutNode', function () {
             dataset.calloutText = '<p><span style="white-space: pre-wrap;">Does </span><code spellcheck="false" style="white-space: pre-wrap;"><span>inline code</span></code><span style="white-space: pre-wrap;"> render properly?</span></p>';
 
             const node = $createCalloutNode(dataset);
-            const {element} = node.exportDOM(exportOptions);
+            const result = node.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-callout-card kg-callout-card-blue">
-                    <div class="kg-callout-emoji">💡</div>
+                    <div class="kg-callout-emoji">\u{1F4A1}</div>
                     <div class="kg-callout-text">
                         Does <code spellcheck="false" style="white-space: pre-wrap">inline code</code> render properly?
                     </div>
@@ -188,15 +193,15 @@ describe('CalloutNode', function () {
         it('parses callout card', editorTest(function () {
             const document = createDocument(html`
                 <div class="kg-card kg-callout-card kg-callout-card-red">
-                    <div class="kg-callout-emoji">💡</div>
+                    <div class="kg-callout-emoji">\u{1F4A1}</div>
                     <div class="kg-callout-text">This is a callout</div>
                 </div>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as CalloutNode[];
             nodes.length.should.equal(1);
             nodes[0].backgroundColor.should.equal('red');
             nodes[0].calloutText.should.equal('This is a callout');
-            nodes[0].calloutEmoji.should.equal('💡');
+            nodes[0].calloutEmoji.should.equal('\u{1F4A1}');
         }));
 
         it('parses callout card with no emoji', editorTest(function () {
@@ -205,7 +210,7 @@ describe('CalloutNode', function () {
                     <div class="kg-callout-text">This is a callout</div>
                 </div>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as CalloutNode[];
             nodes.length.should.equal(1);
             nodes[0].backgroundColor.should.equal('red');
             nodes[0].calloutText.should.equal('This is a callout');
@@ -234,7 +239,7 @@ describe('CalloutNode', function () {
 
             editor.getEditorState().read(() => {
                 try {
-                    const [calloutNode] = $getRoot().getChildren();
+                    const [calloutNode] = $getRoot().getChildren() as CalloutNode[];
                     calloutNode.calloutText.should.equal(dataset.calloutText);
                     calloutNode.calloutEmoji.should.equal(dataset.calloutEmoji);
                     calloutNode.backgroundColor.should.equal(dataset.backgroundColor);

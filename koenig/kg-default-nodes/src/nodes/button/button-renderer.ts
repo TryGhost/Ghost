@@ -1,11 +1,20 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {renderEmptyContainer} from '../../utils/render-empty-container';
-import {renderEmailButton} from '../../utils/render-helpers/email-button';
-import {html} from '../../utils/tagged-template-fns.mjs';
+import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
+import type {ExportDOMOptions} from '../../export-dom.js';
+import {renderEmptyContainer} from '../../utils/render-empty-container.js';
+import {renderEmailButton} from '../../utils/render-helpers/email-button.js';
+import {html} from '../../utils/tagged-template-fns.js';
 
-export function renderButtonNode(node, options = {}) {
+interface ButtonNodeData {
+    buttonUrl: string;
+    buttonText: string;
+    alignment: string;
+}
+
+interface RenderOptions extends ExportDOMOptions {}
+
+export function renderButtonNode(node: ButtonNodeData, options: RenderOptions = {}) {
     addCreateDocumentOption(options);
-    const document = options.createDocument();
+    const document = options.createDocument!();
 
     if (!node.buttonUrl || node.buttonUrl.trim() === '') {
         return renderEmptyContainer(document);
@@ -18,7 +27,7 @@ export function renderButtonNode(node, options = {}) {
     }
 }
 
-function frontendTemplate(node, document) {
+function frontendTemplate(node: ButtonNodeData, document: Document) {
     const cardClasses = getCardClasses(node);
 
     const cardDiv = document.createElement('div');
@@ -30,10 +39,10 @@ function frontendTemplate(node, document) {
     button.textContent = node.buttonText || 'Button Title';
 
     cardDiv.appendChild(button);
-    return {element: cardDiv};
+    return {element: cardDiv, type: 'outer' as const};
 }
 
-function emailTemplate(node, options, document) {
+function emailTemplate(node: ButtonNodeData, options: RenderOptions, document: Document) {
     const {buttonUrl, buttonText} = node;
 
     let cardHtml;
@@ -55,7 +64,7 @@ function emailTemplate(node, options, document) {
 
         const element = document.createElement('p');
         element.innerHTML = cardHtml;
-        return {element};
+        return {element, type: 'outer' as const};
     } else if (options.feature?.emailCustomizationAlpha) {
         const buttonHtml = renderEmailButton({
             alignment: node.alignment,
@@ -78,7 +87,7 @@ function emailTemplate(node, options, document) {
 
         const element = document.createElement('div');
         element.innerHTML = cardHtml;
-        return {element, type: 'inner'};
+        return {element, type: 'inner' as const};
     } else {
         cardHtml = html`
         <div class="btn btn-accent">
@@ -94,12 +103,12 @@ function emailTemplate(node, options, document) {
 
         const element = document.createElement('p');
         element.innerHTML = cardHtml;
-        return {element};
+        return {element, type: 'outer' as const};
     }
 }
 
-function getCardClasses(node) {
-    let cardClasses = ['kg-card kg-button-card'];
+function getCardClasses(node: ButtonNodeData) {
+    const cardClasses = ['kg-card kg-button-card'];
 
     if (node.alignment) {
         cardClasses.push(`kg-align-${node.alignment}`);

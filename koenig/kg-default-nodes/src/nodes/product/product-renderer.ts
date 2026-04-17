@@ -1,10 +1,44 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {renderEmptyContainer} from '../../utils/render-empty-container';
-import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions';
+import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
+import type {ExportDOMOptions} from '../../export-dom.js';
+import {renderEmptyContainer} from '../../utils/render-empty-container.js';
+import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions.js';
 
-export function renderProductNode(node, options = {}) {
+interface ProductNodeData {
+    productStarRating: number;
+    isEmpty: () => boolean;
+    getDataset: () => ProductTemplateBaseData;
+}
+
+interface ProductRenderOptions extends ExportDOMOptions {
+    design?: { buttonCorners?: string };
+}
+
+interface ProductTemplateBaseData {
+    productImageSrc: string;
+    productImageWidth: number | null;
+    productImageHeight: number | null;
+    productTitle: string;
+    productDescription: string;
+    productRatingEnabled: boolean;
+    productStarRating: number;
+    productButtonEnabled: boolean;
+    productButton: string;
+    productUrl: string;
+}
+
+interface ProductTemplateData extends ProductTemplateBaseData {
+    starIcon: string;
+    buttonBorderRadius: string;
+    star1: string;
+    star2: string;
+    star3: string;
+    star4: string;
+    star5: string;
+}
+
+export function renderProductNode(node: ProductNodeData, options: ProductRenderOptions = {}) {
     addCreateDocumentOption(options);
-    const document = options.createDocument();
+    const document = options.createDocument!();
 
     if (node.isEmpty()) {
         return renderEmptyContainer(document);
@@ -22,31 +56,35 @@ export function renderProductNode(node, options = {}) {
         buttonBorderRadius = '9999px';
     }
 
-    const templateData = {
+    const templateData: ProductTemplateData = {
         ...node.getDataset(),
         starIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"/></svg>`,
-        buttonBorderRadius
+        buttonBorderRadius,
+        star1: '',
+        star2: '',
+        star3: '',
+        star4: '',
+        star5: ''
     };
 
     const starActiveClasses = 'kg-product-card-rating-active';
     for (let i = 1; i <= 5; i++) {
-        templateData['star' + i] = '';
         if (node.productStarRating >= i) {
-            templateData['star' + i] = starActiveClasses;
+            templateData[`star${i}` as keyof Pick<ProductTemplateData, 'star1' | 'star2' | 'star3' | 'star4' | 'star5'>] = starActiveClasses;
         }
     }
 
     const htmlString = options.target === 'email'
         ? emailCardTemplate({data: templateData, feature: options.feature})
-        : cardTemplate({data: templateData, feature: options.feature});
+        : cardTemplate({data: templateData});
 
     const element = document.createElement('div');
     element.innerHTML = htmlString.trim();
 
-    return {element: element.firstElementChild};
+    return {element: element.firstElementChild, type: 'outer' as const};
 }
 
-export function cardTemplate({data}) {
+export function cardTemplate({data}: {data: ProductTemplateData}) {
     return (
         `
         <div class="kg-card kg-product-card">
@@ -75,10 +113,10 @@ export function cardTemplate({data}) {
     );
 }
 
-export function emailCardTemplate({data, feature}) {
+export function emailCardTemplate({data, feature}: {data: ProductTemplateData; feature?: {emailCustomization?: boolean; emailCustomizationAlpha?: boolean}}) {
     let imageDimensions;
 
-    if (data.productImageWidth && data.productImageHeight) {
+    if (typeof data.productImageWidth === 'number' && typeof data.productImageHeight === 'number') {
         imageDimensions = {
             width: data.productImageWidth,
             height: data.productImageHeight

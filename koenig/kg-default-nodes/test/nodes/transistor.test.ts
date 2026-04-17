@@ -1,17 +1,18 @@
-const assert = require('node:assert/strict');
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$getRoot} = require('lexical');
-const {dom} = require('../test-utils');
-const {TransistorNode, $isTransistorNode} = require('../../');
+import assert from 'node:assert/strict';
+import {createHeadlessEditor} from '@lexical/headless';
+import {$getRoot, type LexicalEditor} from 'lexical';
+import {dom} from '../test-utils/index.js';
+import {TransistorNode, $createTransistorNode, $isTransistorNode, type ExportDOMOptions, type TransistorData} from '../../src/index.js';
+import {renderTransistorNode} from '../../src/nodes/transistor/transistor-renderer.js';
 
 const editorNodes = [TransistorNode];
 
 describe('TransistorNode', function () {
-    let editor;
-    let dataset;
-    let exportOptions;
+    let editor: LexicalEditor;
+    let dataset: TransistorData;
+    let exportOptions: ExportDOMOptions;
 
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -46,9 +47,10 @@ describe('TransistorNode', function () {
             assert.equal(transistorNode.accentColor, dataset.accentColor);
             assert.equal(transistorNode.backgroundColor, dataset.backgroundColor);
             // Default visibility should be members-only (nonMember: false)
-            assert.equal(transistorNode.visibility.web.nonMember, false);
-            assert.equal(transistorNode.visibility.web.memberSegment, 'status:free,status:-free');
-            assert.equal(transistorNode.visibility.email.memberSegment, 'status:free,status:-free');
+            const visibility = transistorNode.visibility as Record<string, Record<string, unknown>>;
+            assert.equal((visibility.web as Record<string, unknown>).nonMember, false);
+            assert.equal((visibility.web as Record<string, unknown>).memberSegment, 'status:free,status:-free');
+            assert.equal((visibility.email as Record<string, unknown>).memberSegment, 'status:free,status:-free');
         }));
 
         it('has setters for all properties', editorTest(function () {
@@ -88,7 +90,15 @@ describe('TransistorNode', function () {
 
             assert.equal(transistorNodeDataset.accentColor, dataset.accentColor);
             assert.equal(transistorNodeDataset.backgroundColor, dataset.backgroundColor);
-            assert.equal(transistorNodeDataset.visibility.web.nonMember, false);
+            assert.equal((transistorNodeDataset.visibility as Record<string, Record<string, unknown>>).web.nonMember, false);
+        }));
+
+        it('can be created without data', editorTest(function () {
+            const transistorNode = $createTransistorNode();
+
+            assert.equal(transistorNode.accentColor, '');
+            assert.equal(transistorNode.backgroundColor, '');
+            assert.equal((transistorNode.visibility as Record<string, Record<string, unknown>>).web.nonMember, false);
         }));
     });
 
@@ -102,7 +112,7 @@ describe('TransistorNode', function () {
         it('returns a copy of the current node', editorTest(function () {
             const transistorNode = new TransistorNode(dataset);
             const transistorNodeDataset = transistorNode.getDataset();
-            const clone = TransistorNode.clone(transistorNode);
+            const clone = TransistorNode.clone(transistorNode) as TransistorNode;
             const cloneDataset = clone.getDataset();
 
             assert.deepEqual(cloneDataset, {...transistorNodeDataset});
@@ -126,9 +136,10 @@ describe('TransistorNode', function () {
     describe('default visibility', function () {
         it('defaults to members-only (nonMember: false)', editorTest(function () {
             const transistorNode = new TransistorNode();
-            assert.equal(transistorNode.visibility.web.nonMember, false);
-            assert.equal(transistorNode.visibility.web.memberSegment, 'status:free,status:-free');
-            assert.equal(transistorNode.visibility.email.memberSegment, 'status:free,status:-free');
+            const visibility = transistorNode.visibility as Record<string, Record<string, unknown>>;
+            assert.equal(visibility.web.nonMember, false);
+            assert.equal(visibility.web.memberSegment, 'status:free,status:-free');
+            assert.equal(visibility.email.memberSegment, 'status:free,status:-free');
         }));
 
         it('preserves custom visibility when provided', editorTest(function () {
@@ -161,12 +172,13 @@ describe('TransistorNode', function () {
         it('renders an iframe with the correct base URL', editorTest(function () {
             const transistorNode = new TransistorNode({visibility: publicVisibility});
             const {element} = transistorNode.exportDOM(exportOptions);
+            const el = element as HTMLElement;
 
-            assert.equal(element.tagName, 'FIGURE');
-            assert.equal(element.classList.contains('kg-card'), true);
-            assert.equal(element.classList.contains('kg-transistor-card'), true);
+            assert.equal(el.tagName, 'FIGURE');
+            assert.equal(el.classList.contains('kg-card'), true);
+            assert.equal(el.classList.contains('kg-transistor-card'), true);
 
-            const iframe = element.querySelector('iframe');
+            const iframe = el.querySelector('iframe');
             assert.ok(iframe);
             assert.equal(iframe.getAttribute('data-src'), 'https://partner.transistor.fm/ghost/embed/{uuid}');
             assert.equal(iframe.getAttribute('width'), '100%');
@@ -176,38 +188,49 @@ describe('TransistorNode', function () {
             assert.equal(iframe.hasAttribute('seamless'), true);
         }));
 
+        it('defaults options before validating document creation', editorTest(function () {
+            assert.throws(
+                () => renderTransistorNode({visibility: publicVisibility}),
+                /Must be passed a `createDocument` function as an option when used in a non-browser environment/
+            );
+        }));
+
         it('includes ctx param when siteUuid is in options', editorTest(function () {
             const transistorNode = new TransistorNode({visibility: publicVisibility});
             const {element} = transistorNode.exportDOM({...exportOptions, siteUuid: 'abc123'});
+            const el = element as HTMLElement;
 
-            const iframe = element.querySelector('iframe');
-            assert.equal(iframe.getAttribute('data-src'), 'https://partner.transistor.fm/ghost/embed/{uuid}?ctx=abc123');
+            const iframe = el.querySelector('iframe');
+            assert.equal(iframe!.getAttribute('data-src'), 'https://partner.transistor.fm/ghost/embed/{uuid}?ctx=abc123');
         }));
 
         it('does not include ctx param when siteUuid is not provided', editorTest(function () {
             const transistorNode = new TransistorNode({visibility: publicVisibility});
             const {element} = transistorNode.exportDOM(exportOptions);
+            const el = element as HTMLElement;
 
-            const iframe = element.querySelector('iframe');
-            assert.ok(!iframe.getAttribute('data-src').includes('ctx='));
+            const iframe = el.querySelector('iframe');
+            assert.ok(!iframe!.getAttribute('data-src')!.includes('ctx='));
         }));
 
         it('includes background detection script that reads data-src', editorTest(function () {
             const transistorNode = new TransistorNode({visibility: publicVisibility});
             const {element} = transistorNode.exportDOM(exportOptions);
+            const el = element as HTMLElement;
 
-            const script = element.querySelector('script');
+            const script = el.querySelector('script');
             assert.ok(script);
-            assert.ok(script.textContent.includes('currentScript'));
-            assert.ok(script.textContent.includes('data-src'));
-            assert.ok(script.textContent.includes('background'));
+            assert.ok(script.textContent!.includes('currentScript'));
+            assert.ok(script.textContent!.includes('data-src'));
+            assert.ok(script.textContent!.includes('background'));
         }));
 
         it('includes noscript fallback with src', editorTest(function () {
             const transistorNode = new TransistorNode({visibility: publicVisibility});
             const {element} = transistorNode.exportDOM(exportOptions);
+            const el = element as HTMLElement;
 
-            const noscript = element.querySelector('noscript');
+            const noscript = el.querySelector('noscript');
             assert.ok(noscript);
             const fallbackIframe = noscript.querySelector('iframe');
             assert.ok(fallbackIframe);
@@ -219,10 +242,11 @@ describe('TransistorNode', function () {
             // Default visibility has nonMember: false
             const transistorNode = new TransistorNode({});
             const {element} = transistorNode.exportDOM(exportOptions);
+            const el = element as HTMLTextAreaElement;
 
             // Should be wrapped in visibility gating
-            assert.equal(element.tagName, 'TEXTAREA');
-            assert.match(element.value, /<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free" -->/);
+            assert.equal(el.tagName, 'TEXTAREA');
+            assert.match(el.value, /<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free" -->/);
         }));
 
         it('renders with email visibility when segment is restricted', editorTest(function () {
@@ -233,7 +257,9 @@ describe('TransistorNode', function () {
                     email: {memberSegment: 'status:-free'} // paid only
                 }
             });
-            const {element, type} = transistorNode.exportDOM(exportOptions);
+            const result = transistorNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
+            const type = result.type;
 
             assert.equal(type, 'html');
             assert.equal(element.tagName, 'DIV');
@@ -273,7 +299,7 @@ describe('TransistorNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done) {
+        it('imports all data', function (done: (err?: unknown) => void) {
             const serializedData = JSON.stringify({
                 root: {
                     children: [{
@@ -304,12 +330,13 @@ describe('TransistorNode', function () {
 
             editor.getEditorState().read(() => {
                 try {
-                    const [transistorNode] = $getRoot().getChildren();
+                    const [transistorNode] = $getRoot().getChildren() as TransistorNode[];
                     assert.equal($isTransistorNode(transistorNode), true);
                     assert.equal(transistorNode.accentColor, '#FF5500');
                     assert.equal(transistorNode.backgroundColor, '#000000');
-                    assert.equal(transistorNode.visibility.web.nonMember, false);
-                    assert.equal(transistorNode.visibility.web.memberSegment, 'status:-free');
+                    const visibility = transistorNode.visibility as Record<string, Record<string, unknown>>;
+                    assert.equal(visibility.web.nonMember, false);
+                    assert.equal(visibility.web.memberSegment, 'status:-free');
 
                     done();
                 } catch (e) {

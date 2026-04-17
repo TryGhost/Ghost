@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import {html} from '../tagged-template-fns.mjs';
+import {html} from '../tagged-template-fns.js';
 
 /**
  * @param {Object} options

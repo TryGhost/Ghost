@@ -1,20 +1,21 @@
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$getRoot} = require('lexical');
-const {createDocument, dom, html} = require('../test-utils');
-const {PaywallNode, $createPaywallNode, $isPaywallNode} = require('../../');
-const {$generateNodesFromDOM} = require('@lexical/html');
+import {createHeadlessEditor} from '@lexical/headless';
+import {$getRoot} from 'lexical';
+import {createDocument, dom, html} from '../test-utils/index.js';
+import {PaywallNode, $createPaywallNode, $isPaywallNode, type ExportDOMOptions} from '../../src/index.js';
+import {$generateNodesFromDOM} from '@lexical/html';
+import type {LexicalEditor} from 'lexical';
 
 const editorNodes = [PaywallNode];
 
 describe('PaywallNode', function () {
-    let editor;
-    let dataset;
-    let exportOptions;
+    let editor: LexicalEditor;
+    let dataset: Record<string, unknown>;
+    let exportOptions: ExportDOMOptions;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -86,9 +87,10 @@ describe('PaywallNode', function () {
 
     describe('exportDOM', function () {
         it('renders a paywall node', editorTest(function () {
-            const paywallNode = $createPaywallNode();
-            const {element} = paywallNode.exportDOM(exportOptions);
+            const paywallNode = $createPaywallNode(dataset);
+            const {element, type} = paywallNode.exportDOM(exportOptions);
 
+            type.should.equal('inner');
             element.innerHTML.should.equal('<!--members-only-->');
         }));
     });
@@ -107,7 +109,7 @@ describe('PaywallNode', function () {
 
     describe('getTextContent', function () {
         it('returns contents', editorTest(function () {
-            const node = $createPaywallNode();
+            const node = $createPaywallNode(dataset);
 
             // paywall nodes don't have text content
             node.getTextContent().should.equal('');

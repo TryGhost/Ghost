@@ -1,21 +1,27 @@
-import {generateDecoratorNode} from '../../generate-decorator-node';
-import {parseProductNode} from './product-parser';
-import {renderProductNode} from './product-renderer';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {parseProductNode} from './product-parser.js';
+import {renderProductNode} from './product-renderer.js';
+
+const productProperties = [
+    {name: 'productImageSrc', default: '', urlType: 'url'},
+    {name: 'productImageWidth', default: null as number | null},
+    {name: 'productImageHeight', default: null as number | null},
+    {name: 'productTitle', default: '', urlType: 'html', wordCount: true},
+    {name: 'productDescription', default: '', urlType: 'html', wordCount: true},
+    {name: 'productRatingEnabled', default: false},
+    {name: 'productStarRating', default: 5},
+    {name: 'productButtonEnabled', default: false},
+    {name: 'productButton', default: ''},
+    {name: 'productUrl', default: ''}
+] as const satisfies readonly DecoratorNodeProperty[];
+
+export type ProductData = DecoratorNodeData<typeof productProperties>;
+
+export interface ProductNode extends DecoratorNodeValueMap<typeof productProperties> {}
 
 export class ProductNode extends generateDecoratorNode({
     nodeType: 'product',
-    properties: [
-        {name: 'productImageSrc', default: '', urlType: 'url'},
-        {name: 'productImageWidth', default: null},
-        {name: 'productImageHeight', default: null},
-        {name: 'productTitle', default: '', urlType: 'html', wordCount: true},
-        {name: 'productDescription', default: '', urlType: 'html', wordCount: true},
-        {name: 'productRatingEnabled', default: false},
-        {name: 'productStarRating', default: 5},
-        {name: 'productButtonEnabled', default: false},
-        {name: 'productButton', default: ''},
-        {name: 'productUrl', default: ''}
-    ],
+    properties: productProperties,
     defaultRenderFn: renderProductNode
 }) {
     /* override */
@@ -52,10 +58,10 @@ export class ProductNode extends generateDecoratorNode({
     }
 }
 
-export const $createProductNode = (dataset) => {
+export const $createProductNode = (dataset: ProductData = {}) => {
     return new ProductNode(dataset);
 };
 
-export function $isProductNode(node) {
+export function $isProductNode(node: unknown): node is ProductNode {
     return node instanceof ProductNode;
 }

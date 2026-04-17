@@ -1,14 +1,20 @@
-import {generateDecoratorNode} from '../../generate-decorator-node';
-import {parseCodeBlockNode} from './codeblock-parser';
-import {renderCodeBlockNode} from './codeblock-renderer';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {parseCodeBlockNode} from './codeblock-parser.js';
+import {renderCodeBlockNode} from './codeblock-renderer.js';
+
+const codeBlockProperties = [
+    {name: 'code', default: '', wordCount: true},
+    {name: 'language', default: ''},
+    {name: 'caption', default: '', urlType: 'html', wordCount: true}
+] as const satisfies readonly DecoratorNodeProperty[];
+
+export type CodeBlockData = DecoratorNodeData<typeof codeBlockProperties>;
+
+export interface CodeBlockNode extends DecoratorNodeValueMap<typeof codeBlockProperties> {}
 
 export class CodeBlockNode extends generateDecoratorNode({
     nodeType: 'codeblock',
-    properties: [
-        {name: 'code', default: '', wordCount: true},
-        {name: 'language', default: ''},
-        {name: 'caption', default: '', urlType: 'html', wordCount: true}
-    ],
+    properties: codeBlockProperties,
     defaultRenderFn: renderCodeBlockNode
 }) {
     static importDOM() {
@@ -20,10 +26,10 @@ export class CodeBlockNode extends generateDecoratorNode({
     }
 }
 
-export function $createCodeBlockNode(dataset) {
+export function $createCodeBlockNode(dataset: CodeBlockData = {}) {
     return new CodeBlockNode(dataset);
 }
 
-export function $isCodeBlockNode(node) {
+export function $isCodeBlockNode(node: unknown): node is CodeBlockNode {
     return node instanceof CodeBlockNode;
 }

@@ -1,21 +1,23 @@
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$generateNodesFromDOM} = require('@lexical/html');
-const {$getRoot} = require('lexical');
-const {dom, createDocument, html: htmlTemplate} = require('../test-utils');
-const {CallToActionNode, $isCallToActionNode, utils} = require('../../');
+import should from 'should';
+import {createHeadlessEditor} from '@lexical/headless';
+import {$generateNodesFromDOM} from '@lexical/html';
+import {$getRoot} from 'lexical';
+import type {LexicalEditor} from 'lexical';
+import {dom, createDocument, html as htmlTemplate} from '../test-utils/index.js';
+import {CallToActionNode, $createCallToActionNode, $isCallToActionNode, utils, type ExportDOMOutputType} from '../../src/index.js';
 const editorNodes = [CallToActionNode];
 
 const {taggedTemplateFns: {oneline}} = utils;
 
 describe('CallToActionNode', function () {
-    let editor;
-    let dataset;
-    let exportOptions;
+    let editor: LexicalEditor;
+    let dataset: Record<string, unknown>;
+    let exportOptions: Record<string, unknown>;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -73,11 +75,35 @@ describe('CallToActionNode', function () {
             callToActionNode.hasSponsorLabel.should.equal(dataset.hasSponsorLabel);
             callToActionNode.sponsorLabel.should.equal(dataset.sponsorLabel);
             callToActionNode.backgroundColor.should.equal(dataset.backgroundColor);
-            callToActionNode.imageUrl.should.equal(dataset.imageUrl);
-            callToActionNode.visibility.should.deepEqual(utils.visibility.buildDefaultVisibility());
-            callToActionNode.imageHeight.should.equal(dataset.imageHeight);
-            callToActionNode.imageWidth.should.equal(dataset.imageWidth);
+            callToActionNode.imageUrl!.should.equal(dataset.imageUrl);
+            (callToActionNode.visibility as Record<string, unknown>).should.deepEqual(utils.visibility.buildDefaultVisibility());
+            callToActionNode.imageHeight!.should.equal(dataset.imageHeight);
+            callToActionNode.imageWidth!.should.equal(dataset.imageWidth);
             callToActionNode.linkColor.should.equal(dataset.linkColor);
+        }));
+
+        it('can be created without a dataset', editorTest(function () {
+            const callToActionNode = $createCallToActionNode();
+
+            callToActionNode.getDataset().should.deepEqual({
+                layout: 'minimal',
+                alignment: 'left',
+                textValue: '',
+                showButton: true,
+                showDividers: true,
+                buttonText: 'Learn more',
+                buttonUrl: '',
+                buttonColor: '#000000',
+                buttonTextColor: '#ffffff',
+                hasSponsorLabel: true,
+                sponsorLabel: '<p><span style="white-space: pre-wrap;">SPONSORED</span></p>',
+                backgroundColor: 'grey',
+                linkColor: 'text',
+                imageUrl: '',
+                imageWidth: null,
+                imageHeight: null,
+                visibility: utils.visibility.buildDefaultVisibility()
+            });
         }));
 
         it('has setters for all properties', editorTest(function () {
@@ -126,19 +152,19 @@ describe('CallToActionNode', function () {
             callToActionNode.backgroundColor = 'red';
             callToActionNode.backgroundColor.should.equal('red');
 
-            callToActionNode.imageUrl.should.equal('');
+            callToActionNode.imageUrl!.should.equal('');
             callToActionNode.imageUrl = 'http://blog.com/image1.jpg';
-            callToActionNode.imageUrl.should.equal('http://blog.com/image1.jpg');
+            callToActionNode.imageUrl!.should.equal('http://blog.com/image1.jpg');
 
             should(callToActionNode.imageHeight).be.null();
             callToActionNode.imageHeight = 100;
-            callToActionNode.imageHeight.should.equal(100);
+            callToActionNode.imageHeight!.should.equal(100);
 
             should(callToActionNode.imageWidth).be.null();
             callToActionNode.imageWidth = 200;
-            callToActionNode.imageWidth.should.equal(200);
+            callToActionNode.imageWidth!.should.equal(200);
 
-            callToActionNode.visibility.should.deepEqual(utils.visibility.buildDefaultVisibility());
+            (callToActionNode.visibility as Record<string, unknown>).should.deepEqual(utils.visibility.buildDefaultVisibility());
             callToActionNode.visibility = {
                 web: {
                     nonMember: false,
@@ -148,7 +174,7 @@ describe('CallToActionNode', function () {
                     memberSegment: ''
                 }
             };
-            callToActionNode.visibility.should.deepEqual({
+            (callToActionNode.visibility as Record<string, unknown>).should.deepEqual({
                 web: {
                     nonMember: false,
                     memberSegment: ''
@@ -185,7 +211,7 @@ describe('CallToActionNode', function () {
         it('returns a copy of the current node', editorTest(function () {
             const callToActionNode = new CallToActionNode(dataset);
             const callToActionNodeDataset = callToActionNode.getDataset();
-            const clone = CallToActionNode.clone(callToActionNode);
+            const clone = CallToActionNode.clone(callToActionNode) as CallToActionNode;
             const cloneDataset = clone.getDataset();
 
             cloneDataset.should.deepEqual({...callToActionNodeDataset});
@@ -204,9 +230,11 @@ describe('CallToActionNode', function () {
     });
 
     describe('exportDOM', function () {
-        const testRender = (assertFn) => {
+        const testRender = (assertFn: (result: {element: HTMLElement; type: ExportDOMOutputType; html: string}) => void) => {
             const callToActionNode = new CallToActionNode(dataset);
-            const {element, type} = callToActionNode.exportDOM(exportOptions);
+            const result = callToActionNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
+            const {type} = result;
 
             const html = element.outerHTML.toString();
             assertFn({element, type, html});
@@ -379,7 +407,7 @@ describe('CallToActionNode', function () {
 
             testRender(({element}) => {
                 element.tagName.should.equal('TEXTAREA');
-                element.value.should.match(/<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free" -->/);
+                (element as HTMLTextAreaElement).value.should.match(/<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free" -->/);
             });
         }));
 
@@ -390,7 +418,7 @@ describe('CallToActionNode', function () {
             testRender(({element, type}) => {
                 type.should.equal('html');
                 element.tagName.should.equal('DIV');
-                element.dataset.ghSegment.should.equal('status:free');
+                element.dataset.ghSegment!.should.equal('status:free');
             });
         }));
 
@@ -407,14 +435,14 @@ describe('CallToActionNode', function () {
 
         it('removes <p> first child tag from sponsorLabel', editorTest(function () {
             testRender(({element}) => {
-                const sponsorLabel = element.querySelector('.kg-cta-sponsor-label');
-                sponsorLabel.should.exist;
-                sponsorLabel.firstElementChild.tagName.should.equal('SPAN');
-                sponsorLabel.firstElementChild.outerHTML.should.equal('<span style="white-space: pre-wrap;">SPONSORED</span>');
+                const sponsorLabel = element.querySelector('.kg-cta-sponsor-label')!;
+                should.exist(sponsorLabel);
+                sponsorLabel.firstElementChild!.tagName.should.equal('SPAN');
+                sponsorLabel.firstElementChild!.outerHTML.should.equal('<span style="white-space: pre-wrap;">SPONSORED</span>');
             });
         }));
 
-        function testButtonSkipOnMissingData(target, layout, {missing = []} = {}) {
+        function testButtonSkipOnMissingData(target: string, layout: string, {missing = [] as string[]} = {}) {
             return editorTest(function () {
                 dataset.layout = layout;
                 dataset.showButton = true;
@@ -428,10 +456,11 @@ describe('CallToActionNode', function () {
 
                 // clear out the missing data
                 missing.forEach((prop) => {
-                    callToActionNode[prop] = '';
+                    (callToActionNode as unknown as Record<string, unknown>)[prop] = '';
                 });
 
-                const {element} = callToActionNode.exportDOM(exportOptions);
+                const result = callToActionNode.exportDOM(exportOptions);
+                const element = result.element as HTMLElement;
                 const html = element.outerHTML.toString();
 
                 html.should.not.containEql('<a href="http://blog.com/post1"');
@@ -446,7 +475,7 @@ describe('CallToActionNode', function () {
         it('skips button when buttonText is empty (email, minimal)', testButtonSkipOnMissingData('email', 'minimal', {missing: ['buttonText']}));
         it('skips button when buttonText is empty (email, immersive)', testButtonSkipOnMissingData('email', 'immersive', {missing: ['buttonText']}));
 
-        function testImageLink(target, layout) {
+        function testImageLink(target: string, layout: string) {
             return editorTest(function () {
                 exportOptions.target = target;
                 dataset.layout = layout;
@@ -464,7 +493,7 @@ describe('CallToActionNode', function () {
         it('adds link to image when button is present with url (email, minimal)', testImageLink('email', 'minimal'));
         it('adds link to image when button is present with url (email, immersive)', testImageLink('email', 'immersive'));
 
-        function testSkippedImageLink(target, layout) {
+        function testSkippedImageLink(target: string, layout: string) {
             return editorTest(function () {
                 exportOptions.target = target;
                 dataset.layout = layout;
@@ -484,7 +513,7 @@ describe('CallToActionNode', function () {
 
         it('can render email with emailCustomization', editorTest(function () {
             exportOptions.target = 'email';
-            exportOptions.feature.emailCustomization = true;
+            (exportOptions.feature as Record<string, unknown>).emailCustomization = true;
 
             testRender(({element}) => {
                 // very basic test to ensure we don't error
@@ -498,7 +527,7 @@ describe('CallToActionNode', function () {
 
         it('can render email with emailCustomizationAlpha', editorTest(function () {
             exportOptions.target = 'email';
-            exportOptions.feature.emailCustomizationAlpha = true;
+            (exportOptions.feature as Record<string, unknown>).emailCustomizationAlpha = true;
 
             testRender(({element}) => {
                 // very basic test to ensure we don't error
@@ -510,36 +539,35 @@ describe('CallToActionNode', function () {
             });
         }));
 
-        // eslint-disable-next-line ghost/mocha/no-setup-in-describe
         ['emailCustomization', 'emailCustomizationAlpha'].forEach((flag) => {
             it(`can render outline accent buttons (${flag})`, editorTest(function () {
                 exportOptions.target = 'email';
-                exportOptions.feature[flag] = true;
-                exportOptions.design.buttonStyle = 'outline';
+                (exportOptions.feature as Record<string, unknown>)[flag] = true;
+                (exportOptions.design as Record<string, unknown>).buttonStyle = 'outline';
 
                 dataset.buttonColor = 'accent';
 
                 testRender(({element}) => {
                     const expectedStyle = 'color: none;';
-                    element.querySelector('table.btn td').getAttribute('style').should.equal(expectedStyle);
-                    element.querySelector('table.btn a').getAttribute('style').should.equal(expectedStyle);
+                    element.querySelector('table.btn td')!.getAttribute('style')!.should.equal(expectedStyle);
+                    element.querySelector('table.btn a')!.getAttribute('style')!.should.equal(expectedStyle);
                 });
             }));
 
             it(`can render outline custom buttons (${flag})`, editorTest(function () {
                 exportOptions.target = 'email';
-                exportOptions.feature[flag] = true;
-                exportOptions.design.buttonStyle = 'outline';
+                (exportOptions.feature as Record<string, unknown>)[flag] = true;
+                (exportOptions.design as Record<string, unknown>).buttonStyle = 'outline';
 
                 dataset.buttonColor = '#F0F0F0';
 
                 testRender(({element}) => {
-                    oneline(element.querySelector('table.btn td').getAttribute('style')).should.equal(oneline`
+                    oneline(element.querySelector('table.btn td')!.getAttribute('style')!).should.equal(oneline`
                         border: 1px solid #F0F0F0;
                         background-color: transparent;
                         color: #F0F0F0;
                     `);
-                    oneline(element.querySelector('table.btn a').getAttribute('style')).should.equal(oneline`
+                    oneline(element.querySelector('table.btn a')!.getAttribute('style')!).should.equal(oneline`
                         background-color: transparent;
                         color: #F0F0F0;
                     `);
@@ -558,6 +586,14 @@ describe('CallToActionNode', function () {
             dataset.buttonColor = 'blue';
             testRender(({html}) => {
                 html.should.containEql('background-color: blue');
+            });
+        }));
+
+        it('rejects partial token matches for buttonColor', editorTest(function () {
+            dataset.buttonColor = 'blue!';
+            testRender(({html}) => {
+                html.should.containEql('kg-style-accent');
+                html.should.not.containEql('background-color: blue!');
             });
         }));
 
@@ -582,10 +618,10 @@ describe('CallToActionNode', function () {
             dataset.imageHeight = 800;
 
             testRender(({element}) => {
-                const img = element.querySelector('.kg-cta-image');
-                img.should.exist;
-                img.getAttribute('width').should.equal('64');
-                img.getAttribute('height').should.equal('64');
+                const img = element.querySelector('.kg-cta-image')!;
+                should.exist(img);
+                img.getAttribute('width')!.should.equal('64');
+                img.getAttribute('height')!.should.equal('64');
             });
         }));
 
@@ -711,11 +747,12 @@ describe('CallToActionNode', function () {
     });
 
     describe('importDom', function () {
-        const generateCallToActionNodes = (nodeDataset) => {
+        const generateCallToActionNodes = (nodeDataset: Record<string, unknown>) => {
             const callToActionNode = new CallToActionNode(nodeDataset);
-            const {element} = callToActionNode.exportDOM(exportOptions);
+            const result = callToActionNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             const docuement = createDocument(htmlTemplate`${element.outerHTML.toString()}`);
-            const nodes = $generateNodesFromDOM(editor, docuement);
+            const nodes = $generateNodesFromDOM(editor, docuement) as CallToActionNode[];
 
             return nodes;
         };
@@ -796,12 +833,12 @@ describe('CallToActionNode', function () {
         it('can get image data', editorTest(function () {
             const nodes = generateCallToActionNodes(dataset);
             nodes.length.should.equal(1);
-            nodes[0].imageUrl.should.equal('http://blog.com/image1.jpg');
-            nodes[0].imageWidth.should.equal(200);
-            nodes[0].imageHeight.should.equal(100);
+            nodes[0].imageUrl!.should.equal('http://blog.com/image1.jpg');
+            nodes[0].imageWidth!.should.equal(200);
+            nodes[0].imageHeight!.should.equal(100);
         }));
 
-        it('image width and height falls back to nulll if not provided', editorTest(function () {
+        it('image width and height falls back to null if not provided', editorTest(function () {
             dataset.imageWidth = null;
             dataset.imageHeight = null;
             const nodes = generateCallToActionNodes(dataset);

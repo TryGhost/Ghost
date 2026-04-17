@@ -1,15 +1,37 @@
-const {createHeadlessEditor} = require('@lexical/headless');
-const {utils} = require('../');
+import 'should';
+import {createHeadlessEditor} from '@lexical/headless';
+import {utils, type ExportDOMOptions, type ExportDOMOutput} from '../src/index.js';
+import type {LexicalEditor} from 'lexical';
+import {dom} from './test-utils/index.js';
 
 const defaultVisibility = utils.visibility.buildDefaultVisibility();
 
+type GeneratedNodeClass = ReturnType<typeof utils.generateDecoratorNode>;
+
+interface GeneratedNodeInstance {
+    exportDOM(options?: ExportDOMOptions): ExportDOMOutput;
+    exportJSON(): Record<string, unknown>;
+    getDataset(): Record<string, unknown>;
+    visibility: Record<string, unknown>;
+    [key: string]: unknown;
+}
+
+function createRenderResult(tagName: 'div' | 'span', content: string) {
+    const element = dom.window.document.createElement(tagName);
+    element.textContent = content;
+    return {
+        element,
+        type: 'inner' as const
+    };
+}
+
 describe('Utils: generateDecoratorNode', function () {
-    let editor;
+    let editor: LexicalEditor;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -21,22 +43,18 @@ describe('Utils: generateDecoratorNode', function () {
     };
 
     describe('exportDOM', function () {
-        let NodeWithRender;
-        let $createNodeWithRender;
+        let NodeWithRender: GeneratedNodeClass;
+        let $createNodeWithRender: (dataset?: Record<string, unknown>) => GeneratedNodeInstance;
 
         before(function () {
             NodeWithRender = utils.generateDecoratorNode({
                 nodeType: 'render-test',
                 properties: [],
-                defaultRenderFn: () => ({
-                    element: 'div',
-                    type: 'inner',
-                    content: 'default render'
-                })
+                defaultRenderFn: () => createRenderResult('div', 'default render')
             });
 
-            $createNodeWithRender = (dataset) => {
-                return new NodeWithRender(dataset);
+            $createNodeWithRender = (dataset?: Record<string, unknown>) => {
+                return new NodeWithRender(dataset) as unknown as GeneratedNodeInstance;
             };
 
             editor = createHeadlessEditor({nodes: [NodeWithRender]});
@@ -46,11 +64,8 @@ describe('Utils: generateDecoratorNode', function () {
             const node = $createNodeWithRender();
             const result = node.exportDOM();
 
-            result.should.deepEqual({
-                element: 'div',
-                type: 'inner',
-                content: 'default render'
-            });
+            result.type.should.equal('inner');
+            result.element?.outerHTML.should.equal('<div>default render</div>');
         }));
 
         it('uses versioned default renderer (static version)', editorTest(function () {
@@ -59,27 +74,16 @@ describe('Utils: generateDecoratorNode', function () {
                 properties: [],
                 version: 2,
                 defaultRenderFn: {
-                    1: () => ({
-                        element: 'div',
-                        type: 'inner',
-                        content: 'version 1'
-                    }),
-                    2: () => ({
-                        element: 'div',
-                        type: 'inner',
-                        content: 'version 2'
-                    })
+                    1: () => createRenderResult('div', 'version 1'),
+                    2: () => createRenderResult('div', 'version 2')
                 }
             });
 
-            const node = new VersionedNode();
+            const node = new VersionedNode() as unknown as GeneratedNodeInstance;
             const result = node.exportDOM();
 
-            result.should.deepEqual({
-                element: 'div',
-                type: 'inner',
-                content: 'version 2'
-            });
+            result.type.should.equal('inner');
+            result.element?.outerHTML.should.equal('<div>version 2</div>');
         }));
 
         it('uses versioned default renderer (dataset version)', editorTest(function () {
@@ -88,27 +92,16 @@ describe('Utils: generateDecoratorNode', function () {
                 properties: [{name: 'version', default: 1}],
                 version: 1,
                 defaultRenderFn: {
-                    1: () => ({
-                        element: 'div',
-                        type: 'inner',
-                        content: 'version 1'
-                    }),
-                    2: () => ({
-                        element: 'div',
-                        type: 'inner',
-                        content: 'version 2'
-                    })
+                    1: () => createRenderResult('div', 'version 1'),
+                    2: () => createRenderResult('div', 'version 2')
                 }
             });
 
-            const node = new VersionedNode({version: 2});
+            const node = new VersionedNode({version: 2}) as unknown as GeneratedNodeInstance;
             const result = node.exportDOM();
 
-            result.should.deepEqual({
-                element: 'div',
-                type: 'inner',
-                content: 'version 2'
-            });
+            result.type.should.equal('inner');
+            result.element?.outerHTML.should.equal('<div>version 2</div>');
         }));
 
         it('throws error when defaultRenderFn is not provided', editorTest(function () {
@@ -117,7 +110,7 @@ describe('Utils: generateDecoratorNode', function () {
                 properties: []
             });
 
-            const node = new NodeWithoutRender();
+            const node = new NodeWithoutRender() as unknown as GeneratedNodeInstance;
             (() => node.exportDOM()).should.throw('[generateDecoratorNode] no-render-test: "defaultRenderFn" is required');
         }));
 
@@ -127,25 +120,20 @@ describe('Utils: generateDecoratorNode', function () {
                 properties: [],
                 version: 2,
                 defaultRenderFn: {
-                    1: () => ({})
+                    1: () => createRenderResult('div', 'version 1')
                 }
             });
 
-            const node = new VersionedNode();
+            const node = new VersionedNode() as unknown as GeneratedNodeInstance;
             (() => node.exportDOM()).should.throw('[generateDecoratorNode] versioned-render-test: "defaultRenderFn" for version 2 is required');
         }));
 
-        // eslint-disable-next-line ghost/mocha/no-setup-in-describe
         ['emailCustomizationAlpha', 'emailCustomization'].forEach((feature) => {
             it(`uses custom renderer if passed in (${feature})`, editorTest(function () {
                 const node = $createNodeWithRender();
-                const customRenderer = () => ({
-                    element: 'span',
-                    type: 'inner',
-                    content: 'custom render'
-                });
+                const customRenderer = () => createRenderResult('span', 'custom render');
 
-                const featureOption = {};
+                const featureOption: Record<string, boolean> = {};
                 featureOption[feature] = true;
 
                 const result = node.exportDOM({
@@ -155,11 +143,8 @@ describe('Utils: generateDecoratorNode', function () {
                     }
                 });
 
-                result.should.deepEqual({
-                    element: 'span',
-                    type: 'inner',
-                    content: 'custom render'
-                });
+                result.type.should.equal('inner');
+                result.element?.outerHTML.should.equal('<span>custom render</span>');
             }));
         });
 
@@ -169,20 +154,12 @@ describe('Utils: generateDecoratorNode', function () {
                 properties: [{name: 'version', default: 1}],
                 version: 1,
                 defaultRenderFn: {
-                    1: () => ({
-                        element: 'div',
-                        type: 'inner',
-                        content: 'version 1'
-                    }),
-                    2: () => ({
-                        element: 'div',
-                        type: 'inner',
-                        content: 'version 2'
-                    })
+                    1: () => createRenderResult('div', 'version 1'),
+                    2: () => createRenderResult('div', 'version 2')
                 }
             });
 
-            const node = new VersionedNode({version: 2});
+            const node = new VersionedNode({version: 2}) as unknown as GeneratedNodeInstance;
 
             (() => node.exportDOM({
                 feature: {
@@ -190,7 +167,7 @@ describe('Utils: generateDecoratorNode', function () {
                 },
                 nodeRenderers: {
                     'versioned-render-test': {
-                        1: () => ({})
+                        1: () => createRenderResult('div', 'version 1')
                     }
                 }
             })).should.throw('[generateDecoratorNode] versioned-render-test: options.nodeRenderers[\'versioned-render-test\'] for version 2 is required');
@@ -198,8 +175,8 @@ describe('Utils: generateDecoratorNode', function () {
     });
 
     describe('hasVisibility', function () {
-        let NodeWithVisibility;
-        let $createNodeWithVisibility;
+        let NodeWithVisibility: GeneratedNodeClass;
+        let $createNodeWithVisibility: (dataset?: Record<string, unknown>) => GeneratedNodeInstance;
 
         before(function () {
             NodeWithVisibility = utils.generateDecoratorNode({
@@ -208,8 +185,8 @@ describe('Utils: generateDecoratorNode', function () {
                 hasVisibility: true
             });
 
-            $createNodeWithVisibility = (dataset) => {
-                return new NodeWithVisibility(dataset);
+            $createNodeWithVisibility = (dataset?: Record<string, unknown>) => {
+                return new NodeWithVisibility(dataset) as unknown as GeneratedNodeInstance;
             };
 
             editor = createHeadlessEditor({nodes: [NodeWithVisibility]});
@@ -219,8 +196,8 @@ describe('Utils: generateDecoratorNode', function () {
             const node = $createNodeWithVisibility();
 
             node.visibility.should.deepEqual(defaultVisibility, 'node.visibility');
-            node.getDataset().visibility.should.deepEqual(defaultVisibility, 'node.getDataset().visibility');
-            node.exportJSON().visibility.should.deepEqual(defaultVisibility, 'node.exportJSON().visibility');
+            node.getDataset().visibility!.should.deepEqual(defaultVisibility, 'node.getDataset().visibility');
+            node.exportJSON().visibility!.should.deepEqual(defaultVisibility, 'node.exportJSON().visibility');
         }));
 
         it('can update visibility', editorTest(function () {
@@ -239,8 +216,8 @@ describe('Utils: generateDecoratorNode', function () {
             node.visibility = newVisibility;
 
             node.visibility.should.deepEqual(newVisibility, 'node.visibility');
-            node.getDataset().visibility.should.deepEqual(newVisibility, 'node.getDataset().visibility');
-            node.exportJSON().visibility.should.deepEqual(newVisibility, 'node.exportJSON().visibility');
+            node.getDataset().visibility!.should.deepEqual(newVisibility, 'node.getDataset().visibility');
+            node.exportJSON().visibility!.should.deepEqual(newVisibility, 'node.exportJSON().visibility');
         }));
 
         it('ensures default doesn\'t change when nested visibility objects are updated', editorTest(function () {
@@ -248,9 +225,9 @@ describe('Utils: generateDecoratorNode', function () {
 
             // NOTE: this wouldn't trigger a Lexical node update, it's just to show
             // that the default can't be accidentally changed by reference
-            node.visibility.web.nonMember = false;
+            (node.visibility as {web: {nonMember: boolean}}).web.nonMember = false;
 
-            NodeWithVisibility.getPropertyDefaults().visibility.should.deepEqual(defaultVisibility);
+            NodeWithVisibility.getPropertyDefaults().visibility!.should.deepEqual(defaultVisibility);
         }));
 
         // During the early visibility beta period we had a different format for visibility
@@ -262,7 +239,7 @@ describe('Utils: generateDecoratorNode', function () {
                     showOnEmail: true,
                     segment: 'status:free'
                 }
-            });
+            }) as unknown as GeneratedNodeInstance;
 
             // old values are kept, new values are added
             node.visibility.should.deepEqual({

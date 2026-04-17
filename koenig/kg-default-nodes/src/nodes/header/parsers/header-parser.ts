@@ -1,12 +1,14 @@
-export function parseHeaderNode(HeaderNode) {
+import type {LexicalNode} from 'lexical';
+
+export function parseHeaderNode(HeaderNode: new (data: Record<string, unknown>) => LexicalNode) {
     return {
-        div: (nodeElem) => {
+        div: (nodeElem: HTMLElement) => {
             const isHeaderCardv1 = nodeElem.classList?.contains('kg-header-card') && !nodeElem.classList?.contains('kg-v2');
             const isHeaderCardv2 = nodeElem.classList?.contains('kg-header-card') && nodeElem.classList?.contains('kg-v2');
             // v1 parser
             if (nodeElem.tagName === 'DIV' && isHeaderCardv1) {
                 return {
-                    conversion(domNode) {
+                    conversion(domNode: HTMLElement) {
                         const div = domNode;
                         const headerElement = domNode.querySelector('.kg-header-card-header');
                         const subheaderElement = domNode.querySelector('.kg-header-card-subheader');
@@ -22,7 +24,7 @@ export function parseHeaderNode(HeaderNode) {
                         const buttonUrl = buttonEnabled ? buttonElement.getAttribute('href') : '';
                         const buttonText = buttonEnabled ? buttonElement.textContent : '';
 
-                        const payload = {
+                        const payload: Record<string, unknown> = {
                             size,
                             style,
                             backgroundImageSrc,
@@ -37,14 +39,14 @@ export function parseHeaderNode(HeaderNode) {
                         const node = new HeaderNode(payload);
                         return {node};
                     },
-                    priority: 1
+                    priority: 1 as const
                 };
             }
 
             // V2 parser
             if (nodeElem.tagName === 'DIV' && isHeaderCardv2) {
                 return {
-                    conversion(domNode) {
+                    conversion(domNode: HTMLElement) {
                         const div = domNode;
                         const headerElement = div.querySelector('.kg-header-card-heading');
                         const subheaderElement = div.querySelector('.kg-header-card-subheading');
@@ -62,7 +64,7 @@ export function parseHeaderNode(HeaderNode) {
                         const buttonUrl = buttonEnabled ? buttonElement.getAttribute('href') : '';
                         const buttonText = buttonEnabled ? buttonElement.textContent : '';
 
-                        const payload = {
+                        const payload: Record<string, unknown> = {
                             backgroundColor,
                             buttonColor,
                             alignment,
@@ -81,7 +83,7 @@ export function parseHeaderNode(HeaderNode) {
                         const node = new HeaderNode(payload);
                         return {node};
                     },
-                    priority: 1
+                    priority: 1 as const
                 };
             }
             return null;

@@ -1,14 +1,34 @@
-import {getAvailableImageWidths} from '../../utils/get-available-image-widths';
-import {isLocalContentImage} from '../../utils/is-local-content-image';
-import {setSrcsetAttribute} from '../../utils/srcset-attribute';
-import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions';
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {renderEmptyContainer} from '../../utils/render-empty-container';
+import {getAvailableImageWidths} from '../../utils/get-available-image-widths.js';
+import {isLocalContentImage} from '../../utils/is-local-content-image.js';
+import {setSrcsetAttribute} from '../../utils/srcset-attribute.js';
+import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions.js';
+import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
+import type {ExportDOMOptions} from '../../export-dom.js';
+import {renderEmptyContainer} from '../../utils/render-empty-container.js';
 
-export function renderImageNode(node, options = {}) {
+interface ImageNodeData {
+    src: string;
+    width: number;
+    height: number;
+    alt: string;
+    title: string;
+    caption: string;
+    cardWidth: string;
+    href: string;
+}
+
+interface ImageRenderOptions extends ExportDOMOptions {
+    imageOptimization?: {
+        defaultMaxWidth?: number;
+        contentImageSizes?: Record<string, { width: number }>;
+        [key: string]: unknown;
+    };
+}
+
+export function renderImageNode(node: ImageNodeData, options: ImageRenderOptions = {}) {
     addCreateDocumentOption(options);
 
-    const document = options.createDocument();
+    const document = options.createDocument!();
 
     if (!node.src || node.src.trim() === '') {
         return renderEmptyContainer(document);
@@ -37,8 +57,8 @@ export function renderImageNode(node, options = {}) {
     }
 
     if (node.width && node.height) {
-        img.setAttribute('width', node.width);
-        img.setAttribute('height', node.height);
+        img.setAttribute('width', String(node.width));
+        img.setAttribute('height', String(node.height));
     }
 
     // images can be resized to max width, if that's the case output
@@ -58,8 +78,8 @@ export function renderImageNode(node, options = {}) {
             height: node.height
         };
         const {width, height} = getResizedImageDimensions(imageDimensions, {width: defaultMaxWidth});
-        img.setAttribute('width', width);
-        img.setAttribute('height', height);
+        img.setAttribute('width', String(width));
+        img.setAttribute('height', String(height));
     }
 
     if (options.target !== 'email') {
@@ -93,19 +113,23 @@ export function renderImageNode(node, options = {}) {
         if (node.width >= 600) {
             imageDimensions = getResizedImageDimensions(imageDimensions, {width: 600});
         }
-        img.setAttribute('width', imageDimensions.width);
-        img.setAttribute('height', imageDimensions.height);
+        img.setAttribute('width', String(imageDimensions.width));
+        img.setAttribute('height', String(imageDimensions.height));
 
-        if (isLocalContentImage(node.src, options.siteUrl) && options.canTransformImage?.(node.src)) {
+        const contentImageSizes = options.imageOptimization?.contentImageSizes;
+        if (contentImageSizes && isLocalContentImage(node.src, options.siteUrl) && options.canTransformImage?.(node.src)) {
             // find available image size next up from 2x600 so we can use it for the "retina" src
-            const availableImageWidths = getAvailableImageWidths(node, options.imageOptimization.contentImageSizes);
+            const availableImageWidths = getAvailableImageWidths(node, contentImageSizes);
             const srcWidth = availableImageWidths.find(width => width >= 1200);
 
             if (!srcWidth || srcWidth === node.width) {
                 // do nothing, width is smaller than retina or matches the original node src
             } else {
-                const [, imagesPath, filename] = node.src.match(/(.*\/content\/images)\/(.*)/);
-                img.setAttribute('src', `${imagesPath}/size/w${srcWidth}/${filename}`);
+                const match = node.src.match(/(.*\/content\/images)\/(.*)/);
+                if (match) {
+                    const [, imagesPath, filename] = match;
+                    img.setAttribute('src', `${imagesPath}/size/w${srcWidth}/${filename}`);
+                }
             }
         }
     }
@@ -125,5 +149,5 @@ export function renderImageNode(node, options = {}) {
         figure.appendChild(caption);
     }
 
-    return {element: figure};
+    return {element: figure, type: 'outer' as const};
 }

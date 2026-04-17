@@ -1,9 +1,18 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {cleanDOM} from '../../utils/clean-dom';
+import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
+import type {ExportDOMOptions} from '../../export-dom.js';
+import {cleanDOM} from '../../utils/clean-dom.js';
 
-export function renderCalloutNode(node, options = {}) {
+interface CalloutNodeData {
+    backgroundColor: string;
+    calloutEmoji: string;
+    calloutText: string;
+}
+
+interface RenderOptions extends ExportDOMOptions {}
+
+export function renderCalloutNode(node: CalloutNodeData, options: RenderOptions = {}) {
     addCreateDocumentOption(options);
-    const document = options.createDocument();
+    const document = options.createDocument!();
     const element = document.createElement('div');
 
     // backgroundColor can end up with `rgba(0, 0, 0, 0)` from old mobiledoc copy/paste
@@ -34,5 +43,5 @@ export function renderCalloutNode(node, options = {}) {
     textElement.innerHTML = temporaryContainer.innerHTML;
     element.appendChild(textElement);
 
-    return {element};
+    return {element, type: 'outer' as const};
 }

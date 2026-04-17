@@ -1,9 +1,10 @@
 import {$applyNodeReplacement, TextNode} from 'lexical';
+import type {EditorConfig} from 'lexical';
 
 // Represents the search query string inside an AtLinkNode. Used in place of a
 // regular TextNode to allow for :after styling to be applied to work as a placeholder
 export class AtLinkSearchNode extends TextNode {
-    __placeholder = null;
+    __placeholder: string | null = null;
 
     defaultPlaceholder = 'Find a post, tag or author';
 
@@ -11,12 +12,12 @@ export class AtLinkSearchNode extends TextNode {
         return 'at-link-search';
     }
 
-    constructor(text, placeholder, key) {
+    constructor(text: string, placeholder: string | null, key?: string) {
         super(text, key);
         this.__placeholder = placeholder;
     }
 
-    static clone(node) {
+    static clone(node: AtLinkSearchNode) {
         return new AtLinkSearchNode(
             node.__text,
             node.__placeholder,
@@ -27,8 +28,8 @@ export class AtLinkSearchNode extends TextNode {
     // This is a temporary node, it should never be serialized but we need
     // to implement just in case and to match expected types. The AtLinkPlugin
     // should take care of replacing this node when needed.
-    static importJSON({text, placeholder}) {
-        return $createAtLinkSearchNode(text, placeholder);
+    static importJSON(serializedNode: ReturnType<AtLinkSearchNode['exportJSON']>) {
+        return $createAtLinkSearchNode(serializedNode.text, serializedNode.placeholder);
     }
 
     exportJSON() {
@@ -40,7 +41,7 @@ export class AtLinkSearchNode extends TextNode {
         };
     }
 
-    createDOM(config) {
+    createDOM(config: EditorConfig) {
         const span = super.createDOM(config);
         span.dataset.placeholder = '';
         if (!this.__text) {
@@ -54,17 +55,22 @@ export class AtLinkSearchNode extends TextNode {
         return span;
     }
 
-    updateDOM(prevNode, dom) {
-        if (this.__text) {
-            dom.dataset.placeholder = this.__placeholder ?? '';
-        }
+    updateDOM(prevNode: AtLinkSearchNode, dom: HTMLElement, config: EditorConfig) {
+        dom.dataset.placeholder = this.__placeholder !== null
+            ? this.__placeholder
+            : this.__text
+                ? ''
+                : this.defaultPlaceholder;
 
-        return super.updateDOM(...arguments);
+        return super.updateDOM(prevNode, dom, config);
     }
 
-    // should not render anything - this is a placeholder node
+    // This is an editor-only placeholder node. Return an empty element and
+    // `type: 'inner'` so downstream serializers emit no HTML while still
+    // receiving a non-null DOM element.
     exportDOM() {
-        return null;
+        const span = document.createElement('span');
+        return {element: span, type: 'inner' as const};
     }
 
     /* c8 ignore next 3 */
@@ -76,7 +82,7 @@ export class AtLinkSearchNode extends TextNode {
         return false;
     }
 
-    setPlaceholder(text) {
+    setPlaceholder(text: string | null) {
         const self = this.getWritable();
         self.__placeholder = text;
     }
@@ -99,10 +105,10 @@ export class AtLinkSearchNode extends TextNode {
     }
 }
 
-export function $createAtLinkSearchNode(text = '', placeholder = null) {
+export function $createAtLinkSearchNode(text = '', placeholder: string | null = null): AtLinkSearchNode {
     return $applyNodeReplacement(new AtLinkSearchNode(text, placeholder));
 }
 
-export function $isAtLinkSearchNode(node) {
+export function $isAtLinkSearchNode(node: unknown): node is AtLinkSearchNode {
     return node instanceof AtLinkSearchNode;
 }

@@ -1,4 +1,4 @@
-import {utils} from '@tryghost/kg-default-nodes';
+import {buildDefaultVisibility} from '@tryghost/kg-default-nodes/visibility';
 
 export const VISIBILITY_SETTINGS = {
     WEB_AND_EMAIL: 'web and email',
@@ -27,7 +27,7 @@ function isToggleChecked(toggles, key, fallback) {
 
 // used for building UI
 export function getVisibilityOptions(visibility, {isStripeEnabled = true, showWeb = true, showEmail = true} = {}) {
-    visibility = visibility || utils.visibility.buildDefaultVisibility();
+    visibility = visibility || buildDefaultVisibility();
     const toggles = parseVisibilityToToggles(visibility);
 
     // use arrays to ensure consistent order when using to build UI
@@ -70,7 +70,7 @@ export function getVisibilityOptions(visibility, {isStripeEnabled = true, showWe
 }
 
 export function serializeOptionsToVisibility(options, existingVisibility) {
-    existingVisibility = existingVisibility || utils.visibility.buildDefaultVisibility();
+    existingVisibility = existingVisibility || buildDefaultVisibility();
     const existingToggles = parseVisibilityToToggles(existingVisibility);
     const webToggles = options.find(group => group.key === 'web')?.toggles ?? [];
     const emailToggles = options.find(group => group.key === 'email')?.toggles ?? [];

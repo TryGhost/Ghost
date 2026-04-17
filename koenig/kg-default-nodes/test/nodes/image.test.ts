@@ -1,20 +1,23 @@
-const {createDocument, dom, html} = require('../test-utils');
-const {$getRoot} = require('lexical');
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$generateNodesFromDOM} = require('@lexical/html');
-const {ImageNode, $createImageNode, $isImageNode} = require('../../');
+import should from 'should';
+import {createDocument, dom, html} from '../test-utils/index.js';
+import {$getRoot, LexicalEditor} from 'lexical';
+import {createHeadlessEditor} from '@lexical/headless';
+import {$generateNodesFromDOM} from '@lexical/html';
+import {ImageNode, $createImageNode, $isImageNode} from '../../src/index.js';
 
 const editorNodes = [ImageNode];
 
+void should;
+
 describe('ImageNode', function () {
-    let editor;
-    let dataset;
-    let exportOptions;
+    let editor: LexicalEditor;
+    let dataset: Record<string, unknown>;
+    let exportOptions: Record<string, unknown>;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -62,8 +65,8 @@ describe('ImageNode', function () {
             const imageNode = $createImageNode(dataset);
 
             imageNode.src.should.equal('/content/images/2022/11/koenig-lexical.jpg');
-            imageNode.width.should.equal(3840);
-            imageNode.height.should.equal(2160);
+            imageNode.width!.should.equal(3840);
+            imageNode.height!.should.equal(2160);
             imageNode.title.should.equal('This is a title');
             imageNode.alt.should.equal('This is some alt text');
             imageNode.caption.should.equal('This is a <b>caption</b>');
@@ -71,18 +74,33 @@ describe('ImageNode', function () {
             imageNode.href.should.equal('');
         }));
 
-        it('has setters for all properties', editorTest(function () {
+        it('can be created without a dataset', editorTest(function () {
             const imageNode = $createImageNode();
+
+            imageNode.getDataset().should.deepEqual({
+                src: '',
+                caption: '',
+                title: '',
+                alt: '',
+                cardWidth: 'regular',
+                width: null,
+                height: null,
+                href: ''
+            });
+        }));
+
+        it('has setters for all properties', editorTest(function () {
+            const imageNode = $createImageNode({} as Record<string, unknown>);
 
             imageNode.src.should.equal('');
             imageNode.src = '/content/images/2022/11/koenig-lexical.jpg';
             imageNode.src.should.equal('/content/images/2022/11/koenig-lexical.jpg');
 
-            should(imageNode.width).equal(null);
+            (should as unknown as (obj: unknown) => should.Assertion)(imageNode.width).equal(null);
             imageNode.width = 3840;
             imageNode.width.should.equal(3840);
 
-            should(imageNode.height).equal(null);
+            (should as unknown as (obj: unknown) => should.Assertion)(imageNode.height).equal(null);
             imageNode.height = 2160;
             imageNode.height.should.equal(2160);
 
@@ -123,7 +141,7 @@ describe('ImageNode', function () {
             const imageNode = $createImageNode(dataset);
             const {element} = imageNode.exportDOM(exportOptions);
 
-            element.outerHTML.should.prettifyTo(html`
+            (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-image-card kg-card-hascaption">
                     <img
                         src="/content/images/2022/11/koenig-lexical.jpg"
@@ -147,7 +165,7 @@ describe('ImageNode', function () {
             });
             const {element} = imageNode.exportDOM(exportOptions);
 
-            element.outerHTML.should.prettifyTo(html`
+            (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-image-card kg-card-hascaption">
                     <a href="https://example.com"
                         ><img
@@ -175,7 +193,7 @@ describe('ImageNode', function () {
             const imageNode = $createImageNode({src: '/image.png'});
             const {element} = imageNode.exportDOM(exportOptions);
 
-            element.outerHTML.should.prettifyTo(html`
+            (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-image-card">
                     <img src="/image.png" class="kg-image" alt="" loading="lazy">
                 </figure>
@@ -183,10 +201,10 @@ describe('ImageNode', function () {
         }));
 
         it('renders an empty span with a missing src', editorTest(function () {
-            const imageNode = $createImageNode();
+            const imageNode = $createImageNode({} as Record<string, unknown>);
             const {element} = imageNode.exportDOM(exportOptions);
 
-            element.outerHTML.should.equal('<span></span>');
+            (element as HTMLElement).outerHTML.should.equal('<span></span>');
         }));
 
         it('renders a wide image', editorTest(function () {
@@ -194,19 +212,19 @@ describe('ImageNode', function () {
             const imageNode = $createImageNode(dataset);
             const {element} = imageNode.exportDOM(exportOptions);
 
-            element.classList.contains('kg-width-wide').should.be.true();
+            (element as HTMLElement).classList.contains('kg-width-wide').should.be.true();
         }));
 
         it('uses resized width and height when there\'s a max width', editorTest(function () {
             dataset.width = 3000;
             dataset.height = 6000;
             // add defaultMaxWidth property to options
-            exportOptions.imageOptimization.defaultMaxWidth = 2000;
+            (exportOptions.imageOptimization as Record<string, unknown>).defaultMaxWidth = 2000;
             exportOptions.canTransformImage = () => true;
 
             const imageNode = $createImageNode(dataset);
             const {element} = imageNode.exportDOM(exportOptions);
-            const output = element.outerHTML;
+            const output = (element as HTMLElement).outerHTML;
 
             output.should.containEql('width="2000"');
             output.should.containEql('height="4000"');
@@ -219,7 +237,7 @@ describe('ImageNode', function () {
 
             const imageNode = $createImageNode(dataset);
             const {element} = imageNode.exportDOM(exportOptions);
-            const output = element.outerHTML;
+            const output = (element as HTMLElement).outerHTML;
 
             output.should.containEql('width="3000" height="6000"');
         }));
@@ -232,7 +250,7 @@ describe('ImageNode', function () {
 
                 const imageNode = $createImageNode(dataset);
                 const {element} = imageNode.exportDOM(exportOptions);
-                const output = element.outerHTML;
+                const output = (element as HTMLElement).outerHTML;
 
                 output.should.containEql('https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1000w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2400&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 2400w');
             }));
@@ -242,7 +260,7 @@ describe('ImageNode', function () {
 
                 const imageNode = $createImageNode(dataset);
                 const {element} = imageNode.exportDOM(exportOptions);
-                const output = element.outerHTML;
+                const output = (element as HTMLElement).outerHTML;
 
                 output.should.not.containEql('srcset');
             }));
@@ -267,7 +285,7 @@ describe('ImageNode', function () {
 
                 const imageNode = $createImageNode(dataset);
                 const {element} = imageNode.exportDOM(exportOptions);
-                const output = element.outerHTML;
+                const output = (element as HTMLElement).outerHTML;
 
                 output.should.containEql('sizes="(min-width: 720px) 720px"');
             }));
@@ -279,7 +297,7 @@ describe('ImageNode', function () {
 
                 const imageNode = $createImageNode(dataset);
                 const {element} = imageNode.exportDOM(exportOptions);
-                const output = element.outerHTML;
+                const output = (element as HTMLElement).outerHTML;
 
                 output.should.containEql('sizes="(min-width: 1200px) 1200px"');
             }));
@@ -315,14 +333,14 @@ describe('ImageNode', function () {
                     height="2000"
                 />
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
 
             nodes.length.should.equal(1);
             nodes[0].src.should.equal('/image.png');
             nodes[0].alt.should.equal('Alt text');
             nodes[0].title.should.equal('Title text');
-            nodes[0].width.should.equal(3000);
-            nodes[0].height.should.equal(2000);
+            nodes[0].width!.should.equal(3000);
+            nodes[0].height!.should.equal(2000);
         }));
 
         it('parses IMG inside FIGURE to image card without caption', editorTest(function () {
@@ -331,7 +349,7 @@ describe('ImageNode', function () {
                     <img src="http://example.com/test.png" alt="Alt test" title="Title test" />
                 </figure>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
 
             nodes.length.should.equal(1);
             nodes[0].src.should.equal('http://example.com/test.png');
@@ -346,7 +364,7 @@ describe('ImageNode', function () {
                     <figcaption>&nbsp; <strong>Caption test</strong></figcaption>
                 </figure>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
 
             nodes.length.should.equal(1);
             nodes[0].src.should.equal('http://example.com/test.png');
@@ -359,7 +377,7 @@ describe('ImageNode', function () {
                     <img src="http://example.com/test.png">
                 </figure>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
             nodes.length.should.equal(1);
             nodes[0].cardWidth.should.equal('wide');
         }));
@@ -370,7 +388,7 @@ describe('ImageNode', function () {
                     <img src="http://example.com/test.png">
                 </figure>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
 
             nodes.length.should.equal(1);
             nodes[0].cardWidth.should.equal('full');
@@ -382,12 +400,12 @@ describe('ImageNode', function () {
                     <img src="http://example.com/test.png" width="640" height="480">
                 </figure>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
 
             nodes.length.should.equal(1);
             nodes[0].src.should.equal('http://example.com/test.png');
-            nodes[0].width.should.equal(640);
-            nodes[0].height.should.equal(480);
+            nodes[0].width!.should.equal(640);
+            nodes[0].height!.should.equal(480);
         }));
 
         it('extracts IMG dimensions from dataset', editorTest(function () {
@@ -396,12 +414,12 @@ describe('ImageNode', function () {
                     <img src="http://example.com/test.png" width="640" height="480">
                 </figure>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
 
             nodes.length.should.equal(1);
             nodes[0].src.should.equal('http://example.com/test.png');
-            nodes[0].width.should.equal(640);
-            nodes[0].height.should.equal(480);
+            nodes[0].width!.should.equal(640);
+            nodes[0].height!.should.equal(480);
         }));
 
         it('extracts IMG dimensions from data-image-dimensions', editorTest(function () {
@@ -410,12 +428,12 @@ describe('ImageNode', function () {
                     <img src="http://example.com/test.png" data-image-dimensions="640x480">
                 </figure>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
 
             nodes.length.should.equal(1);
             nodes[0].src.should.equal('http://example.com/test.png');
-            nodes[0].width.should.equal(640);
-            nodes[0].height.should.equal(480);
+            nodes[0].width!.should.equal(640);
+            nodes[0].height!.should.equal(480);
         }));
 
         it('extracts href when img wrapped in anchor tag', editorTest(function () {
@@ -426,7 +444,7 @@ describe('ImageNode', function () {
                     </a>
                 </figure>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
 
             nodes.length.should.equal(1);
             nodes[0].src.should.equal('http://example.com/test.png');
@@ -439,7 +457,7 @@ describe('ImageNode', function () {
                     <img src="http://example.com/test.png">
                 </a>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
 
             nodes.length.should.equal(1);
             nodes[0].src.should.equal('http://example.com/test.png');
@@ -491,11 +509,11 @@ describe('ImageNode', function () {
 
             editor.getEditorState().read(() => {
                 try {
-                    const [imageNode] = $getRoot().getChildren();
+                    const [imageNode] = $getRoot().getChildren() as ImageNode[];
 
                     imageNode.src.should.equal('/content/images/2022/11/koenig-lexical.jpg');
-                    imageNode.width.should.equal(3840);
-                    imageNode.height.should.equal(2160);
+                    imageNode.width!.should.equal(3840);
+                    imageNode.height!.should.equal(2160);
                     imageNode.title.should.equal('This is a title');
                     imageNode.alt.should.equal('This is some alt text');
                     imageNode.caption.should.equal('This is a <b>caption</b>');
@@ -511,7 +529,7 @@ describe('ImageNode', function () {
 
     describe('getTextContent', function () {
         it('returns contents', editorTest(function () {
-            const node = $createImageNode();
+            const node = $createImageNode({} as Record<string, unknown>);
             node.getTextContent().should.equal('');
 
             node.caption = 'Test caption';

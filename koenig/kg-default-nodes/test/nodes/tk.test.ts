@@ -1,16 +1,17 @@
-const {createHeadlessEditor} = require('@lexical/headless');
-const {TKNode, $createTKNode, $isTKNode} = require('../../');
-const {$getRoot} = require('lexical');
+import {createHeadlessEditor} from '@lexical/headless';
+import {TKNode, $createTKNode, $isTKNode} from '../../src/index.js';
+import {$getRoot} from 'lexical';
+import type {ElementNode, LexicalEditor} from 'lexical';
 
 const editorNodes = [TKNode];
 
 describe('TKNode', function () {
-    let editor;
+    let editor: LexicalEditor;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -26,18 +27,18 @@ describe('TKNode', function () {
     });
 
     it('matches node with $isTKNode', editorTest(function () {
-        const tkNode = $createTKNode();
+        const tkNode = $createTKNode('TK');
         $isTKNode(tkNode).should.be.true();
     }));
 
     it('is a text entity', editorTest(function () {
-        const tkNode = $createTKNode();
-        tkNode.isTextEntity().should.be.true();
+        const tkNode = $createTKNode('TK');
+        (tkNode as TKNode).isTextEntity().should.be.true();
     }));
 
     it('can not insert text before', editorTest(function () {
-        const tkNode = $createTKNode();
-        tkNode.canInsertTextBefore().should.be.false();
+        const tkNode = $createTKNode('TK');
+        (tkNode as TKNode).canInsertTextBefore().should.be.false();
     }));
 
     describe('exportJSON', function () {
@@ -95,7 +96,7 @@ describe('TKNode', function () {
             editor.getEditorState().read(() => {
                 try {
                     const [tkNode] = $getRoot().getChildren();
-                    tkNode.getChildren()[0].should.be.instanceof(TKNode);
+                    (tkNode as ElementNode).getChildren()[0].should.be.instanceof(TKNode);
 
                     done();
                 } catch (e) {
@@ -107,7 +108,7 @@ describe('TKNode', function () {
 
     it('can clone', editorTest(function () {
         const tkNode = $createTKNode('TK');
-        const clonedNode = TKNode.clone(tkNode);
+        const clonedNode = TKNode.clone(tkNode as TKNode);
 
         clonedNode.should.not.equal(tkNode);
         clonedNode.getTextContent().should.equal(tkNode.getTextContent());

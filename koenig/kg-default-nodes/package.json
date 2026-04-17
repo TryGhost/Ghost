@@ -4,45 +4,65 @@
   "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-default-nodes",
   "author": "Ghost Foundation",
   "license": "MIT",
-  "main": "cjs/kg-default-nodes.js",
-  "module": "es/kg-default-nodes.js",
-  "source": "lib/kg-default-nodes.js",
+  "engines": {
+    "node": "^22.13.1 || ^24.0.0"
+  },
+  "main": "build/cjs/index.js",
+  "module": "build/esm/index.js",
+  "types": "build/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/esm/index.d.ts",
+      "import": "./build/esm/index.js",
+      "require": "./build/cjs/index.js"
+    },
+    "./visibility": {
+      "types": "./build/esm/visibility.d.ts",
+      "import": "./build/esm/visibility.js",
+      "require": "./build/cjs/visibility.js"
+    }
+  },
   "scripts": {
-    "dev": "rollup -c -w",
-    "build": "rollup -c",
-    "prepare": "NODE_ENV=production yarn build",
-    "pretest": "yarn build",
-    "test:unit": "NODE_ENV=testing c8 --src lib --all --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.*js'",
+    "dev": "tsc --watch --preserveWatchOutput",
+    "clean": "rm -rf build",
+    "build": "yarn clean && tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
+    "prepare": "yarn clean && tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
+    "pretest": "yarn clean && tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json && tsc -p tsconfig.test.json",
+    "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --reporter text --reporter cobertura mocha --require tsx './test/**/*.test.ts'",
     "test": "yarn test:unit",
-    "test:no-coverage": "yarn pretest && mocha './test/**/*.test.*js'",
-    "lint": "eslint . --cache"
+    "lint:code": "eslint src/ --cache",
+    "lint": "yarn lint:code && yarn lint:test",
+    "lint:test": "eslint test/ --cache"
   },
   "files": [
     "LICENSE",
     "README.md",
-    "cjs/",
-    "es/",
-    "lib/"
+    "build"
   ],
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.28.6",
-    "@babel/plugin-syntax-import-assertions": "7.28.6",
-    "@babel/preset-env": "7.29.2",
+    "@eslint/js": "9.39.4",
     "@lexical/headless": "0.13.1",
     "@lexical/html": "0.13.1",
     "@prettier/sync": "0.6.1",
-    "@rollup/plugin-babel": "7.0.0",
+    "@types/jsdom": "^21.1.7",
+    "@types/lodash": "^4.17.24",
+    "@types/luxon": "^3.6.2",
+    "@types/mocha": "10.0.10",
+    "@types/node": "24.12.0",
+    "@types/should": "^13.0.0",
+    "@types/sinon": "21.0.0",
     "c8": "11.0.0",
     "html-minifier": "4.0.0",
     "mocha": "11.7.5",
     "prettier": "3.8.2",
-    "rollup": "4.60.1",
-    "rollup-plugin-svg": "2.0.0",
     "should": "13.2.3",
-    "sinon": "21.1.2"
+    "sinon": "21.1.2",
+    "tsx": "4.21.0",
+    "typescript": "5.8.3",
+    "typescript-eslint": "8.57.0"
   },
   "dependencies": {
     "@lexical/clipboard": "0.13.1",

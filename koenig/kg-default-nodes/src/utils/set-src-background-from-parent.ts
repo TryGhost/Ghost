@@ -7,28 +7,35 @@
  * Uses `document.currentScript` to scope to the containing card, so multiple
  * instances on the same page each target their own iframe.
  *
- * @param {Document} document
- * @returns {HTMLScriptElement} A script element
+ * Note: the inner function is serialized to a string and embedded in a <script>
+ * tag, so TypeScript checking of the inner function body is not meaningful.
  */
-export function buildSrcBackgroundScript(document) {
+
+export function buildSrcBackgroundScript(document: Document): HTMLScriptElement {
     function setSrcBackgroundFromParent() {
         const script = document.currentScript;
-        if (!script) {
+        if (!(script instanceof HTMLScriptElement) || !script.parentElement) {
             return;
         }
 
         const el = script.parentElement.querySelector('iframe[data-src]');
-        if (!el) {
+        if (!(el instanceof HTMLIFrameElement)) {
             return;
         }
 
         const baseSrc = el.getAttribute('data-src');
+        if (!baseSrc) {
+            return;
+        }
 
-        function colorToRgb(color) {
+        function colorToRgb(color: string) {
             const canvas = document.createElement('canvas');
             canvas.width = 1;
             canvas.height = 1;
             const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                return {r: 0, g: 0, b: 0, a: 0};
+            }
             ctx.fillStyle = color;
             ctx.fillRect(0, 0, 1, 1);
             const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data;
@@ -36,9 +43,9 @@ export function buildSrcBackgroundScript(document) {
         }
 
         let node = el.parentElement;
-        let bg;
+        let bg: string | undefined;
         while (node) {
-            bg = window.getComputedStyle(node).backgroundColor;
+            bg = (window as {getComputedStyle(el: unknown): {backgroundColor: string}}).getComputedStyle(node).backgroundColor;
             if (bg && bg !== 'transparent') {
                 const {a} = colorToRgb(bg);
                 if (a > 0) {

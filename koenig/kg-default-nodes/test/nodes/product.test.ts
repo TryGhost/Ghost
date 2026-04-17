@@ -1,20 +1,22 @@
-const {createDocument, dom, html} = require('../test-utils');
-const {$getRoot} = require('lexical');
-const {createHeadlessEditor} = require('@lexical/headless');
-const {ProductNode, $createProductNode, $isProductNode} = require('../../');
-const {$generateNodesFromDOM} = require('@lexical/html');
+import should from 'should';
+import {createDocument, dom, html} from '../test-utils/index.js';
+import {$getRoot} from 'lexical';
+import type {LexicalEditor} from 'lexical';
+import {createHeadlessEditor} from '@lexical/headless';
+import {ProductNode, $createProductNode, $isProductNode} from '../../src/index.js';
+import {$generateNodesFromDOM} from '@lexical/html';
 
 const editorNodes = [ProductNode];
 
 describe('ProductNode', function () {
-    let editor;
-    let dataset;
-    let exportOptions;
+    let editor: LexicalEditor;
+    let dataset: Record<string, unknown>;
+    let exportOptions: Record<string, unknown>;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -25,10 +27,10 @@ describe('ProductNode', function () {
         });
     };
 
-    const checkGetters = (productNode, data) => {
+    const checkGetters = (productNode: ProductNode, data: Record<string, unknown>) => {
         productNode.productImageSrc.should.equal(data.productImageSrc);
-        productNode.productImageWidth.should.equal(data.productImageWidth);
-        productNode.productImageHeight.should.equal(data.productImageHeight);
+        productNode.productImageWidth!.should.equal(data.productImageWidth);
+        productNode.productImageHeight!.should.equal(data.productImageHeight);
         productNode.productTitle.should.equal(data.productTitle);
         productNode.productDescription.should.equal(data.productDescription);
         productNode.productRatingEnabled.should.be.exactly(true);
@@ -53,9 +55,9 @@ describe('ProductNode', function () {
             productUrl: 'https://google.com/'
         };
 
-        exportOptions = new Object({
+        exportOptions = {
             dom
-        });
+        };
     });
 
     it('matches node with $isProductNode', editorTest(function () {
@@ -216,7 +218,7 @@ describe('ProductNode', function () {
 
             editor.getEditorState().read(() => {
                 try {
-                    const [productNode] = $getRoot().getChildren();
+                    const [productNode] = $getRoot().getChildren() as ProductNode[];
 
                     checkGetters(productNode, dataset);
 
@@ -241,7 +243,8 @@ describe('ProductNode', function () {
                 productUrl: 'https://example.com/product/ok'
             };
             const productNode = $createProductNode(payload);
-            const {element} = productNode.exportDOM(exportOptions);
+            const result = productNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
                 <div class="kg-card kg-product-card"><div class="kg-product-card-container"><img src="https://example.com/images/ok.jpg" class="kg-product-card-image" loading="lazy" /><div class="kg-product-card-title-container"><h4 class="kg-product-card-title">Product title!</h4></div><div class="kg-product-card-rating"><span class="kg-product-card-rating-active kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span><span class="kg-product-card-rating-active kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span><span class="kg-product-card-rating-active kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span><span class=" kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span><span class=" kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span></div><div class="kg-product-card-description">This product is ok</div><a href="https://example.com/product/ok" class="kg-product-card-button kg-product-card-btn-accent" target="_blank" rel="noopener noreferrer"><span>Click me</span></a></div></div>
@@ -262,7 +265,8 @@ describe('ProductNode', function () {
                 productUrl: 'https://example.com/product/ok'
             };
             const productNode = $createProductNode(payload);
-            const {element} = productNode.exportDOM(exportOptions);
+            const result = productNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
                 <div class="kg-card kg-product-card"><div class="kg-product-card-container"><img src="https://example.com/images/ok.jpg" width="200" height="100" class="kg-product-card-image" loading="lazy" /><div class="kg-product-card-title-container"><h4 class="kg-product-card-title">Product title!</h4></div><div class="kg-product-card-rating"><span class="kg-product-card-rating-active kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span><span class="kg-product-card-rating-active kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span><span class="kg-product-card-rating-active kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span><span class=" kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span><span class=" kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span></div><div class="kg-product-card-description">This product is ok</div><a href="https://example.com/product/ok" class="kg-product-card-button kg-product-card-btn-accent" target="_blank" rel="noopener noreferrer"><span>Click me</span></a></div></div>
@@ -275,7 +279,8 @@ describe('ProductNode', function () {
                 productDescription: ''
             };
             const productNode = $createProductNode(payload);
-            const {element} = productNode.exportDOM(exportOptions);
+            const result = productNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.equal('<span></span>');
         }));
@@ -285,7 +290,8 @@ describe('ProductNode', function () {
                 productTitle: 'Just a title'
             };
             const productNode = $createProductNode(payload);
-            const {element} = productNode.exportDOM(exportOptions);
+            const result = productNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
                 <div class="kg-card kg-product-card"><div class="kg-product-card-container"><div class="kg-product-card-title-container"><h4 class="kg-product-card-title">Just a title</h4></div><div class="kg-product-card-description"></div></div></div>
@@ -297,7 +303,8 @@ describe('ProductNode', function () {
                 productDescription: 'Just a description'
             };
             const productNode = $createProductNode(payload);
-            const {element} = productNode.exportDOM(exportOptions);
+            const result = productNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
                 <div class="kg-card kg-product-card"><div class="kg-product-card-container"><div class="kg-product-card-title-container"><h4 class="kg-product-card-title"></h4></div><div class="kg-product-card-description">Just a description</div></div></div>
@@ -311,7 +318,8 @@ describe('ProductNode', function () {
                 productUrl: 'https://example.com/product/ok'
             };
             const productNode = $createProductNode(payload);
-            const {element} = productNode.exportDOM(exportOptions);
+            const result = productNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
                 <div class="kg-card kg-product-card"><div class="kg-product-card-container"><div class="kg-product-card-title-container"><h4 class="kg-product-card-title"></h4></div><div class="kg-product-card-description"></div><a href="https://example.com/product/ok" class="kg-product-card-button kg-product-card-btn-accent" target="_blank" rel="noopener noreferrer"><span>Button text</span></a></div></div>
@@ -335,7 +343,8 @@ describe('ProductNode', function () {
             };
 
             const productNode = $createProductNode(payload);
-            const {element} = productNode.exportDOM({...exportOptions, ...options});
+            const result = productNode.exportDOM({...exportOptions, ...options});
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
                 <table cellspacing="0" cellpadding="0" border="0" style="width:100%; padding:20px; border:1px solid #E9E9E9; border-radius: 5px; margin: 0 0 1.5em; width: 100%;"><tbody><tr><td align="center" style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><img src="https://example.com/images/ok.jpg" style="display: block; width: 100%; height: auto; max-width: 100%; border: none; padding-bottom: 16px;" border="0"></td></tr><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 700;">Product title!</h4></td></tr><tr style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><td valign="top"><img src="https://static.ghost.org/v4.0.0/images/star-rating-3.png" style="border: none; width: 96px;" border="0"></td></tr><tr><td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><div style="padding-top: 8px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">This product is ok</div></td></tr><tr><td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><div class="btn btn-accent" style="box-sizing: border-box;display: table;width: 100%;padding-top: 16px;"><a href="https://example.com/product/ok" style="overflow-wrap: anywhere;border: solid 1px;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 0;text-decoration: none;color: #FFFFFF; width: 100%; text-align: center;"><span style="display: block;padding: 12px 25px;">Click me</span></a></div></td></tr></tbody></table>
@@ -362,7 +371,8 @@ describe('ProductNode', function () {
             };
 
             const productNode = $createProductNode(payload);
-            const {element} = productNode.exportDOM({...exportOptions, ...options});
+            const result = productNode.exportDOM({...exportOptions, ...options});
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
                 <table class="kg-product-card" cellspacing="0" cellpadding="0" border="0">
@@ -438,7 +448,8 @@ describe('ProductNode', function () {
             };
 
             const productNode = $createProductNode(payload);
-            const {element} = productNode.exportDOM({...exportOptions, ...options});
+            const result = productNode.exportDOM({...exportOptions, ...options});
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
                 <table cellspacing="0" cellpadding="0" border="0" style="width:100%; padding:20px; border:1px solid #E9E9E9; border-radius: 5px; margin: 0 0 1.5em; width: 100%;"><tbody><tr><td align="center" style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><img src="https://example.com/images/ok.jpg" width="200" height="100" style="display: block; width: 100%; height: auto; max-width: 100%; border: none; padding-bottom: 16px;" border="0"></td></tr><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 700;">Product title!</h4></td></tr><tr style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><td valign="top"><img src="https://static.ghost.org/v4.0.0/images/star-rating-3.png" style="border: none; width: 96px;" border="0"></td></tr><tr><td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><div style="padding-top: 8px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">This product is ok</div></td></tr><tr><td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><div class="btn btn-accent" style="box-sizing: border-box;display: table;width: 100%;padding-top: 16px;"><a href="https://example.com/product/ok" style="overflow-wrap: anywhere;border: solid 1px;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 0;text-decoration: none;color: #FFFFFF; width: 100%; text-align: center;"><span style="display: block;padding: 12px 25px;">Click me</span></a></div></td></tr></tbody></table>
@@ -461,7 +472,8 @@ describe('ProductNode', function () {
             };
 
             const productNode = $createProductNode(payload);
-            const {element} = productNode.exportDOM({...exportOptions, ...options});
+            const result = productNode.exportDOM({...exportOptions, ...options});
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
                 <table cellspacing="0" cellpadding="0" border="0" style="width:100%; padding:20px; border:1px solid #E9E9E9; border-radius: 5px; margin: 0 0 1.5em; width: 100%;"><tbody><tr><td align="center" style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><img src="https://example.com/images/ok.jpg" style="display: block; width: 100%; height: auto; max-width: 100%; border: none; padding-bottom: 16px;" border="0"></td></tr><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 700;">Product title!</h4></td></tr><tr><td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><div style="padding-top: 8px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">This product is ok</div></td></tr><tr><td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><div class="btn btn-accent" style="box-sizing: border-box;display: table;width: 100%;padding-top: 16px;"><a href="https://example.com/product/ok" style="overflow-wrap: anywhere;border: solid 1px;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 0;text-decoration: none;color: #FFFFFF; width: 100%; text-align: center;"><span style="display: block;padding: 12px 25px;">Click me</span></a></div></td></tr></tbody></table>
@@ -484,7 +496,8 @@ describe('ProductNode', function () {
             };
 
             const productNode = $createProductNode(payload);
-            const {element} = productNode.exportDOM({...exportOptions, ...options});
+            const result = productNode.exportDOM({...exportOptions, ...options});
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
                 <table cellspacing="0" cellpadding="0" border="0" style="width:100%; padding:20px; border:1px solid #E9E9E9; border-radius: 5px; margin: 0 0 1.5em; width: 100%;"><tbody><tr><td align="center" style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><img src="https://example.com/images/ok.jpg" style="display: block; width: 100%; height: auto; max-width: 100%; border: none; padding-bottom: 16px;" border="0"></td></tr><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 700;">Product title!</h4></td></tr><tr><td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><div style="padding-top: 8px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">This product is ok</div></td></tr></tbody></table>
@@ -506,14 +519,15 @@ describe('ProductNode', function () {
             };
 
             const productNode = $createProductNode(payload);
-            const {element} = productNode.exportDOM({...exportOptions, ...options});
+            const result = productNode.exportDOM({...exportOptions, ...options});
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
                 <table cellspacing="0" cellpadding="0" border="0" style="width:100%; padding:20px; border:1px solid #E9E9E9; border-radius: 5px; margin: 0 0 1.5em; width: 100%;"><tbody><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 700;">Product title!</h4></td></tr><tr><td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><div style="padding-top: 8px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">This product is ok</div></td></tr></tbody></table>
             `);
         }));
 
-        function renderButton(design) {
+        function renderButton(design?: Record<string, unknown>) {
             const payload = {
                 productButton: 'Click me',
                 productButtonEnabled: true,
@@ -529,7 +543,8 @@ describe('ProductNode', function () {
             };
 
             const productNode = $createProductNode(payload);
-            const {element} = productNode.exportDOM({...exportOptions, ...options});
+            const result = productNode.exportDOM({...exportOptions, ...options});
+            const element = result.element as HTMLElement;
 
             return element.outerHTML;
         }
@@ -559,7 +574,7 @@ describe('ProductNode', function () {
             const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
 
-            const productNode = nodes[0];
+            const productNode = nodes[0] as ProductNode;
             $isProductNode(productNode).should.be.exactly(true);
 
             productNode.productImageSrc.should.equal('https://example.com/images/ok.jpg');
@@ -579,7 +594,7 @@ describe('ProductNode', function () {
             const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
 
-            const productNode = nodes[0];
+            const productNode = nodes[0] as ProductNode;
             $isProductNode(productNode).should.be.exactly(true);
 
             productNode.productImageSrc.should.equal('https://example.com/images/ok.jpg');
@@ -598,7 +613,7 @@ describe('ProductNode', function () {
             const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
 
-            const productNode = nodes[0];
+            const productNode = nodes[0] as ProductNode;
             $isProductNode(productNode).should.be.exactly(true);
 
             productNode.productImageSrc.should.equal('https://example.com/images/ok.jpg');
@@ -615,7 +630,7 @@ describe('ProductNode', function () {
             const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
 
-            const productNode = nodes[0];
+            const productNode = nodes[0] as ProductNode;
             $isProductNode(productNode).should.be.exactly(true);
 
             productNode.productImageSrc.should.equal('https://example.com/images/ok.jpg');
@@ -623,8 +638,23 @@ describe('ProductNode', function () {
             productNode.productDescription.should.equal('This product is ok');
             productNode.productRatingEnabled.should.be.exactly(false);
             productNode.productButtonEnabled.should.be.exactly(false);
-            productNode.productImageWidth.should.equal('200');
-            productNode.productImageHeight.should.equal('100');
+            productNode.productImageWidth!.should.equal(200);
+            productNode.productImageHeight!.should.equal(100);
+        }));
+
+        it('ignores malformed image width/height', editorTest(function () {
+            const document = createDocument(html`
+                <div class="kg-card kg-product-card"><div class="kg-product-card-container"><img src="https://example.com/images/ok.jpg" class="kg-product-card-image" width="wide" height="tall"/><div class="kg-product-card-header"><div class="kg-product-card-title-container"><h4 class="kg-product-card-title">Product title!</h4></div></div><p class="kg-product-card-description">This product is ok</p></div></div>
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
+            nodes.length.should.equal(1);
+
+            const productNode = nodes[0] as ProductNode;
+            $isProductNode(productNode).should.be.exactly(true);
+
+            productNode.productImageSrc.should.equal('https://example.com/images/ok.jpg');
+            should(productNode.productImageWidth).equal(null);
+            should(productNode.productImageHeight).equal(null);
         }));
 
         it('handles arbitrary whitespace in button content', editorTest(function () {
@@ -649,7 +679,7 @@ describe('ProductNode', function () {
             const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
 
-            const productNode = nodes[0];
+            const productNode = nodes[0] as ProductNode;
             $isProductNode(productNode).should.be.exactly(true);
 
             productNode.productImageSrc.should.equal('https://example.com/images/ok.jpg');
@@ -683,7 +713,7 @@ describe('ProductNode', function () {
             const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
 
-            const productNode = nodes[0];
+            const productNode = nodes[0] as ProductNode;
             $isProductNode(productNode).should.be.exactly(true);
 
             productNode.productImageSrc.should.equal('https://example.com/images/ok.jpg');

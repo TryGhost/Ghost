@@ -1,9 +1,36 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {renderEmptyContainer} from '../../utils/render-empty-container';
+import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
+import type {ExportDOMOptions, ExportDOMOutput} from '../../export-dom.js';
+import {renderEmptyContainer} from '../../utils/render-empty-container.js';
 
-export function renderAudioNode(node, options = {}) {
+interface AudioNodeData {
+    src: string;
+    title: string;
+    thumbnailSrc: string;
+    duration: number;
+}
+
+interface RenderOptions extends ExportDOMOptions {}
+
+interface EmailAudioRenderOptions extends RenderOptions {
+    target: 'email';
+    postUrl: string;
+}
+
+interface DefaultAudioRenderOptions extends RenderOptions {
+    target?: string;
+    postUrl?: string;
+}
+
+type AudioRenderOptions = EmailAudioRenderOptions | DefaultAudioRenderOptions;
+
+export type AudioExportDOMOutput =
+    | ExportDOMOutput<HTMLDivElement>
+    | ExportDOMOutput<HTMLTableElement>
+    | ExportDOMOutput<HTMLSpanElement, 'inner'>;
+
+export function renderAudioNode(node: AudioNodeData, options: AudioRenderOptions = {}): AudioExportDOMOutput {
     addCreateDocumentOption(options);
-    const document = options.createDocument();
+    const document = options.createDocument!();
 
     if (!node.src || node.src.trim() === '') {
         return renderEmptyContainer(document);
@@ -13,13 +40,21 @@ export function renderAudioNode(node, options = {}) {
     const emptyThumbnailCls = getEmptyThumbnailCls(node);
 
     if (options.target === 'email') {
+        if (!isEmailRenderOptions(options)) {
+            throw new Error('renderAudioNode requires options.postUrl when options.target is "email"');
+        }
+
         return emailTemplate(node, document, options, thumbnailCls, emptyThumbnailCls);
     } else {
         return frontendTemplate(node, document, thumbnailCls, emptyThumbnailCls);
     }
 }
 
-function frontendTemplate(node, document, thumbnailCls, emptyThumbnailCls) {
+function isEmailRenderOptions(options: AudioRenderOptions): options is EmailAudioRenderOptions {
+    return options.target === 'email' && typeof options.postUrl === 'string' && options.postUrl.trim() !== '';
+}
+
+function frontendTemplate(node: AudioNodeData, document: Document, thumbnailCls: string, emptyThumbnailCls: string) {
     const element = document.createElement('div');
     element.setAttribute('class', 'kg-card kg-audio-card');
     const img = document.createElement('img');
@@ -113,7 +148,7 @@ function frontendTemplate(node, document, thumbnailCls, emptyThumbnailCls) {
     audioDurationTotal.textContent = '/';
     const audioDUrationNode = document.createElement('span');
     audioDUrationNode.setAttribute('class', 'kg-audio-duration');
-    audioDUrationNode.textContent = node.duration;
+    audioDUrationNode.textContent = String(node.duration);
     audioDurationTotal.appendChild(audioDUrationNode);
     audioPlayer.appendChild(audioDurationTotal);
 
@@ -163,10 +198,10 @@ function frontendTemplate(node, document, thumbnailCls, emptyThumbnailCls) {
     audioPlayerContainer.appendChild(audioPlayer);
     element.appendChild(audioPlayerContainer);
 
-    return {element};
+    return {element, type: 'outer' as const};
 }
 
-function emailTemplate(node, document, options, thumbnailCls, emptyThumbnailCls) {
+function emailTemplate(node: AudioNodeData, document: Document, options: EmailAudioRenderOptions, thumbnailCls: string, emptyThumbnailCls: string) {
     const html = (`
         <table cellspacing="0" cellpadding="0" border="0" class="kg-audio-card">
                 <tr>
@@ -215,11 +250,10 @@ function emailTemplate(node, document, options, thumbnailCls, emptyThumbnailCls)
 
     const container = document.createElement('div');
     container.innerHTML = html.trim();
-
-    return {element: container.firstElementChild};
+    return {element: container.firstElementChild as HTMLTableElement, type: 'outer' as const};
 }
 
-function getThumbnailCls(node) {
+function getThumbnailCls(node: AudioNodeData) {
     let thumbnailCls = 'kg-audio-thumbnail';
 
     if (!node.thumbnailSrc) {
@@ -229,7 +263,7 @@ function getThumbnailCls(node) {
     return thumbnailCls;
 }
 
-function getEmptyThumbnailCls(node) {
+function getEmptyThumbnailCls(node: AudioNodeData) {
     let emptyThumbnailCls = 'kg-audio-thumbnail placeholder';
 
     if (node.thumbnailSrc) {

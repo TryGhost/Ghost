@@ -1,6 +1,6 @@
-const {JSDOM} = require('jsdom');
-const {utils} = require('../../');
-const {isOldVisibilityFormat, isVisibilityRestricted, migrateOldVisibilityFormat, renderWithVisibility, buildDefaultVisibility} = utils.visibility;
+import {JSDOM} from 'jsdom';
+import type {RenderOutput, Visibility} from '../../src/utils/visibility.js';
+import {isOldVisibilityFormat, isVisibilityRestricted, migrateOldVisibilityFormat, renderWithVisibility, buildDefaultVisibility} from '../../src/utils/visibility.js';
 
 describe('Utils: visibility', function () {
     describe('isOldVisibilityFormat', function () {
@@ -41,6 +41,11 @@ describe('Utils: visibility', function () {
             isVisibilityRestricted(visibility).should.be.false();
         });
 
+        it('returns false if old visibility format relies on default segment behavior', function () {
+            const visibility = {};
+            isVisibilityRestricted(visibility).should.be.false();
+        });
+
         it('returns true if old visibility format has showOnEmail === false', function () {
             const visibility = {showOnEmail: false};
             isVisibilityRestricted(visibility).should.be.true();
@@ -51,8 +56,8 @@ describe('Utils: visibility', function () {
             isVisibilityRestricted(visibility).should.be.true();
         });
 
-        it('returns true if old visibility format has segment !== ""', function () {
-            const visibility = {segment: 'status:free'};
+        it('returns true if old visibility format targets a specific email segment', function () {
+            const visibility = {showOnEmail: true, segment: 'status:free'};
             isVisibilityRestricted(visibility).should.be.true();
         });
 
@@ -102,7 +107,7 @@ describe('Utils: visibility', function () {
         });
 
         describe('web', function () {
-            function testWebMigration(before, after) {
+            function testWebMigration(before: Visibility, after: Visibility['web']) {
                 return function () {
                     const result = migrateOldVisibilityFormat(before);
                     result.web.should.deepEqual(after);
@@ -146,7 +151,7 @@ describe('Utils: visibility', function () {
         });
 
         describe('email', function () {
-            function testEmailMigration(before, after) {
+            function testEmailMigration(before: Visibility, after: Visibility['email']) {
                 return function () {
                     const result = migrateOldVisibilityFormat(before);
                     result.email.should.deepEqual(after);
@@ -196,17 +201,17 @@ describe('Utils: visibility', function () {
     });
 
     describe('renderWithVisibility', function () {
-        let document;
+        let document: Document;
 
         before(function () {
             document = (new JSDOM()).window.document;
         });
 
-        function buildVisibility(visibility) {
+        function buildVisibility(visibility: Partial<Visibility>) {
             return {...buildDefaultVisibility(), ...visibility};
         }
 
-        function runRender(html, visibility, target) {
+        function runRender(html: string, visibility: Partial<Visibility>, target: string) {
             const visibilityWithDefaults = buildVisibility(visibility);
 
             const p = document.createElement('p');
@@ -215,7 +220,7 @@ describe('Utils: visibility', function () {
             const originalOutput = {
                 element: p,
                 type: 'html'
-            };
+            } as RenderOutput;
             return renderWithVisibility(originalOutput, visibilityWithDefaults, {target});
         }
 
@@ -243,7 +248,7 @@ describe('Utils: visibility', function () {
                 const result = runRender('testing', visibility, 'email');
 
                 result.element.tagName.should.eql('DIV');
-                result.element.dataset.ghSegment.should.equal('status:free');
+                (result.element as HTMLElement).dataset.ghSegment!.should.equal('status:free');
                 result.element.innerHTML.should.equal('<p>testing</p>');
                 result.type.should.equal('html');
             });
@@ -264,7 +269,7 @@ describe('Utils: visibility', function () {
                 const result = runRender('testing', visibility, 'web');
 
                 result.element.tagName.should.equal('TEXTAREA');
-                result.element.value.should.equal('\n<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free" --><p>testing</p><!--kg-gated-block:end-->\n');
+                (result.element as HTMLTextAreaElement).value.should.equal('\n<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free" --><p>testing</p><!--kg-gated-block:end-->\n');
             });
 
             it('adds wrapping comments when member segment is gated', function () {
@@ -272,7 +277,7 @@ describe('Utils: visibility', function () {
                 const result = runRender('testing', visibility, 'web');
 
                 result.element.tagName.should.equal('TEXTAREA');
-                result.element.value.should.equal('\n<!--kg-gated-block:begin nonMember:true memberSegment:"status:free" --><p>testing</p><!--kg-gated-block:end-->\n');
+                (result.element as HTMLTextAreaElement).value.should.equal('\n<!--kg-gated-block:begin nonMember:true memberSegment:"status:free" --><p>testing</p><!--kg-gated-block:end-->\n');
             });
         });
 
@@ -280,36 +285,36 @@ describe('Utils: visibility', function () {
             const visibility = buildVisibility({web: {nonMember: true, memberSegment: 'status:free'}});
             const p = document.createElement('p');
             p.innerHTML = 'testing';
-            const originalOutput = {element: p};
+            const originalOutput = {element: p, type: 'outer'} as RenderOutput;
 
             const result = renderWithVisibility(originalOutput, buildVisibility(visibility), {target: 'web'});
 
             result.element.tagName.should.equal('TEXTAREA');
-            result.element.value.should.equal('\n<!--kg-gated-block:begin nonMember:true memberSegment:"status:free" --><p>testing</p><!--kg-gated-block:end-->\n');
+            (result.element as HTMLTextAreaElement).value.should.equal('\n<!--kg-gated-block:begin nonMember:true memberSegment:"status:free" --><p>testing</p><!--kg-gated-block:end-->\n');
         });
 
         it('handles inner render type', function () {
             const visibility = buildVisibility({web: {nonMember: true, memberSegment: 'status:free'}});
             const div = document.createElement('div');
             div.innerHTML = '<!--comment test--><span>testing</span>';
-            const originalOutput = {element: div, type: 'inner'};
+            const originalOutput = {element: div, type: 'inner'} as RenderOutput;
 
             const result = renderWithVisibility(originalOutput, buildVisibility(visibility), {target: 'web'});
 
             result.element.tagName.should.equal('TEXTAREA');
-            result.element.value.should.equal('\n<!--kg-gated-block:begin nonMember:true memberSegment:"status:free" --><!--comment test--><span>testing</span><!--kg-gated-block:end-->\n');
+            (result.element as HTMLTextAreaElement).value.should.equal('\n<!--kg-gated-block:begin nonMember:true memberSegment:"status:free" --><!--comment test--><span>testing</span><!--kg-gated-block:end-->\n');
         });
 
         it('handles value render type', function () {
             const visibility = buildVisibility({web: {nonMember: true, memberSegment: 'status:free'}});
             const input = document.createElement('input');
             input.value = '<!--comment test--><span>testing</span>';
-            const originalOutput = {element: input, type: 'value'};
+            const originalOutput = {element: input, type: 'value'} as RenderOutput;
 
             const result = renderWithVisibility(originalOutput, buildVisibility(visibility), {target: 'web'});
 
             result.element.tagName.should.equal('TEXTAREA');
-            result.element.value.should.equal('\n<!--kg-gated-block:begin nonMember:true memberSegment:"status:free" --><!--comment test--><span>testing</span><!--kg-gated-block:end-->\n');
+            (result.element as HTMLTextAreaElement).value.should.equal('\n<!--kg-gated-block:begin nonMember:true memberSegment:"status:free" --><!--comment test--><span>testing</span><!--kg-gated-block:end-->\n');
         });
 
         it('handles old beta visibility format', function () {
@@ -325,11 +330,11 @@ describe('Utils: visibility', function () {
             const originalOutput = {
                 element: p,
                 type: 'html'
-            };
+            } as RenderOutput;
             const result = renderWithVisibility(originalOutput, visibility, {target: 'email'});
 
             result.element.tagName.should.eql('DIV');
-            result.element.dataset.ghSegment.should.equal('status:free');
+            (result.element as HTMLElement).dataset.ghSegment!.should.equal('status:free');
             result.element.innerHTML.should.equal('<p>testing</p>');
             result.type.should.equal('html');
         });

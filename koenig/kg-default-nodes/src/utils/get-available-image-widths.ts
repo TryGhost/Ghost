@@ -1,4 +1,4 @@
-export const getAvailableImageWidths = function (image, imageSizes) {
+export const getAvailableImageWidths = function (image: {width: number}, imageSizes: Record<string, {width: number}>) {
     // get a sorted list of the available responsive widths
     const imageWidths = Object.values(imageSizes)
         .map(({width}) => width)

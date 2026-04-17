@@ -1,23 +1,24 @@
-const {createDocument, dom, html} = require('../test-utils');
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$generateNodesFromDOM} = require('@lexical/html');
-const {CodeBlockNode, $createCodeBlockNode, $isCodeBlockNode} = require('../../');
-const {$getRoot} = require('lexical');
+import should from 'should';
+import {createDocument, dom, html} from '../test-utils/index.js';
+import {createHeadlessEditor} from '@lexical/headless';
+import {$generateNodesFromDOM} from '@lexical/html';
+import {CodeBlockNode, $createCodeBlockNode, $isCodeBlockNode} from '../../src/index.js';
+import {$getRoot, type LexicalEditor} from 'lexical';
 
 const editorNodes = [CodeBlockNode];
 
 describe('CodeBlockNode', function () {
-    let dataset;
-    let editor;
-    let code;
-    let language;
-    let caption;
-    let exportOptions;
+    let dataset: Record<string, unknown>;
+    let editor: LexicalEditor;
+    let code: string;
+    let language: string;
+    let caption: string;
+    let exportOptions: Record<string, unknown>;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -52,7 +53,7 @@ describe('CodeBlockNode', function () {
     }));
 
     describe('importJSON', function () {
-        it('imports all properties', function (done) {
+        it('imports all properties', function (done: (err?: unknown) => void) {
             const serialized = `
                 {
                     "root": {
@@ -77,7 +78,7 @@ describe('CodeBlockNode', function () {
 
             editorState.read(() => {
                 try {
-                    const codeBlockNode = $getRoot().getChildren()[0];
+                    const codeBlockNode = $getRoot().getChildren()[0] as CodeBlockNode;
                     should(codeBlockNode.code).equal(`<?php echo 'Hello World'; ?>`);
                     should(codeBlockNode.language).equal('php');
                     should(codeBlockNode.caption).equal('Your first PHP enabled page');
@@ -90,7 +91,7 @@ describe('CodeBlockNode', function () {
     });
 
     describe('exportJSON', function () {
-        it('exports all properties', function (done) {
+        it('exports all properties', function (done: (err?: unknown) => void) {
             editor.update(() => {
                 try {
                     const codeBlockNode = $createCodeBlockNode({code, language, caption});
@@ -172,7 +173,7 @@ describe('CodeBlockNode', function () {
         it('returns a copy of the current node', editorTest(function () {
             const codeBlockNode = $createCodeBlockNode(dataset);
             const codeBlockNodeDataset = codeBlockNode.getDataset();
-            const clone = CodeBlockNode.clone(codeBlockNode);
+            const clone = CodeBlockNode.clone(codeBlockNode) as CodeBlockNode;
             const cloneDataset = clone.getDataset();
 
             cloneDataset.should.deepEqual({...codeBlockNodeDataset});
@@ -198,8 +199,9 @@ describe('CodeBlockNode', function () {
         it('renders and escapes', editorTest(function () {
             const codeBlockNode = $createCodeBlockNode({code});
             const {element} = codeBlockNode.exportDOM(exportOptions);
+            const el = element as HTMLElement;
 
-            element.outerHTML.should.prettifyTo(html`
+            el.outerHTML.should.prettifyTo(html`
                 <pre><code>&lt;script&gt;&lt;/script&gt;</code></pre>
             `);
         }));
@@ -207,8 +209,9 @@ describe('CodeBlockNode', function () {
         it('renders language class if provided', editorTest(function () {
             const codeBlockNode = $createCodeBlockNode({language, code});
             const {element} = codeBlockNode.exportDOM(exportOptions);
+            const el = element as HTMLElement;
 
-            element.outerHTML.should.prettifyTo(html`
+            el.outerHTML.should.prettifyTo(html`
                 <pre><code class="language-javascript">&lt;script&gt;&lt;/script&gt;</code></pre>
             `);
         }));
@@ -216,15 +219,17 @@ describe('CodeBlockNode', function () {
         it('renders empty span when code is undefined or empty', editorTest(function () {
             const codeBlockNode = $createCodeBlockNode({code: ''});
             const {element} = codeBlockNode.exportDOM(exportOptions);
+            const el = element as HTMLElement;
 
-            element.outerHTML.should.equal('<span></span>');
+            el.outerHTML.should.equal('<span></span>');
         }));
 
         it('renders a figure if a caption is provided', editorTest(function () {
             const codeBlockNode = $createCodeBlockNode({language, code, caption});
             const {element} = codeBlockNode.exportDOM(exportOptions);
+            const el = element as HTMLElement;
 
-            element.outerHTML.should.prettifyTo(html`
+            el.outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-code-card">
                     <pre><code class="language-javascript">&lt;script&gt;&lt;/script&gt;</code></pre>
                     <figcaption>A code block</figcaption>
@@ -238,7 +243,7 @@ describe('CodeBlockNode', function () {
             const document = createDocument(html`
                 <figure><pre><code>Test code</code></pre></figure>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as CodeBlockNode[];
 
             nodes.length.should.equal(1);
             nodes[0].code.should.equal('Test code');
@@ -250,7 +255,7 @@ describe('CodeBlockNode', function () {
             const document = createDocument(html`
                 <figure><pre><code>Test code</code></pre><figcaption>Test caption</figcaption></figure>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as CodeBlockNode[];
 
             nodes.length.should.equal(1);
             nodes[0].code.should.equal('Test code');
@@ -262,7 +267,7 @@ describe('CodeBlockNode', function () {
             const document = createDocument(html`
                 <figure><pre class="language-js"><code>Test code</code></pre><figcaption>Test caption</figcaption></figure>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as CodeBlockNode[];
 
             nodes.length.should.equal(1);
             nodes[0].code.should.equal('Test code');
@@ -274,7 +279,7 @@ describe('CodeBlockNode', function () {
             const document = createDocument(html`
                 <figure><pre><code class="language-js">Test code</code></pre><figcaption>Test caption</figcaption></figure>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as CodeBlockNode[];
 
             nodes.length.should.equal(1);
             nodes[0].code.should.equal('Test code');
@@ -295,7 +300,7 @@ describe('CodeBlockNode', function () {
             const document = createDocument(html`
                 <figure><pre><code>Test code</code></pre></figure>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as CodeBlockNode[];
 
             nodes.length.should.equal(1);
             nodes[0].code.should.equal('Test code');
@@ -307,7 +312,7 @@ describe('CodeBlockNode', function () {
             const document = createDocument(html`
                 <figure><pre class="language-javascript"><code>Test code</code></pre></figure>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as CodeBlockNode[];
 
             nodes.length.should.equal(1);
             nodes[0].code.should.equal('Test code');
@@ -319,7 +324,7 @@ describe('CodeBlockNode', function () {
             const document = createDocument(html`
                 <figure><pre><code class="language-ruby">Test code</code></pre></figure>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as CodeBlockNode[];
 
             nodes.length.should.equal(1);
             nodes[0].code.should.equal('Test code');

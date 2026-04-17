@@ -1,11 +1,25 @@
-import {addCreateDocumentOption} from '../../../../utils/add-create-document-option';
-import {renderEmptyContainer} from '../../../../utils/render-empty-container';
-import {slugify} from '../../../../utils/slugify';
+import {addCreateDocumentOption} from '../../../../utils/add-create-document-option.js';
+import type {ExportDOMOptions} from '../../../../export-dom.js';
+import {renderEmptyContainer} from '../../../../utils/render-empty-container.js';
+import {slugify} from '../../../../utils/slugify.js';
 
-export function renderHeaderNodeV1(node, options = {}) {
+interface HeaderV1NodeData {
+    size: string;
+    style: string;
+    buttonEnabled: boolean;
+    buttonUrl: string;
+    buttonText: string;
+    header: string;
+    subheader: string;
+    backgroundImageSrc: string;
+}
+
+interface RenderOptions extends ExportDOMOptions {}
+
+export function renderHeaderNodeV1(node: HeaderV1NodeData, options: RenderOptions = {}) {
     addCreateDocumentOption(options);
 
-    const document = options.createDocument();
+    const document = options.createDocument!();
 
     if (!node.header && !node.subheader && (!node.buttonEnabled || (!node.buttonUrl || !node.buttonText))) {
         return renderEmptyContainer(document);
@@ -22,7 +36,7 @@ export function renderHeaderNodeV1(node, options = {}) {
         subheader: node.subheader,
         subheaderSlug: slugify(node.subheader),
         hasHeader: !!node.header,
-        hasSubheader: !!node.subheader && !!node.subheader.replace(/(<br>)+$/g).trim(),
+        hasSubheader: !!node.subheader && !!node.subheader.replace(/(<br\s*\/?>)+$/i, '').trim(),
         backgroundImageStyle: node.style === 'image' ? `background-image: url(${node.backgroundImageSrc})` : '',
         backgroundImageSrc: node.backgroundImageSrc
     };
@@ -56,5 +70,5 @@ export function renderHeaderNodeV1(node, options = {}) {
         div.appendChild(buttonElement);
     }
 
-    return {element: div};
+    return {element: div, type: 'outer' as const};
 }

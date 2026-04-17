@@ -1,21 +1,22 @@
-const {createDocument, dom, html} = require('../test-utils');
-const {$getRoot} = require('lexical');
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$generateNodesFromDOM} = require('@lexical/html');
+import {createDocument, dom, html} from '../test-utils/index.js';
+import {$getRoot} from 'lexical';
+import type {LexicalEditor} from 'lexical';
+import {createHeadlessEditor} from '@lexical/headless';
+import {$generateNodesFromDOM} from '@lexical/html';
 
-const {ButtonNode, $createButtonNode, $isButtonNode} = require('../../');
+import {ButtonNode, $createButtonNode, $isButtonNode} from '../../src/index.js';
 
 const editorNodes = [ButtonNode];
 
 describe('ButtonNode', function () {
-    let editor;
-    let dataset;
-    let exportOptions;
+    let editor: LexicalEditor;
+    let dataset: {buttonText: string; buttonUrl: string; alignment: string};
+    let exportOptions: Record<string, unknown>;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -88,7 +89,7 @@ describe('ButtonNode', function () {
         it('returns a copy of the current node', editorTest(function () {
             const buttonNode = $createButtonNode(dataset);
             const buttonNodeDataset = buttonNode.getDataset();
-            const clone = ButtonNode.clone(buttonNode);
+            const clone = ButtonNode.clone(buttonNode) as ButtonNode;
             const cloneDataset = clone.getDataset();
 
             cloneDataset.should.deepEqual({...buttonNodeDataset});
@@ -113,7 +114,8 @@ describe('ButtonNode', function () {
     describe('exportDOM', function () {
         it('creates a button card', editorTest(function () {
             const buttonNode = $createButtonNode(dataset);
-            const {element} = buttonNode.exportDOM(exportOptions);
+            const result = buttonNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(html`<div class="kg-card kg-button-card kg-align-center"><a href="http://blog.com/post1" class="kg-btn kg-btn-accent">click me</a></div>`);
         }));
@@ -123,7 +125,8 @@ describe('ButtonNode', function () {
             const options = {
                 target: 'email'
             };
-            const {element} = buttonNode.exportDOM({...exportOptions, ...options});
+            const result = buttonNode.exportDOM({...exportOptions, ...options});
+            const element = result.element as HTMLElement;
             const output = element.outerHTML;
 
             output.should.not.containEql('kg-card');
@@ -140,7 +143,8 @@ describe('ButtonNode', function () {
                     emailCustomization: true
                 }
             };
-            const {element} = buttonNode.exportDOM({...exportOptions, ...options});
+            const result = buttonNode.exportDOM({...exportOptions, ...options});
+            const element = result.element as HTMLElement;
             const output = element.innerHTML;
 
             output.should.prettifyTo(html`
@@ -172,7 +176,8 @@ describe('ButtonNode', function () {
                     emailCustomizationAlpha: true
                 }
             };
-            const {element} = buttonNode.exportDOM({...exportOptions, ...options});
+            const result = buttonNode.exportDOM({...exportOptions, ...options});
+            const element = result.element as HTMLElement;
             const output = element.innerHTML;
 
             output.should.prettifyTo(html`
@@ -198,7 +203,8 @@ describe('ButtonNode', function () {
 
         it('renders an empty span with a missing buttonUrl', editorTest(function () {
             const buttonNode = $createButtonNode();
-            const {element} = buttonNode.exportDOM(exportOptions);
+            const result = buttonNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             element.outerHTML.should.equal('<span></span>');
         }));
@@ -240,7 +246,7 @@ describe('ButtonNode', function () {
 
             editor.getEditorState().read(() => {
                 try {
-                    const [buttonNode] = $getRoot().getChildren();
+                    const [buttonNode] = $getRoot().getChildren() as ButtonNode[];
 
                     buttonNode.buttonUrl.should.equal(dataset.buttonUrl);
                     buttonNode.buttonText.should.equal(dataset.buttonText);
@@ -271,7 +277,7 @@ describe('ButtonNode', function () {
             const document = createDocument(html`
                 <div class="kg-card kg-button-card kg-align-center"><a href="http://someblog.com/somepost" class="kg-btn kg-btn-accent">click me</a></div>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as ButtonNode[];
             nodes.length.should.equal(1);
             nodes[0].buttonUrl.should.equal('http://someblog.com/somepost');
             nodes[0].buttonText.should.equal('click me');
@@ -284,7 +290,7 @@ describe('ButtonNode', function () {
                     <a href="#/portal/signup" class="kg-btn kg-btn-accent">Subscribe 1</a>
                 </div>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as ButtonNode[];
             nodes.length.should.equal(1);
             nodes[0].buttonUrl.should.equal('#/portal/signup');
             nodes[0].buttonText.should.equal('Subscribe 1');

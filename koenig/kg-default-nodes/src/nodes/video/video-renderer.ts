@@ -1,10 +1,50 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {renderEmptyContainer} from '../../utils/render-empty-container';
+import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
+import type {ExportDOMOptions} from '../../export-dom.js';
+import {renderEmptyContainer} from '../../utils/render-empty-container.js';
 
-export function renderVideoNode(node, options = {}) {
+interface VideoNodeData {
+    src: string;
+    width: number | null;
+    height: number | null;
+    caption: string;
+    loop: boolean;
+    thumbnailSrc: string;
+    customThumbnailSrc: string;
+    formattedDuration: string;
+    cardWidth: string;
+}
+
+interface BaseVideoRenderOptions extends ExportDOMOptions {}
+
+interface EmailVideoRenderOptions extends BaseVideoRenderOptions {
+    target: 'email';
+    postUrl: string;
+}
+
+interface DefaultVideoRenderOptions extends BaseVideoRenderOptions {
+    target?: string;
+    postUrl?: string;
+}
+
+type VideoRenderOptions = EmailVideoRenderOptions | DefaultVideoRenderOptions;
+const DEFAULT_EMAIL_ASPECT_RATIO = 16 / 9;
+
+function hasVideoDimensions(node: VideoNodeData): node is VideoNodeData & {width: number; height: number} {
+    return node.width !== null && node.height !== null && node.width > 0 && node.height > 0;
+}
+
+function getPosterSpacerSrc(width: number, height: number) {
+    return `https://img.spacergif.org/v1/${width}x${height}/0a/spacer.png`;
+}
+
+function isEmailRenderOptions(options: VideoRenderOptions): options is EmailVideoRenderOptions {
+    return options.target === 'email' && typeof options.postUrl === 'string' && options.postUrl.trim() !== '';
+}
+
+export function renderVideoNode(node: VideoNodeData, options: VideoRenderOptions = {}) {
     addCreateDocumentOption(options);
 
-    const document = options.createDocument();
+    const document = options.createDocument!();
 
     if (!node.src || node.src.trim() === '') {
         return renderEmptyContainer(document);
@@ -13,19 +53,25 @@ export function renderVideoNode(node, options = {}) {
     const cardClasses = getCardClasses(node).join(' ');
 
     const htmlString = options.target === 'email'
-        ? emailCardTemplate({node, options, cardClasses})
+        ? (() => {
+            if (!isEmailRenderOptions(options)) {
+                throw new Error('renderVideoNode requires options.postUrl when options.target is "email"');
+            }
+
+            return emailCardTemplate({node, options, cardClasses});
+        })()
         : cardTemplate({node, cardClasses});
 
     const element = document.createElement('div');
     element.innerHTML = htmlString.trim();
 
-    return {element: element.firstElementChild};
+    return {element: element.firstElementChild, type: 'outer' as const};
 }
 
-export function cardTemplate({node, cardClasses}) {
-    const width = node.width;
-    const height = node.height;
-    const posterSpacerSrc = `https://img.spacergif.org/v1/${width}x${height}/0a/spacer.png`;
+export function cardTemplate({node, cardClasses}: {node: VideoNodeData, cardClasses: string}) {
+    const widthAttr = hasVideoDimensions(node) ? `width="${node.width}"` : '';
+    const heightAttr = hasVideoDimensions(node) ? `height="${node.height}"` : '';
+    const posterAttr = hasVideoDimensions(node) ? `poster="${getPosterSpacerSrc(node.width, node.height)}"` : '';
     const autoplayAttr = node.loop ? 'loop autoplay muted' : '';
     const thumbnailSrc = node.customThumbnailSrc || node.thumbnailSrc;
     const hideControlsClass = node.loop ? ' kg-video-hide' : '';
@@ -36,9 +82,9 @@ export function cardTemplate({node, cardClasses}) {
             <div class="kg-video-container">
                 <video
                     src="${node.src}"
-                    poster="${posterSpacerSrc}"
-                    width="${width}"
-                    height="${height}"
+                    ${posterAttr}
+                    ${widthAttr}
+                    ${heightAttr}
                     ${autoplayAttr}
                     playsinline
                     preload="metadata"
@@ -90,13 +136,13 @@ export function cardTemplate({node, cardClasses}) {
     );
 }
 
-export function emailCardTemplate({node, options, cardClasses}) {
+export function emailCardTemplate({node, options, cardClasses}: {node: VideoNodeData, options: EmailVideoRenderOptions, cardClasses: string}) {
     const thumbnailSrc = node.customThumbnailSrc || node.thumbnailSrc;
     const emailTemplateMaxWidth = 600;
-    const aspectRatio = node.width / node.height;
+    const aspectRatio = hasVideoDimensions(node) ? node.width / node.height : DEFAULT_EMAIL_ASPECT_RATIO;
     const emailSpacerWidth = Math.round(emailTemplateMaxWidth / 4);
     const emailSpacerHeight = Math.round(emailTemplateMaxWidth / aspectRatio);
-    const posterSpacerSrc = `https://img.spacergif.org/v1/${emailSpacerWidth}x${emailSpacerHeight}/0a/spacer.png`;
+    const posterSpacerSrc = getPosterSpacerSrc(emailSpacerWidth, emailSpacerHeight);
     const outlookCircleLeft = Math.round((emailTemplateMaxWidth / 2) - 39);
     const outlookCircleTop = Math.round((emailSpacerHeight / 2) - 39);
     const outlookPlayLeft = Math.round((emailTemplateMaxWidth / 2) - 11);
@@ -143,8 +189,8 @@ export function emailCardTemplate({node, options, cardClasses}) {
     );
 }
 
-export function getCardClasses(node) {
-    let cardClasses = ['kg-card kg-video-card'];
+export function getCardClasses(node: VideoNodeData) {
+    const cardClasses = ['kg-card kg-video-card'];
 
     if (node.cardWidth) {
         cardClasses.push(`kg-width-${node.cardWidth}`);

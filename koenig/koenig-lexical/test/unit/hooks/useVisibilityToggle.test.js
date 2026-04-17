@@ -5,6 +5,19 @@ import {act, renderHook} from '@testing-library/react';
 import {expect, vi} from 'vitest';
 import {useVisibilityToggle} from '../../../src/hooks/useVisibilityToggle';
 
+const lexicalMocks = vi.hoisted(() => ({
+    $getNodeByKey: vi.fn()
+}));
+
+vi.mock(import('lexical'), async (importOriginal) => {
+    const actual = await importOriginal();
+
+    return {
+        ...actual,
+        $getNodeByKey: lexicalMocks.$getNodeByKey
+    };
+});
+
 describe('useVisibilityToggle', () => {
     let editor;
     let node;
@@ -21,11 +34,6 @@ describe('useVisibilityToggle', () => {
     };
 
     beforeEach(() => {
-        // Mocking $getNodeByKey function
-        vi.mock('lexical', () => ({
-            $getNodeByKey: vi.fn()
-        }));
-
         node = {
             visibility: DEFAULT_VISIBILITY,
             getIsVisibilityActive: vi.fn(() => true)
@@ -47,6 +55,7 @@ describe('useVisibilityToggle', () => {
 
     afterEach(() => {
         vi.restoreAllMocks();
+        lexicalMocks.$getNodeByKey.mockReset();
     });
 
     function callHook(visibility = DEFAULT_VISIBILITY, {stripeEnabled = true} = {}) {

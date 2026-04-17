@@ -1,6 +1,7 @@
-import {rgbToHex} from '../../utils/rgb-to-hex';
+import type {LexicalNode} from 'lexical';
+import {rgbToHex} from '../../utils/rgb-to-hex.js';
 
-function getLayout(domNode) {
+function getLayout(domNode: HTMLElement) {
     if (domNode.classList.contains('kg-layout-split')) {
         return 'split';
     } else if (domNode.classList.contains('kg-layout-full')) {
@@ -12,26 +13,26 @@ function getLayout(domNode) {
     }
 }
 
-export function signupParser(SignupNode) {
+export function signupParser(SignupNode: new (data: Record<string, unknown>) => LexicalNode) {
     return {
-        div: (nodeElem) => {
-            const isSignupNode = nodeElem.dataset?.lexicalSignupForm === '';
+        div: (nodeElem: HTMLElement) => {
+            const isSignupNode = nodeElem.hasAttribute('data-lexical-signup-form');
             if (nodeElem.tagName === 'DIV' && isSignupNode) {
                 return {
-                    conversion(domNode) {
+                    conversion(domNode: HTMLElement) {
                         const layout = getLayout(domNode);
                         const header = domNode.querySelector('h2')?.textContent || '';
                         const subheader = domNode.querySelector('h3')?.textContent || '';
                         const disclaimer = domNode.querySelector('p')?.textContent || '';
                         const backgroundImageSrc = domNode.querySelector('.kg-signup-card-image')?.getAttribute('src');
                         const backgroundColor = domNode.style.backgroundColor || '';
-                        const buttonColor = domNode.querySelector('.kg-signup-card-button')?.style.backgroundColor || '';
+                        const buttonColor = (domNode.querySelector('.kg-signup-card-button') as HTMLElement | null)?.style.backgroundColor || '';
                         const buttonText = domNode.querySelector('.kg-signup-card-button-default')?.textContent?.trim() || 'Subscribe';
-                        const buttonTextColor = domNode.querySelector('.kg-signup-card-button')?.style.color || '';
-                        const textColor = domNode.querySelector('.kg-signup-card-success')?.style.color || '';
+                        const buttonTextColor = (domNode.querySelector('.kg-signup-card-button') as HTMLElement | null)?.style.color || '';
+                        const textColor = (domNode.querySelector('.kg-signup-card-success') as HTMLElement | null)?.style.color || '';
                         const alignment = domNode.querySelector('.kg-signup-card-text')?.classList.contains('kg-align-center') ? 'center' : 'left';
                         const successMessage = domNode.querySelector('.kg-signup-card-success')?.textContent?.trim() || '';
-                        const labels = [...domNode.querySelectorAll('input[data-members-label]')].map(input => input.value);
+                        const labels = [...domNode.querySelectorAll<HTMLInputElement>('input[data-members-label]')].map(input => input.value);
 
                         const isAccentBackground = domNode.classList?.contains('kg-style-accent') ?? false;
                         const isAccentButton = domNode.querySelector('.kg-signup-card-button')?.classList?.contains('kg-style-accent') ?? false;
@@ -39,7 +40,7 @@ export function signupParser(SignupNode) {
                         const isSwapped = domNode.classList.contains('kg-swapped');
                         const backgroundSize = domNode.classList.contains('kg-content-wide') ? 'contain' : 'cover';
 
-                        const payload = {
+                        const payload: Record<string, unknown> = {
                             layout,
                             buttonText,
                             header,
@@ -60,7 +61,7 @@ export function signupParser(SignupNode) {
                         const node = new SignupNode(payload);
                         return {node};
                     },
-                    priority: 1
+                    priority: 1 as const
                 };
             }
             return null;

@@ -1,20 +1,21 @@
-const {dom, createDocument} = require('../test-utils');
-const {$getRoot} = require('lexical');
-const {createHeadlessEditor} = require('@lexical/headless');
-const {$generateNodesFromDOM} = require('@lexical/html');
-const {FileNode, $createFileNode, $isFileNode} = require('../../');
+import should from 'should';
+import {dom, createDocument} from '../test-utils/index.js';
+import {$getRoot, type LexicalEditor} from 'lexical';
+import {createHeadlessEditor} from '@lexical/headless';
+import {$generateNodesFromDOM} from '@lexical/html';
+import {FileNode, $createFileNode, $isFileNode} from '../../src/index.js';
 
 const editorNodes = [FileNode];
 
 describe('FileNode', function () {
-    let editor;
-    let dataset;
-    let exportOptions;
+    let editor: LexicalEditor;
+    let dataset: Record<string, unknown>;
+    let exportOptions: Record<string, unknown>;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -83,7 +84,7 @@ describe('FileNode', function () {
         it('creates a file card', editorTest(function () {
             const fileNode = $createFileNode(dataset);
             const {element} = fileNode.exportDOM(exportOptions);
-            element.outerHTML.should.equal(`<div class="kg-card kg-file-card"><a class="kg-file-card-container" href="/content/files/2023/03/IMG_0196.jpeg" title="Download" download=""><div class="kg-file-card-contents"><div class="kg-file-card-title">Cool image to download</div><div class="kg-file-card-caption">This is a description</div><div class="kg-file-card-metadata"><div class="kg-file-card-filename">IMG_0196.jpeg</div><div class="kg-file-card-filesize">121 KB</div></div></div><div class="kg-file-card-icon"><svg viewBox="0 0 24 24"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class="a" points="8.25 14.25 12 18 15.75 14.25"></polyline><line class="a" x1="12" y1="6.75" x2="12" y2="18"></line><circle class="a" cx="12" cy="12" r="11.25"></circle></svg></div></a></div>`);
+            (element as HTMLElement).outerHTML.should.equal(`<div class="kg-card kg-file-card"><a class="kg-file-card-container" href="/content/files/2023/03/IMG_0196.jpeg" title="Download" download=""><div class="kg-file-card-contents"><div class="kg-file-card-title">Cool image to download</div><div class="kg-file-card-caption">This is a description</div><div class="kg-file-card-metadata"><div class="kg-file-card-filename">IMG_0196.jpeg</div><div class="kg-file-card-filesize">121 KB</div></div></div><div class="kg-file-card-icon"><svg viewBox="0 0 24 24"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class="a" points="8.25 14.25 12 18 15.75 14.25"></polyline><line class="a" x1="12" y1="6.75" x2="12" y2="18"></line><circle class="a" cx="12" cy="12" r="11.25"></circle></svg></div></a></div>`);
         }));
 
         describe('email template', function () {
@@ -95,28 +96,29 @@ describe('FileNode', function () {
             it('renders complete email template with all fields', editorTest(function () {
                 const fileNode = $createFileNode(dataset);
                 const {element} = fileNode.exportDOM(exportOptions);
+                const el = element as HTMLElement;
 
                 // Check basic structure
-                element.tagName.should.equal('TABLE');
-                element.className.should.equal('kg-file-card');
+                el.tagName.should.equal('TABLE');
+                el.className.should.equal('kg-file-card');
 
                 // Check title is present and linked
-                const titleLink = element.querySelector('.kg-file-title');
-                titleLink.textContent.should.equal('Cool image to download');
-                titleLink.closest('a').href.should.equal('https://example.com/post');
+                const titleLink = el.querySelector('.kg-file-title')!;
+                titleLink.textContent!.should.equal('Cool image to download');
+                titleLink.closest('a')!.href.should.equal('https://example.com/post');
 
                 // Check caption is present and linked
-                const descriptionLink = element.querySelector('.kg-file-description');
-                descriptionLink.textContent.should.equal('This is a description');
-                descriptionLink.closest('a').href.should.equal('https://example.com/post');
+                const descriptionLink = el.querySelector('.kg-file-description')!;
+                descriptionLink.textContent!.should.equal('This is a description');
+                descriptionLink.closest('a')!.href.should.equal('https://example.com/post');
 
                 // Check metadata
-                const metaLink = element.querySelector('.kg-file-meta');
+                const metaLink = el.querySelector('.kg-file-meta')!;
                 metaLink.innerHTML.should.containEql('IMG_0196.jpeg');
                 metaLink.innerHTML.should.containEql('121 KB');
 
                 // Check icon
-                const icon = element.querySelector('img');
+                const icon = el.querySelector('img') as HTMLImageElement;
                 icon.src.should.equal('https://static.ghost.org/v4.0.0/images/download-icon-darkmode.png');
                 icon.style.height.should.equal('24px');
             }));
@@ -129,15 +131,16 @@ describe('FileNode', function () {
                 };
                 const fileNode = $createFileNode(minimalDataset);
                 const {element} = fileNode.exportDOM(exportOptions);
+                const el = element as HTMLElement;
 
                 // Should not have title
-                should.not.exist(element.querySelector('.kg-file-title'));
+                should.not.exist(el.querySelector('.kg-file-title'));
 
                 // Should not have caption
-                should.not.exist(element.querySelector('.kg-file-description'));
+                should.not.exist(el.querySelector('.kg-file-description'));
 
                 // Should have smaller icon
-                const icon = element.querySelector('img');
+                const icon = el.querySelector('img') as HTMLImageElement;
                 icon.style.height.should.equal('20px');
             }));
 
@@ -150,13 +153,14 @@ describe('FileNode', function () {
                 };
                 const fileNode = $createFileNode(datasetWithHtml);
                 const {element} = fileNode.exportDOM(exportOptions);
+                const el = element as HTMLElement;
 
-                const html = element.innerHTML;
-                html.should.not.containEql('<script>');
-                html.should.not.containEql('<strong>');
-                html.should.containEql('file&lt;.html');
-                html.should.containEql('Title with ');
-                html.should.containEql('Caption with ');
+                const elHtml = el.innerHTML;
+                elHtml.should.not.containEql('<script>');
+                elHtml.should.not.containEql('<strong>');
+                elHtml.should.containEql('file&lt;.html');
+                elHtml.should.containEql('Title with ');
+                elHtml.should.containEql('Caption with ');
             }));
         });
     });
@@ -171,7 +175,7 @@ describe('FileNode', function () {
         it('returns a copy of the current node', editorTest(function () {
             const fileNode = $createFileNode(dataset);
             const fileNodeDataset = fileNode.getDataset();
-            const clone = FileNode.clone(fileNode);
+            const clone = FileNode.clone(fileNode) as FileNode;
             const cloneDataset = clone.getDataset();
 
             cloneDataset.should.deepEqual({...fileNodeDataset});
@@ -228,7 +232,7 @@ describe('FileNode', function () {
                     </a>
                 </div>
             `);
-            const nodes = $generateNodesFromDOM(editor, document);
+            const nodes = $generateNodesFromDOM(editor, document) as FileNode[];
             nodes.length.should.equal(1);
             nodes[0].src.should.equal('/content/files/2023/03/IMG_0196.jpeg');
             nodes[0].fileTitle.should.equal('Cool image to download');
@@ -239,7 +243,7 @@ describe('FileNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done) {
+        it('imports all data', function (done: (err?: unknown) => void) {
             const serializedState = JSON.stringify({
                 root: {
                     children: [{
@@ -259,7 +263,7 @@ describe('FileNode', function () {
 
             editor.getEditorState().read(() => {
                 try {
-                    const [fileNode] = $getRoot().getChildren();
+                    const [fileNode] = $getRoot().getChildren() as FileNode[];
                     fileNode.src.should.equal('/content/files/2023/03/IMG_0196.jpeg');
                     fileNode.fileTitle.should.equal('Cool image to download');
                     fileNode.fileCaption.should.equal('This is a description');
@@ -280,6 +284,7 @@ describe('FileNode', function () {
             const json = fileNode.exportJSON();
             json.should.deepEqual({
                 type: 'file',
+                version: 1,
                 ...dataset
             });
         }));

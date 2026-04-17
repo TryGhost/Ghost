@@ -1,16 +1,17 @@
-require('../test-utils');
-const {createHeadlessEditor} = require('@lexical/headless');
-const {ZWNJNode, $createZWNJNode, $isZWNJNode} = require('../../');
+import '../test-utils/index.js';
+import {createHeadlessEditor} from '@lexical/headless';
+import {ZWNJNode, $createZWNJNode, $isZWNJNode} from '../../src/index.js';
+import type {LexicalEditor} from 'lexical';
 
 const editorNodes = [ZWNJNode];
 
 describe('ZWNJNode', function () {
-    let editor;
+    let editor: LexicalEditor;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();

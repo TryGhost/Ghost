@@ -1,12 +1,26 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {renderEmptyContainer} from '../../utils/render-empty-container';
-import {escapeHtml} from '../../utils/escape-html';
-import {truncateHtml} from '../../utils/truncate';
+import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
+import type {ExportDOMOptions} from '../../export-dom.js';
+import {renderEmptyContainer} from '../../utils/render-empty-container.js';
+import {escapeHtml} from '../../utils/escape-html.js';
+import {truncateHtml} from '../../utils/truncate.js';
 
-export function renderBookmarkNode(node, options = {}) {
+interface BookmarkNodeData {
+    url: string;
+    title: string;
+    description: string;
+    icon: string;
+    author: string;
+    publisher: string;
+    thumbnail: string;
+    caption: string;
+}
+
+interface RenderOptions extends ExportDOMOptions {}
+
+export function renderBookmarkNode(node: BookmarkNodeData, options: RenderOptions = {}) {
     addCreateDocumentOption(options);
 
-    const document = options.createDocument();
+    const document = options.createDocument!();
 
     if (!node.url || node.url.trim() === '') {
         return renderEmptyContainer(document);
@@ -19,7 +33,7 @@ export function renderBookmarkNode(node, options = {}) {
     }
 }
 
-function emailTemplate(node, document) {
+function emailTemplate(node: BookmarkNodeData, document: Document) {
     const title = escapeHtml(node.title);
     const publisher = escapeHtml(node.publisher);
     const author = escapeHtml(node.author);
@@ -103,10 +117,10 @@ function emailTemplate(node, document) {
         <![endif]-->`;
 
     element.innerHTML = html;
-    return {element};
+    return {element, type: 'outer' as const};
 }
 
-function frontendTemplate(node, document) {
+function frontendTemplate(node: BookmarkNodeData, document: Document) {
     const element = document.createElement('figure');
     const caption = node.caption;
     let cardClass = 'kg-card kg-bookmark-card';
@@ -138,39 +152,39 @@ function frontendTemplate(node, document) {
     metadata.setAttribute('class','kg-bookmark-metadata');
     content.appendChild(metadata);
 
-    metadata.icon = node.icon;
-    if (metadata.icon) {
+    const nodeIcon = node.icon;
+    if (nodeIcon) {
         const icon = document.createElement('img');
         icon.setAttribute('class','kg-bookmark-icon');
-        icon.src = metadata.icon;
+        icon.src = nodeIcon;
         icon.alt = '';
         metadata.appendChild(icon);
     }
 
-    metadata.publisher = node.publisher;
-    if (metadata.publisher) {
+    const nodePublisher = node.publisher;
+    if (nodePublisher) {
         const publisher = document.createElement('span');
         publisher.setAttribute('class','kg-bookmark-author'); // NOTE: This is NOT in error. The classes are reversed for theme backwards-compatibility.
-        publisher.textContent = metadata.publisher;
+        publisher.textContent = nodePublisher;
         metadata.appendChild(publisher);
     }
 
-    metadata.author = node.author;
-    if (metadata.author) {
+    const nodeAuthor = node.author;
+    if (nodeAuthor) {
         const author = document.createElement('span');
         author.setAttribute('class','kg-bookmark-publisher'); // NOTE: This is NOT in error. The classes are reversed for theme backwards-compatibility.
-        author.textContent = metadata.author;
+        author.textContent = nodeAuthor;
         metadata.appendChild(author);
     }
 
-    metadata.thumbnail = node.thumbnail;
-    if (metadata.thumbnail) {
+    const nodeThumbnail = node.thumbnail;
+    if (nodeThumbnail) {
         const thumbnailDiv = document.createElement('div');
         thumbnailDiv.setAttribute('class','kg-bookmark-thumbnail');
         container.appendChild(thumbnailDiv);
 
         const thumbnail = document.createElement('img');
-        thumbnail.src = metadata.thumbnail;
+        thumbnail.src = nodeThumbnail;
         thumbnail.alt = '';
         thumbnail.setAttribute('onerror',`this.style.display = 'none'`); // Hide thumbnail div if image fails to load
         thumbnailDiv.appendChild(thumbnail);
@@ -182,5 +196,5 @@ function frontendTemplate(node, document) {
         element.appendChild(figCaption);
     }
 
-    return {element};
+    return {element, type: 'outer' as const};
 }

@@ -1,11 +1,17 @@
-import {generateDecoratorNode} from '../../generate-decorator-node';
-import {renderMarkdownNode} from './markdown-renderer';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {renderMarkdownNode} from './markdown-renderer.js';
+
+const markdownProperties = [
+    {name: 'markdown', default: '', urlType: 'markdown', wordCount: true}
+] as const satisfies readonly DecoratorNodeProperty[];
+
+export type MarkdownData = DecoratorNodeData<typeof markdownProperties>;
+
+export interface MarkdownNode extends DecoratorNodeValueMap<typeof markdownProperties> {}
 
 export class MarkdownNode extends generateDecoratorNode({
     nodeType: 'markdown',
-    properties: [
-        {name: 'markdown', default: '', urlType: 'markdown', wordCount: true}
-    ],
+    properties: markdownProperties,
     defaultRenderFn: renderMarkdownNode
 }) {
     isEmpty() {
@@ -13,10 +19,10 @@ export class MarkdownNode extends generateDecoratorNode({
     }
 }
 
-export function $createMarkdownNode(dataset) {
+export function $createMarkdownNode(dataset: MarkdownData = {}) {
     return new MarkdownNode(dataset);
 }
 
-export function $isMarkdownNode(node) {
+export function $isMarkdownNode(node: unknown): node is MarkdownNode {
     return node instanceof MarkdownNode;
 }

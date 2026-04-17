@@ -1,19 +1,20 @@
-import {rgbToHex} from '../../utils/rgb-to-hex';
+import type {LexicalNode} from 'lexical';
+import {rgbToHex} from '../../utils/rgb-to-hex.js';
 import {readImageAttributesFromElement} from '../../utils/read-image-attributes-from-element.js';
 
-export function parseCallToActionNode(CallToActionNode) {
+export function parseCallToActionNode(CallToActionNode: new (data: Record<string, unknown>) => LexicalNode) {
     return {
-        div: (nodeElem) => {
+        div: (nodeElem: HTMLElement) => {
             const isCallToActionElement = nodeElem.classList?.contains('kg-cta-card');
             if (isCallToActionElement) {
                 return {
-                    conversion(domNode) {
+                    conversion(domNode: HTMLElement) {
                         const div = domNode;
                         const layout = div.getAttribute('data-layout') || 'minimal';
                         const alignment = div.getAttribute('data-alignment') || 'left';
                         const textValueElement = domNode.querySelector('.kg-cta-text');
-                        const buttonElement = domNode.querySelector('.kg-cta-button');
-                        const buttonStyles = buttonElement?.style || {};
+                        const buttonElement = domNode.querySelector('.kg-cta-button') as HTMLElement | null;
+                        const buttonStyles = buttonElement?.style || {} as CSSStyleDeclaration;
                         const buttonColor = buttonStyles.backgroundColor || '#000000';
                         const buttonTextColor = buttonStyles.color || '#ffffff';
                         const sponsorLabelElement = domNode.querySelector('.kg-cta-sponsor-label');
@@ -23,7 +24,7 @@ export function parseCallToActionNode(CallToActionNode) {
                         const showDividers = div.classList.contains('kg-cta-has-dividers');
                         const imageContainer = domNode.querySelector('.kg-cta-image-container');
                         const imageElement = imageContainer?.querySelector('img');
-                        let imageData = {
+                        const imageData: {imageUrl: string | number; imageWidth: string | number | null; imageHeight: string | number | null} = {
                             imageUrl: '',
                             imageWidth: null,
                             imageHeight: null
@@ -43,13 +44,13 @@ export function parseCallToActionNode(CallToActionNode) {
                             sponsorLabelElement.innerHTML = `<p>${sponsorLabelElement.innerHTML.trim()}</p>`;
                         }
 
-                        const payload = {
+                        const payload: Record<string, unknown> = {
                             layout: layout,
                             alignment: alignment,
-                            textValue: textValueElement.textContent.trim() || '',
+                            textValue: textValueElement?.textContent?.trim() || '',
                             showButton: buttonElement ? true : false,
                             showDividers: showDividers,
-                            buttonText: buttonElement?.textContent.trim() || '',
+                            buttonText: buttonElement?.textContent?.trim() || '',
                             buttonUrl: buttonElement?.getAttribute('href'),
                             buttonColor: rgbToHex(buttonColor),
                             buttonTextColor: rgbToHex(buttonTextColor),
@@ -64,7 +65,7 @@ export function parseCallToActionNode(CallToActionNode) {
                         const node = new CallToActionNode(payload);
                         return {node};
                     },
-                    priority: 1
+                    priority: 1 as const
                 };
             }
             return null;

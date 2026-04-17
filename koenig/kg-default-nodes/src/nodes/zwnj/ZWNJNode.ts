@@ -1,4 +1,5 @@
 import {TextNode} from 'lexical';
+import type {EditorConfig} from 'lexical';
 
 // This is used in places where we need an extra cursor position at the
 // beginning of an element node as it prevents Lexical normalizing the
@@ -8,11 +9,11 @@ export class ZWNJNode extends TextNode {
         return 'zwnj';
     }
 
-    static clone(node) {
+    static clone(node: ZWNJNode) {
         return new ZWNJNode('', node.__key);
     }
 
-    createDOM(config) {
+    createDOM(config: EditorConfig) {
         const span = super.createDOM(config);
         span.innerHTML = '&zwnj;';
         return span;
@@ -43,6 +44,6 @@ export function $createZWNJNode() {
     return new ZWNJNode('');
 }
 
-export function $isZWNJNode(node) {
+export function $isZWNJNode(node: unknown): node is ZWNJNode {
     return node instanceof ZWNJNode;
 }

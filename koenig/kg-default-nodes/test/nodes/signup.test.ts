@@ -1,17 +1,19 @@
-const {createHeadlessEditor} = require('@lexical/headless');
-const {createDocument, dom, html} = require('../test-utils');
-const {$getRoot} = require('lexical');
-const {SignupNode, $createSignupNode, $isSignupNode, $createPaywallNode} = require('../../');
-const {$generateNodesFromDOM} = require('@lexical/html');
+import 'should';
+import {createHeadlessEditor} from '@lexical/headless';
+import {createDocument, dom, html} from '../test-utils/index.js';
+import {$getRoot} from 'lexical';
+import type {LexicalEditor} from 'lexical';
+import {SignupNode, $createSignupNode, $isSignupNode, $createPaywallNode, type SignupData} from '../../src/index.js';
+import {$generateNodesFromDOM} from '@lexical/html';
 
 const editorNodes = [SignupNode];
 
 describe('SignupNode', function () {
-    let editor;
-    let dataset;
-    let exportOptions;
+    let editor: LexicalEditor;
+    let dataset: SignupData;
+    let exportOptions: Record<string, unknown>;
 
-    const editorTest = testFn => function (done) {
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
         editor.update(() => {
             try {
                 testFn();
@@ -57,7 +59,7 @@ describe('SignupNode', function () {
         it('clones the node', editorTest(function () {
             dataset.backgroundColor = '#000000';
             const signupNode = $createSignupNode(dataset);
-            const clonedSignupNode = SignupNode.clone(signupNode);
+            const clonedSignupNode = SignupNode.clone(signupNode) as SignupNode;
             const cloneDataset = clonedSignupNode.getDataset();
             cloneDataset.should.deepEqual(dataset);
         }));
@@ -118,10 +120,37 @@ describe('SignupNode', function () {
                 node.labels.should.deepEqual(['new label 1', 'new label 2']);
             }));
 
+            it('clones labels passed to the constructor', editorTest(function () {
+                const labels = ['label 1', 'label 2'];
+                const node = $createSignupNode({...dataset, labels});
+
+                labels.push('label 3');
+                node.labels.should.deepEqual(['label 1', 'label 2']);
+            }));
+
+            it('clones labels passed to setLabels', editorTest(function () {
+                const node = $createSignupNode(dataset);
+                const labels = ['new label 1', 'new label 2'];
+
+                node.setLabels(labels);
+                labels.push('new label 3');
+
+                node.labels.should.deepEqual(['new label 1', 'new label 2']);
+            }));
+
+            it('clones labels returned from the getter', editorTest(function () {
+                const node = $createSignupNode(dataset);
+                const labels = node.labels;
+
+                labels.push('new label 3');
+
+                node.labels.should.deepEqual(['label 1', 'label 2']);
+            }));
+
             it('only accepts an array of strings for setLabels', editorTest(function () {
                 const node = $createSignupNode(dataset);
-                (() => node.setLabels('label')).should.throwError();
-                (() => node.setLabels(['label 1', 2])).should.throwError();
+                (() => node.setLabels('label' as unknown as string[])).should.throwError();
+                (() => node.setLabels(['label 1', 2 as unknown as string])).should.throwError();
             }));
 
             it('can add one label to the existing array', editorTest(function () {
@@ -130,10 +159,20 @@ describe('SignupNode', function () {
                 node.labels.should.deepEqual(['label 1', 'label 2', 'new label 3']);
             }));
 
+            it('only accepts strings for addLabel', editorTest(function () {
+                const node = $createSignupNode(dataset);
+                (() => node.addLabel(2 as unknown as string)).should.throwError();
+            }));
+
             it('can remove one label from the existing array', editorTest(function () {
                 const node = $createSignupNode(dataset);
                 node.removeLabel('label 2');
                 node.labels.should.deepEqual(['label 1']);
+            }));
+
+            it('only accepts strings for removeLabel', editorTest(function () {
+                const node = $createSignupNode(dataset);
+                (() => node.removeLabel(2 as unknown as string)).should.throwError();
             }));
         });
 
@@ -166,7 +205,8 @@ describe('SignupNode', function () {
 
         it('creates signup element', editorTest(function () {
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form=""  style="display: none;">
                     <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""/></picture>
@@ -199,7 +239,8 @@ describe('SignupNode', function () {
             dataset.subheader = '';
             dataset.disclaimer = '';
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none">
                     <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""/></picture>
@@ -230,7 +271,8 @@ describe('SignupNode', function () {
             dataset.backgroundImageSrc = '';
 
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-width-regular kg-style-accent" data-lexical-signup-form="" style="display:none">
                     <div class="kg-signup-card-content">
@@ -261,7 +303,8 @@ describe('SignupNode', function () {
             dataset.layout = 'split';
 
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full" data-lexical-signup-form="" style="background-color: transparent; display:none">
                     <div class="kg-signup-card-content">
@@ -294,7 +337,8 @@ describe('SignupNode', function () {
             dataset.swapped = true;
 
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-swapped" data-lexical-signup-form="" style="background-color: transparent; display:none">
                     <div class="kg-signup-card-content">
@@ -327,7 +371,8 @@ describe('SignupNode', function () {
             dataset.backgroundSize = 'contain';
 
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-content-wide" data-lexical-signup-form="" style="background-color: transparent; display:none">
                     <div class="kg-signup-card-content">
@@ -359,7 +404,8 @@ describe('SignupNode', function () {
             dataset.backgroundColor = '#ffffff';
 
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none">
                 <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""></picture>
@@ -392,7 +438,8 @@ describe('SignupNode', function () {
             dataset.backgroundImageSrc = '';
 
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="background-color: transparent; display:none">
                 <div class="kg-signup-card-content">
@@ -424,7 +471,8 @@ describe('SignupNode', function () {
             dataset.backgroundImageSrc = '';
 
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-width-regular kg-style-accent" data-lexical-signup-form="" style="display:none">
                     <div class="kg-signup-card-content">
@@ -456,7 +504,8 @@ describe('SignupNode', function () {
             dataset.layout = 'split';
 
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-style-accent" data-lexical-signup-form="" style="display:none">
                     <div class="kg-signup-card-content">
@@ -489,7 +538,8 @@ describe('SignupNode', function () {
             dataset.backgroundImageSrc = 'https://example.com/image.jpg';
 
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none">
                     <picture>
@@ -526,7 +576,8 @@ describe('SignupNode', function () {
         it('returns empty element if target is email', editorTest(function () {
             exportOptions.target = 'email';
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             element.outerHTML.should.equal('<div></div>');
         }));
     });
@@ -535,7 +586,8 @@ describe('SignupNode', function () {
             dataset.backgroundColor = '#ffffff';
 
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
@@ -546,7 +598,8 @@ describe('SignupNode', function () {
             dataset.layout = 'split';
 
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
@@ -557,7 +610,8 @@ describe('SignupNode', function () {
             dataset.layout = 'split';
             dataset.swapped = true;
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
@@ -567,7 +621,8 @@ describe('SignupNode', function () {
             dataset.layout = 'split';
             dataset.backgroundSize = 'contain';
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
@@ -577,7 +632,8 @@ describe('SignupNode', function () {
             dataset.layout = 'split';
             dataset.backgroundSize = 'cover';
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
@@ -590,7 +646,8 @@ describe('SignupNode', function () {
             dataset.backgroundColor = '#ffffff';
 
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
@@ -603,7 +660,8 @@ describe('SignupNode', function () {
             dataset.backgroundImageSrc = '';
 
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
@@ -616,11 +674,43 @@ describe('SignupNode', function () {
             dataset.buttonTextColor = '#ffffff';
 
             const signupNode = $createSignupNode(dataset);
-            const {element} = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(exportOptions);
+            const element = result.element as HTMLElement;
 
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
+        }));
+
+        it('parses when data-lexical-signup-form has a non-empty value', editorTest(function () {
+            const document = createDocument(html`
+                <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="signup" style="display:none">
+                    <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""/></picture>
+                    <div class="kg-signup-card-content">
+                        <div class="kg-signup-card-text kg-align-center">
+                            <h2 class="kg-signup-card-heading" style="color: #000000">Header</h2>
+                            <p class="kg-signup-card-subheading" style="color: #000000">Subheader</p>
+                            <form class="kg-signup-card-form" data-members-form="signup">
+                                <input data-members-label="" type="hidden" value="label 1">
+                                <input data-members-label="" type="hidden" value="label 2">
+                                <div class="kg-signup-card-fields">
+                                    <input class="kg-signup-card-input" id="email" data-members-email="" type="email" required="true" placeholder="Your email">
+                                    <button class="kg-signup-card-button" style="background-color:#000000;color:#ffffff" type="submit">
+                                        <span class="kg-signup-card-button-default">Button</span>
+                                    </button>
+                                </div>
+                                <div class="kg-signup-card-success" style="color: #000000">Success!</div>
+                                <div class="kg-signup-card-error" style="color: #000000" data-members-error=""></div>
+                            </form>
+                            <p class="kg-signup-card-disclaimer" style="color: #000000">Disclaimer</p>
+                        </div>
+                    </div>
+                </div>
+            `);
+
+            const nodes = $generateNodesFromDOM(editor, document);
+            nodes.length.should.equal(1);
+            $isSignupNode(nodes[0]).should.be.true();
         }));
     });
 

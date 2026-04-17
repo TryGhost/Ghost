@@ -1,13 +1,18 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
+import type {ExportDOMOptions, ExportDOMOutput} from '../../export-dom.js';
 
-export function renderPaywallNode(_, options = {}) {
+interface RenderOptions extends ExportDOMOptions {}
+
+export type PaywallExportDOMOutput = ExportDOMOutput<HTMLDivElement, 'inner'>;
+
+export function renderPaywallNode(_: unknown, options: RenderOptions = {}): PaywallExportDOMOutput {
     addCreateDocumentOption(options);
-    const document = options.createDocument();
+    const document = options.createDocument!();
     const element = document.createElement('div');
 
-    element.innerHTML = '<!--members-only-->';
+    element.appendChild(document.createComment('members-only'));
 
     // `type: 'inner'` will render only the innerHTML of the element
     // @see @tryghost/kg-lexical-html-renderer package
-    return {element, type: 'inner'};
+    return {element, type: 'inner' as const};
 }
