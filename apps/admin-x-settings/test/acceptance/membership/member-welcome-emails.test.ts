@@ -30,6 +30,64 @@ const automatedEmailsFixture = {
     }]
 };
 
+const automatedEmailsListFirstFixture = {
+    automated_emails: [{
+        ...automatedEmailsFixture.automated_emails[0],
+        lexical: JSON.stringify({
+            root: {
+                children: [{
+                    children: [{
+                        checked: undefined,
+                        children: [{
+                            detail: 0,
+                            format: 0,
+                            mode: 'normal',
+                            style: '',
+                            text: 'First list item',
+                            type: 'extended-text',
+                            version: 1
+                        }],
+                        direction: 'ltr',
+                        format: '',
+                        indent: 0,
+                        type: 'listitem',
+                        value: 1,
+                        version: 1
+                    }],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    listType: 'bullet',
+                    start: 1,
+                    tag: 'ul',
+                    type: 'list',
+                    version: 1
+                }, {
+                    children: [{
+                        detail: 0,
+                        format: 0,
+                        mode: 'normal',
+                        style: '',
+                        text: 'Trailing paragraph',
+                        type: 'extended-text',
+                        version: 1
+                    }],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'paragraph',
+                    version: 1
+                }],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        })
+    }]
+};
+
 const newslettersRequest = {
     browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: responseFixtures.newsletters}
 };
@@ -131,6 +189,68 @@ const pasteText = async (page: Page, content: string) => {
     }, content);
 };
 
+const getSubjectSelection = async (subjectInput: ReturnType<Page['locator']>) => {
+    return await subjectInput.evaluate((element: HTMLInputElement) => ({
+        end: element.selectionEnd,
+        isFocused: document.activeElement === element,
+        start: element.selectionStart,
+        valueLength: element.value.length
+    }));
+};
+
+const setSubjectSelection = async (subjectInput: ReturnType<Page['locator']>, start: number, end = start) => {
+    await subjectInput.evaluate((element: HTMLInputElement, selection: {start: number; end: number}) => {
+        element.focus();
+        element.setSelectionRange(selection.start, selection.end);
+    }, {end, start});
+};
+
+const getEditorSelection = async (editor: ReturnType<Page['locator']>) => {
+    return await editor.evaluate((element: HTMLElement) => {
+        const selection = window.getSelection();
+
+        return {
+            anchorOffset: selection?.anchorOffset ?? null,
+            focusOffset: selection?.focusOffset ?? null,
+            isFocused: document.activeElement === element
+        };
+    });
+};
+
+const getEditorSelectionContext = async (editor: ReturnType<Page['locator']>) => {
+    return await editor.evaluate((element: HTMLElement) => {
+        const selection = window.getSelection();
+        const anchorNode = selection?.anchorNode;
+        const anchorElement = anchorNode?.nodeType === Node.TEXT_NODE
+            ? anchorNode.parentElement
+            : anchorNode as Element | null;
+
+        return {
+            anchorOffset: selection?.anchorOffset ?? null,
+            isFocused: document.activeElement === element,
+            listItemText: anchorElement?.closest('li')?.textContent ?? null,
+            paragraphText: anchorElement?.closest('p')?.textContent ?? null
+        };
+    });
+};
+
+const getEditorStructure = async (editor: ReturnType<Page['locator']>) => {
+    return await editor.evaluate((element: HTMLElement) => {
+        const selection = window.getSelection();
+        const anchorNode = selection?.anchorNode;
+        const anchorElement = anchorNode?.nodeType === Node.TEXT_NODE
+            ? anchorNode.parentElement
+            : anchorNode as Element | null;
+
+        return {
+            childTags: Array.from(element.children).map(child => child.tagName.toLowerCase()),
+            hasListItemAncestor: Boolean(anchorElement?.closest('li')),
+            hasParagraphAncestor: Boolean(anchorElement?.closest('p')),
+            isFocused: document.activeElement === element
+        };
+    });
+};
+
 test.describe('Member emails settings', async () => {
     test.describe('Welcome email modal', async () => {
         test('Edit and Preview controls render; preview request only happens on Preview switch', async ({page}) => {
@@ -147,7 +267,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -158,6 +277,8 @@ test.describe('Member emails settings', async () => {
 
             await expect(modal.getByTestId('welcome-email-mode-edit')).toBeVisible();
             await expect(modal.getByTestId('welcome-email-mode-preview')).toBeVisible();
+            await expect(modal.getByTestId('welcome-email-edit-subject')).toBeVisible();
+            await expect(modal.getByTestId('welcome-email-edit-subject')).toHaveValue('Welcome to Test Site');
             await expect(modal.getByTestId('welcome-email-preview-subject')).not.toBeVisible();
 
             const editor = modal.locator('[data-kg="editor"] div[contenteditable="true"]').first();
@@ -173,6 +294,8 @@ test.describe('Member emails settings', async () => {
             const previewIframe = modal.getByTestId('welcome-email-preview-iframe');
             await expect(previewIframe).toBeVisible();
             await expect(modal.getByTestId('welcome-email-preview-subject')).toBeVisible();
+            await expect(modal.getByTestId('welcome-email-preview-subject')).toContainText('Preview Subject');
+            await expect(modal.getByTestId('welcome-email-preview-subject').locator('input')).toHaveCount(0);
             await expect(previewIframe).toHaveAttribute('sandbox', 'allow-same-origin allow-popups allow-popups-to-escape-sandbox');
 
             await expect.poll(async () => {
@@ -217,7 +340,6 @@ test.describe('Member emails settings', async () => {
             });
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -225,19 +347,22 @@ test.describe('Member emails settings', async () => {
 
             const modal = page.getByTestId('welcome-email-modal');
             await expect(modal).toBeVisible();
+            const editSubject = modal.getByTestId('welcome-email-edit-subject');
 
             const editor = modal.locator('[data-kg="editor"] div[contenteditable="true"]').first();
             await editor.click({timeout: 5000});
             await page.keyboard.type(' Draft note');
+            await editSubject.fill('Unsaved welcome email subject');
 
             await modal.getByTestId('welcome-email-mode-preview').click();
             await expect(modal.getByTestId('welcome-email-preview-iframe')).toBeVisible();
             await expect(modal.getByTestId('welcome-email-preview-loading')).not.toBeVisible();
             const previewSubject = modal.getByTestId('welcome-email-preview-subject');
-            await previewSubject.fill('Unsaved welcome email subject');
+            await expect(previewSubject).toContainText('Unsaved welcome email subject');
 
             await modal.getByTestId('welcome-email-mode-edit').click();
             await expect(editor).toContainText('Draft note');
+            await expect(editSubject).toHaveValue('Unsaved welcome email subject');
 
             await modal.getByTestId('welcome-email-mode-preview').click();
             await expect.poll(() => previewRequests.at(-1)?.subject).toBe('Unsaved welcome email subject');
@@ -271,7 +396,6 @@ test.describe('Member emails settings', async () => {
             });
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -303,7 +427,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -374,7 +497,6 @@ test.describe('Member emails settings', async () => {
             });
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -382,19 +504,20 @@ test.describe('Member emails settings', async () => {
 
             const modal = page.getByTestId('welcome-email-modal');
             await expect(modal).toBeVisible();
+            const editSubject = modal.getByTestId('welcome-email-edit-subject');
 
             await modal.getByTestId('welcome-email-mode-preview').click();
             const previewSubject = modal.getByTestId('welcome-email-preview-subject');
             await expect(previewSubject).toBeVisible();
-            await previewSubject.fill('First unsaved subject');
-
             await modal.getByTestId('welcome-email-mode-edit').click();
+            await editSubject.fill('First unsaved subject');
+
             await modal.getByTestId('welcome-email-mode-preview').click();
-            await previewSubject.fill('Second unsaved subject');
             await modal.getByTestId('welcome-email-mode-edit').click();
+            await editSubject.fill('Second unsaved subject');
             await modal.getByTestId('welcome-email-mode-preview').click();
 
-            await expect(previewSubject).toHaveValue('Preview Subject 3');
+            await expect(previewSubject).toContainText('Preview Subject 3');
 
             releaseFirstPreview();
 
@@ -403,7 +526,7 @@ test.describe('Member emails settings', async () => {
                 'First unsaved subject',
                 'Second unsaved subject'
             ]);
-            await expect(previewSubject).toHaveValue('Preview Subject 3');
+            await expect(previewSubject).toContainText('Preview Subject 3');
         });
 
         test('Invalid draft shows preview inline error state', async ({page}) => {
@@ -420,7 +543,32 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByTestId('free-welcome-email-preview').click();
+
+            const modal = page.getByTestId('welcome-email-modal');
+            await expect(modal).toBeVisible();
+            const editSubject = modal.getByTestId('welcome-email-edit-subject');
+
+            await editSubject.fill('   ');
+            await modal.getByTestId('welcome-email-mode-preview').click();
+
+            await expect(modal.getByTestId('welcome-email-preview-error')).toBeVisible();
+            await expect(modal.getByTestId('welcome-email-preview-error')).toContainText('A subject is required');
+            expect(lastApiRequests.previewWelcomeEmail).toBeUndefined();
+        });
+
+        test('edit mode keeps subject and body keyboard navigation aligned', async ({page}) => {
+            await mockApi({page, requests: {
+                ...globalDataRequests,
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
+            }});
+
+            await page.goto('/#/memberemails');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -429,17 +577,119 @@ test.describe('Member emails settings', async () => {
             const modal = page.getByTestId('welcome-email-modal');
             await expect(modal).toBeVisible();
 
-            await modal.getByTestId('welcome-email-mode-preview').click();
-            const previewSubject = modal.getByTestId('welcome-email-preview-subject');
-            await expect(previewSubject).toBeVisible();
-            const initialPreviewRequest = lastApiRequests.previewWelcomeEmail?.body;
-            await previewSubject.fill('   ');
-            await modal.getByTestId('welcome-email-mode-edit').click();
-            await modal.getByTestId('welcome-email-mode-preview').click();
+            const subjectInput = modal.getByTestId('welcome-email-edit-subject');
+            const editor = modal.locator('[data-kg="editor"] div[contenteditable="true"]').first();
 
-            await expect(modal.getByTestId('welcome-email-preview-error')).toBeVisible();
-            await expect(modal.getByTestId('welcome-email-preview-error')).toContainText('A subject is required');
-            expect(lastApiRequests.previewWelcomeEmail?.body).toEqual(initialPreviewRequest);
+            await setSubjectSelection(subjectInput, 7);
+            await subjectInput.press('Tab');
+
+            await expect(editor).toBeFocused();
+            await expect.poll(async () => await getEditorSelection(editor)).toMatchObject({
+                anchorOffset: 0,
+                focusOffset: 0,
+                isFocused: true
+            });
+
+            await page.keyboard.press('Shift+Tab');
+            await expect(subjectInput).toBeFocused();
+            await expect.poll(async () => await getSubjectSelection(subjectInput)).toMatchObject({
+                isFocused: true,
+                start: 7
+            });
+
+            await setSubjectSelection(subjectInput, 2);
+            await subjectInput.press('ArrowDown');
+            await expect(subjectInput).toBeFocused();
+            await expect.poll(async () => await getSubjectSelection(subjectInput)).toMatchObject({
+                isFocused: true,
+                start: 20,
+                valueLength: 20
+            });
+
+            await setSubjectSelection(subjectInput, 20);
+            await subjectInput.press('ArrowDown');
+            await expect(editor).toBeFocused();
+            await expect.poll(async () => await getEditorSelection(editor)).toMatchObject({
+                anchorOffset: 0,
+                focusOffset: 0,
+                isFocused: true
+            });
+
+            await page.keyboard.press('ArrowUp');
+            await expect(subjectInput).toBeFocused();
+            await expect.poll(async () => await getSubjectSelection(subjectInput)).toMatchObject({
+                isFocused: true,
+                start: 0
+            });
+        });
+
+        test('tab from subject lands at the first list item when the body starts with a list', async ({page}) => {
+            await mockApi({page, requests: {
+                ...globalDataRequests,
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsListFirstFixture}
+            }});
+
+            await page.goto('/#/memberemails');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByTestId('free-welcome-email-preview').click();
+
+            const modal = page.getByTestId('welcome-email-modal');
+            await expect(modal).toBeVisible();
+
+            const subjectInput = modal.getByTestId('welcome-email-edit-subject');
+            const editor = modal.locator('[data-kg="editor"] div[contenteditable="true"]').first();
+
+            await setSubjectSelection(subjectInput, 7);
+            await subjectInput.press('Tab');
+
+            await expect(editor).toBeFocused();
+            await expect.poll(async () => await getEditorSelectionContext(editor)).toMatchObject({
+                anchorOffset: 0,
+                isFocused: true,
+                listItemText: 'First list item',
+                paragraphText: null
+            });
+        });
+
+        test('enter from subject inserts a new top paragraph before existing body content', async ({page}) => {
+            await mockApi({page, requests: {
+                ...globalDataRequests,
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsListFirstFixture}
+            }});
+
+            await page.goto('/#/memberemails');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByTestId('free-welcome-email-preview').click();
+
+            const modal = page.getByTestId('welcome-email-modal');
+            await expect(modal).toBeVisible();
+
+            const subjectInput = modal.getByTestId('welcome-email-edit-subject');
+            const editor = modal.locator('[data-kg="editor"] div[contenteditable="true"]').first();
+
+            await setSubjectSelection(subjectInput, 'Welcome to Test Site'.length);
+            await subjectInput.press('Enter');
+
+            await expect(editor).toBeFocused();
+            await expect.poll(async () => await getEditorStructure(editor)).toMatchObject({
+                childTags: ['p', 'ul', 'p'],
+                hasListItemAncestor: false,
+                hasParagraphAncestor: true,
+                isFocused: true
+            });
+            await expect.poll(async () => await getEditorSelection(editor)).toMatchObject({
+                anchorOffset: 0,
+                focusOffset: 0,
+                isFocused: true
+            });
         });
 
         test('Escape key closes test email dropdown without closing modal', async ({page}) => {
@@ -454,7 +704,6 @@ test.describe('Member emails settings', async () => {
             await page.goto('/#/memberemails');
 
             // Wait for page to load
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -496,7 +745,6 @@ test.describe('Member emails settings', async () => {
             await page.goto('/#/memberemails');
 
             // Wait for page to load
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -526,7 +774,6 @@ test.describe('Member emails settings', async () => {
             await page.goto('/#/memberemails');
 
             // Wait for page to load
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -572,7 +819,6 @@ test.describe('Member emails settings', async () => {
             await page.goto('/#/memberemails');
 
             // Wait for page to load
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -631,7 +877,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -677,7 +922,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -698,8 +942,8 @@ test.describe('Member emails settings', async () => {
             await bookmarkUrlInput.fill('https://ghost.org/');
             await bookmarkUrlInput.press('Enter');
 
-            await expect(modal.getByTestId('bookmark-title')).toContainText('Ghost: The Creator Economy Platform');
-            await expect.poll(() => lastApiRequests.fetchOembed?.url || '').toContain('type=bookmark');
+            await expect.poll(() => lastApiRequests.fetchOembed?.url || '', {timeout: 15000}).toContain('type=bookmark');
+            await expect(modal.getByTestId('bookmark-title')).toContainText('Ghost: The Creator Economy Platform', {timeout: 15000});
         });
 
         test('welcome email editor inserts call to action card via slash menu', async ({page}) => {
@@ -711,7 +955,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -739,7 +982,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -780,7 +1022,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -823,7 +1064,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -869,7 +1109,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -912,7 +1151,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -951,7 +1189,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -996,7 +1233,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -1032,7 +1268,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -1055,7 +1290,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -1096,7 +1330,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -1132,7 +1365,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -1156,7 +1388,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -1215,7 +1446,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -1262,7 +1492,6 @@ test.describe('Member emails settings', async () => {
         }});
 
         await page.goto('/#/memberemails?verifyEmail=test-verification-token');
-        await page.waitForLoadState('networkidle');
 
         const confirmation = page.getByTestId('confirmation-modal');
         await expect(confirmation).toBeVisible();
@@ -1286,7 +1515,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -1335,7 +1563,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -1383,7 +1610,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -1430,7 +1656,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -1481,7 +1706,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});
@@ -1532,7 +1756,6 @@ test.describe('Member emails settings', async () => {
             }});
 
             await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
 
             const section = page.getByTestId('memberemails');
             await expect(section).toBeVisible({timeout: 10000});

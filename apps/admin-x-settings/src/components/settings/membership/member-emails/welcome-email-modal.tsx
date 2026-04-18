@@ -1,23 +1,23 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import {useCallback, useEffect, useRef, useState} from 'react';
-
-import MemberEmailEditor from './member-email-editor';
-import WelcomeEmailPreviewFrame from './welcome-email-preview-frame';
-import {Hint, Button as LegacyButton, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {$getRoot, $isDecoratorNode} from 'lexical';
+import {$selectDecoratorNode} from '@tryghost/koenig-lexical';
+import {Button, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {Hint, type KoenigInstance, Button as LegacyButton, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {cn} from '@tryghost/shade/utils';
 import {confirmIfDirty} from '@tryghost/admin-x-design-system';
-import {getWelcomeEmailValidationErrors} from './welcome-email-validation';
 import {useBrowseAutomatedEmails, useEditAutomatedEmail, usePreviewWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+
+import MemberEmailEditor from './member-email-editor';
+import TestEmailDropdown from './test-email-dropdown';
+import WelcomeEmailPreviewFrame from './welcome-email-preview-frame';
+import {getWelcomeEmailValidationErrors} from './welcome-email-validation';
 import {useWelcomeEmailPreview} from './use-welcome-email-preview';
 import {useWelcomeEmailSenderDetails} from '../../../../hooks/use-welcome-email-sender-details';
-
-import TestEmailDropdown from './test-email-dropdown';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
-
-import {Button, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {cn} from '@tryghost/shade/utils';
 
 interface EmailPreviewModalContentProps {
     title: string;
@@ -26,12 +26,13 @@ interface EmailPreviewModalContentProps {
     children: React.ReactNode;
     className?: string;
     isEditMode?: boolean;
+    onKeyDownCapture?: React.KeyboardEventHandler<HTMLDivElement>;
 }
 
 const EmailPreviewModalContent = React.forwardRef<
     HTMLDivElement,
     EmailPreviewModalContentProps
->(({title, centeredHeaderContent, headerActions, children, className, isEditMode = false}, ref) => (
+>(({title, centeredHeaderContent, headerActions, children, className, isEditMode = false, onKeyDownCapture}, ref) => (
     <div
         ref={ref}
         className={cn(
@@ -40,6 +41,7 @@ const EmailPreviewModalContent = React.forwardRef<
             'dark:bg-gray-975',
             className
         )}
+        onKeyDownCapture={onKeyDownCapture}
     >
         <div className="sticky top-0 grid shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b border-gray-200 bg-white px-5 py-3 dark:border-gray-900 dark:bg-gray-975">
             <h3 className="justify-self-start text-xl font-semibold">
@@ -102,10 +104,13 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const {data: automatedEmailsData} = useBrowseAutomatedEmails();
     const [showTestDropdown, setShowTestDropdown] = useState(false);
     const [mode, setMode] = useState<PreviewMode>('edit');
-    const [previewSubjectOverride, setPreviewSubjectOverride] = useState<string | null>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const normalizedLexical = useRef<string>(automatedEmail?.lexical || '');
-    const hasEditorBeenFocused = useRef(false);
+    const hasUserInteractedWithEditor = useRef(false);
+    const editorAPIRef = useRef<KoenigInstance | null>(null);
+    const subjectInputRef = useRef<HTMLInputElement>(null);
+    const lastSubjectSelectionRef = useRef({start: 0, end: 0});
+    const bodyExitIntentRef = useRef<'arrow-up' | 'shift-tab' | null>(null);
     const handleError = useHandleError();
     const automatedEmails = automatedEmailsData?.automated_emails || [];
     const {resolvedSenderName, resolvedSenderEmail, resolvedReplyToEmail, hasDistinctReplyTo} = useWelcomeEmailSenderDetails(automatedEmails);
@@ -136,8 +141,9 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const handleClose = useCallback(() => {
         confirmIfDirty(isDirty, () => {
             modal.remove();
+            updateRoute('memberemails');
         });
-    }, [modal, isDirty]);
+    }, [modal, isDirty, updateRoute]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -178,36 +184,248 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
         setMode(nextMode);
 
         if (nextMode === 'preview') {
-            setPreviewSubjectOverride(null);
             enterPreview(formState);
         } else {
             setShowTestDropdown(false);
-            setPreviewSubjectOverride(null);
             exitPreview();
         }
     }, [enterPreview, exitPreview, formState]);
 
     // The editor normalizes content on mount (e.g., processing {name} templates),
-    // which triggers onChange even without user edits. We track whether the editor
-    // has ever been focused - normalization happens before focus is possible, so any
-    // onChange before first focus is normalization. After focus, we compare against
-    // the normalized baseline to determine dirty state.
+    // which triggers onChange even without user edits. Only mark the editor dirty
+    // once the user has actually interacted with it, otherwise treat onChange as
+    // normalization and update the clean baseline.
     const handleEditorChange = useCallback((lexical: string) => {
-        if (!hasEditorBeenFocused.current) {
-            // Editor hasn't been focused yet = must be normalization
+        if (!hasUserInteractedWithEditor.current) {
             normalizedLexical.current = lexical;
             setFormState(state => ({...state, lexical}));
             return;
         }
 
-        // Editor has been focused = compare to baseline
         if (lexical !== normalizedLexical.current) {
             updateForm(state => ({...state, lexical}));
         } else {
-            // Content reverted to normalized state - don't mark dirty
             setFormState(state => ({...state, lexical}));
         }
     }, [setFormState, updateForm]);
+
+    const updateStoredSubjectSelection = useCallback((input = subjectInputRef.current) => {
+        if (!input) {
+            return;
+        }
+
+        const start = input.selectionStart ?? 0;
+        const end = input.selectionEnd ?? start;
+
+        lastSubjectSelectionRef.current = {start, end};
+    }, []);
+
+    const focusSubjectInput = useCallback((position: 'start' | 'stored') => {
+        const input = subjectInputRef.current;
+
+        if (!input) {
+            return;
+        }
+
+        input.focus();
+
+        requestAnimationFrame(() => {
+            const selection = position === 'start'
+                ? {start: 0, end: 0}
+                : lastSubjectSelectionRef.current;
+
+            input.setSelectionRange(selection.start, selection.end);
+            updateStoredSubjectSelection(input);
+        });
+    }, [updateStoredSubjectSelection]);
+
+    const focusEditorAtTop = useCallback(() => {
+        const editorAPI = editorAPIRef.current;
+
+        if (!editorAPI) {
+            return;
+        }
+
+        requestAnimationFrame(() => {
+            const lexicalEditor = editorAPI.editorInstance;
+
+            editorAPI.focusEditor({position: 'top'});
+
+            lexicalEditor.update(() => {
+                const firstChild = $getRoot().getFirstChild();
+
+                if (!firstChild) {
+                    return;
+                }
+
+                if ($isDecoratorNode(firstChild)) {
+                    $selectDecoratorNode(firstChild);
+                    lexicalEditor.getRootElement()?.focus();
+                    return;
+                }
+
+                firstChild.selectStart?.();
+            }, {tag: 'history-merge'});
+
+            requestAnimationFrame(() => {
+                const rootElement = lexicalEditor.getRootElement();
+
+                if (!rootElement) {
+                    return;
+                }
+
+                const textWalker = document.createTreeWalker(rootElement, NodeFilter.SHOW_TEXT, {
+                    acceptNode: (node) => {
+                        return node.textContent?.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+                    }
+                });
+                const firstTextNode = textWalker.nextNode();
+
+                if (!firstTextNode) {
+                    return;
+                }
+
+                const selection = window.getSelection();
+                const range = document.createRange();
+
+                range.setStart(firstTextNode, 0);
+                range.collapse(true);
+                selection?.removeAllRanges();
+                selection?.addRange(range);
+                rootElement.focus();
+            });
+        });
+    }, []);
+
+    const insertParagraphAtTop = useCallback(() => {
+        const editorAPI = editorAPIRef.current;
+
+        if (!editorAPI) {
+            return;
+        }
+
+        requestAnimationFrame(() => {
+            editorAPI.insertParagraphAtTop({focus: true});
+
+            requestAnimationFrame(() => {
+                const rootElement = editorAPI.editorInstance.getRootElement();
+                const firstParagraph = rootElement?.querySelector(':scope > p');
+
+                if (!rootElement || !firstParagraph) {
+                    rootElement?.focus();
+                    return;
+                }
+
+                const selection = window.getSelection();
+                const range = document.createRange();
+
+                range.setStart(firstParagraph, 0);
+                range.collapse(true);
+                selection?.removeAllRanges();
+                selection?.addRange(range);
+                rootElement.focus();
+            });
+        });
+    }, []);
+
+    const handleSubjectKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+        const editorAPI = editorAPIRef.current;
+
+        if (!editorAPI || event.nativeEvent.isComposing) {
+            return;
+        }
+
+        const input = event.currentTarget;
+        const valueLength = input.value.length;
+        const selectionStart = input.selectionStart ?? 0;
+        const selectionEnd = input.selectionEnd ?? selectionStart;
+        const isCaretAtEnd = selectionStart === valueLength && selectionEnd === valueLength;
+
+        if (event.key === 'Tab') {
+            event.preventDefault();
+            updateStoredSubjectSelection(input);
+            focusEditorAtTop();
+            return;
+        }
+
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            updateStoredSubjectSelection(input);
+
+            if (!editorAPI.editorIsEmpty()) {
+                insertParagraphAtTop();
+            } else {
+                focusEditorAtTop();
+            }
+
+            return;
+        }
+
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+
+            if (valueLength === 0 || isCaretAtEnd) {
+                updateStoredSubjectSelection(input);
+                focusEditorAtTop();
+                return;
+            }
+
+            input.setSelectionRange(valueLength, valueLength);
+            updateStoredSubjectSelection(input);
+        }
+    }, [focusEditorAtTop, insertParagraphAtTop, updateStoredSubjectSelection]);
+
+    const trackEditorExitIntent = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
+        const target = event.target as HTMLElement;
+
+        if (!target.closest('[data-kg="editor"]')) {
+            return;
+        }
+
+        if (!['ArrowDown', 'ArrowUp', 'Tab'].includes(event.key)) {
+            hasUserInteractedWithEditor.current = true;
+        }
+
+        if (event.key === 'Tab' && event.shiftKey) {
+            bodyExitIntentRef.current = 'shift-tab';
+            return;
+        }
+
+        if (event.key === 'ArrowUp' && !event.shiftKey) {
+            bodyExitIntentRef.current = 'arrow-up';
+            return;
+        }
+
+        bodyExitIntentRef.current = null;
+    }, []);
+
+    const handleBodyExitAtTop = useCallback(() => {
+        const exitIntent = bodyExitIntentRef.current;
+        bodyExitIntentRef.current = null;
+
+        if (exitIntent === 'arrow-up') {
+            focusSubjectInput('start');
+            return;
+        }
+
+        focusSubjectInput('stored');
+    }, [focusSubjectInput]);
+
+    const handleModalKeyDownCapture = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (event.key !== 'Escape') {
+            return;
+        }
+
+        if (showTestDropdown) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        handleClose();
+    }, [handleClose, showTestDropdown]);
+
+    const previewSubject = previewState.status === 'success' ? previewState.preview.subject : formState.subject;
 
     return (
         <Modal
@@ -252,8 +470,36 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 }
                 isEditMode={mode === 'edit'}
                 title={modalTitle}
+                onKeyDownCapture={handleModalKeyDownCapture}
             >
                 <div className='flex grow flex-col items-center p-6'>
+                    {mode === 'edit' && (
+                        <EmailPreviewEmailHeader className='max-w-[600px] border-0 bg-transparent px-0 py-0 shadow-none'>
+                            <TextField
+                                autoFocus={true}
+                                className='w-full appearance-none border-0 bg-transparent px-0 pb-1 text-[1.75rem] leading-[1.1] font-bold tracking-[-0.017em] text-black shadow-none outline-none placeholder:font-bold placeholder:text-gray-400 focus:outline-none min-[500px]:text-[2.25rem] min-[769px]:text-[3rem] dark:text-white dark:placeholder:text-gray-600'
+                                containerClassName='w-full'
+                                data-testid='welcome-email-edit-subject'
+                                error={Boolean(errors.subject)}
+                                hint={errors.subject}
+                                hintClassName='mt-2 text-sm'
+                                inputRef={subjectInputRef}
+                                placeholder='Email subject'
+                                unstyled={true}
+                                value={formState.subject}
+                                onBlur={() => updateStoredSubjectSelection()}
+                                onChange={(e) => {
+                                    updateStoredSubjectSelection(e.target);
+                                    updateForm(state => ({...state, subject: e.target.value}));
+                                }}
+                                onClick={() => updateStoredSubjectSelection()}
+                                onFocus={() => updateStoredSubjectSelection()}
+                                onKeyDown={handleSubjectKeyDown}
+                                onKeyUp={() => updateStoredSubjectSelection()}
+                                onSelect={() => updateStoredSubjectSelection()}
+                            />
+                        </EmailPreviewEmailHeader>
+                    )}
                     {mode === 'preview' && (
                         <EmailPreviewEmailHeader className='border-x-0 border-t-0 border-b'>
                             <div className='flex flex-col gap-2'>
@@ -289,16 +535,12 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                 <div className='flex items-center'>
                                     <div className='w-20 shrink-0 text-sm font-semibold'>Subject:</div>
                                     <div className='grow'>
-                                        <TextField
-                                            className='w-full'
+                                        <div
+                                            className='w-full text-sm text-black dark:text-white'
                                             data-testid='welcome-email-preview-subject'
-                                            value={previewSubjectOverride ?? (previewState.status === 'success' ? previewState.preview.subject : formState.subject)}
-                                            onChange={(e) => {
-                                                const nextSubject = e.target.value;
-                                                setPreviewSubjectOverride(nextSubject);
-                                                updateForm(state => ({...state, subject: nextSubject}));
-                                            }}
-                                        />
+                                        >
+                                            {previewSubject}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -316,14 +558,23 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                 mode === 'preview' && 'hidden'
                             )}
                             data-testid='welcome-email-editor'
-                            onFocus={() => {
-                                hasEditorBeenFocused.current = true;
+                            onKeyDownCapture={trackEditorExitIntent}
+                            onMouseDownCapture={(event) => {
+                                const target = event.target as HTMLElement;
+
+                                if (target.closest('[data-kg="editor"]')) {
+                                    hasUserInteractedWithEditor.current = true;
+                                }
                             }}
                         >
                             <MemberEmailEditor
                                 key={automatedEmail?.id || 'new'}
                                 className='welcome-email-editor'
+                                cursorDidExitAtTop={handleBodyExitAtTop}
                                 placeholder='Write your welcome email content...'
+                                registerAPI={(API) => {
+                                    editorAPIRef.current = API;
+                                }}
                                 value={formState.lexical}
                                 onChange={handleEditorChange}
                             />

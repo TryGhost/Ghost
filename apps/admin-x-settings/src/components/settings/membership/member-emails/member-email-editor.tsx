@@ -12,6 +12,9 @@ export interface MemberEmailsEditorProps {
     placeholder?: string;
     className?: string;
     onChange?: (value: string) => void;
+    onFocus?: () => void;
+    cursorDidExitAtTop?: () => void;
+    registerAPI?: (API: KoenigInstance | null) => void;
 }
 
 const fileUploader = {
@@ -66,7 +69,9 @@ const EmailEditorInner: React.FC<{
     className?: string;
     registerAPI: (API: KoenigInstance | null) => void;
     onChange: (data: unknown) => void;
-}> = ({editor, darkMode, cardConfig, initialEditorState, placeholder, className, registerAPI, onChange}) => {
+    onFocus?: () => void;
+    cursorDidExitAtTop?: () => void;
+}> = ({editor, darkMode, cardConfig, initialEditorState, placeholder, className, registerAPI, onChange, onFocus, cursorDidExitAtTop}) => {
     const koenig = editor.read();
     const EmailEditor = koenig.EmailEditor;
 
@@ -75,12 +80,14 @@ const EmailEditorInner: React.FC<{
             <EmailEditor
                 cardConfig={cardConfig}
                 className="koenig-lexical koenig-lexical-editor-input"
+                cursorDidExitAtTop={cursorDidExitAtTop}
                 darkMode={darkMode}
                 fileUploader={fileUploader}
                 initialEditorState={initialEditorState}
                 placeholderText={placeholder}
                 registerAPI={registerAPI}
                 onChange={onChange}
+                onFocus={onFocus}
             />
         </div>
     );
@@ -90,7 +97,10 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     value,
     placeholder,
     className,
-    onChange
+    onChange,
+    onFocus,
+    cursorDidExitAtTop,
+    registerAPI
 }) => {
     const editorAPIRef = useRef<KoenigInstance | null>(null);
     // Capture the initial value once — the editor owns its own state after mount
@@ -120,7 +130,8 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
 
     const registerEditorAPI = useCallback((API: KoenigInstance | null) => {
         editorAPIRef.current = API;
-    }, []);
+        registerAPI?.(API);
+    }, [registerAPI]);
 
     // Koenig's onChange passes the Lexical state as a plain object,
     // but the API expects a JSON string
@@ -151,12 +162,14 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
                     <EmailEditorInner
                         cardConfig={cardConfig}
                         className={className}
+                        cursorDidExitAtTop={cursorDidExitAtTop}
                         darkMode={darkMode}
                         editor={editorResource}
                         initialEditorState={initialEditorState.current}
                         placeholder={placeholder}
                         registerAPI={registerEditorAPI}
                         onChange={handleChange}
+                        onFocus={onFocus}
                     />
                 </Suspense>
             </ErrorBoundary>
