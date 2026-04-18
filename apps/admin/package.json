@@ -41,7 +41,7 @@
     "eslint-plugin-react-refresh": "0.4.24",
     "eslint-plugin-tailwindcss": "4.0.0-beta.0",
     "globals": "17.4.0",
-    "jest-extended": "6.0.0",
+    "jest-extended": "7.0.0",
     "jsdom": "28.1.0",
     "msw": "2.12.14",
     "sirv": "3.0.2",
