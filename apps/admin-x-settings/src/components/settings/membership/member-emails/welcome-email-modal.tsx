@@ -1,7 +1,6 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import {$getRoot, $isDecoratorNode} from 'lexical';
-import {$selectDecoratorNode} from '@tryghost/koenig-lexical';
 import {Button, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {Hint, type KoenigInstance, Button as LegacyButton, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {cn} from '@tryghost/shade/utils';
@@ -95,6 +94,10 @@ interface WelcomeEmailModalProps {
 }
 
 type PreviewMode = 'edit' | 'preview';
+
+type LexicalEditorInstance = KoenigInstance['editorInstance'] & {
+    update: (callback: () => void, options?: {tag?: string}) => void;
+};
 
 const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType = 'free', automatedEmail}) => {
     const modal = useModal();
@@ -247,19 +250,22 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
         }
 
         requestAnimationFrame(() => {
-            const lexicalEditor = editorAPI.editorInstance;
+            const lexicalEditor = editorAPI.editorInstance as LexicalEditorInstance;
 
             editorAPI.focusEditor({position: 'top'});
 
             lexicalEditor.update(() => {
                 const firstChild = $getRoot().getFirstChild();
+                const selectDecoratorNode = window['@tryghost/koenig-lexical']?.$selectDecoratorNode as
+                    | ((node: object) => void)
+                    | undefined;
 
                 if (!firstChild) {
                     return;
                 }
 
-                if ($isDecoratorNode(firstChild)) {
-                    $selectDecoratorNode(firstChild);
+                if ($isDecoratorNode(firstChild) && selectDecoratorNode) {
+                    selectDecoratorNode(firstChild);
                     lexicalEditor.getRootElement()?.focus();
                     return;
                 }
