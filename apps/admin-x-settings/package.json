@@ -54,6 +54,7 @@
     "@uiw/react-codemirror": "4.25.2",
     "clsx": "2.1.1",
     "lucide-react": "0.577.0",
+    "lexical": "0.13.1",
     "mingo": "2.5.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",
