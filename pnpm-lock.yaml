@@ -517,8 +517,8 @@ importers:
         specifier: 14.3.1
         version: 14.3.1(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/koenig-lexical':
-        specifier: 1.7.28
-        version: 1.7.28
+        specifier: 1.7.30
+        version: 1.7.30
       '@types/react':
         specifier: 18.3.28
         version: 18.3.28
@@ -9210,9 +9210,6 @@ packages:
 
   '@tryghost/kg-utils@1.0.43':
     resolution: {integrity: sha512-adCb45ViNgIqQHUBaG2E/Sp7bB/hmsc3t3sDsEKpruOtlhJIw7Qea1SF9VyHnnd81rRBB3rgFrQx2DqNaQraRA==}
-
-  '@tryghost/koenig-lexical@1.7.28':
-    resolution: {integrity: sha512-81irvOeur1YsQxg6dpU/Ch0s8j8io3b0Dg0wo8F27aJJp/acfaJnVPN4jCndkylNjfYNQ3T1hqY9IFufi0McNA==}
 
   '@tryghost/koenig-lexical@1.7.30':
     resolution: {integrity: sha512-4qjUMD79kj573kVwW5C1wMqmO1+lVm+fr7al6C6TMGncb9uiicCTTI+OKn/RpAYUeTtMAhBRqlqcgZ0nlvNykQ==}
@@ -31411,8 +31408,6 @@ snapshots:
   '@tryghost/kg-utils@1.0.43':
     dependencies:
       semver: 7.7.4
-
-  '@tryghost/koenig-lexical@1.7.28': {}
 
   '@tryghost/koenig-lexical@1.7.30': {}
 
