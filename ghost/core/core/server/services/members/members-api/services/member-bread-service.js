@@ -79,50 +79,62 @@ module.exports = class MemberBREADService {
         // Remove incomplete subscriptions from the API
         member.subscriptions = member.subscriptions.filter(sub => sub.status !== 'incomplete' && sub.status !== 'incomplete_expired');
 
-        for (const product of member.products) {
-            if (!subscriptionProducts.includes(product.id)) {
-                const productAddEvent = member.productEvents.find(event => event.product_id === product.id);
-                let startDate;
-                if (!productAddEvent || productAddEvent.action !== 'added') {
-                    startDate = moment();
-                } else {
-                    startDate = moment(productAddEvent.created_at);
-                }
-                member.subscriptions.push({
-                    id: '',
-                    tier: product,
-                    customer: {
-                        id: '',
-                        name: member.name,
-                        email: member.email
-                    },
-                    plan: {
-                        id: '',
-                        nickname: 'Complimentary',
-                        interval: 'year',
-                        currency: 'USD',
-                        amount: 0
-                    },
-                    status: 'active',
-                    start_date: startDate,
-                    default_payment_card_last4: '****',
-                    cancel_at_period_end: false,
-                    cancellation_reason: null,
-                    current_period_end: moment(product.expiry_at),
-                    price: {
-                        id: '',
-                        price_id: '',
-                        nickname: 'Complimentary',
-                        amount: 0,
-                        interval: 'year',
-                        type: 'recurring',
-                        currency: 'USD',
-                        product: {
-                            id: '',
-                            product_id: product.id
-                        }
+        // Attach non-Stripe complimentary or gifted subscriptions to member
+        // These subscriptions are either granted by the publisher for free (complimentary) or paid by someone else (gift)
+        // They are not backed by a Stripe subscription as there isn't any recurring charges
+        //
+        // In the logic below, we construct Stripe-alike member subscription API responses, so that the client does not need to handle Stripe vs non-Stripe subscriptions separately.
+        // Note: a complimentary or gift subscription should always be the current member subscription and match its status,
+        // as non-Stripe subscriptions are removed when a member continues with a Stripe paid subscription
+        if (member.status === 'comped' || member.status === 'gift') {
+            for (const product of member.products) {
+                if (!subscriptionProducts.includes(product.id)) {
+                    const productAddEvent = member.productEvents.find(event => event.product_id === product.id && event.action === 'added');
+                    let startDate;
+                    if (!productAddEvent) {
+                        startDate = moment();
+                    } else {
+                        startDate = moment(productAddEvent.created_at);
                     }
-                });
+
+                    const nickname = member.status === 'gift' ? 'Gift subscription' : 'Complimentary';
+
+                    member.subscriptions.push({
+                        id: '',
+                        tier: product,
+                        customer: {
+                            id: '',
+                            name: member.name,
+                            email: member.email
+                        },
+                        plan: {
+                            id: '',
+                            nickname,
+                            interval: 'year',
+                            currency: product.currency,
+                            amount: 0
+                        },
+                        status: 'active',
+                        start_date: startDate,
+                        default_payment_card_last4: '****',
+                        cancel_at_period_end: false,
+                        cancellation_reason: null,
+                        current_period_end: product.expiry_at ? moment(product.expiry_at) : null,
+                        price: {
+                            id: '',
+                            price_id: '',
+                            nickname,
+                            amount: 0,
+                            interval: 'year',
+                            type: 'recurring',
+                            currency: product.currency,
+                            product: {
+                                id: '',
+                                product_id: product.id
+                            }
+                        }
+                    });
+                }
             }
         }
 
