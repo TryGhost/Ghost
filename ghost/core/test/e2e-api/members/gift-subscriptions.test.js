@@ -638,6 +638,36 @@ describe('Gift Subscriptions', function () {
                     .expectStatus(200);
 
                 assert.equal(memberResponse.body.status, 'gift');
+                assert.equal(
+                    memberResponse.body.subscriptions.length,
+                    1,
+                    'Gift members should receive a synthetic gift subscription in the member API'
+                );
+                assert.equal(
+                    memberResponse.body.subscriptions[0].tier.id,
+                    paidProduct.id,
+                    'The gift subscription should point at the redeemed tier'
+                );
+                assert.equal(
+                    memberResponse.body.subscriptions[0].plan.nickname,
+                    'Gift subscription',
+                    'The synthetic subscription plan should be marked as a gift'
+                );
+                assert.equal(
+                    memberResponse.body.subscriptions[0].price.nickname,
+                    'Gift subscription',
+                    'The synthetic subscription price should be marked as a gift'
+                );
+                assert.equal(
+                    memberResponse.body.subscriptions[0].plan.currency.toLowerCase(),
+                    paidProduct.get('currency').toLowerCase(),
+                    'The gift subscription plan should reuse the tier currency'
+                );
+                assert.equal(
+                    memberResponse.body.subscriptions[0].price.currency.toLowerCase(),
+                    paidProduct.get('currency').toLowerCase(),
+                    'The gift subscription price should reuse the tier currency'
+                );
 
                 // Verify staff notification email was sent
                 mockManager.assert.sentEmail({

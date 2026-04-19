@@ -312,10 +312,12 @@ describe('MemberBreadService', function () {
             const productsJSON = [
                 {
                     id: 'prod_123',
+                    currency: 'usd',
                     expiry_at: new Date('2023-10-13T15:15:00')
                 },
                 {
                     id: 'prod_456',
+                    currency: 'cad',
                     expiry_at: new Date('2023-10-13T15:15:00')
                 }
             ];
@@ -334,6 +336,11 @@ describe('MemberBreadService', function () {
             const subscriptionsJSON = [
                 {
                     subscription_id: 'sub_123',
+                    plan: {
+                        amount: 1200,
+                        interval: 'year',
+                        currency: 'usd'
+                    },
                     price: {
                         product: {
                             product_id: productsJSON[0].id
@@ -367,6 +374,7 @@ describe('MemberBreadService', function () {
 
             memberModelStub.toJSON.returns({
                 ...memberModelJSON,
+                status: 'comped',
                 subscriptions: subscriptionsJSON,
                 products: productsJSON,
                 productEvents: productEventsJSON
@@ -395,7 +403,7 @@ describe('MemberBreadService', function () {
                     id: '',
                     nickname: 'Complimentary',
                     interval: 'year',
-                    currency: 'USD',
+                    currency: productsJSON[1].currency,
                     amount: 0
                 },
                 status: 'active',
@@ -411,10 +419,145 @@ describe('MemberBreadService', function () {
                     amount: 0,
                     interval: 'year',
                     type: 'recurring',
-                    currency: 'USD',
+                    currency: productsJSON[1].currency,
                     product: {
                         id: '',
                         product_id: productsJSON[1].id
+                    }
+                }
+            });
+        });
+
+        it('does not synthesize complimentary subscriptions for paid members with extra products', async function () {
+            const productsJSON = [
+                {
+                    id: 'prod_123',
+                    currency: 'usd',
+                    expiry_at: new Date('2023-10-13T15:15:00')
+                },
+                {
+                    id: 'prod_456',
+                    currency: 'cad',
+                    expiry_at: new Date('2023-10-13T15:15:00')
+                }
+            ];
+            const subscriptionsJSON = [
+                {
+                    subscription_id: 'sub_123',
+                    plan: {
+                        amount: 1200,
+                        interval: 'year',
+                        currency: 'usd'
+                    },
+                    price: {
+                        product: {
+                            product_id: productsJSON[0].id
+                        }
+                    },
+                    status: 'active',
+                    product_id: productsJSON[0].id
+                }
+            ];
+            const subscriptionModels = subscriptionsJSON.map((subscription, index) => {
+                const model = {
+                    id: `${index + 1}`,
+                    get: sinon.stub()
+                };
+
+                model.get.withArgs('subscription_id').returns(subscription.subscription_id);
+                model.get.withArgs('offer_id').returns(undefined);
+
+                return model;
+            });
+
+            memberModelStub.related
+                .withArgs('stripeSubscriptions')
+                .returns(subscriptionModels);
+
+            memberModelStub.toJSON.returns({
+                ...memberModelJSON,
+                status: 'paid',
+                subscriptions: subscriptionsJSON,
+                products: productsJSON,
+                productEvents: []
+            });
+
+            memberRepositoryStub.isActiveSubscriptionStatus = sinon.stub().returns(true);
+
+            const memberBreadService = getService();
+            const member = await memberBreadService.read({id: MEMBER_ID});
+
+            assert.equal(member.subscriptions.length, 1);
+            assert.equal(member.subscriptions[0].subscription_id, subscriptionsJSON[0].subscription_id);
+        });
+
+        it('returns a member with a gift subscription', async function () {
+            const productsJSON = [
+                {
+                    id: 'prod_789',
+                    currency: 'aud',
+                    expiry_at: new Date('2023-10-13T15:15:00')
+                }
+            ];
+            const productEventsJSON = [
+                {
+                    product_id: productsJSON[0].id,
+                    created_at: new Date('2023-09-13T15:15:00'),
+                    action: 'added'
+                }
+            ];
+
+            memberModelStub.related
+                .withArgs('stripeSubscriptions')
+                .returns([]);
+
+            memberModelStub.toJSON.returns({
+                ...memberModelJSON,
+                status: 'gift',
+                subscriptions: [],
+                products: productsJSON,
+                productEvents: productEventsJSON
+            });
+
+            memberRepositoryStub.isActiveSubscriptionStatus = sinon.stub().returns(true);
+
+            const memberBreadService = getService();
+            const member = await memberBreadService.read({id: MEMBER_ID});
+
+            assert.equal(member.subscriptions.length, 1);
+
+            sinon.assert.match(member.subscriptions[0], {
+                id: '',
+                tier: productsJSON[0],
+                customer: {
+                    id: '',
+                    name: memberModelJSON.name,
+                    email: memberModelJSON.email
+                },
+                plan: {
+                    id: '',
+                    nickname: 'Gift subscription',
+                    interval: 'year',
+                    currency: productsJSON[0].currency,
+                    amount: 0
+                },
+                status: 'active',
+                start_date: moment(productEventsJSON[0].created_at),
+                default_payment_card_last4: '****',
+                cancel_at_period_end: false,
+                cancellation_reason: null,
+                current_period_end: moment(productsJSON[0].expiry_at),
+                price: {
+                    id: '',
+                    price_id: '',
+                    nickname: 'Gift subscription',
+                    amount: 0,
+                    interval: 'year',
+                    type: 'recurring',
+                    currency: productsJSON[0].currency,
+                    product: {
+                        id: '',
+                        product_id: productsJSON[0].id
                     }
                 }
             });

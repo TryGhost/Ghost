@@ -1415,6 +1415,36 @@ describe('Members API', function () {
         const updatedMember = body2.members[0];
         assert.equal(updatedMember.status, 'comped', 'A comped member should have the comped status');
         assert.equal(updatedMember.tiers.length, 1, 'The member should have one product');
+        assert.equal(
+            updatedMember.subscriptions.length,
+            1,
+            'The member should have one synthetic complimentary subscription'
+        );
+        assert.equal(
+            updatedMember.subscriptions[0].tier.id,
+            product.id,
+            'The subscription should point at the assigned tier'
+        );
+        assert.equal(
+            updatedMember.subscriptions[0].plan.nickname,
+            'Complimentary',
+            'The subscription plan should be marked as complimentary'
+        );
+        assert.equal(
+            updatedMember.subscriptions[0].price.nickname,
+            'Complimentary',
+            'The subscription price should be marked as complimentary'
+        );
+        assert.equal(
+            updatedMember.subscriptions[0].plan.currency.toLowerCase(),
+            product.get('currency').toLowerCase(),
+            'The synthetic subscription plan should reuse the tier currency'
+        );
+        assert.equal(
+            updatedMember.subscriptions[0].price.currency.toLowerCase(),
+            product.get('currency').toLowerCase(),
+            'The synthetic subscription price should reuse the tier currency'
+        );
 
         await assertMemberEvents({
             eventType: 'MemberStatusEvent',
@@ -1961,6 +1991,16 @@ describe('Members API', function () {
 
         const beforeMember = body2.members[0];
         assert.equal(beforeMember.tiers.length, 2, 'The member should have two tiers now');
+        assert.equal(
+            beforeMember.subscriptions.length,
+            1,
+            'Only the Stripe-backed paid subscription should be returned while the member status is paid'
+        );
+        assert.equal(
+            beforeMember.subscriptions[0].tier.id,
+            memberWithPaidSubscription.tiers[0].id,
+            'The returned subscription should stay attached to the paid tier'
+        );
 
         // Now try to remove only the complimentary one
         const compedPayload = {
