@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import {compExpiry, getDiscountPrice, getOfferDisplayData, getSubscriptionData, isActive, isCanceled, isComplimentary, isSetToCancel, priceLabel, trialUntil, validUntil, validityDetails} from 'ghost-admin/utils/subscription-data';
+import {compExpiry, getDiscountPrice, getOfferDisplayData, getSubscriptionData, giftExpiry, isActive, isCanceled, isComplimentary, isGift, isSetToCancel, priceLabel, trialUntil, validUntil, validityDetails} from 'ghost-admin/utils/subscription-data';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 
@@ -107,13 +107,25 @@ describe('Unit: Util: subscription-data', function () {
 
     describe('isComplimentary', function () {
         it('returns true for complimentary subscriptions', function () {
-            let sub = {id: null};
+            let sub = {id: null, plan: {nickname: 'Complimentary'}};
             expect(isComplimentary(sub)).to.be.true;
         });
 
         it('returns false for paid subscriptions', function () {
             let sub = {id: 'sub_123'};
             expect(isComplimentary(sub)).to.be.false;
+        });
+    });
+
+    describe('isGift', function () {
+        it('returns true for gift subscriptions', function () {
+            let sub = {id: null, plan: {nickname: 'Gift subscription'}};
+            expect(isGift(sub)).to.be.true;
+        });
+
+        it('returns false for complimentary subscriptions', function () {
+            let sub = {id: null, plan: {nickname: 'Complimentary'}};
+            expect(isGift(sub)).to.be.false;
         });
     });
 
@@ -164,14 +176,52 @@ describe('Unit: Util: subscription-data', function () {
     });
 
     describe('compExpiry', function () {
-        it('returns the complimentary expiry date for complimentary subscriptions', function () {
-            let sub = {id: null, tier: {expiry_at: moment.utc('2021-05-31').toISOString()}};
+        it('returns the expiry date for complimentary subscriptions', function () {
+            let sub = {
+                id: null,
+                plan: {nickname: 'Complimentary'},
+                tier: {expiry_at: moment.utc('2021-05-31').toISOString()}
+            };
             expect(compExpiry(sub)).to.equal('31 May 2021');
+        });
+
+        it('returns undefined for gift subscriptions', function () {
+            let sub = {
+                id: null,
+                plan: {nickname: 'Gift subscription'},
+                tier: {expiry_at: moment.utc('2021-05-31').toISOString()}
+            };
+            expect(compExpiry(sub)).to.be.undefined;
         });
 
         it('returns undefined for paid subscriptions', function () {
             let sub = {id: 'sub_123'};
             expect(compExpiry(sub)).to.be.undefined;
+        });
+    });
+
+    describe('giftExpiry', function () {
+        it('returns the expiry date for gift subscriptions', function () {
+            let sub = {
+                id: null,
+                plan: {nickname: 'Gift subscription'},
+                tier: {expiry_at: moment.utc('2021-05-31').toISOString()}
+            };
+            expect(giftExpiry(sub)).to.equal('31 May 2021');
+        });
+
+        it('returns undefined for complimentary subscriptions', function () {
+            let sub = {
+                id: null,
+                plan: {nickname: 'Complimentary'},
+                tier: {expiry_at: moment.utc('2021-05-31').toISOString()}
+            };
+            expect(giftExpiry(sub)).to.be.undefined;
+        });
+
+        it('returns undefined for paid subscriptions', function () {
+            let sub = {id: 'sub_123'};
+            expect(giftExpiry(sub)).to.be.undefined;
         });
     });
 
@@ -210,6 +260,14 @@ describe('Unit: Util: subscription-data', function () {
                 compExpiry: undefined
             };
             expect(validityDetails(data)).to.equal('');
+        });
+
+        it('returns "Expires {giftExpiry}" for gift subscriptions', function () {
+            let data = {
+                isGift: true,
+                giftExpiry: '31 May 2021'
+            };
+            expect(validityDetails(data)).to.equal('Expires 31 May 2021');
         });
 
         it('returns "Ended {validUntil}" for canceled subscriptions', function () {
@@ -261,7 +319,9 @@ describe('Unit: Util: subscription-data', function () {
 
             expect(data).to.include({
                 isComplimentary: false,
+                isGift: false,
                 compExpiry: undefined,
+                giftExpiry: undefined,
                 hasEnded: false,
                 validUntil: '31 May 2021',
                 willEndSoon: false,
@@ -288,7 +348,9 @@ describe('Unit: Util: subscription-data', function () {
 
             expect(data).to.include({
                 isComplimentary: false,
+                isGift: false,
                 compExpiry: undefined,
+                giftExpiry: undefined,
                 hasEnded: false,
                 validUntil: '31 May 2222',
                 willEndSoon: false,
@@ -320,7 +382,9 @@ describe('Unit: Util: subscription-data', function () {
 
             expect(data).to.include({
                 isComplimentary: false,
+                isGift: false,
                 compExpiry: undefined,
+                giftExpiry: undefined,
                 hasEnded: false,
                 validUntil: '31 May 2222',
                 willEndSoon: false,
@@ -347,7 +411,9 @@ describe('Unit: Util: subscription-data', function () {
 
             expect(data).to.include({
                 isComplimentary: false,
+                isGift: false,
                 compExpiry: undefined,
+                giftExpiry: undefined,
                 hasEnded: true,
                 validUntil: '',
                 willEndSoon: false,
@@ -374,7 +440,9 @@ describe('Unit: Util: subscription-data', function () {
 
             expect(data).to.include({
                 isComplimentary: false,
+                isGift: false,
                 compExpiry: undefined,
+                giftExpiry: undefined,
                 hasEnded: false,
                 validUntil: '31 May 2021',
                 willEndSoon: true,
@@ -391,6 +459,9 @@ describe('Unit: Util: subscription-data', function () {
                 cancel_at_period_end: false,
                 current_period_end: '2021-05-31',
                 trial_end_at: null,
+                plan: {
+                    nickname: 'Complimentary'
+                },
                 tier: {
                     expiry_at: null
                 },
@@ -404,7 +475,9 @@ describe('Unit: Util: subscription-data', function () {
 
             expect(data).to.include({
                 isComplimentary: true,
+                isGift: false,
                 compExpiry: undefined,
+                giftExpiry: undefined,
                 hasEnded: false,
                 validUntil: '31 May 2021',
                 willEndSoon: false,
@@ -421,6 +494,9 @@ describe('Unit: Util: subscription-data', function () {
                 cancel_at_period_end: false,
                 current_period_end: '2021-05-31',
                 trial_end_at: null,
+                plan: {
+                    nickname: 'Complimentary'
+                },
                 tier: {
                     expiry_at: moment.utc('2021-05-31').toISOString()
                 },
@@ -434,12 +510,49 @@ describe('Unit: Util: subscription-data', function () {
 
             expect(data).to.include({
                 isComplimentary: true,
+                isGift: false,
                 compExpiry: '31 May 2021',
+                giftExpiry: undefined,
                 hasEnded: false,
                 validUntil: '31 May 2021',
                 willEndSoon: false,
                 trialUntil: undefined,
                 priceLabel: 'Complimentary',
+                validityDetails: ' – Expires 31 May 2021'
+            });
+        });
+
+        it('returns the correct data for a gift subscription with an expiration date', function () {
+            let sub = {
+                id: null,
+                status: 'active',
+                cancel_at_period_end: false,
+                current_period_end: '2021-05-31',
+                trial_end_at: null,
+                plan: {
+                    nickname: 'Gift subscription'
+                },
+                tier: {
+                    expiry_at: moment.utc('2021-05-31').toISOString()
+                },
+                price: {
+                    currency: 'usd',
+                    amount: 0,
+                    nickname: 'Gift subscription'
+                }
+            };
+            let data = getSubscriptionData(sub);
+
+            expect(data).to.include({
+                isComplimentary: false,
+                isGift: true,
+                compExpiry: undefined,
+                giftExpiry: '31 May 2021',
+                hasEnded: false,
+                validUntil: '31 May 2021',
+                willEndSoon: false,
+                trialUntil: undefined,
+                priceLabel: 'Gift subscription',
                 validityDetails: ' – Expires 31 May 2021'
             });
         });
