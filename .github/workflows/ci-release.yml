@@ -14,6 +14,7 @@ concurrency:
 # here — otherwise the ci: job's `permissions:` block exceeds the caller
 # workflow's permissions and GitHub rejects the run with startup_failure.
 permissions:
+  actions: read
   contents: write
   packages: write
   id-token: write
@@ -23,6 +24,7 @@ jobs:
     uses: ./.github/workflows/ci.yml
     secrets: inherit
     permissions:
+      actions: read
       contents: write
       packages: write
       id-token: write
