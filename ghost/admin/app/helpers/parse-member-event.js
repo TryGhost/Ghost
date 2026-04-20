@@ -141,7 +141,11 @@ export default class ParseMemberEventHelper extends Helper {
         }
 
         if (event.type === 'gift_purchase_event') {
-            icon = 'subscriptions';
+            icon = 'gift';
+        }
+
+        if (event.type === 'gift_redemption_event') {
+            icon = 'gift';
         }
 
         if (event.type === 'email_change_event') {
@@ -267,6 +271,11 @@ export default class ParseMemberEventHelper extends Helper {
             const cadenceLabel = duration === 1 ? event.data.cadence : event.data.cadence + 's';
 
             return `Purchased a gift subscription for ${formattedAmount} (${tierName}, ${duration} ${cadenceLabel})`;
+        }
+
+        if (event.type === 'gift_redemption_event') {
+            const tierName = event.data.tier_name;
+            return `Started paid subscription (${tierName}) via gift`;
         }
     }
 
