@@ -1,10 +1,10 @@
 const moment = require('moment');
 const errors = require('@tryghost/errors');
 
-const urlUtils = require('../../../../shared/url-utils');
-const getSignedAdminToken = require('./scheduling-auth-token');
+const urlUtils = require('../../../shared/url-utils');
+const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
 
-class PostScheduler {
+class PostSchedulerService {
     constructor({apiUrl, integration, adapter, scheduledResources, events} = {}) {
         if (!apiUrl) {
             throw new errors.IncorrectUsageError({message: 'post-scheduling: no apiUrl was provided'});
@@ -56,10 +56,7 @@ class PostScheduler {
         const signedAdminToken = getSignedAdminToken({
             publishedAt,
             apiUrl,
-            key: {
-                id: integration.api_keys[0].id,
-                secret: integration.api_keys[0].secret
-            }
+            integration
         });
         let url = `${urlUtils.urlJoin(apiUrl, 'schedules', resource, model.get('id'))}/?token=${signedAdminToken}`;
 
@@ -75,4 +72,4 @@ class PostScheduler {
     }
 }
 
-module.exports = PostScheduler;
+module.exports = PostSchedulerService;
