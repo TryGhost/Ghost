@@ -23,7 +23,7 @@ Your gift subscription to ${data.siteTitle} ends on ${data.gift.consumesAt}.
 
 Gift subscription: ${data.gift.tierName} • ${data.gift.cadenceLabel}
 
-To keep your access, upgrade to a paid subscription before your gift ends:
+To keep your access, continue with a paid subscription before your gift ends:
 ${data.gift.manageSubscriptionUrl}
 
 ---
