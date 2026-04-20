@@ -153,7 +153,9 @@ if (!packagedPkg.pnpm?.overrides || Object.keys(packagedPkg.pnpm.overrides).leng
 }
 
 // 4. Create tarball
-// ghost-cli expects a package/ prefix inside the tarball.
+// Uses the standard npm tarball layout (a top-level `package/` directory), which
+// is what `npm pack <anything>` produces and what Ghost-CLI expects since it
+// installs the archive via pnpm/npm.
 const version = pkg.version;
 const tgzPath = path.join(CORE_DIR, `ghost-${version}.tgz`);
 
