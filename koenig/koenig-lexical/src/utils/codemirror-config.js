@@ -1,8 +1,10 @@
 import {EditorView, keymap, lineNumbers} from '@codemirror/view';
 import {HighlightStyle, syntaxHighlighting} from '@codemirror/language';
-import {history, standardKeymap} from '@codemirror/commands';
+import {history, historyKeymap, standardKeymap} from '@codemirror/commands';
 import {minimalSetup} from '@uiw/codemirror-extensions-basic-setup';
 import {tags as t} from '@lezer/highlight';
+
+const disableHistoryGroupingForTests = import.meta.env.VITE_TEST;
 
 // Static theme and highlight objects — hoisted to module scope to avoid
 // recreating them on every render. CodeMirror tracks extensions by reference
@@ -129,9 +131,9 @@ const sharedExtensions = [
     EditorView.lineWrapping,
     lineNumbers(),
     minimalSetup({defaultKeymap: false, history: false}),
-    keymap.of(standardKeymap),
+    keymap.of([...historyKeymap, ...standardKeymap]),
     history({
-        joinToEvent: process.env.NODE_ENV === 'test' ? () => false : undefined
+        joinToEvent: disableHistoryGroupingForTests ? () => false : undefined
     })
 ];
 

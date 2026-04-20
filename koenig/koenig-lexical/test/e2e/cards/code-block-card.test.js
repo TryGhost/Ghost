@@ -1,8 +1,15 @@
-import {assertHTML, focusEditor, html, initialize, isMac, pasteText, selectBackwards} from '../../utils/e2e';
+import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, pasteText, selectBackwards} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
+async function pressCodeEditorShortcut(page, key) {
+    const modifier = await page.evaluate(() => {
+        return navigator.platform.includes('Mac') ? 'Meta' : 'Control';
+    });
+
+    await page.keyboard.press(`${modifier}+${key}`);
+}
+
 test.describe('Code Block card', async () => {
-    const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
     let page;
 
     test.beforeAll(async ({browser}) => {
@@ -178,7 +185,7 @@ test.describe('Code Block card', async () => {
         await page.keyboard.press('Enter');
         await page.keyboard.press('Backspace');
         await page.keyboard.press('Backspace');
-        await page.keyboard.press(`${ctrlOrCmd}+z`);
+        await pressCodeEditorShortcut(page, 'z');
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -219,13 +226,13 @@ test.describe('Code Block card', async () => {
         await expect(page.getByText('Here are some words')).toBeVisible();
         await page.keyboard.press('Backspace');
         await expect(page.getByText('Here are some word')).toBeVisible();
-        await page.keyboard.press(`${ctrlOrCmd}+z`);
+        await pressCodeEditorShortcut(page, 'z');
         await expect(page.getByText('Here are some words')).toBeVisible();
         await page.keyboard.press('Escape');
         await page.click('[data-testid="codeblock-caption"]');
         await page.keyboard.type('My caption');
         await page.keyboard.press('Backspace');
-        await page.keyboard.press(`${ctrlOrCmd}+z`);
+        await pressCodeEditorShortcut(page, 'z');
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -294,7 +301,7 @@ test.describe('Code Block card', async () => {
         // see https://github.com/TryGhost/Product/issues/3785
         await selectBackwards(page, 4);
 
-        await page.keyboard.press(`${ctrlOrCmd}+x`);
+        await page.keyboard.press(`${ctrlOrCmd()}+x`);
 
         await assertHTML(page, html`
             <div>
