@@ -2,16 +2,16 @@ const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const moment = require('moment');
-const testUtils = require('../../../../../utils');
-const models = require('../../../../../../core/server/models');
-const events = require('../../../../../../core/server/lib/common/events');
-const schedulingUtils = require('../../../../../../core/server/adapters/scheduling/utils');
-const SchedulingDefault = require('../../../../../../core/server/adapters/scheduling/scheduling-default');
-const urlUtils = require('../../../../../../core/shared/url-utils');
-const PostScheduler = require('../../../../../../core/server/adapters/scheduling/post-scheduling/PostScheduler');
+const testUtils = require('../../../../utils');
+const models = require('../../../../../core/server/models');
+const events = require('../../../../../core/server/lib/common/events');
+const schedulingUtils = require('../../../../../core/server/adapters/scheduling/utils');
+const SchedulingDefault = require('../../../../../core/server/adapters/scheduling/scheduling-default');
+const urlUtils = require('../../../../../core/shared/url-utils');
+const PostSchedulerService = require('../../../../../core/server/services/post-scheduling/post-scheduler-service');
 const nock = require('nock');
 
-describe('Scheduling: Post Scheduler', function () {
+describe('Post Scheduler Service', function () {
     let adapter;
 
     before(function () {
@@ -51,7 +51,7 @@ describe('Scheduling: Post Scheduler', function () {
                     .query(true)
                     .reply(200);
 
-                new PostScheduler({
+                new PostSchedulerService({
                     apiUrl: 'http://scheduler.local:1111/',
                     integration: {
                         api_keys: [{
@@ -87,7 +87,7 @@ describe('Scheduling: Post Scheduler', function () {
         describe('error', function () {
             it('no apiUrl parameter passed', function () {
                 try {
-                    new PostScheduler();
+                    new PostSchedulerService();
                     throw new Error('should have thrown');
                 } catch (err) {
                     assert.equal((err instanceof errors.IncorrectUsageError), true);

@@ -1,7 +1,5 @@
-const events = require('../../../lib/common/events');
-const localUtils = require('../utils');
-const PostScheduler = require('./PostScheduler');
-const getSchedulerIntegration = require('./scheduler-integration');
+const events = require('../../lib/common/events');
+const PostSchedulerService = require('./post-scheduler-service');
 const {sequence} = require('@tryghost/promise');
 
 /**
@@ -9,7 +7,7 @@ const {sequence} = require('@tryghost/promise');
  * @return {Promise}
  */
 const loadScheduledResources = async function () {
-    const api = require('../../../api').endpoints;
+    const api = require('../../api').endpoints;
     const SCHEDULED_RESOURCES = ['post', 'page'];
 
     // Fetches all scheduled resources(posts/pages) with default API
@@ -30,10 +28,7 @@ const loadScheduledResources = async function () {
     }, {});
 };
 
-const init = async (options) => {
-    const integration = await getSchedulerIntegration();
-    const adapter = localUtils.createAdapter();
-
+const init = async ({adapter, apiUrl, integration}) => {
     let scheduledResources;
 
     if (!adapter.rescheduleOnBoot) {
@@ -42,8 +37,8 @@ const init = async (options) => {
         scheduledResources = await loadScheduledResources();
     }
 
-    return new PostScheduler({
-        apiUrl: options.apiUrl,
+    return new PostSchedulerService({
+        apiUrl,
         integration,
         adapter,
         scheduledResources,
@@ -51,4 +46,4 @@ const init = async (options) => {
     });
 };
 
-module.exports = init;
+exports.init = init;
