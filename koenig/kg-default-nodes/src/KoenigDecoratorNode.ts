@@ -1,5 +1,6 @@
 /* c8 ignore start */
 import {DecoratorNode} from 'lexical';
+import type {LexicalEditor} from 'lexical';
 import type {ExportDOMOptions, ExportDOMOutput} from './export-dom.js';
 
 export class KoenigDecoratorNode extends DecoratorNode<unknown> {
@@ -14,7 +15,7 @@ export class KoenigDecoratorNode extends DecoratorNode<unknown> {
 
 export type KoenigCard = KoenigDecoratorNode & {
     isKoenigCard(): true;
-    exportDOM(options: ExportDOMOptions): ExportDOMOutput;
+    exportDOM(editor: LexicalEditor, options?: ExportDOMOptions): ExportDOMOutput;
     hasDynamicData(): boolean;
     getDynamicData?(options: ExportDOMOptions): Promise<{key: number; data: unknown}>;
 };

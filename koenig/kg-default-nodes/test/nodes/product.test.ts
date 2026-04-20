@@ -243,7 +243,7 @@ describe('ProductNode', function () {
                 productUrl: 'https://example.com/product/ok'
             };
             const productNode = $createProductNode(payload);
-            const result = productNode.exportDOM(exportOptions);
+            const result = productNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
@@ -265,7 +265,7 @@ describe('ProductNode', function () {
                 productUrl: 'https://example.com/product/ok'
             };
             const productNode = $createProductNode(payload);
-            const result = productNode.exportDOM(exportOptions);
+            const result = productNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
@@ -279,7 +279,7 @@ describe('ProductNode', function () {
                 productDescription: ''
             };
             const productNode = $createProductNode(payload);
-            const result = productNode.exportDOM(exportOptions);
+            const result = productNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.equal('<span></span>');
@@ -290,7 +290,7 @@ describe('ProductNode', function () {
                 productTitle: 'Just a title'
             };
             const productNode = $createProductNode(payload);
-            const result = productNode.exportDOM(exportOptions);
+            const result = productNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
@@ -303,7 +303,7 @@ describe('ProductNode', function () {
                 productDescription: 'Just a description'
             };
             const productNode = $createProductNode(payload);
-            const result = productNode.exportDOM(exportOptions);
+            const result = productNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
@@ -318,7 +318,7 @@ describe('ProductNode', function () {
                 productUrl: 'https://example.com/product/ok'
             };
             const productNode = $createProductNode(payload);
-            const result = productNode.exportDOM(exportOptions);
+            const result = productNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
@@ -343,7 +343,7 @@ describe('ProductNode', function () {
             };
 
             const productNode = $createProductNode(payload);
-            const result = productNode.exportDOM({...exportOptions, ...options});
+            const result = productNode.exportDOM(editor, {...exportOptions, ...options});
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
@@ -371,7 +371,7 @@ describe('ProductNode', function () {
             };
 
             const productNode = $createProductNode(payload);
-            const result = productNode.exportDOM({...exportOptions, ...options});
+            const result = productNode.exportDOM(editor, {...exportOptions, ...options});
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
@@ -448,7 +448,7 @@ describe('ProductNode', function () {
             };
 
             const productNode = $createProductNode(payload);
-            const result = productNode.exportDOM({...exportOptions, ...options});
+            const result = productNode.exportDOM(editor, {...exportOptions, ...options});
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
@@ -472,7 +472,7 @@ describe('ProductNode', function () {
             };
 
             const productNode = $createProductNode(payload);
-            const result = productNode.exportDOM({...exportOptions, ...options});
+            const result = productNode.exportDOM(editor, {...exportOptions, ...options});
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
@@ -496,7 +496,7 @@ describe('ProductNode', function () {
             };
 
             const productNode = $createProductNode(payload);
-            const result = productNode.exportDOM({...exportOptions, ...options});
+            const result = productNode.exportDOM(editor, {...exportOptions, ...options});
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
@@ -519,7 +519,7 @@ describe('ProductNode', function () {
             };
 
             const productNode = $createProductNode(payload);
-            const result = productNode.exportDOM({...exportOptions, ...options});
+            const result = productNode.exportDOM(editor, {...exportOptions, ...options});
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(`
@@ -543,7 +543,7 @@ describe('ProductNode', function () {
             };
 
             const productNode = $createProductNode(payload);
-            const result = productNode.exportDOM({...exportOptions, ...options});
+            const result = productNode.exportDOM(editor, {...exportOptions, ...options});
             const element = result.element as HTMLElement;
 
             return element.outerHTML;

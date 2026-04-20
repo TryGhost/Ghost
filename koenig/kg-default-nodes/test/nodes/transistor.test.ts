@@ -171,7 +171,7 @@ describe('TransistorNode', function () {
 
         it('renders an iframe with the correct base URL', editorTest(function () {
             const transistorNode = new TransistorNode({visibility: publicVisibility});
-            const {element} = transistorNode.exportDOM(exportOptions);
+            const {element} = transistorNode.exportDOM(editor, exportOptions);
             const el = element as HTMLElement;
 
             assert.equal(el.tagName, 'FIGURE');
@@ -197,7 +197,7 @@ describe('TransistorNode', function () {
 
         it('includes ctx param when siteUuid is in options', editorTest(function () {
             const transistorNode = new TransistorNode({visibility: publicVisibility});
-            const {element} = transistorNode.exportDOM({...exportOptions, siteUuid: 'abc123'});
+            const {element} = transistorNode.exportDOM(editor, {...exportOptions, siteUuid: 'abc123'});
             const el = element as HTMLElement;
 
             const iframe = el.querySelector('iframe');
@@ -206,7 +206,7 @@ describe('TransistorNode', function () {
 
         it('does not include ctx param when siteUuid is not provided', editorTest(function () {
             const transistorNode = new TransistorNode({visibility: publicVisibility});
-            const {element} = transistorNode.exportDOM(exportOptions);
+            const {element} = transistorNode.exportDOM(editor, exportOptions);
             const el = element as HTMLElement;
 
             const iframe = el.querySelector('iframe');
@@ -215,7 +215,7 @@ describe('TransistorNode', function () {
 
         it('includes background detection script that reads data-src', editorTest(function () {
             const transistorNode = new TransistorNode({visibility: publicVisibility});
-            const {element} = transistorNode.exportDOM(exportOptions);
+            const {element} = transistorNode.exportDOM(editor, exportOptions);
             const el = element as HTMLElement;
 
             const script = el.querySelector('script');
@@ -227,7 +227,7 @@ describe('TransistorNode', function () {
 
         it('includes noscript fallback with src', editorTest(function () {
             const transistorNode = new TransistorNode({visibility: publicVisibility});
-            const {element} = transistorNode.exportDOM(exportOptions);
+            const {element} = transistorNode.exportDOM(editor, exportOptions);
             const el = element as HTMLElement;
 
             const noscript = el.querySelector('noscript');
@@ -241,7 +241,7 @@ describe('TransistorNode', function () {
             exportOptions.target = 'web';
             // Default visibility has nonMember: false
             const transistorNode = new TransistorNode({});
-            const {element} = transistorNode.exportDOM(exportOptions);
+            const {element} = transistorNode.exportDOM(editor, exportOptions);
             const el = element as HTMLTextAreaElement;
 
             // Should be wrapped in visibility gating
@@ -257,7 +257,7 @@ describe('TransistorNode', function () {
                     email: {memberSegment: 'status:-free'} // paid only
                 }
             });
-            const result = transistorNode.exportDOM(exportOptions);
+            const result = transistorNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             const type = result.type;
 

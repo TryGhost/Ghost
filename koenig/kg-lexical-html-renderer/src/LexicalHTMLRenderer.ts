@@ -80,7 +80,7 @@ export default class LexicalHTMLRenderer {
         // render
         let html = '';
         editor.update(async () => {
-            html = $convertToHtmlString(options);
+            html = $convertToHtmlString(editor, options);
         });
 
         return html;

@@ -163,7 +163,7 @@ describe('BookmarkNode', function () {
     describe('exportDOM', function () {
         it('creates an bookmark card', editorTest(function () {
             const bookmarkNode = $createBookmarkNode(dataset);
-            const result = bookmarkNode.exportDOM(exportOptions);
+            const result = bookmarkNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             const metadata = dataset.metadata as Record<string, unknown>;
 
@@ -197,7 +197,7 @@ describe('BookmarkNode', function () {
                 target: 'email'
             };
             const bookmarkNode = $createBookmarkNode(dataset);
-            const result = bookmarkNode.exportDOM({...exportOptions, ...options});
+            const result = bookmarkNode.exportDOM(editor, {...exportOptions, ...options});
             const element = result.element as HTMLElement;
 
             element.innerHTML.should.containEql('<!--[if !mso !vml]-->');
@@ -208,7 +208,7 @@ describe('BookmarkNode', function () {
 
         it('renders an empty span with a missing src', editorTest(function () {
             const bookmarkNode = $createBookmarkNode();
-            const result = bookmarkNode.exportDOM(exportOptions);
+            const result = bookmarkNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.equal('<span></span>');
@@ -228,7 +228,7 @@ describe('BookmarkNode', function () {
                 caption: '<p dir="ltr"><span style="white-space: pre-wrap;">This is a </span><b><strong style="white-space: pre-wrap;">caption</strong></b></p>'
             };
             const bookmarkNode = $createBookmarkNode(dataset);
-            const result = bookmarkNode.exportDOM(exportOptions);
+            const result = bookmarkNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             // Check that text fields are escaped
@@ -258,7 +258,7 @@ describe('BookmarkNode', function () {
                 caption: '<p dir="ltr"><span style="white-space: pre-wrap;">This is a </span><b><strong style="white-space: pre-wrap;">caption</strong></b></p>'
             };
             const bookmarkNode = $createBookmarkNode(dataset);
-            const result = bookmarkNode.exportDOM({...exportOptions, ...options});
+            const result = bookmarkNode.exportDOM(editor, {...exportOptions, ...options});
             const element = result.element as HTMLElement;
 
             // Check that email template is used

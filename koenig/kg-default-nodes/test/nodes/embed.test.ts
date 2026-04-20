@@ -172,7 +172,7 @@ describe('EmbedNode', function () {
     describe('exportDOM', function () {
         it('renders embed html with no metadata', editorTest(function () {
             const embedNode = $createEmbedNode(dataset);
-            const {element} = embedNode.exportDOM(exportOptions);
+            const {element} = embedNode.exportDOM(editor, exportOptions);
 
             const expectedHtml = `
                 <figure class="kg-card kg-embed-card kg-card-hascaption">
@@ -205,7 +205,7 @@ describe('EmbedNode', function () {
                 },
                 caption: 'caption text'
             });
-            const {element} = embedNode.exportDOM(exportOptions);
+            const {element} = embedNode.exportDOM(editor, exportOptions);
 
             const expectedHtml = `
                 <figure class="kg-card kg-embed-card kg-card-hascaption">
@@ -262,7 +262,7 @@ describe('EmbedNode', function () {
                 },
                 caption: 'caption text'
             });
-            const {element} = embedNode.exportDOM(exportOptions);
+            const {element} = embedNode.exportDOM(editor, exportOptions);
 
             (element as HTMLElement).outerHTML.should.containEql('<blockquote class="twitter-tweet"');
         }));
@@ -334,7 +334,7 @@ describe('EmbedNode', function () {
                 },
                 caption: 'caption text'
             });
-            const {element} = embedNode.exportDOM({...exportOptions, ...options});
+            const {element} = embedNode.exportDOM(editor, {...exportOptions, ...options});
 
             (element as HTMLElement).outerHTML.should.containEql('<table cellspacing="0" cellpadding="0" border="0" class="kg-twitter-card">');
             (element as HTMLElement).outerHTML.should.containEql(`<a href="https://twitter.com/twitter/status/${tweetData.id}"`);
@@ -357,7 +357,7 @@ describe('EmbedNode', function () {
                 },
                 caption: 'caption text'
             });
-            const {element} = embedNode.exportDOM({...exportOptions, ...options});
+            const {element} = embedNode.exportDOM(editor, {...exportOptions, ...options});
             const output = (element as HTMLElement).outerHTML;
 
             output.should.containEql('<blockquote class="twitter-tweet">');
@@ -370,7 +370,7 @@ describe('EmbedNode', function () {
                 target: 'email'
             };
             const embedNode = $createEmbedNode(youtubeEmbed);
-            const {element} = embedNode.exportDOM({...exportOptions, ...options});
+            const {element} = embedNode.exportDOM(editor, {...exportOptions, ...options});
 
             (element as HTMLElement).outerHTML.should.containEql('<!--[if !mso !vml]-->');
             (element as HTMLElement).outerHTML.should.containEql('<a class="kg-video-preview"');
@@ -380,7 +380,7 @@ describe('EmbedNode', function () {
 
         it('renders empty span with missing data', editorTest(function () {
             const embedNode = $createEmbedNode({} as Record<string, unknown>);
-            const {element} = embedNode.exportDOM(exportOptions);
+            const {element} = embedNode.exportDOM(editor, exportOptions);
 
             (element as HTMLElement).outerHTML.should.equal('<span></span>');
         }));

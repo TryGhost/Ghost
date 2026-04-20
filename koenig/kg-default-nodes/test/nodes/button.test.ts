@@ -114,7 +114,7 @@ describe('ButtonNode', function () {
     describe('exportDOM', function () {
         it('creates a button card', editorTest(function () {
             const buttonNode = $createButtonNode(dataset);
-            const result = buttonNode.exportDOM(exportOptions);
+            const result = buttonNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(html`<div class="kg-card kg-button-card kg-align-center"><a href="http://blog.com/post1" class="kg-btn kg-btn-accent">click me</a></div>`);
@@ -125,7 +125,7 @@ describe('ButtonNode', function () {
             const options = {
                 target: 'email'
             };
-            const result = buttonNode.exportDOM({...exportOptions, ...options});
+            const result = buttonNode.exportDOM(editor, {...exportOptions, ...options});
             const element = result.element as HTMLElement;
             const output = element.outerHTML;
 
@@ -143,7 +143,7 @@ describe('ButtonNode', function () {
                     emailCustomization: true
                 }
             };
-            const result = buttonNode.exportDOM({...exportOptions, ...options});
+            const result = buttonNode.exportDOM(editor, {...exportOptions, ...options});
             const element = result.element as HTMLElement;
             const output = element.innerHTML;
 
@@ -176,7 +176,7 @@ describe('ButtonNode', function () {
                     emailCustomizationAlpha: true
                 }
             };
-            const result = buttonNode.exportDOM({...exportOptions, ...options});
+            const result = buttonNode.exportDOM(editor, {...exportOptions, ...options});
             const element = result.element as HTMLElement;
             const output = element.innerHTML;
 
@@ -203,7 +203,7 @@ describe('ButtonNode', function () {
 
         it('renders an empty span with a missing buttonUrl', editorTest(function () {
             const buttonNode = $createButtonNode();
-            const result = buttonNode.exportDOM(exportOptions);
+            const result = buttonNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.equal('<span></span>');

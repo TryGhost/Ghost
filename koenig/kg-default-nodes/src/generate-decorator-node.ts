@@ -2,6 +2,7 @@ import {KoenigDecoratorNode} from './KoenigDecoratorNode.js';
 import type {ExportDOMOptions, ExportDOMOutput} from './export-dom.js';
 import readTextContent from './utils/read-text-content.js';
 import {buildDefaultVisibility, isVisibilityRestricted, migrateOldVisibilityFormat} from './utils/visibility.js';
+import type {LexicalEditor} from 'lexical';
 import type {Visibility} from './utils/visibility.js';
 
 type RenderFn<TOutput extends ExportDOMOutput = ExportDOMOutput> = (node: any, options: ExportDOMOptions) => TOutput;
@@ -66,7 +67,7 @@ export type DecoratorNodeValueMap<Props extends readonly DecoratorNodeProperty[]
 export type DecoratorNodeData<Props extends readonly DecoratorNodeProperty[], HasVisibility extends boolean = false> = Partial<DecoratorNodeValueMap<Props, HasVisibility>>;
 
 type GeneratedDecoratorNodeInstance<TDataset extends Record<string, unknown>, TOutput extends ExportDOMOutput = ExportDOMOutput> = GeneratedDecoratorNodeBase<TDataset> & TDataset & {
-    exportDOM(options?: ExportDOMOptions): TOutput;
+    exportDOM(editor: LexicalEditor, options?: ExportDOMOptions): TOutput;
 };
 
 export interface GeneratedDecoratorNodeClass<TDataset extends Record<string, unknown>, TOutput extends ExportDOMOutput = ExportDOMOutput> {
@@ -292,8 +293,7 @@ export function generateDecoratorNode<
             return dataset;
         }
 
-        // @ts-expect-error - custom exportDOM signature for Ghost rendering
-        exportDOM(options: ExportDOMOptions = {}): TOutput {
+        exportDOM(_editor: LexicalEditor, options: ExportDOMOptions = {}): TOutput {
             // this.__version is used when a node has a version property which
             // means it's set from the serialized version data at runtime
             const nodeVersion = this.__version || version;

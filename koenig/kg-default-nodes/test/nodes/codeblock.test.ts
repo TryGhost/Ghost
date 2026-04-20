@@ -198,7 +198,7 @@ describe('CodeBlockNode', function () {
     describe('exportDOM', function () {
         it('renders and escapes', editorTest(function () {
             const codeBlockNode = $createCodeBlockNode({code});
-            const {element} = codeBlockNode.exportDOM(exportOptions);
+            const {element} = codeBlockNode.exportDOM(editor, exportOptions);
             const el = element as HTMLElement;
 
             el.outerHTML.should.prettifyTo(html`
@@ -208,7 +208,7 @@ describe('CodeBlockNode', function () {
 
         it('renders language class if provided', editorTest(function () {
             const codeBlockNode = $createCodeBlockNode({language, code});
-            const {element} = codeBlockNode.exportDOM(exportOptions);
+            const {element} = codeBlockNode.exportDOM(editor, exportOptions);
             const el = element as HTMLElement;
 
             el.outerHTML.should.prettifyTo(html`
@@ -218,7 +218,7 @@ describe('CodeBlockNode', function () {
 
         it('renders empty span when code is undefined or empty', editorTest(function () {
             const codeBlockNode = $createCodeBlockNode({code: ''});
-            const {element} = codeBlockNode.exportDOM(exportOptions);
+            const {element} = codeBlockNode.exportDOM(editor, exportOptions);
             const el = element as HTMLElement;
 
             el.outerHTML.should.equal('<span></span>');
@@ -226,7 +226,7 @@ describe('CodeBlockNode', function () {
 
         it('renders a figure if a caption is provided', editorTest(function () {
             const codeBlockNode = $createCodeBlockNode({language, code, caption});
-            const {element} = codeBlockNode.exportDOM(exportOptions);
+            const {element} = codeBlockNode.exportDOM(editor, exportOptions);
             const el = element as HTMLElement;
 
             el.outerHTML.should.prettifyTo(html`

@@ -165,7 +165,7 @@ describe('ToggleNode', function () {
                 content: 'Content'
             };
             const toggleNode = $createToggleNode(payload);
-            const result = toggleNode.exportDOM(exportOptions);
+            const result = toggleNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(html`
@@ -194,7 +194,7 @@ describe('ToggleNode', function () {
                 postUrl: 'https://example.com/my-post'
             };
             const toggleNode = $createToggleNode(payload);
-            const result = toggleNode.exportDOM({...exportOptions, ...options});
+            const result = toggleNode.exportDOM(editor, {...exportOptions, ...options});
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(html`
@@ -220,7 +220,7 @@ describe('ToggleNode', function () {
                 }
             };
             const toggleNode = $createToggleNode(payload);
-            const result = toggleNode.exportDOM({...exportOptions, ...options});
+            const result = toggleNode.exportDOM(editor, {...exportOptions, ...options});
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(html`
@@ -248,7 +248,7 @@ describe('ToggleNode', function () {
             };
 
             const toggleNode = $createToggleNode(payload);
-            const result = toggleNode.exportDOM(exportOptions);
+            const result = toggleNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             element.outerHTML.should.containEql('<h4 class="kg-toggle-heading-text">Heading</h4>');
         }));
@@ -260,7 +260,7 @@ describe('ToggleNode', function () {
             };
 
             const toggleNode = $createToggleNode(payload);
-            const result = toggleNode.exportDOM(exportOptions);
+            const result = toggleNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             element.outerHTML.should.containEql('<div class="kg-toggle-content">Content</div>');
         }));

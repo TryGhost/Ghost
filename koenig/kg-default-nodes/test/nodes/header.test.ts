@@ -137,7 +137,7 @@ describe('HeaderNode', function () {
         describe('exportDOM', function () {
             it('can render to HTML', editorTest(function () {
                 const headerNode = $createHeaderNode(dataset);
-                const {element} = headerNode.exportDOM(exportOptions);
+                const {element} = headerNode.exportDOM(editor, exportOptions);
                 const expectedElement = html`
                 <div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-image" data-kg-background-image="https://example.com/image.jpg" style="background-image: url(https://example.com/image.jpg)">
                     <h2 class="kg-header-card-header" id="this-is-the-header-card">This is the header card</h2>
@@ -153,7 +153,7 @@ describe('HeaderNode', function () {
                 node.header = null as unknown as string;
                 node.subheader = null as unknown as string;
                 node.buttonEnabled = false;
-                const result = node.exportDOM(exportOptions);
+                const result = node.exportDOM(editor, exportOptions);
                 should.equal((result as unknown as {type?: string}).type, 'inner');
                 (result.element as HTMLElement).innerHTML.should.equal('');
             }));
@@ -172,7 +172,7 @@ describe('HeaderNode', function () {
                 };
                 const node = $createHeaderNode(payload);
 
-                const {element} = node.exportDOM(exportOptions);
+                const {element} = node.exportDOM(editor, exportOptions);
                 const expectedElement = `<div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-dark" data-kg-background-image="" style=""><h2 class="kg-header-card-header" id="hello-world">hello world</h2><h3 class="kg-header-card-subheader" id="hello-sub-world">hello sub world</h3></div>`;
                 (element as HTMLElement).outerHTML.should.equal(expectedElement);
             }));
@@ -191,7 +191,7 @@ describe('HeaderNode', function () {
                 };
                 const node = $createHeaderNode(payload);
 
-                const {element} = node.exportDOM(exportOptions);
+                const {element} = node.exportDOM(editor, exportOptions);
                 const expectedElement = `<div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-dark" data-kg-background-image="" style=""><h2 class="kg-header-card-header" id="hello-world">hello world</h2></div>`;
                 (element as HTMLElement).outerHTML.should.equal(expectedElement);
             }));
@@ -210,7 +210,7 @@ describe('HeaderNode', function () {
                 };
                 const node = $createHeaderNode(payload);
 
-                const {element} = node.exportDOM(exportOptions);
+                const {element} = node.exportDOM(editor, exportOptions);
                 const expectedElement = `<div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-dark" data-kg-background-image="" style=""><h2 class="kg-header-card-header" id="hello-world">hello world</h2></div>`;
                 (element as HTMLElement).outerHTML.should.equal(expectedElement);
             }));
@@ -462,7 +462,7 @@ describe('HeaderNode', function () {
         describe('exportDOM', function () {
             it('renders version 2 html', editorTest(function () {
                 const headerNode = $createHeaderNode(dataset);
-                const {element} = headerNode.exportDOM(exportOptions);
+                const {element} = headerNode.exportDOM(editor, exportOptions);
                 const el = element as HTMLElement;
 
                 // Assuming outerHTML gets the full HTML string of the element
@@ -488,7 +488,7 @@ describe('HeaderNode', function () {
                 node.header = null as unknown as string;
                 node.subheader = null as unknown as string;
                 node.buttonEnabled = false;
-                const {element} = node.exportDOM(exportOptions);
+                const {element} = node.exportDOM(editor, exportOptions);
                 // v2 renderer has no empty check — it always returns a card element
                 should.exist(element);
                 should.not.exist((element as HTMLElement).querySelector('.kg-header-card-heading'));
@@ -510,7 +510,7 @@ describe('HeaderNode', function () {
                 };
                 const node = $createHeaderNode(payload);
 
-                const {element} = node.exportDOM(exportOptions);
+                const {element} = node.exportDOM(editor, exportOptions);
                 const el = element as HTMLElement;
                 const renderedHtml = _.replace(el.outerHTML, /\s/g, '');
                 const expectedHtml = `
@@ -543,7 +543,7 @@ describe('HeaderNode', function () {
                 };
                 const node = $createHeaderNode(payload);
 
-                const {element} = node.exportDOM(exportOptions);
+                const {element} = node.exportDOM(editor, exportOptions);
                 const el = element as HTMLElement;
                 const renderedHtml = _.replace(el.outerHTML, /\s/g, '');
                 const expectedHtml = `

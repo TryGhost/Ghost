@@ -642,21 +642,21 @@ describe('GalleryNode', function () {
     describe('exportDOM', function () {
         it('renders empty span with no images', editorTest(function () {
             const galleryNode = $createGalleryNode({images: [], caption: null as unknown as string});
-            const {element} = galleryNode.exportDOM(exportOptions);
+            const {element} = galleryNode.exportDOM(editor, exportOptions);
 
             (element as HTMLElement).outerHTML.should.equal('<span></span>');
         }));
 
         it('renders empty span no valid images', editorTest(function () {
             const galleryNode = $createGalleryNode({images: [{src: 'undefined'}], caption: null as unknown as string});
-            const {element} = galleryNode.exportDOM(exportOptions);
+            const {element} = galleryNode.exportDOM(editor, exportOptions);
 
             (element as HTMLElement).outerHTML.should.equal('<span></span>');
         }));
 
         it('renders', editorTest(function () {
             const galleryNode = $createGalleryNode(dataset);
-            const {element} = galleryNode.exportDOM({...exportOptions, canTransformImage: () => false});
+            const {element} = galleryNode.exportDOM(editor, {...exportOptions, canTransformImage: () => false});
 
             (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption">
@@ -697,7 +697,7 @@ describe('GalleryNode', function () {
                 ],
                 caption: 'Test caption'
             });
-            const {element} = galleryNode.exportDOM({...exportOptions, canTransformImage: () => false});
+            const {element} = galleryNode.exportDOM(editor, {...exportOptions, canTransformImage: () => false});
 
             (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption">
@@ -724,7 +724,7 @@ describe('GalleryNode', function () {
                 ],
                 caption: 'Test caption'
             });
-            const {element} = galleryNode.exportDOM({...exportOptions, canTransformImage: () => false});
+            const {element} = galleryNode.exportDOM(editor, {...exportOptions, canTransformImage: () => false});
 
             (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption">
@@ -807,7 +807,7 @@ describe('GalleryNode', function () {
                 ],
                 caption: 'Test caption'
             });
-            const {element} = galleryNode.exportDOM({...exportOptions, canTransformImage: () => false});
+            const {element} = galleryNode.exportDOM(editor, {...exportOptions, canTransformImage: () => false});
 
             (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption">
@@ -842,7 +842,7 @@ describe('GalleryNode', function () {
                 ]
             });
 
-            const {element} = galleryNode.exportDOM(exportOptions);
+            const {element} = galleryNode.exportDOM(editor, exportOptions);
 
             const output = (element as HTMLElement).outerHTML;
 
@@ -929,7 +929,7 @@ describe('GalleryNode', function () {
 
             // skip srcset
             delete (exportOptions.imageOptimization as Record<string, unknown>).contentImageSizes;
-            const {element} = galleryNode.exportDOM(exportOptions);
+            const {element} = galleryNode.exportDOM(editor, exportOptions);
 
             (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-gallery-card kg-width-wide">
@@ -979,7 +979,7 @@ describe('GalleryNode', function () {
                 });
 
                 delete (exportOptions.imageOptimization as Record<string, unknown>).defaultMaxWidth;
-                const {element} = galleryNode.exportDOM(exportOptions);
+                const {element} = galleryNode.exportDOM(editor, exportOptions);
 
                 (element as HTMLElement).outerHTML.should.prettifyTo(html`
                     <figure class="kg-card kg-gallery-card kg-width-wide">
@@ -1013,7 +1013,7 @@ describe('GalleryNode', function () {
 
                 delete (exportOptions.imageOptimization as Record<string, unknown>).defaultMaxWidth;
                 exportOptions.siteUrl = 'https://localhost:2368';
-                const {element} = galleryNode.exportDOM(exportOptions);
+                const {element} = galleryNode.exportDOM(editor, exportOptions);
 
                 (element as HTMLElement).outerHTML.should.prettifyTo(html`
                     <figure class="kg-card kg-gallery-card kg-width-wide">
@@ -1040,7 +1040,7 @@ describe('GalleryNode', function () {
 
                 delete (exportOptions.imageOptimization as Record<string, unknown>).defaultMaxWidth;
                 exportOptions.target = 'email';
-                const {element} = galleryNode.exportDOM(exportOptions);
+                const {element} = galleryNode.exportDOM(editor, exportOptions);
 
                 (element as HTMLElement).outerHTML.should.not.containEql('srcset=');
             }));
@@ -1057,7 +1057,7 @@ describe('GalleryNode', function () {
                 });
 
                 delete (exportOptions.imageOptimization as Record<string, unknown>).contentImageSizes;
-                const {element} = galleryNode.exportDOM(exportOptions);
+                const {element} = galleryNode.exportDOM(editor, exportOptions);
 
                 (element as HTMLElement).outerHTML.should.not.containEql('srcset=');
             }));
@@ -1074,7 +1074,7 @@ describe('GalleryNode', function () {
                 });
 
                 (exportOptions.imageOptimization as Record<string, unknown>).srcsets = false;
-                const {element} = galleryNode.exportDOM(exportOptions);
+                const {element} = galleryNode.exportDOM(editor, exportOptions);
 
                 (element as HTMLElement).outerHTML.should.not.containEql('srcset=');
             }));
@@ -1104,7 +1104,7 @@ describe('GalleryNode', function () {
                     }]
                 });
 
-                const {element} = galleryNode.exportDOM(exportOptions);
+                const {element} = galleryNode.exportDOM(editor, exportOptions);
 
                 const output = (element as HTMLElement).outerHTML;
                 const sizes = output.match(/sizes="(.*?)"/g);
@@ -1126,7 +1126,7 @@ describe('GalleryNode', function () {
                     }]
                 });
 
-                const {element} = galleryNode.exportDOM(exportOptions);
+                const {element} = galleryNode.exportDOM(editor, exportOptions);
 
                 (element as HTMLElement).outerHTML.should.match(/standard\.jpg 2000w" sizes="\(min-width: 1200px\) 1200px"/);
             }));
@@ -1142,7 +1142,7 @@ describe('GalleryNode', function () {
                     }]
                 });
 
-                const {element} = galleryNode.exportDOM(exportOptions);
+                const {element} = galleryNode.exportDOM(editor, exportOptions);
 
                 (element as HTMLElement).outerHTML.should.match(/standard\.jpg 1000w" sizes="\(min-width: 720px\) 720px"/);
             }));
@@ -1171,7 +1171,7 @@ describe('GalleryNode', function () {
                 });
 
                 (exportOptions.imageOptimization as Record<string, unknown>).srcsets = false;
-                const {element} = galleryNode.exportDOM(exportOptions);
+                const {element} = galleryNode.exportDOM(editor, exportOptions);
 
                 const output = (element as HTMLElement).outerHTML;
                 const sizes = output.match(/sizes="(.*?)"/g);
@@ -1214,7 +1214,7 @@ describe('GalleryNode', function () {
                     }]
                 });
 
-                const {element} = galleryNode.exportDOM(exportOptions);
+                const {element} = galleryNode.exportDOM(editor, exportOptions);
                 const output = (element as HTMLElement).outerHTML;
 
                 // 3 images wider than 600px template width resized to fit
@@ -1249,7 +1249,7 @@ describe('GalleryNode', function () {
 
                 exportOptions.canTransformImage = () => false;
 
-                const {element} = galleryNode.exportDOM(exportOptions);
+                const {element} = galleryNode.exportDOM(editor, exportOptions);
                 const output = (element as HTMLElement).outerHTML;
 
                 output.should.not.match(/width="3000"/);

@@ -3,17 +3,17 @@ import {$isLinkNode} from '@lexical/link';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import TextContent from './utils/TextContent.js';
 import elementTransformers from './transformers/index.js';
-import type {ElementNode, LexicalNode} from 'lexical';
+import type {ElementNode, LexicalEditor, LexicalNode} from 'lexical';
 import type {RendererOptions} from './types.js';
 
-export default function $convertToHtmlString(options: RendererOptions = {}): string {
+export default function $convertToHtmlString(editor: LexicalEditor, options: RendererOptions = {}): string {
     const output: string[] = [];
     const children: LexicalNode[] = $getRoot().getChildren();
 
     options.usedIdAttributes = options.usedIdAttributes || {};
 
     for (const child of children) {
-        const result = exportTopLevelElementOrDecorator(child, options);
+        const result = exportTopLevelElementOrDecorator(child, editor, options);
 
         if (result !== null) {
             output.push(result);
@@ -30,9 +30,9 @@ export default function $convertToHtmlString(options: RendererOptions = {}): str
     return output.join('');
 }
 
-function exportTopLevelElementOrDecorator(node: LexicalNode, options: RendererOptions): string | null {
+function exportTopLevelElementOrDecorator(node: LexicalNode, editor: LexicalEditor, options: RendererOptions): string | null {
     if ($isKoenigCard(node)) {
-        const {element, type} = node.exportDOM(options);
+        const {element, type} = node.exportDOM(editor, options);
 
         switch (type) {
         case 'inner':

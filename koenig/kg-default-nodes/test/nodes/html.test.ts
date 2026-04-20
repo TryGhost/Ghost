@@ -152,7 +152,7 @@ describe('HtmlNode', function () {
     describe('exportDOM', function () {
         it('creates a html card', editorTest(function () {
             const htmlNode = $createHtmlNode(dataset);
-            const result = htmlNode.exportDOM(exportOptions);
+            const result = htmlNode.exportDOM(editor, exportOptions);
             result.type.should.equal('value');
             const element = result.element as HTMLTextAreaElement;
             element.value.should.prettifyTo(html`
@@ -168,7 +168,7 @@ describe('HtmlNode', function () {
 
         it('renders an empty span with missing html', editorTest(function () {
             const htmlNode = $createHtmlNode();
-            const result = htmlNode.exportDOM(exportOptions);
+            const result = htmlNode.exportDOM(editor, exportOptions);
             result.type.should.equal('inner');
             const element = result.element as HTMLElement;
 
@@ -177,7 +177,7 @@ describe('HtmlNode', function () {
 
         it('renders unclosed tags', editorTest(function () {
             const htmlNode = $createHtmlNode({html: '<div style="color:red">'});
-            const result = htmlNode.exportDOM(exportOptions);
+            const result = htmlNode.exportDOM(editor, exportOptions);
             result.type.should.equal('value');
             const element = result.element as HTMLTextAreaElement;
 
@@ -187,7 +187,7 @@ describe('HtmlNode', function () {
 
         it('renders html entities', editorTest(function () {
             const htmlNode = $createHtmlNode({html: '<p>&lt;pre&gt;Test&lt;/pre&gt;</p>'});
-            const result = htmlNode.exportDOM(exportOptions);
+            const result = htmlNode.exportDOM(editor, exportOptions);
             result.type.should.equal('value');
             const element = result.element as HTMLTextAreaElement;
 
@@ -196,7 +196,7 @@ describe('HtmlNode', function () {
 
         it('handles single-quote attributes', editorTest(function () {
             const htmlNode = $createHtmlNode({html: '<div data-graph-name=\'The "all-in" cost of a grant\'>Test</div>'});
-            const result = htmlNode.exportDOM(exportOptions);
+            const result = htmlNode.exportDOM(editor, exportOptions);
             result.type.should.equal('value');
             const element = result.element as HTMLTextAreaElement;
 
@@ -207,7 +207,7 @@ describe('HtmlNode', function () {
             describe('with old visibility settings', function () {
                 function testWebRender(visibility: Record<string, unknown>) {
                     const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});
-                    const result = htmlNode.exportDOM(exportOptions);
+                    const result = htmlNode.exportDOM(editor, exportOptions);
                     result.type.should.equal('value');
                     const element = result.element as HTMLTextAreaElement;
                     element.value.should.equal('\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n');
@@ -215,7 +215,7 @@ describe('HtmlNode', function () {
 
                 function testEmailRender(visibility: Record<string, unknown>) {
                     const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});
-                    const result = htmlNode.exportDOM({...exportOptions, target: 'email'});
+                    const result = htmlNode.exportDOM(editor, {...exportOptions, target: 'email'});
                     const expectedContents = '<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->';
 
                     if (visibility.segment) {
@@ -231,7 +231,7 @@ describe('HtmlNode', function () {
 
                 function testBlankRender(visibility: Record<string, unknown>, target: string) {
                     const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});
-                    const result = htmlNode.exportDOM({...exportOptions, target});
+                    const result = htmlNode.exportDOM(editor, {...exportOptions, target});
                     result.type.should.equal('inner');
                     const element = result.element as HTMLElement;
                     element.innerHTML.should.equal('');
@@ -259,7 +259,7 @@ describe('HtmlNode', function () {
             describe('with new visibility settings', function () {
                 function testWebRender(visibility: Record<string, unknown>, expectedGateParams?: string | null) {
                     const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});
-                    const result = htmlNode.exportDOM(exportOptions);
+                    const result = htmlNode.exportDOM(editor, exportOptions);
                     result.type.should.equal('value');
                     const element = result.element as HTMLTextAreaElement;
                     const baseExpectedContents = '\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n';
@@ -268,7 +268,7 @@ describe('HtmlNode', function () {
 
                 function testEmailRender(visibility: Record<string, unknown>, expectedSegment: string) {
                     const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});
-                    const result = htmlNode.exportDOM({...exportOptions, target: 'email'});
+                    const result = htmlNode.exportDOM(editor, {...exportOptions, target: 'email'});
                     const expectedContents = '<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->';
 
                     if (!expectedSegment) {
@@ -284,7 +284,7 @@ describe('HtmlNode', function () {
 
                 function testBlankRender(visibility: Record<string, unknown>, target: string) {
                     const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});
-                    const result = htmlNode.exportDOM({...exportOptions, target});
+                    const result = htmlNode.exportDOM(editor, {...exportOptions, target});
                     result.type.should.equal('inner');
                     const element = result.element as HTMLElement;
                     element.innerHTML.should.equal('');

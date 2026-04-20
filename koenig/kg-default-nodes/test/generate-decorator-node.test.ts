@@ -9,7 +9,7 @@ const defaultVisibility = utils.visibility.buildDefaultVisibility();
 type GeneratedNodeClass = ReturnType<typeof utils.generateDecoratorNode>;
 
 interface GeneratedNodeInstance {
-    exportDOM(options?: ExportDOMOptions): ExportDOMOutput;
+    exportDOM(editor: LexicalEditor, options?: ExportDOMOptions): ExportDOMOutput;
     exportJSON(): Record<string, unknown>;
     getDataset(): Record<string, unknown>;
     visibility: Record<string, unknown>;
@@ -72,7 +72,7 @@ describe('Utils: generateDecoratorNode', function () {
 
         it('uses default renderer when no custom renderer is provided', editorTest(function () {
             const node = $createNodeWithRender();
-            const result = node.exportDOM();
+            const result = node.exportDOM(editor);
 
             result.type.should.equal('inner');
             expectHtmlElement(result).outerHTML.should.equal('<div>default render</div>');
@@ -90,7 +90,7 @@ describe('Utils: generateDecoratorNode', function () {
             });
 
             const node = new VersionedNode() as unknown as GeneratedNodeInstance;
-            const result = node.exportDOM();
+            const result = node.exportDOM(editor);
 
             result.type.should.equal('inner');
             expectHtmlElement(result).outerHTML.should.equal('<div>version 2</div>');
@@ -108,7 +108,7 @@ describe('Utils: generateDecoratorNode', function () {
             });
 
             const node = new VersionedNode({version: 2}) as unknown as GeneratedNodeInstance;
-            const result = node.exportDOM();
+            const result = node.exportDOM(editor);
 
             result.type.should.equal('inner');
             expectHtmlElement(result).outerHTML.should.equal('<div>version 2</div>');
@@ -121,7 +121,7 @@ describe('Utils: generateDecoratorNode', function () {
             });
 
             const node = new NodeWithoutRender() as unknown as GeneratedNodeInstance;
-            (() => node.exportDOM()).should.throw('[generateDecoratorNode] no-render-test: "defaultRenderFn" is required');
+            (() => node.exportDOM(editor)).should.throw('[generateDecoratorNode] no-render-test: "defaultRenderFn" is required');
         }));
 
         it('throws error when default versioned renderer is missing for node version', editorTest(function () {
@@ -135,7 +135,7 @@ describe('Utils: generateDecoratorNode', function () {
             });
 
             const node = new VersionedNode() as unknown as GeneratedNodeInstance;
-            (() => node.exportDOM()).should.throw('[generateDecoratorNode] versioned-render-test: "defaultRenderFn" for version 2 is required');
+            (() => node.exportDOM(editor)).should.throw('[generateDecoratorNode] versioned-render-test: "defaultRenderFn" for version 2 is required');
         }));
 
         ['emailCustomizationAlpha', 'emailCustomization'].forEach((feature) => {
@@ -146,7 +146,7 @@ describe('Utils: generateDecoratorNode', function () {
                 const featureOption: Record<string, boolean> = {};
                 featureOption[feature] = true;
 
-                const result = node.exportDOM({
+                const result = node.exportDOM(editor, {
                     feature: featureOption,
                     nodeRenderers: {
                         'render-test': customRenderer
@@ -171,7 +171,7 @@ describe('Utils: generateDecoratorNode', function () {
 
             const node = new VersionedNode({version: 2}) as unknown as GeneratedNodeInstance;
 
-            (() => node.exportDOM({
+            (() => node.exportDOM(editor, {
                 feature: {
                     emailCustomizationAlpha: true
                 },

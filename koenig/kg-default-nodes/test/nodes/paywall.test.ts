@@ -96,7 +96,7 @@ describe('PaywallNode', function () {
     describe('exportDOM', function () {
         it('renders a paywall node', editorTest(function () {
             const paywallNode = $createPaywallNode(dataset);
-            const {element, type} = paywallNode.exportDOM(exportOptions);
+            const {element, type} = paywallNode.exportDOM(editor, exportOptions);
 
             type.should.equal('inner');
             getHTMLElement(element).innerHTML.should.equal('<!--members-only-->');

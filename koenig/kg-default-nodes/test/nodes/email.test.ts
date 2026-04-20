@@ -155,7 +155,7 @@ describe('EmailNode', function () {
                 postUrl: 'https://example.com/my-post'
             };
             const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
             el.innerHTML.should.prettifyTo(html`
@@ -168,7 +168,7 @@ describe('EmailNode', function () {
                 html: '<p>Hello World</p>'
             };
             const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM(exportOptions);
+            const {element} = emailNode.exportDOM(editor, exportOptions);
 
             (element as HTMLElement).innerHTML.should.equal('');
         }));
@@ -183,7 +183,7 @@ describe('EmailNode', function () {
                 postUrl: 'https://example.com/my-post'
             };
             const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
 
             (element as HTMLElement).innerHTML.should.equal('');
         }));
@@ -198,7 +198,7 @@ describe('EmailNode', function () {
                 postUrl: 'https://example.com/my-post'
             };
             const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
             el.innerHTML.should.prettifyTo(html`
@@ -216,7 +216,7 @@ describe('EmailNode', function () {
                 postUrl: 'https://example.com/my-post'
             };
             const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
             el.innerHTML.should.prettifyTo(html`
@@ -234,7 +234,7 @@ describe('EmailNode', function () {
                 postUrl: 'https://example.com/my-post'
             };
             const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
             el.innerHTML.should.prettifyTo(html`
@@ -252,7 +252,7 @@ describe('EmailNode', function () {
                 postUrl: 'https://example.com/my-post'
             };
             const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
             el.innerHTML.should.prettifyTo(html`
@@ -270,7 +270,7 @@ describe('EmailNode', function () {
                 postUrl: 'https://example.com/my-post'
             };
             const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
             el.innerHTML.should.prettifyTo(html`
@@ -288,7 +288,7 @@ describe('EmailNode', function () {
                 postUrl: 'https://example.com/my-post'
             };
             const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
             el.innerHTML.should.prettifyTo(html`
@@ -306,7 +306,7 @@ describe('EmailNode', function () {
                 postUrl: 'https://example.com/my-post'
             };
             const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
             el.innerHTML.should.prettifyTo(html`
@@ -324,7 +324,7 @@ describe('EmailNode', function () {
                 postUrl: 'https://example.com/my-post'
             };
             const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
             el.innerHTML.should.prettifyTo(html`
@@ -342,7 +342,7 @@ describe('EmailNode', function () {
                 postUrl: 'https://example.com/my-post'
             };
             const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
             el.innerHTML.should.prettifyTo(html`
@@ -360,7 +360,7 @@ describe('EmailNode', function () {
                 postUrl: 'https://example.com/my-post'
             };
             const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
             el.innerHTML.should.prettifyTo(html`
@@ -378,7 +378,7 @@ describe('EmailNode', function () {
                 postUrl: 'https://example.com/my-post'
             };
             const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
             el.innerHTML.should.prettifyTo(html`
@@ -399,7 +399,7 @@ describe('EmailNode', function () {
             };
 
             const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
             el.innerHTML.should.prettifyTo(html`
@@ -420,7 +420,7 @@ describe('EmailNode', function () {
             };
 
             const emailNode = $createEmailNode(payload);
-            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+            const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
             el.innerHTML.should.prettifyTo(html`

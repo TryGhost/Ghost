@@ -44,7 +44,7 @@ describe('HorizontalNode', function () {
     describe('exportDOM', function () {
         it('creates hr element', editorTest(function () {
             const hrNode = $createHorizontalRuleNode();
-            const {element} = hrNode.exportDOM(exportOptions);
+            const {element} = hrNode.exportDOM(editor, exportOptions);
 
             (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <hr />

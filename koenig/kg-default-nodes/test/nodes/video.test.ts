@@ -262,7 +262,7 @@ describe('VideoNode', function () {
                 thumbnailSrc: '/content/images/2022/11/koenig-lexical.jpg'
             };
             const videoNode = $createVideoNode(payload);
-            const {element} = videoNode.exportDOM(exportOptions);
+            const {element} = videoNode.exportDOM(editor, exportOptions);
 
             (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-video-card kg-width-regular" data-kg-thumbnail="/content/images/2022/11/koenig-lexical.jpg" data-kg-custom-thumbnail="">
@@ -334,7 +334,7 @@ describe('VideoNode', function () {
                 postUrl: 'https://example.com/my-post'
             };
             const videoNode = $createVideoNode(payload);
-            const {element} = videoNode.exportDOM({...exportOptions, ...options});
+            const {element} = videoNode.exportDOM(editor, {...exportOptions, ...options});
             const output = (element as HTMLElement).outerHTML;
 
             output.should.not.containEql('<video');
@@ -354,7 +354,7 @@ describe('VideoNode', function () {
 
             const videoNode = $createVideoNode(payload);
 
-            (() => videoNode.exportDOM({...exportOptions, target: 'email'})).should.throw('renderVideoNode requires options.postUrl when options.target is "email"');
+            (() => videoNode.exportDOM(editor, {...exportOptions, target: 'email'})).should.throw('renderVideoNode requires options.postUrl when options.target is "email"');
         }));
 
         it('renders without invalid dimensions when width and height are null', editorTest(function () {
@@ -367,7 +367,7 @@ describe('VideoNode', function () {
             };
 
             const videoNode = $createVideoNode(payload);
-            const {element} = videoNode.exportDOM(exportOptions);
+            const {element} = videoNode.exportDOM(editor, exportOptions);
             const output = (element as HTMLElement).outerHTML;
 
             output.should.not.containEql('nullxnull');
@@ -390,7 +390,7 @@ describe('VideoNode', function () {
                 postUrl: 'https://example.com/my-post'
             };
             const videoNode = $createVideoNode(payload);
-            const {element} = videoNode.exportDOM({...exportOptions, ...options});
+            const {element} = videoNode.exportDOM(editor, {...exportOptions, ...options});
             const output = (element as HTMLElement).outerHTML;
 
             output.should.not.containEql('NaN');
@@ -409,7 +409,7 @@ describe('VideoNode', function () {
             };
 
             const videoNode = $createVideoNode(payload);
-            const {element} = videoNode.exportDOM(exportOptions);
+            const {element} = videoNode.exportDOM(editor, exportOptions);
             const output = (element as HTMLElement).outerHTML;
             output.should.containEql('kg-card kg-video-card kg-width-wide');
         }));
@@ -425,7 +425,7 @@ describe('VideoNode', function () {
             };
 
             const videoNode = $createVideoNode(payload);
-            const {element} = videoNode.exportDOM(exportOptions);
+            const {element} = videoNode.exportDOM(editor, exportOptions);
             const output = (element as HTMLElement).outerHTML;
             output.should.containEql('loop');
         }));
@@ -441,7 +441,7 @@ describe('VideoNode', function () {
             };
 
             const videoNode = $createVideoNode(payload);
-            const {element} = videoNode.exportDOM(exportOptions);
+            const {element} = videoNode.exportDOM(editor, exportOptions);
             const output = (element as HTMLElement).outerHTML;
             output.should.containEql('<figure class="kg-card kg-video-card kg-width-regular kg-card-hascaption"');
             output.should.containEql('<figcaption><strong>Caption</strong></figcaption>');

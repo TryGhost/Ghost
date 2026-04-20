@@ -139,7 +139,7 @@ describe('ImageNode', function () {
     describe('exportDOM', function () {
         it('creates a full-featured image card', editorTest(function () {
             const imageNode = $createImageNode(dataset);
-            const {element} = imageNode.exportDOM(exportOptions);
+            const {element} = imageNode.exportDOM(editor, exportOptions);
 
             (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-image-card kg-card-hascaption">
@@ -163,7 +163,7 @@ describe('ImageNode', function () {
                 ...dataset,
                 href: 'https://example.com'
             });
-            const {element} = imageNode.exportDOM(exportOptions);
+            const {element} = imageNode.exportDOM(editor, exportOptions);
 
             (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-image-card kg-card-hascaption">
@@ -191,7 +191,7 @@ describe('ImageNode', function () {
 
         it('creates a minimal image card', editorTest(function () {
             const imageNode = $createImageNode({src: '/image.png'});
-            const {element} = imageNode.exportDOM(exportOptions);
+            const {element} = imageNode.exportDOM(editor, exportOptions);
 
             (element as HTMLElement).outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-image-card">
@@ -202,7 +202,7 @@ describe('ImageNode', function () {
 
         it('renders an empty span with a missing src', editorTest(function () {
             const imageNode = $createImageNode({} as Record<string, unknown>);
-            const {element} = imageNode.exportDOM(exportOptions);
+            const {element} = imageNode.exportDOM(editor, exportOptions);
 
             (element as HTMLElement).outerHTML.should.equal('<span></span>');
         }));
@@ -210,7 +210,7 @@ describe('ImageNode', function () {
         it('renders a wide image', editorTest(function () {
             dataset.cardWidth = 'wide';
             const imageNode = $createImageNode(dataset);
-            const {element} = imageNode.exportDOM(exportOptions);
+            const {element} = imageNode.exportDOM(editor, exportOptions);
 
             (element as HTMLElement).classList.contains('kg-width-wide').should.be.true();
         }));
@@ -223,7 +223,7 @@ describe('ImageNode', function () {
             exportOptions.canTransformImage = () => true;
 
             const imageNode = $createImageNode(dataset);
-            const {element} = imageNode.exportDOM(exportOptions);
+            const {element} = imageNode.exportDOM(editor, exportOptions);
             const output = (element as HTMLElement).outerHTML;
 
             output.should.containEql('width="2000"');
@@ -236,7 +236,7 @@ describe('ImageNode', function () {
             exportOptions.canTransformImage = () => false;
 
             const imageNode = $createImageNode(dataset);
-            const {element} = imageNode.exportDOM(exportOptions);
+            const {element} = imageNode.exportDOM(editor, exportOptions);
             const output = (element as HTMLElement).outerHTML;
 
             output.should.containEql('width="3000" height="6000"');
@@ -249,7 +249,7 @@ describe('ImageNode', function () {
                 dataset.src = 'https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=2000&fit=max&ixid=eyJhcHBfaWQiOjExNzczfQ';
 
                 const imageNode = $createImageNode(dataset);
-                const {element} = imageNode.exportDOM(exportOptions);
+                const {element} = imageNode.exportDOM(editor, exportOptions);
                 const output = (element as HTMLElement).outerHTML;
 
                 output.should.containEql('https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1000w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2400&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 2400w');
@@ -259,7 +259,7 @@ describe('ImageNode', function () {
                 exportOptions.target = 'email';
 
                 const imageNode = $createImageNode(dataset);
-                const {element} = imageNode.exportDOM(exportOptions);
+                const {element} = imageNode.exportDOM(editor, exportOptions);
                 const output = (element as HTMLElement).outerHTML;
 
                 output.should.not.containEql('srcset');
@@ -284,7 +284,7 @@ describe('ImageNode', function () {
                 dataset.height = 6000;
 
                 const imageNode = $createImageNode(dataset);
-                const {element} = imageNode.exportDOM(exportOptions);
+                const {element} = imageNode.exportDOM(editor, exportOptions);
                 const output = (element as HTMLElement).outerHTML;
 
                 output.should.containEql('sizes="(min-width: 720px) 720px"');
@@ -296,7 +296,7 @@ describe('ImageNode', function () {
                 dataset.cardWidth = 'wide';
 
                 const imageNode = $createImageNode(dataset);
-                const {element} = imageNode.exportDOM(exportOptions);
+                const {element} = imageNode.exportDOM(editor, exportOptions);
                 const output = (element as HTMLElement).outerHTML;
 
                 output.should.containEql('sizes="(min-width: 1200px) 1200px"');

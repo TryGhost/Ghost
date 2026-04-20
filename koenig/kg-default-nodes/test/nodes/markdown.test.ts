@@ -112,7 +112,7 @@ describe('MarkdownNode', function () {
     describe('exportDOM', function () {
         it('creates a markdown card', editorTest(function () {
             const markdownNode = $createMarkdownNode(dataset);
-            const result = markdownNode.exportDOM(exportOptions);
+            const result = markdownNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             result.type.should.equal('inner');
@@ -127,7 +127,7 @@ describe('MarkdownNode', function () {
 
         it('renders an empty div with a missing src', editorTest(function () {
             const markdownNode = $createMarkdownNode();
-            const result = markdownNode.exportDOM(exportOptions);
+            const result = markdownNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.equal('<div></div>');
@@ -136,7 +136,7 @@ describe('MarkdownNode', function () {
         it('throws a clear error when createDocument is not callable', editorTest(function () {
             const markdownNode = $createMarkdownNode(dataset);
 
-            (() => markdownNode.exportDOM({createDocument: true as unknown as () => Document})).should.throw(
+            (() => markdownNode.exportDOM(editor, {createDocument: true as unknown as () => Document})).should.throw(
                 'renderMarkdownNode requires options.createDocument to be a function'
             );
         }));

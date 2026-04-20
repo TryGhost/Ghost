@@ -118,7 +118,7 @@ describe('CalloutNode', function () {
     describe('exportDOM', function () {
         it('can render to HTML', editorTest(function () {
             const node = $createCalloutNode(dataset);
-            const result = node.exportDOM(exportOptions);
+            const result = node.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-callout-card kg-callout-card-blue">
@@ -139,7 +139,7 @@ describe('CalloutNode', function () {
                 backgroundColor: 'blue'
             };
             const node = $createCalloutNode(dataset2);
-            const result = node.exportDOM(exportOptions);
+            const result = node.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-callout-card kg-callout-card-blue">
@@ -156,7 +156,7 @@ describe('CalloutNode', function () {
             dataset.backgroundColor = 'rgba(124, 139, 154, 0.13)';
 
             const node = $createCalloutNode(dataset);
-            const result = node.exportDOM(exportOptions);
+            const result = node.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(html`
@@ -175,7 +175,7 @@ describe('CalloutNode', function () {
             dataset.calloutText = '<p><span style="white-space: pre-wrap;">Does </span><code spellcheck="false" style="white-space: pre-wrap;"><span>inline code</span></code><span style="white-space: pre-wrap;"> render properly?</span></p>';
 
             const node = $createCalloutNode(dataset);
-            const result = node.exportDOM(exportOptions);
+            const result = node.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(html`

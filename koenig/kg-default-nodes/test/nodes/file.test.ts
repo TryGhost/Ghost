@@ -83,7 +83,7 @@ describe('FileNode', function () {
     describe('exportDOM', function () {
         it('creates a file card', editorTest(function () {
             const fileNode = $createFileNode(dataset);
-            const {element} = fileNode.exportDOM(exportOptions);
+            const {element} = fileNode.exportDOM(editor, exportOptions);
             (element as HTMLElement).outerHTML.should.equal(`<div class="kg-card kg-file-card"><a class="kg-file-card-container" href="/content/files/2023/03/IMG_0196.jpeg" title="Download" download=""><div class="kg-file-card-contents"><div class="kg-file-card-title">Cool image to download</div><div class="kg-file-card-caption">This is a description</div><div class="kg-file-card-metadata"><div class="kg-file-card-filename">IMG_0196.jpeg</div><div class="kg-file-card-filesize">121 KB</div></div></div><div class="kg-file-card-icon"><svg viewBox="0 0 24 24"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class="a" points="8.25 14.25 12 18 15.75 14.25"></polyline><line class="a" x1="12" y1="6.75" x2="12" y2="18"></line><circle class="a" cx="12" cy="12" r="11.25"></circle></svg></div></a></div>`);
         }));
 
@@ -95,7 +95,7 @@ describe('FileNode', function () {
 
             it('renders complete email template with all fields', editorTest(function () {
                 const fileNode = $createFileNode(dataset);
-                const {element} = fileNode.exportDOM(exportOptions);
+                const {element} = fileNode.exportDOM(editor, exportOptions);
                 const el = element as HTMLElement;
 
                 // Check basic structure
@@ -130,7 +130,7 @@ describe('FileNode', function () {
                     fileSize: 123456
                 };
                 const fileNode = $createFileNode(minimalDataset);
-                const {element} = fileNode.exportDOM(exportOptions);
+                const {element} = fileNode.exportDOM(editor, exportOptions);
                 const el = element as HTMLElement;
 
                 // Should not have title
@@ -152,7 +152,7 @@ describe('FileNode', function () {
                     fileName: 'file<.html'
                 };
                 const fileNode = $createFileNode(datasetWithHtml);
-                const {element} = fileNode.exportDOM(exportOptions);
+                const {element} = fileNode.exportDOM(editor, exportOptions);
                 const el = element as HTMLElement;
 
                 const elHtml = el.innerHTML;

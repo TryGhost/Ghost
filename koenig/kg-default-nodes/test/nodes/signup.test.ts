@@ -205,7 +205,7 @@ describe('SignupNode', function () {
 
         it('creates signup element', editorTest(function () {
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form=""  style="display: none;">
@@ -239,7 +239,7 @@ describe('SignupNode', function () {
             dataset.subheader = '';
             dataset.disclaimer = '';
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none">
@@ -271,7 +271,7 @@ describe('SignupNode', function () {
             dataset.backgroundImageSrc = '';
 
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-width-regular kg-style-accent" data-lexical-signup-form="" style="display:none">
@@ -303,7 +303,7 @@ describe('SignupNode', function () {
             dataset.layout = 'split';
 
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full" data-lexical-signup-form="" style="background-color: transparent; display:none">
@@ -337,7 +337,7 @@ describe('SignupNode', function () {
             dataset.swapped = true;
 
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-swapped" data-lexical-signup-form="" style="background-color: transparent; display:none">
@@ -371,7 +371,7 @@ describe('SignupNode', function () {
             dataset.backgroundSize = 'contain';
 
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-content-wide" data-lexical-signup-form="" style="background-color: transparent; display:none">
@@ -404,7 +404,7 @@ describe('SignupNode', function () {
             dataset.backgroundColor = '#ffffff';
 
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none">
@@ -438,7 +438,7 @@ describe('SignupNode', function () {
             dataset.backgroundImageSrc = '';
 
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="background-color: transparent; display:none">
@@ -471,7 +471,7 @@ describe('SignupNode', function () {
             dataset.backgroundImageSrc = '';
 
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-width-regular kg-style-accent" data-lexical-signup-form="" style="display:none">
@@ -504,7 +504,7 @@ describe('SignupNode', function () {
             dataset.layout = 'split';
 
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-style-accent" data-lexical-signup-form="" style="display:none">
@@ -538,7 +538,7 @@ describe('SignupNode', function () {
             dataset.backgroundImageSrc = 'https://example.com/image.jpg';
 
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none">
@@ -576,7 +576,7 @@ describe('SignupNode', function () {
         it('returns empty element if target is email', editorTest(function () {
             exportOptions.target = 'email';
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             element.outerHTML.should.equal('<div></div>');
         }));
@@ -586,7 +586,7 @@ describe('SignupNode', function () {
             dataset.backgroundColor = '#ffffff';
 
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             const document = createDocument(element.outerHTML);
@@ -598,7 +598,7 @@ describe('SignupNode', function () {
             dataset.layout = 'split';
 
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             const document = createDocument(element.outerHTML);
@@ -610,7 +610,7 @@ describe('SignupNode', function () {
             dataset.layout = 'split';
             dataset.swapped = true;
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
@@ -621,7 +621,7 @@ describe('SignupNode', function () {
             dataset.layout = 'split';
             dataset.backgroundSize = 'contain';
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
@@ -632,7 +632,7 @@ describe('SignupNode', function () {
             dataset.layout = 'split';
             dataset.backgroundSize = 'cover';
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
@@ -646,7 +646,7 @@ describe('SignupNode', function () {
             dataset.backgroundColor = '#ffffff';
 
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             const document = createDocument(element.outerHTML);
@@ -660,7 +660,7 @@ describe('SignupNode', function () {
             dataset.backgroundImageSrc = '';
 
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             const document = createDocument(element.outerHTML);
@@ -674,7 +674,7 @@ describe('SignupNode', function () {
             dataset.buttonTextColor = '#ffffff';
 
             const signupNode = $createSignupNode(dataset);
-            const result = signupNode.exportDOM(exportOptions);
+            const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             const document = createDocument(element.outerHTML);

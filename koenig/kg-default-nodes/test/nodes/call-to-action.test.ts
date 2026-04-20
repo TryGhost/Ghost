@@ -232,7 +232,7 @@ describe('CallToActionNode', function () {
     describe('exportDOM', function () {
         const testRender = (assertFn: (result: {element: HTMLElement; type: ExportDOMOutputType; html: string}) => void) => {
             const callToActionNode = new CallToActionNode(dataset);
-            const result = callToActionNode.exportDOM(exportOptions);
+            const result = callToActionNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             const {type} = result;
 
@@ -459,7 +459,7 @@ describe('CallToActionNode', function () {
                     (callToActionNode as unknown as Record<string, unknown>)[prop] = '';
                 });
 
-                const result = callToActionNode.exportDOM(exportOptions);
+                const result = callToActionNode.exportDOM(editor, exportOptions);
                 const element = result.element as HTMLElement;
                 const html = element.outerHTML.toString();
 
@@ -749,7 +749,7 @@ describe('CallToActionNode', function () {
     describe('importDom', function () {
         const generateCallToActionNodes = (nodeDataset: Record<string, unknown>) => {
             const callToActionNode = new CallToActionNode(nodeDataset);
-            const result = callToActionNode.exportDOM(exportOptions);
+            const result = callToActionNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
             const docuement = createDocument(htmlTemplate`${element.outerHTML.toString()}`);
             const nodes = $generateNodesFromDOM(editor, docuement) as CallToActionNode[];
