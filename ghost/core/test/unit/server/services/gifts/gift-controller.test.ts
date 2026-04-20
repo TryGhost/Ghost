@@ -39,6 +39,7 @@ describe('GiftController', function () {
             consumedAt: null,
             expiredAt: null,
             refundedAt: null,
+            consumesSoonReminderSentAt: null,
             ...overrides
         });
     }

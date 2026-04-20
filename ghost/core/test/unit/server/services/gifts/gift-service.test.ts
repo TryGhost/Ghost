@@ -3,8 +3,29 @@ import errors from '@tryghost/errors';
 import sinon from 'sinon';
 import {GiftService, type GiftPurchaseData} from '../../../../../core/server/services/gifts/gift-service';
 import {Gift} from '../../../../../core/server/services/gifts/gift';
-import type {GiftRepository} from '../../../../../core/server/services/gifts/gift-repository';
+import type {FindPendingReminderOptions, GiftRepository} from '../../../../../core/server/services/gifts/gift-repository';
 import {buildGift} from './utils';
+
+function buildRedeemedGift(overrides: Parameters<typeof buildGift>[0] = {}) {
+    return buildGift({
+        token: 'gift-token',
+        status: 'redeemed',
+        redeemerMemberId: 'member_1',
+        redeemedAt: new Date('2025-04-01T00:00:00.000Z'),
+        consumesAt: new Date('2026-04-16T00:00:00.000Z'),
+        ...overrides
+    });
+}
+
+function buildRedeemer(id: string = 'member_1') {
+    const memberGet = sinon.stub();
+
+    memberGet.withArgs('email').returns(`${id}@example.com`);
+    memberGet.withArgs('name').returns('Member Name');
+    memberGet.withArgs('email_disabled').returns(false);
+
+    return {id, get: memberGet};
+}
 
 describe('GiftService', function () {
     type GiftRepositoryStub = {
@@ -13,6 +34,7 @@ describe('GiftService', function () {
         getByPaymentIntentId: sinon.SinonStub<[string], Promise<Gift | null>>;
         findPendingConsumption: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingExpiration: sinon.SinonStub<[], Promise<Gift[]>>;
+        findPendingReminder: sinon.SinonStub<[FindPendingReminderOptions], Promise<Gift[]>>;
         create: sinon.SinonStub;
         update: sinon.SinonStub;
         transaction: sinon.SinonStub<Parameters<GiftRepository['transaction']>, Promise<unknown>>;
@@ -29,6 +51,7 @@ describe('GiftService', function () {
     };
     let giftEmailService: {
         sendPurchaseConfirmation: sinon.SinonStub;
+        sendReminder: sinon.SinonStub;
     };
     let tiersService: {
         api: {
@@ -55,6 +78,7 @@ describe('GiftService', function () {
             getByPaymentIntentId: sinon.stub<[string], Promise<Gift | null>>().resolves(null),
             findPendingConsumption: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingExpiration: sinon.stub<[], Promise<Gift[]>>().resolves([]),
+            findPendingReminder: sinon.stub<[FindPendingReminderOptions], Promise<Gift[]>>().resolves([]),
             create: sinon.stub(),
             update: sinon.stub(),
             transaction: sinon.stub<Parameters<GiftRepository['transaction']>, Promise<unknown>>().callsFake(async (callback) => {
@@ -70,7 +94,8 @@ describe('GiftService', function () {
             notifyGiftSubscriptionStarted: sinon.stub()
         };
         giftEmailService = {
-            sendPurchaseConfirmation: sinon.stub()
+            sendPurchaseConfirmation: sinon.stub().resolves(undefined),
+            sendReminder: sinon.stub().resolves(undefined)
         };
         tiersService = {
             api: {
@@ -653,6 +678,271 @@ describe('GiftService', function () {
             const result = await service.processExpired();
 
             assert.equal(result.expiredCount, 2);
+            assert.equal(giftRepository.update.callCount, 2);
+        });
+    });
+
+    describe('processReminders', function () {
+        const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+        it('returns zero counts when no gifts are pending reminders', async function () {
+            giftRepository.findPendingReminder.resolves([]);
+
+            const service = createService();
+            const result = await service.processReminders();
+
+            assert.deepEqual(result, {remindedCount: 0, skippedCount: 0, failedCount: 0});
+            sinon.assert.notCalled(giftEmailService.sendReminder);
+            sinon.assert.notCalled(giftRepository.update);
+        });
+
+        it('queries the repository with the 7d/3d window', async function () {
+            giftRepository.findPendingReminder.resolves([]);
+
+            const before = Date.now();
+            const service = createService();
+            await service.processReminders();
+            const after = Date.now();
+
+            sinon.assert.calledOnce(giftRepository.findPendingReminder);
+
+            const args = giftRepository.findPendingReminder.getCall(0).args[0];
+
+            assert.equal(args.reminderLeadMs, 7 * MS_PER_DAY);
+            assert.equal(args.reminderFloorMs, 3 * MS_PER_DAY);
+            assert.ok(args.now.getTime() >= before);
+            assert.ok(args.now.getTime() <= after);
+        });
+
+        it('sends the reminder, marks the gift as reminded, and returns counts', async function () {
+            const gift = buildRedeemedGift();
+
+            giftRepository.findPendingReminder.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
+            memberRepository.get.resolves(buildRedeemer());
+
+            const service = createService();
+            const result = await service.processReminders();
+
+            assert.equal(result.remindedCount, 1);
+            assert.equal(result.skippedCount, 0);
+            assert.equal(result.failedCount, 0);
+
+            sinon.assert.calledOnce(giftRepository.transaction);
+
+            // getByToken is called twice: once unlocked (before the tier check) and
+            // once locked (inside the transaction).
+            assert.equal(giftRepository.getByToken.callCount, 2);
+            sinon.assert.calledWithExactly(giftRepository.getByToken.firstCall, gift.token);
+            sinon.assert.calledWithExactly(giftRepository.getByToken.secondCall, gift.token, {transacting: 'trx', forUpdate: true});
+
+            sinon.assert.calledOnceWithExactly(memberRepository.get, {id: 'member_1'}, {transacting: 'trx', forUpdate: true});
+
+            sinon.assert.calledOnce(giftEmailService.sendReminder);
+
+            const emailArgs = giftEmailService.sendReminder.getCall(0).args[0];
+
+            assert.equal(emailArgs.memberEmail, 'member_1@example.com');
+            assert.equal(emailArgs.memberName, 'Member Name');
+            assert.equal(emailArgs.tierName, 'Bronze');
+            assert.equal(emailArgs.cadence, gift.cadence);
+            assert.equal(emailArgs.duration, gift.duration);
+            assert.equal(emailArgs.consumesAt, gift.consumesAt);
+
+            sinon.assert.calledOnce(giftRepository.update);
+
+            const savedGift = giftRepository.update.getCall(0).args[0];
+
+            assert.notEqual(savedGift.consumesSoonReminderSentAt, null);
+        });
+
+        it('skips gifts no longer in redeemed status when re-loaded', async function () {
+            const gift = buildRedeemedGift();
+
+            giftRepository.findPendingReminder.resolves([gift]);
+            giftRepository.getByToken.resolves(buildGift({
+                status: 'refunded',
+                refundedAt: new Date()
+            }));
+
+            const service = createService();
+            const result = await service.processReminders();
+
+            assert.equal(result.remindedCount, 0);
+            assert.equal(result.skippedCount, 1);
+            sinon.assert.notCalled(giftEmailService.sendReminder);
+            sinon.assert.notCalled(giftRepository.update);
+        });
+
+        it('skips gifts that have already been reminded', async function () {
+            const gift = buildRedeemedGift({
+                consumesSoonReminderSentAt: new Date('2026-04-10T00:00:00.000Z')
+            });
+
+            giftRepository.findPendingReminder.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
+
+            const service = createService();
+            const result = await service.processReminders();
+
+            assert.equal(result.remindedCount, 0);
+            assert.equal(result.skippedCount, 1);
+            sinon.assert.notCalled(giftEmailService.sendReminder);
+            sinon.assert.notCalled(giftRepository.update);
+        });
+
+        it('marks the gift as reminded but does not send when the redeemer has email_disabled', async function () {
+            const gift = buildRedeemedGift();
+            const memberGet = sinon.stub();
+
+            memberGet.withArgs('email').returns('member@example.com');
+            memberGet.withArgs('name').returns('Member Name');
+            memberGet.withArgs('email_disabled').returns(true);
+
+            giftRepository.findPendingReminder.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
+            memberRepository.get.resolves({id: 'member_1', get: memberGet});
+
+            const service = createService();
+            const result = await service.processReminders();
+
+            assert.equal(result.remindedCount, 0);
+            assert.equal(result.skippedCount, 1);
+            sinon.assert.notCalled(giftEmailService.sendReminder);
+            sinon.assert.calledOnce(giftRepository.update);
+
+            const savedGift = giftRepository.update.getCall(0).args[0];
+
+            assert.notEqual(savedGift.consumesSoonReminderSentAt, null);
+        });
+
+        it('marks the gift as reminded but does not send when the redeemer no longer exists', async function () {
+            const gift = buildRedeemedGift();
+
+            giftRepository.findPendingReminder.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
+            memberRepository.get.resolves(null);
+
+            const service = createService();
+            const result = await service.processReminders();
+
+            assert.equal(result.remindedCount, 0);
+            assert.equal(result.skippedCount, 1);
+            sinon.assert.notCalled(giftEmailService.sendReminder);
+            sinon.assert.calledOnce(giftRepository.update);
+
+            const savedGift = giftRepository.update.getCall(0).args[0];
+
+            assert.notEqual(savedGift.consumesSoonReminderSentAt, null);
+        });
+
+        it('marks the gift as reminded before sending so a failed email does not cause a duplicate send on retry', async function () {
+            // Mark-before-send trade: we accept the risk of a missed reminder on
+            // email failure in exchange for the guarantee that no gift is ever
+            // reminded twice. The failure is caught by processReminders'
+            // per-gift try/catch and counted as a failure rather than propagated.
+            const gift = buildRedeemedGift();
+
+            giftRepository.findPendingReminder.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
+            memberRepository.get.resolves(buildRedeemer());
+            giftEmailService.sendReminder.rejects(new Error('SMTP error'));
+
+            const service = createService();
+            const result = await service.processReminders();
+
+            assert.equal(result.remindedCount, 0);
+            assert.equal(result.skippedCount, 0);
+            assert.equal(result.failedCount, 1);
+
+            // The reminder-sent marker was committed before the email was attempted.
+            sinon.assert.calledOnce(giftRepository.update);
+
+            const marked = giftRepository.update.getCall(0).args[0];
+            assert.notEqual(marked.consumesSoonReminderSentAt, null);
+
+            // And the update call finished before sendReminder was invoked.
+            sinon.assert.callOrder(giftRepository.update, giftEmailService.sendReminder);
+        });
+
+        it('does not mark the gift as reminded when the tier is missing so an admin fix recovers the reminder', async function () {
+            const gift = buildRedeemedGift();
+
+            giftRepository.findPendingReminder.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
+            tiersService.api.read.resolves(null);
+
+            const service = createService();
+            const result = await service.processReminders();
+
+            assert.equal(result.remindedCount, 0);
+            assert.equal(result.skippedCount, 0);
+            assert.equal(result.failedCount, 1);
+
+            // Tier is read up front, but the transaction never runs, so the gift
+            // is neither locked nor marked as reminded. A follow-up run after the
+            // tier is restored will pick the gift up again.
+            sinon.assert.notCalled(giftRepository.update);
+            sinon.assert.notCalled(giftEmailService.sendReminder);
+        });
+
+        it('continues processing the batch when one gift fails', async function () {
+            // Gift 1 will fail at the email stage; gift 2 should still be processed.
+            const gift1 = buildRedeemedGift({token: 'gift-1', redeemerMemberId: 'member_1'});
+            const gift2 = buildRedeemedGift({token: 'gift-2', redeemerMemberId: 'member_2'});
+
+            giftRepository.findPendingReminder.resolves([gift1, gift2]);
+
+            // getByToken resolves regardless of whether the lock options are passed.
+            giftRepository.getByToken
+                .withArgs('gift-1').resolves(gift1)
+                .withArgs('gift-1', sinon.match.any).resolves(gift1)
+                .withArgs('gift-2').resolves(gift2)
+                .withArgs('gift-2', sinon.match.any).resolves(gift2);
+
+            memberRepository.get
+                .withArgs({id: 'member_1'}, sinon.match.any).resolves(buildRedeemer('member_1'))
+                .withArgs({id: 'member_2'}, sinon.match.any).resolves(buildRedeemer('member_2'));
+
+            giftEmailService.sendReminder
+                .onFirstCall().rejects(new Error('Transient SMTP error'))
+                .onSecondCall().resolves(undefined);
+
+            const service = createService();
+            const result = await service.processReminders();
+
+            assert.equal(result.remindedCount, 1);
+            assert.equal(result.skippedCount, 0);
+            assert.equal(result.failedCount, 1);
+
+            // Both gifts were claimed (marked as reminded inside their transactions),
+            // and both emails were attempted.
+            assert.equal(giftRepository.update.callCount, 2);
+            assert.equal(giftEmailService.sendReminder.callCount, 2);
+        });
+
+        it('handles multiple gifts independently', async function () {
+            const gift1 = buildRedeemedGift({token: 'gift-1', redeemerMemberId: 'member_1'});
+            const gift2 = buildRedeemedGift({token: 'gift-2', redeemerMemberId: 'member_2'});
+
+            giftRepository.findPendingReminder.resolves([gift1, gift2]);
+            giftRepository.getByToken
+                .withArgs('gift-1').resolves(gift1)
+                .withArgs('gift-1', sinon.match.any).resolves(gift1)
+                .withArgs('gift-2').resolves(gift2)
+                .withArgs('gift-2', sinon.match.any).resolves(gift2);
+
+            memberRepository.get
+                .withArgs({id: 'member_1'}, sinon.match.any).resolves(buildRedeemer('member_1'))
+                .withArgs({id: 'member_2'}, sinon.match.any).resolves(buildRedeemer('member_2'));
+
+            const service = createService();
+            const result = await service.processReminders();
+
+            assert.equal(result.remindedCount, 2);
+            assert.equal(result.skippedCount, 0);
+            assert.equal(result.failedCount, 0);
+            assert.equal(giftEmailService.sendReminder.callCount, 2);
             assert.equal(giftRepository.update.callCount, 2);
         });
     });
