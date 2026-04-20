@@ -1,5 +1,6 @@
 import MembersActions from './components/members-actions';
 import MembersContent from './components/members-content';
+import MembersEmptyState from './components/members-empty-state';
 import MembersFilters from './components/members-filters';
 import MembersHeader from './components/members-header';
 import MembersHeaderSearch from './components/members-header-search';
@@ -187,26 +188,25 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                         </Button>
                     </div>
                 ) : !data?.members.length ? (
-                    <div className="flex h-full flex-col items-center justify-center">
-                        {hasFilterOrSearch ? (
-                            <>
-                                <EmptyIndicator title="No matching members found.">
-                                    <LucideIcon.Users />
-                                </EmptyIndicator>
-                                <Button
-                                    className="mt-4"
-                                    variant="outline"
-                                    onClick={() => clearAll({replace: false})}
-                                >
-                                    Show all members
-                                </Button>
-                            </>
-                        ) : (
-                            <EmptyIndicator title="No members yet">
+                    hasFilterOrSearch ? (
+                        <div className="flex h-full flex-col items-center justify-center">
+                            <EmptyIndicator
+                                actions={
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => clearAll({replace: false})}
+                                    >
+                                        Show all members
+                                    </Button>
+                                }
+                                title="No matching members found."
+                            >
                                 <LucideIcon.Users />
                             </EmptyIndicator>
-                        )}
-                    </div>
+                        </div>
+                    ) : (
+                        <MembersEmptyState onMemberCreated={() => void refetch()} />
+                    )
                 ) : (
                     <MembersList
                         activeColumns={activeColumns}
