@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-markdown-html-renderer",
-  "version": "7.1.18",
+  "version": "7.2.0",
   "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-markdown-html-renderer",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -49,7 +49,7 @@
     "typescript-eslint": "8.58.2"
   },
   "dependencies": {
-    "@tryghost/kg-utils": "*",
+    "@tryghost/kg-utils": "1.1.0",
     "markdown-it": "14.1.1",
     "markdown-it-footnote": "4.0.0",
     "markdown-it-image-lazy-loading": "2.0.1",
