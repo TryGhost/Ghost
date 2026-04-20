@@ -16,14 +16,6 @@ function asStringOrNull(value: unknown): string | null {
     return typeof value === 'string' ? value : null;
 }
 
-/**
- * Narrow a Bookshelf attribute value to a boolean. Bookshelf may return `0`/`1`
- * for tinyint columns on some drivers, so coerce defensively.
- */
-function asBoolean(value: unknown): boolean {
-    return value === true || value === 1;
-}
-
 const errorMessages = {
     giftSubscriptionsNotEnabled: 'Gift subscriptions are not enabled on this site.',
     giftNotFound: 'This gift does not exist.',
@@ -517,7 +509,7 @@ export class GiftService {
                 return {outcome: 'skip'};
             }
 
-            if (asBoolean(member.get('email_disabled'))) {
+            if (member.get('email_disabled')) {
                 return {outcome: 'skip'};
             }
 
