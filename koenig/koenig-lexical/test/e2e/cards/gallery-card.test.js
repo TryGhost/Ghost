@@ -371,8 +371,8 @@ test.describe('Gallery card', async () => {
         // Second Backspace: deletes the selected gallery card
         await page.keyboard.press('Backspace');
         await expect(page.locator('[data-testid="gallery-image"]')).toHaveCount(0);
-        await page.keyboard.press(`${ctrlOrCmd()}+z`);
-        await page.keyboard.press(`${ctrlOrCmd()}+z`);
+        await page.keyboard.press(`${ctrlOrCmd(page)}+z`);
+        await page.keyboard.press(`${ctrlOrCmd(page)}+z`);
         await expect(page.locator('[data-kg-card="gallery"]')).toBeVisible();
 
         // verify the gallery content is preserved after undo

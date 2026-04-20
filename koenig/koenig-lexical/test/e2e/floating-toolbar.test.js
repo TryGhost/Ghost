@@ -7,7 +7,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 test.describe('Floating format toolbar', async () => {
-    const ctrlOrCmdKey = ctrlOrCmd();
     let page;
 
     test.beforeAll(async ({browser}) => {
@@ -285,7 +284,7 @@ test.describe('Floating format toolbar', async () => {
             await page.keyboard.press('Enter');
             await insertCard(page, {cardName: 'divider'});
             await page.keyboard.type('Second paragraph');
-            await page.keyboard.press(`${ctrlOrCmdKey}+A`);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+A`);
 
             const buttonSelector = `[data-kg-floating-toolbar] [data-kg-toolbar-button="h2"] button`;
             await page.click(buttonSelector);
@@ -317,7 +316,7 @@ test.describe('Floating format toolbar', async () => {
 
             await page.keyboard.press('ArrowDown');
             await page.keyboard.type('Second paragraph');
-            await page.keyboard.press(`${ctrlOrCmdKey}+A`);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+A`);
 
             const buttonSelector = `[data-kg-floating-toolbar] [data-kg-toolbar-button="h2"] button`;
             await page.click(buttonSelector);
@@ -347,7 +346,7 @@ test.describe('Floating format toolbar', async () => {
 
             await page.keyboard.press('ArrowDown');
             await page.keyboard.type('Second paragraph');
-            await page.keyboard.press(`${ctrlOrCmdKey}+A`);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+A`);
 
             const buttonSelector = `[data-kg-floating-toolbar] [data-kg-toolbar-button="h2"] button`;
             await page.click(buttonSelector);

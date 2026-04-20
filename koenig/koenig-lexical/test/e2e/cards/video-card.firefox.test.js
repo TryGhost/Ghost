@@ -405,7 +405,7 @@ test.describe('Video card', async () => {
         await page.keyboard.type('Test caption');
         await page.keyboard.press('Escape');
         await page.keyboard.press('Backspace');
-        await page.keyboard.press(`${ctrlOrCmd()}+z`);
+        await page.keyboard.press(`${ctrlOrCmd(page)}+z`);
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">

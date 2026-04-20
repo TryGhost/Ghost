@@ -141,7 +141,7 @@ test.describe('Html card', async () => {
         await page.waitForTimeout(600);
         await page.keyboard.press('Backspace');
         await expect(page.getByText('Here are some word')).toBeVisible();
-        await page.keyboard.press(`${ctrlOrCmd()}+z`);
+        await page.keyboard.press(`${ctrlOrCmd(page)}+z`);
         await expect(page.getByText('Here are some words')).toBeVisible();
         await page.keyboard.press('Escape');
         await expect(page.getByText('Here are some words')).toBeVisible();

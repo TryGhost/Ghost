@@ -1,8 +1,6 @@
 import {assertHTML, assertSelection, ctrlOrCmd, dragMouse, focusEditor, html, initialize} from '../utils/e2e';
 import {test} from '@playwright/test';
 
-const ctrlOrCmdKey = ctrlOrCmd();
-
 test.describe('Selection behaviour', async () => {
     let page;
 
@@ -72,9 +70,10 @@ test.describe('Selection behaviour', async () => {
             await page.keyboard.type('---');
             await page.keyboard.type('Second paragraph');
 
-            await page.keyboard.down(ctrlOrCmdKey);
+            const modifier = ctrlOrCmd(page);
+            await page.keyboard.down(modifier);
             await page.keyboard.press('a');
-            await page.keyboard.up(ctrlOrCmdKey);
+            await page.keyboard.up(modifier);
 
             await assertSelection(page, {
                 anchorPath: [0, 0, 0],
@@ -89,9 +88,10 @@ test.describe('Selection behaviour', async () => {
             await page.keyboard.press('Enter');
             await page.keyboard.type('---');
 
-            await page.keyboard.down(ctrlOrCmdKey);
+            const modifier = ctrlOrCmd(page);
+            await page.keyboard.down(modifier);
             await page.keyboard.press('a');
-            await page.keyboard.up(ctrlOrCmdKey);
+            await page.keyboard.up(modifier);
 
             await assertSelection(page, {
                 anchorPath: [0],

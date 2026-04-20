@@ -1,4 +1,4 @@
-import {assertHTML, createSnippet, focusEditor, html, initialize} from '../../utils/e2e';
+import {assertHTML, createSnippet, ctrlOrCmd, focusEditor, html, initialize} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 async function insertEmailCard(page) {
@@ -20,14 +20,6 @@ async function insertEmailCard(page) {
     await page.waitForSelector('[data-kg-card-menu-item="Email content"]', {state: 'visible'});
     await page.locator('[data-kg-card-menu-item="Email content"]').click();
     await page.waitForSelector('[data-kg-card="email"]');
-}
-
-async function pressEmailEditorShortcut(page, key) {
-    const modifier = await page.evaluate(() => {
-        return navigator.platform.includes('Mac') ? 'Meta' : 'Control';
-    });
-
-    await page.keyboard.press(`${modifier}+${key}`);
 }
 
 test.describe('Email card', async () => {
@@ -152,7 +144,7 @@ test.describe('Email card', async () => {
         await insertEmailCard(page);
 
         // Remove all existing content
-        await pressEmailEditorShortcut(page, 'A');
+        await page.keyboard.press(`${ctrlOrCmd(page)}+A`);
         await page.keyboard.press('Backspace');
 
         // Shift focus away from email card
@@ -200,7 +192,7 @@ test.describe('Email card', async () => {
         await page.keyboard.press('Enter');
         await page.keyboard.press('Escape');
         await page.keyboard.press('Backspace');
-        await pressEmailEditorShortcut(page, 'z');
+        await page.keyboard.press(`${ctrlOrCmd(page)}+z`);
 
         const emailCard = page.locator('[data-kg-card="email"] [data-kg="editor"] ul > li:first-child');
         await expect(emailCard).toHaveText('List item 1');

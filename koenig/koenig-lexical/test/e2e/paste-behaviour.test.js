@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import {assertHTML, ctrlOrCmd, focusEditor,html, initialize, insertCard, paste, pasteFiles, pasteFilesWithText, pasteHtml, pasteText, selectBackwards} from '../utils/e2e';
+import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, insertCard, paste, pasteFiles, pasteFilesWithText, pasteHtml, pasteText, selectBackwards} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -109,13 +109,13 @@ test.describe('Paste behaviour', async () => {
         test('pasted on selected text containing formats converts to link', async function () {
             await focusEditor(page);
             await page.keyboard.type('Text with ');
-            await page.keyboard.press(`${ctrlOrCmd()}+B`);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+B`);
             await page.keyboard.type('bold');
-            await page.keyboard.press(`${ctrlOrCmd()}+B`);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+B`);
             await page.keyboard.type(' and ');
-            await page.keyboard.press(`${ctrlOrCmd()}+I`);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+I`);
             await page.keyboard.type('italic');
-            await page.keyboard.press(`${ctrlOrCmd()}+I`);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+I`);
             await page.keyboard.type(' text.');
 
             await assertHTML(page, html`
@@ -128,7 +128,7 @@ test.describe('Paste behaviour', async () => {
                 </p>
             `);
 
-            await page.keyboard.press(`${ctrlOrCmd()}+A`);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+A`);
             await pasteText(page, 'https://ghost.org');
 
             await assertHTML(page, html`
@@ -151,7 +151,7 @@ test.describe('Paste behaviour', async () => {
             await page.keyboard.type('1 test');
             await selectBackwards(page, 4);
             await pasteText(page, 'https://ghost.org');
-            await page.keyboard.press(`${ctrlOrCmd()}+Enter`); // exit edit mode
+            await page.keyboard.press(`${ctrlOrCmd(page)}+Enter`); // exit edit mode
 
             await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">

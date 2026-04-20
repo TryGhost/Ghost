@@ -271,7 +271,7 @@ test.describe('Toggle card', async () => {
         await page.keyboard.press('Enter');
         await page.keyboard.press('Backspace');
         await page.keyboard.press('Backspace');
-        await page.keyboard.press(`${ctrlOrCmd()}+z`);
+        await page.keyboard.press(`${ctrlOrCmd(page)}+z`);
 
         // verify the card is restored and selected after undo
         await expect(page.locator('[data-kg-card="toggle"]')).toBeVisible();

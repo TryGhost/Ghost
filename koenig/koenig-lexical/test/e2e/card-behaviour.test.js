@@ -1323,9 +1323,9 @@ test.describe('Card behaviour', async () => {
         test('at start of formatted text in paragraph before card', async function () {
             await focusEditor(page);
             await page.keyboard.type('Before ');
-            await page.keyboard.press(`${ctrlOrCmd()}+i`);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+i`);
             await page.keyboard.type('italic');
-            await page.keyboard.press(`${ctrlOrCmd()}+i`);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+i`);
             await page.keyboard.type(' after');
             await page.keyboard.press('Enter');
             await page.keyboard.type('---');
@@ -1376,7 +1376,7 @@ test.describe('Card behaviour', async () => {
             await page.keyboard.type('---');
             await page.keyboard.type('Some content');
 
-            await page.keyboard.press(`${ctrlOrCmd()}+Backspace`);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+Backspace`);
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
@@ -1397,7 +1397,7 @@ test.describe('Card behaviour', async () => {
             await page.keyboard.press('ArrowUp');
             await page.keyboard.press('ArrowUp');
 
-            await page.keyboard.press(`${ctrlOrCmd()}+Backspace`);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+Backspace`);
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
@@ -1859,8 +1859,6 @@ test.describe('Card behaviour', async () => {
         test.describe('codemirror', function () {
             // Skipped because CodeMirror does not pick up the copy/paste properly inside Playwright - manual testing is working
             test.skip('can copy/paste', async function () {
-                const ctrlOrCmdKey = ctrlOrCmd();
-
                 await focusEditor(page);
                 await insertCard(page, {cardName: 'html'});
 
@@ -1869,13 +1867,13 @@ test.describe('Card behaviour', async () => {
 
                 await page.keyboard.type('Testing', {delay: 10});
                 await page.waitForTimeout(100);
-                await page.keyboard.press(`${ctrlOrCmdKey}+KeyA`, {delay: 10});
+                await page.keyboard.press(`${ctrlOrCmd(page)}+KeyA`);
                 await page.waitForTimeout(100);
-                await page.keyboard.press(`${ctrlOrCmdKey}+KeyC`, {delay: 10});
+                await page.keyboard.press(`${ctrlOrCmd(page)}+KeyC`);
                 await page.waitForTimeout(100);
-                await page.keyboard.press(`${ctrlOrCmdKey}+KeyV`, {delay: 10});
+                await page.keyboard.press(`${ctrlOrCmd(page)}+KeyV`);
                 await page.waitForTimeout(100);
-                await page.keyboard.press(`${ctrlOrCmdKey}+KeyV`, {delay: 10});
+                await page.keyboard.press(`${ctrlOrCmd(page)}+KeyV`);
                 await page.waitForTimeout(100);
 
                 await assertHTML(page, html`

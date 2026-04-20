@@ -2,7 +2,6 @@ import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, selectBackwards} f
 import {test} from '@playwright/test';
 
 test.describe('Editor keyboard shortcuts', async () => {
-    const ctrlOrCmdKey = ctrlOrCmd();
     let page;
 
     test.beforeAll(async ({browser}) => {
@@ -25,7 +24,7 @@ test.describe('Editor keyboard shortcuts', async () => {
 
             await selectBackwards(page, 4);
 
-            await page.keyboard.press(`${ctrlOrCmdKey}+B`);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+B`);
 
             await assertHTML(page, html`<p dir="ltr"><strong data-lexical-text="true">test</strong></p>`);
         });
@@ -37,7 +36,7 @@ test.describe('Editor keyboard shortcuts', async () => {
 
             await selectBackwards(page, 4);
 
-            await page.keyboard.press(`${ctrlOrCmdKey}+I`);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+I`);
 
             await assertHTML(page, html`<p dir="ltr"><em data-lexical-text="true">test</em></p>`);
         });
@@ -49,7 +48,7 @@ test.describe('Editor keyboard shortcuts', async () => {
 
             await selectBackwards(page, 4);
 
-            await page.keyboard.press(`${ctrlOrCmdKey}+Alt+U`);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+Alt+U`);
 
             await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true" class="line-through">test</span></p>`);
         });
@@ -61,7 +60,7 @@ test.describe('Editor keyboard shortcuts', async () => {
 
             await selectBackwards(page, 4);
 
-            await page.keyboard.press(`${ctrlOrCmdKey}+K`);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+K`);
 
             await page.waitForSelector('[data-testid="link-input"]');
             await page.getByTestId('link-input').fill('https://example.com');
@@ -94,7 +93,7 @@ test.describe('Editor keyboard shortcuts', async () => {
 
             await selectBackwards(page, 4);
 
-            await page.keyboard.press(`${ctrlOrCmdKey}+Alt+H`);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+Alt+H`);
 
             await assertHTML(page, html`<p dir="ltr"><mark data-lexical-text="true"><span>test</span></mark></p>`);
         });

@@ -1,5 +1,5 @@
 import path from 'path';
-import {assertHTML, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
+import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 import {selectCustomColor, selectTitledColor} from '../../utils/color-select-helper';
@@ -721,7 +721,7 @@ test.describe('Signup card', async () => {
 
         await page.keyboard.press('Escape');
         await page.keyboard.press('Backspace');
-        await page.keyboard.press(`${ctrlOrCmd()}+z`);
+        await page.keyboard.press(`${ctrlOrCmd(page)}+z`);
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">

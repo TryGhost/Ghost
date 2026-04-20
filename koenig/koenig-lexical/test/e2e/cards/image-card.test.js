@@ -1124,7 +1124,7 @@ test.describe('Image card', async () => {
             await page.waitForSelector('[data-kg-card="image"][data-kg-card-selected="true"]');
             await page.keyboard.press('Backspace');
             await expect(page.locator('[data-kg-card="image"]')).not.toBeVisible();
-            await page.keyboard.press(`${ctrlOrCmd()}+z`);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+z`);
 
             await expect(page.getByTestId('image-caption-editor')).toHaveText('This is a caption');
         });

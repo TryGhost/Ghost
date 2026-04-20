@@ -175,7 +175,7 @@ test.describe('Emoji Picker Plugin', async function () {
         await page.keyboard.press('Enter');
         await page.keyboard.type('s for all', {delay: 10});
 
-        await page.keyboard.press(`${ctrlOrCmd()}+Enter`); // exit edit mode
+        await page.keyboard.press(`${ctrlOrCmd(page)}+Enter`); // exit edit mode
 
         await assertHTML(page, `
         <div data-lexical-decorator="true" contenteditable="false">
@@ -235,7 +235,7 @@ test.describe('Emoji Picker Plugin', async function () {
 
         await page.keyboard.type('```js ', {delay: 10});
         await page.keyboard.type(`sample code`, {delay: 10});
-        await page.keyboard.press(`${ctrlOrCmd()}+Enter`);
+        await page.keyboard.press(`${ctrlOrCmd(page)}+Enter`);
         await page.keyboard.type('enjoy :ta', {delay: 10});
         await page.keyboard.press('ArrowDown'); // make sure we test arrow key use
         await page.keyboard.press('ArrowDown');

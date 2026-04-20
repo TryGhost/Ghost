@@ -6,6 +6,7 @@ import {E2E_PORT} from '../../playwright.config';
 import {expect} from '@playwright/test';
 
 const {JSDOM} = jsdom;
+const browserCtrlOrCmdMap = new WeakMap();
 
 export async function initialize({page, uri = '/#/?content=false'}) {
     const url = `http://localhost:${E2E_PORT}${uri}`;
@@ -45,6 +46,10 @@ export async function initialize({page, uri = '/#/?content=false'}) {
         }, [uri.slice(2), currentUrl === url]);
         await exposeLexicalEditor(page);
     }
+
+    browserCtrlOrCmdMap.set(page, await page.evaluate(() => {
+        return navigator.platform.includes('Mac') ? 'Meta' : 'Control';
+    }));
 }
 
 async function exposeLexicalEditor(page) {
@@ -397,8 +402,18 @@ export function isMac() {
     return process.platform === 'darwin';
 }
 
-export function ctrlOrCmd() {
-    return isMac() ? 'Meta' : 'Control';
+export function ctrlOrCmd(page) {
+    if (!page) {
+        return isMac() ? 'Meta' : 'Control';
+    }
+
+    const modifier = browserCtrlOrCmdMap.get(page);
+
+    if (!modifier) {
+        throw new Error('ctrlOrCmd(page) requires initialize({page}) before use');
+    }
+
+    return modifier;
 }
 
 // note: we always use lowercase for the cardName but we use start case for the menu item attribute
