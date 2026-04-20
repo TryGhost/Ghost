@@ -36,7 +36,7 @@ export class MembersListPage extends AdminPage implements MembersListSurface {
         this.newMemberButton = page.getByRole('link', {name: 'New member'});
         this.filterButton = page.getByRole('button', {name: /^(Filter|Add filter)$/});
         this.clearFiltersButton = page.getByRole('button', {name: 'Clear'});
-        this.emptyState = page.getByText('No members yet');
+        this.emptyState = page.getByText('Start building your audience');
         this.noResults = page.getByText('No matching members found.');
         this.showAllButton = page.getByRole('button', {name: 'Show all members'});
     }
