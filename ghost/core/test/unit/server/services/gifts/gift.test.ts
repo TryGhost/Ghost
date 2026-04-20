@@ -326,11 +326,26 @@ describe('Gift', function () {
 
             const after = new Date();
 
+            assert.ok(reminded);
             assert.notEqual(reminded, gift);
             assert.equal(gift.consumesSoonReminderSentAt, null);
             assert.ok(reminded.consumesSoonReminderSentAt);
             assert.ok(reminded.consumesSoonReminderSentAt >= before);
             assert.ok(reminded.consumesSoonReminderSentAt <= after);
+        });
+
+        it('returns null if already reminded', function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemerMemberId: 'member_2',
+                redeemedAt: new Date('2026-04-11T12:00:00.000Z'),
+                consumesAt: new Date('2027-04-11T12:00:00.000Z'),
+                consumesSoonReminderSentAt: new Date('2027-04-01T12:00:00.000Z')
+            });
+
+            const result = gift.remind();
+
+            assert.equal(result, null);
         });
     });
 });

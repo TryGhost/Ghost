@@ -494,7 +494,13 @@ export class GiftService {
 
             // Record the reminder as sent before any skip or send below so we don't
             // re-try gifts with permanently unreachable redeemers on every poll.
-            await this.deps.giftRepository.update(locked.remind(), {transacting});
+            const reminded = locked.remind();
+
+            if (!reminded) {
+                return null;
+            }
+
+            await this.deps.giftRepository.update(reminded, {transacting});
 
             if (!member) {
                 return null;

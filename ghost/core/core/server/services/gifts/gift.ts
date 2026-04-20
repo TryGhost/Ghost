@@ -204,7 +204,11 @@ export class Gift {
         });
     }
 
-    remind(): Gift {
+    remind(): Gift | null {
+        if (this.consumesSoonReminderSentAt !== null) {
+            return null;
+        }
+
         return new Gift({
             ...this,
             consumesSoonReminderSentAt: new Date()
