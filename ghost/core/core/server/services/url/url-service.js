@@ -63,7 +63,7 @@ class UrlService {
      * The "init" event is basically the bootstrap event, which is the siganliser if url generation
      * is in progress or not.
      *
-     * @param {String} event
+     * @param {string} event
      * @private
      */
     _onQueueStarted(event) {
@@ -75,7 +75,7 @@ class UrlService {
 
     /**
      * @description The queue will notify us if the queue has ended with an event.
-     * @param {String} event
+     * @param {string} event
      * @private
      */
     _onQueueEnded(event) {
@@ -90,10 +90,10 @@ class UrlService {
 
     /**
      * @description Router was created, connect it with a url generator.
-     * @param {String} identifier frontend router ID reference
-     * @param {String} filter NQL filter
-     * @param {String} resourceType
-     * @param {String} permalink
+     * @param {string} identifier frontend router ID reference
+     * @param {string} filter NQL filter
+     * @param {string} resourceType
+     * @param {string} permalink
      */
     onRouterAddedType(identifier, filter, resourceType, permalink) {
         debug('Registering route:', filter, resourceType, permalink);
@@ -113,7 +113,7 @@ class UrlService {
 
     /**
      * @description Router update handler - regenerates it's resources
-     * @param {String} identifier router ID linked to the UrlGenerator
+     * @param {string} identifier router ID linked to the UrlGenerator
      */
     onRouterUpdated(identifier) {
         const generator = this.urlGenerators.find(g => g.identifier === identifier);
@@ -141,7 +141,7 @@ class UrlService {
      *
      * @NOTE: only accepts relative urls at the moment.
      *
-     * @param {String} url
+     * @param {string} url
      * @param {Object} options
      * @returns {Object}
      */
@@ -188,7 +188,7 @@ class UrlService {
 
     /**
      * @description Get resource by id.
-     * @param {String} resourceId
+     * @param {string} resourceId
      * @returns {Object}
      */
     getResourceById(resourceId) {
@@ -222,11 +222,11 @@ class UrlService {
      * You will see a suggestion of posts, but they all don't belong to a collection.
      * They would show localhost:2368/null/.
      *
-     * @param {String} id
+     * @param {string} id
      * @param {Object} [options]
      * @param {Object} [options.absolute]
      * @param {Object} [options.withSubdirectory]
-     * @returns {String}
+     * @returns {string}
      */
     getUrlByResourceId(id, options = {}) {
         const obj = this.urls.getByResourceId(id);
@@ -256,8 +256,8 @@ class UrlService {
 
     /**
      * @description Check whether a router owns a resource id.
-     * @param {String} routerId
-     * @param {String} id
+     * @param {string} routerId
+     * @param {string} id
      * @returns {boolean}
      */
     owns(routerId, id) {
@@ -273,7 +273,7 @@ class UrlService {
 
     /**
      * @description Get permlink structure for url.
-     * @param {String} url
+     * @param {string} url
      * @param {object} options
      * @returns {*}
      */
@@ -298,7 +298,7 @@ class UrlService {
     /**
      * @description Initializes components needed for the URL Service to function
      * @param {Object} options
-     * @param {Boolean} [options.urlCache] - whether to init using url cache or not
+     * @param {boolean} [options.urlCache] - whether to init using url cache or not
      */
     async init({urlCache} = {}) {
         let persistedUrls;

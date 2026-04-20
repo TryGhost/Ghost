@@ -535,4 +535,127 @@ describe('EventRepository', function () {
             assert.equal(event.data.member_id, null);
         });
     });
+
+    describe('getGiftRedemptionEvents', function () {
+        let eventRepository;
+        let fake;
+
+        before(function () {
+            fake = sinon.fake.returns({data: [{
+                toJSON: () => ({
+                    id: 'gift123',
+                    redeemer_member_id: 'member789',
+                    redeemer: {id: 'member789', name: 'Test Redeemer', email: 'redeemer@example.com'},
+                    tier: {name: 'Gold'},
+                    amount: 5000,
+                    currency: 'usd',
+                    cadence: 'year',
+                    duration: 1,
+                    redeemed_at: '2024-08-20T09:30:00.000Z',
+                    token: 'secret-token',
+                    stripe_checkout_session_id: 'cs_123',
+                    stripe_payment_intent_id: 'pi_123',
+                    status: 'redeemed'
+                })
+            }]});
+            eventRepository = new EventRepository({
+                EmailRecipient: null,
+                MemberSubscribeEvent: null,
+                MemberPaymentEvent: null,
+                MemberStatusEvent: null,
+                MemberLoginEvent: null,
+                MemberPaidSubscriptionEvent: null,
+                labsService: null,
+                Gift: {
+                    findPage: fake
+                }
+            });
+        });
+
+        afterEach(function () {
+            fake.resetHistory();
+        });
+
+        it('queries with correct options', async function () {
+            await eventRepository.getGiftRedemptionEvents({
+                filter: 'not used',
+                order: 'created_at desc, id desc'
+            }, {
+                type: 'unused'
+            });
+
+            sinon.assert.calledOnceWithMatch(fake, {
+                withRelated: ['redeemer', 'tier'],
+                filter: 'redeemer_member_id:-null+custom:true',
+                order: 'redeemed_at desc, id desc'
+            });
+        });
+
+        it('returns correctly formatted gift_redemption_event', async function () {
+            const result = await eventRepository.getGiftRedemptionEvents({
+                order: 'created_at desc, id desc'
+            }, {});
+
+            assert.equal(result.data.length, 1);
+
+            const event = result.data[0];
+
+            assert.equal(event.type, 'gift_redemption_event');
+            assert.equal(event.data.id, 'gift123');
+            assert.equal(event.data.amount, 5000);
+            assert.equal(event.data.currency, 'usd');
+            assert.equal(event.data.tier_name, 'Gold');
+            assert.equal(event.data.cadence, 'year');
+            assert.equal(event.data.duration, 1);
+            assert.equal(event.data.member_id, 'member789');
+            assert.equal(event.data.created_at, '2024-08-20T09:30:00.000Z');
+            assert.deepEqual(event.data.member, {
+                id: 'member789',
+                name: 'Test Redeemer',
+                email: 'redeemer@example.com'
+            });
+        });
+
+        it('excludes internal fields from event data', async function () {
+            const result = await eventRepository.getGiftRedemptionEvents({}, {});
+
+            const event = result.data[0];
+
+            assert.equal(event.data.token, undefined);
+            assert.equal(event.data.stripe_checkout_session_id, undefined);
+            assert.equal(event.data.stripe_payment_intent_id, undefined);
+            assert.equal(event.data.status, undefined);
+        });
+
+        it('sets member to null when redeemer is not present', async function () {
+            const nullRedeemerFake = sinon.fake.returns({data: [{
+                toJSON: () => ({
+                    id: 'gift999',
+                    redeemer_member_id: null,
+                    redeemer: null,
+                    amount: 3000,
+                    currency: 'eur',
+                    redeemed_at: '2024-09-01T12:00:00.000Z'
+                })
+            }]});
+            const repo = new EventRepository({
+                EmailRecipient: null,
+                MemberSubscribeEvent: null,
+                MemberPaymentEvent: null,
+                MemberStatusEvent: null,
+                MemberLoginEvent: null,
+                MemberPaidSubscriptionEvent: null,
+                labsService: null,
+                Gift: {
+                    findPage: nullRedeemerFake
+                }
+            });
+
+            const result = await repo.getGiftRedemptionEvents({}, {});
+            const event = result.data[0];
+
+            assert.equal(event.data.member, null);
+            assert.equal(event.data.member_id, null);
+        });
+    });
 });

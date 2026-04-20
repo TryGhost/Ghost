@@ -23,7 +23,7 @@
     </p>
 {{else if (eq @publishOptions.totalMemberCount 0)}}
     <p class="gh-box gh-content-box" data-test-publish-type-error="no-members">
-        <LinkTo @route="members">Add members</LinkTo>
+        <a href="#/members">Add members</a>
         to start sending newsletters!
     </p>
 {{else if (not @publishOptions.mailgunIsConfigured)}}

@@ -30,6 +30,8 @@ const errors = require('@tryghost/errors');
  * @property {number} apiPollingTimeMs - Time spent polling the API in milliseconds
  * @property {number} processingTimeMs - Time spent processing events in milliseconds
  * @property {number} aggregationTimeMs - Time spent aggregating stats in milliseconds
+ * @property {number} emailAggregationTimeMs - Time spent aggregating email stats in milliseconds
+ * @property {number} memberAggregationTimeMs - Time spent aggregating member stats in milliseconds
  * @property {EventProcessingResult} result - The processing result with event breakdown
  */
 
@@ -46,6 +48,8 @@ function createEmptyResult() {
         apiPollingTimeMs: 0,
         processingTimeMs: 0,
         aggregationTimeMs: 0,
+        emailAggregationTimeMs: 0,
+        memberAggregationTimeMs: 0,
         result: new EventProcessingResult()
     };
 }
@@ -112,6 +116,14 @@ module.exports = class EmailAnalyticsService {
             // @ts-expect-error
             prometheusClient.registerCounter({name: 'email_analytics_aggregate_member_stats_count', help: 'Count of member stats aggregations'});
         }
+    }
+
+    #clearScheduledData() {
+        this.#fetchScheduledData = {
+            running: false,
+            jobName: 'email-analytics-scheduled'
+        };
+        this.queries.setJobMetadata('email-analytics-scheduled', null);
     }
 
     getStatus() {
@@ -215,7 +227,7 @@ module.exports = class EmailAnalyticsService {
      * @param {Date} options.end - The end date for the scheduled fetch.
      * @throws {errors.ValidationError} Throws an error if a fetch is already in progress.
      */
-    schedule({begin, end}) {
+    async schedule({begin, end}) {
         if (this.#fetchScheduledData && this.#fetchScheduledData.running) {
             throw new errors.ValidationError({
                 message: 'Already fetching scheduled events. Wait for it to finish before scheduling a new one.'
@@ -230,6 +242,10 @@ module.exports = class EmailAnalyticsService {
                 end
             }
         };
+        await this.queries.setJobMetadata('email-analytics-scheduled', {
+            begin: begin.toISOString(),
+            end: end.toISOString()
+        });
     }
 
     /**
@@ -241,14 +257,46 @@ module.exports = class EmailAnalyticsService {
     cancelScheduled() {
         if (this.#fetchScheduledData) {
             if (this.#fetchScheduledData.running) {
-                // Cancel the running fetch
                 this.#fetchScheduledData.canceled = true;
+                // Clear metadata eagerly; fetchScheduled() will clear in-memory state next cycle
+                this.queries.setJobMetadata('email-analytics-scheduled', null);
             } else {
+                this.#clearScheduledData();
+            }
+        }
+    }
+
+    /**
+     * Restores a previously persisted scheduled fetch from the database.
+     * Must only be called once on startup (caller guards against repeated calls).
+     */
+    async restoreScheduled() {
+        try {
+            const jobData = await this.queries.getJobData('email-analytics-scheduled');
+            if (!jobData || !jobData.metadata) {
+                return;
+            }
+
+            const metadata = JSON.parse(jobData.metadata);
+            if (metadata.begin && metadata.end) {
+                const begin = new Date(metadata.begin);
+                const end = new Date(metadata.end);
+
                 this.#fetchScheduledData = {
                     running: false,
-                    jobName: 'email-analytics-scheduled'
+                    jobName: 'email-analytics-scheduled',
+                    schedule: {begin, end}
                 };
+
+                // Use finished_at as the resume cursor if available
+                if (jobData.finished_at) {
+                    this.#fetchScheduledData.lastEventTimestamp = new Date(jobData.finished_at);
+                }
+
+                logging.info('[EmailAnalytics] Restored scheduled fetch: ' + begin.toISOString() + ' to ' + end.toISOString());
             }
+        } catch (e) {
+            logging.error('[EmailAnalytics] Failed to restore scheduled fetch', e);
         }
     }
 
@@ -266,8 +314,7 @@ module.exports = class EmailAnalyticsService {
         }
 
         if (this.#fetchScheduledData.canceled) {
-            // Skip for now
-            this.#fetchScheduledData = null;
+            this.#clearScheduledData();
             return createEmptyResult();
         }
 
@@ -280,22 +327,14 @@ module.exports = class EmailAnalyticsService {
         }
 
         if (end <= begin) {
-            // Skip for now
             logging.info('[EmailAnalytics] Ending fetchScheduled because end is before begin');
-            this.#fetchScheduledData = {
-                running: false,
-                jobName: 'email-analytics-scheduled'
-            };
+            this.#clearScheduledData();
             return createEmptyResult();
         }
 
         const fetchResult = await this.#fetchEvents(this.#fetchScheduledData, {begin, end, maxEvents});
         if (fetchResult.eventCount === 0 || this.#fetchScheduledData.canceled) {
-            // Reset the scheduled fetch
-            this.#fetchScheduledData = {
-                running: false,
-                jobName: 'email-analytics-scheduled'
-            };
+            this.#clearScheduledData();
         }
 
         this.queries.setJobTimestamp(this.#fetchScheduledData.jobName, 'finished', this.#fetchScheduledData.lastEventTimestamp);
@@ -323,6 +362,8 @@ module.exports = class EmailAnalyticsService {
         const fetchStartMs = Date.now();
         let processingTimeMs = 0;
         let aggregationTimeMs = 0;
+        let emailAggregationTimeMs = 0;
+        let memberAggregationTimeMs = 0;
 
         let lastAggregation = Date.now();
         let eventCount = 0;
@@ -387,8 +428,10 @@ module.exports = class EmailAnalyticsService {
                 // We do this here because otherwise it could take a long time before the new events are visible in the stats
                 try {
                     const intermediateAggregationStart = Date.now();
-                    await this.aggregateStats(processingResult, includeOpenedEvents);
+                    const aggregationTimings = await this.aggregateStats(processingResult, includeOpenedEvents);
                     aggregationTimeMs += (Date.now() - intermediateAggregationStart);
+                    emailAggregationTimeMs += aggregationTimings.emailAggregationTimeMs;
+                    memberAggregationTimeMs += aggregationTimings.memberAggregationTimeMs;
                     lastAggregation = Date.now();
                     // Remove aggregated emailIds and memberIds from tracking sets to avoid re-aggregating at the end
                     processingResult.emailIds.forEach(id => allEmailIds.delete(id));
@@ -434,8 +477,10 @@ module.exports = class EmailAnalyticsService {
                     emailIds: finalEmailIds,
                     memberIds: finalMemberIds
                 };
-                await this.aggregateStats(finalAggregationResult, includeOpenedEvents);
+                const aggregationTimings = await this.aggregateStats(finalAggregationResult, includeOpenedEvents);
                 aggregationTimeMs += (Date.now() - aggregationStart);
+                emailAggregationTimeMs += aggregationTimings.emailAggregationTimeMs;
+                memberAggregationTimeMs += aggregationTimings.memberAggregationTimeMs;
             } catch (err) {
                 logging.error('[EmailAnalytics] Error while aggregating stats');
                 logging.error(err);
@@ -476,6 +521,8 @@ module.exports = class EmailAnalyticsService {
             apiPollingTimeMs,
             processingTimeMs,
             aggregationTimeMs,
+            emailAggregationTimeMs,
+            memberAggregationTimeMs,
             result: cumulativeResult
         };
     }
@@ -625,17 +672,21 @@ module.exports = class EmailAnalyticsService {
     /**
      * @param {{emailIds?: string[], memberIds?: string[]}} stats
      * @param {boolean} includeOpenedEvents
+     * @returns {Promise<{emailAggregationTimeMs: number, memberAggregationTimeMs: number}>}
      */
     async aggregateStats({emailIds = [], memberIds = []}, includeOpenedEvents = true) {
         const useBatchProcessing = this.config.get('emailAnalytics:batchProcessing');
 
+        const emailAggregationStart = Date.now();
         for (const emailId of emailIds) {
             await this.aggregateEmailStats(emailId, includeOpenedEvents);
         }
+        const emailAggregationTimeMs = Date.now() - emailAggregationStart;
 
         // @ts-expect-error
         const memberMetric = this.prometheusClient?.getMetric('email_analytics_aggregate_member_stats_count');
 
+        const memberAggregationStart = Date.now();
         if (useBatchProcessing) {
             // Batched mode: process 100 members at a time
             logging.info(`[EmailAnalytics] Aggregating stats for ${memberIds.length} members using BATCHED mode (batch size: 100)`);
@@ -653,6 +704,9 @@ module.exports = class EmailAnalyticsService {
                 memberMetric?.inc();
             }
         }
+        const memberAggregationTimeMs = Date.now() - memberAggregationStart;
+
+        return {emailAggregationTimeMs, memberAggregationTimeMs};
     }
 
     /**

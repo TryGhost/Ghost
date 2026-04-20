@@ -118,7 +118,7 @@ class BaseSiteMapGenerator {
 
     /**
      *
-     * @param {String} url
+     * @param {string} url
      * @param {Object} datum
      * @returns
      */

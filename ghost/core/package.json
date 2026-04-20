@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.31.0-rc.0",
+  "version": "6.32.0-rc.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -73,7 +73,7 @@
     "@faker-js/faker": "7.6.0",
     "@isaacs/ttlcache": "1.4.1",
     "@sentry/node": "7.120.4",
-    "@slack/webhook": "7.0.8",
+    "@slack/webhook": "7.0.9",
     "@tryghost/adapter-base-cache": "0.1.23",
     "@tryghost/admin-api-schema": "4.7.2",
     "@tryghost/api-framework": "1.0.7",

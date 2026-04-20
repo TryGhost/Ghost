@@ -13,7 +13,7 @@ class MemoryCache extends Base {
 
     /**
      *
-     * @param {String} key
+     * @param {string} key
      * @param {*} value
      */
     set(key, value) {

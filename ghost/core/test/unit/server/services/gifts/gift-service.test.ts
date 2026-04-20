@@ -12,6 +12,7 @@ describe('GiftService', function () {
         getByToken: sinon.SinonStub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>;
         getByPaymentIntentId: sinon.SinonStub<[string], Promise<Gift | null>>;
         findPendingConsumption: sinon.SinonStub<[], Promise<Gift[]>>;
+        findPendingExpiration: sinon.SinonStub<[], Promise<Gift[]>>;
         create: sinon.SinonStub;
         update: sinon.SinonStub;
         transaction: sinon.SinonStub<Parameters<GiftRepository['transaction']>, Promise<unknown>>;
@@ -24,6 +25,7 @@ describe('GiftService', function () {
     };
     let staffServiceEmails: {
         notifyGiftReceived: sinon.SinonStub;
+        notifyGiftSubscriptionStarted: sinon.SinonStub;
     };
     let giftEmailService: {
         sendPurchaseConfirmation: sinon.SinonStub;
@@ -52,6 +54,7 @@ describe('GiftService', function () {
             getByToken: sinon.stub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>().resolves(null),
             getByPaymentIntentId: sinon.stub<[string], Promise<Gift | null>>().resolves(null),
             findPendingConsumption: sinon.stub<[], Promise<Gift[]>>().resolves([]),
+            findPendingExpiration: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             create: sinon.stub(),
             update: sinon.stub(),
             transaction: sinon.stub<Parameters<GiftRepository['transaction']>, Promise<unknown>>().callsFake(async (callback) => {
@@ -63,7 +66,8 @@ describe('GiftService', function () {
             update: sinon.stub().resolves(undefined)
         };
         staffServiceEmails = {
-            notifyGiftReceived: sinon.stub()
+            notifyGiftReceived: sinon.stub(),
+            notifyGiftSubscriptionStarted: sinon.stub()
         };
         giftEmailService = {
             sendPurchaseConfirmation: sinon.stub()
@@ -291,18 +295,14 @@ describe('GiftService', function () {
             assert.equal(result, expectedGift);
         });
 
-        it('throws NotFoundError when the token does not exist', async function () {
+        it('returns null when the token does not exist', async function () {
             giftRepository.getByToken.resolves(null);
 
             const service = createService();
-            await assert.rejects(
-                () => service.getByToken('missing-token'),
-                (err: any) => {
-                    assert.equal(err.errorType, 'NotFoundError');
-                    assert.equal(err.message, 'This gift does not exist.');
-                    return true;
-                }
-            );
+            const result = await service.getByToken('missing-token');
+
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, 'missing-token');
+            assert.equal(result, null);
         });
     });
 
@@ -444,6 +444,7 @@ describe('GiftService', function () {
             });
 
             giftRepository.findPendingConsumption.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
             memberRepository.get.resolves({
                 id: 'member_1',
                 get: sinon.stub().withArgs('status').returns('gift')
@@ -456,6 +457,7 @@ describe('GiftService', function () {
             assert.equal(result.updatedMemberCount, 1);
 
             sinon.assert.calledOnce(giftRepository.transaction);
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, gift.token, {transacting: 'trx', forUpdate: true});
             sinon.assert.calledOnceWithExactly(memberRepository.update, {
                 products: [],
                 status: 'free'
@@ -467,6 +469,29 @@ describe('GiftService', function () {
             assert.notEqual(savedGift.consumedAt, null);
         });
 
+        it('skips gifts that are no longer redeemed when re-loaded', async function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemerMemberId: 'member_1',
+                redeemedAt: new Date('2025-04-01T00:00:00.000Z'),
+                consumesAt: new Date('2026-04-01T00:00:00.000Z')
+            });
+
+            giftRepository.findPendingConsumption.resolves([gift]);
+            giftRepository.getByToken.resolves(buildGift({
+                status: 'refunded',
+                refundedAt: new Date()
+            }));
+
+            const service = createService();
+            const result = await service.processConsumed();
+
+            assert.equal(result.consumedCount, 0);
+            assert.equal(result.updatedMemberCount, 0);
+            sinon.assert.notCalled(giftRepository.update);
+            sinon.assert.notCalled(memberRepository.get);
+        });
+
         it('skips members that are no longer in gift status', async function () {
             const gift = buildGift({
                 status: 'redeemed',
@@ -476,6 +501,7 @@ describe('GiftService', function () {
             });
 
             giftRepository.findPendingConsumption.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
             memberRepository.get.resolves({
                 id: 'member_1',
                 get: sinon.stub().withArgs('status').returns('paid')
@@ -500,6 +526,7 @@ describe('GiftService', function () {
             });
 
             giftRepository.findPendingConsumption.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
             memberRepository.get.resolves(null);
 
             const service = createService();
@@ -527,12 +554,15 @@ describe('GiftService', function () {
             });
 
             giftRepository.findPendingConsumption.resolves([gift1, gift2]);
+            giftRepository.getByToken
+                .withArgs('gift-1', {transacting: 'trx', forUpdate: true}).resolves(gift1)
+                .withArgs('gift-2', {transacting: 'trx', forUpdate: true}).resolves(gift2);
             memberRepository.get
-                .withArgs({id: 'member_1'}, {transacting: 'trx'}).resolves({
+                .withArgs({id: 'member_1'}, {transacting: 'trx', forUpdate: true}).resolves({
                     id: 'member_1',
                     get: sinon.stub().withArgs('status').returns('gift')
                 })
-                .withArgs({id: 'member_2'}, {transacting: 'trx'}).resolves({
+                .withArgs({id: 'member_2'}, {transacting: 'trx', forUpdate: true}).resolves({
                     id: 'member_2',
                     get: sinon.stub().withArgs('status').returns('gift')
                 });
@@ -547,14 +577,99 @@ describe('GiftService', function () {
         });
     });
 
+    describe('processExpired', function () {
+        it('returns zero count when no gifts are pending expiration', async function () {
+            giftRepository.findPendingExpiration.resolves([]);
+
+            const service = createService();
+            const result = await service.processExpired();
+
+            assert.deepEqual(result, {expiredCount: 0});
+            sinon.assert.notCalled(giftRepository.update);
+        });
+
+        it('marks purchased gifts past their expiry as expired', async function () {
+            const gift = buildGift({
+                status: 'purchased',
+                expiresAt: new Date('2026-01-01T00:00:00.000Z')
+            });
+
+            giftRepository.findPendingExpiration.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
+
+            const service = createService();
+            const result = await service.processExpired();
+
+            assert.equal(result.expiredCount, 1);
+
+            sinon.assert.calledOnce(giftRepository.transaction);
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, gift.token, {transacting: 'trx', forUpdate: true});
+
+            sinon.assert.calledOnce(giftRepository.update);
+            const savedGift = giftRepository.update.getCall(0).args[0];
+            assert.equal(savedGift.status, 'expired');
+            assert.notEqual(savedGift.expiredAt, null);
+        });
+
+        it('skips gifts that are no longer purchased when re-loaded', async function () {
+            const gift = buildGift({
+                status: 'purchased',
+                expiresAt: new Date('2026-01-01T00:00:00.000Z')
+            });
+
+            giftRepository.findPendingExpiration.resolves([gift]);
+            giftRepository.getByToken.resolves(buildGift({
+                status: 'redeemed',
+                redeemedAt: new Date(),
+                redeemerMemberId: 'member_1',
+                consumesAt: new Date('2027-01-01T00:00:00.000Z')
+            }));
+
+            const service = createService();
+            const result = await service.processExpired();
+
+            assert.equal(result.expiredCount, 0);
+            sinon.assert.notCalled(giftRepository.update);
+        });
+
+        it('handles multiple expired gifts', async function () {
+            const gift1 = buildGift({
+                token: 'gift-1',
+                status: 'purchased',
+                expiresAt: new Date('2025-06-01T00:00:00.000Z')
+            });
+            const gift2 = buildGift({
+                token: 'gift-2',
+                status: 'purchased',
+                expiresAt: new Date('2025-12-01T00:00:00.000Z')
+            });
+
+            giftRepository.findPendingExpiration.resolves([gift1, gift2]);
+            giftRepository.getByToken
+                .withArgs('gift-1', {transacting: 'trx', forUpdate: true}).resolves(gift1)
+                .withArgs('gift-2', {transacting: 'trx', forUpdate: true}).resolves(gift2);
+
+            const service = createService();
+            const result = await service.processExpired();
+
+            assert.equal(result.expiredCount, 2);
+            assert.equal(giftRepository.update.callCount, 2);
+        });
+    });
+
     describe('redeem', function () {
         it('redeems the gift, saves it, and grants gift access to the member', async function () {
             const gift = buildGift();
+            const memberGet = sinon.stub();
+
+            memberGet.withArgs('status').returns('free');
+            memberGet.withArgs('name').returns('Member Name');
+            memberGet.withArgs('email').returns('member@example.com');
 
             giftRepository.getByToken.resolves(gift);
             memberRepository.get.resolves({
                 id: 'member_1',
-                get: sinon.stub().withArgs('status').returns('free')
+                get: memberGet
             });
 
             const service = createService();
@@ -577,9 +692,42 @@ describe('GiftService', function () {
                 transacting: 'trx'
             });
             sinon.assert.calledOnceWithExactly(giftRepository.update, redeemed, {transacting: 'trx'});
+            sinon.assert.calledOnceWithExactly(tiersService.api.read, 'tier_1');
+            sinon.assert.calledOnceWithExactly(staffServiceEmails.notifyGiftSubscriptionStarted, {
+                memberId: 'member_1',
+                memberEmail: 'member@example.com',
+                memberName: 'Member Name',
+                tierName: 'Bronze',
+                buyerEmail: 'buyer@example.com'
+            });
             assert.equal(redeemed.status, 'redeemed');
             assert.equal(redeemed.redeemerMemberId, 'member_1');
             assert.notEqual(redeemed.consumesAt, null);
+        });
+
+        it('does not fail redemption when staff notification email throws', async function () {
+            const gift = buildGift();
+            const memberGet = sinon.stub();
+
+            memberGet.withArgs('status').returns('free');
+            memberGet.withArgs('name').returns('Member Name');
+            memberGet.withArgs('email').returns('member@example.com');
+
+            giftRepository.getByToken.resolves(gift);
+            memberRepository.get.resolves({
+                id: 'member_1',
+                get: memberGet
+            });
+            staffServiceEmails.notifyGiftSubscriptionStarted.rejects(new Error('SMTP error'));
+
+            const service = createService();
+            const redeemed = await service.redeem({
+                token: 'gift-token',
+                memberId: 'member_1'
+            });
+
+            assert.equal(redeemed.status, 'redeemed');
+            sinon.assert.calledOnce(staffServiceEmails.notifyGiftSubscriptionStarted);
         });
 
         it('throws NotFoundError when the member does not exist', async function () {
@@ -600,6 +748,7 @@ describe('GiftService', function () {
 
             sinon.assert.notCalled(memberRepository.update);
             sinon.assert.notCalled(giftRepository.update);
+            sinon.assert.notCalled(staffServiceEmails.notifyGiftSubscriptionStarted);
         });
 
         it('throws NotFoundError when the gift token does not exist', async function () {
@@ -620,6 +769,7 @@ describe('GiftService', function () {
 
             sinon.assert.notCalled(memberRepository.update);
             sinon.assert.notCalled(giftRepository.update);
+            sinon.assert.notCalled(staffServiceEmails.notifyGiftSubscriptionStarted);
         });
 
         it('throws BadRequestError when the member is not eligible', async function () {
@@ -644,6 +794,7 @@ describe('GiftService', function () {
 
             sinon.assert.notCalled(memberRepository.update);
             sinon.assert.notCalled(giftRepository.update);
+            sinon.assert.notCalled(staffServiceEmails.notifyGiftSubscriptionStarted);
         });
     });
 

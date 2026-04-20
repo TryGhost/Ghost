@@ -7,19 +7,19 @@ const jwt = require('jsonwebtoken');
  * @param {Object} options
  * @param {string} options.publishedAt - ISO date
  * @param {string} options.apiUrl - url of the JWT's audience
- * @param {string} options.key - integration key
+ * @param {object} options.key - integration key
  * @param {string} options.key.id - key ID
  * @param {string} options.key.secret - key secret
  *
  * @return {string} the JSON Web Token
  */
 const getSignedAdminToken = function ({publishedAt, apiUrl, key}) {
-    const JWT_OPTIONS = {
+    const JWT_OPTIONS = /** @type {const} */ ({
         keyid: key.id,
         algorithm: 'HS256',
         audience: apiUrl,
         noTimestamp: true
-    };
+    });
 
     // Default token expiry is till 6 hours after scheduled time
     // or if published_at is in past then till 6 hours after blog start

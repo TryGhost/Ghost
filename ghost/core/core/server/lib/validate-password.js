@@ -14,8 +14,8 @@ const messages = {
 /**
  * Counts repeated characters in a string. When 50% or more characters are the same,
  * we return false and therefore invalidate the string.
- * @param {String} stringToTest The password string to check.
- * @return {Boolean}
+ * @param {string} stringToTest The password string to check.
+ * @return {boolean}
  */
 function characterOccurance(stringToTest) {
     const chars = {};
@@ -48,9 +48,9 @@ function characterOccurance(stringToTest) {
 /**
  * Validation against simple password rules
  * Returns false when validation fails and true for a valid password
- * @param {String} password The password string to check.
- * @param {String} email The users email address to validate agains password.
- * @param {String} [blogTitle] Optional blogTitle value, when blog title is not set yet, e. g. in setup process.
+ * @param {string} password The password string to check.
+ * @param {string} email The users email address to validate agains password.
+ * @param {string} [blogTitle] Optional blogTitle value, when blog title is not set yet, e. g. in setup process.
  * @return {Object} example for returned validation Object:
  * invalid password: `validationResult: {isValid: false, message: 'Sorry, you cannot use an insecure password.'}`
  * valid password: `validationResult: {isValid: true}`

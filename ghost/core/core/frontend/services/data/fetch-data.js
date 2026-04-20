@@ -39,7 +39,7 @@ defaultPostQuery.options = defaultQueryOptions.options;
  * Converts the query config to a promise for the result
  *
  * @param {Object} query
- * @param {String} slugParam
+ * @param {string} slugParam
  * @returns {Promise}
  */
 function processQuery(query, slugParam, locals) {

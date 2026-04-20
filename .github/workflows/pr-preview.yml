@@ -18,11 +18,12 @@ jobs:
     env:
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
-      - name: Wait for CI build artifacts
+      - name: Wait for Docker build job
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILD_JOB_NAME: Build & Publish Artifacts
         run: |
-          echo "Waiting for CI to complete Docker build for $HEAD_SHA..."
+          echo "Waiting for '${BUILD_JOB_NAME}' job to complete for $HEAD_SHA..."
           TIMEOUT=1800  # 30 minutes
           INTERVAL=30
           START=$(date +%s)
@@ -30,13 +31,13 @@ jobs:
           while true; do
             ELAPSED=$(( $(date +%s) - START ))
             if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
-              echo "::error::Timed out waiting for CI (${TIMEOUT}s)"
+              echo "::error::Timed out waiting for '${BUILD_JOB_NAME}' (${TIMEOUT}s)"
               exit 1
             fi
 
             # Find the CI run for this SHA
             RUN=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=${HEAD_SHA}&per_page=1" \
-              --jq '.workflow_runs[0] | {id, status, conclusion}' 2>/dev/null || echo "")
+              --jq '.workflow_runs[0] | {id, status}' 2>/dev/null || echo "")
 
             if [ -z "$RUN" ] || [ "$RUN" = "null" ]; then
               echo "  No CI run found yet, waiting ${INTERVAL}s... (${ELAPSED}s elapsed)"
@@ -44,32 +45,36 @@ jobs:
               continue
             fi
 
-            STATUS=$(echo "$RUN" | jq -r '.status')
-            CONCLUSION=$(echo "$RUN" | jq -r '.conclusion // empty')
             RUN_ID=$(echo "$RUN" | jq -r '.id')
+            RUN_STATUS=$(echo "$RUN" | jq -r '.status')
 
-            if [ "$STATUS" = "completed" ]; then
-              if [ "$CONCLUSION" = "success" ] || [ "$CONCLUSION" = "failure" ]; then
-                # Check if Docker build job specifically succeeded (paginate — CI has 30+ jobs)
-                BUILD_JOB=$(gh api --paginate "repos/${{ github.repository }}/actions/runs/${RUN_ID}/jobs?per_page=100" \
-                  --jq '.jobs[] | select(.name == "Build & Publish Artifacts") | .conclusion')
-                if [ -z "$BUILD_JOB" ]; then
-                  echo "::error::Build & Publish Artifacts job not found in CI run ${RUN_ID}"
-                  exit 1
-                elif [ "$BUILD_JOB" = "success" ]; then
-                  echo "Docker build ready (CI run $RUN_ID)"
-                  break
-                else
-                  echo "::error::Docker build job did not succeed (conclusion: $BUILD_JOB)"
-                  exit 1
-                fi
-              else
-                echo "::error::CI run failed (conclusion: $CONCLUSION)"
+            # Look up the build job specifically (paginate — CI has 30+ jobs)
+            BUILD_JOB=$(gh api --paginate "repos/${{ github.repository }}/actions/runs/${RUN_ID}/jobs?per_page=100" \
+              --jq ".jobs[] | select(.name == \"${BUILD_JOB_NAME}\") | {status, conclusion}")
+
+            if [ -z "$BUILD_JOB" ]; then
+              if [ "$RUN_STATUS" = "completed" ]; then
+                echo "::error::CI run ${RUN_ID} completed but '${BUILD_JOB_NAME}' job was not found"
                 exit 1
               fi
+              echo "  '${BUILD_JOB_NAME}' job not started yet (run ${RUN_STATUS}), waiting ${INTERVAL}s... (${ELAPSED}s elapsed)"
+              sleep "$INTERVAL"
+              continue
             fi
 
-            echo "  CI still running ($STATUS), waiting ${INTERVAL}s... (${ELAPSED}s elapsed)"
+            JOB_STATUS=$(echo "$BUILD_JOB" | jq -r '.status')
+            JOB_CONCLUSION=$(echo "$BUILD_JOB" | jq -r '.conclusion // empty')
+
+            if [ "$JOB_STATUS" = "completed" ]; then
+              if [ "$JOB_CONCLUSION" = "success" ]; then
+                echo "Docker build ready (CI run $RUN_ID)"
+                break
+              fi
+              echo "::error::'${BUILD_JOB_NAME}' did not succeed (conclusion: $JOB_CONCLUSION)"
+              exit 1
+            fi
+
+            echo "  '${BUILD_JOB_NAME}' still ${JOB_STATUS}, waiting ${INTERVAL}s... (${ELAPSED}s elapsed)"
             sleep "$INTERVAL"
           done
 

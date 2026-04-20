@@ -46,11 +46,11 @@ util.inherits(SchedulingDefault, SchedulingBase);
  * A new job get's added when the post scheduler module receives a new model event e.g. "post.scheduled".
  *
  * @param {Object} object
- * @param {Number} object.time - unix timestamp
- * @param {String} object.url - full post/page API url to publish the resource.
+ * @param {number} object.time - unix timestamp
+ * @param {string} object.url - full post/page API url to publish the resource.
  * @param {Object} object.extra
- * @param {String} object.extra.httpMethod - the method of the target API endpoint.
- * @param {Number} object.extra.oldTime - the previous published time.
+ * @param {string} object.extra.httpMethod - the method of the target API endpoint.
+ * @param {number} object.extra.oldTime - the previous published time.
  */
 SchedulingDefault.prototype.schedule = function (object) {
     this._addJob(object);
@@ -62,13 +62,13 @@ SchedulingDefault.prototype.schedule = function (object) {
  * Unscheduling means: scheduled -> draft.
  *
  * @param {Object} object
- * @param {Number} object.time - unix timestamp
- * @param {String} object.url - full post/page API url to publish the resource.
+ * @param {number} object.time - unix timestamp
+ * @param {string} object.url - full post/page API url to publish the resource.
  * @param {Object} object.extra
- * @param {String} object.extra.httpMethod - the method of the target API endpoint.
- * @param {Number} object.extra.oldTime - the previous published time.
+ * @param {string} object.extra.httpMethod - the method of the target API endpoint.
+ * @param {number} object.extra.oldTime - the previous published time.
  * @param {Object} options
- * @param {Boolean} [options.bootstrap]
+ * @param {boolean} [options.bootstrap]
  */
 SchedulingDefault.prototype.unschedule = function (object, options = {bootstrap: false}) {
     /**
