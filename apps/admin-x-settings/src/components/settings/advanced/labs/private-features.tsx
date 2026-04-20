@@ -56,10 +56,6 @@ const features: Feature[] = [{
     description: 'Enable welcome email drip sequences',
     flag: 'dripSequences'
 }, {
-    title: 'Welcome Emails Design Customization',
-    description: 'Enable design customization options for welcome emails',
-    flag: 'welcomeEmailsDesignCustomization'
-}, {
     title: 'Picture Element',
     description: 'Use the HTML picture element to serve modern image formats (AVIF, WebP) with automatic fallbacks',
     flag: 'pictureImageFormats'
