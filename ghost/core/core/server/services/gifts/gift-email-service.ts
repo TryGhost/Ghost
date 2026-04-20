@@ -78,8 +78,7 @@ export class GiftEmailService {
 
         const giftLink = `${siteUrl.replace(/\/$/, '')}/gift/${token}`;
 
-        const unit = cadence === 'month' ? 'month' : 'year';
-        const cadenceLabel = duration === 1 ? `1 ${unit}` : `${duration} ${unit}s`;
+        const cadenceLabel = duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
 
         // Pre-build a mailto: URL the buyer can click to open their default mail
         // client with a friendly draft already filled in. Recipient is left blank
@@ -122,8 +121,7 @@ export class GiftEmailService {
         const siteUrl = this.urlUtils.getSiteUrl();
         const siteTitle = this.settingsCache.get('title') ?? siteDomain;
 
-        const unit = cadence === 'month' ? 'month' : 'year';
-        const cadenceLabel = duration === 1 ? `1 ${unit}` : `${duration} ${unit}s`;
+        const cadenceLabel = duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
 
         const manageSubscriptionUrl = new URL('#/portal/account', siteUrl).href;
 
