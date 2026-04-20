@@ -1,23 +1,28 @@
 #!/usr/bin/env node
 
 /**
- * pack.js — Build a distributable Ghost tarball using pnpm deploy.
+ * pack.js — Build a distributable Ghost tarball for Ghost-CLI.
+ *
+ * Produces ghost/core/ghost-<version>.tgz, the archive consumed by
+ * `ghost install --archive` and `ghost update --archive` (Ghost-CLI). It is
+ * not published to npm; it is the release artifact uploaded to GitHub.
  *
  * Uses pnpm's native deploy command to create a standalone directory with all
  * production dependencies resolved from the workspace, then post-processes
- * the output for ghost-cli compatibility:
+ * the output for Ghost-CLI compatibility:
  *
  *  1. Strip peer dep suffixes from version strings (pnpm deploy artifact)
  *  2. Pack private workspace packages as component tarballs
  *  3. Merge root pnpm overrides so standalone installs resolve correctly
- *  4. Create a ghost-cli compatible tarball (package/ prefix, no node_modules)
+ *  4. Create a Ghost-CLI compatible tarball (package/ prefix, no node_modules)
  */
 
-/* eslint-disable no-console */
+/* eslint-disable no-console, ghost/ghost-custom/no-native-error */
 
 const fs = require('node:fs');
 const path = require('node:path');
-const {execSync} = require('node:child_process');
+const {execFileSync} = require('node:child_process');
+const fsExtra = require('fs-extra');
 
 const CORE_DIR = path.resolve(__dirname, '..');
 const ROOT_DIR = path.resolve(CORE_DIR, '../..');
@@ -27,16 +32,22 @@ const DEPLOY_DIR = path.join(CORE_DIR, 'package');
 // inject-workspace-packages is enabled only for deploy (not workspace-wide)
 // because it conflicts with packages that have build outputs in their files field.
 console.log('Running pnpm deploy...');
-execSync(`rm -rf ${DEPLOY_DIR}`, {stdio: 'inherit'});
-execSync(`pnpm --filter ghost deploy ${DEPLOY_DIR} --prod --config.inject-workspace-packages=true`, {
-    cwd: ROOT_DIR,
-    stdio: 'inherit'
-});
+fs.rmSync(DEPLOY_DIR, {recursive: true, force: true});
+execFileSync(
+    'pnpm',
+    [
+        '--filter', 'ghost',
+        'deploy', DEPLOY_DIR,
+        '--prod',
+        '--config.inject-workspace-packages=true'
+    ],
+    {cwd: ROOT_DIR, stdio: 'inherit'}
+);
 
 // 2. Fix package.json
 console.log('\nPost-processing package.json...');
 const pkgPath = path.join(DEPLOY_DIR, 'package.json');
-const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+const pkg = fsExtra.readJsonSync(pkgPath);
 
 // Strip peer dep suffixes (e.g., "2.0.17(@noble/hashes@1.8.0)" → "2.0.17")
 // pnpm deploy writes lockfile-internal version identifiers into package.json.
@@ -65,27 +76,31 @@ for (const [key, val] of Object.entries(pkg.dependencies || {})) {
 
     const depDir = path.join(DEPLOY_DIR, 'node_modules', key);
     if (!fs.existsSync(depDir)) {
-        console.warn(`  Warning: ${key} not found in node_modules, skipping`);
-        continue;
+        throw new Error(`${key} has a file: dependency ref but is missing from node_modules (${depDir})`);
     }
 
-    const depPkg = JSON.parse(fs.readFileSync(path.join(depDir, 'package.json'), 'utf8'));
+    const depPkg = fsExtra.readJsonSync(path.join(depDir, 'package.json'));
     const slug = key.replaceAll('@', '').replaceAll('/', '-');
     const tgzName = `${slug}-${depPkg.version}.tgz`;
 
     console.log(`  Packing ${key} → components/${tgzName}`);
-    execSync(`npm pack --pack-destination ${componentsDir}`, {cwd: depDir, stdio: 'pipe'});
+    execFileSync(
+        'npm',
+        ['pack', '--pack-destination', componentsDir],
+        {cwd: depDir, stdio: 'pipe'}
+    );
     pkg.dependencies[key] = `file:components/${tgzName}`;
 }
 
 // Carry over root-level fields that pnpm deploy doesn't preserve.
-const rootPkg = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'package.json'), 'utf8'));
+const rootPkg = fsExtra.readJsonSync(path.join(ROOT_DIR, 'package.json'));
 
 // packageManager — required by corepack (Dockerfile) and verified by CI release checks.
-if (rootPkg.packageManager) {
-    pkg.packageManager = rootPkg.packageManager;
-    console.log(`  Set packageManager: ${rootPkg.packageManager.split('+')[0]}`);
+if (!rootPkg.packageManager) {
+    throw new Error('Root package.json is missing required "packageManager" field');
 }
+pkg.packageManager = rootPkg.packageManager;
+console.log(`  Set packageManager: ${rootPkg.packageManager.split('+')[0]}`);
 
 // pnpm overrides — the root overrides apply globally in the workspace (e.g., forcing
 // moment to 2.24.0 so moment-timezone doesn't pull in a separate copy). pnpm deploy
@@ -97,7 +112,7 @@ if (rootPkg.pnpm?.overrides || rootPkg.overrides) {
     console.log(`  Merged ${Object.keys(rootOverrides).length} root overrides into package.json`);
 }
 
-fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+fsExtra.writeJsonSync(pkgPath, pkg, {spaces: 2});
 
 // Copy .npmrc and pnpm-workspace.yaml for ghost-cli installs.
 // The lockfile references catalogs from pnpm-workspace.yaml, and pnpm validates
@@ -121,13 +136,14 @@ const version = pkg.version;
 const tgzPath = path.join(CORE_DIR, `ghost-${version}.tgz`);
 
 // Remove node_modules — both the tarball and Docker build install their own
-execSync(`rm -rf ${path.join(DEPLOY_DIR, 'node_modules')}`);
+fs.rmSync(path.join(DEPLOY_DIR, 'node_modules'), {recursive: true, force: true});
 
 console.log(`\nCreating tarball: ghost-${version}.tgz`);
-execSync(
-    `tar czf ${tgzPath} package`,
+execFileSync(
+    'tar',
+    ['czf', tgzPath, 'package'],
     {cwd: CORE_DIR, stdio: 'inherit'}
 );
 
 const size = (fs.statSync(tgzPath).size / 1024 / 1024).toFixed(1);
-console.log(`\nDone: ${tgzPath} (${size} MB)`);
+console.log(`\nDone: ${tgzPath} (${size} MiB)`);
