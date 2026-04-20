@@ -7,7 +7,7 @@ const testUtils = require('../../../utils');
 
 const {poll} = require('../../../../core/server/services/welcome-email-automations/poll');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../../core/server/services/member-welcome-emails/constants');
-const {WelcomeEmailAutomationRun} = require('../../../../core/server/models');
+const {Member, WelcomeEmailAutomationRun} = require('../../../../core/server/models');
 
 const RETRY_DELAY_MS = 10 * 60 * 1000;
 const LOCK_TIMEOUT_MS = 30 * 60 * 1000;
@@ -398,6 +398,35 @@ describe('welcome email automations poll', function () {
         assert.equal(updatedRun.ready_at, null);
         assert.equal(updatedRun.step_started_at, null);
         assert.equal(updatedRun.step_attempts, 0);
+    });
+
+    it('does not send email if member is deleted mid-run (race condition)', async function () {
+        const automation = await createAutomation();
+        const automatedEmail = await createAutomatedEmail({
+            welcome_email_automation_id: automation.id
+        });
+        const member = await createMember();
+        const run = await createRun({
+            welcome_email_automation_id: automation.id,
+            member_id: member.id,
+            next_welcome_email_automated_email_id: automatedEmail.id,
+            ready_at: new Date(Date.now() - 1000)
+        });
+
+        // Simulate race: member (and run, via cascade) deleted while run is being processed
+        const originalFindOne = Member.findOne;
+        sinon.stub(Member, 'findOne').callsFake(async function () {
+            await testUtils.knex('members').where({id: member.id}).del();
+            return originalFindOne.apply(this, arguments);
+        });
+
+        await poll(options);
+
+        sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
+        sinon.assert.notCalled(options.enqueueAnotherPollNow);
+        sinon.assert.notCalled(options.enqueueAnotherPollAt);
+        assert.equal(await readRun(run.id), undefined);
+        assert.deepEqual(await readTrackedRecipients(), []);
     });
 
     it('fails if run stored with more attempts than now supported', async function () {
