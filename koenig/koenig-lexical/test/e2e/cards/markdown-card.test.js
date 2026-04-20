@@ -7,7 +7,6 @@ import {
     html,
     initialize,
     insertCard,
-    isMac,
     selectBackwards
 } from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
@@ -22,9 +21,20 @@ async function focusMarkdownEditor(page) {
     await expect(page.locator('[data-kg-card="markdown"] .CodeMirror-focused')).toBeVisible();
 }
 
-test.describe('Markdown card', async () => {
-    const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
+async function pressMarkdownShortcut(page, key) {
+    const locator = '[data-kg-card="markdown"] [title^="Bold"]';
+    const title = await page.locator(locator).getAttribute('title');
 
+    if (!title) {
+        throw new Error(`Unable to determine markdown shortcut modifier: missing title for locator "${locator}" while resolving toolbar shortcut intent.`);
+    }
+
+    const modifier = title.includes('Ctrl-') ? 'Control' : 'Meta';
+
+    await page.keyboard.press(`${modifier}+${key}`);
+}
+
+test.describe('Markdown card', async () => {
     let page;
 
     test.beforeAll(async ({browser}) => {
@@ -123,7 +133,7 @@ test.describe('Markdown card', async () => {
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await focusMarkdownEditor(page);
 
-        await page.keyboard.press(`Control+Alt+O`);
+        await pressMarkdownShortcut(page, 'Alt+O');
         await page.waitForSelector('[data-kg-modal="unsplash"]');
     });
 
@@ -132,7 +142,7 @@ test.describe('Markdown card', async () => {
         await insertCard(page, {cardName: 'markdown'});
 
         await expect(page.locator('[title*="Spellcheck"]')).not.toBeNull();
-        await page.keyboard.press(`Control+Alt+S`);
+        await pressMarkdownShortcut(page, 'Alt+S');
         await expect(page.locator('[title*="Spellcheck"][class*="active"]')).toHaveCount(1);
     });
 
@@ -142,7 +152,7 @@ test.describe('Markdown card', async () => {
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await focusMarkdownEditor(page);
-        await page.keyboard.press(`Control+Alt+I`);
+        await pressMarkdownShortcut(page, 'Alt+I');
         await fileChooserPromise;
     });
 
@@ -204,7 +214,7 @@ test.describe('Markdown card', async () => {
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await page.waitForSelector('[data-kg-card="markdown"] .editor-toolbar');
-        await page.keyboard.press(`Control+Alt+I`);
+        await pressMarkdownShortcut(page, 'Alt+I');
 
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles(filePath);
@@ -241,7 +251,7 @@ test.describe('Markdown card', async () => {
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await focusMarkdownEditor(page);
-        await page.keyboard.press(`${ctrlOrCmd}+B`);
+        await pressMarkdownShortcut(page, 'B');
         await page.keyboard.type('bold text', {delay: 10});
 
         await assertRootChildren(page, JSON.stringify([
@@ -271,7 +281,7 @@ test.describe('Markdown card', async () => {
         // select the text
         await selectBackwards(page, 4);
         // make it bold
-        await page.keyboard.press(`${ctrlOrCmd}+B`);
+        await pressMarkdownShortcut(page, 'B');
 
         await assertRootChildren(page, JSON.stringify([
             {
@@ -296,7 +306,7 @@ test.describe('Markdown card', async () => {
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await focusMarkdownEditor(page);
-        await page.keyboard.press(`${ctrlOrCmd}+I`);
+        await pressMarkdownShortcut(page, 'I');
         await page.keyboard.type('italic text', {delay: 10});
 
         await assertRootChildren(page, JSON.stringify([
@@ -326,7 +336,7 @@ test.describe('Markdown card', async () => {
         // select the text
         await selectBackwards(page, 6);
         // make it italic
-        await page.keyboard.press(`${ctrlOrCmd}+I`);
+        await pressMarkdownShortcut(page, 'I');
 
         await assertRootChildren(page, JSON.stringify([
             {
@@ -351,7 +361,7 @@ test.describe('Markdown card', async () => {
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await focusMarkdownEditor(page);
-        await page.keyboard.press(`${ctrlOrCmd}+Alt+U`);
+        await pressMarkdownShortcut(page, 'Alt+U');
         await page.keyboard.type('text', {delay: 10});
 
         await assertRootChildren(page, JSON.stringify([
@@ -381,7 +391,7 @@ test.describe('Markdown card', async () => {
         // select the text
         await selectBackwards(page, 4);
         // make it strikethrough
-        await page.keyboard.press(`${ctrlOrCmd}+Alt+U`);
+        await pressMarkdownShortcut(page, 'Alt+U');
 
         await assertRootChildren(page, JSON.stringify([
             {
@@ -406,7 +416,7 @@ test.describe('Markdown card', async () => {
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await focusMarkdownEditor(page);
-        await page.keyboard.press(`${ctrlOrCmd}+H`);
+        await pressMarkdownShortcut(page, 'H');
         await page.keyboard.type('Heading text', {delay: 10});
 
         await assertRootChildren(page, JSON.stringify([
@@ -433,7 +443,7 @@ test.describe('Markdown card', async () => {
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await focusMarkdownEditor(page);
         await page.keyboard.type('Heading', {delay: 10});
-        await page.keyboard.press(`${ctrlOrCmd}+H`);
+        await pressMarkdownShortcut(page, 'H');
 
         await assertRootChildren(page, JSON.stringify([
             {
@@ -458,7 +468,7 @@ test.describe('Markdown card', async () => {
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await focusMarkdownEditor(page);
-        await page.keyboard.press(`${ctrlOrCmd}+'`);
+        await pressMarkdownShortcut(page, '\'');
         await page.keyboard.type('quote', {delay: 10});
 
         await assertRootChildren(page, JSON.stringify([
@@ -485,7 +495,7 @@ test.describe('Markdown card', async () => {
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await focusMarkdownEditor(page);
         await page.keyboard.type('quote', {delay: 10});
-        await page.keyboard.press(`${ctrlOrCmd}+'`);
+        await pressMarkdownShortcut(page, '\'');
 
         await assertRootChildren(page, JSON.stringify([
             {
@@ -510,7 +520,7 @@ test.describe('Markdown card', async () => {
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await focusMarkdownEditor(page);
-        await page.keyboard.press(`${ctrlOrCmd}+L`);
+        await pressMarkdownShortcut(page, 'L');
         await page.keyboard.type('First list item', {delay: 10});
 
         await assertRootChildren(page, JSON.stringify([
@@ -537,7 +547,7 @@ test.describe('Markdown card', async () => {
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await focusMarkdownEditor(page);
         await page.keyboard.type('A list item', {delay: 10});
-        await page.keyboard.press(`${ctrlOrCmd}+L`);
+        await pressMarkdownShortcut(page, 'L');
 
         await assertRootChildren(page, JSON.stringify([
             {
@@ -562,7 +572,7 @@ test.describe('Markdown card', async () => {
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await focusMarkdownEditor(page);
-        await page.keyboard.press(`${ctrlOrCmd}+Alt+L`);
+        await pressMarkdownShortcut(page, 'Alt+L');
         // Wait for CodeMirror to insert the list prefix before typing
         await expect(page.locator('[data-kg-card="markdown"] .CodeMirror-line')).toContainText('1.');
         await page.keyboard.type('First list item', {delay: 10});
@@ -591,7 +601,7 @@ test.describe('Markdown card', async () => {
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await focusMarkdownEditor(page);
         await page.keyboard.type('A list item', {delay: 10});
-        await page.keyboard.press(`${ctrlOrCmd}+Alt+L`);
+        await pressMarkdownShortcut(page, 'Alt+L');
 
         await assertRootChildren(page, JSON.stringify([
             {
@@ -616,7 +626,7 @@ test.describe('Markdown card', async () => {
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await focusMarkdownEditor(page);
-        await page.keyboard.press(`${ctrlOrCmd}+K`);
+        await pressMarkdownShortcut(page, 'K');
 
         await assertRootChildren(page, JSON.stringify([
             {
@@ -645,7 +655,7 @@ test.describe('Markdown card', async () => {
         // select the text
         await selectBackwards(page, 4);
         // convert to link
-        await page.keyboard.press(`${ctrlOrCmd}+K`);
+        await pressMarkdownShortcut(page, 'K');
 
         await assertRootChildren(page, JSON.stringify([
             {
@@ -701,7 +711,7 @@ test.describe('Markdown card', async () => {
         await expect(page.getByText('Here are some words')).toBeVisible();
         await page.keyboard.press('Backspace');
         await expect(page.getByText('Here are some word')).toBeVisible();
-        await page.keyboard.press(`${ctrlOrCmd}+z`);
+        await pressMarkdownShortcut(page, 'z');
         await expect(page.getByText('Here are some words')).toBeVisible();
         await page.keyboard.press('Escape');
         await expect(page.getByText('Here are some words')).toBeVisible();
