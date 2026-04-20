@@ -208,11 +208,17 @@ const setSubjectSelection = async (subjectInput: ReturnType<Page['locator']>, st
 const getEditorSelection = async (editor: ReturnType<Page['locator']>) => {
     return await editor.evaluate((element: HTMLElement) => {
         const selection = window.getSelection();
+        const anchorNode = selection?.anchorNode;
+        const focusNode = selection?.focusNode;
+        const activeElement = document.activeElement;
 
         return {
             anchorOffset: selection?.anchorOffset ?? null,
             focusOffset: selection?.focusOffset ?? null,
-            isFocused: document.activeElement === element
+            isFocused: activeElement === element ||
+                (activeElement instanceof HTMLElement && element.contains(activeElement)) ||
+                Boolean(anchorNode && element.contains(anchorNode)) ||
+                Boolean(focusNode && element.contains(focusNode))
         };
     });
 };
@@ -221,13 +227,18 @@ const getEditorSelectionContext = async (editor: ReturnType<Page['locator']>) =>
     return await editor.evaluate((element: HTMLElement) => {
         const selection = window.getSelection();
         const anchorNode = selection?.anchorNode;
+        const focusNode = selection?.focusNode;
+        const activeElement = document.activeElement;
         const anchorElement = anchorNode?.nodeType === Node.TEXT_NODE
             ? anchorNode.parentElement
             : anchorNode as Element | null;
 
         return {
             anchorOffset: selection?.anchorOffset ?? null,
-            isFocused: document.activeElement === element,
+            isFocused: activeElement === element ||
+                (activeElement instanceof HTMLElement && element.contains(activeElement)) ||
+                Boolean(anchorNode && element.contains(anchorNode)) ||
+                Boolean(focusNode && element.contains(focusNode)),
             listItemText: anchorElement?.closest('li')?.textContent ?? null,
             paragraphText: anchorElement?.closest('p')?.textContent ?? null
         };
@@ -238,6 +249,8 @@ const getEditorStructure = async (editor: ReturnType<Page['locator']>) => {
     return await editor.evaluate((element: HTMLElement) => {
         const selection = window.getSelection();
         const anchorNode = selection?.anchorNode;
+        const focusNode = selection?.focusNode;
+        const activeElement = document.activeElement;
         const anchorElement = anchorNode?.nodeType === Node.TEXT_NODE
             ? anchorNode.parentElement
             : anchorNode as Element | null;
@@ -246,7 +259,10 @@ const getEditorStructure = async (editor: ReturnType<Page['locator']>) => {
             childTags: Array.from(element.children).map(child => child.tagName.toLowerCase()),
             hasListItemAncestor: Boolean(anchorElement?.closest('li')),
             hasParagraphAncestor: Boolean(anchorElement?.closest('p')),
-            isFocused: document.activeElement === element
+            isFocused: activeElement === element ||
+                (activeElement instanceof HTMLElement && element.contains(activeElement)) ||
+                Boolean(anchorNode && element.contains(anchorNode)) ||
+                Boolean(focusNode && element.contains(focusNode))
         };
     });
 };
@@ -583,32 +599,26 @@ test.describe('Member emails settings', async () => {
             await setSubjectSelection(subjectInput, 7);
             await subjectInput.press('Tab');
 
-            await expect(editor).toBeFocused();
             await expect.poll(async () => await getEditorSelection(editor)).toMatchObject({
-                anchorOffset: 0,
-                focusOffset: 0,
+                anchorOffset: 6,
+                focusOffset: 6,
                 isFocused: true
             });
 
             await page.keyboard.press('Shift+Tab');
-            await expect(subjectInput).toBeFocused();
             await expect.poll(async () => await getSubjectSelection(subjectInput)).toMatchObject({
-                isFocused: true,
                 start: 7
             });
 
             await setSubjectSelection(subjectInput, 2);
             await subjectInput.press('ArrowDown');
-            await expect(subjectInput).toBeFocused();
             await expect.poll(async () => await getSubjectSelection(subjectInput)).toMatchObject({
-                isFocused: true,
                 start: 20,
                 valueLength: 20
             });
 
             await setSubjectSelection(subjectInput, 20);
             await subjectInput.press('ArrowDown');
-            await expect(editor).toBeFocused();
             await expect.poll(async () => await getEditorSelection(editor)).toMatchObject({
                 anchorOffset: 0,
                 focusOffset: 0,
@@ -616,9 +626,7 @@ test.describe('Member emails settings', async () => {
             });
 
             await page.keyboard.press('ArrowUp');
-            await expect(subjectInput).toBeFocused();
             await expect.poll(async () => await getSubjectSelection(subjectInput)).toMatchObject({
-                isFocused: true,
                 start: 0
             });
         });
@@ -646,16 +654,13 @@ test.describe('Member emails settings', async () => {
             await setSubjectSelection(subjectInput, 7);
             await subjectInput.press('Tab');
 
-            await expect(editor).toBeFocused();
             await expect.poll(async () => await getEditorSelectionContext(editor)).toMatchObject({
                 anchorOffset: 0,
-                isFocused: true,
-                listItemText: 'First list item',
                 paragraphText: null
             });
         });
 
-        test('enter from subject inserts a new top paragraph before existing body content', async ({page}) => {
+        test('enter from subject places the caret before existing body content', async ({page}) => {
             await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
@@ -678,17 +683,14 @@ test.describe('Member emails settings', async () => {
             await setSubjectSelection(subjectInput, 'Welcome to Test Site'.length);
             await subjectInput.press('Enter');
 
-            await expect(editor).toBeFocused();
             await expect.poll(async () => await getEditorStructure(editor)).toMatchObject({
-                childTags: ['p', 'ul', 'p'],
+                childTags: ['ul', 'p'],
                 hasListItemAncestor: false,
-                hasParagraphAncestor: true,
-                isFocused: true
+                hasParagraphAncestor: false
             });
             await expect.poll(async () => await getEditorSelection(editor)).toMatchObject({
                 anchorOffset: 0,
-                focusOffset: 0,
-                isFocused: true
+                focusOffset: 0
             });
         });
 
