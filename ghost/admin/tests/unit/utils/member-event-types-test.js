@@ -24,7 +24,7 @@ describe('Unit | Utility | event-type-utils', function () {
 
         const newExcludedEvents = toggleEventType('payment_event', eventTypes);
 
-        expect(newExcludedEvents).to.equal('payment_event,donation_event,gift_purchase_event');
+        expect(newExcludedEvents).to.equal('payment_event,donation_event,gift_purchase_event,gift_redemption_event');
     });
 
     it('should toggle both payment_event and donation_event off when toggling payment_event off', function () {

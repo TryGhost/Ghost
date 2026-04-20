@@ -85,7 +85,8 @@ module.exports = class EventRepository {
                 {type: 'login_event', action: 'getLoginEvents'},
                 {type: 'payment_event', action: 'getPaymentEvents'},
                 {type: 'email_change_event', action: 'getEmailChangeEvent'},
-                {type: 'gift_purchase_event', action: 'getGiftPurchaseEvents'}
+                {type: 'gift_purchase_event', action: 'getGiftPurchaseEvents'},
+                {type: 'gift_redemption_event', action: 'getGiftRedemptionEvents'}
             );
 
             if (this._AutomatedEmailRecipient) {
@@ -464,6 +465,55 @@ module.exports = class EventRepository {
                     amount: json.amount,
                     currency: json.currency,
                     created_at: json.purchased_at
+                }
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
+    async getGiftRedemptionEvents(options = {}, filter) {
+        options = {
+            ...options,
+            withRelated: ['redeemer', 'tier'],
+            filter: 'redeemer_member_id:-null+custom:true',
+            useBasicCount: true,
+            mongoTransformer: chainTransformers(
+                // First set the filter manually
+                replaceCustomFilterTransformer(filter),
+
+                // Map the used keys in that filter
+                ...mapKeys({
+                    'data.created_at': 'redeemed_at',
+                    'data.member_id': 'redeemer_member_id'
+                })
+            )
+        };
+
+        if (options.order) {
+            options.order = options.order.replace(/created_at/g, 'redeemed_at');
+        }
+
+        const {data: models, meta} = await this._Gift.findPage(options);
+
+        const data = models.map((model) => {
+            const json = model.toJSON(options);
+
+            return {
+                type: 'gift_redemption_event',
+                data: {
+                    id: json.id,
+                    member: json.redeemer || null,
+                    member_id: json.redeemer_member_id,
+                    tier_name: json.tier?.name,
+                    cadence: json.cadence,
+                    duration: json.duration,
+                    amount: json.amount,
+                    currency: json.currency,
+                    created_at: json.redeemed_at
                 }
             };
         });
