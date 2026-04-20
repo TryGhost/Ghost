@@ -21,6 +21,7 @@ export function buildGift(overrides: Partial<ConstructorParameters<typeof Gift>[
         consumedAt: null,
         expiredAt: null,
         refundedAt: null,
+        consumesSoonReminderSentAt: null,
         ...overrides
     });
 }

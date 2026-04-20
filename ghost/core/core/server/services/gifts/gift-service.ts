@@ -3,6 +3,9 @@ import logging from '@tryghost/logging';
 import {Gift} from './gift';
 import type {GiftRepository} from './gift-repository';
 import tpl from '@tryghost/tpl';
+import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 const errorMessages = {
     giftSubscriptionsNotEnabled: 'Gift subscriptions are not enabled on this site.',
@@ -14,8 +17,17 @@ const errorMessages = {
     paidMember: 'You already have an active subscription.'
 };
 
+interface MemberModel {
+    id: string;
+    get(key: 'email'): string;
+    get(key: 'status'): string;
+    get(key: 'name'): string | null;
+    get(key: 'email_disabled'): boolean;
+    get(key: string): unknown;
+}
+
 interface MemberRepository {
-    get(filter: Record<string, unknown>, options?: Record<string, unknown>): Promise<{id: string; get(key: string): string | null} | null>;
+    get(filter: Record<string, unknown>, options?: Record<string, unknown>): Promise<MemberModel | null>;
     update(data: Record<string, unknown>, options?: Record<string, unknown>): Promise<unknown>;
 }
 
@@ -45,6 +57,14 @@ interface GiftEmailService {
         cadence: 'month' | 'year';
         duration: number;
         expiresAt: Date;
+    }): Promise<void>;
+    sendReminder(data: {
+        memberEmail: string;
+        memberName: string | null;
+        tierName: string;
+        cadence: 'month' | 'year';
+        duration: number;
+        consumesAt: Date;
     }): Promise<void>;
 }
 
@@ -87,6 +107,14 @@ interface GiftServiceDeps {
     tiersService: TiersService;
     giftEmailService: GiftEmailService;
     staffServiceEmails: StaffServiceEmails;
+}
+
+interface ReminderSend {
+    memberEmail: string;
+    memberName: string | null;
+    cadence: 'month' | 'year';
+    duration: number;
+    consumesAt: Date;
 }
 
 export class GiftService {
@@ -262,8 +290,8 @@ export class GiftService {
 
             await this.deps.staffServiceEmails.notifyGiftSubscriptionStarted({
                 memberId: member.id,
-                memberEmail: member.get('email')!,
-                memberName: member.get('name') ?? null,
+                memberEmail: member.get('email'),
+                memberName: member.get('name'),
                 tierName: tier.name,
                 buyerEmail: redeemed.buyerEmail
             });
@@ -381,5 +409,122 @@ export class GiftService {
         }
 
         return {expiredCount};
+    }
+
+    async processReminders(): Promise<{remindedCount: number; skippedCount: number; failedCount: number}> {
+        const now = new Date();
+        const toRemind = await this.deps.giftRepository.findPendingReminder({
+            now,
+            reminderLeadMs: GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY,
+            reminderFloorMs: GIFT_REMINDER_FLOOR_DAYS * MS_PER_DAY
+        });
+
+        if (toRemind.length === 0) {
+            return {remindedCount: 0, skippedCount: 0, failedCount: 0};
+        }
+
+        let remindedCount = 0;
+        let skippedCount = 0;
+        let failedCount = 0;
+
+        for (const gift of toRemind) {
+            try {
+                const sent = await this.sendReminderForGift(gift.token);
+
+                if (sent) {
+                    remindedCount += 1;
+                } else {
+                    skippedCount += 1;
+                }
+            } catch (err) {
+                logging.error(err);
+
+                failedCount += 1;
+            }
+        }
+
+        return {remindedCount, skippedCount, failedCount};
+    }
+
+    private async sendReminderForGift(token: string): Promise<boolean> {
+        const gift = await this.deps.giftRepository.getByToken(token);
+
+        if (!gift) {
+            return false;
+        }
+
+        const tier = await this.deps.tiersService.api.read(gift.tierId);
+
+        if (!tier) {
+            throw new errors.NotFoundError({message: `Tier not found for gift: ${gift.tierId}`});
+        }
+
+        const result = await this.deps.giftRepository.transaction(async (transacting): Promise<ReminderSend | null> => {
+            const locked = await this.deps.giftRepository.getByToken(token, {transacting, forUpdate: true});
+
+            if (!locked) {
+                return null;
+            }
+
+            if (
+                // Gift must still be active — a concurrent refund or early consume can happen
+                // between `findPendingReminder` and this re-read.
+                locked.status !== 'redeemed'
+                // Idempotency guard: another path (rerun, scheduler) may already have sent.
+                || locked.consumesSoonReminderSentAt !== null
+                // Narrows `redeemerMemberId` from `string | null` to `string` — always set for redeemed gifts.
+                || locked.redeemerMemberId === null
+                // Narrows `consumesAt` from `Date | null` to `Date` — always set for redeemed gifts.
+                || locked.consumesAt === null
+            ) {
+                return null;
+            }
+
+            const member = await this.deps.memberRepository.get(
+                {id: locked.redeemerMemberId},
+                {transacting, forUpdate: true}
+            );
+
+            // Record the reminder as sent before any skip or send below so we don't
+            // re-try gifts with permanently unreachable redeemers on every poll.
+            const reminded = locked.remind();
+
+            if (!reminded) {
+                return null;
+            }
+
+            await this.deps.giftRepository.update(reminded, {transacting});
+
+            if (!member) {
+                return null;
+            }
+
+            if (member.get('email_disabled')) {
+                return null;
+            }
+
+            return {
+                memberEmail: member.get('email'),
+                memberName: member.get('name'),
+                cadence: locked.cadence,
+                duration: locked.duration,
+                consumesAt: locked.consumesAt
+            };
+        });
+
+        if (!result) {
+            return false;
+        }
+
+        await this.deps.giftEmailService.sendReminder({
+            memberEmail: result.memberEmail,
+            memberName: result.memberName,
+            tierName: tier.name,
+            cadence: result.cadence,
+            duration: result.duration,
+            consumesAt: result.consumesAt
+        });
+
+        return true;
     }
 }
