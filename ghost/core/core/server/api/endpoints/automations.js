@@ -10,6 +10,10 @@ const controller = {
         headers: {
             cacheInvalidate: false
         },
+        permissions: {
+            docName: 'automated_emails',
+            method: 'edit'
+        },
         query() {
             domainEvents.dispatch(StartAutomationsPollEvent.create());
         }
