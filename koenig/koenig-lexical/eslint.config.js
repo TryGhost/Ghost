@@ -6,8 +6,10 @@ import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import storybookPlugin from 'eslint-plugin-storybook';
 import tailwindcssPlugin from 'eslint-plugin-tailwindcss';
 import globals from 'globals';
+import {fileURLToPath} from 'node:url';
 
 const ghost = fixupPluginRules(ghostPlugin);
+const tailwindConfigPath = fileURLToPath(new URL('./tailwind.config.cjs', import.meta.url));
 
 export default [
     {ignores: ['dist/**', 'build/**', '.storybook/**']},
@@ -66,13 +68,13 @@ export default [
             'react/button-has-type': 'error',
             'react/no-array-index-key': 'error',
 
-            'tailwindcss/classnames-order': ['error', {config: 'tailwind.config.cjs'}],
-            'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: 'tailwind.config.cjs'}],
-            'tailwindcss/enforces-shorthand': ['warn', {config: 'tailwind.config.cjs'}],
-            'tailwindcss/migration-from-tailwind-2': ['warn', {config: 'tailwind.config.cjs'}],
+            'tailwindcss/classnames-order': ['error', {config: tailwindConfigPath}],
+            'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: tailwindConfigPath}],
+            'tailwindcss/enforces-shorthand': ['warn', {config: tailwindConfigPath}],
+            'tailwindcss/migration-from-tailwind-2': ['warn', {config: tailwindConfigPath}],
             'tailwindcss/no-arbitrary-value': 'off',
             'tailwindcss/no-custom-classname': 'off',
-            'tailwindcss/no-contradicting-classname': ['error', {config: 'tailwind.config.cjs'}]
+            'tailwindcss/no-contradicting-classname': ['error', {config: tailwindConfigPath}]
         }
     },
     {

@@ -103,7 +103,7 @@
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "5.2.0",
     "eslint-plugin-storybook": "10.3.5",
-    "eslint-plugin-tailwindcss": "3.18.2",
+    "eslint-plugin-tailwindcss": "3.18.3",
     "eventemitter3": "5.0.4",
     "fast-average-color": "9.5.2",
     "jsdom": "29.0.2",

@@ -6,6 +6,9 @@ import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import reactRefreshPlugin from 'eslint-plugin-react-refresh';
 import tailwindPlugin from 'eslint-plugin-tailwindcss';
+import {fileURLToPath} from 'node:url';
+
+const tailwindConfigPath = fileURLToPath(new URL('./tailwind.config.cjs', import.meta.url));
 
 export default defineConfig([
     {ignores: ['dist/**', 'types/**']},
@@ -60,13 +63,13 @@ export default defineConfig([
             'react/no-array-index-key': 'error',
             'react/jsx-key': 'off',
 
-            'tailwindcss/classnames-order': ['error', {config: 'tailwind.config.cjs'}],
-            'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: 'tailwind.config.cjs'}],
-            'tailwindcss/enforces-shorthand': ['warn', {config: 'tailwind.config.cjs'}],
-            'tailwindcss/migration-from-tailwind-2': ['warn', {config: 'tailwind.config.cjs'}],
+            'tailwindcss/classnames-order': ['error', {config: tailwindConfigPath}],
+            'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: tailwindConfigPath}],
+            'tailwindcss/enforces-shorthand': ['warn', {config: tailwindConfigPath}],
+            'tailwindcss/migration-from-tailwind-2': ['warn', {config: tailwindConfigPath}],
             'tailwindcss/no-arbitrary-value': 'off',
             'tailwindcss/no-custom-classname': 'off',
-            'tailwindcss/no-contradicting-classname': ['error', {config: 'tailwind.config.cjs'}]
+            'tailwindcss/no-contradicting-classname': ['error', {config: tailwindConfigPath}]
         }
     },
     {
