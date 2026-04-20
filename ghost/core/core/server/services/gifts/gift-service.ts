@@ -165,16 +165,8 @@ export class GiftService {
         return true;
     }
 
-    async getByToken(token: string): Promise<Gift> {
-        const gift = await this.deps.giftRepository.getByToken(token);
-
-        if (!gift) {
-            throw new errors.NotFoundError({
-                message: tpl(errorMessages.giftNotFound)
-            });
-        }
-
-        return gift;
+    async getByToken(token: string): Promise<Gift | null> {
+        return this.deps.giftRepository.getByToken(token);
     }
 
     async assertRedeemable(gift: Gift, memberStatus: string | null): Promise<Gift> {

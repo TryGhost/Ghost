@@ -295,18 +295,14 @@ describe('GiftService', function () {
             assert.equal(result, expectedGift);
         });
 
-        it('throws NotFoundError when the token does not exist', async function () {
+        it('returns null when the token does not exist', async function () {
             giftRepository.getByToken.resolves(null);
 
             const service = createService();
-            await assert.rejects(
-                () => service.getByToken('missing-token'),
-                (err: any) => {
-                    assert.equal(err.errorType, 'NotFoundError');
-                    assert.equal(err.message, 'This gift does not exist.');
-                    return true;
-                }
-            );
+            const result = await service.getByToken('missing-token');
+
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, 'missing-token');
+            assert.equal(result, null);
         });
     });
 
