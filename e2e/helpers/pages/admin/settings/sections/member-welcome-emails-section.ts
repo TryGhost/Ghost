@@ -37,13 +37,13 @@ export class MemberWelcomeEmailsSection extends BasePage {
     // Modal locators
     readonly welcomeEmailModal: Locator;
     readonly modalEditor: Locator;
-    readonly modalSubjectInput: Locator;
+    readonly modalEditSubjectInput: Locator;
     readonly modalSaveButton: Locator;
     readonly modalSavedButton: Locator;
     readonly modalLexicalEditor: Locator;
     readonly modalEditTab: Locator;
     readonly modalPreviewTab: Locator;
-    readonly modalPreviewSubjectInput: Locator;
+    readonly modalPreviewSubject: Locator;
     readonly modalPreviewIframe: Locator;
     readonly modalPreviewFrame: FrameLocator;
 
@@ -86,8 +86,8 @@ export class MemberWelcomeEmailsSection extends BasePage {
         this.modalEditor = this.welcomeEmailModal.getByTestId('welcome-email-editor');
         this.modalEditTab = this.welcomeEmailModal.getByTestId('welcome-email-mode-edit');
         this.modalPreviewTab = this.welcomeEmailModal.getByTestId('welcome-email-mode-preview');
-        this.modalPreviewSubjectInput = this.welcomeEmailModal.getByTestId('welcome-email-preview-subject');
-        this.modalSubjectInput = this.modalPreviewSubjectInput;
+        this.modalEditSubjectInput = this.welcomeEmailModal.getByTestId('welcome-email-edit-subject');
+        this.modalPreviewSubject = this.welcomeEmailModal.getByTestId('welcome-email-preview-subject');
         this.modalSaveButton = this.welcomeEmailModal.getByRole('button', {name: 'Save'});
         this.modalSavedButton = this.welcomeEmailModal.getByRole('button', {name: 'Saved'});
         this.modalLexicalEditor = this.modalEditor.getByRole('textbox').first();

@@ -122,11 +122,12 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
         await welcomeEmailsSection.goto();
         await welcomeEmailsSection.enableFreeWelcomeEmail();
         await welcomeEmailsSection.openFreeWelcomeEmailModal();
+        await expect(welcomeEmailsSection.modalEditSubjectInput).toBeVisible();
+        await welcomeEmailsSection.modalEditSubjectInput.clear();
+        await welcomeEmailsSection.modalEditSubjectInput.fill(customSubject);
         await welcomeEmailsSection.replaceWelcomeEmailContent(customBody);
         await welcomeEmailsSection.modalPreviewTab.click();
-        await expect(welcomeEmailsSection.modalSubjectInput).toBeVisible();
-        await welcomeEmailsSection.modalSubjectInput.clear();
-        await welcomeEmailsSection.modalSubjectInput.fill(customSubject);
+        await expect(welcomeEmailsSection.modalPreviewSubject).toContainText(customSubject);
         await welcomeEmailsSection.saveWelcomeEmail();
 
         await withIsolatedPage(browser, {baseURL}, async ({page: signupPage}) => {
@@ -160,12 +161,13 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
                 response.request().method() === 'POST'
         );
 
+        await expect(welcomeEmailsSection.modalEditSubjectInput).toBeVisible();
+        await welcomeEmailsSection.modalEditSubjectInput.clear();
+        await welcomeEmailsSection.modalEditSubjectInput.fill(customSubject);
         await welcomeEmailsSection.modalPreviewTab.click();
         await previewResponse;
 
-        await welcomeEmailsSection.modalSubjectInput.clear();
-        await welcomeEmailsSection.modalSubjectInput.fill(customSubject);
-        await expect(welcomeEmailsSection.modalPreviewSubjectInput).toHaveValue(customSubject);
+        await expect(welcomeEmailsSection.modalPreviewSubject).toContainText(customSubject);
         await expect(welcomeEmailsSection.modalPreviewIframe).toBeVisible();
         await expect(welcomeEmailsSection.modalPreviewFrame.locator('body')).toContainText(customBody);
     });
