@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const RedisCache = require('../../../../../../core/server/adapters/lib/redis/AdapterCacheRedis');
 
@@ -265,6 +266,26 @@ describe('Adapter Cache Redis', function () {
             await cache.reset();
 
             sinon.assert.calledOnce(logging.error);
+        });
+    });
+
+    describe('keys', function () {
+        it('throws an IncorrectUsageError - this adapter does not support enumerating keys', function () {
+            const redisCacheInstanceStub = {
+                store: {
+                    getClient: sinon.stub().returns({
+                        on: sinon.stub()
+                    })
+                }
+            };
+            const cache = new RedisCache({
+                cache: redisCacheInstanceStub
+            });
+
+            assert.throws(
+                () => cache.keys(),
+                err => err instanceof errors.IncorrectUsageError
+            );
         });
     });
 });
