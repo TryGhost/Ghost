@@ -44,7 +44,7 @@
   "dependencies": {
     "codemirror": "5.65.21",
     "codemirror-spell-checker": "1.1.2",
-    "marked": "18.0.1"
+    "marked": "18.0.0"
   },
   "gitHead": "d46b01ff5696e5a457abee67e0aabc62f2b8a191"
 }
