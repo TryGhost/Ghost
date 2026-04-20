@@ -130,7 +130,29 @@ fs.copyFileSync(workspaceSrc, workspaceDst);
 
 console.log('Copied .npmrc (with frozen-lockfile=false) and pnpm-workspace.yaml');
 
-// 3. Create tarball
+// 3. Validate deploy output before tarring.
+// Guards against regressions in this script that would produce a valid-looking
+// but broken tarball (missing lockfile, missing overrides merge, empty components/).
+console.log('\nValidating deploy output...');
+const packagedPkg = fsExtra.readJsonSync(pkgPath);
+const requiredFiles = ['.npmrc', 'pnpm-workspace.yaml', 'pnpm-lock.yaml', 'package.json'];
+for (const rel of requiredFiles) {
+    if (!fs.existsSync(path.join(DEPLOY_DIR, rel))) {
+        throw new Error(`Required file missing from deploy output: ${rel}`);
+    }
+}
+const componentTgzs = fs.readdirSync(componentsDir).filter(f => f.endsWith('.tgz'));
+if (componentTgzs.length === 0) {
+    throw new Error('No component tarballs produced in components/');
+}
+if (!packagedPkg.packageManager) {
+    throw new Error('Packaged package.json is missing packageManager');
+}
+if (!packagedPkg.pnpm?.overrides || Object.keys(packagedPkg.pnpm.overrides).length === 0) {
+    throw new Error('Packaged package.json is missing pnpm.overrides');
+}
+
+// 4. Create tarball
 // ghost-cli expects a package/ prefix inside the tarball.
 const version = pkg.version;
 const tgzPath = path.join(CORE_DIR, `ghost-${version}.tgz`);
