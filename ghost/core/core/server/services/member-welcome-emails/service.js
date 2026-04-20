@@ -1,6 +1,5 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const labs = require('../../../shared/labs');
 const urlUtils = require('../../../shared/url-utils');
 const settingsCache = require('../../../shared/settings-cache');
 const verifyEmailTemplate = require('../newsletters/emails/verify-email');
@@ -151,10 +150,6 @@ class MemberWelcomeEmailService {
 
         this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
         return this.#defaultNewsletterSenderOptions;
-    }
-
-    #useDesignCustomization() {
-        return labs.isSet('welcomeEmailsDesignCustomization');
     }
 
     async #getEffectiveSenderOptions(automatedSender = {}) {
@@ -342,9 +337,7 @@ class MemberWelcomeEmailService {
 
         for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
             const row = await WelcomeEmailAutomation.findOne({slug}, {
-                withRelated: this.#useDesignCustomization()
-                    ? ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
-                    : ['welcomeEmailAutomatedEmail']
+                withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
             });
 
             if (!row) {
@@ -359,7 +352,7 @@ class MemberWelcomeEmailService {
                 continue;
             }
 
-            const designSettings = this.#useDesignCustomization() ? email.related('emailDesignSetting') : null;
+            const designSettings = email.related('emailDesignSetting');
 
             this.#memberWelcomeEmails[memberStatus] = {
                 lexical: email.get('lexical'),
@@ -445,9 +438,7 @@ class MemberWelcomeEmailService {
     async #renderWelcomeEmailPreview({automatedEmailId, subject, lexical, memberEmail = 'jamie@example.com'}) {
         // Still validate the automated email exists (for permission purposes)
         const automation = await WelcomeEmailAutomation.findOne({id: automatedEmailId}, {
-            withRelated: this.#useDesignCustomization()
-                ? ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
-                : ['welcomeEmailAutomatedEmail']
+            withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
         });
         const automatedEmail = automation?.related('welcomeEmailAutomatedEmail');
 
@@ -475,7 +466,7 @@ class MemberWelcomeEmailService {
             uuid: '00000000-0000-4000-8000-000000000000'
         };
 
-        const designSettings = this.#useDesignCustomization() ? automatedEmail.related('emailDesignSetting') : null;
+        const designSettings = automatedEmail.related('emailDesignSetting');
 
         const preview = await this.#renderer.render({
             lexical,
@@ -580,9 +571,7 @@ class MemberWelcomeEmailService {
 
 class MemberWelcomeEmailServiceWrapper {
     init() {
-        const useDesignCustomization = labs.isSet('welcomeEmailsDesignCustomization');
-
-        if (this.api && this.useDesignCustomization === useDesignCustomization) {
+        if (this.api) {
             return;
         }
 
@@ -600,7 +589,6 @@ class MemberWelcomeEmailServiceWrapper {
         const SingleUseTokenProvider = require('../members/single-use-token-provider');
         const models = require('../../models');
 
-        this.useDesignCustomization = useDesignCustomization;
         this.api = new MemberWelcomeEmailService({
             t: this.i18n.t,
             singleUseTokenProvider: new SingleUseTokenProvider({

@@ -2,12 +2,10 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const errors = require('@tryghost/errors');
-const labs = require('../../../../../core/shared/labs');
 
 describe('MemberWelcomeEmailRenderer', function () {
     let MemberWelcomeEmailRenderer;
     let lexicalRenderStub;
-    let originalLabsIsSet;
 
     const defaultSiteSettings = {
         title: 'Test Site',
@@ -17,15 +15,6 @@ describe('MemberWelcomeEmailRenderer', function () {
     };
 
     beforeEach(function () {
-        originalLabsIsSet = labs.isSet;
-        sinon.stub(labs, 'isSet').callsFake((flag) => {
-            if (flag === 'welcomeEmailsDesignCustomization') {
-                return false;
-            }
-
-            return originalLabsIsSet(flag);
-        });
-
         lexicalRenderStub = sinon.stub().resolves('<p>Hello World</p>');
 
         MemberWelcomeEmailRenderer = rewire('../../../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');
@@ -72,50 +61,10 @@ describe('MemberWelcomeEmailRenderer', function () {
                 postTitleColor: '#000000',
                 sectionTitleColor: null,
                 textColor: '#000000',
-                titleFontWeight: 'bold',
+                titleFontWeight: null,
                 titleStrongWeight: '800',
                 titleWeight: '700'
             }});
-        });
-
-        it('falls back to the legacy welcome email design when the labs flag is off', async function () {
-            const getEmailDesignStub = sinon.stub().returns({accentColor: '#123456'});
-            MemberWelcomeEmailRenderer.__set__('getEmailDesign', getEmailDesignStub);
-
-            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
-
-            const result = await renderer.render({
-                lexical: '{}',
-                subject: 'Welcome!',
-                designSettings: {
-                    background_color: '#111111',
-                    header_image: 'https://example.com/header.png',
-                    show_badge: true,
-                    show_header_title: true
-                },
-                member: {name: 'John', email: 'john@example.com'},
-                siteSettings: defaultSiteSettings
-            });
-
-            sinon.assert.calledOnceWithExactly(getEmailDesignStub, {
-                accentColor: '#ff0000',
-                backgroundColor: '#ffffff',
-                buttonColor: 'accent',
-                buttonCorners: null,
-                buttonStyle: null,
-                dividerColor: null,
-                headerBackgroundColor: null,
-                imageCorners: null,
-                linkColor: 'accent',
-                linkStyle: null,
-                postTitleColor: null,
-                sectionTitleColor: null,
-                titleFontWeight: 'bold'
-            });
-
-            assert(!result.html.includes('https://example.com/header.png'));
-            assert(!result.html.includes('https://ghost.org/?via=pbg-newsletter'));
-            assert(!result.html.includes('class="header"'));
         });
 
         it('substitutes member template variables', async function () {
@@ -515,18 +464,7 @@ describe('MemberWelcomeEmailRenderer', function () {
             assert(!result.html.includes('Manage your preferences'));
         });
 
-        describe('labs flag on', function () {
-            beforeEach(function () {
-                labs.isSet.restore();
-                sinon.stub(labs, 'isSet').callsFake((flag) => {
-                    if (flag === 'welcomeEmailsDesignCustomization') {
-                        return true;
-                    }
-
-                    return originalLabsIsSet(flag);
-                });
-            });
-
+        describe('design customization', function () {
             it('builds the email design from database-backed design settings', async function () {
                 const getEmailDesignStub = sinon.stub().returns({accentColor: '#123456'});
                 MemberWelcomeEmailRenderer.__set__('getEmailDesign', getEmailDesignStub);

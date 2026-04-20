@@ -9,7 +9,6 @@ const mailService = require('../../../core/server/services/mail');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
 const processOutbox = require('../../../core/server/services/outbox/jobs/lib/process-outbox');
-const labs = require('../../../core/shared/labs');
 
 function parseDatabaseDate(date) {
     if (date instanceof Date) {
@@ -27,7 +26,6 @@ describe('Member Welcome Emails Integration', function () {
     let membersService;
     let defaultNewsletterSenderState = null;
     let defaultEmailDesignSettingId;
-    let originalLabsIsSet;
 
     before(async function () {
         await testUtils.setup('default')();
@@ -40,15 +38,6 @@ describe('Member Welcome Emails Integration', function () {
     });
 
     beforeEach(async function () {
-        originalLabsIsSet = labs.isSet;
-        sinon.stub(labs, 'isSet').callsFake((flag) => {
-            if (flag === 'welcomeEmailsDesignCustomization') {
-                return false;
-            }
-
-            return originalLabsIsSet(flag);
-        });
-
         const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
         if (defaultNewsletter) {
             defaultNewsletterSenderState = {
@@ -540,48 +529,11 @@ describe('Member Welcome Emails Integration', function () {
         });
     });
 
-    describe('labs flag on', function () {
+    describe('design settings', function () {
         beforeEach(function () {
-            labs.isSet.restore();
-            sinon.stub(labs, 'isSet').callsFake((flag) => {
-                if (flag === 'welcomeEmailsDesignCustomization') {
-                    return true;
-                }
-
-                return originalLabsIsSet(flag);
-            });
             memberWelcomeEmailService.api = null;
             memberWelcomeEmailService.init();
             sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
-        });
-
-        it('reinitializes the service when the labs mode changes', function () {
-            labs.isSet.restore();
-            sinon.stub(labs, 'isSet').callsFake((flag) => {
-                if (flag === 'welcomeEmailsDesignCustomization') {
-                    return false;
-                }
-
-                return originalLabsIsSet(flag);
-            });
-
-            memberWelcomeEmailService.api = null;
-            memberWelcomeEmailService.useDesignCustomization = undefined;
-            memberWelcomeEmailService.init();
-            const labsOffApi = memberWelcomeEmailService.api;
-
-            labs.isSet.restore();
-            sinon.stub(labs, 'isSet').callsFake((flag) => {
-                if (flag === 'welcomeEmailsDesignCustomization') {
-                    return true;
-                }
-
-                return originalLabsIsSet(flag);
-            });
-
-            memberWelcomeEmailService.init();
-
-            assert.notEqual(memberWelcomeEmailService.api, labsOffApi);
         });
 
         it('uses cached design settings after welcome emails are loaded', async function () {

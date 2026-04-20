@@ -31,7 +31,6 @@ Object {
       "tagsX": true,
       "themeTranslation": true,
       "urlCache": true,
-      "welcomeEmailsDesignCustomization": true,
     },
     "mail": "",
     "mailgunIsConfigured": false,

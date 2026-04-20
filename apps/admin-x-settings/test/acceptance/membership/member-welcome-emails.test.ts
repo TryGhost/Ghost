@@ -45,23 +45,12 @@ const configWithTenorEnabled = {
     }
 };
 
-const configWithWelcomeEmailCustomization = {
+const managedEmailConfigWithoutSendingDomain = {
     ...responseFixtures.config,
     config: {
         ...responseFixtures.config.config,
-        labs: {
-            ...responseFixtures.config.config.labs,
-            welcomeEmailsDesignCustomization: true
-        }
-    }
-};
-
-const managedEmailConfigWithoutSendingDomain = {
-    ...configWithWelcomeEmailCustomization,
-    config: {
-        ...configWithWelcomeEmailCustomization.config,
         hostSettings: {
-            ...configWithWelcomeEmailCustomization.config.hostSettings,
+            ...responseFixtures.config.config.hostSettings,
             managedEmail: {
                 enabled: true
             }
@@ -656,7 +645,7 @@ test.describe('Member emails settings', async () => {
                 ...globalDataRequests,
                 browseSettings: {...globalDataRequests.browseSettings, response: settingsWithPublicationIcon},
                 ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailCustomization},
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
                 readAutomatedEmailDesign: {method: 'GET', path: '/automated_emails/design/', response: automatedEmailDesignFixture},
                 editAutomatedEmailDesign: {method: 'PUT', path: '/automated_emails/design/', response: automatedEmailDesignFixture},
@@ -699,7 +688,7 @@ test.describe('Member emails settings', async () => {
             await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailCustomization},
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
                 readAutomatedEmailDesign: {method: 'GET', path: '/automated_emails/design/', response: automatedEmailDesignFixture}
             }});
@@ -722,7 +711,7 @@ test.describe('Member emails settings', async () => {
             await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailCustomization},
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
                 readAutomatedEmailDesign: {method: 'GET', path: '/automated_emails/design/', response: automatedEmailDesignFixture}
             }});
@@ -763,7 +752,7 @@ test.describe('Member emails settings', async () => {
             await mockApi({page, requests: {
                 ...globalDataRequests,
                 browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: newsletterReplyToNewsletterResponse},
-                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailCustomization},
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
                 readAutomatedEmailDesign: {method: 'GET', path: '/automated_emails/design/', response: automatedEmailDesignFixture}
             }});
@@ -799,7 +788,7 @@ test.describe('Member emails settings', async () => {
             await mockApi({page, requests: {
                 ...globalDataRequests,
                 browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: newsletterCustomReplyToResponse},
-                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailCustomization},
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
                 readAutomatedEmailDesign: {method: 'GET', path: '/automated_emails/design/', response: automatedEmailDesignFixture}
             }});
@@ -860,7 +849,7 @@ test.describe('Member emails settings', async () => {
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithWelcomeEmailCustomization},
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture},
                 readAutomatedEmailDesign: {method: 'GET', path: '/automated_emails/design/', response: automatedEmailDesignFixture},
                 editAutomatedEmailDesign: {method: 'PUT', path: '/automated_emails/design/', response: automatedEmailDesignFixture},
