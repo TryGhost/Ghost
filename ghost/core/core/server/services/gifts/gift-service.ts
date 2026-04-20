@@ -116,16 +116,13 @@ interface GiftServiceDeps {
     staffServiceEmails: StaffServiceEmails;
 }
 
-type ReminderResult =
-    | {outcome: 'skip'}
-    | {
-        outcome: 'send';
-        memberEmail: string;
-        memberName: string | null;
-        cadence: 'month' | 'year';
-        duration: number;
-        consumesAt: Date;
-    };
+interface ReminderSend {
+    memberEmail: string;
+    memberName: string | null;
+    cadence: 'month' | 'year';
+    duration: number;
+    consumesAt: Date;
+}
 
 export class GiftService {
     private readonly deps: GiftServiceDeps;
@@ -475,11 +472,11 @@ export class GiftService {
             throw new errors.NotFoundError({message: `Tier not found for gift: ${gift.tierId}`});
         }
 
-        const result = await this.deps.giftRepository.transaction(async (transacting): Promise<ReminderResult> => {
+        const result = await this.deps.giftRepository.transaction(async (transacting): Promise<ReminderSend | null> => {
             const locked = await this.deps.giftRepository.getByToken(token, {transacting, forUpdate: true});
 
             if (!locked) {
-                return {outcome: 'skip'};
+                return null;
             }
 
             if (
@@ -493,7 +490,7 @@ export class GiftService {
                 // Narrows `consumesAt` from `Date | null` to `Date` — always set for redeemed gifts.
                 || locked.consumesAt === null
             ) {
-                return {outcome: 'skip'};
+                return null;
             }
 
             const member = await this.deps.memberRepository.get(
@@ -506,21 +503,20 @@ export class GiftService {
             await this.deps.giftRepository.update(locked.remind(), {transacting});
 
             if (!member) {
-                return {outcome: 'skip'};
+                return null;
             }
 
             if (member.get('email_disabled')) {
-                return {outcome: 'skip'};
+                return null;
             }
 
             const memberEmail = asStringOrNull(member.get('email'));
 
             if (!memberEmail) {
-                return {outcome: 'skip'};
+                return null;
             }
 
             return {
-                outcome: 'send',
                 memberEmail,
                 memberName: asStringOrNull(member.get('name')),
                 cadence: locked.cadence,
@@ -529,7 +525,7 @@ export class GiftService {
             };
         });
 
-        if (result.outcome === 'skip') {
+        if (!result) {
             return false;
         }
 
