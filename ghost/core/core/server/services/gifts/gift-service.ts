@@ -295,15 +295,9 @@ export class GiftService {
                 throw new errors.NotFoundError({message: `Tier not found: ${redeemed.tierId}`});
             }
 
-            const memberEmail = asStringOrNull(member.get('email'));
-
-            if (!memberEmail) {
-                throw new errors.InternalServerError({message: `Redeemer member ${member.id} has no email address`});
-            }
-
             await this.deps.staffServiceEmails.notifyGiftSubscriptionStarted({
                 memberId: member.id,
-                memberEmail,
+                memberEmail: asStringOrNull(member.get('email'))!,
                 memberName: asStringOrNull(member.get('name')),
                 tierName: tier.name,
                 buyerEmail: redeemed.buyerEmail
