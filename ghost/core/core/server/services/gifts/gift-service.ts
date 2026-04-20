@@ -7,15 +7,6 @@ import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-/**
- * Narrow a Bookshelf attribute value (`unknown` from `member.get()`) to `string | null`.
- * Returns `null` for any value that isn't a string, so callers can safely pass the
- * result to APIs expecting `string | null`.
- */
-function asStringOrNull(value: unknown): string | null {
-    return typeof value === 'string' ? value : null;
-}
-
 const errorMessages = {
     giftSubscriptionsNotEnabled: 'Gift subscriptions are not enabled on this site.',
     giftNotFound: 'This gift does not exist.',
@@ -28,8 +19,10 @@ const errorMessages = {
 
 interface MemberModel {
     id: string;
-    // Bookshelf's generic `get()` returns the raw column value, which is `unknown`
-    // at the type level. Callers narrow with `typeof` checks before use.
+    get(key: 'email'): string;
+    get(key: 'status'): string;
+    get(key: 'name'): string | null;
+    get(key: 'email_disabled'): boolean;
     get(key: string): unknown;
 }
 
@@ -169,8 +162,8 @@ export class GiftService {
 
         try {
             await this.deps.staffServiceEmails.notifyGiftReceived({
-                name: member ? asStringOrNull(member.get('name')) : null,
-                email: (member && asStringOrNull(member.get('email'))) ?? data.buyerEmail,
+                name: member?.get('name') ?? null,
+                email: member?.get('email') ?? data.buyerEmail,
                 memberId: member?.id ?? null,
                 amount: data.amount,
                 currency: data.currency,
@@ -268,7 +261,7 @@ export class GiftService {
                 throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
             }
 
-            await this.assertRedeemable(gift, asStringOrNull(_member.get('status')));
+            await this.assertRedeemable(gift, _member.get('status'));
 
             const _redeemed = gift.redeem({memberId});
 
@@ -297,8 +290,8 @@ export class GiftService {
 
             await this.deps.staffServiceEmails.notifyGiftSubscriptionStarted({
                 memberId: member.id,
-                memberEmail: asStringOrNull(member.get('email'))!,
-                memberName: asStringOrNull(member.get('name')),
+                memberEmail: member.get('email'),
+                memberName: member.get('name'),
                 tierName: tier.name,
                 buyerEmail: redeemed.buyerEmail
             });
@@ -510,15 +503,9 @@ export class GiftService {
                 return null;
             }
 
-            const memberEmail = asStringOrNull(member.get('email'));
-
-            if (!memberEmail) {
-                return null;
-            }
-
             return {
-                memberEmail,
-                memberName: asStringOrNull(member.get('name')),
+                memberEmail: member.get('email'),
+                memberName: member.get('name'),
                 cadence: locked.cadence,
                 duration: locked.duration,
                 consumesAt: locked.consumesAt
