@@ -182,7 +182,22 @@ async function processRun({
     try {
         const member = await Member.findOne({id: run.member_id}, {withRelated: ['newsletters']});
 
-        // TODO(NY-1192): Bail if member no longer exists
+        // When a member is deleted, the run is cascade-deleted. In this edge
+        // case, when a member is deleted after the run is loaded but before
+        // it's processed, bail. (There's no run to update any longer.)
+        if (!member) {
+            logging.warn(
+                {
+                    system: {
+                        event: 'welcome_email_automations.member_not_found',
+                        run_id: run.id
+                    }
+                },
+                `${LOG_KEY} Member not found for run ${run.id}`
+            );
+            return;
+        }
+
         // TODO(NY-1193): Bail if member is unsubscribed
         // TODO(NY-1194): Bail if member's status has changed
 
