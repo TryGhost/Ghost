@@ -64,8 +64,6 @@ async function createOfferAndRedeem(page: Page, request: APIRequestContext, stri
 }
 
 test.describe('Ghost Admin - Members Label Multiselect Filter', () => {
-    test.use({labs: {membersForward: true}});
-
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {
@@ -174,7 +172,7 @@ test.describe('Ghost Admin - Members Label Multiselect Filter', () => {
 });
 
 test.describe('Ghost Admin - Members Offer Multiselect Filter', () => {
-    test.use({labs: {membersForward: true}, stripeEnabled: true});
+    test.use({stripeEnabled: true});
 
     test('opens offer filter and selects an offer to filter members', async ({page, stripe}) => {
         const {suffix} = await createOfferAndRedeem(page, page.request, stripe!, {

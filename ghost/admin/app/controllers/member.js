@@ -27,7 +27,8 @@ export default class MemberController extends Controller {
     @service store;
 
     queryParams = [
-        {postAnalytics: 'post'}
+        {postAnalytics: 'post'},
+        {backPath: 'back'}
     ];
 
     @tracked isLoading = false;
@@ -40,12 +41,29 @@ export default class MemberController extends Controller {
 
     @tracked directlyFromAnalytics = false;
     @tracked postAnalytics = null;
+    @tracked backPath = null;
 
     get fromAnalytics() {
         if (!this.postAnalytics) {
             return null;
         }
         return [this.postAnalytics];
+    }
+
+    get membersListPath() {
+        if (this.backPath?.startsWith('/members')) {
+            return this.backPath;
+        }
+
+        if (this.postAnalytics) {
+            return `/members?post=${encodeURIComponent(this.postAnalytics)}`;
+        }
+
+        return '/members';
+    }
+
+    get membersListUrl() {
+        return `#${this.membersListPath}`;
     }
 
     constructor() {
@@ -146,7 +164,7 @@ export default class MemberController extends Controller {
                 this.membersStats.invalidate();
                 this.members.refreshData();
                 this.membersCountCache.clear();
-                this.transitionToRoute('members');
+                this.router.transitionTo(this.membersListPath);
             }
         });
     }

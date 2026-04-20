@@ -76,7 +76,7 @@ describe('Acceptance: Authentication', function () {
             });
         });
         it('redirects to setup when setup isn\'t complete', async function () {
-            await visit('/members');
+            await visit('/pages');
             expect(currentURL()).to.equal('/setup');
         });
     });
@@ -139,7 +139,7 @@ describe('Acceptance: Authentication', function () {
             }));
 
             await authenticateSession();
-            await visit('/members');
+            await visit('/pages');
 
             expect(windowProxy.replaceLocation.calledOnce, 'replaceLocation called').to.be.true;
         });
@@ -152,7 +152,7 @@ describe('Acceptance: Authentication', function () {
             }));
 
             await authenticateSession();
-            await visit('/members');
+            await visit('/pages');
 
             expect(windowProxy.replaceLocation.calledOnce, 'replaceLocation called').to.be.true;
         });

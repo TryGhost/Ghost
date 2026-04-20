@@ -7,8 +7,6 @@ import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 usePerTestIsolation();
 
 test.describe('Ghost Admin - Members Tier Filter Search', () => {
-    test.use({labs: {membersForward: true}});
-
     let memberFactory: MemberFactory;
     let tierFactory: TierFactory;
 

@@ -9,6 +9,7 @@ const {mockCanManageMembers, mockUseCurrentUser} = vi.hoisted(() => ({
 }));
 
 vi.mock('@tryghost/admin-x-framework', () => ({
+    Outlet: () => React.createElement('div', {'data-testid': 'outlet'}),
     Navigate: ({replace, to}: {replace?: boolean; to: string}) => React.createElement('div', {
         'data-replace': String(Boolean(replace)),
         'data-testid': 'navigate',
@@ -24,10 +25,6 @@ vi.mock('@tryghost/admin-x-framework/api/users', () => ({
     canManageMembers: mockCanManageMembers
 }));
 
-vi.mock('./members-route-gate', () => ({
-    MembersRouteGate: () => React.createElement('div', {'data-testid': 'members-route-gate'})
-}));
-
 describe('MembersRoute', () => {
     beforeEach(() => {
         mockCanManageMembers.mockReturnValue(true);
@@ -41,10 +38,10 @@ describe('MembersRoute', () => {
         });
     });
 
-    it('renders the members route gate for authorized users', () => {
+    it('renders the nested members routes for authorized users', () => {
         render(<MembersRoute />);
 
-        expect(screen.getByTestId('members-route-gate')).toBeInTheDocument();
+        expect(screen.getByTestId('outlet')).toBeInTheDocument();
     });
 
     it('redirects users without member permissions to home', () => {

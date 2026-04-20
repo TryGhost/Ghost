@@ -4,7 +4,6 @@ import {inject as service} from '@ember/service';
 
 export default class MembersRoute extends MembersManagementRoute {
     @service store;
-    @service feature;
 
     queryParams = {
         label: {refreshModel: true},

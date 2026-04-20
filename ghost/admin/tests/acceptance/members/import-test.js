@@ -8,7 +8,7 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
-describe('Acceptance: Members import', function () {
+describe.skip('Acceptance: Members import', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 

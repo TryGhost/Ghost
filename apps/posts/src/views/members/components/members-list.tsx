@@ -3,6 +3,7 @@ import MembersListItem from './members-list-item';
 import {Member} from '@tryghost/admin-x-framework/api/members';
 import {MembersTableColGroup, MembersTableHeader, PinnedMemberHeader} from './member-table-chrome';
 import {Table, TableBody, TableCell, TableRow} from '@tryghost/shade/components';
+import {buildMemberDetailPath} from '../member-detail-hash';
 import {forwardRef, useEffect, useMemo, useRef, useState} from 'react';
 import {getMemberTableLayout, getMemberTableLayoutStyles} from './member-table-layout';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
@@ -39,6 +40,7 @@ const PlaceholderRow = forwardRef<HTMLTableRowElement>(
 interface MembersListProps {
     items: Member[];
     totalItems: number;
+    backPath?: string;
     hasNextPage?: boolean;
     isFetchingNextPage?: boolean;
     fetchNextPage: () => void;
@@ -53,6 +55,7 @@ interface MembersListProps {
 function MembersList({
     items,
     totalItems,
+    backPath,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
@@ -189,7 +192,7 @@ function MembersList({
             onRowClick(memberId);
         } else {
             // Default: Navigate to Ember member detail page
-            window.location.hash = `/members/${memberId}`;
+            window.location.hash = buildMemberDetailPath(memberId, backPath);
         }
     };
 
@@ -263,6 +266,7 @@ function MembersList({
                                     key={key}
                                     {...props}
                                     activeColumns={activeColumns}
+                                    backPath={backPath}
                                     columnStyles={columnStyles}
                                     item={item}
                                     showEmailOpenRate={showEmailOpenRate}

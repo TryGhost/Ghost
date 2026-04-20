@@ -52,14 +52,14 @@
                 />
             </LinkTo>
             {{!-- Step 4 --}}
-            <LinkTo @route="members" class="gh-onboarding-item {{onboarding-step-class "build-audience"}}" id="ob-build-audience" {{on "click" (fn this.onboarding.markStepCompleted "build-audience")}}>
+            <a href="#/members" class="gh-onboarding-item {{onboarding-step-class "build-audience"}}" id="ob-build-audience" {{on "click" (fn this.onboarding.markStepCompleted "build-audience")}}>
                 <Dashboard::Onboarding::Step
                     @icon="member-add"
                     @title="Build your audience"
                     @description="Add members and grow your readership."
                     @complete={{is-onboarding-step-completed "build-audience"}}
                 />
-            </LinkTo>
+            </a>
             {{!-- Step 5 --}}
             <div role="button" {{on "click" this.openShareModal}} class="gh-onboarding-item {{onboarding-step-class "share-publication"}}" id="ob-share-publication">
                 <Dashboard::Onboarding::Step
