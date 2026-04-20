@@ -118,11 +118,11 @@ test.describe('Email card', async () => {
         await focusEditor(page);
         await insertEmailCard(page);
 
-        // Wait for card to be in editing mode before moving away
         const emailCard = page.locator('[data-kg-card="email"]');
         await expect(emailCard).toHaveAttribute('data-kg-card-editing', 'true');
 
-        // Shift focus away from email card
+        // Match real-world pacing and avoid local selection timing flake.
+        await page.waitForTimeout(25);
         await page.keyboard.press('ArrowDown');
 
         await expect(emailCard).toHaveAttribute('data-kg-card-editing', 'false');
