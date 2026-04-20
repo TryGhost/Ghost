@@ -53,7 +53,7 @@
     "typescript": "5.9.3",
     "typescript-eslint": "8.58.2",
     "vite": "8.0.8",
-    "vite-plugin-css-injected-by-js": "5.0.0",
+    "vite-plugin-css-injected-by-js": "5.0.1",
     "vite-plugin-dts": "4.5.4",
     "vite-plugin-svgr": "5.2.0",
     "vitest": "4.1.4"
