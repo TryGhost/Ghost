@@ -10,7 +10,8 @@ describe('validators/handle', function () {
 
     describe('input', function () {
         it('no api config passed', function () {
-            return shared.validators.handle.input()
+            return shared.validators.handle
+                .input()
                 .then(Promise.reject)
                 .catch((err) => {
                     assert.equal(err instanceof errors.IncorrectUsageError, true);
@@ -18,7 +19,8 @@ describe('validators/handle', function () {
         });
 
         it('no api validators passed', function () {
-            return shared.validators.handle.input({})
+            return shared.validators.handle
+                .input({})
                 .then(Promise.reject)
                 .catch((err) => {
                     assert.equal(err instanceof errors.IncorrectUsageError, true);
@@ -26,7 +28,8 @@ describe('validators/handle', function () {
         });
 
         it('no api config passed when validators exist', function () {
-            return shared.validators.handle.input(undefined, {}, {})
+            return shared.validators.handle
+                .input(undefined, {}, {})
                 .then(Promise.reject)
                 .catch((err) => {
                     assert.equal(err instanceof errors.IncorrectUsageError, true);
@@ -45,17 +48,18 @@ describe('validators/handle', function () {
 
             const apiValidators = {
                 all: {
-                    add: sinon.stub().resolves()
+                    add: sinon.stub().resolves(),
                 },
                 posts: {
-                    add: sinon.stub().resolves()
+                    add: sinon.stub().resolves(),
                 },
                 users: {
-                    add: sinon.stub().resolves()
-                }
+                    add: sinon.stub().resolves(),
+                },
             };
 
-            return shared.validators.handle.input({docName: 'posts', method: 'add'}, apiValidators, {context: {}})
+            return shared.validators.handle
+                .input({ docName: 'posts', method: 'add' }, apiValidators, { context: {} })
                 .then(() => {
                     assert.equal(getStub.calledOnce, true);
                     assert.equal(addStub.calledOnce, true);
@@ -68,11 +72,12 @@ describe('validators/handle', function () {
         it('calls docName all validator when provided', function () {
             const apiValidators = {
                 posts: {
-                    all: sinon.stub().resolves()
-                }
+                    all: sinon.stub().resolves(),
+                },
             };
 
-            return shared.validators.handle.input({docName: 'posts', method: 'browse'}, apiValidators, {})
+            return shared.validators.handle
+                .input({ docName: 'posts', method: 'browse' }, apiValidators, {})
                 .then(() => {
                     assert.equal(apiValidators.posts.all.calledOnce, true);
                 });

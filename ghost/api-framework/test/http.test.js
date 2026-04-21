@@ -13,16 +13,15 @@ describe('HTTP', function () {
         next = sinon.stub();
 
         req.body = {
-            a: 'a'
+            a: 'a',
         };
         req.vhost = {
-            host: 'example.com'
+            host: 'example.com',
         };
         req.get = sinon.stub().returns('fallback.example.com');
         req.originalUrl = '/ghost/api/content/posts/';
         req.secure = true;
-        req.url = 'https://example.com/ghost/api/content/',
-
+        req.url = 'https://example.com/ghost/api/content/';
         res.status = sinon.stub();
         res.json = sinon.stub();
         res.set = (headers) => {
@@ -51,17 +50,17 @@ describe('HTTP', function () {
             'apiType',
             'docName',
             'method',
-            'response'
+            'response',
         ]);
 
-        assert.deepEqual(apiImpl.args[0][0].data, {a: 'a'});
+        assert.deepEqual(apiImpl.args[0][0].data, { a: 'a' });
         assert.deepEqual(apiImpl.args[0][0].options, {
             context: {
                 api_key: null,
                 integration: null,
                 user: null,
-                member: null
-            }
+                member: null,
+            },
         });
     });
 
@@ -101,19 +100,19 @@ describe('HTTP', function () {
     it('handles api key, user and plain text response', async function () {
         await new Promise((resolve) => {
             req.vhost = null;
-            req.user = {id: 'user-id'};
+            req.user = { id: 'user-id' };
             req.api_key = {
                 get(key) {
                     return {
                         id: 'api-key-id',
                         type: 'admin',
-                        integration_id: 'integration-id'
+                        integration_id: 'integration-id',
                     }[key];
-                }
+                },
             };
 
             const apiImpl = sinon.stub().resolves('plain body');
-            apiImpl.response = {format: 'plain'};
+            apiImpl.response = { format: 'plain' };
             apiImpl.statusCode = 201;
 
             res.send.callsFake(() => {
@@ -134,12 +133,12 @@ describe('HTTP', function () {
 
     it('supports async response format and statusCode function', async function () {
         await new Promise((resolve) => {
-            const apiImpl = sinon.stub().resolves({ok: true});
+            const apiImpl = sinon.stub().resolves({ ok: true });
             apiImpl.statusCode = sinon.stub().returns(204);
             apiImpl.response = {
                 format() {
                     return Promise.resolve('plain');
-                }
+                },
             };
 
             res.send.callsFake(() => {
@@ -158,7 +157,7 @@ describe('HTTP', function () {
             apiImpl.response = {
                 format() {
                     return 'plain';
-                }
+                },
             };
 
             res.send.callsFake(() => {
@@ -180,7 +179,7 @@ describe('HTTP', function () {
                 assert.equal(err, error);
                 assert.deepEqual(req.frameOptions, {
                     docName: null,
-                    method: null
+                    method: null,
                 });
                 resolve();
             });

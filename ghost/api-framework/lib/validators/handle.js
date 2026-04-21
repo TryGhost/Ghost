@@ -1,6 +1,6 @@
 const debug = require('@tryghost/debug')('validators:handle');
 const errors = require('@tryghost/errors');
-const {sequence} = require('@tryghost/promise');
+const { sequence } = require('@tryghost/promise');
 
 /**
  * @description Shared input validation handler.

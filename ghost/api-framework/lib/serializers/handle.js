@@ -1,5 +1,5 @@
 const debug = require('@tryghost/debug')('serializers:handle');
-const {sequence} = require('@tryghost/promise');
+const { sequence } = require('@tryghost/promise');
 const errors = require('@tryghost/errors');
 
 /**
@@ -113,7 +113,11 @@ module.exports.output = (response = {}, apiConfig, apiSerializers, frame) => {
         });
     }
 
-    const customSerializer = getBestMatchSerializer(apiSerializers, apiConfig.docName, apiConfig.method);
+    const customSerializer = getBestMatchSerializer(
+        apiSerializers,
+        apiConfig.docName,
+        apiConfig.method,
+    );
     const defaultSerializer = getBestMatchSerializer(apiSerializers, 'default', apiConfig.method);
 
     if (customSerializer) {

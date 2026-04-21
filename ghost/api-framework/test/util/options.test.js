@@ -19,12 +19,15 @@ describe('util/options', function () {
     });
 
     it('accepts parameters in form of an array', function () {
-        assert.deepEqual(optionsUtil.trimAndLowerCase(['  PeanUt', ' buTTer ']), ['peanut', 'butter']);
+        assert.deepEqual(optionsUtil.trimAndLowerCase(['  PeanUt', ' buTTer ']), [
+            'peanut',
+            'butter',
+        ]);
     });
 
     it('throws error for invalid object input', function () {
-        assert.throws(() => optionsUtil.trimAndLowerCase({name: 'peanut'}), {
-            message: 'Params must be a string or array'
+        assert.throws(() => optionsUtil.trimAndLowerCase({ name: 'peanut' }), {
+            message: 'Params must be a string or array',
         });
     });
 });

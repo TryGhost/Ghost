@@ -1,7 +1,7 @@
 const debug = require('@tryghost/debug')('pipeline');
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
-const {sequence} = require('@tryghost/promise');
+const { sequence } = require('@tryghost/promise');
 
 const Frame = require('./Frame');
 const serializers = require('./serializers');
@@ -37,12 +37,12 @@ const STAGES = {
                 return validators.handle.input(
                     Object.assign({}, apiConfig, apiImpl.validation),
                     apiUtils.validators.input,
-                    frame
+                    frame,
                 );
             });
 
             return sequence(tasks);
-        }
+        },
     },
 
     serialisation: {
@@ -63,9 +63,9 @@ const STAGES = {
         input(apiUtils, apiConfig, apiImpl, frame) {
             debug('stages: input serialisation');
             return serializers.handle.input(
-                Object.assign({data: apiImpl.data}, apiConfig),
+                Object.assign({ data: apiImpl.data }, apiConfig),
                 apiUtils.serializers.input,
-                frame
+                frame,
             );
         },
 
@@ -85,8 +85,13 @@ const STAGES = {
          */
         output(response, apiUtils, apiConfig, apiImpl, frame) {
             debug('stages: output serialisation');
-            return serializers.handle.output(response, apiConfig, apiUtils.serializers.output, frame);
-        }
+            return serializers.handle.output(
+                response,
+                apiConfig,
+                apiUtils.serializers.output,
+                frame,
+            );
+        },
     },
 
     /**
@@ -132,7 +137,7 @@ const STAGES = {
         tasks.push(function doPermissions() {
             return apiUtils.permissions.handle(
                 Object.assign({}, apiConfig, apiImpl.permissions),
-                frame
+                frame,
             );
         });
 
@@ -156,7 +161,7 @@ const STAGES = {
         }
 
         return apiImpl.query(frame);
-    }
+    },
 };
 
 const controllerMap = new Map();
@@ -185,7 +190,7 @@ const pipeline = (apiController, apiUtils, apiType) => {
         return controllerMap.get(apiController);
     }
 
-    const keys = Object.keys(apiController).filter(key => key !== 'docName');
+    const keys = Object.keys(apiController).filter((key) => key !== 'docName');
     const docName = apiController.docName;
 
     // CASE: api controllers are objects with configuration.
@@ -196,7 +201,7 @@ const pipeline = (apiController, apiUtils, apiType) => {
         Object.freeze(apiImpl.headers);
 
         obj[method] = async function ImplWrapper() {
-            const apiConfig = {docName, method};
+            const apiConfig = { docName, method };
             let options;
             let data;
             let frame;
@@ -216,12 +221,12 @@ const pipeline = (apiController, apiUtils, apiType) => {
                 frame = new Frame({
                     body: data,
                     options: _.omit(options, 'context'),
-                    context: options.context || {}
+                    context: options.context || {},
                 });
 
                 frame.configure({
                     options: apiImpl.options,
-                    data: apiImpl.data
+                    data: apiImpl.data,
                 });
             } else {
                 frame = options;
