@@ -2,10 +2,12 @@ const {agentProvider, fixtureManager, matchers, dbUtils} = require('../../utils/
 const {anyContentVersion, anyObjectId, anyISODateTime, anyErrorId, anyEtag, anyLocationFor} = matchers;
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const ObjectId = require('bson-objectid').default;
 const logging = require('@tryghost/logging');
 const mailService = require('../../../core/server/services/mail');
 const SingleUseTokenProvider = require('../../../core/server/services/members/single-use-token-provider');
 const models = require('../../../core/server/models');
+const db = require('../../../core/server/data/db');
 
 const matchAutomatedEmail = {
     id: anyObjectId,
@@ -87,6 +89,48 @@ describe('Automated Emails API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+        });
+
+        it('Returns the first email in the linked list when there are multiple emails', async function () {
+            const automatedEmail = await createAutomatedEmail({subject: 'First email subject'});
+            const automationId = automatedEmail.id;
+
+            const [firstEmail] = await db.knex('welcome_email_automated_emails')
+                .where('welcome_email_automation_id', automationId);
+
+            const emailDesignSettingId = await db.knex('email_design_settings').first('id').then(r => r.id);
+            const secondEmailId = ObjectId().toHexString();
+            await db.knex('welcome_email_automated_emails').insert({
+                id: secondEmailId,
+                welcome_email_automation_id: automationId,
+                delay_days: 1,
+                subject: 'Second email subject',
+                lexical: JSON.stringify({root: {children: []}}),
+                email_design_setting_id: emailDesignSettingId,
+                created_at: new Date(),
+                updated_at: new Date()
+            });
+            await db.knex('welcome_email_automated_emails')
+                .where('id', firstEmail.id)
+                .update({next_welcome_email_automated_email_id: secondEmailId});
+
+            const {body} = await agent
+                .get(`automated_emails/${automationId}`)
+                .expectStatus(200);
+
+            assert.equal(body.automated_emails[0].subject, 'First email subject');
+        });
+
+        it('Returns InternalServerError when no emails exist for automation', async function () {
+            const automation = await models.WelcomeEmailAutomation.add({
+                name: 'Welcome Email (Free)',
+                slug: 'member-welcome-email-free',
+                status: 'inactive'
+            });
+
+            await agent
+                .get(`automated_emails/${automation.id}`)
+                .expectStatus(500);
         });
     });
 
@@ -342,6 +386,44 @@ describe('Automated Emails API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+        });
+
+        it('Deletes extra emails and keeps only the first when there are multiple emails', async function () {
+            const automatedEmail = await createAutomatedEmail({subject: 'First email subject'});
+            const automationId = automatedEmail.id;
+
+            const [firstEmail] = await db.knex('welcome_email_automated_emails')
+                .where('welcome_email_automation_id', automationId);
+
+            const emailDesignSettingId = await db.knex('email_design_settings').first('id').then(r => r.id);
+            const secondEmailId = ObjectId().toHexString();
+            await db.knex('welcome_email_automated_emails').insert({
+                id: secondEmailId,
+                welcome_email_automation_id: automationId,
+                delay_days: 1,
+                subject: 'Second email subject',
+                lexical: JSON.stringify({root: {children: []}}),
+                email_design_setting_id: emailDesignSettingId,
+                created_at: new Date(),
+                updated_at: new Date()
+            });
+            await db.knex('welcome_email_automated_emails')
+                .where('id', firstEmail.id)
+                .update({next_welcome_email_automated_email_id: secondEmailId});
+
+            await agent
+                .put(`automated_emails/${automationId}`)
+                .body({automated_emails: [{
+                    name: 'Welcome Email (Free)',
+                    subject: 'Updated subject'
+                }]})
+                .expectStatus(200);
+
+            const remainingEmails = await db.knex('welcome_email_automated_emails')
+                .where('welcome_email_automation_id', automationId);
+            assert.equal(remainingEmails.length, 1);
+            assert.equal(remainingEmails[0].id, firstEmail.id);
+            assert.equal(remainingEmails[0].next_welcome_email_automated_email_id, null);
         });
 
         describe('Structured logging', function () {

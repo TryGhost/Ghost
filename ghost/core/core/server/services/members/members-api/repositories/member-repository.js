@@ -388,9 +388,11 @@ module.exports = class MemberRepository {
         if (shouldCheckFreeWelcomeEmail && this._WelcomeEmailAutomation) {
             freeWelcomeAutomation = await this._WelcomeEmailAutomation.findOne(
                 {slug: MEMBER_WELCOME_EMAIL_SLUGS.free},
-                {...options, withRelated: ['welcomeEmailAutomatedEmail']}
+                {...options, withRelated: ['welcomeEmailAutomatedEmails']}
             );
-            freeWelcomeEmail = freeWelcomeAutomation?.related('welcomeEmailAutomatedEmail');
+            const freeEmails = freeWelcomeAutomation?.related('welcomeEmailAutomatedEmails').models || [];
+            const freeNextIds = new Set(freeEmails.map(e => e.get('next_welcome_email_automated_email_id')).filter(Boolean));
+            freeWelcomeEmail = freeEmails.find(e => !freeNextIds.has(e.id));
             isFreeWelcomeEmailActive = Boolean(
                 freeWelcomeAutomation &&
                 freeWelcomeEmail &&
@@ -1507,9 +1509,11 @@ module.exports = class MemberRepository {
             if (shouldSendPaidWelcomeEmail && this._WelcomeEmailAutomation) {
                 paidWelcomeAutomation = await this._WelcomeEmailAutomation.findOne(
                     {slug: MEMBER_WELCOME_EMAIL_SLUGS.paid},
-                    {...options, withRelated: ['welcomeEmailAutomatedEmail']}
+                    {...options, withRelated: ['welcomeEmailAutomatedEmails']}
                 );
-                paidWelcomeEmail = paidWelcomeAutomation?.related('welcomeEmailAutomatedEmail');
+                const paidEmails = paidWelcomeAutomation?.related('welcomeEmailAutomatedEmails').models || [];
+                const paidNextIds = new Set(paidEmails.map(e => e.get('next_welcome_email_automated_email_id')).filter(Boolean));
+                paidWelcomeEmail = paidEmails.find(e => !paidNextIds.has(e.id));
                 isPaidWelcomeEmailActive = Boolean(
                     paidWelcomeAutomation &&
                     paidWelcomeEmail &&

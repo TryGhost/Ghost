@@ -23,8 +23,8 @@ describe('member-created handler', function () {
             findOne: sinon.stub().resolves({
                 id: 'automation123',
                 related: sinon.stub().callsFake((relation) => {
-                    if (relation === 'welcomeEmailAutomatedEmail') {
-                        return {id: 'ae123'};
+                    if (relation === 'welcomeEmailAutomatedEmails') {
+                        return {models: [{id: 'ae123', get: sinon.stub().returns(null)}]};
                     }
                 })
             })

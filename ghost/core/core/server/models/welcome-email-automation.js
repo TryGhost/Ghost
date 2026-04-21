@@ -13,10 +13,6 @@ const WelcomeEmailAutomation = ghostBookshelf.Model.extend({
         };
     },
 
-    welcomeEmailAutomatedEmail() {
-        return this.hasOne('WelcomeEmailAutomatedEmail', 'welcome_email_automation_id');
-    },
-
     welcomeEmailAutomatedEmails() {
         return this.hasMany('WelcomeEmailAutomatedEmail', 'welcome_email_automation_id');
     },

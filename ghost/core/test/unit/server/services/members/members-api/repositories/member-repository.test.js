@@ -1521,13 +1521,15 @@ describe('MemberRepository', function () {
                         return data[key];
                     }),
                     related: sinon.stub().callsFake((relation) => {
-                        assert.equal(relation, 'welcomeEmailAutomatedEmail');
+                        assert.equal(relation, 'welcomeEmailAutomatedEmails');
                         return {
-                            id: 'automated_email_id_free',
-                            get: sinon.stub().callsFake((key) => {
-                                const data = {lexical: '{"root":{}}'};
-                                return data[key];
-                            })
+                            models: [{
+                                id: 'automated_email_id_free',
+                                get: sinon.stub().callsFake((key) => {
+                                    const data = {lexical: '{"root":{}}'};
+                                    return data[key];
+                                })
+                            }]
                         };
                     })
                 })
@@ -1613,12 +1615,14 @@ describe('MemberRepository', function () {
                     return data[key];
                 }),
                 related: sinon.stub().callsFake((relation) => {
-                    assert.equal(relation, 'welcomeEmailAutomatedEmail');
+                    assert.equal(relation, 'welcomeEmailAutomatedEmails');
                     return {
-                        get: sinon.stub().callsFake((key) => {
-                            const data = {lexical: '{"root":{}}'};
-                            return data[key];
-                        })
+                        models: [{
+                            get: sinon.stub().callsFake((key) => {
+                                const data = {lexical: '{"root":{}}'};
+                                return data[key];
+                            })
+                        }]
                     };
                 })
             });
@@ -1847,13 +1851,15 @@ describe('MemberRepository', function () {
                         return data[key];
                     }),
                     related: sinon.stub().callsFake((relation) => {
-                        assert.equal(relation, 'welcomeEmailAutomatedEmail');
+                        assert.equal(relation, 'welcomeEmailAutomatedEmails');
                         return {
-                            id: 'automated_email_id_paid',
-                            get: sinon.stub().callsFake((key) => {
-                                const data = {lexical: '{"root":{}}'};
-                                return data[key];
-                            })
+                            models: [{
+                                id: 'automated_email_id_paid',
+                                get: sinon.stub().callsFake((key) => {
+                                    const data = {lexical: '{"root":{}}'};
+                                    return data[key];
+                                })
+                            }]
                         };
                     })
                 })
@@ -1975,13 +1981,15 @@ describe('MemberRepository', function () {
                     return data[key];
                 }),
                 related: sinon.stub().callsFake((relation) => {
-                    assert.equal(relation, 'welcomeEmailAutomatedEmail');
+                    assert.equal(relation, 'welcomeEmailAutomatedEmails');
                     return {
-                        id: 'automated_email_id_paid',
-                        get: sinon.stub().callsFake((key) => {
-                            const data = {lexical: '{"root":{}}'};
-                            return data[key];
-                        })
+                        models: [{
+                            id: 'automated_email_id_paid',
+                            get: sinon.stub().callsFake((key) => {
+                                const data = {lexical: '{"root":{}}'};
+                                return data[key];
+                            })
+                        }]
                     };
                 })
             });

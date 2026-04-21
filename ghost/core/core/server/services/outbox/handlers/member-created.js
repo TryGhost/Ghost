@@ -21,7 +21,7 @@ async function handle({payload}) {
             return;
         }
 
-        const automation = await WelcomeEmailAutomation.findOne({slug}, {withRelated: ['welcomeEmailAutomatedEmail']});
+        const automation = await WelcomeEmailAutomation.findOne({slug}, {withRelated: ['welcomeEmailAutomatedEmails']});
         if (!automation) {
             logging.warn({
                 system: {
@@ -32,20 +32,9 @@ async function handle({payload}) {
             return;
         }
 
-        // NOTE(NY-1190): This naively assumes each drip sequence will have
-        // just one email. When we change that assumption, this line will need
-        // to change to something like:
-        //
-        // ```
-        // SELECT * FROM welcome_email_automated_emails
-        // WHERE welcome_email_automation_id IS ?
-        // AND id NOT IN (
-        //   SELECT next_id FROM welcome_email_automated_emails
-        //   WHERE next_id IS NOT NULL
-        //   AND welcome_email_automation_id IS ?
-        // );
-        // ```
-        const email = automation.related('welcomeEmailAutomatedEmail');
+        const emailModels = automation.related('welcomeEmailAutomatedEmails').models;
+        const nextIds = new Set(emailModels.map(e => e.get('next_welcome_email_automated_email_id')).filter(Boolean));
+        const email = emailModels.find(e => !nextIds.has(e.id));
         if (!email || !email.id) {
             logging.warn({
                 system: {
