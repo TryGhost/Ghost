@@ -5,6 +5,11 @@ const {routerManager} = require('../');
 const urlUtils = require('../../../../shared/url-utils');
 const dataService = require('../../data');
 const renderer = require('../../rendering');
+const llmsService = require('../../llms/service');
+const {
+    getAcceptedMarkdownContentType,
+    renderEntryMarkdown
+} = require('../../llms/markdown');
 
 /**
  * @description Entry controller.
@@ -15,6 +20,7 @@ const renderer = require('../../rendering');
  */
 module.exports = function entryController(req, res, next) {
     debug('entryController', res.routerOptions);
+    const markdownContentType = getAcceptedMarkdownContentType(req);
 
     return dataService.entryLookup(req.path, res.routerOptions, res.locals)
         .then(function then(lookup) {
@@ -82,6 +88,18 @@ module.exports = function entryController(req, res, next) {
                     pathname: url.parse(entry.url).pathname,
                     search: url.parse(req.originalUrl).search
                 }));
+            }
+
+            if (markdownContentType && llmsService.isEnabled() && entry.visibility === 'public') {
+                return llmsService.fetchPublicEntry(res.routerOptions.resourceType, entry.id)
+                    .then((markdownEntry) => {
+                        if (!markdownEntry) {
+                            return next();
+                        }
+
+                        res.type(markdownContentType);
+                        res.send(renderEntryMarkdown(markdownEntry));
+                    });
             }
 
             return renderer.renderEntry(req, res)(entry);

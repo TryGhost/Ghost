@@ -167,6 +167,9 @@
         "sitemapXSL": {
             "maxAge": 86400
         },
+        "llms": {
+            "maxAge": 3600
+        },
         "robotstxt": {
             "maxAge": 3600
         },

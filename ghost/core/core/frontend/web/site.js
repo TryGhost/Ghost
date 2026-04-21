@@ -8,6 +8,7 @@ const {MemberPageViewEvent} = require('../../shared/events');
 const config = require('../../shared/config');
 const storage = require('../../server/adapters/storage');
 const urlUtils = require('../../shared/url-utils');
+const llmsHandler = require('../services/llms/handler');
 const sitemapHandler = require('../services/sitemap/handler');
 const serveFavicon = require('./routers/serve-favicon');
 const servePublicFiles = require('./routers/serve-public-file');
@@ -67,6 +68,7 @@ module.exports = function setupSiteApp(routerConfig) {
 
     // Public files (sitemap.xsl, stylesheets, scripts, etc.)
     servePublicFiles(siteApp);
+    siteApp.use(mw.llmsDiscovery);
 
     // Serve site images using the storage adapter
     siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage('images').serve());
@@ -104,6 +106,7 @@ module.exports = function setupSiteApp(routerConfig) {
 
     // site map - this should probably be refactored to be an internal app
     sitemapHandler(siteApp);
+    llmsHandler(siteApp);
 
     // Global handling for member session, ensures a member is logged in to the frontend
     siteApp.use(membersService.middleware.loadMemberSession);
@@ -128,6 +131,8 @@ module.exports = function setupSiteApp(routerConfig) {
             return next();
         }
     });
+
+    llmsHandler.mountMarkdownRoutes(siteApp);
 
     siteApp.use(function memberPageViewMiddleware(req, res, next) {
         if (req.member) {

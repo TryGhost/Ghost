@@ -65,6 +65,10 @@
             "value": null
         },
         {
+            "key": "llms_enabled",
+            "value": true
+        },
+        {
             "key": "og_image",
             "value": null
         },

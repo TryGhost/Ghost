@@ -27,6 +27,7 @@ const keyGroupMapping = {
     secondary_navigation: 'site',
     meta_title: 'site',
     meta_description: 'site',
+    llms_enabled: 'site',
     og_image: 'site',
     og_title: 'site',
     og_description: 'site',

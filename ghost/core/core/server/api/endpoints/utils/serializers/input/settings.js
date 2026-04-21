@@ -20,6 +20,7 @@ const EDITABLE_SETTINGS = [
     'secondary_navigation',
     'meta_title',
     'meta_description',
+    'llms_enabled',
     'og_image',
     'og_title',
     'og_description',
