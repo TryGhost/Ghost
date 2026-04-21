@@ -17,7 +17,7 @@ import {
     useReactFlow,
     useViewport
 } from '@xyflow/react';
-import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {Badge, Button, Checkbox, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {getAutomationById} from './mock-data';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -33,6 +33,37 @@ type NodeLabelProps = {
     type: string;
     value?: string;
 };
+
+type AddStepOption = {id: string; icon: React.ElementType; title: string; description: string};
+
+const addStepOptions: AddStepOption[] = [
+    {id: 'email', icon: LucideIcon.Mail, title: 'Email', description: 'Send an email'},
+    {id: 'action', icon: LucideIcon.UserCog, title: 'Action', description: 'Manage subscribers'},
+    {id: 'delay', icon: LucideIcon.Clock, title: 'Delay', description: 'Wait for a time or a date'},
+    {id: 'branch', icon: LucideIcon.GitBranch, title: 'Branch', description: 'Split based on label'},
+    {id: 'exit', icon: LucideIcon.LogOut, title: 'Exit', description: 'End automation flow'}
+];
+
+const AddStepMenu: React.FC<{children: React.ReactNode}> = ({children}) => (
+    <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+            {children}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="center" className="w-64" sideOffset={8}>
+            {addStepOptions.map(({id, icon: Icon, title, description}) => (
+                <DropdownMenuItem key={id} className="gap-3 py-2">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-grey-100 text-grey-700">
+                        <Icon className="size-4" />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-sm font-medium">{title}</span>
+                        <span className="text-xs text-grey-600">{description}</span>
+                    </div>
+                </DropdownMenuItem>
+            ))}
+        </DropdownMenuContent>
+    </DropdownMenu>
+);
 
 const PlusEdge: React.FC<EdgeProps> = ({sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, markerEnd}) => {
     const [path, labelX, labelY] = getSmoothStepPath({
@@ -55,15 +86,15 @@ const PlusEdge: React.FC<EdgeProps> = ({sourceX, sourceY, targetX, targetY, sour
                 x={labelX - 10}
                 y={labelY - 10}
             >
-                <button
-                    aria-label="Add step"
-                    className="pointer-events-auto flex size-5 items-center justify-center rounded-full bg-blue-500 text-white opacity-0 shadow-md transition-opacity hover:bg-blue-600"
-                    type="button"
-                    // eslint-disable-next-line no-console
-                    onClick={() => console.log('Add step on edge')}
-                >
-                    <LucideIcon.Plus className="size-3" />
-                </button>
+                <AddStepMenu>
+                    <button
+                        aria-label="Add step"
+                        className="pointer-events-auto flex size-5 items-center justify-center rounded-full bg-blue-500 text-white opacity-0 shadow-md transition-opacity hover:bg-blue-600"
+                        type="button"
+                    >
+                        <LucideIcon.Plus className="size-3" />
+                    </button>
+                </AddStepMenu>
             </foreignObject>
         </>
     );
@@ -111,7 +142,7 @@ const stepMeta: Record<string, StepMeta> = {
     delay: {icon: LucideIcon.Clock, type: 'Wait', value: '1 day', description: 'Pauses the flow before moving to the next step.'},
     'send-email': {icon: LucideIcon.Mail, type: 'Send email', value: 'Welcome to The Blueprint', description: 'Sends the selected email to the member.'},
     'add-label': {icon: LucideIcon.Tag, type: 'Add label', value: 'Onboarding', description: 'Applies a label to the member for segmentation.'},
-    end: {icon: LucideIcon.Flag, type: 'End', description: 'Marks the completion of the automation.'}
+    end: {icon: LucideIcon.LogOut, type: 'Exit', description: 'Marks the completion of the automation.'}
 };
 
 const buildNode = (id: string, position: {x: number; y: number}, type?: 'input' | 'output'): Node => {
@@ -131,17 +162,16 @@ const buildNode = (id: string, position: {x: number; y: number}, type?: 'input' 
 const initialNodes: Node[] = [
     buildNode('trigger', {x: 240, y: 0}, 'input'),
     buildNode('delay', {x: 240, y: 180}),
-    buildNode('send-email', {x: 0, y: 360}),
-    buildNode('add-label', {x: 480, y: 360}),
-    buildNode('end', {x: 240, y: 540}, 'output')
+    buildNode('add-label', {x: 240, y: 360}),
+    buildNode('send-email', {x: 240, y: 540}),
+    buildNode('end', {x: 240, y: 720}, 'output')
 ];
 
 const initialEdges: Edge[] = [
     {id: 'e1', source: 'trigger', target: 'delay'},
-    {id: 'e2', source: 'delay', target: 'send-email'},
-    {id: 'e3', source: 'delay', target: 'add-label'},
-    {id: 'e4', source: 'send-email', target: 'end'},
-    {id: 'e5', source: 'add-label', target: 'end'}
+    {id: 'e2', source: 'delay', target: 'add-label'},
+    {id: 'e3', source: 'add-label', target: 'send-email'},
+    {id: 'e4', source: 'send-email', target: 'end'}
 ];
 
 const SidebarField: React.FC<{label: string; children: React.ReactNode}> = ({label, children}) => (
@@ -160,7 +190,110 @@ const SidebarShell: React.FC<{width: string; children: React.ReactNode}> = ({wid
     </aside>
 );
 
-const StepSidebarBody: React.FC<{nodeId: string}> = ({nodeId}) => {
+const triggerOptions = [
+    {value: 'signup', label: 'New member sign up'},
+    {value: 'unsubscribe', label: 'Member unsubscribes'},
+    {value: 'upgrade', label: 'Member upgrades'},
+    {value: 'label-added', label: 'A label is added to a member'},
+    {value: 'newsletter-sent', label: 'Newsletter sent'},
+    {value: 'post-published', label: 'Post published'}
+];
+
+const tierOptions = [
+    {value: 'free', label: 'Free'},
+    {value: 'paid', label: 'Paid'},
+    {value: 'comp', label: 'Complimentary'}
+];
+
+const TriggerStepBody: React.FC = () => {
+    const [trigger, setTrigger] = useState('signup');
+    const [tiers, setTiers] = useState<string[]>(['free', 'paid']);
+    const toggleTier = (value: string) => setTiers(current => (current.includes(value) ? current.filter(v => v !== value) : [...current, value]));
+
+    return (
+        <div className="flex flex-col gap-5">
+            <SidebarField label="Trigger">
+                <Select value={trigger} onValueChange={setTrigger}>
+                    <SelectTrigger>
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {triggerOptions.map(opt => (
+                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </SidebarField>
+            <SidebarField label="Tier">
+                <div className="flex flex-col gap-2">
+                    {tierOptions.map(opt => (
+                        <Label key={opt.value} className="flex cursor-pointer items-center gap-2 font-normal">
+                            <Checkbox
+                                checked={tiers.includes(opt.value)}
+                                onCheckedChange={() => toggleTier(opt.value)}
+                            />
+                            <span>{opt.label}</span>
+                        </Label>
+                    ))}
+                </div>
+            </SidebarField>
+        </div>
+    );
+};
+
+const delayUnits = [
+    {value: 'minutes', label: 'Minutes'},
+    {value: 'hours', label: 'Hours'},
+    {value: 'days', label: 'Days'}
+];
+
+const DelayStepBody: React.FC = () => {
+    const [amount, setAmount] = useState('1');
+    const [unit, setUnit] = useState('days');
+    return (
+        <SidebarField label="Wait for">
+            <div className="flex items-center gap-2">
+                <Input
+                    className="w-24"
+                    min={0}
+                    type="number"
+                    value={amount}
+                    onChange={e => setAmount(e.target.value)}
+                />
+                <Select value={unit} onValueChange={setUnit}>
+                    <SelectTrigger className="flex-1">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {delayUnits.map(opt => (
+                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+        </SidebarField>
+    );
+};
+
+const SendEmailStepBody: React.FC = () => {
+    const [subject, setSubject] = useState('Welcome to The Blueprint');
+    const [preview, setPreview] = useState('Your first issue is on the way');
+    return (
+        <div className="flex flex-col gap-5">
+            <SidebarField label="Subject line">
+                <Input value={subject} onChange={e => setSubject(e.target.value)} />
+            </SidebarField>
+            <SidebarField label="Preview text">
+                <Input value={preview} onChange={e => setPreview(e.target.value)} />
+            </SidebarField>
+            <Button className="w-full" variant="outline">
+                <LucideIcon.Pencil /> Edit email
+            </Button>
+        </div>
+    );
+};
+
+const StepSidebarBody: React.FC<{nodeId: string; onDelete: () => void}> = ({nodeId, onDelete}) => {
     const meta = stepMeta[nodeId];
     if (!meta) {
         return null;
@@ -177,17 +310,40 @@ const StepSidebarBody: React.FC<{nodeId: string}> = ({nodeId}) => {
                     <h2 className="text-base leading-tight font-semibold">{meta.type}</h2>
                 </div>
             </div>
-            {meta.description && (
-                <p className="text-sm text-grey-700">{meta.description}</p>
-            )}
-            {meta.value !== undefined && (
-                <SidebarField label="Value">
-                    <div className="rounded-md border bg-grey-75 px-3 py-2">{meta.value}</div>
+            {nodeId === 'trigger' && <TriggerStepBody />}
+            {nodeId === 'delay' && <DelayStepBody />}
+            {nodeId === 'send-email' && <SendEmailStepBody />}
+            {nodeId === 'add-label' && (
+                <SidebarField label="Label">
+                    <div className="flex flex-wrap items-center gap-2 rounded-md border bg-background px-3 py-2">
+                        <Badge variant="secondary">
+                            <LucideIcon.Tag className="mr-1 size-3" />
+                            {meta.value}
+                        </Badge>
+                    </div>
                 </SidebarField>
             )}
-            <SidebarField label="Step ID">
-                <code className="text-xs text-grey-700">{nodeId}</code>
-            </SidebarField>
+            {nodeId !== 'trigger' && nodeId !== 'delay' && nodeId !== 'add-label' && nodeId !== 'send-email' && (
+                <>
+                    {meta.description && (
+                        <p className="text-sm text-grey-700">{meta.description}</p>
+                    )}
+                    {meta.value !== undefined && (
+                        <SidebarField label="Value">
+                            <div className="rounded-md border bg-grey-75 px-3 py-2">{meta.value}</div>
+                        </SidebarField>
+                    )}
+                </>
+            )}
+            <div className="mt-auto pt-6">
+                <Button
+                    className="w-full border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
+                    variant="outline"
+                    onClick={onDelete}
+                >
+                    <LucideIcon.Trash2 /> Delete step
+                </Button>
+            </div>
         </>
     );
 };
@@ -210,8 +366,8 @@ const mockRuns: Run[] = [
         timeline: [
             {stepId: 'trigger', at: '2026-04-21T09:14:00Z', status: 'completed'},
             {stepId: 'delay', at: '2026-04-21T09:14:01Z', status: 'completed', note: 'Waited 1 day'},
-            {stepId: 'send-email', at: '2026-04-22T09:14:02Z', status: 'completed', note: 'Delivered'},
             {stepId: 'add-label', at: '2026-04-22T09:14:02Z', status: 'completed'},
+            {stepId: 'send-email', at: '2026-04-22T09:14:02Z', status: 'completed', note: 'Delivered'},
             {stepId: 'end', at: '2026-04-22T09:14:02Z', status: 'completed'}
         ]
     },
@@ -224,8 +380,8 @@ const mockRuns: Run[] = [
         timeline: [
             {stepId: 'trigger', at: '2026-04-21T08:02:00Z', status: 'completed'},
             {stepId: 'delay', at: '2026-04-21T08:02:00Z', status: 'completed'},
-            {stepId: 'send-email', at: '2026-04-22T08:02:00Z', status: 'completed', note: 'Opened'},
-            {stepId: 'add-label', at: '2026-04-22T08:02:01Z', status: 'completed'},
+            {stepId: 'add-label', at: '2026-04-22T08:02:00Z', status: 'completed'},
+            {stepId: 'send-email', at: '2026-04-22T08:02:01Z', status: 'completed', note: 'Opened'},
             {stepId: 'end', at: '2026-04-22T08:02:01Z', status: 'completed'}
         ]
     },
@@ -237,8 +393,8 @@ const mockRuns: Run[] = [
         timeline: [
             {stepId: 'trigger', at: '2026-04-21T07:47:00Z', status: 'completed'},
             {stepId: 'delay', at: '2026-04-21T07:47:00Z', status: 'pending', note: 'Waiting 1 day'},
-            {stepId: 'send-email', status: 'pending'},
             {stepId: 'add-label', status: 'pending'},
+            {stepId: 'send-email', status: 'pending'},
             {stepId: 'end', status: 'pending'}
         ]
     },
@@ -251,8 +407,8 @@ const mockRuns: Run[] = [
         timeline: [
             {stepId: 'trigger', at: '2026-04-20T22:31:00Z', status: 'completed'},
             {stepId: 'delay', at: '2026-04-20T22:31:01Z', status: 'completed'},
+            {stepId: 'add-label', at: '2026-04-21T22:31:11Z', status: 'completed'},
             {stepId: 'send-email', at: '2026-04-21T22:31:12Z', status: 'failed', note: 'Bounced: mailbox full'},
-            {stepId: 'add-label', status: 'skipped'},
             {stepId: 'end', status: 'skipped'}
         ]
     },
@@ -265,8 +421,8 @@ const mockRuns: Run[] = [
         timeline: [
             {stepId: 'trigger', at: '2026-04-20T18:09:00Z', status: 'completed'},
             {stepId: 'delay', at: '2026-04-20T18:09:00Z', status: 'completed'},
-            {stepId: 'send-email', at: '2026-04-21T18:09:01Z', status: 'completed'},
             {stepId: 'add-label', at: '2026-04-21T18:09:01Z', status: 'completed'},
+            {stepId: 'send-email', at: '2026-04-21T18:09:01Z', status: 'completed'},
             {stepId: 'end', at: '2026-04-21T18:09:01Z', status: 'completed'}
         ]
     }
@@ -415,7 +571,7 @@ const AutomationEditor: React.FC = () => {
     const existing = id && id !== 'new' ? getAutomationById(id) : undefined;
     const title = existing?.name ?? (id === 'new' ? 'New automation' : 'Automation');
 
-    const [nodes, , onNodesChange] = useNodesState<Node>(initialNodes);
+    const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
     const [sidebar, setSidebar] = useState<SidebarState>(null);
 
@@ -453,17 +609,17 @@ const AutomationEditor: React.FC = () => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem>
-                                <LucideIcon.Play className="mr-2 size-4" /> Test
+                                <LucideIcon.Play /> Test
                             </DropdownMenuItem>
                             <DropdownMenuItem>
-                                <LucideIcon.Copy className="mr-2 size-4" /> Duplicate
+                                <LucideIcon.Copy /> Duplicate
                             </DropdownMenuItem>
                             <DropdownMenuItem>
-                                <LucideIcon.Settings className="mr-2 size-4" /> Settings
+                                <LucideIcon.Settings /> Settings
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className="text-red-600 focus:text-red-600">
-                                <LucideIcon.Trash2 className="mr-2 size-4" /> Delete
+                                <LucideIcon.Trash2 /> Delete
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -510,7 +666,17 @@ const AutomationEditor: React.FC = () => {
                 </div>
                 {sidebar && (
                     <SidebarShell width={sidebar.mode === 'runs' ? '60rem' : '36rem'}>
-                        {sidebar.mode === 'step' && <StepSidebarBody nodeId={sidebar.nodeId} />}
+                        {sidebar.mode === 'step' && (
+                            <StepSidebarBody
+                                nodeId={sidebar.nodeId}
+                                onDelete={() => {
+                                    const targetId = sidebar.nodeId;
+                                    setNodes(current => current.filter(n => n.id !== targetId));
+                                    setEdges(current => current.filter(e => e.source !== targetId && e.target !== targetId));
+                                    setSidebar(null);
+                                }}
+                            />
+                        )}
                         {sidebar.mode === 'runs' && <RunsSidebarBody />}
                     </SidebarShell>
                 )}
