@@ -126,6 +126,10 @@ export class GiftService {
     }
 
     generateToken(): string {
+        /**
+         * Combinations: 62^12 ≈ 3.23 × 10^21 (~3.23 sextillion)
+         * Entropy:      12 × log2(62) ≈ 71.45 bits
+         */
         const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         let token = '';
 
