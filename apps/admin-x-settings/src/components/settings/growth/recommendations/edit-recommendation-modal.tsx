@@ -2,7 +2,7 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationDescriptionForm, {validateDescriptionForm} from './recommendation-description-form';
 import {ConfirmationModal, Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design-system';
-import {type Recommendation, useDeleteRecommendation, useEditRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
+import {type EditOrAddRecommendation, type Recommendation, useDeleteRecommendation, useEditRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -10,6 +10,10 @@ interface EditRecommendationModalProps {
     recommendation: Recommendation,
     animate?: boolean
 }
+
+const isRecommendation = (value: EditOrAddRecommendation | Recommendation): value is Recommendation => {
+    return 'created_at' in value && 'updated_at' in value && typeof value.id === 'string';
+};
 
 const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationModalProps> = ({recommendation, animate}) => {
     const modal = useModal();
@@ -33,6 +37,17 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
             return newErrors;
         }
     });
+
+    const updateFormForComponent: React.ComponentProps<typeof RecommendationDescriptionForm>['updateForm'] = (fn) => {
+        updateForm((state) => {
+            const result = fn(state);
+            // Type guard: in edit mode, we always have a full Recommendation with id, created_at, and updated_at
+            if (!isRecommendation(result)) {
+                throw new Error('Expected a Recommendation with id, created_at, and updated_at in edit mode');
+            }
+            return result;
+        });
+    };
 
     let leftButtonProps = {
         label: 'Delete',
@@ -93,7 +108,7 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
             }
         }}
     >
-        <RecommendationDescriptionForm clearError={clearError} errors={errors} formState={formState} setErrors={setErrors} showURL={true} updateForm={updateForm as any}/>
+        <RecommendationDescriptionForm clearError={clearError} errors={errors} formState={formState} setErrors={setErrors} showURL={true} updateForm={updateFormForComponent}/>
     </Modal>;
 };
 
