@@ -162,27 +162,34 @@ class AdapterCacheRedis extends BaseCacheAdapter {
     }
 
     /**
-     * Returns the specified key from the cache if it exists, otherwise returns null
-     * - If getTimeoutMilliseconds is set, the method will return a promise that resolves with the value or null if the timeout is exceeded
+     * Performs the buildKey + cache.get sequence, bounded by
+     * getTimeoutMilliseconds if configured. On timeout resolves with
+     * {internalKey: null, result: null} so the caller treats it as a MISS.
      *
      * @param {string} key
+     * @returns {Promise<{internalKey: string|null, result: any}>}
      */
-    async _get(key) {
-        if (typeof this.getTimeoutMilliseconds !== 'number') {
-            return this.cache.get(key);
-        } else {
-            return new Promise((resolve) => {
-                const timer = setTimeout(() => {
-                    debug('get', key, 'timeout');
-                    resolve(null);
-                }, this.getTimeoutMilliseconds);
+    #lookupWithTimeout(key) {
+        const lookup = (async () => {
+            const internalKey = await this._buildKey(key);
+            const result = await this.cache.get(internalKey);
+            return {internalKey, result};
+        })();
 
-                this.cache.get(key).then((result) => {
-                    clearTimeout(timer);
-                    resolve(result);
-                });
-            });
+        if (typeof this.getTimeoutMilliseconds !== 'number') {
+            return lookup;
         }
+
+        return new Promise((resolve) => {
+            const timer = setTimeout(() => {
+                debug('get', key, 'timeout');
+                resolve({internalKey: null, result: null});
+            }, this.getTimeoutMilliseconds);
+            lookup.then((value) => {
+                clearTimeout(timer);
+                resolve(value);
+            });
+        });
     }
 
     /**
@@ -191,10 +198,9 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * @param {() => Promise<any>} [fetchData] An optional function to fetch the data, which will be used in the case of a cache MISS or a background refresh
      */
     async get(key, fetchData) {
-        const internalKey = await this._buildKey(key);
         try {
-            const result = await this._get(internalKey);
-            debug(`get ${internalKey}: Cache ${result ? 'HIT' : 'MISS'}`);
+            const {internalKey, result} = await this.#lookupWithTimeout(key);
+            debug(`get ${key}: Cache ${result ? 'HIT' : 'MISS'}`);
             if (!fetchData) {
                 return result;
             }
@@ -202,10 +208,10 @@ class AdapterCacheRedis extends BaseCacheAdapter {
                 const shouldRefresh = await this.shouldRefresh(internalKey);
                 const isRefreshing = this.currentlyExecutingBackgroundRefreshes.has(internalKey);
                 if (isRefreshing) {
-                    debug(`Background refresh already happening for ${internalKey}`);
+                    debug(`Background refresh already happening for ${key}`);
                 }
                 if (!isRefreshing && shouldRefresh) {
-                    debug(`Doing background refresh for ${internalKey}`);
+                    debug(`Doing background refresh for ${key}`);
                     this.currentlyExecutingBackgroundRefreshes.add(internalKey);
                     fetchData().then(async (data) => {
                         await this.set(key, data); // We don't use `internalKey` here because `set` handles it

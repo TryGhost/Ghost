@@ -150,7 +150,7 @@ describe('Integration: AdapterCacheRedis', function () {
             assert.equal(await cache.get('fast'), 'value');
         });
 
-        it('returns null when the underlying get exceeds the timeout', async function () {
+        it('returns null when the data fetch exceeds the timeout', async function () {
             const cache = createCache({getTimeoutMilliseconds: 1});
             await cache.set('slow', 'value');
 
@@ -160,6 +160,19 @@ describe('Integration: AdapterCacheRedis', function () {
             });
 
             assert.equal(await cache.get('slow'), null);
+        });
+
+        it('returns null when the prefix_hash fetch exceeds the timeout', async function () {
+            const cache = createCache({getTimeoutMilliseconds: 1});
+            // Prime the cache so prefix_hash exists before we slow reads down.
+            await cache.set('foo', 'value');
+
+            const original = cache.redisClient.get.bind(cache.redisClient);
+            cache.redisClient.get = k => new Promise((resolve) => {
+                setTimeout(() => original(k).then(resolve), 50);
+            });
+
+            assert.equal(await cache.get('foo'), null);
         });
     });
 });
