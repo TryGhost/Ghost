@@ -275,7 +275,7 @@ const DelayStepBody: React.FC = () => {
     );
 };
 
-const SendEmailStepBody: React.FC = () => {
+const SendEmailStepBody: React.FC<{onEdit: () => void}> = ({onEdit}) => {
     const [subject, setSubject] = useState('Welcome to The Blueprint');
     const [preview, setPreview] = useState('Your first issue is on the way');
     return (
@@ -286,14 +286,49 @@ const SendEmailStepBody: React.FC = () => {
             <SidebarField label="Preview text">
                 <Input value={preview} onChange={e => setPreview(e.target.value)} />
             </SidebarField>
-            <Button className="w-full" variant="outline">
+            <Button className="w-full" variant="outline" onClick={onEdit}>
                 <LucideIcon.Pencil /> Edit email
             </Button>
         </div>
     );
 };
 
-const StepSidebarBody: React.FC<{nodeId: string; onDelete: () => void}> = ({nodeId, onDelete}) => {
+const EmailEditorModal: React.FC<{onClose: () => void}> = ({onClose}) => (
+    <div className="fixed inset-0 z-[60] flex animate-in flex-col bg-background duration-200 fade-in-0">
+        <header className="relative z-10 flex h-14 shrink-0 items-center justify-between bg-background px-4 shadow-sm">
+            <div className="flex items-center gap-3">
+                <Button aria-label="Close email editor" size="icon" variant="ghost" onClick={onClose}>
+                    <LucideIcon.ArrowLeft />
+                </Button>
+                <span className="font-medium">Edit email</span>
+            </div>
+            <div className="flex items-center gap-2">
+                <Button onClick={onClose}>Done</Button>
+            </div>
+        </header>
+        <div className="flex-1 overflow-y-auto bg-grey-75">
+            <article className="mx-auto my-10 flex max-w-2xl flex-col gap-6 rounded-lg border bg-background p-10 shadow-sm">
+                <div className="flex flex-col gap-2">
+                    <span className="text-xs font-medium tracking-wide text-grey-600 uppercase">The Blueprint · Issue 01</span>
+                    <h1 className="text-3xl font-semibold">Welcome to The Blueprint</h1>
+                </div>
+                <p className="text-sm text-grey-600">Your first issue is on the way</p>
+                <div className="flex flex-col gap-4 text-base leading-relaxed text-grey-800">
+                    <p>Hey there — thanks for signing up. Every Tuesday, we unpack one idea, one tool, and one story from the world of independent publishing.</p>
+                    <p>Before your first proper issue lands next week, here are three things worth knowing:</p>
+                    <ol className="flex list-decimal flex-col gap-2 pl-6">
+                        <li>Replies come straight to our inbox — we read everything.</li>
+                        <li>Every issue is archived at blueprint.example.com/archive.</li>
+                        <li>If you ever want to take a break, the unsubscribe link at the bottom of each email does the trick.</li>
+                    </ol>
+                    <p>Until next week,<br />— The Blueprint team</p>
+                </div>
+            </article>
+        </div>
+    </div>
+);
+
+const StepSidebarBody: React.FC<{nodeId: string; onDelete: () => void; onEditEmail: () => void}> = ({nodeId, onDelete, onEditEmail}) => {
     const meta = stepMeta[nodeId];
     if (!meta) {
         return null;
@@ -312,7 +347,7 @@ const StepSidebarBody: React.FC<{nodeId: string; onDelete: () => void}> = ({node
             </div>
             {nodeId === 'trigger' && <TriggerStepBody />}
             {nodeId === 'delay' && <DelayStepBody />}
-            {nodeId === 'send-email' && <SendEmailStepBody />}
+            {nodeId === 'send-email' && <SendEmailStepBody onEdit={onEditEmail} />}
             {nodeId === 'add-label' && (
                 <SidebarField label="Label">
                     <div className="flex flex-wrap items-center gap-2 rounded-md border bg-background px-3 py-2">
@@ -574,6 +609,7 @@ const AutomationEditor: React.FC = () => {
     const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
     const [sidebar, setSidebar] = useState<SidebarState>(null);
+    const [emailEditorOpen, setEmailEditorOpen] = useState(false);
 
     const onConnect = useCallback(
         (connection: Connection) => setEdges(eds => addEdge(connection, eds)),
@@ -675,12 +711,14 @@ const AutomationEditor: React.FC = () => {
                                     setEdges(current => current.filter(e => e.source !== targetId && e.target !== targetId));
                                     setSidebar(null);
                                 }}
+                                onEditEmail={() => setEmailEditorOpen(true)}
                             />
                         )}
                         {sidebar.mode === 'runs' && <RunsSidebarBody />}
                     </SidebarShell>
                 )}
             </div>
+            {emailEditorOpen && <EmailEditorModal onClose={() => setEmailEditorOpen(false)} />}
         </div>
     );
 };
