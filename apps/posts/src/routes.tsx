@@ -69,6 +69,19 @@ export const routes: RouteObject[] = [
                 path: 'comments',
                 lazy: lazyComponent(() => import('@views/comments/comments'))
             },
+            {
+                path: 'automations',
+                children: [
+                    {
+                        index: true,
+                        lazy: lazyComponent(() => import('@views/Automations/list'))
+                    },
+                    {
+                        path: ':id',
+                        lazy: lazyComponent(() => import('@views/Automations/editor'))
+                    }
+                ]
+            },
 
             // Error handling
             {
