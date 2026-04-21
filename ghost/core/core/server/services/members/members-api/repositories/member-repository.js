@@ -11,6 +11,7 @@ const crypto = require('crypto');
 const hasActiveOffer = require('../utils/has-active-offer');
 const StartAutomationsPollEvent = require('../../../welcome-email-automations/events/start-automations-poll-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
+
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
     moreThanOneProduct: 'A member cannot have more than one Product',
@@ -32,12 +33,13 @@ const messages = {
     offerAlreadyRedeemed: 'This offer has already been redeemed on this subscription',
     subscriptionNotActive: 'Cannot apply offer to an inactive subscription',
     subscriptionHasOffer: 'Subscription already has an offer applied',
-    subscriptionCancelling: 'Cannot apply retention offer to a subscription that is already cancelling'
+    subscriptionCancelling: 'Cannot apply retention offer to a subscription that is already cancelling',
+    invalidMemberStatus: 'Invalid member status, must be one of {statuses}'
 };
 
 const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
-
 const WELCOME_EMAIL_SOURCES = ['member'];
+const MEMBER_STATUSES = ['free', 'paid', 'comped', 'gift'];
 
 /**
  * @typedef {object} ITokenService
@@ -341,6 +343,13 @@ module.exports = class MemberRepository {
             }
         }
 
+        if (memberData.status && !MEMBER_STATUSES.includes(memberData.status)) {
+            throw new errors.ValidationError({
+                message: tpl(messages.invalidMemberStatus, {statuses: MEMBER_STATUSES.join(', ')}),
+                property: 'status'
+            });
+        }
+
         if (!memberData.status) {
             if (memberData.products && memberData.products.length === 1) {
                 memberData.status = 'comped';
@@ -580,6 +589,13 @@ module.exports = class MemberRepository {
             throw new errors.ValidationError({
                 message: tpl(messages.invalidEmail),
                 property: 'email'
+            });
+        }
+
+        if (data.status && !MEMBER_STATUSES.includes(data.status)) {
+            throw new errors.ValidationError({
+                message: tpl(messages.invalidMemberStatus, {statuses: MEMBER_STATUSES.join(', ')}),
+                property: 'status'
             });
         }
 
