@@ -233,9 +233,19 @@ describe('Adapter Cache Redis', function () {
 
             const first = await cache.get(KEY, fetchData);
             assert.equal(first, 'Original Value');
+            sinon.assert.calledOnce(fetchData);
 
             const second = await cache.get(KEY, fetchData);
             assert.equal(second, 'Original Value');
+            sinon.assert.calledTwice(fetchData);
+
+            // The .catch() handler fires asynchronously — wait for it to settle
+            await new Promise((resolve) => { 
+                setTimeout(resolve, 10); 
+            });
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].message, 'There was an error refreshing cache data in the background');
+            assert.equal(logging.error.firstCall.args[0].error.message, 'refresh failed');
         });
 
         it('Can do a background update of the cache', async function () {
