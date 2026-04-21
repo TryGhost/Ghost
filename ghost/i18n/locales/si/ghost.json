@@ -77,6 +77,7 @@
     "You're one tap away from subscribing to {siteTitle} — please confirm your email address with this link:": "{siteTitle} වෙත subscribe වීම සඳහා ඇත්තේ තව එක පියවරක් පමණි - කරුණාකර පහත link එක සමඟින් ඔබගේ email ලිපිනය තහවුරු කරන්න:",
     "You're one tap away from subscribing to {siteTitle}!": "{siteTitle} වෙත subscribe වීම සඳහා ඇත්තේ තව එක පියවරක් පමණි!",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "",
+    "Your gift subscription will expire on {date}.": "",
     "Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.": "",
     "Your subscription has expired.": "",
     "Your subscription will expire on {date}.": "",

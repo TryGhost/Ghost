@@ -77,6 +77,7 @@
     "You're one tap away from subscribing to {siteTitle} — please confirm your email address with this link:": "Таны {siteTitle} захиалга идэвжихэд ганцхан алхам үлдлээ - энэхүү холбоосоор өөрийн имэйлээ идэхжүүлнэ үү:",
     "You're one tap away from subscribing to {siteTitle}!": "Та {siteTitle}-д захиалга өгөхөд ганцхан алхам үлдлээ!",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "Таны үнэгүй туршилт {date}-нд дуусах бөгөөд энэ үед танаас үндсэн үнийг авна. Та үүнээс өмнө хэзээ ч цуцалж болно.",
+    "Your gift subscription will expire on {date}.": "",
     "Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.": "Таны захиалга цуцлагдсан бөгөөд {date}-нд дуусна. Та бүртгэлийн тохиргоогоороо захиалгаа үргэлжлүүлж болно.",
     "Your subscription has expired.": "Таны захиалга дууссан.",
     "Your subscription will expire on {date}.": "Таны захиалга {date}-нд дуусна.",
