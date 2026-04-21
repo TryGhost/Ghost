@@ -106,13 +106,13 @@ describe('{{excerpt}} Helper', function () {
     it('does not truncate custom_excerpt if characters options is provided', function () {
         const excerpt = 'Hello World! It\'s me!';
         const customExcerpt = 'This is a custom excerpt. It should always be rendered in full length and not being cut ' +
-                   'off. The maximum length of a custom excerpt is 300 characters. Enough to tell a bit about ' +
+                   'off. The maximum length of a custom excerpt is 2000 characters. Enough to tell a bit about ' +
                    'your story and make a nice summary for your readers. It\s only allowed to truncate anything ' +
-                   'after 300 characters. This give';
+                   'after 2000 characters. This give';
         const expected = 'This is a custom excerpt. It should always be rendered in full length and not being cut ' +
-                   'off. The maximum length of a custom excerpt is 300 characters. Enough to tell a bit about ' +
+                   'off. The maximum length of a custom excerpt is 2000 characters. Enough to tell a bit about ' +
                    'your story and make a nice summary for your readers. It\s only allowed to truncate anything ' +
-            'after 300 characters. This give';
+            'after 2000 characters. This give';
 
         shouldRenderToExpected(
             {
@@ -127,13 +127,13 @@ describe('{{excerpt}} Helper', function () {
     it('does not truncate custom_excerpt if words options is provided', function () {
         const excerpt = 'Hello World! It\'s me!';
         const customExcerpt = 'This is a custom excerpt. It should always be rendered in full length and not being cut ' +
-                   'off. The maximum length of a custom excerpt is 300 characters. Enough to tell a bit about ' +
+                   'off. The maximum length of a custom excerpt is 2000 characters. Enough to tell a bit about ' +
                    'your story and make a nice summary for your readers. It\s only allowed to truncate anything ' +
-                   'after 300 characters. This give';
+                   'after 2000 characters. This give';
         const expected = 'This is a custom excerpt. It should always be rendered in full length and not being cut ' +
-                   'off. The maximum length of a custom excerpt is 300 characters. Enough to tell a bit about ' +
+                   'off. The maximum length of a custom excerpt is 2000 characters. Enough to tell a bit about ' +
                    'your story and make a nice summary for your readers. It\s only allowed to truncate anything ' +
-            'after 300 characters. This give';
+            'after 2000 characters. This give';
 
         shouldRenderToExpected(
             {

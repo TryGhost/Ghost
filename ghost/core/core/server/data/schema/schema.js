@@ -90,7 +90,7 @@ module.exports = {
         updated_at: {type: 'dateTime', nullable: true, index: true},
         published_at: {type: 'dateTime', nullable: true, index: true},
         published_by: {type: 'string', maxlength: 24, nullable: true},
-        custom_excerpt: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}},
+        custom_excerpt: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 2000}}},
         codeinjection_head: {type: 'text', maxlength: 65535, nullable: true},
         codeinjection_foot: {type: 'text', maxlength: 65535, nullable: true},
         custom_template: {type: 'string', maxlength: 100, nullable: true},
@@ -414,7 +414,7 @@ module.exports = {
         feature_image: {type: 'string', maxlength: 2000, nullable: true},
         feature_image_alt: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 191}}},
         feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
-        custom_excerpt: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}}
+        custom_excerpt: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 2000}}}
     },
     members: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
