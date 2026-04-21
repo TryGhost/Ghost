@@ -17,7 +17,7 @@ import {
     useReactFlow,
     useViewport
 } from '@xyflow/react';
-import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger} from '@tryghost/shade/components';
+import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {getAutomationById} from './mock-data';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -194,15 +194,103 @@ const StepSidebarBody: React.FC<{nodeId: string}> = ({nodeId}) => {
 
 type RunStatus = 'completed' | 'failed' | 'running';
 
-type Run = {id: string; member: string; startedAt: string; status: RunStatus};
+type RunStepStatus = 'completed' | 'failed' | 'pending' | 'skipped';
+
+type RunStep = {stepId: string; at?: string; status: RunStepStatus; note?: string};
+
+type Run = {id: string; member: string; startedAt: string; status: RunStatus; durationMs?: number; timeline: RunStep[]};
 
 const mockRuns: Run[] = [
-    {id: 'r-1042', member: 'amelia.harris@example.com', startedAt: '2026-04-21T09:14:00Z', status: 'completed'},
-    {id: 'r-1041', member: 'danielle.kumar@example.com', startedAt: '2026-04-21T08:02:00Z', status: 'completed'},
-    {id: 'r-1040', member: 'noah.bennet@example.com', startedAt: '2026-04-21T07:47:00Z', status: 'running'},
-    {id: 'r-1039', member: 'priya.shah@example.com', startedAt: '2026-04-20T22:31:00Z', status: 'failed'},
-    {id: 'r-1038', member: 'jake.thompson@example.com', startedAt: '2026-04-20T18:09:00Z', status: 'completed'}
+    {
+        id: 'r-1042',
+        member: 'amelia.harris@example.com',
+        startedAt: '2026-04-21T09:14:00Z',
+        status: 'completed',
+        durationMs: 86_400_000,
+        timeline: [
+            {stepId: 'trigger', at: '2026-04-21T09:14:00Z', status: 'completed'},
+            {stepId: 'delay', at: '2026-04-21T09:14:01Z', status: 'completed', note: 'Waited 1 day'},
+            {stepId: 'send-email', at: '2026-04-22T09:14:02Z', status: 'completed', note: 'Delivered'},
+            {stepId: 'add-label', at: '2026-04-22T09:14:02Z', status: 'completed'},
+            {stepId: 'end', at: '2026-04-22T09:14:02Z', status: 'completed'}
+        ]
+    },
+    {
+        id: 'r-1041',
+        member: 'danielle.kumar@example.com',
+        startedAt: '2026-04-21T08:02:00Z',
+        status: 'completed',
+        durationMs: 86_400_000,
+        timeline: [
+            {stepId: 'trigger', at: '2026-04-21T08:02:00Z', status: 'completed'},
+            {stepId: 'delay', at: '2026-04-21T08:02:00Z', status: 'completed'},
+            {stepId: 'send-email', at: '2026-04-22T08:02:00Z', status: 'completed', note: 'Opened'},
+            {stepId: 'add-label', at: '2026-04-22T08:02:01Z', status: 'completed'},
+            {stepId: 'end', at: '2026-04-22T08:02:01Z', status: 'completed'}
+        ]
+    },
+    {
+        id: 'r-1040',
+        member: 'noah.bennet@example.com',
+        startedAt: '2026-04-21T07:47:00Z',
+        status: 'running',
+        timeline: [
+            {stepId: 'trigger', at: '2026-04-21T07:47:00Z', status: 'completed'},
+            {stepId: 'delay', at: '2026-04-21T07:47:00Z', status: 'pending', note: 'Waiting 1 day'},
+            {stepId: 'send-email', status: 'pending'},
+            {stepId: 'add-label', status: 'pending'},
+            {stepId: 'end', status: 'pending'}
+        ]
+    },
+    {
+        id: 'r-1039',
+        member: 'priya.shah@example.com',
+        startedAt: '2026-04-20T22:31:00Z',
+        status: 'failed',
+        durationMs: 86_400_000 + 12_000,
+        timeline: [
+            {stepId: 'trigger', at: '2026-04-20T22:31:00Z', status: 'completed'},
+            {stepId: 'delay', at: '2026-04-20T22:31:01Z', status: 'completed'},
+            {stepId: 'send-email', at: '2026-04-21T22:31:12Z', status: 'failed', note: 'Bounced: mailbox full'},
+            {stepId: 'add-label', status: 'skipped'},
+            {stepId: 'end', status: 'skipped'}
+        ]
+    },
+    {
+        id: 'r-1038',
+        member: 'jake.thompson@example.com',
+        startedAt: '2026-04-20T18:09:00Z',
+        status: 'completed',
+        durationMs: 86_400_000,
+        timeline: [
+            {stepId: 'trigger', at: '2026-04-20T18:09:00Z', status: 'completed'},
+            {stepId: 'delay', at: '2026-04-20T18:09:00Z', status: 'completed'},
+            {stepId: 'send-email', at: '2026-04-21T18:09:01Z', status: 'completed'},
+            {stepId: 'add-label', at: '2026-04-21T18:09:01Z', status: 'completed'},
+            {stepId: 'end', at: '2026-04-21T18:09:01Z', status: 'completed'}
+        ]
+    }
 ];
+
+const runStepDotStyles: Record<RunStepStatus, string> = {
+    completed: 'bg-green-500',
+    failed: 'bg-red-500',
+    pending: 'bg-grey-400',
+    skipped: 'bg-grey-300'
+};
+
+const formatDuration = (ms: number): string => {
+    const days = Math.floor(ms / 86_400_000);
+    const hours = Math.floor((ms % 86_400_000) / 3_600_000);
+    const mins = Math.floor((ms % 3_600_000) / 60_000);
+    if (days > 0) {
+        return `${days}d ${hours}h`;
+    }
+    if (hours > 0) {
+        return `${hours}h ${mins}m`;
+    }
+    return `${mins}m`;
+};
 
 const runStatusStyles: Record<RunStatus, string> = {
     completed: 'bg-green-100 text-green-800',
@@ -212,27 +300,84 @@ const runStatusStyles: Record<RunStatus, string> = {
 
 const formatRunTime = (iso: string): string => new Date(iso).toLocaleString(undefined, {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
 
-const RunsSidebarBody: React.FC = () => (
-    <>
-        <div className="flex flex-col gap-1">
-            <span className="text-xs font-medium text-grey-600">Activity</span>
-            <h2 className="text-base leading-tight font-semibold">Previous runs</h2>
-        </div>
-        <ul className="flex flex-col gap-2">
-            {mockRuns.map(run => (
-                <li key={run.id} className="flex flex-col gap-1 rounded-md border bg-grey-75 p-3">
-                    <div className="flex items-center justify-between gap-2">
-                        <span className="truncate text-sm font-medium">{run.member}</span>
+const RunItem: React.FC<{run: Run}> = ({run}) => {
+    const [expanded, setExpanded] = useState(false);
+    return (
+        <li className="flex flex-col rounded-md border bg-grey-75">
+            <button
+                aria-expanded={expanded}
+                className="flex flex-col gap-1 p-3 text-left hover:bg-grey-100"
+                type="button"
+                onClick={() => setExpanded(v => !v)}
+            >
+                <div className="flex items-center justify-between gap-2">
+                    <span className="truncate text-sm font-medium">{run.member}</span>
+                    <div className="flex items-center gap-2">
                         <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${runStatusStyles[run.status]}`}>{run.status}</span>
+                        <LucideIcon.ChevronRight
+                            className="size-4 text-grey-600 transition-transform duration-150"
+                            style={{transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)'}}
+                        />
                     </div>
-                    <div className="flex items-center justify-between text-xs text-grey-600">
+                </div>
+                <div className="text-xs text-grey-600">{formatRunTime(run.startedAt)}</div>
+            </button>
+            {expanded && (
+                <div className="flex animate-in flex-col gap-3 border-t px-3 py-3 duration-150 fade-in-0 slide-in-from-top-1">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                        <span className="text-grey-600">Started</span>
                         <span>{formatRunTime(run.startedAt)}</span>
-                        <code>{run.id}</code>
+                        {run.durationMs !== undefined && (
+                            <>
+                                <span className="text-grey-600">Duration</span>
+                                <span>{formatDuration(run.durationMs)}</span>
+                            </>
+                        )}
                     </div>
-                </li>
-            ))}
-        </ul>
-    </>
+                    <div className="flex flex-col gap-1">
+                        <span className="text-xs font-medium text-grey-600">Timeline</span>
+                        <ol className="flex flex-col gap-1">
+                            {run.timeline.map((step) => {
+                                const meta = stepMeta[step.stepId];
+                                return (
+                                    <li key={`${run.id}-${step.stepId}`} className="flex items-start gap-2 text-xs">
+                                        <span className={`mt-1.5 size-2 shrink-0 rounded-full ${runStepDotStyles[step.status]}`} />
+                                        <div className="flex flex-1 flex-col">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className="font-medium">{meta?.type ?? step.stepId}</span>
+                                                {step.at && <span className="text-grey-600">{formatRunTime(step.at)}</span>}
+                                            </div>
+                                            {step.note && <span className="text-grey-600">{step.note}</span>}
+                                        </div>
+                                    </li>
+                                );
+                            })}
+                        </ol>
+                    </div>
+                </div>
+            )}
+        </li>
+    );
+};
+
+const RunsSidebarBody: React.FC = () => (
+    <Tabs className="flex flex-col gap-6" defaultValue="runs">
+        <div className="flex items-center justify-between gap-4">
+            <h2 className="text-base leading-tight font-semibold">Analytics</h2>
+            <TabsList>
+                <TabsTrigger value="runs">Runs</TabsTrigger>
+                <TabsTrigger value="metrics">Metrics</TabsTrigger>
+            </TabsList>
+        </div>
+        <TabsContent className="flex flex-col gap-2" value="runs">
+            <ul className="flex flex-col gap-2">
+                {mockRuns.map(run => <RunItem key={run.id} run={run} />)}
+            </ul>
+        </TabsContent>
+        <TabsContent value="metrics">
+            <p className="text-sm text-grey-600">Metrics coming soon.</p>
+        </TabsContent>
+    </Tabs>
 );
 
 type SidebarState = {mode: 'step'; nodeId: string} | {mode: 'runs'} | null;
