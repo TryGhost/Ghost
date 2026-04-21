@@ -1460,23 +1460,22 @@ describe('Email renderer', function () {
             assert(response.html.includes('http://feedback-link.com/?score=0'));
         });
 
-        it('includes share links for posts with public, members, paid, and tiers visibility', async function () {
-            const newsletter = createModel({
-                header_image: null,
-                name: 'Test Newsletter',
-                show_badge: false,
-                feedback_enabled: true,
-                show_share_button: true,
-                show_post_title_section: true
-            });
-            const segment = null;
-            const options = {};
-
-            for (const visibility of ['public', 'members', 'paid', 'tiers']) {
+        for (const visibility of ['public', 'members', 'paid', 'tiers']) {
+            it(`includes share links for posts with ${visibility} visibility`, async function () {
+                const newsletter = createModel({
+                    header_image: null,
+                    name: 'Test Newsletter',
+                    show_badge: false,
+                    feedback_enabled: true,
+                    show_share_button: true,
+                    show_post_title_section: true
+                });
                 const post = createModel({
                     ...basePost,
                     visibility
                 });
+                const segment = null;
+                const options = {};
 
                 const response = await emailRenderer.renderBody(
                     post,
@@ -1487,8 +1486,8 @@ describe('Email renderer', function () {
 
                 assert(response.html.includes('href="http://example.com/#/share"'), `Expected share link for "${visibility}" visibility`);
                 assert(response.html.includes('>Share</p>'), `Expected share button text for "${visibility}" visibility`);
-            }
-        });
+            });
+        }
 
         it('does not include share links for email-only posts', async function () {
             const post = createModel({
