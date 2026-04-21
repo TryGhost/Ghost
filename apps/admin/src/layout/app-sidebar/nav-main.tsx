@@ -41,12 +41,6 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             <NavMenuItem.Label>Analytics</NavMenuItem.Label>
                         </NavMenuItem.Link>
                     </NavMenuItem>
-                    <NavMenuItem>
-                        <NavMenuItem.Link to="automations" activeOnSubpath>
-                            <LucideIcon.Zap />
-                            <NavMenuItem.Label>Automations</NavMenuItem.Label>
-                        </NavMenuItem.Link>
-                    </NavMenuItem>
                     {networkEnabled && (
                         <NavMenuItem>
                             <NavMenuItem.Link to="network" isActive={isNetworkRouteActive || isActivitypubRouteActive}>

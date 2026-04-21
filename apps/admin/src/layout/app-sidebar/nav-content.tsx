@@ -212,6 +212,13 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             </NavMenuItem.Link>
                         </NavMenuItem>
                     )}
+
+                    <NavMenuItem>
+                        <NavMenuItem.Link to="automations" activeOnSubpath>
+                            <LucideIcon.Zap />
+                            <NavMenuItem.Label>Automations</NavMenuItem.Label>
+                        </NavMenuItem.Link>
+                    </NavMenuItem>
                 </SidebarMenu>
             </SidebarGroupContent>
         </SidebarGroup>

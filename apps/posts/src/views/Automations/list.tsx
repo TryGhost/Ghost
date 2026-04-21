@@ -4,6 +4,7 @@ import {Automation, AutomationStatus, mockAutomations} from './mock-data';
 import {Badge, Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {Header} from '@tryghost/shade/primitives';
 import {Link, useNavigate} from '@tryghost/admin-x-framework';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 function statusVariant(status: AutomationStatus): 'default' | 'secondary' | 'outline' {
     if (status === 'active') {
@@ -29,7 +30,12 @@ const AutomationRow: React.FC<{automation: Automation}> = ({automation}) => {
                 <div className="text-muted-foreground">{automation.description}</div>
             </TableCell>
             <TableCell className="p-4">
-                <Badge className="capitalize" variant={statusVariant(automation.status)}>{automation.status}</Badge>
+                <Badge
+                    className={`capitalize ${automation.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-100' : ''}`}
+                    variant={statusVariant(automation.status)}
+                >
+                    {automation.status}
+                </Badge>
             </TableCell>
             <TableCell className="p-4 text-muted-foreground">
                 {formatUpdated(automation.updatedAt)}
@@ -46,7 +52,10 @@ const AutomationsList: React.FC = () => {
                 <Header.Actions>
                     <Header.ActionGroup>
                         <Button asChild>
-                            <Link className="font-bold" to="/automations/new">New automation</Link>
+                            <Link className="font-bold" to="/automations/new">
+                                <LucideIcon.Plus />
+                                New automation
+                            </Link>
                         </Button>
                     </Header.ActionGroup>
                 </Header.Actions>
