@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import {Gift} from './gift';
@@ -122,6 +123,21 @@ export class GiftService {
 
     constructor(deps: GiftServiceDeps) {
         this.deps = deps;
+    }
+
+    generateToken(): string {
+        /**
+         * Combinations: 62^12 ≈ 3.23 × 10^21 (~3.23 sextillion)
+         * Entropy:      12 × log2(62) ≈ 71.45 bits
+         */
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let token = '';
+
+        for (let i = 0; i < 12; i++) {
+            token += alphabet[crypto.randomInt(alphabet.length)];
+        }
+
+        return token;
     }
 
     async recordPurchase(data: GiftPurchaseData): Promise<boolean> {

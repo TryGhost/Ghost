@@ -187,7 +187,8 @@ module.exports = function MembersAPI({
         Offer,
         offersAPI,
         stripeAPIService,
-        settingsCache
+        settingsCache,
+        giftService
     });
 
     const memberController = new MemberController({
