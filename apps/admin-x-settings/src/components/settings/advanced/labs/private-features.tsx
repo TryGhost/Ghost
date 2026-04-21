@@ -12,6 +12,10 @@ type Feature = {
 };
 
 const features: Feature[] = [{
+    title: 'Automations',
+    description: 'Enable automations management interface.',
+    flag: 'automations'
+}, {
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax'
