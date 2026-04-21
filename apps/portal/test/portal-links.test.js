@@ -608,7 +608,7 @@ describe('Portal Data links:', () => {
             const giftTitle = within(popupFrame.contentDocument).queryByText(/gift ready to share/i);
             expect(giftTitle).toBeInTheDocument();
 
-            const redeemUrl = within(popupFrame.contentDocument).queryByText(/#\/portal\/gift\/redeem\/abc123/);
+            const redeemUrl = within(popupFrame.contentDocument).queryByText(/\/gift\/abc123$/);
             expect(redeemUrl).toBeInTheDocument();
         });
 
