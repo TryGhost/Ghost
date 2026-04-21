@@ -19,13 +19,35 @@ const requiredForExcerpt = (requestedColumns) => {
 };
 
 const parsePositiveInteger = (value, defaultValue) => {
-    const parsedValue = parseInt(value, 10);
+    const parsedValue = Number.parseInt(value, 10);
 
     if (Number.isNaN(parsedValue)) {
         return defaultValue;
     }
 
     return Math.max(parsedValue, 1);
+};
+
+// Pre-applies limit/offset so callers can use fetchPage's limit='all'
+// short-circuit (which skips the count query) while still fetching only
+// the requested window.
+const applyManualPaginationWindow = (itemCollection, options) => {
+    if (options.limit === 'all') {
+        return;
+    }
+
+    const limit = parsePositiveInteger(options.limit, 15);
+    const page = parsePositiveInteger(options.page, 1);
+
+    itemCollection
+        .query('limit', limit)
+        .query('offset', limit * (page - 1));
+
+    options.limit = 'all';
+};
+
+const buildPaginationMeta = (skipPagination, pagination) => {
+    return skipPagination ? {} : {pagination};
 };
 
 /**
@@ -162,18 +184,8 @@ module.exports = function (Bookshelf) {
                 options.useSmartCount = true;
             }
 
-            if (skipPagination && options.limit !== 'all') {
-                // fetchPage skips its count query only for limit='all'. Preserve the requested page window
-                // manually before using that path, so callers can avoid pagination metadata without fetching
-                // every matching row.
-                const limit = parsePositiveInteger(options.limit, 15);
-                const page = parsePositiveInteger(options.page, 1);
-
-                itemCollection
-                    .query('limit', limit)
-                    .query('offset', limit * (page - 1));
-
-                options.limit = 'all';
+            if (skipPagination) {
+                applyManualPaginationWindow(itemCollection, options);
             }
 
             const response = await itemCollection.fetchPage(options);
@@ -191,7 +203,7 @@ module.exports = function (Bookshelf) {
 
             return {
                 data: data,
-                meta: skipPagination ? {} : {pagination: response.pagination}
+                meta: buildPaginationMeta(skipPagination, response.pagination)
             };
         },
 
