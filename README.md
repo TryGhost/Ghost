@@ -13,7 +13,7 @@ class MyEvent {
     constructor(message) {
         this.timestamp = new Date();
         this.data = {
-            message
+            message,
         };
     }
 }

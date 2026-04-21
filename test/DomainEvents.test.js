@@ -10,14 +10,15 @@ class TestEvent {
     constructor(message) {
         this.timestamp = new Date();
         this.data = {
-            message
+            message,
         };
     }
 }
 
-const sleep = ms => new Promise((resolve) => {
-    setTimeout(resolve, ms);
-});
+const sleep = (ms) =>
+    new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 
 describe('DomainEvents', function () {
     afterEach(function () {

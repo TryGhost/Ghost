@@ -1,31 +1,29 @@
 {
   "name": "@tryghost/domain-events",
   "version": "3.0.3",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": "Ghost Foundation",
   "license": "MIT",
-  "main": "index.js",
-  "types": "types",
-  "scripts": {
-    "dev": "echo \"Implement me!\"",
-    "test:unit": "NODE_ENV=testing vitest run --coverage --config ../../vitest.config.ts",
-    "test": "yarn test:unit",
-    "lint:code": "eslint *.js lib/ --ext .js --cache",
-    "lint": "yarn lint:code && yarn lint:test",
-    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache"
+  "author": "Ghost Foundation",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/framework.git",
+    "directory": "packages/domain-events"
   },
   "files": [
     "index.js",
     "lib"
   ],
+  "main": "index.js",
+  "types": "types",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test:unit": "NODE_ENV=testing vitest run --coverage --config ../../vitest.config.ts",
+    "test": "yarn test:unit",
+    "lint": "oxlint -c ../../.oxlintrc.json ."
+  },
   "devDependencies": {
     "@tryghost/logging": "^4.0.3"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/TryGhost/framework.git",
-    "directory": "packages/domain-events"
   }
 }
