@@ -17,7 +17,7 @@ import {
     useReactFlow,
     useViewport
 } from '@xyflow/react';
-import {Badge, Button, Checkbox, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {Badge, Button, Checkbox, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Input, Label, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {getAutomationById} from './mock-data';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -40,7 +40,8 @@ const addStepOptions: AddStepOption[] = [
     {id: 'email', icon: LucideIcon.Mail, title: 'Email', description: 'Send an email'},
     {id: 'action', icon: LucideIcon.UserCog, title: 'Action', description: 'Manage subscribers'},
     {id: 'delay', icon: LucideIcon.Clock, title: 'Delay', description: 'Wait for a time or a date'},
-    {id: 'branch', icon: LucideIcon.GitBranch, title: 'Branch', description: 'Split based on label'},
+    {id: 'wait-until', icon: LucideIcon.Hourglass, title: 'Wait until', description: 'Wait until an event or condition'},
+    {id: 'branch', icon: LucideIcon.GitBranch, title: 'Branch', description: 'Split based on a condition'},
     {id: 'exit', icon: LucideIcon.LogOut, title: 'Exit', description: 'End automation flow'}
 ];
 
@@ -190,13 +191,33 @@ const SidebarShell: React.FC<{width: string; children: React.ReactNode}> = ({wid
     </aside>
 );
 
-const triggerOptions = [
-    {value: 'signup', label: 'New member sign up'},
-    {value: 'unsubscribe', label: 'Member unsubscribes'},
-    {value: 'upgrade', label: 'Member upgrades'},
-    {value: 'label-added', label: 'A label is added to a member'},
-    {value: 'newsletter-sent', label: 'Newsletter sent'},
-    {value: 'post-published', label: 'Post published'}
+type TriggerOption = {value: string; label: string};
+
+const triggerGroups: {label: string; options: TriggerOption[]}[] = [
+    {
+        label: 'Members',
+        options: [
+            {value: 'signup', label: 'New member sign up'},
+            {value: 'unsubscribe', label: 'Member unsubscribes'},
+            {value: 'upgrade', label: 'Member upgrades'},
+            {value: 'subscription-cancelled', label: 'Subscription cancelled'}
+        ]
+    },
+    {
+        label: 'Engagement',
+        options: [
+            {value: 'inactive', label: 'Member inactive for a period'},
+            {value: 'engagement-threshold', label: 'Engagement threshold reached'},
+            {value: 'label-added', label: 'A label is added to a member'}
+        ]
+    },
+    {
+        label: 'Content',
+        options: [
+            {value: 'newsletter-sent', label: 'Newsletter sent'},
+            {value: 'post-published', label: 'Post published'}
+        ]
+    }
 ];
 
 const tierOptions = [
@@ -218,8 +239,13 @@ const TriggerStepBody: React.FC = () => {
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        {triggerOptions.map(opt => (
-                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        {triggerGroups.map(group => (
+                            <SelectGroup key={group.label}>
+                                <SelectLabel>{group.label}</SelectLabel>
+                                {group.options.map(opt => (
+                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                ))}
+                            </SelectGroup>
                         ))}
                     </SelectContent>
                 </Select>
