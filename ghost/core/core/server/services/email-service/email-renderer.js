@@ -42,7 +42,7 @@ const messages = {
         trial: t('Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.'),
         complimentaryExpires: t('Your subscription will expire on {date}.'),
         complimentaryInfinite: '',
-        giftExpires: t('Your gift subscription will expire on {date}.')
+        giftExpires: t('Your subscription will expire on {date}.')
     }
 };
 

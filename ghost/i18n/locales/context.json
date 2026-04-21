@@ -380,7 +380,6 @@
     "Your email address": "Placeholder text in an input field",
     "Your email has failed to resubscribe, please try again": "error message in portal",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "Newsletter text - shown to trialing members when receiving the newsletter (if subscription status is being shown)",
-    "Your gift subscription will expire on {date}.": "Appears in the newsletter footer for members who redeemed a gift subscription, be sure to include {date} in the translation.",
     "Your input helps shape what gets published.": "Descriptive text displayed on the member feedback UI, telling people how their feedback is used",
     "Your name": "Form label for the name input in e.g. signup forms",
     "Your request will be sent to the owner of this site.": "Descriptive text displayed in the report comment modal",
