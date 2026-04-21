@@ -6,9 +6,6 @@ import type {GiftRepository} from './gift-repository';
 import tpl from '@tryghost/tpl';
 import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
 
-const GIFT_TOKEN_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-const GIFT_TOKEN_LENGTH = 12;
-
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 const errorMessages = {
@@ -129,10 +126,11 @@ export class GiftService {
     }
 
     generateToken(): string {
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         let token = '';
 
-        for (let i = 0; i < GIFT_TOKEN_LENGTH; i++) {
-            token += GIFT_TOKEN_ALPHABET[crypto.randomInt(GIFT_TOKEN_ALPHABET.length)];
+        for (let i = 0; i < 12; i++) {
+            token += alphabet[crypto.randomInt(alphabet.length)];
         }
 
         return token;
