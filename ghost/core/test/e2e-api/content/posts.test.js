@@ -5,6 +5,7 @@ const config = require('../../../core/shared/config');
 const moment = require('moment');
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
+const api = require('../../../core/server/api/endpoints');
 const urlUtilsHelper = require('../../utils/url-utils');
 
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
@@ -437,6 +438,24 @@ describe('Posts Content API', function () {
             const sqlWithoutCount = query.sql.replace(/count\(\*\)/g, '');
             assert(!sqlWithoutCount.includes('*'), 'Query should not select *');
         }
+    });
+
+    it('Can skip pagination counts when skipPagination is true', async function () {
+        const queries = await trackDb(() => {
+            return api.postsPublic.browse({
+                filter: 'published_at:>\'2015-07-20\'',
+                skipPagination: true,
+                limit: 1,
+                order: 'published_at asc',
+                context: {}
+            });
+        }, this.skip.bind(this));
+
+        const postsCountQueries = queries.filter((query) => {
+            return query.sql.includes('count(') && query.sql.includes('`posts`');
+        });
+
+        assert.equal(postsCountQueries.length, 0);
     });
 
     it('Strips out gated blocks not viewable by anonymous viewers ', async function () {

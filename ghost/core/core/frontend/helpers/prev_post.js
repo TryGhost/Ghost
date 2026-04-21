@@ -30,6 +30,7 @@ const buildApiOptions = function buildApiOptions(options, post) {
         include: 'author,authors,tags,tiers',
         order: 'published_at ' + order,
         limit: 1,
+        skipPagination: true,
         // This line deliberately uses double quotes because GQL cannot handle either double quotes
         // or escaped singles, see TryGhost/GQL#34
         filter: "slug:-" + slug + "+published_at:" + op + "'" + publishedAt + "'", // eslint-disable-line quotes
