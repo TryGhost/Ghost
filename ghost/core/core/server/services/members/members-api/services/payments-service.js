@@ -1,4 +1,3 @@
-const crypto = require('node:crypto');
 const logging = require('@tryghost/logging');
 const DomainEvents = require('@tryghost/domain-events');
 const TierCreatedEvent = require('../../../tiers/tier-created-event');
@@ -14,6 +13,7 @@ class PaymentsService {
      * @param {import('../../../offers/application/offers-api')} deps.offersAPI
      * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
      * @param {{get(key: string): any}} deps.settingsCache
+     * @param {{service: import('../../../gifts/gift-service').GiftService}} deps.giftService
      */
     constructor(deps) {
         /** @private */
@@ -30,6 +30,8 @@ class PaymentsService {
         this.stripeAPIService = deps.stripeAPIService;
         /** @private */
         this.settingsCache = deps.settingsCache;
+        /** @private */
+        this.giftService = deps.giftService;
 
         DomainEvents.subscribe(OfferCreatedEvent, async (event) => {
             await this.getCouponForOffer(event.data.offer.id);
@@ -173,7 +175,7 @@ class PaymentsService {
         const amount = tier.getPrice(cadence);
         const currency = tier.currency.toLowerCase();
 
-        const token = crypto.randomBytes(6).toString('base64url');
+        const token = this.giftService.service.generateToken();
 
         const successUrlObj = new URL(successUrl);
         successUrlObj.searchParams.set('stripe', 'gift-purchase-success');
