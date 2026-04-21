@@ -42,6 +42,11 @@ jobs:
     permissions:
       actions: read
       contents: read
+      # Required by dorny/paths-filter, which calls pulls.listFiles on
+      # pull_request events. Private forks of this repo don't grant this
+      # implicitly when an explicit permissions block is present, so it must
+      # be listed here for the Setup job to succeed on those forks.
+      pull-requests: read
     steps:
       - name: Checkout current commit
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
