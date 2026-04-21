@@ -2,8 +2,8 @@ import {chooseOptionInSelect, getOptionsFromSelect, globalDataRequests, mockApi,
 import {expect, test} from '@playwright/test';
 
 test.describe('Access settings', async () => {
-    test('Shows site visibility controls at the top of the access section', async ({page}) => {
-        const {lastApiRequests} = await mockApi({page, requests: {
+    test('Supports switching site visibility between public and private', async ({page}) => {
+        const mockLock = await mockApi({page, requests: {
             ...globalDataRequests,
             editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
                 {key: 'is_private', value: true},
@@ -24,12 +24,31 @@ test.describe('Access settings', async () => {
         await expect(accessSection.getByText('A private RSS feed is available here')).toHaveCount(0);
         await accessSection.getByRole('button', {name: 'Save'}).click();
 
+        await expect(siteVisibilitySelect).toContainText('Private');
         await expect(accessSection.getByText('A private RSS feed is available here')).toHaveCount(1);
 
-        expect(lastApiRequests.editSettings?.body).toEqual({
+        expect(mockLock.lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'is_private', value: true},
                 {key: 'password', value: 'secret'}
+            ]
+        });
+
+        const mockUnlock = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'is_private', value: false}
+            ])}
+        }});
+
+        await chooseOptionInSelect(siteVisibilitySelect, 'Public');
+        await accessSection.getByRole('button', {name: 'Save'}).click();
+
+        await expect(siteVisibilitySelect).toContainText('Public');
+
+        expect(mockUnlock.lastApiRequests.editSettings?.body).toEqual({
+            settings: [
+                {key: 'is_private', value: false}
             ]
         });
     });
