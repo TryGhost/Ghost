@@ -1042,8 +1042,8 @@ class EmailRenderer {
         }
 
         const postUrl = this.#getPostUrl(post);
-        const isPublicPost = post.get('visibility') === 'public';
-        const showShareButton = isPublicPost && newsletter.get('show_share_button');
+        const hasEmailOnlyFlag = post.related('posts_meta')?.get('email_only') ?? false;
+        const showShareButton = newsletter.get('show_share_button') && !hasEmailOnlyFlag;
         const shareUrl = new URL(postUrl);
         shareUrl.hash = '/share';
 
@@ -1068,7 +1068,6 @@ class EmailRenderer {
         const commentUrl = new URL(postUrl);
         commentUrl.hash = '#ghost-comments-root';
 
-        const hasEmailOnlyFlag = post.related('posts_meta')?.get('email_only') ?? false;
         const hasFeedbackButtons = newsletter.get('feedback_enabled');
         const showCommentCta = newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag;
         const feedbackButtonCount = (hasFeedbackButtons ? 2 : 0) + (showCommentCta ? 1 : 0) + (showShareButton ? 1 : 0);
