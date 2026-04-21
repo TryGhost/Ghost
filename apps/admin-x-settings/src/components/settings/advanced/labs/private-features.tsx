@@ -52,10 +52,6 @@ const features: Feature[] = [{
     description: 'Display a Feedback menu item in the admin sidebar. Requires the new admin experience.',
     flag: 'featurebaseFeedback'
 }, {
-    title: 'Drip Sequences',
-    description: 'Enable welcome email drip sequences',
-    flag: 'dripSequences'
-}, {
     title: 'Picture Element',
     description: 'Use the HTML picture element to serve modern image formats (AVIF, WebP) with automatic fallbacks',
     flag: 'pictureImageFormats'
