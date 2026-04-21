@@ -176,7 +176,7 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
         });
     });
 
-    test('free welcome email preview renders edited subject and body', async ({page}) => {
+    test('free welcome email preview - renders edited subject and body', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
         const customSubject = 'Preview subject from the browser test';
         const customBody = 'Preview body content rendered from an unsaved draft.';
@@ -198,10 +198,10 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
         await welcomeEmailsSection.modalSubjectInput.fill(customSubject);
         await expect(welcomeEmailsSection.modalPreviewSubjectInput).toHaveValue(customSubject);
         await expect(welcomeEmailsSection.modalPreviewIframe).toBeVisible();
-        await expect(welcomeEmailsSection.modalPreviewFrame.locator('body')).toContainText(customBody);
+        await expect(welcomeEmailsSection.modalPreviewFrame.getByText(customBody)).toBeVisible();
     });
 
-    test('free welcome email preview preserves subject tokens when edited and saved', async ({page, browser, baseURL}) => {
+    test('free welcome email preview - preserves subject tokens when edited and saved', async ({page, browser, baseURL}) => {
         const emailClient = new MailPit();
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
         const templatedSubject = 'Welcome {first_name}';
