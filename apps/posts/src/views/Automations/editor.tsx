@@ -6,6 +6,7 @@ import {
     Controls,
     Edge,
     Node,
+    Position,
     ReactFlow,
     addEdge,
     useEdgesState,
@@ -16,33 +17,60 @@ import {LucideIcon} from '@tryghost/shade/utils';
 import {getAutomationById} from './mock-data';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 
+const nodeDefaults = {
+    sourcePosition: Position.Bottom,
+    targetPosition: Position.Top,
+    className: 'border-0! shadow-sm text-sm! px-5! py-4! rounded-lg! w-56!'
+};
+
+type NodeLabelProps = {
+    icon: React.ElementType;
+    type: string;
+    value?: string;
+};
+
+const NodeLabel: React.FC<NodeLabelProps> = ({icon: Icon, type, value}) => (
+    <div className="flex flex-col items-center gap-1">
+        <div className="flex items-center gap-1.5 text-xs text-grey-600">
+            <Icon className="size-3.5" />
+            <span>{type}</span>
+        </div>
+        {value && <div className="font-medium">{value}</div>}
+    </div>
+);
+
 const initialNodes: Node[] = [
     {
         id: 'trigger',
         type: 'input',
-        position: {x: 80, y: 80},
-        data: {label: 'Trigger: Member signs up'}
+        position: {x: 240, y: 0},
+        data: {label: <NodeLabel icon={LucideIcon.Zap} type="Trigger" value="Member signs up" />},
+        ...nodeDefaults
     },
     {
         id: 'delay',
-        position: {x: 320, y: 80},
-        data: {label: 'Wait 1 day'}
+        position: {x: 240, y: 180},
+        data: {label: <NodeLabel icon={LucideIcon.Clock} type="Wait" value="1 day" />},
+        ...nodeDefaults
     },
     {
         id: 'send-email',
-        position: {x: 560, y: 20},
-        data: {label: 'Send email: Welcome'}
+        position: {x: 0, y: 360},
+        data: {label: <NodeLabel icon={LucideIcon.Mail} type="Send email" value="Welcome to The Blueprint" />},
+        ...nodeDefaults
     },
     {
         id: 'add-label',
-        position: {x: 560, y: 140},
-        data: {label: 'Add label: Onboarding'}
+        position: {x: 480, y: 360},
+        data: {label: <NodeLabel icon={LucideIcon.Tag} type="Add label" value="Onboarding" />},
+        ...nodeDefaults
     },
     {
         id: 'end',
         type: 'output',
-        position: {x: 820, y: 80},
-        data: {label: 'End'}
+        position: {x: 240, y: 540},
+        data: {label: <NodeLabel icon={LucideIcon.Flag} type="End" />},
+        ...nodeDefaults
     }
 ];
 
@@ -84,16 +112,20 @@ const AutomationEditor: React.FC = () => {
                     <Button onClick={goBack}>Save</Button>
                 </div>
             </header>
-            <div className="flex-1">
+            <style>{`.react-flow__handle { opacity: 0 !important; }`}</style>
+            <div className="flex-1 bg-grey-75">
                 <ReactFlow
+                    defaultEdgeOptions={{type: 'smoothstep', style: {stroke: 'var(--color-grey-500)'}, ...({pathOptions: {borderRadius: 40}} as object)}}
                     edges={edges}
+                    fitViewOptions={{maxZoom: 1}}
                     nodes={nodes}
+                    nodesDraggable={false}
                     fitView
                     onConnect={onConnect}
                     onEdgesChange={onEdgesChange}
                     onNodesChange={onNodesChange}
                 >
-                    <Background />
+                    <Background color="var(--color-grey-400)" />
                     <Controls />
                 </ReactFlow>
             </div>
