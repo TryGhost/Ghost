@@ -123,6 +123,28 @@ describe('GiftService', function () {
         });
     }
 
+    describe('generateToken', function () {
+        it('returns a 12-character base62 string', function () {
+            const service = createService();
+
+            for (let i = 0; i < 50; i++) {
+                assert.match(service.generateToken(), /^[A-Za-z0-9]{12}$/);
+            }
+        });
+
+        it('produces unique tokens across many invocations', function () {
+            const service = createService();
+            const tokens = new Set<string>();
+            const samples = 10_000;
+
+            for (let i = 0; i < samples; i++) {
+                tokens.add(service.generateToken());
+            }
+
+            assert.equal(tokens.size, samples);
+        });
+    });
+
     describe('recordPurchase', function () {
         it('creates a Gift entity and saves it', async function () {
             const service = createService();
