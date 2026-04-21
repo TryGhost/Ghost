@@ -1,4 +1,5 @@
 const BaseCacheAdapter = require('@tryghost/adapter-base-cache');
+const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const debug = require('@tryghost/debug')('redis-cache');
@@ -270,17 +271,14 @@ class AdapterCacheRedis extends BaseCacheAdapter {
     }
 
     /**
-     * Helper method to assist "getAll" type of operations
-     * @returns {Promise<Array<String>>} all keys present in the cache
+     * @deprecated The cache adapter interface still requires a `keys` method
+     *             (see @tryghost/adapter-base-cache#requiredFns), but the
+     *             redis adapter does not support enumerating its keys.
      */
-    async keys() {
-        try {
-            return (await this.#getKeys()).map((key) => {
-                return this._removeKeyPrefix(key);
-            });
-        } catch (err) {
-            logging.error(err);
-        }
+    keys() {
+        throw new errors.IncorrectUsageError({
+            message: 'AdapterCacheRedis does not support keys()'
+        });
     }
 }
 
