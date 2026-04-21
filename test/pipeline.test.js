@@ -19,11 +19,12 @@ describe('Pipeline', function () {
                     const apiUtils = {};
                     const apiConfig = {};
                     const apiImpl = {
-                        validation: sinon.stub().resolves('response')
+                        validation: sinon.stub().resolves('response'),
                     };
                     const frame = {};
 
-                    return shared.pipeline.STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame)
+                    return shared.pipeline.STAGES.validation
+                        .input(apiUtils, apiConfig, apiImpl, frame)
                         .then((response) => {
                             assert.equal(response, 'response');
 
@@ -36,45 +37,50 @@ describe('Pipeline', function () {
                     const apiUtils = {
                         validators: {
                             input: {
-                                posts: {}
-                            }
-                        }
+                                posts: {},
+                            },
+                        },
                     };
                     const apiConfig = {
-                        docName: 'posts'
+                        docName: 'posts',
                     };
                     const apiImpl = {
                         options: ['include'],
                         validation: {
                             options: {
                                 include: {
-                                    required: true
-                                }
-                            }
-                        }
+                                    required: true,
+                                },
+                            },
+                        },
                     };
                     const frame = {
-                        options: {}
+                        options: {},
                     };
 
-                    return shared.pipeline.STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame)
+                    return shared.pipeline.STAGES.validation
+                        .input(apiUtils, apiConfig, apiImpl, frame)
                         .then(() => {
                             assert.equal(shared.validators.handle.input.calledOnce, true);
-                            assert.equal(shared.validators.handle.input.calledWith(
-                                {
-                                    docName: 'posts',
-                                    options: {
-                                        include: {
-                                            required: true
-                                        }
-                                    }
-                                },
-                                {
-                                    posts: {}
-                                },
-                                {
-                                    options: {}
-                                }), true);
+                            assert.equal(
+                                shared.validators.handle.input.calledWith(
+                                    {
+                                        docName: 'posts',
+                                        options: {
+                                            include: {
+                                                required: true,
+                                            },
+                                        },
+                                    },
+                                    {
+                                        posts: {},
+                                    },
+                                    {
+                                        options: {},
+                                    },
+                                ),
+                                true,
+                            );
                         });
                 });
             });
@@ -84,18 +90,19 @@ describe('Pipeline', function () {
             it('input calls shared serializer input handler', function () {
                 sinon.stub(shared.serializers.handle, 'input').resolves();
 
-                const apiUtils = {serializers: {input: {posts: {}}}};
-                const apiConfig = {docName: 'posts', method: 'browse'};
-                const apiImpl = {data: ['id']};
+                const apiUtils = { serializers: { input: { posts: {} } } };
+                const apiConfig = { docName: 'posts', method: 'browse' };
+                const apiImpl = { data: ['id'] };
                 const frame = {};
 
-                return shared.pipeline.STAGES.serialisation.input(apiUtils, apiConfig, apiImpl, frame)
+                return shared.pipeline.STAGES.serialisation
+                    .input(apiUtils, apiConfig, apiImpl, frame)
                     .then(() => {
                         assert.equal(shared.serializers.handle.input.calledOnce, true);
                         assert.deepEqual(shared.serializers.handle.input.args[0][0], {
                             data: ['id'],
                             docName: 'posts',
-                            method: 'browse'
+                            method: 'browse',
                         });
                     });
             });
@@ -103,15 +110,24 @@ describe('Pipeline', function () {
             it('output calls shared serializer output handler', function () {
                 sinon.stub(shared.serializers.handle, 'output').resolves();
 
-                const apiUtils = {serializers: {output: {posts: {}}}};
-                const apiConfig = {docName: 'posts', method: 'browse'};
+                const apiUtils = { serializers: { output: { posts: {} } } };
+                const apiConfig = { docName: 'posts', method: 'browse' };
                 const apiImpl = {};
                 const frame = {};
-                const response = [{id: '1'}];
+                const response = [{ id: '1' }];
 
-                return shared.pipeline.STAGES.serialisation.output(response, apiUtils, apiConfig, apiImpl, frame)
+                return shared.pipeline.STAGES.serialisation
+                    .output(response, apiUtils, apiConfig, apiImpl, frame)
                     .then(() => {
-                        assert.equal(shared.serializers.handle.output.calledOnceWithExactly(response, apiConfig, apiUtils.serializers.output, frame), true);
+                        assert.equal(
+                            shared.serializers.handle.output.calledOnceWithExactly(
+                                response,
+                                apiConfig,
+                                apiUtils.serializers.output,
+                                frame,
+                            ),
+                            true,
+                        );
                     });
             });
         });
@@ -122,8 +138,8 @@ describe('Pipeline', function () {
             beforeEach(function () {
                 apiUtils = {
                     permissions: {
-                        handle: sinon.stub().resolves()
-                    }
+                        handle: sinon.stub().resolves(),
+                    },
                 };
             });
 
@@ -143,69 +159,77 @@ describe('Pipeline', function () {
             it('do it yourself', function () {
                 const apiConfig = {};
                 const apiImpl = {
-                    permissions: sinon.stub().resolves('lol')
+                    permissions: sinon.stub().resolves('lol'),
                 };
                 const frame = {};
 
-                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame)
-                    .then((response) => {
+                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame).then(
+                    (response) => {
                         assert.equal(response, 'lol');
                         assert.equal(apiImpl.permissions.calledOnce, true);
                         assert.equal(apiUtils.permissions.handle.called, false);
-                    });
+                    },
+                );
             });
 
             it('skip stage', function () {
                 const apiConfig = {};
                 const apiImpl = {
-                    permissions: false
+                    permissions: false,
                 };
                 const frame = {};
 
-                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame)
-                    .then(() => {
+                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame).then(
+                    () => {
                         assert.equal(apiUtils.permissions.handle.called, false);
-                    });
+                    },
+                );
             });
 
             it('default', function () {
                 const apiConfig = {};
                 const apiImpl = {
-                    permissions: true
+                    permissions: true,
                 };
                 const frame = {};
 
-                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame)
-                    .then(() => {
+                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame).then(
+                    () => {
                         assert.equal(apiUtils.permissions.handle.calledOnce, true);
-                    });
+                    },
+                );
             });
 
             it('with permission config', function () {
                 const apiConfig = {
-                    docName: 'posts'
+                    docName: 'posts',
                 };
                 const apiImpl = {
                     permissions: {
-                        unsafeAttrs: ['test']
-                    }
+                        unsafeAttrs: ['test'],
+                    },
                 };
                 const frame = {
-                    options: {}
+                    options: {},
                 };
 
-                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame)
-                    .then(() => {
+                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame).then(
+                    () => {
                         assert.equal(apiUtils.permissions.handle.calledOnce, true);
-                        assert.equal(apiUtils.permissions.handle.calledWith(
-                            {
-                                docName: 'posts',
-                                unsafeAttrs: ['test']
-                            },
-                            {
-                                options: {}
-                            }), true);
-                    });
+                        assert.equal(
+                            apiUtils.permissions.handle.calledWith(
+                                {
+                                    docName: 'posts',
+                                    unsafeAttrs: ['test'],
+                                },
+                                {
+                                    options: {},
+                                },
+                            ),
+                            true,
+                        );
+                    },
+                );
             });
 
             it('runs permission before hook', function () {
@@ -213,16 +237,17 @@ describe('Pipeline', function () {
                 const apiConfig = {};
                 const apiImpl = {
                     permissions: {
-                        before
-                    }
+                        before,
+                    },
                 };
                 const frame = {};
 
-                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame)
-                    .then(() => {
+                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame).then(
+                    () => {
                         assert.equal(before.calledOnceWithExactly(frame), true);
                         assert.equal(apiUtils.permissions.handle.calledOnce, true);
-                    });
+                    },
+                );
             });
         });
 
@@ -238,11 +263,10 @@ describe('Pipeline', function () {
             it('runs query when configured', function () {
                 const query = sinon.stub().resolves('result');
                 const frame = {};
-                return shared.pipeline.STAGES.query({}, {}, {query}, frame)
-                    .then((result) => {
-                        assert.equal(result, 'result');
-                        assert.equal(query.calledOnceWithExactly(frame), true);
-                    });
+                return shared.pipeline.STAGES.query({}, {}, { query }, frame).then((result) => {
+                    assert.equal(result, 'result');
+                    assert.equal(query.calledOnceWithExactly(frame), true);
+                });
             });
         });
     });
@@ -259,7 +283,7 @@ describe('Pipeline', function () {
         it('ensure we receive a callable api controller fn', function () {
             const apiController = {
                 add: {},
-                browse: {}
+                browse: {},
             };
 
             const apiUtils = {};
@@ -275,7 +299,7 @@ describe('Pipeline', function () {
 
         it('call api controller fn', function () {
             const apiController = {
-                add: {}
+                add: {},
             };
 
             const apiUtils = {};
@@ -285,20 +309,21 @@ describe('Pipeline', function () {
             shared.pipeline.STAGES.serialisation.input.resolves();
             shared.pipeline.STAGES.permissions.resolves();
             shared.pipeline.STAGES.query.resolves('response');
-            shared.pipeline.STAGES.serialisation.output.callsFake(function (response, _apiUtils, apiConfig, apiImpl, frame) {
-                frame.response = response;
+            shared.pipeline.STAGES.serialisation.output.callsFake(
+                function (response, _apiUtils, apiConfig, apiImpl, frame) {
+                    frame.response = response;
+                },
+            );
+
+            return result.add().then((response) => {
+                assert.equal(response, 'response');
+
+                assert.equal(shared.pipeline.STAGES.validation.input.calledOnce, true);
+                assert.equal(shared.pipeline.STAGES.serialisation.input.calledOnce, true);
+                assert.equal(shared.pipeline.STAGES.permissions.calledOnce, true);
+                assert.equal(shared.pipeline.STAGES.query.calledOnce, true);
+                assert.equal(shared.pipeline.STAGES.serialisation.output.calledOnce, true);
             });
-
-            return result.add()
-                .then((response) => {
-                    assert.equal(response, 'response');
-
-                    assert.equal(shared.pipeline.STAGES.validation.input.calledOnce, true);
-                    assert.equal(shared.pipeline.STAGES.serialisation.input.calledOnce, true);
-                    assert.equal(shared.pipeline.STAGES.permissions.calledOnce, true);
-                    assert.equal(shared.pipeline.STAGES.query.calledOnce, true);
-                    assert.equal(shared.pipeline.STAGES.serialisation.output.calledOnce, true);
-                });
         });
 
         it('supports data and options arguments', function () {
@@ -307,8 +332,8 @@ describe('Pipeline', function () {
                 add: {
                     headers: {},
                     permissions: true,
-                    query: sinon.stub().resolves('response')
-                }
+                    query: sinon.stub().resolves('response'),
+                },
             };
 
             const apiUtils = {};
@@ -318,15 +343,18 @@ describe('Pipeline', function () {
             shared.pipeline.STAGES.serialisation.input.resolves();
             shared.pipeline.STAGES.permissions.resolves();
             shared.pipeline.STAGES.query.resolves('response');
-            shared.pipeline.STAGES.serialisation.output.callsFake(function (response, _apiUtils, apiConfig, apiImpl, frame) {
-                frame.response = response;
-            });
+            shared.pipeline.STAGES.serialisation.output.callsFake(
+                function (response, _apiUtils, apiConfig, apiImpl, frame) {
+                    frame.response = response;
+                },
+            );
 
-            return result.add({posts: [{title: 't'}]}, {context: {internal: true}})
+            return result
+                .add({ posts: [{ title: 't' }] }, { context: { internal: true } })
                 .then(() => {
                     const frame = shared.pipeline.STAGES.validation.input.args[0][3];
-                    assert.deepEqual(frame.data, {posts: [{title: 't'}]});
-                    assert.deepEqual(frame.options.context, {internal: true});
+                    assert.deepEqual(frame.data, { posts: [{ title: 't' }] });
+                    assert.deepEqual(frame.options.context, { internal: true });
                 });
         });
 
@@ -336,8 +364,8 @@ describe('Pipeline', function () {
                 add: {
                     headers: {},
                     permissions: true,
-                    query: sinon.stub().resolves('response')
-                }
+                    query: sinon.stub().resolves('response'),
+                },
             };
 
             const apiUtils = {};
@@ -347,37 +375,37 @@ describe('Pipeline', function () {
             shared.pipeline.STAGES.serialisation.input.resolves();
             shared.pipeline.STAGES.permissions.resolves();
             shared.pipeline.STAGES.query.resolves('response');
-            shared.pipeline.STAGES.serialisation.output.callsFake(function (response, _apiUtils, apiConfig, apiImpl, frame) {
-                frame.response = response;
-            });
+            shared.pipeline.STAGES.serialisation.output.callsFake(
+                function (response, _apiUtils, apiConfig, apiImpl, frame) {
+                    frame.response = response;
+                },
+            );
 
-            return result.add(undefined)
-                .then(() => {
-                    const frame = shared.pipeline.STAGES.validation.input.args[0][3];
-                    assert.deepEqual(frame.options.context, {});
-                });
+            return result.add(undefined).then(() => {
+                const frame = shared.pipeline.STAGES.validation.input.args[0][3];
+                assert.deepEqual(frame.options.context, {});
+            });
         });
 
         it('api controller is fn, not config', function () {
             const apiController = {
                 add() {
                     return Promise.resolve('response');
-                }
+                },
             };
 
             const apiUtils = {};
             const result = shared.pipeline(apiController, apiUtils);
 
-            return result.add()
-                .then((response) => {
-                    assert.equal(response, 'response');
+            return result.add().then((response) => {
+                assert.equal(response, 'response');
 
-                    assert.equal(shared.pipeline.STAGES.validation.input.called, false);
-                    assert.equal(shared.pipeline.STAGES.serialisation.input.called, false);
-                    assert.equal(shared.pipeline.STAGES.permissions.called, false);
-                    assert.equal(shared.pipeline.STAGES.query.called, false);
-                    assert.equal(shared.pipeline.STAGES.serialisation.output.called, false);
-                });
+                assert.equal(shared.pipeline.STAGES.validation.input.called, false);
+                assert.equal(shared.pipeline.STAGES.serialisation.input.called, false);
+                assert.equal(shared.pipeline.STAGES.permissions.called, false);
+                assert.equal(shared.pipeline.STAGES.query.called, false);
+                assert.equal(shared.pipeline.STAGES.serialisation.output.called, false);
+            });
         });
 
         it('uses existing frame instance and generateCacheKeyData', async function () {
@@ -385,9 +413,9 @@ describe('Pipeline', function () {
                 browse: {
                     headers: {},
                     permissions: true,
-                    generateCacheKeyData: sinon.stub().resolves({custom: 'key'}),
-                    query: sinon.stub().resolves('response')
-                }
+                    generateCacheKeyData: sinon.stub().resolves({ custom: 'key' }),
+                    query: sinon.stub().resolves('response'),
+                },
             };
 
             const apiUtils = {};
@@ -398,14 +426,19 @@ describe('Pipeline', function () {
             shared.pipeline.STAGES.serialisation.input.resolves();
             shared.pipeline.STAGES.permissions.resolves();
             shared.pipeline.STAGES.query.resolves('response');
-            shared.pipeline.STAGES.serialisation.output.callsFake(function (response, _apiUtils, apiConfig, apiImpl, frameArg) {
-                frameArg.response = response;
-            });
+            shared.pipeline.STAGES.serialisation.output.callsFake(
+                function (response, _apiUtils, apiConfig, apiImpl, frameArg) {
+                    frameArg.response = response;
+                },
+            );
 
             const response = await result.browse(frame);
 
             assert.equal(response, 'response');
-            assert.equal(apiController.browse.generateCacheKeyData.calledOnceWithExactly(frame), true);
+            assert.equal(
+                apiController.browse.generateCacheKeyData.calledOnceWithExactly(frame),
+                true,
+            );
             assert.equal(frame.apiType, 'content');
             assert.equal(frame.docName, undefined);
             assert.equal(frame.method, 'browse');
@@ -417,8 +450,8 @@ describe('Pipeline', function () {
                 browse: {
                     headers: {},
                     permissions: true,
-                    query: sinon.stub().resolves('response')
-                }
+                    query: sinon.stub().resolves('response'),
+                },
             };
 
             const first = shared.pipeline(apiController, {});
@@ -442,9 +475,9 @@ describe('Pipeline', function () {
                 browse: {
                     cache: {
                         get: sinon.stub().resolves(null),
-                        set: sinon.stub().resolves(true)
-                    }
-                }
+                        set: sinon.stub().resolves(true),
+                    },
+                },
             };
 
             const apiUtils = {};
@@ -454,9 +487,11 @@ describe('Pipeline', function () {
             shared.pipeline.STAGES.serialisation.input.resolves();
             shared.pipeline.STAGES.permissions.resolves();
             shared.pipeline.STAGES.query.resolves('response');
-            shared.pipeline.STAGES.serialisation.output.callsFake(function (response, _apiUtils, apiConfig, apiImpl, frame) {
-                frame.response = response;
-            });
+            shared.pipeline.STAGES.serialisation.output.callsFake(
+                function (response, _apiUtils, apiConfig, apiImpl, frame) {
+                    frame.response = response;
+                },
+            );
 
             const response = await result.browse();
 
@@ -479,9 +514,9 @@ describe('Pipeline', function () {
                 browse: {
                     cache: {
                         get: sinon.stub().resolves('CACHED RESPONSE'),
-                        set: sinon.stub().resolves(true)
-                    }
-                }
+                        set: sinon.stub().resolves(true),
+                    },
+                },
             };
 
             const apiUtils = {};
@@ -491,9 +526,11 @@ describe('Pipeline', function () {
             shared.pipeline.STAGES.serialisation.input.resolves();
             shared.pipeline.STAGES.permissions.resolves();
             shared.pipeline.STAGES.query.resolves('response');
-            shared.pipeline.STAGES.serialisation.output.callsFake(function (response, _apiUtils, apiConfig, apiImpl, frame) {
-                frame.response = response;
-            });
+            shared.pipeline.STAGES.serialisation.output.callsFake(
+                function (response, _apiUtils, apiConfig, apiImpl, frame) {
+                    frame.response = response;
+                },
+            );
 
             const response = await result.browse();
 

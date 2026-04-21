@@ -9,14 +9,14 @@ describe('serializers/input/all', function () {
                 original: {
                     include: 'tags',
                     fields: 'id,status',
-                    formats: 'html'
+                    formats: 'html',
                 },
                 options: {
                     include: 'tags',
                     fields: 'id,status',
                     formats: 'html',
-                    context: {}
-                }
+                    context: {},
+                },
             };
 
             shared.serializers.input.all.all(apiConfig, frame);
@@ -41,11 +41,11 @@ describe('serializers/input/all', function () {
                 const frame = {
                     options: {
                         context: {
-                            internal: true
+                            internal: true,
                         },
                         transacting: true,
-                        forUpdate: true
-                    }
+                        forUpdate: true,
+                    },
                 };
 
                 const apiConfig = {};
@@ -61,11 +61,11 @@ describe('serializers/input/all', function () {
                 const frame = {
                     options: {
                         context: {
-                            user: true
+                            user: true,
                         },
                         transacting: true,
-                        forUpdate: true
-                    }
+                        forUpdate: true,
+                    },
                 };
 
                 const apiConfig = {};

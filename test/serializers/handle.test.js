@@ -10,7 +10,8 @@ describe('serializers/handle', function () {
 
     describe('input', function () {
         it('no api config passed', function () {
-            return shared.serializers.handle.input()
+            return shared.serializers.handle
+                .input()
                 .then(Promise.reject)
                 .catch((err) => {
                     assert.equal(err instanceof errors.IncorrectUsageError, true);
@@ -18,7 +19,8 @@ describe('serializers/handle', function () {
         });
 
         it('no api serializers passed', function () {
-            return shared.serializers.handle.input({})
+            return shared.serializers.handle
+                .input({})
                 .then(Promise.reject)
                 .catch((err) => {
                     assert.equal(err instanceof errors.IncorrectUsageError, true);
@@ -33,26 +35,25 @@ describe('serializers/handle', function () {
                 all: sinon.stub().resolves(),
                 posts: {
                     all: sinon.stub().resolves(),
-                    browse: sinon.stub().resolves()
-                }
+                    browse: sinon.stub().resolves(),
+                },
             };
 
-            const apiConfig = {docName: 'posts', method: 'browse'};
+            const apiConfig = { docName: 'posts', method: 'browse' };
             const frame = {};
 
             const stubsToCheck = [
                 allStub,
                 apiSerializers.all,
                 apiSerializers.posts.all,
-                apiSerializers.posts.browse
+                apiSerializers.posts.browse,
             ];
 
-            return shared.serializers.handle.input(apiConfig, apiSerializers, frame)
-                .then(() => {
-                    stubsToCheck.forEach((stub) => {
-                        sinon.assert.calledOnceWithExactly(stub, apiConfig, frame);
-                    });
+            return shared.serializers.handle.input(apiConfig, apiSerializers, frame).then(() => {
+                stubsToCheck.forEach((stub) => {
+                    sinon.assert.calledOnceWithExactly(stub, apiConfig, frame);
                 });
+            });
         });
 
         it('ensure serializers are called with apiConfig and frame if new shared serializer is added', function () {
@@ -67,11 +68,11 @@ describe('serializers/handle', function () {
                 all: sinon.stub().resolves(),
                 posts: {
                     all: sinon.stub().resolves(),
-                    browse: sinon.stub().resolves()
-                }
+                    browse: sinon.stub().resolves(),
+                },
             };
 
-            const apiConfig = {docName: 'posts', method: 'browse'};
+            const apiConfig = { docName: 'posts', method: 'browse' };
             const frame = {};
 
             const stubsToCheck = [
@@ -79,29 +80,31 @@ describe('serializers/handle', function () {
                 allBrowseStub,
                 apiSerializers.all,
                 apiSerializers.posts.all,
-                apiSerializers.posts.browse
+                apiSerializers.posts.browse,
             ];
 
-            return shared.serializers.handle.input(apiConfig, apiSerializers, frame)
-                .then(() => {
-                    stubsToCheck.forEach((stub) => {
-                        sinon.assert.calledOnceWithExactly(stub, apiConfig, frame);
-                    });
-
-                    sinon.assert.callOrder(allStub, allBrowseStub, apiSerializers.all, apiSerializers.posts.all, apiSerializers.posts.browse);
+            return shared.serializers.handle.input(apiConfig, apiSerializers, frame).then(() => {
+                stubsToCheck.forEach((stub) => {
+                    sinon.assert.calledOnceWithExactly(stub, apiConfig, frame);
                 });
+
+                sinon.assert.callOrder(
+                    allStub,
+                    allBrowseStub,
+                    apiSerializers.all,
+                    apiSerializers.posts.all,
+                    apiSerializers.posts.browse,
+                );
+            });
         });
     });
 
     describe('output', function () {
-        let apiSerializers,
-            response,
-            apiConfig,
-            frame;
+        let apiSerializers, response, apiConfig, frame;
 
         beforeEach(function () {
             response = [];
-            apiConfig = {docName: 'posts', method: 'add'};
+            apiConfig = { docName: 'posts', method: 'add' };
             frame = {};
         });
 
@@ -110,7 +113,8 @@ describe('serializers/handle', function () {
         });
 
         it('no api config passed', function () {
-            return shared.serializers.handle.output([])
+            return shared.serializers.handle
+                .output([])
                 .then(Promise.reject)
                 .catch((err) => {
                     assert.equal(err instanceof errors.IncorrectUsageError, true);
@@ -118,7 +122,8 @@ describe('serializers/handle', function () {
         });
 
         it('no api serializers passed', function () {
-            return shared.serializers.handle.output([], {})
+            return shared.serializers.handle
+                .output([], {})
                 .then(Promise.reject)
                 .catch((err) => {
                     assert.equal(err instanceof errors.IncorrectUsageError, true);
@@ -129,26 +134,33 @@ describe('serializers/handle', function () {
             beforeEach(function () {
                 apiSerializers = {
                     posts: {
-                        add: sinon.stub().resolves()
+                        add: sinon.stub().resolves(),
                     },
                     users: {
-                        add: sinon.stub().resolves()
-                    }
+                        add: sinon.stub().resolves(),
+                    },
                 };
             });
 
             it('correct custom serializer is called', function () {
-                return shared.serializers.handle.output(response, apiConfig, apiSerializers, frame)
+                return shared.serializers.handle
+                    .output(response, apiConfig, apiSerializers, frame)
                     .then(() => {
-                        sinon.assert.calledOnceWithExactly(apiSerializers.posts.add, response, apiConfig, frame);
+                        sinon.assert.calledOnceWithExactly(
+                            apiSerializers.posts.add,
+                            response,
+                            apiConfig,
+                            frame,
+                        );
                         sinon.assert.notCalled(apiSerializers.users.add);
                     });
             });
 
             it('no serializer called if there is no match', function () {
-                apiConfig = {docName: 'posts', method: 'idontexist'};
+                apiConfig = { docName: 'posts', method: 'idontexist' };
 
-                return shared.serializers.handle.output(response, apiConfig, apiSerializers, frame)
+                return shared.serializers.handle
+                    .output(response, apiConfig, apiSerializers, frame)
                     .then(() => {
                         sinon.assert.notCalled(apiSerializers.posts.add);
                         sinon.assert.notCalled(apiSerializers.users.add);
@@ -161,55 +173,66 @@ describe('serializers/handle', function () {
                 apiSerializers = {
                     all: {
                         after: sinon.stub().resolves(),
-                        before: sinon.stub().resolves()
-
+                        before: sinon.stub().resolves(),
                     },
                     posts: {
                         add: sinon.stub().resolves(),
-                        all: sinon.stub().resolves()
-                    }
+                        all: sinon.stub().resolves(),
+                    },
                 };
             });
 
             it('calls custom serializer if one exists', function () {
-                const stubsToCheck = [
-                    apiSerializers.all.before,
-                    apiSerializers.posts.add
-                ];
+                const stubsToCheck = [apiSerializers.all.before, apiSerializers.posts.add];
 
-                return shared.serializers.handle.output(response, apiConfig, apiSerializers, frame)
+                return shared.serializers.handle
+                    .output(response, apiConfig, apiSerializers, frame)
                     .then(() => {
                         stubsToCheck.forEach((stub) => {
                             sinon.assert.calledOnceWithExactly(stub, response, apiConfig, frame);
                         });
 
                         // After has a different call signature... is this a intentional?
-                        sinon.assert.calledOnceWithExactly(apiSerializers.all.after, apiConfig, frame);
+                        sinon.assert.calledOnceWithExactly(
+                            apiSerializers.all.after,
+                            apiConfig,
+                            frame,
+                        );
 
-                        sinon.assert.callOrder(apiSerializers.all.before, apiSerializers.posts.add, apiSerializers.all.after);
+                        sinon.assert.callOrder(
+                            apiSerializers.all.before,
+                            apiSerializers.posts.add,
+                            apiSerializers.all.after,
+                        );
 
                         sinon.assert.notCalled(apiSerializers.posts.all);
                     });
             });
 
             it('calls all serializer if custom one does not exist', function () {
-                apiConfig = {docName: 'posts', method: 'idontexist'};
+                apiConfig = { docName: 'posts', method: 'idontexist' };
 
-                const stubsToCheck = [
-                    apiSerializers.all.before,
-                    apiSerializers.posts.all
-                ];
+                const stubsToCheck = [apiSerializers.all.before, apiSerializers.posts.all];
 
-                return shared.serializers.handle.output(response, apiConfig, apiSerializers, frame)
+                return shared.serializers.handle
+                    .output(response, apiConfig, apiSerializers, frame)
                     .then(() => {
                         stubsToCheck.forEach((stub) => {
                             sinon.assert.calledOnceWithExactly(stub, response, apiConfig, frame);
                         });
 
                         // After has a different call signature... is this a intentional?
-                        sinon.assert.calledOnceWithExactly(apiSerializers.all.after, apiConfig, frame);
+                        sinon.assert.calledOnceWithExactly(
+                            apiSerializers.all.after,
+                            apiConfig,
+                            frame,
+                        );
 
-                        sinon.assert.callOrder(apiSerializers.all.before, apiSerializers.posts.all, apiSerializers.all.after);
+                        sinon.assert.callOrder(
+                            apiSerializers.all.before,
+                            apiSerializers.posts.all,
+                            apiSerializers.all.after,
+                        );
 
                         sinon.assert.notCalled(apiSerializers.posts.add);
                     });
@@ -221,36 +244,40 @@ describe('serializers/handle', function () {
                 apiSerializers = {
                     all: {
                         after: sinon.stub().resolves(),
-                        before: sinon.stub().resolves()
-
+                        before: sinon.stub().resolves(),
                     },
                     default: {
                         add: sinon.stub().resolves(),
-                        all: sinon.stub().resolves()
-
+                        all: sinon.stub().resolves(),
                     },
                     posts: {
-                        add: sinon.stub().resolves()
-                    }
+                        add: sinon.stub().resolves(),
+                    },
                 };
             });
 
             it('uses best match serializer when custom match exists', function () {
-                const stubsToCheck = [
-                    apiSerializers.all.before,
-                    apiSerializers.posts.add
-                ];
+                const stubsToCheck = [apiSerializers.all.before, apiSerializers.posts.add];
 
-                return shared.serializers.handle.output(response, apiConfig, apiSerializers, frame)
+                return shared.serializers.handle
+                    .output(response, apiConfig, apiSerializers, frame)
                     .then(() => {
                         stubsToCheck.forEach((stub) => {
                             sinon.assert.calledOnceWithExactly(stub, response, apiConfig, frame);
                         });
 
                         // After has a different call signature... is this a intentional?
-                        sinon.assert.calledOnceWithExactly(apiSerializers.all.after, apiConfig, frame);
+                        sinon.assert.calledOnceWithExactly(
+                            apiSerializers.all.after,
+                            apiConfig,
+                            frame,
+                        );
 
-                        sinon.assert.callOrder(apiSerializers.all.before, apiSerializers.posts.add, apiSerializers.all.after);
+                        sinon.assert.callOrder(
+                            apiSerializers.all.before,
+                            apiSerializers.posts.add,
+                            apiSerializers.all.after,
+                        );
 
                         sinon.assert.notCalled(apiSerializers.default.add);
                         sinon.assert.notCalled(apiSerializers.default.all);
@@ -258,23 +285,29 @@ describe('serializers/handle', function () {
             });
 
             it('uses nearest fallback serializer when custom match does not exist', function () {
-                apiConfig = {docName: 'posts', method: 'idontexist'};
+                apiConfig = { docName: 'posts', method: 'idontexist' };
 
-                const stubsToCheck = [
-                    apiSerializers.all.before,
-                    apiSerializers.default.all
-                ];
+                const stubsToCheck = [apiSerializers.all.before, apiSerializers.default.all];
 
-                return shared.serializers.handle.output(response, apiConfig, apiSerializers, frame)
+                return shared.serializers.handle
+                    .output(response, apiConfig, apiSerializers, frame)
                     .then(() => {
                         stubsToCheck.forEach((stub) => {
                             sinon.assert.calledOnceWithExactly(stub, response, apiConfig, frame);
                         });
 
                         // After has a different call signature... is this a intentional?
-                        sinon.assert.calledOnceWithExactly(apiSerializers.all.after, apiConfig, frame);
+                        sinon.assert.calledOnceWithExactly(
+                            apiSerializers.all.after,
+                            apiConfig,
+                            frame,
+                        );
 
-                        sinon.assert.callOrder(apiSerializers.all.before, apiSerializers.default.all, apiSerializers.all.after);
+                        sinon.assert.callOrder(
+                            apiSerializers.all.before,
+                            apiSerializers.default.all,
+                            apiSerializers.all.after,
+                        );
 
                         sinon.assert.notCalled(apiSerializers.posts.add);
                         sinon.assert.notCalled(apiSerializers.default.add);
@@ -287,37 +320,41 @@ describe('serializers/handle', function () {
                 apiSerializers = {
                     all: {
                         after: sinon.stub().resolves(),
-                        before: sinon.stub().resolves()
-
+                        before: sinon.stub().resolves(),
                     },
                     default: {
                         add: sinon.stub().resolves(),
-                        all: sinon.stub().resolves()
-
+                        all: sinon.stub().resolves(),
                     },
                     posts: {
                         add: sinon.stub().resolves(),
-                        all: sinon.stub().resolves()
-                    }
+                        all: sinon.stub().resolves(),
+                    },
                 };
             });
 
             it('uses best match serializer when custom match exists', function () {
-                const stubsToCheck = [
-                    apiSerializers.all.before,
-                    apiSerializers.posts.add
-                ];
+                const stubsToCheck = [apiSerializers.all.before, apiSerializers.posts.add];
 
-                return shared.serializers.handle.output(response, apiConfig, apiSerializers, frame)
+                return shared.serializers.handle
+                    .output(response, apiConfig, apiSerializers, frame)
                     .then(() => {
                         stubsToCheck.forEach((stub) => {
                             sinon.assert.calledOnceWithExactly(stub, response, apiConfig, frame);
                         });
 
                         // After has a different call signature... is this a intentional?
-                        sinon.assert.calledOnceWithExactly(apiSerializers.all.after, apiConfig, frame);
+                        sinon.assert.calledOnceWithExactly(
+                            apiSerializers.all.after,
+                            apiConfig,
+                            frame,
+                        );
 
-                        sinon.assert.callOrder(apiSerializers.all.before, apiSerializers.posts.add, apiSerializers.all.after);
+                        sinon.assert.callOrder(
+                            apiSerializers.all.before,
+                            apiSerializers.posts.add,
+                            apiSerializers.all.after,
+                        );
 
                         sinon.assert.notCalled(apiSerializers.posts.all);
                         sinon.assert.notCalled(apiSerializers.default.add);
@@ -326,23 +363,29 @@ describe('serializers/handle', function () {
             });
 
             it('uses nearest fallback serializer when custom match does not exist', function () {
-                apiConfig = {docName: 'posts', method: 'idontexist'};
+                apiConfig = { docName: 'posts', method: 'idontexist' };
 
-                const stubsToCheck = [
-                    apiSerializers.all.before,
-                    apiSerializers.posts.all
-                ];
+                const stubsToCheck = [apiSerializers.all.before, apiSerializers.posts.all];
 
-                return shared.serializers.handle.output(response, apiConfig, apiSerializers, frame)
+                return shared.serializers.handle
+                    .output(response, apiConfig, apiSerializers, frame)
                     .then(() => {
                         stubsToCheck.forEach((stub) => {
                             sinon.assert.calledOnceWithExactly(stub, response, apiConfig, frame);
                         });
 
                         // After has a different call signature... is this a intentional?
-                        sinon.assert.calledOnceWithExactly(apiSerializers.all.after, apiConfig, frame);
+                        sinon.assert.calledOnceWithExactly(
+                            apiSerializers.all.after,
+                            apiConfig,
+                            frame,
+                        );
 
-                        sinon.assert.callOrder(apiSerializers.all.before, apiSerializers.posts.all, apiSerializers.all.after);
+                        sinon.assert.callOrder(
+                            apiSerializers.all.before,
+                            apiSerializers.posts.all,
+                            apiSerializers.all.after,
+                        );
 
                         sinon.assert.notCalled(apiSerializers.posts.add);
                         sinon.assert.notCalled(apiSerializers.default.add);
@@ -356,54 +399,65 @@ describe('serializers/handle', function () {
                 apiSerializers = {
                     all: {
                         after: sinon.stub().resolves(),
-                        before: sinon.stub().resolves()
-
+                        before: sinon.stub().resolves(),
                     },
                     default: {
                         add: sinon.stub().resolves(),
-                        all: sinon.stub().resolves()
-                    }
+                        all: sinon.stub().resolves(),
+                    },
                 };
             });
 
             it('correctly calls default serializer when no custom one is set', function () {
-                const stubsToCheck = [
-                    apiSerializers.all.before,
-                    apiSerializers.default.add
-                ];
+                const stubsToCheck = [apiSerializers.all.before, apiSerializers.default.add];
 
-                return shared.serializers.handle.output(response, apiConfig, apiSerializers, frame)
+                return shared.serializers.handle
+                    .output(response, apiConfig, apiSerializers, frame)
                     .then(() => {
                         stubsToCheck.forEach((stub) => {
                             sinon.assert.calledOnceWithExactly(stub, response, apiConfig, frame);
                         });
 
                         // After has a different call signature... is this a intentional?
-                        sinon.assert.calledOnceWithExactly(apiSerializers.all.after, apiConfig, frame);
+                        sinon.assert.calledOnceWithExactly(
+                            apiSerializers.all.after,
+                            apiConfig,
+                            frame,
+                        );
 
-                        sinon.assert.callOrder(apiSerializers.all.before, apiSerializers.default.add, apiSerializers.all.after);
+                        sinon.assert.callOrder(
+                            apiSerializers.all.before,
+                            apiSerializers.default.add,
+                            apiSerializers.all.after,
+                        );
                         sinon.assert.notCalled(apiSerializers.default.all);
                     });
             });
 
             it('correctly uses fallback serializer when there is no default match', function () {
-                apiConfig = {docName: 'posts', method: 'idontexist'};
+                apiConfig = { docName: 'posts', method: 'idontexist' };
 
-                const stubsToCheck = [
-                    apiSerializers.all.before,
-                    apiSerializers.default.all
-                ];
+                const stubsToCheck = [apiSerializers.all.before, apiSerializers.default.all];
 
-                return shared.serializers.handle.output(response, apiConfig, apiSerializers, frame)
+                return shared.serializers.handle
+                    .output(response, apiConfig, apiSerializers, frame)
                     .then(() => {
                         stubsToCheck.forEach((stub) => {
                             sinon.assert.calledOnceWithExactly(stub, response, apiConfig, frame);
                         });
 
                         // After has a different call signature... is this a intentional?
-                        sinon.assert.calledOnceWithExactly(apiSerializers.all.after, apiConfig, frame);
+                        sinon.assert.calledOnceWithExactly(
+                            apiSerializers.all.after,
+                            apiConfig,
+                            frame,
+                        );
 
-                        sinon.assert.callOrder(apiSerializers.all.before, apiSerializers.default.all, apiSerializers.all.after);
+                        sinon.assert.callOrder(
+                            apiSerializers.all.before,
+                            apiSerializers.default.all,
+                            apiSerializers.all.after,
+                        );
                         sinon.assert.notCalled(apiSerializers.default.add);
                     });
             });

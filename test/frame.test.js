@@ -14,17 +14,17 @@ describe('Frame', function () {
             'apiType',
             'docName',
             'method',
-            'response'
+            'response',
         ]);
     });
 
     describe('fn: configure', function () {
         it('no transform', function () {
             const original = {
-                context: {user: 'id'},
-                body: {posts: []},
-                params: {id: 'id'},
-                query: {include: 'tags', filter: 'type:post', soup: 'yumyum'}
+                context: { user: 'id' },
+                body: { posts: [] },
+                params: { id: 'id' },
+                query: { include: 'tags', filter: 'type:post', soup: 'yumyum' },
             };
 
             const frame = new shared.Frame(original);
@@ -42,16 +42,16 @@ describe('Frame', function () {
 
         it('transform with query', function () {
             const original = {
-                context: {user: 'id'},
-                body: {posts: []},
-                params: {id: 'id'},
-                query: {include: 'tags', filter: 'type:post', soup: 'yumyum'}
+                context: { user: 'id' },
+                body: { posts: [] },
+                params: { id: 'id' },
+                query: { include: 'tags', filter: 'type:post', soup: 'yumyum' },
             };
 
             const frame = new shared.Frame(original);
 
             frame.configure({
-                options: ['include', 'filter', 'id']
+                options: ['include', 'filter', 'id'],
             });
 
             assert.ok(frame.options.context.user);
@@ -65,16 +65,16 @@ describe('Frame', function () {
 
         it('transform', function () {
             const original = {
-                context: {user: 'id'},
+                context: { user: 'id' },
                 options: {
-                    slug: 'slug'
-                }
+                    slug: 'slug',
+                },
             };
 
             const frame = new shared.Frame(original);
 
             frame.configure({
-                options: ['include', 'filter', 'slug']
+                options: ['include', 'filter', 'slug'],
             });
 
             assert.ok(frame.options.context.user);
@@ -83,17 +83,17 @@ describe('Frame', function () {
 
         it('transform with data', function () {
             const original = {
-                context: {user: 'id'},
+                context: { user: 'id' },
                 options: {
-                    id: 'id'
+                    id: 'id',
                 },
-                body: {}
+                body: {},
             };
 
             const frame = new shared.Frame(original);
 
             frame.configure({
-                data: ['id']
+                data: ['id'],
             });
 
             assert.ok(frame.options.context.user);
@@ -103,10 +103,10 @@ describe('Frame', function () {
 
         it('supports options/data selectors as functions', function () {
             const original = {
-                context: {user: 'id'},
-                query: {include: 'tags'},
-                params: {slug: 'abc'},
-                options: {id: 'id'}
+                context: { user: 'id' },
+                query: { include: 'tags' },
+                params: { slug: 'abc' },
+                options: { id: 'id' },
             };
 
             const frame = new shared.Frame(original);
@@ -117,7 +117,7 @@ describe('Frame', function () {
                 },
                 data() {
                     return ['slug', 'id'];
-                }
+                },
             });
 
             assert.equal(frame.options.include, 'tags');
@@ -133,10 +133,10 @@ describe('Frame', function () {
             frame.setHeader('X-Test', '1');
 
             const headers = frame.getHeaders();
-            assert.deepEqual(headers, {'X-Test': '1'});
+            assert.deepEqual(headers, { 'X-Test': '1' });
 
             headers['X-Test'] = '2';
-            assert.deepEqual(frame.getHeaders(), {'X-Test': '1'});
+            assert.deepEqual(frame.getHeaders(), { 'X-Test': '1' });
         });
     });
 });

@@ -1,30 +1,25 @@
 {
   "name": "@tryghost/api-framework",
   "version": "3.0.3",
+  "author": "Ghost Foundation",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/framework.git",
     "directory": "packages/api-framework"
   },
-  "author": "Ghost Foundation",
-  "publishConfig": {
-    "access": "public"
-  },
-  "main": "index.js",
-  "scripts": {
-    "dev": "echo \"Implement me!\"",
-    "test:unit": "NODE_ENV=testing vitest run --coverage --config ../../vitest.config.ts",
-    "test": "yarn test:unit",
-    "lint:code": "eslint *.js lib/ --ext .js --cache",
-    "lint": "yarn lint:code && yarn lint:test",
-    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache"
-  },
   "files": [
     "index.js",
     "lib"
   ],
-  "devDependencies": {
-    "sinon": "21.1.2"
+  "main": "index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test:unit": "NODE_ENV=testing vitest run --coverage --config ../../vitest.config.ts",
+    "test": "yarn test:unit",
+    "lint": "oxlint -c ../../.oxlintrc.json ."
   },
   "dependencies": {
     "@tryghost/debug": "^2.0.3",
@@ -33,5 +28,8 @@
     "@tryghost/tpl": "^2.0.3",
     "@tryghost/validator": "^2.0.3",
     "lodash": "4.18.1"
+  },
+  "devDependencies": {
+    "sinon": "21.1.2"
   }
 }
