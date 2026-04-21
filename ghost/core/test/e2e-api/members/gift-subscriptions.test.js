@@ -4,6 +4,7 @@ const {agentProvider, mockManager, fixtureManager, configUtils, matchers} = requ
 const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
 const models = require('../../../core/server/models');
 const membersService = require('../../../core/server/services/members');
+const tiersService = require('../../../core/server/services/tiers');
 const urlUtils = require('../../../core/shared/url-utils');
 const {anyErrorId} = matchers;
 
@@ -993,30 +994,33 @@ describe('Gift Subscriptions', function () {
     });
 
     describe('Continue a gift subscription as paid subscription', function () {
-        it('Passes remaining gift days as trial_period_days when gift member upgrades', async function () {
-            const paidTier = await getPaidTier();
-            const email = 'gift-upgrade-trial@example.com';
+        let continueSequence = 0;
 
-            // Create a member and redeem a gift for them
-            const member = await membersService.api.members.create({email, name: 'Gift Upgrader'});
+        async function setupGiftMember({cadence = 'year', consumesInDays = 30, tierId, giftTierId} = {}) {
+            continueSequence += 1;
+            const paidTier = await getPaidTier();
+            const effectiveTierId = tierId ?? paidTier.id;
+            const effectiveGiftTierId = giftTierId ?? effectiveTierId;
+            const email = `gift-continue-${continueSequence}@example.com`;
+
+            const member = await membersService.api.members.create({email, name: `Gift Continuer ${continueSequence}`});
             const identityToken = await membersService.api.getMemberIdentityToken(member.get('transient_id'));
 
-            // Create a redeemed gift that expires 30 days from now
             const now = new Date();
             const consumesAt = new Date(now);
-            consumesAt.setDate(consumesAt.getDate() + 30);
+            consumesAt.setDate(consumesAt.getDate() + consumesInDays);
 
             const gift = await models.Gift.add({
-                token: 'gift-upgrade-trial-token',
-                buyer_email: 'gift-buyer-upgrade@example.com',
+                token: `gift-continue-token-${continueSequence}`,
+                buyer_email: `gift-continue-buyer-${continueSequence}@example.com`,
                 redeemer_member_id: member.id,
-                tier_id: paidTier.id,
-                cadence: 'year',
+                tier_id: effectiveGiftTierId,
+                cadence,
                 duration: 1,
                 currency: 'usd',
                 amount: 5000,
-                stripe_checkout_session_id: 'cs_gift_upgrade_trial',
-                stripe_payment_intent_id: 'pi_gift_upgrade_trial',
+                stripe_checkout_session_id: `cs_gift_continue_${continueSequence}`,
+                stripe_payment_intent_id: `pi_gift_continue_${continueSequence}`,
                 consumes_at: consumesAt,
                 expires_at: new Date('2030-01-01T00:00:00.000Z'),
                 status: 'redeemed',
@@ -1024,23 +1028,26 @@ describe('Gift Subscriptions', function () {
                 redeemed_at: now
             });
 
-            // Set the member as a gift member with the product
             await models.Member.edit({
                 status: 'gift',
                 products: [{
-                    id: paidTier.id,
+                    id: effectiveTierId,
                     expiry_at: consumesAt
                 }]
             }, {id: member.id});
 
             await DomainEvents.allSettled();
 
-            // Create a subscription checkout session as the gift member
+            return {member, identityToken, gift, paidTier, consumesAt};
+        }
+
+        it('applies remaining gift days as trial and continues on the same tier/cadence as gift', async function () {
+            const {identityToken, gift, paidTier} = await setupGiftMember({cadence: 'month', consumesInDays: 30});
+
             await membersAgent.post('/api/create-stripe-checkout-session/')
                 .body({
                     type: 'subscription',
-                    tierId: paidTier.id,
-                    cadence: 'year',
+                    continueFromGift: true,
                     identity: identityToken,
                     metadata: {
                         checkoutType: 'upgrade'
@@ -1052,14 +1059,99 @@ describe('Gift Subscriptions', function () {
 
             assert.ok(checkoutSession, 'Checkout session should be created');
 
-            // Verify that trial_period_days is set to approximately 30 days
             const trialDays = checkoutSession.subscription_data?.trial_period_days;
             assert.ok(trialDays, 'Should have trial_period_days set');
             assert.ok(trialDays >= 29 && trialDays <= 31, `Trial days should be approximately 30, got ${trialDays}`);
 
-            // Verify the gift is still in redeemed state (not yet consumed)
+            const priceId = checkoutSession.subscription_data?.items?.[0]?.plan;
+            assert.ok(priceId, 'Checkout session should carry a Stripe price');
+
+            const price = stripeMocker.prices.find(p => p.id === priceId);
+            assert.ok(price, 'Stripe price should exist in mocker');
+            assert.equal(price.recurring?.interval, 'month', 'Should use the gift\'s cadence');
+
             const giftRecord = await models.Gift.findOne({token: gift.get('token')}, {require: true});
             assert.equal(giftRecord.get('status'), 'redeemed');
+            assert.equal(giftRecord.get('tier_id'), paidTier.id);
+        });
+
+        it('Returns 401 for unauthenticated members', async function () {
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({
+                    type: 'subscription',
+                    continueFromGift: true,
+                    metadata: {
+                        checkoutType: 'upgrade'
+                    }
+                })
+                .expectStatus(401);
+        });
+
+        it('Returns 400 when member is not a gift member', async function () {
+            const paidTier = await getPaidTier();
+            const email = 'gift-continue-not-gift@example.com';
+
+            const member = await membersService.api.members.create({email, name: 'Not A Gift Member'});
+            const identityToken = await membersService.api.getMemberIdentityToken(member.get('transient_id'));
+
+            // Deliberately leave the member as a free member — no status change, no gift record.
+            // Verify we still reject even if a stale gift exists on another member.
+            await models.Gift.add({
+                token: 'gift-continue-unrelated-token',
+                buyer_email: 'gift-continue-unrelated@example.com',
+                redeemer_member_id: null,
+                tier_id: paidTier.id,
+                cadence: 'year',
+                duration: 1,
+                currency: 'usd',
+                amount: 5000,
+                stripe_checkout_session_id: 'cs_gift_continue_unrelated',
+                stripe_payment_intent_id: 'pi_gift_continue_unrelated',
+                consumes_at: null,
+                expires_at: new Date('2030-01-01T00:00:00.000Z'),
+                status: 'purchased',
+                purchased_at: new Date()
+            });
+
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({
+                    type: 'subscription',
+                    continueFromGift: true,
+                    identity: identityToken,
+                    metadata: {
+                        checkoutType: 'upgrade'
+                    }
+                })
+                .expectStatus(400);
+        });
+
+        it('Returns 403 when gift tier is archived', async function () {
+            const archivedTier = await tiersService.api.add({
+                name: `Archived Gift Tier ${continueSequence + 1}`,
+                type: 'paid',
+                currency: 'USD',
+                monthlyPrice: 500,
+                yearlyPrice: 5000
+            });
+
+            const {identityToken} = await setupGiftMember({
+                cadence: 'year',
+                consumesInDays: 30,
+                tierId: archivedTier.id.toHexString()
+            });
+
+            await tiersService.api.edit(archivedTier.id.toHexString(), {status: 'archived'});
+
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({
+                    type: 'subscription',
+                    continueFromGift: true,
+                    identity: identityToken,
+                    metadata: {
+                        checkoutType: 'upgrade'
+                    }
+                })
+                .expectStatus(403);
         });
     });
 });

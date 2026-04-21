@@ -64,6 +64,7 @@ class PaymentsService {
      * @param {Tier.Cadence} params.cadence
      * @param {Offer} [params.offer]
      * @param {Member} [params.member]
+     * @param {import('../../../gifts/gift').Gift} [params.gift]
      * @param {Object.<string, any>} [params.metadata]
      * @param {string} params.successUrl
      * @param {string} params.cancelUrl
@@ -71,7 +72,7 @@ class PaymentsService {
      *
      * @returns {Promise<URL>}
      */
-    async getPaymentLink({tier, cadence, offer, member, metadata, successUrl, cancelUrl, email}) {
+    async getPaymentLink({tier, cadence, offer, member, gift, metadata, successUrl, cancelUrl, email}) {
         let coupon = null;
         let trialDays = null;
         if (offer) {
@@ -92,17 +93,13 @@ class PaymentsService {
             }
         }
 
-        // If active gift subscription, add remaining days as trial
-        if (trialDays === null && member) {
-            const gift = await this.giftService.service.getRedeemedByMember(member.id);
-
-            if (gift && gift.consumesAt) {
-                const now = new Date();
-                const diffMs = gift.consumesAt.getTime() - now.getTime();
-                const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-                if (diffDays > 0) {
-                    trialDays = Math.min(diffDays, 730); // Stripe max trial period
-                }
+        // If continuing from a gift subscription, add gift remaining days as trial
+        if (trialDays === null && gift && gift.consumesAt) {
+            const now = new Date();
+            const diffMs = gift.consumesAt.getTime() - now.getTime();
+            const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+            if (diffDays > 0) {
+                trialDays = Math.min(diffDays, 730); // Stripe max trial period
             }
         }
 

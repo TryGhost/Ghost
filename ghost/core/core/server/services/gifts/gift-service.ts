@@ -335,14 +335,11 @@ export class GiftService {
         return redeemed;
     }
 
-    async getRedeemedByMember(memberId: string): Promise<Gift | null> {
-        const gift = await this.deps.giftRepository.getRedeemedByMember(memberId);
-
-        if (!gift) {
+    async getActiveGift(memberId: string): Promise<Gift | null> {
+        if (!memberId) {
             return null;
         }
-
-        return gift;
+        return this.deps.giftRepository.getActiveGift(memberId);
     }
 
     async refund(paymentIntentId: string): Promise<boolean> {

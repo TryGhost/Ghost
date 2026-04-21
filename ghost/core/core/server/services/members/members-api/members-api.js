@@ -220,7 +220,8 @@ module.exports = function MembersAPI({
         settingsHelpers,
         sentry,
         urlUtils,
-        emailAddressService
+        emailAddressService,
+        giftService
     });
 
     const wellKnownController = new WellKnownController({
