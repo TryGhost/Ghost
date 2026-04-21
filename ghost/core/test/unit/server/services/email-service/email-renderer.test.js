@@ -1439,8 +1439,7 @@ describe('Email renderer', function () {
             assert(response.html.includes('http://feedback-link.com/?score=0'));
         });
 
-        it('includes share links for public posts', async function () {
-            const post = createModel(basePost);
+        it('includes share links for posts with public, members, paid, and tiers visibility', async function () {
             const newsletter = createModel({
                 header_image: null,
                 name: 'Test Newsletter',
@@ -1452,21 +1451,33 @@ describe('Email renderer', function () {
             const segment = null;
             const options = {};
 
-            const response = await emailRenderer.renderBody(
-                post,
-                newsletter,
-                segment,
-                options
-            );
+            for (const visibility of ['public', 'members', 'paid', 'tiers']) {
+                const post = createModel({
+                    ...basePost,
+                    visibility
+                });
 
-            assert(response.html.includes('href="http://example.com/#/share"'));
-            assert(response.html.includes('>Share</p>'));
+                const response = await emailRenderer.renderBody(
+                    post,
+                    newsletter,
+                    segment,
+                    options
+                );
+
+                assert(response.html.includes('href="http://example.com/#/share"'), `Expected share link for "${visibility}" visibility`);
+                assert(response.html.includes('>Share</p>'), `Expected share button text for "${visibility}" visibility`);
+            }
         });
 
-        it('does not include share links for non-public posts', async function () {
+        it('does not include share links for email-only posts', async function () {
             const post = createModel({
                 ...basePost,
-                visibility: 'members'
+                posts_meta: createModel({
+                    feature_image_alt: null,
+                    feature_image_caption: null,
+                    email_only: true
+                }),
+                loaded: ['posts_meta']
             });
             const newsletter = createModel({
                 header_image: null,
@@ -2585,18 +2596,21 @@ describe('Email renderer', function () {
             assert.equal(data.post.publishedAt, '1 Jan 1970');
         });
 
-        it('includes share URL for public posts', async function () {
+        it('includes share URL for posts with public, members, paid, and tiers visibility', async function () {
             const html = '';
-            const post = createModel({
-                posts_meta: createModel({}),
-                loaded: ['posts_meta'],
-                visibility: 'public'
-            });
             const newsletter = createModel({
                 show_share_button: true
             });
-            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
-            assert.equal(data.post.shareUrl, 'http://example.com/#/share');
+
+            for (const visibility of ['public', 'members', 'paid', 'tiers']) {
+                const post = createModel({
+                    posts_meta: createModel({}),
+                    loaded: ['posts_meta'],
+                    visibility
+                });
+                const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+                assert.equal(data.post.shareUrl, 'http://example.com/#/share', `Expected share URL for "${visibility}" visibility`);
+            }
         });
 
         it('calculates footer feedback button widths based on visible actions', async function () {
@@ -2632,21 +2646,19 @@ describe('Email renderer', function () {
             assert.equal(data.post.shareUrl, null);
         });
 
-        it('does not include share URL for non-public posts', async function () {
+        it('does not include share URL for email-only posts', async function () {
             const html = '';
+            const post = createModel({
+                posts_meta: createModel({email_only: true}),
+                loaded: ['posts_meta'],
+                visibility: 'members'
+            });
             const newsletter = createModel({
                 show_share_button: true
             });
 
-            for (const visibility of ['members', 'paid', 'tiers']) {
-                const post = createModel({
-                    posts_meta: createModel({}),
-                    loaded: ['posts_meta'],
-                    visibility
-                });
-                const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
-                assert.equal(data.post.shareUrl, null, `Expected no share URL for "${visibility}" visibility`);
-            }
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.post.shareUrl, null);
         });
 
         it('show feature image if post has feature image', async function () {
