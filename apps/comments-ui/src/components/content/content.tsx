@@ -2,6 +2,7 @@ import CTABox from './cta-box';
 import Comment from './comment';
 import CommentingDisabledBox from './commenting-disabled-box';
 import ContentTitle from './content-title';
+import FocusedThread from './focused-thread';
 import MainForm from './forms/main-form';
 import Pagination from './pagination';
 import {ROOT_DIV_ID} from '../../utils/constants';
@@ -73,7 +74,7 @@ function onIframeResize(
 
 const Content = () => {
     const labs = useLabs();
-    const {pagination, comments, commentCount, title, showCount, commentsIsLoading, t, dispatchAction, commentIdToScrollTo, showMissingCommentNotice, isMember, isPaidOnly, hasRequiredTier, isCommentingDisabled} = useAppContext();
+    const {pagination, comments, commentCount, title, showCount, commentsIsLoading, t, dispatchAction, commentIdToScrollTo, showMissingCommentNotice, focusedThreadId, isMember, isPaidOnly, hasRequiredTier, isCommentingDisabled} = useAppContext();
     const containerRef = useRef<HTMLDivElement>(null);
 
     const scrollToComment = useCallback((element: HTMLElement, commentId: string) => {
@@ -175,6 +176,21 @@ const Content = () => {
     const showCtaBox = !canComment && !isCommentingDisabled;
 
     const commentsComponents = comments.map(comment => <Comment key={comment.id} comment={comment} />);
+
+    // Focused thread mode: show only a single comment's sub-thread
+    if (focusedThreadId) {
+        return (
+            <>
+                <ContentTitle count={commentCount} showCount={showCount} title={title}/>
+                <div ref={containerRef} className={`z-10 transition-opacity duration-100 ${commentsIsLoading ? 'opacity-50' : ''}`} data-testid="comment-elements">
+                    <FocusedThread comments={comments} focusedThreadId={focusedThreadId} />
+                </div>
+                {
+                    labs?.testFlag ? <div data-testid="this-comes-from-a-flag" style={{display: 'none'}}></div> : null
+                }
+            </>
+        );
+    }
 
     return (
         <>

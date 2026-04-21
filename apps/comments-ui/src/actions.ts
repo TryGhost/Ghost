@@ -116,16 +116,20 @@ async function addComment({state, api, data: comment}: {state: EditableAppContex
 }
 
 async function addReply({state, api, data: {reply, parent}}: {state: EditableAppContext, api: GhostApi, data: {reply: any, parent: any}}) {
+    // parent_id must always refer to a top-level comment, not a nested reply.
+    // In focused-thread mode, `parent` can be a reply itself, so resolve upward.
+    const topLevelId = parent.parent_id || parent.id;
+
     const data = await api.comments.add({
-        comment: {...reply, parent_id: parent.id}
+        comment: {...reply, parent_id: topLevelId}
     });
     const newComment = data.comments[0];
 
-    const allReplies = await api.comments.replies({commentId: parent.id, limit: 'all'});
+    const allReplies = await api.comments.replies({commentId: topLevelId, limit: 'all'});
 
     return {
         comments: state.comments.map((c) => {
-            if (c.id === parent.id) {
+            if (c.id === topLevelId) {
                 return {
                     ...c,
                     replies: allReplies.comments,
@@ -407,27 +411,7 @@ function closePopup() {
     };
 }
 
-async function openCommentForm({data: newForm, api, state}: {data: OpenCommentForm, api: GhostApi, state: EditableAppContext}) {
-    let otherStateChanges = {};
-
-    // When opening a reply form, load all replies for the parent comment so the
-    // reply appears in the correct position after posting
-    const topLevelCommentId = newForm.parent_id || newForm.id;
-    if (newForm.type === 'reply' && !state.openCommentForms.some(f => f.id === topLevelCommentId || f.parent_id === topLevelCommentId)) {
-        const comment = state.comments.find(c => c.id === topLevelCommentId);
-
-        if (comment) {
-            try {
-                const newCommentsState = await loadMoreReplies({state, api, data: {comment, limit: 'all'}, isReply: true});
-                otherStateChanges = {...otherStateChanges, ...newCommentsState};
-            } catch (e) {
-                // If loading replies fails, continue anyway - the form should still open
-                // and replies will be loaded when the user submits
-                console.error('[Comments] Failed to load replies before opening form:', e); // eslint-disable-line no-console
-            }
-        }
-    }
-
+async function openCommentForm({data: newForm, state}: {data: OpenCommentForm, api: GhostApi, state: EditableAppContext}) {
     // We want to keep the number of displayed forms to a minimum so when opening a
     // new form, we close any existing forms that are empty or have had no changes
     const openFormsAfterAutoclose = state.openCommentForms.filter(form => form.hasUnsavedChanges);
@@ -437,9 +421,9 @@ async function openCommentForm({data: newForm, api, state}: {data: OpenCommentFo
     const openFormIndexForId = openFormsAfterAutoclose.findIndex(form => form.id === newForm.id);
     if (openFormIndexForId > -1) {
         openFormsAfterAutoclose[openFormIndexForId] = newForm;
-        return {openCommentForms: openFormsAfterAutoclose, ...otherStateChanges};
+        return {openCommentForms: openFormsAfterAutoclose};
     } else {
-        return {openCommentForms: [...openFormsAfterAutoclose, newForm], ...otherStateChanges};
+        return {openCommentForms: [...openFormsAfterAutoclose, newForm]};
     }
 }
 
@@ -486,13 +470,23 @@ function setScrollTarget({data: commentId}: {data: string | null}) {
     return {commentIdToScrollTo: commentId};
 }
 
+function focusThread({data: commentId}: {data: string}) {
+    return {focusedThreadId: commentId};
+}
+
+function unfocusThread() {
+    return {focusedThreadId: null};
+}
+
 // Sync actions make use of setState((currentState) => newState), to avoid 'race' conditions
 export const SyncActions = {
     openPopup,
     closePopup,
     closeCommentForm,
     setCommentFormHasUnsavedChanges,
-    setScrollTarget
+    setScrollTarget,
+    focusThread,
+    unfocusThread
 };
 
 export type SyncActionType = keyof typeof SyncActions;

@@ -162,7 +162,6 @@ type FormHeaderProps = {
     show: boolean;
     name: string | null;
     expertise: string | null;
-    replyingToId?: string;
     replyingToText?: string;
     editName: () => void;
     editExpertise: () => void;
@@ -379,7 +378,6 @@ const FormWrapper: React.FC<FormWrapperProps> = ({
                             editName={editName}
                             expertise={memberExpertise}
                             name={memberName}
-                            replyingToId={openForm?.in_reply_to_id}
                             replyingToText={openForm?.in_reply_to_snippet}
                             show={isOpen}
                         />
