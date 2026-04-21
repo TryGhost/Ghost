@@ -1,4 +1,5 @@
 TOKEN "tracker" APPEND
+TOKEN "analytics-service" APPEND
 
 
 SCHEMA >
