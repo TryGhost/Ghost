@@ -850,6 +850,27 @@ describe('Email renderer', function () {
             assert.equal(result, 'Your subscription will expire on 13 March 2050.');
         });
 
+        it('Returns for a gift member', function () {
+            const member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'gift',
+                subscriptions: [],
+                tiers: [
+                    {
+                        name: 'Silver',
+                        expiry_at: new Date(2050, 2, 13, 12, 0)
+                    }
+                ]
+            };
+
+            const result = emailRenderer.getMemberStatusText(member);
+            assert.equal(result, 'Your subscription will expire on 13 March 2050.');
+        });
+
         it('Returns for a paid member without subscriptions', function () {
             const member = {
                 id: '456',
