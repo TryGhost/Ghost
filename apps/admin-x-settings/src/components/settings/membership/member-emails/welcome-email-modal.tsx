@@ -125,7 +125,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
         onValidate: getWelcomeEmailValidationErrors
     });
     const saveButtonLabel = okProps.label || 'Save';
-    const {previewFrameState, previewState, enterPreview, exitPreview} = useWelcomeEmailPreview({
+    const {previewFrameState, enterPreview, exitPreview} = useWelcomeEmailPreview({
         automatedEmailId: automatedEmail.id,
         previewWelcomeEmail,
         setErrors
@@ -292,7 +292,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                         <TextField
                                             className='w-full'
                                             data-testid='welcome-email-preview-subject'
-                                            value={previewSubjectOverride ?? (previewState.status === 'success' ? previewState.preview.subject : formState.subject)}
+                                            value={previewSubjectOverride ?? formState.subject}
                                             onChange={(e) => {
                                                 const nextSubject = e.target.value;
                                                 setPreviewSubjectOverride(nextSubject);

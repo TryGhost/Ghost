@@ -30,6 +30,13 @@ const automatedEmailsFixture = {
     }]
 };
 
+const automatedEmailsWithTemplateSubjectFixture = {
+    automated_emails: [{
+        ...automatedEmailsFixture.automated_emails[0],
+        subject: 'Welcome {first_name}'
+    }]
+};
+
 const newslettersRequest = {
     browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: responseFixtures.newsletters}
 };
@@ -233,6 +240,58 @@ test.describe('Member emails settings', async () => {
             await expect(previewSubject).toBeVisible();
         });
 
+        test('Preview keeps the raw template subject editable and saves it without rendering replacements into the draft', async ({page}) => {
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsWithTemplateSubjectFixture},
+                editAutomatedEmail: {
+                    method: 'PUT',
+                    path: '/automated_emails/free-welcome-email-id/',
+                    response: automatedEmailsWithTemplateSubjectFixture
+                }
+            }});
+
+            await page.route(/\/ghost\/api\/admin\/automated_emails\/free-welcome-email-id\/preview\/$/, async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    body: JSON.stringify({
+                        automated_emails: [{
+                            html: '<!doctype html><html><body><p>Preview</p></body></html>',
+                            plaintext: 'Preview',
+                            subject: 'Welcome Jamie'
+                        }]
+                    })
+                });
+            });
+
+            await page.goto('/#/memberemails');
+            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('memberemails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByTestId('free-welcome-email-preview').click();
+
+            const modal = page.getByTestId('welcome-email-modal');
+            await expect(modal).toBeVisible();
+
+            await modal.getByTestId('welcome-email-mode-preview').click();
+
+            const previewSubject = modal.getByTestId('welcome-email-preview-subject');
+            await expect(previewSubject).toHaveValue('Welcome {first_name}');
+
+            await previewSubject.press('End');
+            await previewSubject.type('!');
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect.poll(() => lastApiRequests.editAutomatedEmail?.body).toMatchObject({
+                automated_emails: [{
+                    subject: 'Welcome {first_name}!'
+                }]
+            });
+        });
+
         test('Preview refetches when re-entering Preview mode', async ({page}) => {
             await mockApi({page, requests: {
                 ...globalDataRequests,
@@ -383,7 +442,7 @@ test.describe('Member emails settings', async () => {
             await modal.getByTestId('welcome-email-mode-edit').click();
             await modal.getByTestId('welcome-email-mode-preview').click();
 
-            await expect(previewSubject).toHaveValue('Preview Subject 3');
+            await expect(previewSubject).toHaveValue('Second unsaved subject');
 
             releaseFirstPreview();
 
@@ -392,7 +451,7 @@ test.describe('Member emails settings', async () => {
                 'First unsaved subject',
                 'Second unsaved subject'
             ]);
-            await expect(previewSubject).toHaveValue('Preview Subject 3');
+            await expect(previewSubject).toHaveValue('Second unsaved subject');
         });
 
         test('Invalid draft shows preview inline error state', async ({page}) => {
