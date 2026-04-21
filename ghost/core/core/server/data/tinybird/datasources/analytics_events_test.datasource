@@ -2,6 +2,7 @@
 # A place to send data for testing and monitoring purposes
 
 TOKEN "tracker" APPEND
+TOKEN "analytics-service" APPEND
 
 SCHEMA >
     `timestamp` DateTime `json:$.timestamp`,
