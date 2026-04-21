@@ -18,6 +18,38 @@ const requiredForExcerpt = (requestedColumns) => {
     }
 };
 
+const parsePositiveInteger = (value, defaultValue) => {
+    const parsedValue = Number.parseInt(value, 10);
+
+    if (Number.isNaN(parsedValue)) {
+        return defaultValue;
+    }
+
+    return Math.max(parsedValue, 1);
+};
+
+// Pre-applies limit/offset so callers can use fetchPage's limit='all'
+// short-circuit (which skips the count query) while still fetching only
+// the requested window.
+const applyManualPaginationWindow = (itemCollection, options) => {
+    if (options.limit === 'all') {
+        return;
+    }
+
+    const limit = parsePositiveInteger(options.limit, 15);
+    const page = parsePositiveInteger(options.page, 1);
+
+    itemCollection
+        .query('limit', limit)
+        .query('offset', limit * (page - 1));
+
+    options.limit = 'all';
+};
+
+const buildPaginationMeta = (skipPagination, pagination) => {
+    return skipPagination ? {} : {pagination};
+};
+
 /**
  * @param {Bookshelf} Bookshelf
  */
@@ -81,6 +113,9 @@ module.exports = function (Bookshelf) {
          */
         findPage: async function findPage(unfilteredOptions) {
             const options = this.filterOptions(unfilteredOptions, 'findPage');
+            const skipPagination = options.skipPagination === true;
+            delete options.skipPagination;
+
             const itemCollection = this.getFilteredCollection(options);
             const requestedColumns = options.columns;
             // make sure we include plaintext and custom_excerpt if excerpt is requested
@@ -149,6 +184,10 @@ module.exports = function (Bookshelf) {
                 options.useSmartCount = true;
             }
 
+            if (skipPagination) {
+                applyManualPaginationWindow(itemCollection, options);
+            }
+
             const response = await itemCollection.fetchPage(options);
             // Attributes are being filtered here, so they are not leaked into calling layer
             // where models are serialized to json and do not do more filtering.
@@ -164,7 +203,7 @@ module.exports = function (Bookshelf) {
 
             return {
                 data: data,
-                meta: {pagination: response.pagination}
+                meta: buildPaginationMeta(skipPagination, response.pagination)
             };
         },
 

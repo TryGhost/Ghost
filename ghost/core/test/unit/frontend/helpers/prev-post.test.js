@@ -68,7 +68,10 @@ describe('{{prev_post}} helper', function () {
 
             sinon.assert.calledOnceWithExactly(
                 browsePostsStub,
-                sinon.match({include: 'author,authors,tags,tiers'})
+                sinon.match({
+                    include: 'author,authors,tags,tiers',
+                    skipPagination: true
+                })
             );
         });
     });
