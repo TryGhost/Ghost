@@ -278,10 +278,7 @@ module.exports = function MembersAPI({
             }
 
             if (giftToken && giftSubscriptionsEnabled) {
-                await giftService.service.redeem({
-                    token: giftToken,
-                    memberId: member.id
-                });
+                await giftService.service.redeem(giftToken, member.id);
             }
 
             await MemberLoginEvent.add({member_id: member.id});
@@ -306,13 +303,19 @@ module.exports = function MembersAPI({
             }
         }
 
-        const newMember = await users.create({name, email, labels, newsletters, attribution, geolocation});
+        let newMember;
 
         if (giftToken && giftSubscriptionsEnabled) {
-            await giftService.service.redeem({
-                token: giftToken,
-                memberId: newMember.id
+            newMember = await Member.transaction(async (transacting) => {
+                const created = await users.create(
+                    {name, email, labels, newsletters, attribution, geolocation, status: 'gift'},
+                    {transacting}
+                );
+                await giftService.service.redeem(giftToken, created.id, {transacting, newMember: true});
+                return created;
             });
+        } else {
+            newMember = await users.create({name, email, labels, newsletters, attribution, geolocation});
         }
 
         await MemberLoginEvent.add({member_id: newMember.id});

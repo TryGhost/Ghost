@@ -99,10 +99,7 @@ export class GiftController {
             });
         }
 
-        const gift = await this.service.redeem({
-            token,
-            memberId: member.id
-        });
+        const gift = await this.service.redeem(token, member.id);
 
         return this.serializeGift(gift);
     }

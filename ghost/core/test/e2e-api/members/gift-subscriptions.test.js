@@ -785,6 +785,25 @@ describe('Gift Subscriptions', function () {
                     const existingMember = await models.Member.findOne({email}, {require: false});
                     assert.equal(existingMember, null, 'Member should not exist before magic link confirmation');
 
+                    // Set up an active free welcome email automation so the test would catch
+                    // any regression that re-introduces the spurious automation run for gift members
+                    const emailDesignSetting = await models.EmailDesignSetting.findOne(
+                        {slug: 'default-automated-email'},
+                        {require: true}
+                    );
+                    const welcomeEmailAutomation = await models.WelcomeEmailAutomation.add({
+                        name: 'Free welcome email',
+                        slug: 'member-welcome-email-free',
+                        status: 'active'
+                    });
+                    await models.WelcomeEmailAutomatedEmail.add({
+                        welcome_email_automation_id: welcomeEmailAutomation.id,
+                        delay_days: 0,
+                        subject: 'Welcome to the site!',
+                        lexical: JSON.stringify({root: {children: [{type: 'paragraph', children: [{text: 'Welcome'}]}]}}),
+                        email_design_setting_id: emailDesignSetting.id
+                    });
+
                     try {
                         await models.Product.edit({
                             welcome_page_url: ''
@@ -821,12 +840,19 @@ describe('Gift Subscriptions', function () {
                         assert.ok(gift.get('redeemed_at'));
                         assert.ok(gift.get('consumes_at'));
 
-                        // TODO: Re-enable this once we've gotten rid of the unwanted "New free member" notification
-                        // // Verify gift subscription started staff notification was sent
-                        // mockManager.assert.sentEmail({
-                        //     subject: /new paid subscriber/i,
-                        //     to: 'jbloggs@example.com'
-                        // });
+                        // Verify the free welcome automation did NOT enqueue a run for this gift member
+                        const welcomeRuns = await models.WelcomeEmailAutomationRun.findAll({
+                            filter: `member_id:'${member.id}'`
+                        });
+                        assert.equal(welcomeRuns.length, 0, 'Should not enqueue free welcome email automation for gift member');
+
+                        // Verify gift subscription started staff notification was sent,
+                        // and that no other unwanted staff notifications were sent (i.e. no "Free member signup" email)
+                        mockManager.assert.sentEmail({
+                            subject: /new paid subscriber/i,
+                            to: 'jbloggs@example.com'
+                        });
+                        mockManager.assert.sentEmailCount(1);
 
                         // Verify the redirect URL was used
                         assert.equal(location.searchParams.get('action'), 'subscribe');
@@ -839,6 +865,7 @@ describe('Gift Subscriptions', function () {
                         }, {
                             id: paidProduct.id
                         });
+                        await models.WelcomeEmailAutomation.destroy({id: welcomeEmailAutomation.id});
                     }
                 });
             });

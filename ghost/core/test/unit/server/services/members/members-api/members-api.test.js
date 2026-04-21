@@ -12,6 +12,7 @@ describe('MembersAPI', function () {
     let memberLoginEvent;
     let labsService;
     let tokenData;
+    let MemberModel;
 
     const createRouterStub = () => {
         const router = {};
@@ -106,7 +107,7 @@ describe('MembersAPI', function () {
                 EmailRecipient: {},
                 StripeCustomer: {},
                 StripeCustomerSubscription: {},
-                Member: {},
+                Member: MemberModel,
                 MemberNewsletter: {},
                 MemberCancelEvent: {},
                 MemberSubscribeEvent: {},
@@ -187,6 +188,11 @@ describe('MembersAPI', function () {
         labsService = {
             isSet: sinon.stub().returns(true)
         };
+        MemberModel = {
+            transaction: sinon.stub().callsFake(async (callback) => {
+                return await callback('trx');
+            })
+        };
 
         membersAPI = buildMembersAPI();
     });
@@ -210,10 +216,7 @@ describe('MembersAPI', function () {
         sinon.assert.calledTwice(memberBREADService.read);
         sinon.assert.calledWithExactly(memberBREADService.read.firstCall, {email: 'jamie@example.com'});
         sinon.assert.calledOnceWithExactly(memberLoginEvent.add, {member_id: 'member_1'});
-        sinon.assert.calledOnceWithExactly(giftRedeem, {
-            token: 'gift-token-123',
-            memberId: 'member_1'
-        });
+        sinon.assert.calledOnceWithExactly(giftRedeem, 'gift-token-123', 'member_1');
         sinon.assert.callOrder(giftRedeem, memberLoginEvent.add);
         assert.equal(result, existingMember);
     });
@@ -232,13 +235,13 @@ describe('MembersAPI', function () {
 
         const result = await membersAPI.getMemberDataFromMagicLinkToken('magic-token');
 
+        sinon.assert.calledOnce(MemberModel.transaction);
         sinon.assert.calledOnce(memberRepository.create);
         assert.equal(memberRepository.create.firstCall.args[0].email, 'jamie@example.com');
         assert.equal(memberRepository.create.firstCall.args[0].name, 'Jamie Larson');
-        sinon.assert.calledOnceWithExactly(giftRedeem, {
-            token: 'gift-token-123',
-            memberId: 'member_2'
-        });
+        assert.equal(memberRepository.create.firstCall.args[0].status, 'gift');
+        assert.deepEqual(memberRepository.create.firstCall.args[1], {transacting: 'trx'});
+        sinon.assert.calledOnceWithExactly(giftRedeem, 'gift-token-123', 'member_2', {transacting: 'trx', newMember: true});
         sinon.assert.calledOnceWithExactly(memberLoginEvent.add, {member_id: 'member_2'});
         sinon.assert.callOrder(giftRedeem, memberLoginEvent.add);
         assert.equal(result, createdMember);
@@ -276,9 +279,6 @@ describe('MembersAPI', function () {
         );
 
         sinon.assert.notCalled(memberLoginEvent.add);
-        sinon.assert.calledOnceWithExactly(giftRedeem, {
-            token: 'gift-token-123',
-            memberId: 'member_1'
-        });
+        sinon.assert.calledOnceWithExactly(giftRedeem, 'gift-token-123', 'member_1');
     });
 });
