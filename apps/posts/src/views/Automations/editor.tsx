@@ -17,7 +17,7 @@ import {
     useReactFlow,
     useViewport
 } from '@xyflow/react';
-import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {getAutomationById} from './mock-data';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -360,25 +360,52 @@ const RunItem: React.FC<{run: Run}> = ({run}) => {
     );
 };
 
-const RunsSidebarBody: React.FC = () => (
-    <Tabs className="flex flex-col gap-6" defaultValue="runs">
-        <div className="flex items-center justify-between gap-4">
-            <h2 className="text-base leading-tight font-semibold">Analytics</h2>
-            <TabsList>
-                <TabsTrigger value="runs">Runs</TabsTrigger>
-                <TabsTrigger value="metrics">Metrics</TabsTrigger>
-            </TabsList>
-        </div>
-        <TabsContent className="flex flex-col gap-2" value="runs">
-            <ul className="flex flex-col gap-2">
-                {mockRuns.map(run => <RunItem key={run.id} run={run} />)}
-            </ul>
-        </TabsContent>
-        <TabsContent value="metrics">
-            <p className="text-sm text-grey-600">Metrics coming soon.</p>
-        </TabsContent>
-    </Tabs>
-);
+const RunsSidebarBody: React.FC = () => {
+    const [tab, setTab] = useState('runs');
+    return (
+        <Tabs className="flex flex-col gap-6" value={tab} onValueChange={setTab}>
+            <div className="flex items-center justify-between gap-4">
+                <h2 className="text-base leading-tight font-semibold">Analytics</h2>
+                <div className="flex items-center gap-2">
+                    {tab === 'runs' && (
+                        <TooltipProvider delayDuration={200}>
+                            <div className="flex items-center gap-1">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button aria-label="Filter runs" className="size-7 [&_svg]:size-3.5" size="icon" variant="ghost">
+                                            <LucideIcon.ListFilter />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Filter runs</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button aria-label="Export runs" className="size-7 [&_svg]:size-3.5" size="icon" variant="ghost">
+                                            <LucideIcon.Download />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Export runs</TooltipContent>
+                                </Tooltip>
+                            </div>
+                        </TooltipProvider>
+                    )}
+                    <TabsList>
+                        <TabsTrigger value="runs">Runs</TabsTrigger>
+                        <TabsTrigger value="metrics">Metrics</TabsTrigger>
+                    </TabsList>
+                </div>
+            </div>
+            <TabsContent className="flex flex-col gap-2" value="runs">
+                <ul className="flex flex-col gap-2">
+                    {mockRuns.map(run => <RunItem key={run.id} run={run} />)}
+                </ul>
+            </TabsContent>
+            <TabsContent value="metrics">
+                <p className="text-sm text-grey-600">Metrics coming soon.</p>
+            </TabsContent>
+        </Tabs>
+    );
+};
 
 type SidebarState = {mode: 'step'; nodeId: string} | {mode: 'runs'} | null;
 
