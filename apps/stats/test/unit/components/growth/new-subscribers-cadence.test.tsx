@@ -14,6 +14,12 @@ vi.mock('@tryghost/admin-x-framework/api/tiers', () => ({
     useBrowseTiers: vi.fn()
 }));
 
+vi.mock('@src/providers/global-data-provider', () => ({
+    useGlobalData: vi.fn(() => ({
+        data: {labs: {giftSubscriptions: true}}
+    }))
+}));
+
 // Mock date helpers from @tryghost/shade/app
 vi.mock('@tryghost/shade/app', async () => {
     const actual = await vi.importActual('@tryghost/shade/app');
@@ -41,11 +47,13 @@ vi.mock('@tryghost/shade/utils', async () => {
 });
 
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {useGlobalData} from '@src/providers/global-data-provider';
 import {useMemberCountHistory, useSubscriptionStats} from '@tryghost/admin-x-framework/api/stats';
 
 const mockedUseSubscriptionStats = useSubscriptionStats as ReturnType<typeof vi.fn>;
 const mockedUseMemberCountHistory = useMemberCountHistory as ReturnType<typeof vi.fn>;
 const mockedUseBrowseTiers = useBrowseTiers as ReturnType<typeof vi.fn>;
+const mockedUseGlobalData = useGlobalData as ReturnType<typeof vi.fn>;
 
 describe('NewSubscribersCadence Component', () => {
     beforeEach(() => {
@@ -205,6 +213,54 @@ describe('NewSubscribersCadence Component', () => {
         expect(screen.getByText('50%')).toBeInTheDocument();
         expect(screen.getByText('30%')).toBeInTheDocument();
         expect(screen.getByText('20%')).toBeInTheDocument();
+    });
+
+    it('shows Gift slice when giftSubscriptions labs flag is enabled and gift count increases', () => {
+        mockedUseGlobalData.mockReturnValue({data: {labs: {giftSubscriptions: true}}});
+
+        mockSuccess(mockedUseSubscriptionStats, {
+            stats: [
+                {date: '2024-01-15', tier: 'tier-1', cadence: 'month', signups: 50, cancellations: 0, count: 100}
+            ],
+            meta: {totals: [{tier: 'tier-1', cadence: 'month', count: 100}]}
+        });
+
+        mockSuccess(mockedUseMemberCountHistory, {
+            stats: [
+                {date: '2024-01-01', paid: 80, free: 50, comped: 0, gift: 0},
+                {date: '2024-01-31', paid: 100, free: 60, comped: 0, gift: 10}
+            ],
+            meta: {totals: {paid: 100, free: 60, comped: 0, gift: 10}}
+        });
+
+        render(<NewSubscribersCadence isLoading={false} range={30} />);
+
+        expect(screen.getByText('Monthly')).toBeInTheDocument();
+        expect(screen.getByText('Gift')).toBeInTheDocument();
+    });
+
+    it('hides Gift slice when giftSubscriptions labs flag is disabled, even when gift count increases', () => {
+        mockedUseGlobalData.mockReturnValue({data: {labs: {giftSubscriptions: false}}});
+
+        mockSuccess(mockedUseSubscriptionStats, {
+            stats: [
+                {date: '2024-01-15', tier: 'tier-1', cadence: 'month', signups: 50, cancellations: 0, count: 100}
+            ],
+            meta: {totals: [{tier: 'tier-1', cadence: 'month', count: 100}]}
+        });
+
+        mockSuccess(mockedUseMemberCountHistory, {
+            stats: [
+                {date: '2024-01-01', paid: 80, free: 50, comped: 0, gift: 0},
+                {date: '2024-01-31', paid: 100, free: 60, comped: 0, gift: 10}
+            ],
+            meta: {totals: {paid: 100, free: 60, comped: 0, gift: 10}}
+        });
+
+        render(<NewSubscribersCadence isLoading={false} range={30} />);
+
+        expect(screen.getByText('Monthly')).toBeInTheDocument();
+        expect(screen.queryByText('Gift')).not.toBeInTheDocument();
     });
 
     it('does not show complimentary when comped count does not increase', () => {
