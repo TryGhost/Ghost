@@ -76,11 +76,6 @@
                 "dependsOn": [
                     "^build"
                 ]
-            },
-            "test:acceptance": {
-                "dependsOn": [
-                    "^build"
-                ]
             }
         }
     }

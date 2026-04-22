@@ -109,23 +109,6 @@ jobs:
               - 'ghost/**'
               - '!ghost/admin/**'
               - '!ghost/core/core/server/data/tinybird/**'
-            admin-x-settings:
-              - *shared
-              - 'apps/admin-x-settings/**'
-              - 'apps/admin-x-design-system/**'
-              - 'apps/admin-x-framework/**'
-              - 'apps/shade/**'
-            activitypub:
-              - *shared
-              - 'apps/shade/**'
-              - 'apps/admin-x-framework/**'
-              - 'apps/activitypub/**'
-            comments-ui:
-              - *shared
-              - 'apps/comments-ui/**'
-            signup-form:
-              - *shared
-              - 'apps/signup-form/**'
             tinybird:
               - '.github/workflows/ci.yml'
               - 'compose.dev.analytics.yaml'
@@ -166,7 +149,7 @@ jobs:
             AFFECTED_ARG=""
           fi
 
-          AFFECTED_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --json | tr -d '\n')
+          AFFECTED_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --json)
           echo "affected_projects=$AFFECTED_PROJECTS" >> "$GITHUB_OUTPUT"
           # string list for use in run-many commands
           AFFECTED_PROJECTS_STR=$(pnpm -s nx show projects ${AFFECTED_ARG} --sep=, | tr -d '\n')
@@ -177,15 +160,18 @@ jobs:
           I18N_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --projects 'tag:i18n' --sep=, | tr -d '\n')
           echo "affected_i18n_projects=${I18N_PROJECTS}" >> "$GITHUB_OUTPUT"
 
+          PLAYWRIGHT_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} \
+            --withTarget test:acceptance \
+            --projects 'apps/*' \
+            --json)
+          echo "affected_playwright_projects=$PLAYWRIGHT_PROJECTS" >> "$GITHUB_OUTPUT"
+
     outputs:
       affected_projects: ${{ steps.affected.outputs.affected_projects }}
       affected_projects_str: ${{ steps.affected.outputs.affected_projects_str }}
+      affected_playwright_projects: ${{ steps.affected.outputs.affected_playwright_projects }}
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
-      changed_admin_x_settings: ${{ steps.changed.outputs.admin-x-settings }}
-      changed_activitypub: ${{ steps.changed.outputs.activitypub }}
-      changed_comments_ui: ${{ steps.changed.outputs.comments-ui }}
-      changed_signup_form: ${{ steps.changed.outputs.signup-form }}
       changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_tinybird_datafiles: ${{ steps.changed.outputs.tinybird-datafiles }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
@@ -600,11 +586,15 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  job_admin_x_settings:
+  job_apps_acceptance-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_admin_x_settings == 'true'
-    name: Admin-X Settings tests
+    if: needs.job_setup.outputs.affected_playwright_projects != '[]'
+    name: App Playwright Acceptance Tests
+    strategy:
+      fail-fast: true
+      matrix:
+        app: ${{ fromJSON(needs.job_setup.outputs.affected_playwright_projects) }}
     env:
       CI: true
     steps:
@@ -623,134 +613,23 @@ jobs:
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
-      - run: pnpm nx run @tryghost/admin-x-settings:test:acceptance
+      - name: Run Playwright tests
+        run: pnpm nx run ${{ matrix.app }}:test:acceptance
+
+      - name: Get App Name
+        if: always()
+        id: app_name
+        # trim '@tryghost/' prefix for better readability in test report artifact names
+        run: |
+          APP_NAME="${{ matrix.app }}"
+          echo "name=${APP_NAME#@tryghost/}" >> $GITHUB_OUTPUT
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: admin-x-settings-playwright-report
-          path: apps/admin-x-settings/playwright-report
-          retention-days: 30
-
-      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        with:
-          status: ${{ job.status }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  job_activitypub:
-    runs-on: ubuntu-latest
-    needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_activitypub == 'true'
-    name: ActivityPub tests
-    env:
-      CI: true
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
-
-      - run: pnpm nx run @tryghost/activitypub:test:acceptance
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: activitypub-playwright-report
-          path: apps/activitypub/playwright-report
-          retention-days: 30
-
-      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        with:
-          status: ${{ job.status }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  job_comments_ui:
-    runs-on: ubuntu-latest
-    needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_comments_ui == 'true'
-    name: Comments-UI tests
-    env:
-      CI: true
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
-
-      - run: pnpm nx run @tryghost/comments-ui:test
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: comments-ui-playwright-report
-          path: apps/comments-ui/playwright-report
-          retention-days: 30
-
-      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        with:
-          status: ${{ job.status }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  job_signup_form:
-    runs-on: ubuntu-latest
-    needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_signup_form == 'true'
-    name: Signup-form tests
-    env:
-      CI: true
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
-
-      - run: pnpm nx run @tryghost/signup-form:test:e2e
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: signup-form-playwright-report
-          path: apps/signup-form/playwright-report
+          name: ${{ steps.app_name.outputs.name }}-playwright-report
+          path: apps/${{ steps.app_name.outputs.name }}/playwright-report
           retention-days: 30
 
       - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
@@ -1499,10 +1378,7 @@ jobs:
         job_unit-tests,
         job_acceptance-tests,
         job_legacy-tests,
-        job_admin_x_settings,
-        job_activitypub,
-        job_comments_ui,
-        job_signup_form,
+        job_apps_acceptance-tests,
         job_tinybird-tests,
         job_build_e2e_public_apps,
         job_build_e2e_image,
