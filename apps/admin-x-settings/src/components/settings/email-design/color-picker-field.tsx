@@ -80,7 +80,7 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({title, value, onChan
         resetInteractionState();
         setOpen(false);
     };
-    const attachEarlyEscapeListener = useCallback(() => {
+    const attachEarlyEscapeListener = () => {
         if (earlyEscapeHandler.current) {
             return;
         }
@@ -92,14 +92,12 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({title, value, onChan
 
             event.preventDefault();
             event.stopPropagation();
-            detachEarlyEscapeListener();
-            resetInteractionState();
-            setOpen(false);
+            closePopover();
         };
 
         earlyEscapeHandler.current = handleEarlyEscape;
         window.addEventListener('keydown', handleEarlyEscape, true);
-    }, [detachEarlyEscapeListener]);
+    };
 
     useEffect(() => {
         return () => {
