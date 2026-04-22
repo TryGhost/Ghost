@@ -77,6 +77,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const memberCount = useMemberCount();
     const routing = useEmberRouting();
     const commentModerationEnabled = useFeatureFlag('commentModeration');
+    const automationsEnabled = useFeatureFlag('automations');
     const isMembersRouteActive = useIsActiveLink({path: 'members', activeOnSubpath: true});
 
     const showTags = currentUser && canManageTags(currentUser);
@@ -209,6 +210,18 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             >
                                 <LucideIcon.MessagesSquare />
                                 <NavMenuItem.Label>Comments</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+                    )}
+
+                    {showMembers && automationsEnabled && (
+                        <NavMenuItem>
+                            <NavMenuItem.Link
+                                to="automations"
+                                activeOnSubpath
+                            >
+                                <LucideIcon.Zap />
+                                <NavMenuItem.Label>Automations</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
                     )}
