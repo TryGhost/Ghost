@@ -208,7 +208,7 @@ const MembersPage: React.FC<{timezone: string; membershipsEnabled: boolean}> = (
                             </EmptyIndicator>
                         </div>
                     ) : (
-                        <MembersEmptyState membershipsEnabled={membershipsEnabled} onMemberCreated={() => void refetch()} />
+                        <MembersEmptyState membershipsEnabled={membershipsEnabled} onMemberCreated={() => refetch()} />
                     )
                 ) : (
                     <MembersList

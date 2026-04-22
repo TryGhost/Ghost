@@ -38,7 +38,7 @@ test.describe('Ghost Admin - Members List', () => {
         await expect(membersPage.memberRows).toHaveCount(0);
     });
 
-    test('adds the current user as a member from the empty state', async ({page, ghostAccountOwner}) => {
+    test('add yourself from empty state - creates a member for the current user', async ({page, ghostAccountOwner}) => {
         const membersPage = new MembersListPage(page);
         await membersPage.goto();
 
