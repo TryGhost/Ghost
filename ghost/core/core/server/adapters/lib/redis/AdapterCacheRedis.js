@@ -67,8 +67,19 @@ class AdapterCacheRedis extends BaseCacheAdapter {
         this.currentlyExecutingBackgroundRefreshes = new Set();
         this._keyPrefix = config.keyPrefix || '';
         this._prefixHashInitInFlight = null;
-        this.redisClient = this.cache.store.getClient();
         this.redisClient.on('error', this.handleRedisError);
+    }
+
+    /**
+     * api-framework's pipeline _.cloneDeep's controllers (and the cache
+     * adapter alongside them). Caching the redis client as `this.redisClient`
+     * was breaking on clones because the cloned ioredis instance has the
+     * prototype but no live socket. Going through cache-manager's
+     * `store.getClient()` works because that function captures the original
+     * client via closure, so even on a clone it returns the live one.
+     */
+    get redisClient() {
+        return this.cache.store.getClient();
     }
 
     /**
