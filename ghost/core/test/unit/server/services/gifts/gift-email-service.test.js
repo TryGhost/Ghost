@@ -135,8 +135,9 @@ describe('GiftEmailService', function () {
         const reminderData = {
             memberEmail: 'member@example.com',
             tierName: 'Gold',
+            tierPrice: 10000,
+            tierCurrency: 'usd',
             cadence: 'year',
-            duration: 1,
             consumesAt: new Date('2026-04-23T00:00:00.000Z')
         };
 
@@ -151,15 +152,15 @@ describe('GiftEmailService', function () {
             }));
         });
 
-        it('includes tier name, cadence, consumesAt, and manage subscription url in both HTML and text', async function () {
+        it('includes tier name, consumesAt, post-gift price and manage subscription url in both HTML and text', async function () {
             await service.sendReminder(reminderData);
 
             const msg = mailer.send.getCall(0).args[0];
 
             for (const field of ['html', 'text']) {
                 sinon.assert.match(msg[field], sinon.match('Gold'));
-                sinon.assert.match(msg[field], sinon.match('1 year'));
                 sinon.assert.match(msg[field], sinon.match('23 Apr 2026'));
+                sinon.assert.match(msg[field], sinon.match('$100.00/year'));
                 sinon.assert.match(msg[field], sinon.match('https://example.com/#/portal/account'));
             }
         });
@@ -183,10 +184,16 @@ describe('GiftEmailService', function () {
             sinon.assert.match(msg.text, sinon.match('Continue subscription'));
         });
 
-        it('formats month cadence correctly', async function () {
-            await service.sendReminder({...reminderData, cadence: 'month', duration: 3});
+        it('formats month cadence in the post-gift price', async function () {
+            await service.sendReminder({...reminderData, cadence: 'month', tierPrice: 1000});
 
-            sinon.assert.calledWith(mailer.send, sinon.match.has('html', sinon.match('3 months')));
+            sinon.assert.calledWith(mailer.send, sinon.match.has('html', sinon.match('$10.00/month')));
+        });
+
+        it('formats non-USD currency correctly in the post-gift price', async function () {
+            await service.sendReminder({...reminderData, tierCurrency: 'eur', tierPrice: 1500});
+
+            sinon.assert.calledWith(mailer.send, sinon.match.has('html', sinon.match('€15.00/year')));
         });
     });
 });

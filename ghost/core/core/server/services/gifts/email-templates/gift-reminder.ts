@@ -7,8 +7,8 @@ export interface GiftReminderData {
     memberEmail: string;
     gift: {
         tierName: string;
-        cadenceLabel: string;
         consumesAt: string;
+        priceAfter: string;
         manageSubscriptionUrl: string;
     };
 }
@@ -18,8 +18,9 @@ export function renderText(data: GiftReminderData): string {
 
 Your gift subscription to ${data.siteTitle} ends on ${data.gift.consumesAt}. Continue with a paid subscription to keep reading.
 
-Gift subscription: ${data.gift.tierName} • ${data.gift.cadenceLabel}
+Gift subscription: ${data.gift.tierName}
 Ends on: ${data.gift.consumesAt}
+Price after gift ends: ${data.gift.priceAfter}
 
 Continue subscription:
 ${data.gift.manageSubscriptionUrl}
