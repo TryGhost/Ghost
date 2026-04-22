@@ -28,8 +28,6 @@ describe('Welcome email design payload helpers', function () {
         assert.equal('show_header_title' in result, false);
         assert.equal('show_badge' in result, false);
         assert.equal('footer_content' in result, false);
-        assert.equal('post_title_color' in result, false);
-        assert.equal('title_alignment' in result, false);
     });
 
     it('preserves unexpected persisted design fields when mapping api data', function () {
@@ -43,7 +41,7 @@ describe('Welcome email design payload helpers', function () {
         assert.equal(result.custom_future_field, '#123456');
     });
 
-    it('preserves unexpected persisted design fields in the save payload while excluding preview-only fields', function () {
+    it('preserves unexpected persisted design fields in the save payload while excluding non-design metadata fields', function () {
         const state = {
             designSettings: {
                 ...DEFAULT_EMAIL_DESIGN,
@@ -84,8 +82,6 @@ describe('Welcome email design payload helpers', function () {
         assert.equal('slug' in payload, false);
         assert.equal('created_at' in payload, false);
         assert.equal('updated_at' in payload, false);
-        assert.equal('post_title_color' in payload, false);
-        assert.equal('title_alignment' in payload, false);
         assert.equal(payload.show_header_icon, true);
     });
 });
