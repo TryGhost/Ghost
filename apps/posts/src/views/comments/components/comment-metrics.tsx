@@ -1,4 +1,3 @@
-import CommentDislikesModal from './comment-dislikes-modal';
 import CommentLikesModal from './comment-likes-modal';
 import CommentReportsModal from './comment-reports-modal';
 import {Comment} from '@tryghost/admin-x-framework/api/comments';
@@ -90,7 +89,7 @@ export function CommentMetrics({
 }: CommentMetricsProps) {
     const [searchParams] = useSearchParams();
     const [likesModalOpen, setLikesModalOpen] = useState(false);
-    const [dislikesModalOpen, setDislikesModalOpen] = useState(false);
+    const [likesModalDefaultTab, setLikesModalDefaultTab] = useState<'likes' | 'dislikes'>('likes');
     const [reportsModalOpen, setReportsModalOpen] = useState(false);
     const repliesLink = buildThreadLink(searchParams, comment.id);
 
@@ -125,6 +124,7 @@ export function CommentMetrics({
                                         type="button"
                                         onClick={(e) => {
                                             e.stopPropagation();
+                                            setLikesModalDefaultTab('likes');
                                             setLikesModalOpen(true);
                                         }}
                                     >
@@ -139,7 +139,21 @@ export function CommentMetrics({
                             <TooltipContent>{hasLikes ? 'View likes' : 'Likes'}</TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
-                    <span>{formatNumber(netScore)}</span>
+                    {hasLikes || hasDislikes ? (
+                        <button
+                            className="cursor-pointer hover:opacity-70"
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setLikesModalDefaultTab('likes');
+                                setLikesModalOpen(true);
+                            }}
+                        >
+                            <span>{formatNumber(netScore)}</span>
+                        </button>
+                    ) : (
+                        <span>{formatNumber(netScore)}</span>
+                    )}
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -150,7 +164,8 @@ export function CommentMetrics({
                                         type="button"
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            setDislikesModalOpen(true);
+                                            setLikesModalDefaultTab('dislikes');
+                                            setLikesModalOpen(true);
                                         }}
                                     >
                                         <LucideIcon.ThumbsDown size={16} strokeWidth={1.5} />
@@ -175,13 +190,9 @@ export function CommentMetrics({
             </div>
             <CommentLikesModal
                 comment={comment}
+                defaultTab={likesModalDefaultTab}
                 open={likesModalOpen}
                 onOpenChange={setLikesModalOpen}
-            />
-            <CommentDislikesModal
-                comment={comment}
-                open={dislikesModalOpen}
-                onOpenChange={setDislikesModalOpen}
             />
             <CommentReportsModal
                 comment={comment}
