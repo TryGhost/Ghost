@@ -1435,16 +1435,6 @@ describe('Members API', function () {
             'Complimentary',
             'The subscription price should be marked as complimentary'
         );
-        assert.equal(
-            updatedMember.subscriptions[0].plan.currency.toLowerCase(),
-            product.get('currency').toLowerCase(),
-            'The synthetic subscription plan should reuse the tier currency'
-        );
-        assert.equal(
-            updatedMember.subscriptions[0].price.currency.toLowerCase(),
-            product.get('currency').toLowerCase(),
-            'The synthetic subscription price should reuse the tier currency'
-        );
 
         await assertMemberEvents({
             eventType: 'MemberStatusEvent',

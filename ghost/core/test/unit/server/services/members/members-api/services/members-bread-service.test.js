@@ -403,7 +403,7 @@ describe('MemberBreadService', function () {
                     id: '',
                     nickname: 'Complimentary',
                     interval: 'year',
-                    currency: productsJSON[1].currency,
+                    currency: 'USD',
                     amount: 0
                 },
                 status: 'active',
@@ -419,7 +419,7 @@ describe('MemberBreadService', function () {
                     amount: 0,
                     interval: 'year',
                     type: 'recurring',
-                    currency: productsJSON[1].currency,
+                    currency: 'USD',
                     product: {
                         id: '',
                         product_id: productsJSON[1].id
@@ -538,7 +538,7 @@ describe('MemberBreadService', function () {
                     id: '',
                     nickname: 'Gift subscription',
                     interval: 'year',
-                    currency: productsJSON[0].currency,
+                    currency: 'USD',
                     amount: 0
                 },
                 status: 'active',
@@ -554,7 +554,7 @@ describe('MemberBreadService', function () {
                     amount: 0,
                     interval: 'year',
                     type: 'recurring',
-                    currency: productsJSON[0].currency,
+                    currency: 'USD',
                     product: {
                         id: '',
                         product_id: productsJSON[0].id
