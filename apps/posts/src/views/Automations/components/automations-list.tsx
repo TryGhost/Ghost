@@ -1,6 +1,6 @@
 import React from 'react';
 import {Badge, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
-import {formatNumber} from '@tryghost/shade/utils';
+import {formatNumber, formatTimestamp} from '@tryghost/shade/utils';
 
 type AutomationStatus = 'active' | 'inactive';
 
@@ -20,14 +20,14 @@ const automations: AutomationRow[] = [
         name: 'Free members welcome email',
         steps: 2,
         status: 'active',
-        lastRun: '2 hours ago'
+        lastRun: new Date(Date.now() - (2 * 60 * 60 * 1000)).toISOString()
     },
     {
         id: 'paid-members-welcome-email',
         name: 'Paid members welcome email',
         steps: 3,
         status: 'active',
-        lastRun: 'Yesterday'
+        lastRun: new Date(Date.now() - (24 * 60 * 60 * 1000)).toISOString()
     }
 ];
 
@@ -81,7 +81,7 @@ const AutomationsList: React.FC = () => {
                             <AutomationsStatusBadge status={automation.status} />
                         </TableCell>
                         <TableCell className="lg:p-4">
-                            <span className="text-muted-foreground">{automation.lastRun}</span>
+                            <span className="text-muted-foreground">{formatTimestamp(automation.lastRun)}</span>
                         </TableCell>
                     </TableRow>
                 ))}
