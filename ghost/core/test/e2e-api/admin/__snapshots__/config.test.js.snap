@@ -11,9 +11,9 @@ Object {
     "labs": Object {
       "additionalPaymentMethods": true,
       "adminUIRefresh": true,
+      "automations": true,
       "commentModeration": true,
       "customFonts": true,
-      "dripSequences": true,
       "editorExcerpt": true,
       "emailCustomization": true,
       "emailUniqueid": true,
@@ -31,7 +31,6 @@ Object {
       "tagsX": true,
       "themeTranslation": true,
       "urlCache": true,
-      "welcomeEmailsDesignCustomization": true,
     },
     "mail": "",
     "mailgunIsConfigured": false,

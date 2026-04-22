@@ -138,6 +138,8 @@
                                                     <span class="gh-badge archived" data-test-text="member-subscription-status">Canceled</span>
                                                 {{else if sub.compExpiry}}
                                                     <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
+                                                {{else if sub.giftExpiry}}
+                                                    <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
                                                 {{else if sub.trialUntil}}
                                                     <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
                                                 {{else}}
@@ -153,7 +155,9 @@
                                             </div>
                                             <Member::SubscriptionDetailBox @sub={{sub}} @index={{index}} />
                                         </div>
-                                        {{#if sub.isComplimentary}}
+                                        {{#if sub.isGift}}
+                                            {{! Gift subscriptions have no action menu }}
+                                        {{else if sub.isComplimentary}}
                                             <span class="action-menu">
                                                 <GhDropdownButton
                                                     @dropdownName="subscription-menu-complimentary"
@@ -185,7 +189,12 @@
                                             </span>
                                         {{else}}
                                             <span class="action-menu">
-                                                <GhDropdownButton @dropdownName="subscription-menu-{{sub.id}}" @classNames="gh-btn gh-btn-outline gh-btn-icon fill gh-btn-subscription-action icon-only" @title="Actions">
+                                                <GhDropdownButton
+                                                    @dropdownName="subscription-menu-{{sub.id}}"
+                                                    @classNames="gh-btn gh-btn-outline gh-btn-icon fill gh-btn-subscription-action icon-only"
+                                                    @title="Actions"
+                                                    data-test-button="subscription-actions"
+                                                >
                                                     <span>
                                                         {{svg-jar "dotdotdot"}}
                                                         <span class="hidden">Subscription menu</span>

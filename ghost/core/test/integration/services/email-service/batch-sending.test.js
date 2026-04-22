@@ -899,7 +899,29 @@ describe.skip('Batch sending tests', function () {
             await models.Newsletter.edit({show_comment_cta: true}, {id: defaultNewsletter.id});
         });
 
-        it('Shows share button when enabled in newsletter for public posts', async function () {
+        it('Shows share button when enabled in newsletter for public, members, paid, and tiers posts', async function () {
+            mockSetting('email_track_clicks', false); // Disable link replacement for this test
+
+            const defaultNewsletter = await getDefaultNewsletter();
+            const originalShowShareButton = defaultNewsletter.get('show_share_button');
+            await models.Newsletter.edit({show_share_button: true}, {id: defaultNewsletter.id});
+
+            try {
+                for (const visibility of ['public', 'members', 'paid', 'tiers']) {
+                    const {html} = await sendEmail(agent, {
+                        title: `This is a test post title (${visibility})`,
+                        mobiledoc: mobileDocExample,
+                        visibility
+                    });
+
+                    assert.match(html, /#\/share/, `Expected share button for "${visibility}" visibility`);
+                }
+            } finally {
+                await models.Newsletter.edit({show_share_button: originalShowShareButton}, {id: defaultNewsletter.id});
+            }
+        });
+
+        it('Hides share button for email-only posts', async function () {
             mockSetting('email_track_clicks', false); // Disable link replacement for this test
 
             const defaultNewsletter = await getDefaultNewsletter();
@@ -910,10 +932,11 @@ describe.skip('Batch sending tests', function () {
                 const {html} = await sendEmail(agent, {
                     title: 'This is a test post title',
                     mobiledoc: mobileDocExample,
-                    visibility: 'public'
+                    visibility: 'members',
+                    email_only: true
                 });
 
-                assert.match(html, /#\/share/);
+                assert.doesNotMatch(html, /#\/share/);
             } finally {
                 await models.Newsletter.edit({show_share_button: originalShowShareButton}, {id: defaultNewsletter.id});
             }

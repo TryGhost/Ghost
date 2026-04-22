@@ -337,14 +337,15 @@ class StaffServiceEmails {
         });
     }
 
-    async notifyGiftSubscriptionStarted({memberId, memberName, memberEmail, tierName, buyerEmail}, options = {}) {
+    async notifyGiftSubscriptionStarted({memberId, memberName, memberEmail, tierName, cadence, duration, buyerEmail}, options = {}) {
         const users = await this.models.User.getEmailAlertUsers('paid-started', options);
         const memberData = this.getMemberData({
             id: memberId,
             name: memberName ?? null,
             email: memberEmail
         });
-        const subject = `🎁 New paid subscriber: ${memberData.name}`;
+        const subject = `🎁 Paid subscription started: ${memberData.name}`;
+        const cadenceLabel = duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
 
         await this.sendToStaff({
             users,
@@ -353,7 +354,8 @@ class StaffServiceEmails {
             memberData,
             templateData: {
                 tierData: {
-                    name: tierName
+                    name: tierName,
+                    details: cadenceLabel
                 },
                 giftedByEmail: buyerEmail
             }

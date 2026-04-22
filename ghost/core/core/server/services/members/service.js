@@ -166,9 +166,11 @@ module.exports = {
         // Schedule daily cron job to clean expired tokens
         memberJobs.scheduleTokenCleanupJob();
 
-        // Schedule daily cron job to clean consumed and expired gifts
+        // Schedule daily cron jobs to clean up consumed/expired gifts and to
+        // send gift reminder emails.
         if (labsService.isSet('giftSubscriptions')) {
             memberJobs.scheduleGiftCleanupJob();
+            memberJobs.scheduleGiftReminderJob();
         }
     },
     contentGating: require('./content-gating'),

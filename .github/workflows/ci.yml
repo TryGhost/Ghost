@@ -42,6 +42,11 @@ jobs:
     permissions:
       actions: read
       contents: read
+      # Required by dorny/paths-filter, which calls pulls.listFiles on
+      # pull_request events. Private forks of this repo don't grant this
+      # implicitly when an explicit permissions block is present, so it must
+      # be listed here for the Setup job to succeed on those forks.
+      pull-requests: read
     steps:
       - name: Checkout current commit
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -391,6 +396,15 @@ jobs:
         options: >-
           --tmpfs /var/lib/mysql
           --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+      redis:
+        image: redis:7.0
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=12
@@ -790,6 +804,9 @@ jobs:
       - run: mv ghost-*.tgz ghost.tgz
         working-directory: ghost/core
 
+      - name: Verify packaged package.json
+        run: tar -xOf ghost/core/ghost.tgz package/package.json | jq -e '.packageManager' >/dev/null
+
       - name: Save Ghost CLI Debug Logs
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -800,13 +817,19 @@ jobs:
       - name: Clean Install
         run: |
           DIR=$(mktemp -d)
-          ghost install local -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
+          ghost install local -d "$DIR" --archive "$(pwd)/ghost/core/ghost.tgz"
+          URL=$(ghost config get url -d "$DIR" --no-prompt --no-color | tail -n1)
+          curl --retry 10 --retry-connrefused --retry-delay 3 -fsSI "$URL"
+          ghost stop -d "$DIR"
 
       - name: Latest Release
         run: |
           DIR=$(mktemp -d)
-          ghost install local -d $DIR
-          ghost update -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
+          ghost install local -d "$DIR"
+          ghost update -d "$DIR" --archive "$(pwd)/ghost/core/ghost.tgz"
+          URL=$(ghost config get url -d "$DIR" --no-prompt --no-color | tail -n1)
+          curl --retry 10 --retry-connrefused --retry-delay 3 -fsSI "$URL"
+          ghost stop -d "$DIR"
 
       - name: Print debug logs
         if: failure()
@@ -865,12 +888,8 @@ jobs:
             exit 1
           fi
 
-      - name: Pack standalone distribution
-        run: pnpm --filter ghost pack:standalone
-
-      - name: Create npm tarball
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: pnpm --filter ghost pack:tarball
+      - name: Build standalone distribution
+        run: pnpm --filter ghost archive
 
       - name: Upload npm tarball
         if: startsWith(github.ref, 'refs/tags/v')
@@ -1689,7 +1708,7 @@ jobs:
   # Publish Ghost npm package — runs on version tags only (OIDC, no stored token)
   # --------------------------------------------------------------------------- #
   publish_ghost:
-    needs: [job_setup, job_build_artifacts]
+    needs: [job_setup, job_build_artifacts, job_ghost-cli]
     name: Publish Ghost to npm
     runs-on: ubuntu-latest
     if: |
@@ -1716,12 +1735,7 @@ jobs:
         run: npm install -g npm@11
 
       - name: Verify tarball contents
-        run: |
-          echo "Tarball contents:"
-          tar -tzf ghost-*.tgz | head -20
-          tar -tzf ghost-*.tgz | grep -q 'package/.npmrc' || { echo "::error::.npmrc not found in tarball"; exit 1; }
-          tar -tzf ghost-*.tgz | grep -q 'package/pnpm-lock.yaml' || { echo "::error::pnpm-lock.yaml not found in tarball"; exit 1; }
-          tar -xOf ghost-*.tgz package/package.json | jq -e '.packageManager' >/dev/null || { echo "::error::packageManager not found in packaged package.json"; exit 1; }
+        run: tar -xOf ghost-*.tgz package/package.json | jq -e '.packageManager' >/dev/null
 
       - name: Publish to npm
         run: npm publish ghost-*.tgz --access public

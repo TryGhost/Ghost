@@ -1,0 +1,246 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Post Analytics Export Default settings (all features enabled) Exports CSV with full analytics data 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-disposition": StringMatching /\\^Attachment; filename="post-analytics\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\.csv"\\$/,
+  "content-length": "3738",
+  "content-type": "text/csv; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Post Analytics Export Default settings (all features enabled) Exports CSV with full analytics data 2 1`] = `
+Object {
+  "text": "id,title,url,author,status,created_at,updated_at,published_at,featured,tags,post_access,email_recipients,newsletter_name,sends,opens,clicks,signups,paid_conversions,feedback_more_like_this,feedback_less_like_this
+000000000000000000000000,Members Only Post,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Members-only,,,,,,0,0,,
+000000000000000000000000,Premium Tier Post,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Specific tiers: Default Product,,,,,,0,0,,
+000000000000000000000000,Email Only Post,http://127.0.0.1:2369/404/,Joe Bloggs,published and emailed,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Public,Free subscribers,,64,45,0,0,0,0,0
+000000000000000000000000,Start here for a quick overview of everything you need to know,http://127.0.0.1:2369/welcome/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,0,0,,
+000000000000000000000000,Customizing your brand and design settings,http://127.0.0.1:2369/design/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,0,0,,
+000000000000000000000000,\\"Writing and managing content in Ghost, an advanced guide\\",http://127.0.0.1:2369/write/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,0,0,,
+000000000000000000000000,Building your audience with subscriber signups,http://127.0.0.1:2369/portal/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,0,0,,
+000000000000000000000000,Selling premium memberships with recurring revenue,http://127.0.0.1:2369/sell/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Paid members-only,,,,,,0,0,,
+000000000000000000000000,How to grow your business around an audience,http://127.0.0.1:2369/grow/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,0,0,,
+000000000000000000000000,Setting up apps and custom integrations,http://127.0.0.1:2369/integrations/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,0,0,,
+000000000000000000000000,Post with all media types - Lexical,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Tag with images,Public,,,,,,0,0,,
+000000000000000000000000,Post with all media types - Mobiledoc,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Tag with images,Public,,,,,,0,0,,
+000000000000000000000000,\\"Not so short, bit complex\\",http://127.0.0.1:2369/not-so-short-bit-complex/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,true,,Public,,,,,,0,0,,
+000000000000000000000000,Short and Sweet,http://127.0.0.1:2369/short-and-sweet/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,true,chorizo,Public,,,,,,2,1,,
+000000000000000000000000,Ghostly Kitchen Sink,http://127.0.0.1:2369/ghostly-kitchen-sink/,Joe Bloggs,published and emailed,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,\\"kitchen sink, bacon\\",Public,Paid subscribers,,128,90,1,3,2,1,0",
+}
+`;
+
+exports[`Post Analytics Export Settings variations Hides clicks column when email_track_clicks disabled 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-disposition": StringMatching /\\^Attachment; filename="post-analytics\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\.csv"\\$/,
+  "content-length": "3714",
+  "content-type": "text/csv; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Post Analytics Export Settings variations Hides clicks column when email_track_clicks disabled 2 1`] = `
+Object {
+  "text": "id,title,url,author,status,created_at,updated_at,published_at,featured,tags,post_access,email_recipients,newsletter_name,sends,opens,signups,paid_conversions,feedback_more_like_this,feedback_less_like_this
+000000000000000000000000,Members Only Post,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Members-only,,,,,0,0,,
+000000000000000000000000,Premium Tier Post,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Specific tiers: Default Product,,,,,0,0,,
+000000000000000000000000,Email Only Post,http://127.0.0.1:2369/404/,Joe Bloggs,published and emailed,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Public,Free subscribers,,64,45,0,0,0,0
+000000000000000000000000,Start here for a quick overview of everything you need to know,http://127.0.0.1:2369/welcome/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,0,0,,
+000000000000000000000000,Customizing your brand and design settings,http://127.0.0.1:2369/design/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,0,0,,
+000000000000000000000000,\\"Writing and managing content in Ghost, an advanced guide\\",http://127.0.0.1:2369/write/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,0,0,,
+000000000000000000000000,Building your audience with subscriber signups,http://127.0.0.1:2369/portal/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,0,0,,
+000000000000000000000000,Selling premium memberships with recurring revenue,http://127.0.0.1:2369/sell/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Paid members-only,,,,,0,0,,
+000000000000000000000000,How to grow your business around an audience,http://127.0.0.1:2369/grow/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,0,0,,
+000000000000000000000000,Setting up apps and custom integrations,http://127.0.0.1:2369/integrations/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,0,0,,
+000000000000000000000000,Post with all media types - Lexical,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Tag with images,Public,,,,,0,0,,
+000000000000000000000000,Post with all media types - Mobiledoc,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Tag with images,Public,,,,,0,0,,
+000000000000000000000000,\\"Not so short, bit complex\\",http://127.0.0.1:2369/not-so-short-bit-complex/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,true,,Public,,,,,0,0,,
+000000000000000000000000,Short and Sweet,http://127.0.0.1:2369/short-and-sweet/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,true,chorizo,Public,,,,,2,1,,
+000000000000000000000000,Ghostly Kitchen Sink,http://127.0.0.1:2369/ghostly-kitchen-sink/,Joe Bloggs,published and emailed,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,\\"kitchen sink, bacon\\",Public,Paid subscribers,,128,90,3,2,1,0",
+}
+`;
+
+exports[`Post Analytics Export Settings variations Hides email columns when members disabled 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-disposition": StringMatching /\\^Attachment; filename="post-analytics\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\.csv"\\$/,
+  "content-length": "3432",
+  "content-type": "text/csv; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Post Analytics Export Settings variations Hides email columns when members disabled 2 1`] = `
+Object {
+  "text": "id,title,url,author,status,created_at,updated_at,published_at,featured,tags,post_access,newsletter_name
+000000000000000000000000,Members Only Post,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Members-only,
+000000000000000000000000,Premium Tier Post,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Specific tiers: Default Product,
+000000000000000000000000,Email Only Post,http://127.0.0.1:2369/404/,Joe Bloggs,published and emailed,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Public,
+000000000000000000000000,Start here for a quick overview of everything you need to know,http://127.0.0.1:2369/welcome/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,
+000000000000000000000000,Customizing your brand and design settings,http://127.0.0.1:2369/design/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,
+000000000000000000000000,\\"Writing and managing content in Ghost, an advanced guide\\",http://127.0.0.1:2369/write/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,
+000000000000000000000000,Building your audience with subscriber signups,http://127.0.0.1:2369/portal/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,
+000000000000000000000000,Selling premium memberships with recurring revenue,http://127.0.0.1:2369/sell/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Paid members-only,
+000000000000000000000000,How to grow your business around an audience,http://127.0.0.1:2369/grow/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,
+000000000000000000000000,Setting up apps and custom integrations,http://127.0.0.1:2369/integrations/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,
+000000000000000000000000,Post with all media types - Lexical,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Tag with images,Public,
+000000000000000000000000,Post with all media types - Mobiledoc,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Tag with images,Public,
+000000000000000000000000,\\"Not so short, bit complex\\",http://127.0.0.1:2369/not-so-short-bit-complex/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,true,,Public,
+000000000000000000000000,Short and Sweet,http://127.0.0.1:2369/short-and-sweet/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,true,chorizo,Public,
+000000000000000000000000,Ghostly Kitchen Sink,http://127.0.0.1:2369/ghostly-kitchen-sink/,Joe Bloggs,published and emailed,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,\\"kitchen sink, bacon\\",Public,",
+}
+`;
+
+exports[`Post Analytics Export Settings variations Hides feedback columns when no newsletter has feedback enabled 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-disposition": StringMatching /\\^Attachment; filename="post-analytics\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\.csv"\\$/,
+  "content-length": "3656",
+  "content-type": "text/csv; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Post Analytics Export Settings variations Hides feedback columns when no newsletter has feedback enabled 2 1`] = `
+Object {
+  "text": "id,title,url,author,status,created_at,updated_at,published_at,featured,tags,post_access,email_recipients,newsletter_name,sends,opens,clicks,signups,paid_conversions
+000000000000000000000000,Members Only Post,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Members-only,,,,,,0,0
+000000000000000000000000,Premium Tier Post,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Specific tiers: Default Product,,,,,,0,0
+000000000000000000000000,Email Only Post,http://127.0.0.1:2369/404/,Joe Bloggs,published and emailed,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Public,Free subscribers,,64,45,0,0,0
+000000000000000000000000,Start here for a quick overview of everything you need to know,http://127.0.0.1:2369/welcome/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,0,0
+000000000000000000000000,Customizing your brand and design settings,http://127.0.0.1:2369/design/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,0,0
+000000000000000000000000,\\"Writing and managing content in Ghost, an advanced guide\\",http://127.0.0.1:2369/write/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,0,0
+000000000000000000000000,Building your audience with subscriber signups,http://127.0.0.1:2369/portal/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,0,0
+000000000000000000000000,Selling premium memberships with recurring revenue,http://127.0.0.1:2369/sell/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Paid members-only,,,,,,0,0
+000000000000000000000000,How to grow your business around an audience,http://127.0.0.1:2369/grow/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,0,0
+000000000000000000000000,Setting up apps and custom integrations,http://127.0.0.1:2369/integrations/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,0,0
+000000000000000000000000,Post with all media types - Lexical,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Tag with images,Public,,,,,,0,0
+000000000000000000000000,Post with all media types - Mobiledoc,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Tag with images,Public,,,,,,0,0
+000000000000000000000000,\\"Not so short, bit complex\\",http://127.0.0.1:2369/not-so-short-bit-complex/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,true,,Public,,,,,,0,0
+000000000000000000000000,Short and Sweet,http://127.0.0.1:2369/short-and-sweet/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,true,chorizo,Public,,,,,,2,1
+000000000000000000000000,Ghostly Kitchen Sink,http://127.0.0.1:2369/ghostly-kitchen-sink/,Joe Bloggs,published and emailed,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,\\"kitchen sink, bacon\\",Public,Paid subscribers,,128,90,1,3,2",
+}
+`;
+
+exports[`Post Analytics Export Settings variations Hides opens column when email_track_opens disabled 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-disposition": StringMatching /\\^Attachment; filename="post-analytics\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\.csv"\\$/,
+  "content-length": "3713",
+  "content-type": "text/csv; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Post Analytics Export Settings variations Hides opens column when email_track_opens disabled 2 1`] = `
+Object {
+  "text": "id,title,url,author,status,created_at,updated_at,published_at,featured,tags,post_access,email_recipients,newsletter_name,sends,clicks,signups,paid_conversions,feedback_more_like_this,feedback_less_like_this
+000000000000000000000000,Members Only Post,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Members-only,,,,,0,0,,
+000000000000000000000000,Premium Tier Post,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Specific tiers: Default Product,,,,,0,0,,
+000000000000000000000000,Email Only Post,http://127.0.0.1:2369/404/,Joe Bloggs,published and emailed,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Public,Free subscribers,,64,0,0,0,0,0
+000000000000000000000000,Start here for a quick overview of everything you need to know,http://127.0.0.1:2369/welcome/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,0,0,,
+000000000000000000000000,Customizing your brand and design settings,http://127.0.0.1:2369/design/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,0,0,,
+000000000000000000000000,\\"Writing and managing content in Ghost, an advanced guide\\",http://127.0.0.1:2369/write/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,0,0,,
+000000000000000000000000,Building your audience with subscriber signups,http://127.0.0.1:2369/portal/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,0,0,,
+000000000000000000000000,Selling premium memberships with recurring revenue,http://127.0.0.1:2369/sell/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Paid members-only,,,,,0,0,,
+000000000000000000000000,How to grow your business around an audience,http://127.0.0.1:2369/grow/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,0,0,,
+000000000000000000000000,Setting up apps and custom integrations,http://127.0.0.1:2369/integrations/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,0,0,,
+000000000000000000000000,Post with all media types - Lexical,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Tag with images,Public,,,,,0,0,,
+000000000000000000000000,Post with all media types - Mobiledoc,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Tag with images,Public,,,,,0,0,,
+000000000000000000000000,\\"Not so short, bit complex\\",http://127.0.0.1:2369/not-so-short-bit-complex/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,true,,Public,,,,,0,0,,
+000000000000000000000000,Short and Sweet,http://127.0.0.1:2369/short-and-sweet/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,true,chorizo,Public,,,,,2,1,,
+000000000000000000000000,Ghostly Kitchen Sink,http://127.0.0.1:2369/ghostly-kitchen-sink/,Joe Bloggs,published and emailed,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,\\"kitchen sink, bacon\\",Public,Paid subscribers,,128,1,3,2,1,0",
+}
+`;
+
+exports[`Post Analytics Export Settings variations Hides paid_conversions when paid members disabled 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-disposition": StringMatching /\\^Attachment; filename="post-analytics\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\.csv"\\$/,
+  "content-length": "3691",
+  "content-type": "text/csv; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Post Analytics Export Settings variations Hides paid_conversions when paid members disabled 2 1`] = `
+Object {
+  "text": "id,title,url,author,status,created_at,updated_at,published_at,featured,tags,post_access,email_recipients,newsletter_name,sends,opens,clicks,signups,feedback_more_like_this,feedback_less_like_this
+000000000000000000000000,Members Only Post,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Members-only,,,,,,0,,
+000000000000000000000000,Premium Tier Post,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Specific tiers: Default Product,,,,,,0,,
+000000000000000000000000,Email Only Post,http://127.0.0.1:2369/404/,Joe Bloggs,published and emailed,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Public,Free subscribers,,64,45,0,0,0,0
+000000000000000000000000,Start here for a quick overview of everything you need to know,http://127.0.0.1:2369/welcome/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,0,,
+000000000000000000000000,Customizing your brand and design settings,http://127.0.0.1:2369/design/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,0,,
+000000000000000000000000,\\"Writing and managing content in Ghost, an advanced guide\\",http://127.0.0.1:2369/write/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,0,,
+000000000000000000000000,Building your audience with subscriber signups,http://127.0.0.1:2369/portal/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,0,,
+000000000000000000000000,Selling premium memberships with recurring revenue,http://127.0.0.1:2369/sell/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Paid members-only,,,,,,0,,
+000000000000000000000000,How to grow your business around an audience,http://127.0.0.1:2369/grow/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,0,,
+000000000000000000000000,Setting up apps and custom integrations,http://127.0.0.1:2369/integrations/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,0,,
+000000000000000000000000,Post with all media types - Lexical,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Tag with images,Public,,,,,,0,,
+000000000000000000000000,Post with all media types - Mobiledoc,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Tag with images,Public,,,,,,0,,
+000000000000000000000000,\\"Not so short, bit complex\\",http://127.0.0.1:2369/not-so-short-bit-complex/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,true,,Public,,,,,,0,,
+000000000000000000000000,Short and Sweet,http://127.0.0.1:2369/short-and-sweet/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,true,chorizo,Public,,,,,,2,,
+000000000000000000000000,Ghostly Kitchen Sink,http://127.0.0.1:2369/ghostly-kitchen-sink/,Joe Bloggs,published and emailed,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,\\"kitchen sink, bacon\\",Public,Paid subscribers,,128,90,1,3,1,0",
+}
+`;
+
+exports[`Post Analytics Export Settings variations Hides signups and paid_conversions when members_track_sources disabled 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-disposition": StringMatching /\\^Attachment; filename="post-analytics\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\.csv"\\$/,
+  "content-length": "3653",
+  "content-type": "text/csv; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Post Analytics Export Settings variations Hides signups and paid_conversions when members_track_sources disabled 2 1`] = `
+Object {
+  "text": "id,title,url,author,status,created_at,updated_at,published_at,featured,tags,post_access,email_recipients,newsletter_name,sends,opens,clicks,feedback_more_like_this,feedback_less_like_this
+000000000000000000000000,Members Only Post,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Members-only,,,,,,,
+000000000000000000000000,Premium Tier Post,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Specific tiers: Default Product,,,,,,,
+000000000000000000000000,Email Only Post,http://127.0.0.1:2369/404/,Joe Bloggs,published and emailed,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,,Public,Free subscribers,,64,45,0,0,0
+000000000000000000000000,Start here for a quick overview of everything you need to know,http://127.0.0.1:2369/welcome/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,,
+000000000000000000000000,Customizing your brand and design settings,http://127.0.0.1:2369/design/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,,
+000000000000000000000000,\\"Writing and managing content in Ghost, an advanced guide\\",http://127.0.0.1:2369/write/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,,
+000000000000000000000000,Building your audience with subscriber signups,http://127.0.0.1:2369/portal/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,,
+000000000000000000000000,Selling premium memberships with recurring revenue,http://127.0.0.1:2369/sell/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Paid members-only,,,,,,,
+000000000000000000000000,How to grow your business around an audience,http://127.0.0.1:2369/grow/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,,
+000000000000000000000000,Setting up apps and custom integrations,http://127.0.0.1:2369/integrations/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,,,
+000000000000000000000000,Post with all media types - Lexical,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Tag with images,Public,,,,,,,
+000000000000000000000000,Post with all media types - Mobiledoc,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Tag with images,Public,,,,,,,
+000000000000000000000000,\\"Not so short, bit complex\\",http://127.0.0.1:2369/not-so-short-bit-complex/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,true,,Public,,,,,,,
+000000000000000000000000,Short and Sweet,http://127.0.0.1:2369/short-and-sweet/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,true,chorizo,Public,,,,,,,
+000000000000000000000000,Ghostly Kitchen Sink,http://127.0.0.1:2369/ghostly-kitchen-sink/,Joe Bloggs,published and emailed,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,\\"kitchen sink, bacon\\",Public,Paid subscribers,,128,90,1,1,0",
+}
+`;

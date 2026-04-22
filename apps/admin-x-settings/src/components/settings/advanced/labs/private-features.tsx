@@ -12,6 +12,10 @@ type Feature = {
 };
 
 const features: Feature[] = [{
+    title: 'Automations',
+    description: 'Enable automations management interface.',
+    flag: 'automations'
+}, {
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax'
@@ -51,14 +55,6 @@ const features: Feature[] = [{
     title: 'Featurebase Feedback',
     description: 'Display a Feedback menu item in the admin sidebar. Requires the new admin experience.',
     flag: 'featurebaseFeedback'
-}, {
-    title: 'Drip Sequences',
-    description: 'Enable welcome email drip sequences',
-    flag: 'dripSequences'
-}, {
-    title: 'Welcome Emails Design Customization',
-    description: 'Enable design customization options for welcome emails',
-    flag: 'welcomeEmailsDesignCustomization'
 }, {
     title: 'Picture Element',
     description: 'Use the HTML picture element to serve modern image formats (AVIF, WebP) with automatic fallbacks',

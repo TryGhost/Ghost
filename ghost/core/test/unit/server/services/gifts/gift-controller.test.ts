@@ -39,6 +39,7 @@ describe('GiftController', function () {
             consumedAt: null,
             expiredAt: null,
             refundedAt: null,
+            consumesSoonReminderSentAt: null,
             ...overrides
         });
     }
@@ -287,10 +288,7 @@ describe('GiftController', function () {
                 }
             });
 
-            sinon.assert.calledOnceWithExactly(service.redeem, {
-                token: 'gift-token',
-                memberId: 'member_1'
-            });
+            sinon.assert.calledOnceWithExactly(service.redeem, 'gift-token', 'member_1');
             sinon.assert.calledOnceWithExactly(tiersService.api.read, 'tier_1');
             assert.deepEqual(result, {
                 token: 'gift-token',
