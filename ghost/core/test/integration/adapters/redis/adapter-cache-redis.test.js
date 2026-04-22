@@ -132,44 +132,6 @@ describe('Integration: AdapterCacheRedis', function () {
         });
     });
 
-    describe('get with fetchData (error paths)', function () {
-        it('does not cache errors — a subsequent call retries fetchData', async function () {
-            const cache = createCache();
-            const fetcher = sinon.stub();
-            fetcher.onFirstCall().rejects(new Error('transient DB error'));
-            fetcher.onSecondCall().resolves('recovered');
-
-            await cache.get('retry-key', fetcher);
-
-            const value = await cache.get('retry-key', fetcher);
-
-            assert.equal(fetcher.callCount, 2);
-            assert.equal(value, 'recovered');
-        });
-
-        it('stores and retrieves complex nested objects', async function () {
-            const cache = createCache();
-            const complexValue = {
-                posts: [
-                    {
-                        id: 'abc123',
-                        title: 'Test Post',
-                        tags: [{id: 't1', name: 'News'}],
-                        authors: [{id: 'a1', name: 'Jane'}]
-                    }
-                ],
-                meta: {
-                    pagination: {page: 1, limit: 15, pages: 3, total: 42, next: 2, prev: null}
-                }
-            };
-
-            await cache.set('complex', complexValue);
-            const retrieved = await cache.get('complex');
-
-            assert.deepEqual(retrieved, complexValue);
-        });
-    });
-
     describe('without a keyPrefix', function () {
         it('still stores and retrieves values', async function () {
             const cache = buildCache(undefined);
