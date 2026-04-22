@@ -111,7 +111,7 @@ module.exports = class MemberBREADService {
                             id: '',
                             nickname,
                             interval: 'year',
-                            currency: product.currency,
+                            currency: 'USD',
                             amount: 0
                         },
                         status: 'active',
@@ -127,7 +127,7 @@ module.exports = class MemberBREADService {
                             amount: 0,
                             interval: 'year',
                             type: 'recurring',
-                            currency: product.currency,
+                            currency: 'USD',
                             product: {
                                 id: '',
                                 product_id: product.id
