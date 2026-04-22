@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Sessions API Is rate limited to protect against brute forcing a users password 1: [headers] 1`] = `
 Object {
