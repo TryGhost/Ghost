@@ -86,16 +86,6 @@ jobs:
             echo "is_member=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Determine added packages
-        if: env.IS_TAG != 'true'
-        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
-        id: added
-        with:
-          base: ${{ env.NX_BASE }}
-          filters: |
-            new-package:
-              - added: 'ghost/**/package.json'
-
       - name: Determine changed packages
         if: env.IS_TAG != 'true'
         uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
@@ -109,14 +99,15 @@ jobs:
               - 'package.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
+            ci:
+              - '.github/workflows/**'
+              - '.github/actions/**'
+              - '.github/scripts/**'
             core:
               - *shared
               - 'ghost/**'
               - '!ghost/admin/**'
               - '!ghost/core/core/server/data/tinybird/**'
-            admin:
-              - *shared
-              - 'ghost/admin/**'
             admin-x-settings:
               - *shared
               - 'apps/admin-x-settings/**'
@@ -128,21 +119,12 @@ jobs:
               - 'apps/shade/**'
               - 'apps/admin-x-framework/**'
               - 'apps/activitypub/**'
-            announcement-bar:
-              - *shared
-              - 'apps/announcement-bar/**'
             comments-ui:
               - *shared
               - 'apps/comments-ui/**'
-            portal:
-              - *shared
-              - 'apps/portal/**'
             signup-form:
               - *shared
               - 'apps/signup-form/**'
-            sodo-search:
-              - *shared
-              - 'apps/sodo-search/**'
             tinybird:
               - '.github/workflows/ci.yml'
               - 'compose.dev.analytics.yaml'
@@ -172,27 +154,38 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Determine Affected Projects
-        if: env.IS_TAG != 'true'
         id: affected
         run: |
-          AFFECTED_PROJECTS=$(pnpm -s nx show projects --affected --json | tr -d '\n')
+          # if the ci files have changed or we're in a tag, ensure we don't just look at affected
+          # projects and we run the necessary jobs on all projects
+          AFFECTED_ARG="--affected"
+          if [[ "${{ steps.changed.outputs.ci }}" == 'true' || "${{ env.IS_TAG }}" == 'true' ]]; then
+            AFFECTED_ARG=""
+          fi
+
+          AFFECTED_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --json | tr -d '\n')
           echo "affected_projects=$AFFECTED_PROJECTS" >> "$GITHUB_OUTPUT"
+          # string list for use in run-many commands
+          AFFECTED_PROJECTS_STR=$(pnpm -s nx show projects ${AFFECTED_ARG} --sep=, | tr -d '\n')
+          echo "affected_projects_str=$AFFECTED_PROJECTS_STR" >> "$GITHUB_OUTPUT"
+
+          # "i18n" tag = packages whose source is scanned by @tryghost/i18n's
+          # translate:* scripts (not packages that merely import @tryghost/i18n).
+          I18N_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --projects 'tag:i18n' --sep=, | tr -d '\n')
+          echo "affected_i18n_projects=${I18N_PROJECTS}" >> "$GITHUB_OUTPUT"
 
     outputs:
       affected_projects: ${{ steps.affected.outputs.affected_projects }}
-      changed_admin: ${{ steps.changed.outputs.admin }}
+      affected_projects_str: ${{ steps.affected.outputs.affected_projects_str }}
+      changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_admin_x_settings: ${{ steps.changed.outputs.admin-x-settings }}
       changed_activitypub: ${{ steps.changed.outputs.activitypub }}
-      changed_announcement_bar: ${{ steps.changed.outputs.announcement-bar }}
       changed_comments_ui: ${{ steps.changed.outputs.comments-ui }}
-      changed_portal: ${{ steps.changed.outputs.portal }}
       changed_signup_form: ${{ steps.changed.outputs.signup-form }}
-      changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
       changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_tinybird_datafiles: ${{ steps.changed.outputs.tinybird-datafiles }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
-      changed_new_package: ${{ steps.added.outputs.new-package }}
       is_main: ${{ env.IS_MAIN }}
       is_tag: ${{ env.IS_TAG }}
       is_development: ${{ env.IS_DEVELOPMENT }}
@@ -227,7 +220,7 @@ jobs:
   job_lint:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_any_code == 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     name: Lint
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -249,13 +242,8 @@ jobs:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - name: Lint all (tags)
-        if: needs.job_setup.outputs.is_tag == 'true'
-        run: pnpm nx run-many -t lint
-
-      - name: Lint affected (branches)
-        if: needs.job_setup.outputs.is_tag != 'true'
-        run: pnpm nx affected -t lint
+      - name: Lint projects
+        run: pnpm nx run-many -t lint -p "${{ needs.job_setup.outputs.affected_projects_str }}"
         env:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
@@ -272,12 +260,8 @@ jobs:
     needs: [job_setup]
     name: i18n
     if: |
-        needs.job_setup.outputs.is_tag == 'true'
-        || needs.job_setup.outputs.changed_comments_ui == 'true'
-        || needs.job_setup.outputs.changed_signup_form == 'true'
-        || needs.job_setup.outputs.changed_sodo_search == 'true'
-        || needs.job_setup.outputs.changed_portal == 'true'
-        || needs.job_setup.outputs.changed_core == 'true'
+      needs.job_setup.outputs.is_tag == 'true'
+      || needs.job_setup.outputs.changed_i18n_apps == 'true'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
@@ -295,7 +279,9 @@ jobs:
   job_admin-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_admin == 'true'
+    if: |
+      needs.job_setup.outputs.is_tag == 'true'
+      || contains(fromJSON(needs.job_setup.outputs.affected_projects), 'ghost-admin')
     name: Admin tests - Chrome
     env:
       MOZ_HEADLESS: 1
@@ -336,7 +322,7 @@ jobs:
   job_unit-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_any_code == 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     strategy:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
@@ -365,25 +351,13 @@ jobs:
         with:
           timezoneLinux: "America/New_York"
 
-      - name: Run unit tests (tags — all)
-        if: needs.job_setup.outputs.is_tag == 'true'
-        run: pnpm nx run-many -t test:unit
+      - name: Run unit tests
+        run: pnpm nx run-many -t test:unit -p "${{ needs.job_setup.outputs.affected_projects_str }}"
         env:
           FORCE_COLOR: 0
           GHOST_UNIT_TEST_VARIANT: ci
           NX_SKIP_LOG_GROUPING: true
           logging__level: fatal
-
-      - name: Run unit tests (branches — affected)
-        if: needs.job_setup.outputs.is_tag != 'true'
-        run: pnpm nx affected -t test:unit
-        env:
-          FORCE_COLOR: 0
-          GHOST_UNIT_TEST_VARIANT: ci
-          NX_SKIP_LOG_GROUPING: true
-          logging__level: fatal
-          NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
-          NX_HEAD: ${{ env.HEAD_COMMIT }}
 
       - name: Check for unexpected file changes
         run: |

@@ -1,12 +1,24 @@
 {
     "$schema": "./node_modules/nx/schemas/nx-schema.json",
     "namedInputs": {
-        "default": ["{projectRoot}/**/*", "{workspaceRoot}/ghost/tsconfig.json"]
+        "default": [
+            "{projectRoot}/**/*",
+            "sharedGlobals"
+        ],
+        "sharedGlobals": [
+            "{workspaceRoot}/.npmrc",
+            "{workspaceRoot}/ghost/tsconfig.json",
+            "{workspaceRoot}/package.json",
+            "{workspaceRoot}/pnpm-workspace.yaml",
+            "{workspaceRoot}/pnpm-lock.yaml"
+        ]
     },
     "parallel": 4,
     "targetDefaults": {
         "build": {
-            "dependsOn": ["^build"],
+            "dependsOn": [
+                "^build"
+            ],
             "inputs": [
                 {
                     "env": "GHOST_CDN_URL"
@@ -30,11 +42,15 @@
         },
         "test:unit": {
             "cache": true,
-            "dependsOn": ["build"]
+            "dependsOn": [
+                "build"
+            ]
         },
         "dev": {
-          "dependsOn": ["^dev"],
-          "continuous": true
+            "dependsOn": [
+                "^dev"
+            ],
+            "continuous": true
         }
     },
     "cacheDirectory": ".nxcache"

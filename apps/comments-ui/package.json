@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/comments-ui",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -85,5 +85,10 @@
     "vite-plugin-css-injected-by-js": "3.5.2",
     "vite-plugin-svgr": "3.3.0",
     "vitest": "1.6.1"
+  },
+  "nx": {
+    "tags": [
+      "i18n"
+    ]
   }
 }
