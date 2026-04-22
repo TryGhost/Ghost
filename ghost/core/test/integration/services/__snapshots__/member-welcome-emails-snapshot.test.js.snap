@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Member Welcome Email Renderer Snapshots renders a simple paragraph welcome email 1 1`] = `
 Object {

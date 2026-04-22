@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`{{ghost_head}} helper accent_color attaches style tag to existing script/style tag 1 1`] = `
 Object {

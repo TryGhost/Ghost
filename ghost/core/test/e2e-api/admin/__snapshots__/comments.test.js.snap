@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Admin Comments API API Key Permissions API key without comment permissions cannot browse comments 1: [body] 1`] = `
 Object {

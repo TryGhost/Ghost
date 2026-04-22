@@ -31,6 +31,9 @@ test.describe('Ghost Admin - Reset Password', () => {
 
         const analyticsPage = new AnalyticsOverviewPage(page);
         await expect(analyticsPage.header).toBeVisible();
+
+        const cookies = await page.context().cookies();
+        expect(cookies.find(({name}) => name === 'ghost-admin-api-session')).toBeDefined();
     });
 
     test('resets account owner password when 2FA enabled', async ({page, ghostAccountOwner}) => {
