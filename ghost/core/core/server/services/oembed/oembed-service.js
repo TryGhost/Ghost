@@ -444,6 +444,18 @@ class OEmbedService {
                     return;
                 }
 
+                // `rich` and `video` responses ship provider-supplied HTML that gets
+                // stored in the post's Lexical payload and rendered into the admin
+                // editor preview (via srcdoc) and into public themes (via innerHTML).
+                // Known providers (YouTube, Twitter, etc.) go through `knownProvider`
+                // with @extractus/oembed-extractor's allowlist — anything reaching
+                // here is an arbitrary site's self-declared oEmbed endpoint, which we
+                // must not trust. Drop the response and let the caller fall back to
+                // a bookmark card.
+                if (oembed.type === 'video' || oembed.type === 'rich') {
+                    return;
+                }
+
                 // return the extracted object, don't pass through the response body
                 return oembed;
             }
