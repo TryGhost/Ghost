@@ -63,10 +63,10 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({title, value, onChan
     const selectedSwatch = swatches.find((swatch) => {
         return swatch.value === value || (value && swatch.hex.toLowerCase() === value.toLowerCase());
     });
-    const resetInteractionState = useCallback(() => {
+    const resetInteractionState = () => {
         allowPickerChanges.current = false;
         suppressPickerChanges.current = false;
-    }, []);
+    };
     const detachEarlyEscapeListener = useCallback(() => {
         if (!earlyEscapeHandler.current) {
             return;
@@ -75,11 +75,11 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({title, value, onChan
         window.removeEventListener('keydown', earlyEscapeHandler.current, true);
         earlyEscapeHandler.current = null;
     }, []);
-    const closePopover = useCallback(() => {
+    const closePopover = () => {
         detachEarlyEscapeListener();
         resetInteractionState();
         setOpen(false);
-    }, [detachEarlyEscapeListener, resetInteractionState]);
+    };
     const attachEarlyEscapeListener = useCallback(() => {
         if (earlyEscapeHandler.current) {
             return;
@@ -93,12 +93,13 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({title, value, onChan
             event.preventDefault();
             event.stopPropagation();
             detachEarlyEscapeListener();
-            closePopover();
+            resetInteractionState();
+            setOpen(false);
         };
 
         earlyEscapeHandler.current = handleEarlyEscape;
         window.addEventListener('keydown', handleEarlyEscape, true);
-    }, [closePopover, detachEarlyEscapeListener]);
+    }, [detachEarlyEscapeListener]);
 
     useEffect(() => {
         return () => {
