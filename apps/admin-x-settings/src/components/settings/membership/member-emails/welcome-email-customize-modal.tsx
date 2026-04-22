@@ -50,17 +50,9 @@ interface WelcomeEmailCustomizeFormState {
 }
 
 const SAVE_ERROR_TOAST_ID = 'welcome-email-design-save-error';
-const NON_DESIGN_FIELDS = new Set([
-    'id',
-    'slug',
-    'created_at',
-    'updated_at',
-    'header_image',
-    'show_header_icon',
-    'show_header_title',
-    'show_badge',
-    'footer_content'
-]);
+const WELCOME_EMAIL_DESIGN_FIELDS = new Set(Object.keys(DEFAULT_EMAIL_DESIGN));
+
+const isWelcomeEmailDesignField = (key: string) => WELCOME_EMAIL_DESIGN_FIELDS.has(key);
 interface GeneralTabProps {
     generalSettings: GeneralSettings;
     onGeneralChange: (updates: Partial<GeneralSettings>) => void;
@@ -310,13 +302,13 @@ export function mapApiToDesignSettings(
     apiData: EmailDesignSettings
 ): EmailDesignSettings {
     return Object.fromEntries(
-        Object.entries(apiData).filter(([key]) => !NON_DESIGN_FIELDS.has(key))
+        Object.entries(apiData).filter(([key]) => isWelcomeEmailDesignField(key))
     ) as EmailDesignSettings;
 }
 
 export function buildAutomatedEmailDesignPayload(state: WelcomeEmailCustomizeFormState): EditAutomatedEmailDesign {
     const persistedDesign = Object.fromEntries(
-        Object.entries(state.designSettings).filter(([key]) => !NON_DESIGN_FIELDS.has(key))
+        Object.entries(state.designSettings).filter(([key]) => isWelcomeEmailDesignField(key))
     );
 
     return {

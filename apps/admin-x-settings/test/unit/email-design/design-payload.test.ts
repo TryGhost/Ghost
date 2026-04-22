@@ -30,7 +30,7 @@ describe('Welcome email design payload helpers', function () {
         assert.equal('footer_content' in result, false);
     });
 
-    it('preserves unexpected persisted design fields when mapping api data', function () {
+    it('keeps only known welcome email design fields when mapping api data', function () {
         const apiData = {
             ...DEFAULT_EMAIL_DESIGN,
             custom_future_field: '#123456'
@@ -38,10 +38,10 @@ describe('Welcome email design payload helpers', function () {
 
         const result = mapApiToDesignSettings(apiData as never) as unknown as typeof apiData;
 
-        assert.equal(result.custom_future_field, '#123456');
+        assert.equal('custom_future_field' in result, false);
     });
 
-    it('preserves unexpected persisted design fields in the save payload while excluding non-design metadata fields', function () {
+    it('keeps only known welcome email design fields in the save payload while excluding non-design metadata fields', function () {
         const state = {
             designSettings: {
                 ...DEFAULT_EMAIL_DESIGN,
@@ -77,7 +77,7 @@ describe('Welcome email design payload helpers', function () {
             footer_content: string | null;
         };
 
-        assert.equal(payload.custom_future_field, '#abcdef');
+        assert.equal('custom_future_field' in payload, false);
         assert.equal('id' in payload, false);
         assert.equal('slug' in payload, false);
         assert.equal('created_at' in payload, false);
