@@ -241,32 +241,30 @@ class AdapterCacheRedis extends BaseCacheAdapter {
                 }
                 return result;
             } else {
-                if (internalKey && this.currentlyExecutingReads.has(internalKey)) {
+                if (!internalKey) {
+                    return fetchData();
+                }
+                if (this.currentlyExecutingReads.has(internalKey)) {
                     return this.currentlyExecutingReads.get(internalKey);
                 }
-                const fetchPromise = fetchData().then(async (data) => {
-                    if (internalKey) {
-                        try {
-                            debug('set', internalKey);
-                            await this.cache.set(internalKey, data);
-                        } catch (err) {
-                            logging.error(err);
-                        }
-                    } else {
-                        await this.set(key, data);
-                    }
-                    return data;
-                }).catch((err) => {
+                const fetchPromise = fetchData();
+                const resultPromise = fetchPromise.catch((err) => {
                     logging.error(err);
-                }).finally(() => {
-                    if (internalKey) {
-                        this.currentlyExecutingReads.delete(internalKey);
-                    }
                 });
-                if (internalKey) {
-                    this.currentlyExecutingReads.set(internalKey, fetchPromise);
-                }
-                return fetchPromise;
+                fetchPromise.then(async (data) => {
+                    try {
+                        debug('set', internalKey);
+                        await this.cache.set(internalKey, data);
+                    } catch (err) {
+                        logging.error(err);
+                    }
+                }).catch(() => {
+                    // fetchData rejection — already logged by resultPromise
+                }).finally(() => {
+                    this.currentlyExecutingReads.delete(internalKey);
+                });
+                this.currentlyExecutingReads.set(internalKey, resultPromise);
+                return resultPromise;
             }
         } catch (err) {
             logging.error(err);
