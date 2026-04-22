@@ -85,6 +85,8 @@ interface StaffServiceEmails {
         memberEmail: string;
         memberName: string | null;
         tierName: string;
+        cadence: 'month' | 'year';
+        duration: number;
         buyerEmail: string;
     }): Promise<void>;
 }
@@ -313,6 +315,8 @@ export class GiftService {
                     memberEmail: member.get('email'),
                     memberName: member.get('name'),
                     tierName: tier.name,
+                    cadence: redeemed.cadence,
+                    duration: redeemed.duration,
                     buyerEmail: redeemed.buyerEmail
                 });
             } catch (err) {

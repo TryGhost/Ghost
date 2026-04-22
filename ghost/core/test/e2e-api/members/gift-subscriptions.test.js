@@ -671,7 +671,7 @@ describe('Gift Subscriptions', function () {
 
                 // Verify staff notification email was sent
                 mockManager.assert.sentEmail({
-                    subject: /new paid subscriber/i,
+                    subject: /paid subscription started/i,
                     to: 'jbloggs@example.com'
                 });
             });
@@ -849,7 +849,7 @@ describe('Gift Subscriptions', function () {
                         // Verify gift subscription started staff notification was sent,
                         // and that no other unwanted staff notifications were sent (i.e. no "Free member signup" email)
                         mockManager.assert.sentEmail({
-                            subject: /new paid subscriber/i,
+                            subject: /paid subscription started/i,
                             to: 'jbloggs@example.com'
                         });
                         mockManager.assert.sentEmailCount(1);
@@ -920,7 +920,7 @@ describe('Gift Subscriptions', function () {
 
                         // Verify gift subscription started staff notification was sent
                         mockManager.assert.sentEmail({
-                            subject: /new paid subscriber/i,
+                            subject: /paid subscription started/i,
                             to: 'jbloggs@example.com'
                         });
 

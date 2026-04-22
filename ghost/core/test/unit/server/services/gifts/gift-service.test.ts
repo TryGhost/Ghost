@@ -1007,6 +1007,8 @@ describe('GiftService', function () {
                 memberEmail: 'member@example.com',
                 memberName: 'Member Name',
                 tierName: 'Bronze',
+                cadence: 'year',
+                duration: 1,
                 buyerEmail: 'buyer@example.com'
             });
             assert.equal(redeemed.status, 'redeemed');
