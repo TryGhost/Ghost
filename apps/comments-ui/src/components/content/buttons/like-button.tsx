@@ -13,7 +13,7 @@ const LikeButton: React.FC<Props> = ({comment}) => {
     const [disabled, setDisabled] = useState(false);
 
     const canInteract = isMember && hasRequiredTier;
-    const netScore = comment.count.likes - comment.count.dislikes;
+    const likesCount = comment.count.likes;
 
     const openCta = () => {
         dispatchAction('openPopup', {
@@ -77,9 +77,9 @@ const LikeButton: React.FC<Props> = ({comment}) => {
                 />
             </button>
             <span className={`min-w-[2ch] text-center font-sans text-base tabular-nums sm:text-sm ${
-                comment.liked ? 'text-black/90 dark:text-white/90' : comment.disliked ? 'text-black/90 dark:text-white/90' : 'text-black/50 dark:text-white/60'
+                comment.liked ? 'text-black/90 dark:text-white/90' : 'text-black/50 dark:text-white/60'
             }`}>
-                {netScore}
+                {likesCount}
             </span>
             <button
                 className={`duration-50 group flex cursor-pointer items-center font-sans text-base outline-0 transition-all ease-linear sm:text-sm ${
