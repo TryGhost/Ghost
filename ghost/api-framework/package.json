@@ -22,11 +22,11 @@
     "lint": "oxlint -c ../../.oxlintrc.json ."
   },
   "dependencies": {
-    "@tryghost/debug": "^2.0.3",
-    "@tryghost/errors": "^3.0.3",
-    "@tryghost/promise": "^2.0.3",
-    "@tryghost/tpl": "^2.0.3",
-    "@tryghost/validator": "^2.0.3",
+    "@tryghost/debug": "workspace:*",
+    "@tryghost/errors": "workspace:*",
+    "@tryghost/promise": "workspace:*",
+    "@tryghost/tpl": "workspace:*",
+    "@tryghost/validator": "workspace:*",
     "lodash": "4.18.1"
   },
   "devDependencies": {
