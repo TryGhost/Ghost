@@ -371,6 +371,21 @@ describe('MemberWelcomeEmailRenderer', function () {
             assert.equal(result.subject, 'Welcome <script>alert("xss")</script>!');
         });
 
+        it('uses &#39;, not &apos;, for Outlook support', async function () {
+            lexicalRenderStub.resolves('<p>It\'s great to have you!</p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert(!result.html.includes('&apos;'), 'HTML should not contain &apos;');
+            assert(result.html.includes('&#39;'), 'HTML should contain &#39;');
+        });
+
         it('removes unknown tokens from output', async function () {
             lexicalRenderStub.resolves('<p>Hello {unknown_token} and {another}</p>');
             const renderer = new MemberWelcomeEmailRenderer({t: key => key});

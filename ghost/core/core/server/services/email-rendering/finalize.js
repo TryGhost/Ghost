@@ -24,7 +24,14 @@ const finalizeHtml = (html) => {
         el.tagName = 'div';
     });
 
-    return $.html();
+    html = $.html();
+    html = html.replace(/&apos;/g, '&#39;');
+    html = html.replace(/→/g, '&rarr;');
+    html = html.replace(/–/g, '&ndash;');
+    html = html.replace(/“/g, '&ldquo;');
+    html = html.replace(/”/g, '&rdquo;');
+
+    return html;
 };
 
 module.exports = {
