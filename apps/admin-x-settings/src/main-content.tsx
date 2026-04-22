@@ -10,6 +10,7 @@ import {useGlobalData} from './components/providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const EMPTY_KEYWORDS: string[] = [];
+const OPEN_SHADE_MODAL_SELECTOR = ':is([role="dialog"], [role="alertdialog"])[data-state="open"]';
 
 const Page: React.FC<{children: ReactNode}> = ({children}) => {
     return <>
@@ -31,13 +32,13 @@ const MainContent: React.FC = () => {
         window.location.hash = escLocation;
     };
     const hasOpenModal = () => {
+        // Legacy admin-x-design-system modals render a dedicated backdrop element.
         if (document.getElementById('modal-backdrop')) {
             return true;
         }
 
-        return Boolean(document.querySelector(
-            '[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]'
-        ));
+        // Newer Shade/Radix dialogs expose their open state via dialog roles.
+        return Boolean(document.querySelector(OPEN_SHADE_MODAL_SELECTOR));
     };
 
     useEffect(() => {
