@@ -241,18 +241,31 @@ class AdapterCacheRedis extends BaseCacheAdapter {
                 }
                 return result;
             } else {
-                if (this.currentlyExecutingReads.has(key)) {
-                    return this.currentlyExecutingReads.get(key);
+                if (internalKey && this.currentlyExecutingReads.has(internalKey)) {
+                    return this.currentlyExecutingReads.get(internalKey);
                 }
                 const fetchPromise = fetchData().then(async (data) => {
-                    await this.set(key, data);
+                    if (internalKey) {
+                        try {
+                            debug('set', internalKey);
+                            await this.cache.set(internalKey, data);
+                        } catch (err) {
+                            logging.error(err);
+                        }
+                    } else {
+                        await this.set(key, data);
+                    }
                     return data;
                 }).catch((err) => {
                     logging.error(err);
                 }).finally(() => {
-                    this.currentlyExecutingReads.delete(key);
+                    if (internalKey) {
+                        this.currentlyExecutingReads.delete(internalKey);
+                    }
                 });
-                this.currentlyExecutingReads.set(key, fetchPromise);
+                if (internalKey) {
+                    this.currentlyExecutingReads.set(internalKey, fetchPromise);
+                }
                 return fetchPromise;
             }
         } catch (err) {

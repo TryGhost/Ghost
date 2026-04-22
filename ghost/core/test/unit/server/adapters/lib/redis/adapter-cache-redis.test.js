@@ -236,6 +236,58 @@ describe('Adapter Cache Redis', function () {
                 assert.equal(value, 'recovered');
             });
 
+            it('does not coalesce fetches across a prefix_hash cycle (reset)', async function () {
+                let prefixHash = 'gen1';
+                const cacheStore = new Map();
+                const redisClient = {
+                    on: sinon.stub(),
+                    get: sinon.stub().callsFake(async (k) => {
+                        if (k === 'prefix_hash') {
+                            return prefixHash;
+                        }
+                        return null;
+                    }),
+                    set: sinon.stub().resolves('OK')
+                };
+                const cacheInstance = {
+                    get: sinon.stub().callsFake(async k => cacheStore.get(k) ?? null),
+                    set: sinon.stub().callsFake(async (k, v) => {
+                        cacheStore.set(k, v);
+                    }),
+                    ttl: sinon.stub(),
+                    store: {getClient: () => redisClient}
+                };
+                const cache = new RedisCache({cache: cacheInstance});
+
+                let resolveSlow;
+                const slowFetch = sinon.stub().returns(new Promise((resolve) => {
+                    resolveSlow = resolve;
+                }));
+                const fastFetch = sinon.stub().resolves('post-reset');
+
+                const pA = cache.get('k', slowFetch);
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 0);
+                });
+                assert.equal(slowFetch.callCount, 1);
+
+                prefixHash = 'gen2';
+
+                const pB = cache.get('k', fastFetch);
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 0);
+                });
+                assert.equal(fastFetch.callCount, 1, 'post-reset caller must not join pre-reset in-flight fetch');
+
+                resolveSlow('pre-reset');
+                const [vA, vB] = await Promise.all([pA, pB]);
+
+                assert.equal(vA, 'pre-reset');
+                assert.equal(vB, 'post-reset');
+                assert.equal(cacheStore.get('gen1k'), 'pre-reset');
+                assert.equal(cacheStore.get('gen2k'), 'post-reset');
+            });
+
             it('fetches independently for different keys', async function () {
                 const cacheStub = createCacheStub();
                 cacheStub.get.resolves(null);
