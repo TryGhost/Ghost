@@ -24,6 +24,7 @@ const finalizeHtml = (html) => {
         el.tagName = 'div';
     });
 
+    // Fix characters unsupported in some Outlook versions.
     html = $.html();
     html = html.replace(/&apos;/g, '&#39;');
     html = html.replace(/→/g, '&rarr;');
