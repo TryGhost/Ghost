@@ -64,7 +64,14 @@ describe('redeemGift action', () => {
                     name: 'Jamie Larson',
                     email: 'jamie@example.com',
                     paid: true,
-                    status: 'gift'
+                    status: 'gift',
+                    subscriptions: [{
+                        status: 'active',
+                        tier: {
+                            name: 'Premium',
+                            expiry_at: '2027-05-29T12:00:00.000Z'
+                        }
+                    }]
                 })),
                 getIntegrityToken: vi.fn(),
                 sendMagicLink: vi.fn()
@@ -113,7 +120,7 @@ describe('redeemGift action', () => {
             notification: {
                 type: 'giftRedeem',
                 status: 'success',
-                message: 'You now have access to Premium for 1 year. Enjoy!'
+                message: 'You now have access to Premium until 29 May 2027. Enjoy!'
             }
         });
         // Ensure the account page is no longer rendered after redemption.
@@ -156,7 +163,7 @@ describe('redeemGift action', () => {
             api: mockApi
         });
 
-        const expectedRedirect = 'https://example.com/?giftRedemption=true&giftTier=Ultra&giftCadence=month&giftDuration=3';
+        const expectedRedirect = 'https://example.com/?giftRedemption=true';
 
         expect(mockApi.member.sendMagicLink).toHaveBeenCalledWith({
             email: 'jamie@example.com',

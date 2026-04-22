@@ -1,3 +1,4 @@
+import {getMemberTierName, getSubscriptionExpiry} from './helpers';
 import {t} from './i18n';
 
 export function getGiftDurationLabel({cadence, duration} = {}) {
@@ -12,13 +13,14 @@ export function getGiftDurationLabel({cadence, duration} = {}) {
         : t('{months} months', {months: duration});
 }
 
-export function getGiftRedemptionSuccessMessage({tierName, cadence, duration} = {}) {
-    if (!tierName || !cadence || !duration) {
+export function getGiftRedemptionSuccessMessage({member} = {}) {
+    const tierName = getMemberTierName({member});
+    const expiryDate = getSubscriptionExpiry({member});
+    if (!tierName || !expiryDate) {
         return null;
     }
-    const durationLabel = getGiftDurationLabel({cadence, duration});
     // TODO: Add translation strings once copy has been finalised
-    return `You now have access to ${tierName} for ${durationLabel}. Enjoy!`;
+    return `You now have access to ${tierName} until ${expiryDate}. Enjoy!`;
 }
 
 export function getGiftRedemptionErrorMessage(error) {

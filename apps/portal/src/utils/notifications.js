@@ -1,5 +1,3 @@
-import {getGiftRedemptionSuccessMessage} from './gift-redemption-notification';
-
 const getHashData = () => {
     const hash = window.location.hash || '';
     const [hashPath = '', hashQueryString = ''] = hash.replace(/^#/, '').split('?');
@@ -14,21 +12,12 @@ const getURLParam = ({searchParams, hashParams}, name) => {
     return searchParams.get(name) ?? hashParams.get(name);
 };
 
-export const handleGiftRedemptionAction = ({status, giftTier, giftCadence, giftDuration}) => {
-    const successStatus = status === 'true';
-    // TODO: Add translation strings once copy has been finalised
-    const successMessage = getGiftRedemptionSuccessMessage({
-        tierName: giftTier,
-        cadence: giftCadence,
-        duration: Number(giftDuration)
-    }) || 'Gift redeemed! You\'re all set.';
-
+export const handleGiftRedemptionAction = ({success}) => {
     return {
         type: 'giftRedeem',
-        status: successStatus ? 'success' : 'error',
-        duration: successStatus ? 5000 : 3000,
-        autoHide: successStatus,
-        ...(successStatus ? {message: successMessage} : {})
+        status: success ? 'success' : 'error',
+        duration: success ? 5000 : 3000,
+        autoHide: success
     };
 };
 
@@ -106,16 +95,9 @@ export default function NotificationParser({billingOnly = false} = {}) {
         return handleStripeActions({status: stripeStatus, billingOnly});
     }
 
-    if ((giftRedemption || action === 'giftRedeem') && successStatus && !billingOnly) {
-        const giftTier = getURLParam({searchParams, hashParams}, 'giftTier');
-        const giftCadence = getURLParam({searchParams, hashParams}, 'giftCadence');
-        const giftDuration = getURLParam({searchParams, hashParams}, 'giftDuration');
-        return handleGiftRedemptionAction({
-            status: successStatus,
-            giftTier,
-            giftCadence,
-            giftDuration
-        });
+    if (giftRedemption && successStatus) {
+        const success = successStatus === 'true';
+        return handleGiftRedemptionAction({success});
     }
 
     if (action && successStatus && !billingOnly) {

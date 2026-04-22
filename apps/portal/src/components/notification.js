@@ -7,6 +7,7 @@ import {ReactComponent as CloseIcon} from '../images/icons/close.svg';
 import {ReactComponent as CheckmarkIcon} from '../images/icons/checkmark-fill.svg';
 import {ReactComponent as WarningIcon} from '../images/icons/warning-fill.svg';
 import NotificationParser, {clearURLParams} from '../utils/notifications';
+import {getGiftRedemptionSuccessMessage} from '../utils/gift-redemption-notification';
 import {getPortalLink} from '../utils/helpers';
 import {t} from '../utils/i18n';
 
@@ -107,12 +108,17 @@ const NotificationText = ({type, status, message, context}) => {
             </p>
         );
     } else if (type === 'giftRedeem' && status === 'success') {
+        // TODO: Add translation strings once copy has been finalised
+        const successMessage = getGiftRedemptionSuccessMessage({member: context.member})
+            || 'Gift redeemed! You\'re all set.';
+
         return (
             <p>
-                {message}
+                {successMessage}
             </p>
         );
     } else if (type === 'giftRedeem' && status === 'error') {
+        // TODO: Add translation strings once copy has been finalised
         return (
             <p>
                 {'We couldn\'t redeem this gift for your account.'}
@@ -289,7 +295,7 @@ export default class Notification extends React.Component {
             if (['signin', 'signup', 'giftRedeem'].includes(type)) {
                 deleteParams.push('action', 'success');
                 if (type === 'giftRedeem') {
-                    deleteParams.push('giftRedemption', 'giftTier', 'giftCadence', 'giftDuration');
+                    deleteParams.push('giftRedemption');
                 }
             } else if (['stripe:checkout'].includes(type)) {
                 deleteParams.push('stripe');

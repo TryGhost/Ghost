@@ -219,10 +219,6 @@ async function signup({data, state, api}) {
 
 async function redeemGift({data, state, api}) {
     try {
-        const gift = state.pageData.gift;
-        if (!gift) {
-            throw new Error('Gift not found');
-        }
         let {email, name, giftToken} = data;
         name = name?.trim();
 
@@ -235,11 +231,7 @@ async function redeemGift({data, state, api}) {
                 autoHide: true,
                 closeable: true,
                 state,
-                message: getGiftRedemptionSuccessMessage({
-                    tierName: gift.tier.name,
-                    cadence: gift.cadence,
-                    duration: gift.duration
-                })
+                message: getGiftRedemptionSuccessMessage({member})
             });
             removePortalLinkFromUrl();
 
@@ -258,10 +250,7 @@ async function redeemGift({data, state, api}) {
         const integrityToken = await api.member.getIntegrityToken();
         const redirectUrl = new URL(state?.site?.url || window.location.href);
         redirectUrl.search = new URLSearchParams({
-            giftRedemption: 'true',
-            giftTier: gift.tier.name,
-            giftCadence: gift.cadence,
-            giftDuration: String(gift.duration)
+            giftRedemption: 'true'
         }).toString();
         redirectUrl.hash = '';
 

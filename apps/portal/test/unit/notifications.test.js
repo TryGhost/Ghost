@@ -9,46 +9,11 @@ describe('notifications utils', () => {
     test('reads gift redemption params from action subscribe plus portal hash query', () => {
         window.history.replaceState({}, '', '/?action=subscribe&success=true#/portal/account?giftRedemption=true');
 
-        expect(NotificationParser()).toMatchObject({
+        expect(NotificationParser()).toEqual({
             type: 'giftRedeem',
             status: 'success',
             autoHide: true,
-            duration: 5000,
-            message: 'Gift redeemed! You\'re all set.'
-        });
-    });
-
-    test('reads gift redemption params from legacy giftRedeem action', () => {
-        window.history.replaceState({}, '', '/#/portal/account?action=giftRedeem&success=true');
-
-        expect(NotificationParser()).toMatchObject({
-            type: 'giftRedeem',
-            status: 'success',
-            autoHide: true,
-            duration: 5000,
-            message: 'Gift redeemed! You\'re all set.'
-        });
-    });
-
-    test('builds tier/duration message when giftTier, giftCadence, and giftDuration params are present', () => {
-        window.history.replaceState({}, '', '/?success=true&giftRedemption=true&giftTier=Ultra&giftCadence=month&giftDuration=1');
-
-        expect(NotificationParser()).toMatchObject({
-            type: 'giftRedeem',
-            status: 'success',
-            autoHide: true,
-            duration: 5000,
-            message: 'You now have access to Ultra for 1 month. Enjoy!'
-        });
-    });
-
-    test('handles plural durations for the tier/duration message', () => {
-        window.history.replaceState({}, '', '/?success=true&giftRedemption=true&giftTier=Premium&giftCadence=year&giftDuration=2');
-
-        expect(NotificationParser()).toMatchObject({
-            type: 'giftRedeem',
-            status: 'success',
-            message: 'You now have access to Premium for 2 years. Enjoy!'
+            duration: 5000
         });
     });
 
