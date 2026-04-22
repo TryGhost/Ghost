@@ -103,7 +103,7 @@ async function updateRun(runId, attrs, transacting) {
 
 /**
  * @param {string} runId
- * @param {'finished' | 'email send failed' | 'member changed status' | 'member not found' | 'member unsubscribed'} exitReason
+ * @param {'finished' | 'email send failed' | 'member changed status' | 'member unsubscribed'} exitReason
  * @param {Knex.Transaction} [transacting]
  * @returns {Promise<void>}
  */

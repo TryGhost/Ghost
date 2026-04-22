@@ -38,8 +38,10 @@ const ShareModal = () => {
         // correct document context where the click events actually fire.
         const doc = moreMenuRef.current?.ownerDocument || document;
 
-        const onDocumentMouseDown = (event) => {
+        const onDocumentClickCapture = (event) => {
             if (moreMenuRef.current && !moreMenuRef.current.contains(event.target)) {
+                event.stopPropagation();
+                event.preventDefault();
                 setIsMoreMenuOpen(false);
             }
         };
@@ -50,11 +52,11 @@ const ShareModal = () => {
             }
         };
 
-        doc.addEventListener('mousedown', onDocumentMouseDown);
+        doc.addEventListener('click', onDocumentClickCapture, true);
         doc.addEventListener('keydown', onDocumentKeyDown);
 
         return () => {
-            doc.removeEventListener('mousedown', onDocumentMouseDown);
+            doc.removeEventListener('click', onDocumentClickCapture, true);
             doc.removeEventListener('keydown', onDocumentKeyDown);
         };
     }, [isMoreMenuOpen]);

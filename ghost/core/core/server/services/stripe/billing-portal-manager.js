@@ -1,3 +1,5 @@
+const logging = require('@tryghost/logging');
+
 const CONFIGURATION_ID_SETTING = 'stripe_billing_portal_configuration_id';
 
 const DEFAULT_FEATURES = {
@@ -91,7 +93,13 @@ class BillingPortalManager {
                 const configuration = await this.api.createBillingPortalConfiguration(this.getConfigurationOptions());
                 return configuration.id;
             }
-            throw err;
+
+            logging.error('Failed to update the billing portal configuration', {
+                err
+            });
+
+            // Couldn't modify configuration, means it's likely the default config
+            return id;
         }
     }
 

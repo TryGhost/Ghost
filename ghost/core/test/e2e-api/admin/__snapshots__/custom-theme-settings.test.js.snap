@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Custom Theme Settings API Browse can fetch settings for current theme 1: [body] 1`] = `
 Object {

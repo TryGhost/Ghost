@@ -6,7 +6,6 @@ export type NavigationItem = {
     url: string;
 }
 
-// eslint-disable-next-line no-unused-vars
 export type NavigationItemErrors = { [key in keyof NavigationItem]?: string }
 export type EditableItem = NavigationItem & { id: string; errors: NavigationItemErrors }
 

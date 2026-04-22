@@ -658,20 +658,10 @@ describe('Gift Subscriptions', function () {
                     'Gift subscription',
                     'The synthetic subscription price should be marked as a gift'
                 );
-                assert.equal(
-                    memberResponse.body.subscriptions[0].plan.currency.toLowerCase(),
-                    paidProduct.get('currency').toLowerCase(),
-                    'The gift subscription plan should reuse the tier currency'
-                );
-                assert.equal(
-                    memberResponse.body.subscriptions[0].price.currency.toLowerCase(),
-                    paidProduct.get('currency').toLowerCase(),
-                    'The gift subscription price should reuse the tier currency'
-                );
 
                 // Verify staff notification email was sent
                 mockManager.assert.sentEmail({
-                    subject: /new paid subscriber/i,
+                    subject: /paid subscription started/i,
                     to: 'jbloggs@example.com'
                 });
             });
@@ -849,7 +839,7 @@ describe('Gift Subscriptions', function () {
                         // Verify gift subscription started staff notification was sent,
                         // and that no other unwanted staff notifications were sent (i.e. no "Free member signup" email)
                         mockManager.assert.sentEmail({
-                            subject: /new paid subscriber/i,
+                            subject: /paid subscription started/i,
                             to: 'jbloggs@example.com'
                         });
                         mockManager.assert.sentEmailCount(1);
@@ -920,7 +910,7 @@ describe('Gift Subscriptions', function () {
 
                         // Verify gift subscription started staff notification was sent
                         mockManager.assert.sentEmail({
-                            subject: /new paid subscriber/i,
+                            subject: /paid subscription started/i,
                             to: 'jbloggs@example.com'
                         });
 

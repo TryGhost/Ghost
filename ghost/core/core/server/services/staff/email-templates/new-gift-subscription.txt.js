@@ -5,8 +5,7 @@ Congratulations!
 
 You have a new paid member: ${data.memberData.name}
 
-Tier: ${data.tierData.name}
-Source: Gift subscription
+Tier: ${data.tierData.name}${data.tierData.details ? ` • ${data.tierData.details}` : ''}
 Gifted by: ${data.giftedByEmail}
 
 ---

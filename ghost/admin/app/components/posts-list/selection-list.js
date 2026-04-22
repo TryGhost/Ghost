@@ -123,11 +123,11 @@ export default class SelectionList {
         }
         
         const models = this.infinityModel;
-        let total;
+        let total = 0;
         for (const key in models) {
-            total += models[key].meta?.pagination?.total;
-        }   
-        return Math.max((total ?? 0) - this.selectedIds.size, 1);
+            total += models[key].meta?.pagination?.total ?? 0;
+        }
+        return Math.max(total - this.selectedIds.size, 1);
     }
 
     isSelected(id) {

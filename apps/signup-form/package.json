@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/signup-form",
-  "version": "0.3.14",
+  "version": "0.3.16",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -31,7 +31,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.40",
+    "@tryghost/debug": "2.1.0",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
@@ -67,5 +67,10 @@
     "vite": "5.4.21",
     "vite-plugin-svgr": "3.3.0",
     "vitest": "1.6.1"
+  },
+  "nx": {
+    "tags": [
+      "i18n"
+    ]
   }
 }
