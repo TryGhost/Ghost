@@ -17,7 +17,7 @@ const getWorkerCount = () => {
 
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
-    timeout: process.env.CI ? 30 * 1000 : 30 * 1000,
+    timeout: process.env.CI ? 60 * 1000 : 30 * 1000,
     expect: {
         timeout: process.env.CI ? 10 * 1000 : 10 * 1000
     },

@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/signup-form",
-  "version": "0.3.14",
+  "version": "0.3.15",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -67,5 +67,10 @@
     "vite": "5.4.21",
     "vite-plugin-svgr": "3.3.0",
     "vitest": "1.6.1"
+  },
+  "nx": {
+    "tags": [
+      "i18n"
+    ]
   }
 }

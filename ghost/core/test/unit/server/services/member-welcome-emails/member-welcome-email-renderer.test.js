@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const cheerio = require('cheerio');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const errors = require('@tryghost/errors');
@@ -127,7 +128,9 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            assert(result.html.includes('color: #ff0000'));
+            const $ = cheerio.load(result.html);
+            const $link = $('a[href="https://example.com"]');
+            assert($link.attr('style').includes('color: #ff0000'));
         });
 
         it('substitutes template variables in subject', async function () {
@@ -262,13 +265,13 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            assert(result.html.includes('<!doctype html>'));
-            assert(result.html.includes('<title>Test Subject</title>'));
-            assert(result.html.includes('>Content</p>'));
-            assert(result.html.includes('Test Site'));
-            assert(result.html.includes(`&copy; ${year}`));
-            assert(result.html.includes('Manage your preferences'));
-            assert(result.html.includes('https://example.com/#/portal/account'));
+            const $ = cheerio.load(result.html);
+            assert(result.html.toLowerCase().includes('<!doctype html>'));
+            assert.equal($('title').text(), 'Test Subject');
+            assert.equal($('p:contains("Content")').length, 1);
+            assert($.text().includes('Test Site'));
+            assert($.text().includes(`© ${year}`));
+            assert($('a[href="https://example.com/#/portal/account/newsletters"]').text().includes('Manage your preferences'));
         });
 
         it('preserves multiline code block whitespace in the shared email wrapper', async function () {
@@ -282,10 +285,10 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            const codeBlockMatch = result.html.match(/<pre[^>]*><code[^>]*>([\s\S]*?)<\/code><\/pre>/);
-
-            assert(codeBlockMatch, 'Expected rendered welcome email HTML to include a code block');
-            assert.equal(codeBlockMatch[1], 'const firstLine = 1;\nconst secondLine = 2;');
+            const $ = cheerio.load(result.html);
+            const $code = $('pre code');
+            assert($code.length, 'Expected rendered welcome email HTML to include a code block');
+            assert.equal($code.text(), 'const firstLine = 1;\nconst secondLine = 2;');
         });
 
         it('resolves relative portal links to absolute URLs', async function () {
@@ -299,8 +302,10 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            assert(result.html.includes('https://example.com/#/portal/support'));
-            assert(!result.html.match(/href="[^"]*"[^>]*>[^<]*Support us/).toString().includes('href="#/portal/support"'));
+            const $ = cheerio.load(result.html);
+            const $link = $('a[href="https://example.com/#/portal/support"]');
+            assert($link.length, 'Expected a link to the absolute portal support URL');
+            assert.equal($link.text(), 'Support us');
         });
 
         it('generates plain text from HTML', async function () {
@@ -360,8 +365,9 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            assert(result.html.includes('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;'));
-            assert(!result.html.includes('<script>alert("xss")</script>'));
+            const $ = cheerio.load(result.html);
+            assert($.text().includes('<script>alert("xss")</script>'));
+            assert.equal($('script').length, 0);
             assert.equal(result.subject, 'Welcome <script>alert("xss")</script>!');
         });
 
@@ -392,7 +398,8 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            assert(!result.html.includes('<code>{first_name}</code>'));
+            const $ = cheerio.load(result.html);
+            assert.equal($('code').length, 0);
             assert(result.html.includes('Hello John'));
         });
 
@@ -407,9 +414,8 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            // Regular code should remain wrapped in <code>
-            assert(result.html.match(/<code[^>]*>.*?if.*?return.*?<\/code>/));
-            // Replacement string should have code wrapper removed and be substituted
+            const $ = cheerio.load(result.html);
+            assert.equal($('code').text(), 'if (x) { return y; }');
             assert(result.html.includes('a greeting for John'));
             assert(!result.html.includes('{first_name}'));
         });
@@ -425,7 +431,8 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            assert(!result.html.includes('<code>{first_name, "friend"}</code>'));
+            const $ = cheerio.load(result.html);
+            assert.equal($('code').length, 0);
             assert(result.html.includes('Hey friend'));
         });
 
@@ -440,7 +447,8 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            assert(!result.html.includes('<code>{first_name "friend"}</code>'));
+            const $ = cheerio.load(result.html);
+            assert.equal($('code').length, 0);
             assert(result.html.includes('Hey friend'));
         });
 
@@ -460,8 +468,9 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            assert(result.html.includes('Gérer vos préférences'));
-            assert(!result.html.includes('Manage your preferences'));
+            const $ = cheerio.load(result.html);
+            assert($.text().includes('Gérer vos préférences'));
+            assert(!$.text().includes('Manage your preferences'));
         });
 
         describe('design customization', function () {
@@ -528,9 +537,10 @@ describe('MemberWelcomeEmailRenderer', function () {
                     siteSettings: defaultSiteSettings
                 });
 
-                assert(result.html.includes('src="https://example.com/header.png"'));
-                assert(result.html.includes('Custom footer</p>'));
-                assert(result.html.includes('https://ghost.org/?via=pbg-newsletter'));
+                const $ = cheerio.load(result.html);
+                assert.equal($('img[src="https://example.com/header.png"]').length, 1);
+                assert.equal($('p:contains("Custom footer")').length, 1);
+                assert.equal($('a[href="https://ghost.org/?via=pbg-newsletter"]').length, 1);
             });
 
             it('renders the publication icon when enabled and a site icon exists', async function () {
@@ -548,9 +558,10 @@ describe('MemberWelcomeEmailRenderer', function () {
                     siteSettings: defaultSiteSettings
                 });
 
-                assert(result.html.includes('class="header"'));
-                assert(result.html.includes('class="site-icon"'));
-                assert(result.html.includes('src="https://example.com/content/images/icon.png"'));
+                const $ = cheerio.load(result.html);
+                assert($('.header').length);
+                assert($('.site-icon').length);
+                assert($('img[src="https://example.com/content/images/icon.png"]').length);
             });
 
             it('does not render the publication icon when disabled', async function () {
@@ -568,9 +579,10 @@ describe('MemberWelcomeEmailRenderer', function () {
                     siteSettings: defaultSiteSettings
                 });
 
-                assert(!result.html.includes('class="header"'));
-                assert(!result.html.includes('class="site-icon"'));
-                assert(!result.html.includes('src="https://example.com/content/images/icon.png"'));
+                const $ = cheerio.load(result.html);
+                assert.equal($('.header').length, 0);
+                assert.equal($('.site-icon').length, 0);
+                assert.equal($('img[src="https://example.com/content/images/icon.png"]').length, 0);
             });
 
             it('does not render the publication icon when the site icon is missing', async function () {
@@ -591,9 +603,10 @@ describe('MemberWelcomeEmailRenderer', function () {
                     }
                 });
 
-                assert(!result.html.includes('class="header"'));
-                assert(!result.html.includes('class="site-icon"'));
-                assert(!result.html.includes('content/images/icon.png'));
+                const $ = cheerio.load(result.html);
+                assert.equal($('.header').length, 0);
+                assert.equal($('.site-icon').length, 0);
+                assert.equal($('img[src="https://example.com/content/images/icon.png"]').length, 0);
             });
 
             it('uses the sans-serif content-shell class by default when design customization is enabled', async function () {
@@ -607,9 +620,10 @@ describe('MemberWelcomeEmailRenderer', function () {
                     siteSettings: defaultSiteSettings
                 });
 
-                assert.match(result.html, /<tr class="post-content-row">/);
-                assert(result.html.includes('class="post-content-sans-serif"'));
-                assert(result.html.includes('font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;'));
+                const $ = cheerio.load(result.html);
+                assert($('tr.post-content-row').length);
+                assert($('.post-content-sans-serif').length);
+                assert($('.post-content-sans-serif').attr('style').includes('font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif'));
             });
 
             it('uses the serif content-shell class when a serif body font is explicitly configured', async function () {
@@ -626,8 +640,10 @@ describe('MemberWelcomeEmailRenderer', function () {
                     siteSettings: defaultSiteSettings
                 });
 
-                assert(result.html.includes('class="post-content"'));
-                assert(result.html.includes('font-family: Georgia, serif;'));
+                const $ = cheerio.load(result.html);
+                assert($('tr.post-content-row').length);
+                assert($('.post-content').length);
+                assert($('.post-content').attr('style').includes('font-family: Georgia, serif'));
             });
 
             it('applies custom link colors when design customization is enabled', async function () {
@@ -644,8 +660,8 @@ describe('MemberWelcomeEmailRenderer', function () {
                     siteSettings: defaultSiteSettings
                 });
 
-                assert(result.html.includes('class="post-content-sans-serif"'));
-                assert(result.html.includes('color: #000000'));
+                const $ = cheerio.load(result.html);
+                assert($('a:contains("Custom link")').attr('style').includes('color: #000000'));
             });
 
             it('applies header image styles and preserves header background color', async function () {
@@ -665,10 +681,10 @@ describe('MemberWelcomeEmailRenderer', function () {
                     siteSettings: defaultSiteSettings
                 });
 
-                assert.match(result.html, /class="header"[^>]*background-color:\s*#123456/i);
-                assert.match(result.html, /class="header-main"[^>]*background-color:\s*#123456/i);
-                assert.match(result.html, /class="header-image"/i);
-                assert.match(result.html, /src="https:\/\/example\.com\/header\.png"/);
+                const $ = cheerio.load(result.html);
+                assert($('.header').attr('style').includes('background-color: #123456'));
+                assert($('.header-image').length);
+                assert($('img[src="https://example.com/header.png"]').length);
             });
 
             it('applies shared Koenig card styles used by newsletters', async function () {
@@ -704,10 +720,9 @@ describe('MemberWelcomeEmailRenderer', function () {
                     siteSettings: defaultSiteSettings
                 });
 
-                assert(result.html.includes('kg-callout-card'));
-                assert(result.html.includes('padding: 24px'));
-                assert(result.html.includes('table class="btn"'));
-                assert(result.html.includes('background-color: #ff0000'));
+                const $ = cheerio.load(result.html);
+                assert($('.kg-callout-card').attr('style').includes('padding: 24px'));
+                assert($('table.btn [style*="background-color: #ff0000"]').length);
             });
 
             it('applies transistor card styles in welcome emails', async function () {
@@ -734,12 +749,13 @@ describe('MemberWelcomeEmailRenderer', function () {
                     siteSettings: defaultSiteSettings
                 });
 
-                assert.match(result.html, /class="kg-card kg-transistor-card"[^>]*style="[^"]*border-radius: 10px/);
-                assert.match(result.html, /class="kg-card kg-transistor-card"[^>]*style="[^"]*border: 1px solid rgba\(0, 0, 0, 0.12\)/);
-                assert.match(result.html, /class="kg-transistor-title"[^>]*style="[^"]*display: block/);
-                assert.match(result.html, /class="kg-transistor-title"[^>]*style="[^"]*text-decoration: none/);
-                assert.match(result.html, /class="kg-transistor-description"[^>]*style="[^"]*max-width: 400px/);
-                assert.match(result.html, /href="https:\/\/partner\.transistor\.fm\/ghost\/abc-123-def"/);
+                const $ = cheerio.load(result.html);
+                assert($('.kg-card.kg-transistor-card').attr('style').includes('border-radius: 10px'));
+                assert($('.kg-card.kg-transistor-card').attr('style').includes('border: 1px solid rgba(0, 0, 0, 0.12)'));
+                assert($('.kg-transistor-title').attr('style').includes('display: block'));
+                assert($('.kg-transistor-title').attr('style').includes('text-decoration: none'));
+                assert($('.kg-transistor-description').attr('style').includes('max-width: 400px'));
+                assert($('a[href="https://partner.transistor.fm/ghost/abc-123-def"]').length);
                 assert(!result.html.includes('%%abc-123-def%%'));
             });
 
@@ -781,9 +797,10 @@ describe('MemberWelcomeEmailRenderer', function () {
                     siteSettings: defaultSiteSettings
                 });
 
-                assert.match(result.html, /class="kg-bookmark-container"[^>]*style="[^"]*display: flex/);
-                assert.match(result.html, /class="kg-video-preview"[^>]*style="[^"]*background-color: #1d1f21/);
-                assert(result.html.includes('Embed note'));
+                const $ = cheerio.load(result.html);
+                assert($('.kg-bookmark-container').attr('style').includes('display: flex'));
+                assert($('.kg-video-preview').attr('style').includes('background-color: #1d1f21'));
+                assert($.text().includes('Embed note'));
             });
 
             it('applies call-to-action and product card styles', async function () {
@@ -842,13 +859,11 @@ describe('MemberWelcomeEmailRenderer', function () {
                     siteSettings: defaultSiteSettings
                 });
 
-                assert.match(result.html, /class="kg-card kg-cta-card kg-cta-bg-none kg-cta-immersive kg-cta-link-accent"[^>]*style="[^"]*border-bottom: 1px solid #e0e7eb/);
-                assert.match(result.html, /class="kg-cta-sponsor-label"[^>]*style="[^"]*border-bottom: 1px solid #e0e7eb/);
-                assert.match(result.html, /class="kg-product-card"[^>]*style="[^"]*background-color: rgba\(255, 255, 255, 0.25\)/);
-
-                const productButtonTableMatch = result.html.match(/class="kg-product-button-wrapper"[\s\S]*?<table[^>]*class="btn"[^>]*style="([^"]*)"/);
-                assert(productButtonTableMatch, 'product button table should have inline styles');
-                assert(productButtonTableMatch[1].includes('width: 100%'), 'product button table should have width: 100%');
+                const $ = cheerio.load(result.html);
+                assert($('.kg-cta-card').attr('style').includes('border-bottom: 1px solid #e0e7eb'));
+                assert($('.kg-cta-sponsor-label').attr('style').includes('border-bottom: 1px solid #e0e7eb'));
+                assert($('.kg-product-card').attr('style').includes('background-color: rgba(255, 255, 255, 0.25)'));
+                assert($('.kg-product-button-wrapper table.btn').attr('style').includes('width: 100%'), 'product button table should have width: 100%');
             });
 
             it('does not inline margin 0 auto on button tables that would override alignment', async function () {
@@ -880,11 +895,11 @@ describe('MemberWelcomeEmailRenderer', function () {
                     siteSettings: defaultSiteSettings
                 });
 
-                assert.match(result.html, /<table[^>]*class="btn"[^>]*align="left"/);
-
-                const btnMatch = result.html.match(/<table[^>]*class="btn"[^>]*>/);
-                assert(btnMatch, 'should have a btn table');
-                assert(!btnMatch[0].includes('margin: 0 auto'), 'button should not have margin: 0 auto');
+                const $ = cheerio.load(result.html);
+                const $button = $('table.btn');
+                assert($button.length, 'should have a btn table');
+                assert.equal($button.attr('align'), 'left');
+                assert(!$button.attr('style')?.includes('margin: 0 auto'), 'button should not have margin: 0 auto');
             });
 
             it('inlines figcaption styles for image card captions', async function () {
@@ -903,12 +918,11 @@ describe('MemberWelcomeEmailRenderer', function () {
                     siteSettings: defaultSiteSettings
                 });
 
-                assert(result.html.includes('A caption'));
-                const figcaptionMatch = result.html.match(/<figcaption[^>]*style="([^"]*)"[^>]*>/);
-                assert(figcaptionMatch, 'figcaption should have inline styles');
-                const figcaptionStyle = figcaptionMatch[1];
-                assert(figcaptionStyle.includes('text-align: center'), 'figcaption should be centered');
-                assert(figcaptionStyle.includes('font-size: 13px'), 'figcaption should have 13px font');
+                const $ = cheerio.load(result.html);
+                const $figcaption = $('figcaption');
+                assert.equal($figcaption.text(), 'A caption');
+                assert($figcaption.attr('style').includes('text-align: center'), 'figcaption should be centered');
+                assert($figcaption.attr('style').includes('font-size: 13px'), 'figcaption should have 13px font');
             });
 
             it('inlines figure margin and image max-width for image cards', async function () {
@@ -926,13 +940,9 @@ describe('MemberWelcomeEmailRenderer', function () {
                     siteSettings: defaultSiteSettings
                 });
 
-                const figureMatch = result.html.match(/<figure[^>]*style="([^"]*)"[^>]*>/);
-                assert(figureMatch, 'figure should have inline styles');
-                assert(figureMatch[1].includes('margin: 0 0 1.5em'), 'figure should have bottom margin');
-
-                const imgMatch = result.html.match(/<img[^>]*style="([^"]*)"[^>]*>/);
-                assert(imgMatch, 'img should have inline styles');
-                assert(imgMatch[1].includes('max-width: 100%'), 'img should have max-width: 100%');
+                const $ = cheerio.load(result.html);
+                assert($('figure').attr('style').includes('margin: 0 0 1.5em'), 'figure should have bottom margin');
+                assert($('figure img.kg-image').attr('style').includes('max-width: 100%'), 'img should have max-width: 100%');
             });
 
             it('inlines width 100% on button card outer table', async function () {
@@ -964,9 +974,8 @@ describe('MemberWelcomeEmailRenderer', function () {
                     siteSettings: defaultSiteSettings
                 });
 
-                const buttonCardMatch = result.html.match(/<table[^>]*class="kg-card kg-button-card"[^>]*style="([^"]*)"[^>]*>/);
-                assert(buttonCardMatch, 'button card table should have inline styles');
-                assert(buttonCardMatch[1].includes('width: 100%'), 'button card table should have width: 100%');
+                const $ = cheerio.load(result.html);
+                assert($('table.kg-card.kg-button-card').attr('style').includes('width: 100%'), 'button card table should have width: 100%');
             });
 
             it('preserves explicit right alignment values', async function () {
@@ -998,7 +1007,8 @@ describe('MemberWelcomeEmailRenderer', function () {
                     siteSettings: defaultSiteSettings
                 });
 
-                assert.match(result.html, /<table[^>]*class="btn"[^>]*align="right"/);
+                const $ = cheerio.load(result.html);
+                assert.equal($('table.btn').attr('align'), 'right');
             });
         });
     });

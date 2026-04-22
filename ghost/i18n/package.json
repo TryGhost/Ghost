@@ -39,5 +39,10 @@
   "dependencies": {
     "@tryghost/debug": "0.1.40",
     "i18next": "23.16.8"
+  },
+  "nx": {
+    "tags": [
+      "i18n"
+    ]
   }
 }

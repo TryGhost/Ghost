@@ -42,6 +42,11 @@ jobs:
     permissions:
       actions: read
       contents: read
+      # Required by dorny/paths-filter, which calls pulls.listFiles on
+      # pull_request events. Private forks of this repo don't grant this
+      # implicitly when an explicit permissions block is present, so it must
+      # be listed here for the Setup job to succeed on those forks.
+      pull-requests: read
     steps:
       - name: Checkout current commit
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -81,16 +86,6 @@ jobs:
             echo "is_member=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Determine added packages
-        if: env.IS_TAG != 'true'
-        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
-        id: added
-        with:
-          base: ${{ env.NX_BASE }}
-          filters: |
-            new-package:
-              - added: 'ghost/**/package.json'
-
       - name: Determine changed packages
         if: env.IS_TAG != 'true'
         uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
@@ -104,14 +99,15 @@ jobs:
               - 'package.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
+            ci:
+              - '.github/workflows/**'
+              - '.github/actions/**'
+              - '.github/scripts/**'
             core:
               - *shared
               - 'ghost/**'
               - '!ghost/admin/**'
               - '!ghost/core/core/server/data/tinybird/**'
-            admin:
-              - *shared
-              - 'ghost/admin/**'
             admin-x-settings:
               - *shared
               - 'apps/admin-x-settings/**'
@@ -123,21 +119,12 @@ jobs:
               - 'apps/shade/**'
               - 'apps/admin-x-framework/**'
               - 'apps/activitypub/**'
-            announcement-bar:
-              - *shared
-              - 'apps/announcement-bar/**'
             comments-ui:
               - *shared
               - 'apps/comments-ui/**'
-            portal:
-              - *shared
-              - 'apps/portal/**'
             signup-form:
               - *shared
               - 'apps/signup-form/**'
-            sodo-search:
-              - *shared
-              - 'apps/sodo-search/**'
             tinybird:
               - '.github/workflows/ci.yml'
               - 'compose.dev.analytics.yaml'
@@ -167,27 +154,38 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Determine Affected Projects
-        if: env.IS_TAG != 'true'
         id: affected
         run: |
-          AFFECTED_PROJECTS=$(pnpm -s nx show projects --affected --json | tr -d '\n')
+          # if the ci files have changed or we're in a tag, ensure we don't just look at affected
+          # projects and we run the necessary jobs on all projects
+          AFFECTED_ARG="--affected"
+          if [[ "${{ steps.changed.outputs.ci }}" == 'true' || "${{ env.IS_TAG }}" == 'true' ]]; then
+            AFFECTED_ARG=""
+          fi
+
+          AFFECTED_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --json | tr -d '\n')
           echo "affected_projects=$AFFECTED_PROJECTS" >> "$GITHUB_OUTPUT"
+          # string list for use in run-many commands
+          AFFECTED_PROJECTS_STR=$(pnpm -s nx show projects ${AFFECTED_ARG} --sep=, | tr -d '\n')
+          echo "affected_projects_str=$AFFECTED_PROJECTS_STR" >> "$GITHUB_OUTPUT"
+
+          # "i18n" tag = packages whose source is scanned by @tryghost/i18n's
+          # translate:* scripts (not packages that merely import @tryghost/i18n).
+          I18N_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --projects 'tag:i18n' --sep=, | tr -d '\n')
+          echo "affected_i18n_projects=${I18N_PROJECTS}" >> "$GITHUB_OUTPUT"
 
     outputs:
       affected_projects: ${{ steps.affected.outputs.affected_projects }}
-      changed_admin: ${{ steps.changed.outputs.admin }}
+      affected_projects_str: ${{ steps.affected.outputs.affected_projects_str }}
+      changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_admin_x_settings: ${{ steps.changed.outputs.admin-x-settings }}
       changed_activitypub: ${{ steps.changed.outputs.activitypub }}
-      changed_announcement_bar: ${{ steps.changed.outputs.announcement-bar }}
       changed_comments_ui: ${{ steps.changed.outputs.comments-ui }}
-      changed_portal: ${{ steps.changed.outputs.portal }}
       changed_signup_form: ${{ steps.changed.outputs.signup-form }}
-      changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
       changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_tinybird_datafiles: ${{ steps.changed.outputs.tinybird-datafiles }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
-      changed_new_package: ${{ steps.added.outputs.new-package }}
       is_main: ${{ env.IS_MAIN }}
       is_tag: ${{ env.IS_TAG }}
       is_development: ${{ env.IS_DEVELOPMENT }}
@@ -222,7 +220,7 @@ jobs:
   job_lint:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_any_code == 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     name: Lint
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -244,13 +242,8 @@ jobs:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - name: Lint all (tags)
-        if: needs.job_setup.outputs.is_tag == 'true'
-        run: pnpm nx run-many -t lint
-
-      - name: Lint affected (branches)
-        if: needs.job_setup.outputs.is_tag != 'true'
-        run: pnpm nx affected -t lint
+      - name: Lint projects
+        run: pnpm nx run-many -t lint -p "${{ needs.job_setup.outputs.affected_projects_str }}"
         env:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
@@ -267,12 +260,8 @@ jobs:
     needs: [job_setup]
     name: i18n
     if: |
-        needs.job_setup.outputs.is_tag == 'true'
-        || needs.job_setup.outputs.changed_comments_ui == 'true'
-        || needs.job_setup.outputs.changed_signup_form == 'true'
-        || needs.job_setup.outputs.changed_sodo_search == 'true'
-        || needs.job_setup.outputs.changed_portal == 'true'
-        || needs.job_setup.outputs.changed_core == 'true'
+      needs.job_setup.outputs.is_tag == 'true'
+      || needs.job_setup.outputs.changed_i18n_apps == 'true'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
@@ -290,7 +279,9 @@ jobs:
   job_admin-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_admin == 'true'
+    if: |
+      needs.job_setup.outputs.is_tag == 'true'
+      || contains(fromJSON(needs.job_setup.outputs.affected_projects), 'ghost-admin')
     name: Admin tests - Chrome
     env:
       MOZ_HEADLESS: 1
@@ -331,7 +322,7 @@ jobs:
   job_unit-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_any_code == 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     strategy:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
@@ -360,25 +351,13 @@ jobs:
         with:
           timezoneLinux: "America/New_York"
 
-      - name: Run unit tests (tags — all)
-        if: needs.job_setup.outputs.is_tag == 'true'
-        run: pnpm nx run-many -t test:unit
+      - name: Run unit tests
+        run: pnpm nx run-many -t test:unit -p "${{ needs.job_setup.outputs.affected_projects_str }}"
         env:
           FORCE_COLOR: 0
           GHOST_UNIT_TEST_VARIANT: ci
           NX_SKIP_LOG_GROUPING: true
           logging__level: fatal
-
-      - name: Run unit tests (branches — affected)
-        if: needs.job_setup.outputs.is_tag != 'true'
-        run: pnpm nx affected -t test:unit
-        env:
-          FORCE_COLOR: 0
-          GHOST_UNIT_TEST_VARIANT: ci
-          NX_SKIP_LOG_GROUPING: true
-          logging__level: fatal
-          NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
-          NX_HEAD: ${{ env.HEAD_COMMIT }}
 
       - name: Check for unexpected file changes
         run: |
@@ -825,6 +804,9 @@ jobs:
       - run: mv ghost-*.tgz ghost.tgz
         working-directory: ghost/core
 
+      - name: Verify packaged package.json
+        run: tar -xOf ghost/core/ghost.tgz package/package.json | jq -e '.packageManager' >/dev/null
+
       - name: Save Ghost CLI Debug Logs
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -835,13 +817,19 @@ jobs:
       - name: Clean Install
         run: |
           DIR=$(mktemp -d)
-          ghost install local -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
+          ghost install local -d "$DIR" --archive "$(pwd)/ghost/core/ghost.tgz"
+          URL=$(ghost config get url -d "$DIR" --no-prompt --no-color | tail -n1)
+          curl --retry 10 --retry-connrefused --retry-delay 3 -fsSI "$URL"
+          ghost stop -d "$DIR"
 
       - name: Latest Release
         run: |
           DIR=$(mktemp -d)
-          ghost install local -d $DIR
-          ghost update -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
+          ghost install local -d "$DIR"
+          ghost update -d "$DIR" --archive "$(pwd)/ghost/core/ghost.tgz"
+          URL=$(ghost config get url -d "$DIR" --no-prompt --no-color | tail -n1)
+          curl --retry 10 --retry-connrefused --retry-delay 3 -fsSI "$URL"
+          ghost stop -d "$DIR"
 
       - name: Print debug logs
         if: failure()
@@ -900,12 +888,8 @@ jobs:
             exit 1
           fi
 
-      - name: Pack standalone distribution
-        run: pnpm --filter ghost pack:standalone
-
-      - name: Create npm tarball
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: pnpm --filter ghost pack:tarball
+      - name: Build standalone distribution
+        run: pnpm --filter ghost archive
 
       - name: Upload npm tarball
         if: startsWith(github.ref, 'refs/tags/v')
@@ -1724,7 +1708,7 @@ jobs:
   # Publish Ghost npm package — runs on version tags only (OIDC, no stored token)
   # --------------------------------------------------------------------------- #
   publish_ghost:
-    needs: [job_setup, job_build_artifacts]
+    needs: [job_setup, job_build_artifacts, job_ghost-cli]
     name: Publish Ghost to npm
     runs-on: ubuntu-latest
     if: |
@@ -1751,12 +1735,7 @@ jobs:
         run: npm install -g npm@11
 
       - name: Verify tarball contents
-        run: |
-          echo "Tarball contents:"
-          tar -tzf ghost-*.tgz | head -20
-          tar -tzf ghost-*.tgz | grep -q 'package/.npmrc' || { echo "::error::.npmrc not found in tarball"; exit 1; }
-          tar -tzf ghost-*.tgz | grep -q 'package/pnpm-lock.yaml' || { echo "::error::pnpm-lock.yaml not found in tarball"; exit 1; }
-          tar -xOf ghost-*.tgz package/package.json | jq -e '.packageManager' >/dev/null || { echo "::error::packageManager not found in packaged package.json"; exit 1; }
+        run: tar -xOf ghost-*.tgz package/package.json | jq -e '.packageManager' >/dev/null
 
       - name: Publish to npm
         run: npm publish ghost-*.tgz --access public

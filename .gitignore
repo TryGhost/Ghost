@@ -117,7 +117,8 @@ test/functional/*.png
 /ghost/core/config.*.json
 /ghost/core/config.*.jsonc
 
-# Built asset files
+# Build/deploy outputs
+/ghost/core/package
 /ghost/core/core/built
 /ghost/core/core/frontend/public/ghost.min.css
 /ghost/core/core/frontend/public/comment-counts.min.js
@@ -203,6 +204,7 @@ yalc.lock
 # e2e test suite
 /e2e/test-results
 /e2e/playwright-report
+/e2e/blob-report
 /e2e/build
 /e2e/playwright
 /e2e/data

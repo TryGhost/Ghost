@@ -123,6 +123,28 @@ describe('GiftService', function () {
         });
     }
 
+    describe('generateToken', function () {
+        it('returns a 12-character base62 string', function () {
+            const service = createService();
+
+            for (let i = 0; i < 50; i++) {
+                assert.match(service.generateToken(), /^[A-Za-z0-9]{12}$/);
+            }
+        });
+
+        it('produces unique tokens across many invocations', function () {
+            const service = createService();
+            const tokens = new Set<string>();
+            const samples = 10_000;
+
+            for (let i = 0; i < samples; i++) {
+                tokens.add(service.generateToken());
+            }
+
+            assert.equal(tokens.size, samples);
+        });
+    });
+
     describe('recordPurchase', function () {
         it('creates a Gift entity and saves it', async function () {
             const service = createService();
@@ -963,10 +985,7 @@ describe('GiftService', function () {
             });
 
             const service = createService();
-            const redeemed = await service.redeem({
-                token: 'gift-token',
-                memberId: 'member_1'
-            });
+            const redeemed = await service.redeem('gift-token', 'member_1');
 
             sinon.assert.calledOnce(giftRepository.transaction);
             sinon.assert.calledOnceWithExactly(giftRepository.getByToken, 'gift-token', {transacting: 'trx', forUpdate: true});
@@ -988,6 +1007,8 @@ describe('GiftService', function () {
                 memberEmail: 'member@example.com',
                 memberName: 'Member Name',
                 tierName: 'Bronze',
+                cadence: 'year',
+                duration: 1,
                 buyerEmail: 'buyer@example.com'
             });
             assert.equal(redeemed.status, 'redeemed');
@@ -1011,13 +1032,69 @@ describe('GiftService', function () {
             staffServiceEmails.notifyGiftSubscriptionStarted.rejects(new Error('SMTP error'));
 
             const service = createService();
-            const redeemed = await service.redeem({
-                token: 'gift-token',
-                memberId: 'member_1'
-            });
+            const redeemed = await service.redeem('gift-token', 'member_1');
 
             assert.equal(redeemed.status, 'redeemed');
             sinon.assert.calledOnce(staffServiceEmails.notifyGiftSubscriptionStarted);
+        });
+
+        it('uses an external transaction when provided instead of creating its own', async function () {
+            const gift = buildGift();
+
+            giftRepository.getByToken.resolves(gift);
+            memberRepository.get.resolves({
+                id: 'member_1',
+                get: sinon.stub().withArgs('status').returns('free')
+            });
+
+            const service = createService();
+            const externalTrx = {executionPromise: Promise.resolve()};
+            const redeemed = await service.redeem('gift-token', 'member_1', {transacting: externalTrx});
+
+            sinon.assert.notCalled(giftRepository.transaction);
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, 'gift-token', {transacting: externalTrx, forUpdate: true});
+            sinon.assert.calledOnceWithExactly(memberRepository.get, {id: 'member_1'}, {transacting: externalTrx, forUpdate: true});
+            sinon.assert.calledOnceWithExactly(memberRepository.update, {
+                products: [{
+                    id: 'tier_1',
+                    expiry_at: redeemed.consumesAt
+                }],
+                status: 'gift'
+            }, {
+                id: 'member_1',
+                transacting: externalTrx
+            });
+            sinon.assert.calledOnceWithExactly(giftRepository.update, redeemed, {transacting: externalTrx});
+            assert.equal(redeemed.status, 'redeemed');
+        });
+
+        it('allows a newly created gift member to redeem when newMember is true', async function () {
+            const gift = buildGift();
+
+            giftRepository.getByToken.resolves(gift);
+            memberRepository.get.resolves({
+                id: 'member_1',
+                get: sinon.stub().withArgs('status').returns('gift')
+            });
+
+            const service = createService();
+            const redeemed = await service.redeem('gift-token', 'member_1', {newMember: true});
+
+            sinon.assert.calledOnce(giftRepository.transaction);
+            sinon.assert.calledOnceWithExactly(memberRepository.get, {id: 'member_1'}, {transacting: 'trx', forUpdate: true});
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, 'gift-token', {transacting: 'trx', forUpdate: true});
+            sinon.assert.calledOnceWithExactly(memberRepository.update, {
+                products: [{
+                    id: 'tier_1',
+                    expiry_at: redeemed.consumesAt
+                }],
+                status: 'gift'
+            }, {
+                id: 'member_1',
+                transacting: 'trx'
+            });
+            sinon.assert.calledOnceWithExactly(giftRepository.update, redeemed, {transacting: 'trx'});
+            assert.equal(redeemed.status, 'redeemed');
         });
 
         it('throws NotFoundError when the member does not exist', async function () {
@@ -1025,10 +1102,7 @@ describe('GiftService', function () {
 
             const service = createService();
             await assert.rejects(
-                () => service.redeem({
-                    token: 'gift-token',
-                    memberId: 'missing-member'
-                }),
+                () => service.redeem('gift-token', 'missing-member'),
                 (err: any) => {
                     assert.equal(err.errorType, 'NotFoundError');
                     assert.equal(err.message, 'Member not found: missing-member');
@@ -1046,10 +1120,7 @@ describe('GiftService', function () {
 
             const service = createService();
             await assert.rejects(
-                () => service.redeem({
-                    token: 'missing-token',
-                    memberId: 'member_1'
-                }),
+                () => service.redeem('missing-token', 'member_1'),
                 (err: any) => {
                     assert.equal(err.errorType, 'NotFoundError');
                     assert.equal(err.message, 'This gift does not exist.');
@@ -1071,10 +1142,7 @@ describe('GiftService', function () {
 
             const service = createService();
             await assert.rejects(
-                () => service.redeem({
-                    token: 'gift-token',
-                    memberId: 'member_1'
-                }),
+                () => service.redeem('gift-token', 'member_1'),
                 (err: any) => {
                     assert.equal(err.errorType, 'BadRequestError');
                     assert.equal(err.message, 'You already have an active subscription.');
