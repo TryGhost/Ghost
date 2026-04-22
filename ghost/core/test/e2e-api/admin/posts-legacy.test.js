@@ -1587,8 +1587,8 @@ describe('Posts API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(422)
             .expect((result) => {
-                result.body.errors[0].message.should.eql('Validation error, cannot edit post.');
-                result.body.errors[0].context.should.eql('Scheduling an email requires a newsletter reference.');
+                assert.equal(result.body.errors[0].message, 'Validation error, cannot edit post.');
+                assert.equal(result.body.errors[0].context, 'Scheduling an email requires a newsletter reference.');
             });
     });
 
