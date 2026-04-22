@@ -170,6 +170,93 @@ describe('Adapter Cache Redis', function () {
             sinon.assert.calledOnce(logging.error);
         });
 
+        describe('concurrent cache miss coalescing', function () {
+            it('calls fetchData only once when multiple callers miss simultaneously', async function () {
+                const KEY = 'concurrent-miss';
+                const cacheStub = createCacheStub();
+                cacheStub.get.resolves(null);
+                cacheStub.set.resolves();
+                const cache = new RedisCache({cache: cacheStub});
+
+                const fetchData = sinon.stub().resolves('shared value');
+
+                const [v1, v2, v3] = await Promise.all([
+                    cache.get(KEY, fetchData),
+                    cache.get(KEY, fetchData),
+                    cache.get(KEY, fetchData)
+                ]);
+
+                assert.equal(fetchData.callCount, 1);
+                assert.equal(v1, 'shared value');
+                assert.equal(v2, 'shared value');
+                assert.equal(v3, 'shared value');
+            });
+
+            it('propagates fetchData rejection to all concurrent callers', async function () {
+                const KEY = 'concurrent-miss-error';
+                const cacheStub = createCacheStub();
+                cacheStub.get.resolves(null);
+                const cache = new RedisCache({cache: cacheStub});
+
+                const fetchData = sinon.stub().rejects(new Error('upstream down'));
+
+                const [v1, v2] = await Promise.all([
+                    cache.get(KEY, fetchData),
+                    cache.get(KEY, fetchData)
+                ]);
+
+                assert.equal(fetchData.callCount, 1);
+                assert.equal(v1, undefined);
+                assert.equal(v2, undefined);
+                sinon.assert.calledOnce(logging.error);
+            });
+
+            it('allows retry after a coalesced fetch rejection', async function () {
+                const KEY = 'concurrent-miss-retry';
+                let cachedValue = null;
+                const cacheStub = createCacheStub();
+                cacheStub.get.callsFake(async () => cachedValue);
+                cacheStub.set.callsFake(async (_key, value) => {
+                    cachedValue = value;
+                });
+                const cache = new RedisCache({cache: cacheStub});
+
+                const fetchData = sinon.stub();
+                fetchData.onFirstCall().rejects(new Error('transient'));
+                fetchData.onSecondCall().resolves('recovered');
+
+                await Promise.all([
+                    cache.get(KEY, fetchData),
+                    cache.get(KEY, fetchData)
+                ]);
+                assert.equal(fetchData.callCount, 1);
+
+                const value = await cache.get(KEY, fetchData);
+                assert.equal(fetchData.callCount, 2);
+                assert.equal(value, 'recovered');
+            });
+
+            it('fetches independently for different keys', async function () {
+                const cacheStub = createCacheStub();
+                cacheStub.get.resolves(null);
+                cacheStub.set.resolves();
+                const cache = new RedisCache({cache: cacheStub});
+
+                const fetchA = sinon.stub().resolves('value-a');
+                const fetchB = sinon.stub().resolves('value-b');
+
+                const [v1, v2] = await Promise.all([
+                    cache.get('key-a', fetchA),
+                    cache.get('key-b', fetchB)
+                ]);
+
+                assert.equal(fetchA.callCount, 1);
+                assert.equal(fetchB.callCount, 1);
+                assert.equal(v1, 'value-a');
+                assert.equal(v2, 'value-b');
+            });
+        });
+
         it('returns the cached value when background refresh fails', async function () {
             const KEY = 'bg-refresh-error';
             let cachedValue = null;
