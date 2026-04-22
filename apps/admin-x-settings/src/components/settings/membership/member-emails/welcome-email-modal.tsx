@@ -299,6 +299,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                                 updateForm(state => ({...state, subject: nextSubject}));
                                             }}
                                         />
+                                        {errors.subject && <Hint className='mt-2' color='red'>{errors.subject}</Hint>}
                                     </div>
                                 </div>
                             </div>
