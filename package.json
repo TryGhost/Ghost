@@ -30,6 +30,6 @@
     "lodash": "4.18.1"
   },
   "devDependencies": {
-    "sinon": "21.1.2"
+    "sinon": "catalog:"
   }
 }
