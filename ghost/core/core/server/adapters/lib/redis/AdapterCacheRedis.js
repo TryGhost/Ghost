@@ -9,8 +9,6 @@ const redisStoreFactory = require('./redis-store-factory');
 const PREFIX_HASH_KEY = 'prefix_hash';
 
 class AdapterCacheRedis extends BaseCacheAdapter {
-    #prefixHashInitInFlight = null;
-
     /**
      *
      * @param {Object} config
@@ -68,6 +66,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
         this.getTimeoutMilliseconds = config.getTimeoutMilliseconds || null;
         this.currentlyExecutingBackgroundRefreshes = new Set();
         this._keyPrefix = config.keyPrefix || '';
+        this._prefixHashInitInFlight = null;
         this.redisClient = this.cache.store.getClient();
         this.redisClient.on('error', this.handleRedisError);
     }
@@ -88,20 +87,20 @@ class AdapterCacheRedis extends BaseCacheAdapter {
         if (currentPrefixHash) {
             return currentPrefixHash;
         }
-        return this.#initPrefixHash();
+        return this._initPrefixHash();
     }
 
     /**
      * Lazily creates the prefix_hash. Concurrent callers in this process
-     * share one in-flight init via #prefixHashInitInFlight; SET NX ensures
+     * share one in-flight init via _prefixHashInitInFlight; SET NX ensures
      * only one writer wins across processes.
      */
-    #initPrefixHash() {
-        if (this.#prefixHashInitInFlight) {
-            return this.#prefixHashInitInFlight;
+    _initPrefixHash() {
+        if (this._prefixHashInitInFlight) {
+            return this._prefixHashInitInFlight;
         }
         const value = crypto.randomBytes(12).toString('hex');
-        this.#prefixHashInitInFlight = this.redisClient
+        this._prefixHashInitInFlight = this.redisClient
             .set(this._keyPrefix + PREFIX_HASH_KEY, value, 'NX')
             .then(async (result) => {
                 if (result === 'OK') {
@@ -111,9 +110,9 @@ class AdapterCacheRedis extends BaseCacheAdapter {
                 return await this.redisClient.get(this._keyPrefix + PREFIX_HASH_KEY);
             })
             .finally(() => {
-                this.#prefixHashInitInFlight = null;
+                this._prefixHashInitInFlight = null;
             });
-        return this.#prefixHashInitInFlight;
+        return this._prefixHashInitInFlight;
     }
 
     async keyPrefix() {
@@ -169,7 +168,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * @param {string} key
      * @returns {Promise<{internalKey: string|null, result: any}>}
      */
-    #lookupWithTimeout(key) {
+    _lookupWithTimeout(key) {
         const lookup = (async () => {
             const internalKey = await this._buildKey(key);
             const result = await this.cache.get(internalKey);
@@ -203,7 +202,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      */
     async get(key, fetchData) {
         try {
-            const {internalKey, result} = await this.#lookupWithTimeout(key);
+            const {internalKey, result} = await this._lookupWithTimeout(key);
             debug(`get ${key}: Cache ${result ? 'HIT' : 'MISS'}`);
             if (!fetchData) {
                 return result;
