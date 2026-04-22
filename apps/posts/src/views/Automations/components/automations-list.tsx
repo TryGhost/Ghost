@@ -12,6 +12,8 @@ interface AutomationRow {
     lastRun: string;
 }
 
+// TODO(NY-1196): This is sample data, which we'll replace with real data once
+// we have the API in place.
 const automations: AutomationRow[] = [
     {
         id: 'free-members-welcome-email',
