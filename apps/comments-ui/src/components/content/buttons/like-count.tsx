@@ -5,12 +5,9 @@ type Props = {
     count: number;
     liked: boolean;
     disliked: boolean;
-    dislikesCount: number;
 };
 
-const LikeCount: React.FC<Props> = ({count, liked, disliked, dislikesCount}) => {
-    const netScore = count - dislikesCount;
-
+const LikeCount: React.FC<Props> = ({count, liked, disliked}) => {
     return (
         <div
             className="flex items-center gap-1.5"
@@ -22,9 +19,9 @@ const LikeCount: React.FC<Props> = ({count, liked, disliked, dislikesCount}) => 
                 }`}
             />
             <span className={`min-w-[2ch] text-center font-sans text-base tabular-nums sm:text-sm ${
-                liked || disliked ? 'text-black/90 dark:text-white/90' : 'text-black/50 dark:text-white/60'
+                liked ? 'text-black/90 dark:text-white/90' : 'text-black/50 dark:text-white/60'
             }`}>
-                {netScore}
+                {count}
             </span>
             <ThumbsDownIcon
                 className={`h-4 w-4 ${
