@@ -65,6 +65,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
         this.refreshAheadFactor = config.refreshAheadFactor || 0;
         this.getTimeoutMilliseconds = config.getTimeoutMilliseconds || null;
         this.currentlyExecutingBackgroundRefreshes = new Set();
+        this.currentlyExecutingReads = new Map();
         this._keyPrefix = config.keyPrefix || '';
         this._prefixHashInitInFlight = null;
         this.redisClient.on('error', this.handleRedisError);
@@ -240,9 +241,19 @@ class AdapterCacheRedis extends BaseCacheAdapter {
                 }
                 return result;
             } else {
-                const data = await fetchData();
-                await this.set(key, data); // We don't use `internalKey` here because `set` handles it
-                return data;
+                if (this.currentlyExecutingReads.has(key)) {
+                    return this.currentlyExecutingReads.get(key);
+                }
+                const fetchPromise = fetchData().then(async (data) => {
+                    await this.set(key, data);
+                    return data;
+                }).catch((err) => {
+                    logging.error(err);
+                }).finally(() => {
+                    this.currentlyExecutingReads.delete(key);
+                });
+                this.currentlyExecutingReads.set(key, fetchPromise);
+                return fetchPromise;
             }
         } catch (err) {
             logging.error(err);
