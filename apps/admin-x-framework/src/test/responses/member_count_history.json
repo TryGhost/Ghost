@@ -45,7 +45,8 @@
         "totals": {
             "paid": 110,
             "free": 530,
-            "comped": 12
+            "comped": 12,
+            "gift": 8
         }
     }
 } 

@@ -12,7 +12,7 @@ describe('MembersStatsService', function () {
         /**
          * @type {MembersStatsService.TotalMembersByStatus}
          */
-        const currentCounts = {paid: 0, free: 0, comped: 0};
+        const currentCounts = {paid: 0, free: 0, comped: 0, gift: 0};
         /**
          * @type {MembersStatsService.MemberStatusDelta[]}
          */
@@ -49,6 +49,11 @@ describe('MembersStatsService', function () {
         });
 
         beforeEach(async function () {
+            currentCounts.paid = 0;
+            currentCounts.free = 0;
+            currentCounts.comped = 0;
+            currentCounts.gift = 0;
+
             db = knex({client: 'sqlite3', connection: {filename: ':memory:'}, useNullAsDefault: true});
             membersStatsService = new MembersStatsService({knex: db});
 
@@ -81,8 +86,12 @@ describe('MembersStatsService', function () {
                 id: 'id',
                 status: 'comped'
             }));
+            const giftMembers = Array.from({length: currentCounts.gift}).map(() => ({
+                id: 'id',
+                status: 'gift'
+            }));
 
-            await db('members').insert(paidMembers.concat(freeMembers, compedMembers));
+            await db('members').insert(paidMembers.concat(freeMembers, compedMembers, giftMembers));
 
             /**
              * @typedef {object} StatusEvent
@@ -125,6 +134,7 @@ describe('MembersStatsService', function () {
             currentCounts.paid = 1;
             currentCounts.free = 2;
             currentCounts.comped = 3;
+            currentCounts.gift = 4;
 
             await setupDB();
 
