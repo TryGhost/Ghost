@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Member Commenting API POST /members/:id/commenting/disable Can disable commenting and hide comments with hide_comments: true 1: [headers] 1`] = `
 Object {
