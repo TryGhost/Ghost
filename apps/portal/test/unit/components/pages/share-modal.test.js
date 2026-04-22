@@ -216,7 +216,7 @@ describe('ShareModal', () => {
         expect(getByRole('menu')).toBeInTheDocument();
         expect(moreButton).toHaveAttribute('aria-expanded', 'true');
 
-        fireEvent.mouseDown(getByText('Share'));
+        fireEvent.click(getByText('Share'));
         expect(queryByRole('menu')).not.toBeInTheDocument();
         expect(moreButton).toHaveAttribute('aria-expanded', 'false');
 
