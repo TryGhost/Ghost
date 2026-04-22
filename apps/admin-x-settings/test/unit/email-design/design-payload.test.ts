@@ -28,13 +28,13 @@ describe('Welcome email design payload helpers', function () {
         assert.equal('show_header_title' in result, false);
         assert.equal('show_badge' in result, false);
         assert.equal('footer_content' in result, false);
+        assert.equal('post_title_color' in result, false);
+        assert.equal('title_alignment' in result, false);
     });
 
     it('preserves unexpected persisted design fields when mapping api data', function () {
         const apiData = {
             ...DEFAULT_EMAIL_DESIGN,
-            post_title_color: undefined,
-            title_alignment: undefined,
             custom_future_field: '#123456'
         };
 

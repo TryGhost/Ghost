@@ -21,7 +21,7 @@ import {
     LinkStyleField,
     SectionTitleColorField
 } from '../../email-design/design-fields';
-import {DEFAULT_EMAIL_DESIGN, type EmailDesignSettings, type PersistedEmailDesignSettings} from '../../email-design/types';
+import {DEFAULT_EMAIL_DESIGN, type EmailDesignSettings} from '../../email-design/types';
 import {EmailDesignProvider} from '../../email-design/email-design-context';
 import {Input, LoadingIndicator, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
 import {WELCOME_EMAIL_SLUGS, type WelcomeEmailType, getDefaultWelcomeEmailValues} from './default-welcome-email-values';
@@ -61,11 +61,6 @@ const NON_DESIGN_FIELDS = new Set([
     'show_badge',
     'footer_content'
 ]);
-const PREVIEW_ONLY_FIELDS = new Set([
-    'post_title_color',
-    'title_alignment'
-]);
-
 interface GeneralTabProps {
     generalSettings: GeneralSettings;
     onGeneralChange: (updates: Partial<GeneralSettings>) => void;
@@ -306,29 +301,22 @@ function mapApiToGeneralSettings(
 }
 
 /**
- * Maps API response fields to the frontend EmailDesignSettings shape.
+ * Maps API response fields to the frontend welcome-email design settings shape.
  *
- * @param {PersistedEmailDesignSettings} apiData - The persisted design fields from the API response
- * @returns {EmailDesignSettings} Design settings populated from the API response, with local-only preview fields set to defaults
+ * @param {EmailDesignSettings} apiData - The persisted design fields from the API response
+ * @returns {EmailDesignSettings} Design settings populated from the API response
  */
 export function mapApiToDesignSettings(
-    apiData: PersistedEmailDesignSettings
+    apiData: EmailDesignSettings
 ): EmailDesignSettings {
-    const persistedDesign = Object.fromEntries(
+    return Object.fromEntries(
         Object.entries(apiData).filter(([key]) => !NON_DESIGN_FIELDS.has(key))
-    ) as PersistedEmailDesignSettings;
-
-    return {
-        ...persistedDesign,
-        // Local-only fields not stored in the backend
-        post_title_color: DEFAULT_EMAIL_DESIGN.post_title_color,
-        title_alignment: DEFAULT_EMAIL_DESIGN.title_alignment
-    };
+    ) as EmailDesignSettings;
 }
 
 export function buildAutomatedEmailDesignPayload(state: WelcomeEmailCustomizeFormState): EditAutomatedEmailDesign {
     const persistedDesign = Object.fromEntries(
-        Object.entries(state.designSettings).filter(([key]) => !PREVIEW_ONLY_FIELDS.has(key) && !NON_DESIGN_FIELDS.has(key))
+        Object.entries(state.designSettings).filter(([key]) => !NON_DESIGN_FIELDS.has(key))
     );
 
     return {
