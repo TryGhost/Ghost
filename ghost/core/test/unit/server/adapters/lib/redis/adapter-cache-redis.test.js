@@ -4,6 +4,33 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const RedisCache = require('../../../../../../core/server/adapters/lib/redis/AdapterCacheRedis');
 
+const PREFIX_HASH = 'mock-prefix-hash';
+
+/**
+ * Build a stub for the cache-manager instance, including a stubbed
+ * underlying redis client. The redis client's get() returns PREFIX_HASH
+ * for the prefix_hash key by default so the prefix-rotation plumbing
+ * doesn't get in the way of the behaviour under test.
+ */
+function createCacheStub({keyPrefix = ''} = {}) {
+    const redisGet = sinon.stub();
+    redisGet.withArgs(`${keyPrefix}prefix_hash`).resolves(PREFIX_HASH);
+
+    const cacheStub = {
+        get: sinon.stub(),
+        set: sinon.stub().resolvesArg(1),
+        ttl: sinon.stub(),
+        store: {
+            getClient: sinon.stub().returns({
+                on: sinon.stub(),
+                get: redisGet,
+                set: sinon.stub().resolves('OK')
+            })
+        }
+    };
+    return cacheStub;
+}
+
 describe('Adapter Cache Redis', function () {
     beforeEach(function () {
         sinon.stub(logging, 'error');
@@ -14,17 +41,7 @@ describe('Adapter Cache Redis', function () {
     });
 
     it('can initialize Redis cache instance directly', async function () {
-        const redisCacheInstanceStub = {
-            store: {
-                getClient: sinon.stub().returns({
-                    on: sinon.stub()
-                })
-            }
-        };
-        const cache = new RedisCache({
-            cache: redisCacheInstanceStub
-        });
-
+        const cache = new RedisCache({cache: createCacheStub()});
         assert.ok(cache);
     });
 
@@ -44,17 +61,9 @@ describe('Adapter Cache Redis', function () {
 
     describe('get', function () {
         it('can get a value from the cache', async function () {
-            const redisCacheInstanceStub = {
-                get: sinon.stub().resolves('value from cache'),
-                store: {
-                    getClient: sinon.stub().returns({
-                        on: sinon.stub()
-                    })
-                }
-            };
-            const cache = new RedisCache({
-                cache: redisCacheInstanceStub
-            });
+            const cacheStub = createCacheStub();
+            cacheStub.get.resolves('value from cache');
+            const cache = new RedisCache({cache: cacheStub});
 
             const value = await cache.get('key');
 
@@ -62,22 +71,12 @@ describe('Adapter Cache Redis', function () {
         });
 
         it('returns null if getTimeoutMilliseconds is exceeded', async function () {
-            const redisCacheInstanceStub = {
-                get: sinon.stub().callsFake(async () => {
-                    return new Promise((resolve) => {
-                        setTimeout(() => {
-                            resolve('value from cache');
-                        }, 200);
-                    });
-                }),
-                store: {
-                    getClient: sinon.stub().returns({
-                        on: sinon.stub()
-                    })
-                }
-            };
+            const cacheStub = createCacheStub();
+            cacheStub.get.callsFake(() => new Promise((resolve) => {
+                setTimeout(() => resolve('value from cache'), 200);
+            }));
             const cache = new RedisCache({
-                cache: redisCacheInstanceStub,
+                cache: cacheStub,
                 getTimeoutMilliseconds: 100
             });
 
@@ -88,40 +87,28 @@ describe('Adapter Cache Redis', function () {
         it('can update the cache in the case of a cache miss', async function () {
             const KEY = 'update-cache-on-miss';
             let cachedValue = null;
-            const redisCacheInstanceStub = {
-                get: function (key) {
-                    assert(key === KEY);
+            const cacheStub = createCacheStub();
+            cacheStub.get.callsFake(async (key) => {
+                if (key === PREFIX_HASH + KEY) {
                     return cachedValue;
-                },
-                set: function (key, value) {
-                    assert(key === KEY);
-                    cachedValue = value;
-                },
-                store: {
-                    getClient: sinon.stub().returns({
-                        on: sinon.stub()
-                    })
                 }
-            };
-            const cache = new RedisCache({
-                cache: redisCacheInstanceStub
             });
+            cacheStub.set.callsFake(async (key, value) => {
+                if (key === PREFIX_HASH + KEY) {
+                    cachedValue = value;
+                }
+            });
+            const cache = new RedisCache({cache: cacheStub});
 
             const fetchData = sinon.stub().resolves('Da Value');
 
-            checkFirstRead: {
-                const value = await cache.get(KEY, fetchData);
-                sinon.assert.calledOnce(fetchData);
-                assert.equal(value, 'Da Value');
-                break checkFirstRead;
-            }
+            const firstRead = await cache.get(KEY, fetchData);
+            assert.equal(fetchData.callCount, 1);
+            assert.equal(firstRead, 'Da Value');
 
-            checkSecondRead: {
-                const value = await cache.get(KEY, fetchData);
-                sinon.assert.calledOnce(fetchData);
-                assert.equal(value, 'Da Value');
-                break checkSecondRead;
-            }
+            const secondRead = await cache.get(KEY, fetchData);
+            assert.equal(fetchData.callCount, 1);
+            assert.equal(secondRead, 'Da Value');
         });
 
         it('Can do a background update of the cache', async function () {
@@ -129,27 +116,24 @@ describe('Adapter Cache Redis', function () {
             let cachedValue = null;
             let remainingTTL = 100;
 
-            const redisCacheInstanceStub = {
-                get: function (key) {
-                    assert(key === KEY);
+            const cacheStub = createCacheStub();
+            cacheStub.get.callsFake(async (key) => {
+                if (key === PREFIX_HASH + KEY) {
                     return cachedValue;
-                },
-                set: function (key, value) {
-                    assert(key === KEY);
-                    cachedValue = value;
-                },
-                ttl: function (key) {
-                    assert(key === KEY);
-                    return remainingTTL;
-                },
-                store: {
-                    getClient: sinon.stub().returns({
-                        on: sinon.stub()
-                    })
                 }
-            };
+            });
+            cacheStub.set.callsFake(async (key, value) => {
+                if (key === PREFIX_HASH + KEY) {
+                    cachedValue = value;
+                }
+            });
+            cacheStub.ttl.callsFake(async (key) => {
+                if (key === PREFIX_HASH + KEY) {
+                    return remainingTTL;
+                }
+            });
             const cache = new RedisCache({
-                cache: redisCacheInstanceStub,
+                cache: cacheStub,
                 ttl: 100,
                 refreshAheadFactor: 0.2
             });
@@ -158,114 +142,78 @@ describe('Adapter Cache Redis', function () {
             fetchData.onFirstCall().resolves('First Value');
             fetchData.onSecondCall().resolves('Second Value');
 
-            checkFirstRead: {
-                const value = await cache.get(KEY, fetchData);
-                sinon.assert.calledOnce(fetchData);
-                assert.equal(value, 'First Value');
-                break checkFirstRead;
-            }
+            const first = await cache.get(KEY, fetchData);
+            assert.equal(fetchData.callCount, 1);
+            assert.equal(first, 'First Value');
 
             // We simulate having been in the cache for 15 seconds
             remainingTTL = 85;
 
-            checkSecondRead: {
-                const value = await cache.get(KEY, fetchData);
-                sinon.assert.calledOnce(fetchData);
-                assert.equal(value, 'First Value');
-                break checkSecondRead;
-            }
+            const second = await cache.get(KEY, fetchData);
+            assert.equal(fetchData.callCount, 1);
+            assert.equal(second, 'First Value');
 
             // We simulate having been in the cache for 30 seconds
             remainingTTL = 70;
 
-            checkThirdRead: {
-                const value = await cache.get(KEY, fetchData);
-                sinon.assert.calledOnce(fetchData);
-                assert.equal(value, 'First Value');
-                break checkThirdRead;
-            }
+            const third = await cache.get(KEY, fetchData);
+            assert.equal(fetchData.callCount, 1);
+            assert.equal(third, 'First Value');
 
             // We simulate having been in the cache for 85 seconds
             // This should trigger a background refresh
             remainingTTL = 15;
 
-            checkFourthRead: {
-                const value = await cache.get(KEY, fetchData);
-                sinon.assert.calledTwice(fetchData);
-                assert.equal(value, 'First Value');
-                break checkFourthRead;
-            }
+            const fourth = await cache.get(KEY, fetchData);
+            assert.equal(fetchData.callCount, 2);
+            assert.equal(fourth, 'First Value');
 
             // We reset the TTL to 100 for the most recent write
             remainingTTL = 100;
 
-            checkFifthRead: {
-                const value = await cache.get(KEY, fetchData);
-                sinon.assert.calledTwice(fetchData);
-                assert.equal(value, 'Second Value');
-                break checkFifthRead;
-            }
+            const fifth = await cache.get(KEY, fetchData);
+            assert.equal(fetchData.callCount, 2);
+            assert.equal(fifth, 'Second Value');
         });
     });
 
     describe('set', function () {
         it('can set a value in the cache', async function () {
-            const redisCacheInstanceStub = {
-                set: sinon.stub().resolvesArg(1),
-                store: {
-                    getClient: sinon.stub().returns({
-                        on: sinon.stub()
-                    })
-                }
-            };
-            const cache = new RedisCache({
-                cache: redisCacheInstanceStub
-            });
+            const cacheStub = createCacheStub();
+            const cache = new RedisCache({cache: cacheStub});
 
             const value = await cache.set('key-here', 'new value');
 
             assert.equal(value, 'new value');
-            assert.equal(redisCacheInstanceStub.set.args[0][0], 'key-here');
+            assert.equal(cacheStub.set.args[0][0], `${PREFIX_HASH}key-here`);
         });
 
         it('sets a key based on keyPrefix', async function () {
-            const redisCacheInstanceStub = {
-                set: sinon.stub().resolvesArg(1),
-                store: {
-                    getClient: sinon.stub().returns({
-                        on: sinon.stub()
-                    })
-                }
-            };
+            const cacheStub = createCacheStub({keyPrefix: 'testing-prefix:'});
             const cache = new RedisCache({
-                cache: redisCacheInstanceStub,
+                cache: cacheStub,
                 keyPrefix: 'testing-prefix:'
             });
 
             const value = await cache.set('key-here', 'new value');
 
             assert.equal(value, 'new value');
-            assert.equal(redisCacheInstanceStub.set.args[0][0], 'testing-prefix:key-here');
+            assert.equal(cacheStub.set.args[0][0], `testing-prefix:${PREFIX_HASH}key-here`);
         });
     });
 
     describe('reset', function () {
-        it('catches an error when thrown during the reset', async function () {
-            const redisCacheInstanceStub = {
-                get: sinon.stub().resolves('value from cache'),
-                store: {
-                    getClient: sinon.stub().returns({
-                        on: sinon.stub()
-                    })
-                }
-            };
-            const cache = new RedisCache({
-                cache: redisCacheInstanceStub
-            });
+        it('writes a new prefix_hash directly via the redis client (no TTL)', async function () {
+            const cacheStub = createCacheStub();
+            const cache = new RedisCache({cache: cacheStub});
+            const redisSet = cacheStub.store.getClient().set;
 
             await cache.reset();
 
-            sinon.assert.calledOnce(logging.error);
+            const [key, value, ...extra] = redisSet.lastCall.args;
+            assert.equal(key, 'prefix_hash');
+            assert.match(value, /^[0-9a-f]{24}$/);
+            assert.deepEqual(extra, []);
         });
     });
 
