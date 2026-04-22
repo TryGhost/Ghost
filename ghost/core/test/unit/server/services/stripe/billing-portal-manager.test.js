@@ -173,7 +173,7 @@ describe('BillingPortalManager', function () {
             sinon.assert.calledOnce(mockApi.createBillingPortalConfiguration);
         });
 
-        it('throws error when update fails with non-resource_missing error', async function () {
+        it('returns the passed id when failing with a non-resource based error', async function () {
             mockSettingsCache.get.withArgs('title').returns('Test Site');
             const genericError = new Error('Stripe API error');
             mockApi.updateBillingPortalConfiguration.rejects(genericError);
@@ -185,10 +185,8 @@ describe('BillingPortalManager', function () {
             });
             manager.configure({siteUrl: 'https://example.com'});
 
-            await assert.rejects(
-                () => manager.createOrUpdateConfiguration('bpc_existing'),
-                {message: 'Stripe API error'}
-            );
+            const result = await manager.createOrUpdateConfiguration('bpc_existing');
+            assert.equal(result, 'bpc_existing');
         });
     });
 

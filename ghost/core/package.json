@@ -302,6 +302,9 @@
     "typescript": "5.9.3"
   },
   "nx": {
+    "tags": [
+      "i18n"
+    ],
     "targets": {
       "build:tsc": {
         "dependsOn": [
