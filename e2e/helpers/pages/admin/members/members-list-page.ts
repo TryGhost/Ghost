@@ -23,6 +23,7 @@ export class MembersListPage extends AdminPage implements MembersListSurface {
     readonly filterButton: Locator;
     readonly clearFiltersButton: Locator;
     readonly emptyState: Locator;
+    readonly addYourselfButton: Locator;
     readonly noResults: Locator;
     readonly showAllButton: Locator;
 
@@ -37,6 +38,7 @@ export class MembersListPage extends AdminPage implements MembersListSurface {
         this.filterButton = page.getByRole('button', {name: /^(Filter|Add filter)$/});
         this.clearFiltersButton = page.getByRole('button', {name: 'Clear'});
         this.emptyState = page.getByText('Start building your audience');
+        this.addYourselfButton = page.getByRole('button', {name: 'Add yourself as a member to test'});
         this.noResults = page.getByText('No matching members found.');
         this.showAllButton = page.getByRole('button', {name: 'Show all members'});
     }

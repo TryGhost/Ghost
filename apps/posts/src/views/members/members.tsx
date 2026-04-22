@@ -4,6 +4,7 @@ import MembersEmptyState from './components/members-empty-state';
 import MembersFilters from './components/members-filters';
 import MembersHeader from './components/members-header';
 import MembersHeaderSearch from './components/members-header-search';
+import MembersHelpCards from './components/members-help-cards';
 import MembersLayout from './components/members-layout';
 import MembersList from './components/members-list';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
@@ -12,18 +13,19 @@ import {ListHeader} from '@tryghost/shade/primitives';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {buildMemberListSearchParams, getMemberActiveColumns} from './member-query-params';
 import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
+import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {shouldDelayMembersDateFilterHydration, useMembersFilterState} from './hooks/use-members-filter-state';
 import {useActiveMemberView, useMemberViews} from './hooks/use-member-views';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
-import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useDebounce} from 'use-debounce';
 import {useLocation, useSearchParams} from 'react-router';
 
 const SEARCH_DEBOUNCE_MS = 250;
+const MEMBERS_HELP_CARDS_LIMIT = 6;
 
-const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
+const MembersPage: React.FC<{timezone: string; membershipsEnabled: boolean}> = ({timezone, membershipsEnabled}) => {
     const headerRef = useRef<HTMLDivElement>(null);
     const {filters, nql, search, setFilters, setSearch, hasFilterOrSearch, clearAll} = useMembersFilterState(timezone);
     const location = useLocation();
@@ -75,6 +77,7 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
     const hasFilters = filters.length > 0;
     const shouldShowMobileSearchRow = showMobileSearch;
     const shouldShowFiltersRow = hasFilters;
+    const shouldShowMembersHelpCards = !hasFilterOrSearch && !shouldShowLoading && !isError && totalMembers < MEMBERS_HELP_CARDS_LIMIT;
 
     useEffect(() => {
         setSearchInput(search);
@@ -205,7 +208,7 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                             </EmptyIndicator>
                         </div>
                     ) : (
-                        <MembersEmptyState onMemberCreated={() => void refetch()} />
+                        <MembersEmptyState membershipsEnabled={membershipsEnabled} onMemberCreated={() => void refetch()} />
                     )
                 ) : (
                     <MembersList
@@ -222,6 +225,7 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
                         totalItems={totalMembers}
                     />
                 )}
+                {shouldShowMembersHelpCards && <MembersHelpCards />}
             </MembersContent>
         </MembersLayout>
     );
@@ -231,9 +235,10 @@ const Members: React.FC = () => {
     const [searchParams] = useSearchParams();
     const {data: settingsData, isLoading: isSettingsLoading} = useBrowseSettings({});
     const filterParam = searchParams.get('filter') ?? undefined;
-    const shouldDelayHydration = shouldDelayMembersDateFilterHydration(filterParam, Boolean(settingsData), isSettingsLoading);
+    const hasResolvedSettings = Boolean(settingsData?.settings);
+    const shouldDelayHydration = shouldDelayMembersDateFilterHydration(filterParam, hasResolvedSettings, isSettingsLoading);
 
-    if (shouldDelayHydration) {
+    if (isSettingsLoading || !settingsData?.settings || shouldDelayHydration) {
         return (
             <MembersLayout>
                 <div className='sticky top-0 z-50 bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black'>
@@ -251,9 +256,11 @@ const Members: React.FC = () => {
         );
     }
 
-    const timezone = getSiteTimezone(settingsData?.settings ?? []);
+    const timezone = getSiteTimezone(settingsData.settings);
+    const membersSignupAccess = getSettingValue<string>(settingsData.settings, 'members_signup_access');
+    const membershipsEnabled = membersSignupAccess !== 'none';
 
-    return <MembersPage timezone={timezone} />;
+    return <MembersPage membershipsEnabled={membershipsEnabled} timezone={timezone} />;
 };
 
 export default Members;
