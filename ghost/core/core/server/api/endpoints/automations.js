@@ -11,8 +11,8 @@ const controller = {
             cacheInvalidate: false
         },
         permissions: {
-            docName: 'automated_emails',
-            method: 'edit'
+            docName: 'automations',
+            method: 'poll'
         },
         query() {
             domainEvents.dispatch(StartAutomationsPollEvent.create());
