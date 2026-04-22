@@ -777,8 +777,8 @@ importers:
         specifier: 2.26.3
         version: 2.26.3(@tiptap/core@2.26.3(@tiptap/pm@2.26.3))(@tiptap/pm@2.26.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@tryghost/debug':
-        specifier: 0.1.40
-        version: 0.1.40
+        specifier: 2.1.0
+        version: 2.1.0
       react:
         specifier: 17.0.2
         version: 17.0.2
@@ -865,8 +865,8 @@ importers:
   apps/portal:
     dependencies:
       '@tryghost/debug':
-        specifier: 0.1.40
-        version: 0.1.40
+        specifier: 2.1.0
+        version: 2.1.0
     devDependencies:
       '@babel/eslint-parser':
         specifier: 7.28.4
@@ -1273,8 +1273,8 @@ importers:
   apps/signup-form:
     dependencies:
       '@tryghost/debug':
-        specifier: 0.1.40
-        version: 0.1.40
+        specifier: 2.1.0
+        version: 2.1.0
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -1379,8 +1379,8 @@ importers:
   apps/sodo-search:
     dependencies:
       '@tryghost/debug':
-        specifier: 0.1.40
-        version: 0.1.40
+        specifier: 2.1.0
+        version: 2.1.0
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../../ghost/i18n
@@ -1519,8 +1519,8 @@ importers:
         specifier: 1.59.1
         version: 1.59.1
       '@tryghost/debug':
-        specifier: 0.1.40
-        version: 0.1.40
+        specifier: 2.1.0
+        version: 2.1.0
       '@tryghost/logging':
         specifier: 2.5.5
         version: 2.5.5
@@ -2012,8 +2012,8 @@ importers:
         specifier: 0.3.35
         version: 0.3.35
       '@tryghost/debug':
-        specifier: 0.1.40
-        version: 0.1.40
+        specifier: 2.1.0
+        version: 2.1.0
       '@tryghost/domain-events':
         specifier: 1.0.8
         version: 1.0.8
@@ -2108,14 +2108,14 @@ importers:
         specifier: workspace:*
         version: link:../parse-email-address
       '@tryghost/pretty-cli':
-        specifier: 1.2.52
-        version: 1.2.52
+        specifier: 3.1.0
+        version: 3.1.0
       '@tryghost/prometheus-metrics':
         specifier: 1.0.8
         version: 1.0.8
       '@tryghost/promise':
-        specifier: 0.3.20
-        version: 0.3.20
+        specifier: 2.1.0
+        version: 2.1.0
       '@tryghost/referrer-parser':
         specifier: 0.1.15
         version: 0.1.15
@@ -2123,8 +2123,8 @@ importers:
         specifier: 1.0.12
         version: 1.0.12
       '@tryghost/root-utils':
-        specifier: 0.3.38
-        version: 0.3.38
+        specifier: 2.1.0
+        version: 2.1.0
       '@tryghost/security':
         specifier: 1.0.6
         version: 1.0.6
@@ -2144,11 +2144,11 @@ importers:
         specifier: 0.2.22
         version: 0.2.22
       '@tryghost/version':
-        specifier: 0.1.38
-        version: 0.1.38
+        specifier: 2.1.0
+        version: 2.1.0
       '@tryghost/zip':
-        specifier: 1.1.54
-        version: 1.1.54
+        specifier: 3.1.0
+        version: 3.1.0
       body-parser:
         specifier: 1.20.4
         version: 1.20.4
@@ -2599,8 +2599,8 @@ importers:
   ghost/i18n:
     dependencies:
       '@tryghost/debug':
-        specifier: 0.1.40
-        version: 0.1.40
+        specifier: 2.1.0
+        version: 2.1.0
       i18next:
         specifier: 23.16.8
         version: 23.16.8
@@ -9147,6 +9147,9 @@ packages:
   '@tryghost/debug@2.0.3':
     resolution: {integrity: sha512-qMlZc/1/OwbN8U/X4p5yFwqAbQZPcIZK9hwHRP/iTs+giYYQT7ZmWvsbxZYcvCIcA91Ia/PO7HZnOvinNF5ZHg==}
 
+  '@tryghost/debug@2.1.0':
+    resolution: {integrity: sha512-lIlqhH7NvG1H8M/do1MEyd6to4Kyta96RMB5Ov7SzcsxQbl6IhMBBGv4jEnh3LQJHkKy01iyouWfNn1MHq56iQ==}
+
   '@tryghost/domain-events@1.0.8':
     resolution: {integrity: sha512-4exHFUo4lRQO4f4l9FeNQEwCgfRtoUmnVBWr2WmDhVjZ09rQgW6ZrLe5f8CV7eMGQGllNjjz8780RZY9+UkONQ==}
 
@@ -9284,11 +9287,11 @@ packages:
   '@tryghost/nql@0.12.10':
     resolution: {integrity: sha512-kpj2ICTBmkz5Uet7Z/J61C/EEBTfa55np6LnbqW6N8g33uvCh9NkAsM2WgV1NK2lffpQT3Cs/qA2ymzHAguvoA==}
 
-  '@tryghost/pretty-cli@1.2.52':
-    resolution: {integrity: sha512-+DGSSeKlNHQ/zqcs167W3W0D+HYz1TzAdK7TyzTBUj4Hodqxd70GfkdcWxLMNGdggKd4d59UxGZ/6n0vjVhVSA==}
-
   '@tryghost/pretty-cli@3.0.3':
     resolution: {integrity: sha512-lAA6brlgQ5uyEDlpHdet7IZrspPYP5bRe6GVsnKQJ/RCTFoOC8fGhIy5E9UV37c6Ym4Jcjm/Z9adWXWiq4xhMg==}
+
+  '@tryghost/pretty-cli@3.1.0':
+    resolution: {integrity: sha512-vnYa/2Ke1OtBqoQWpuR1lfh+3khR00r8fJ8n+JlJjDRh7Qd9gMIkLC/SQOCHVQbEfHKT7vNsG3WYtRyDMz5WjA==}
 
   '@tryghost/pretty-stream@0.2.5':
     resolution: {integrity: sha512-2bc5mk+7BAOt/mrcbjTsmUQhTKqysbIDOUUThSemPVbnij6487DhaRbnYWZW2IGKfAucrEO3h6TTm3kfioKJSw==}
@@ -9301,6 +9304,9 @@ packages:
 
   '@tryghost/promise@0.3.8':
     resolution: {integrity: sha512-ppcnLBWczpbo4sQcGWtjEA82kdZMv4NFF2MvZRi1MBP4lSOSgh9A636eUxlB1/FpIG+D5ixq84xlY4QJMqW2kA==}
+
+  '@tryghost/promise@2.1.0':
+    resolution: {integrity: sha512-/hBrEOsfihCBrRnEGmsZJ54Muo8UdVTP8bq0uA+E+8DLtDMsL7BH1RX82RZ3Qvm1uTcSGOD5xwVTFBRfjmsOyA==}
 
   '@tryghost/referrer-parser@0.1.15':
     resolution: {integrity: sha512-d/C1iim7X08dDBB6+xt45cUAtjyF4sje8Z+tjJ00heC+kcuZca1m/5YqosWytUCPvUpq0G5jeatZYTK8r19lag==}
@@ -9315,8 +9321,8 @@ packages:
   '@tryghost/root-utils@0.3.38':
     resolution: {integrity: sha512-ARn8wC6qv867lCr7BZ+IS8S/88K5go0j6HgQFhP27rKje4b40PsxH/P3rO4Ez2NzF/Do8ywFrTWHoLCSsCazXQ==}
 
-  '@tryghost/root-utils@2.0.3':
-    resolution: {integrity: sha512-7fF7QLwiOoVzHVd5Qci8gsrqFIrZP5FwVrwGjSxjjF5hoOtgPn7HLdHLyIHUY9T5KgJ1/69i573E/EA+4kmAfA==}
+  '@tryghost/root-utils@2.1.0':
+    resolution: {integrity: sha512-ENU9J1EPMcIfrim93oH/5ti38WqFbvj+cVL5WUfDtlkwrAVTXDZxiyWM1hKPEpfq8g38lXaMqXqX4pN40E1RDg==}
 
   '@tryghost/security@1.0.6':
     resolution: {integrity: sha512-h4FiUK4ndHezlXeuRzfwTZrX/a8ZdCS/FRqmZWCHcMUiBH6lewHv8eIjsPemN6e6Gn9jtsWZsKnuYM2mD0meSQ==}
@@ -9354,14 +9360,17 @@ packages:
   '@tryghost/version@0.1.38':
     resolution: {integrity: sha512-kVaM7eijFRrBLZLDbmiFxHQ/shmAg5UQ9yM4s9GZN4M3OWY34UHNmjoSOniOHnA5E8fYNA8A3IFmS3FW910xYg==}
 
+  '@tryghost/version@2.1.0':
+    resolution: {integrity: sha512-Iqyp1Xeik8UuthWw2M/4xYvFtcYRSoHL+bamRlbvBiL9ZOwyy1ZpfV/dMKjtStd6mLedhMdJEEYvXhIv1DvjqQ==}
+
   '@tryghost/webhook-mock-receiver@2.1.0':
     resolution: {integrity: sha512-Cka5SW4igfgbGv33fFyEjkgt1HCA3lNhKCL88ThsDCw3/9ROxKQLcHMB+S7SNcewIDfsS5kI2INHtD+1Tbp/BA==}
 
-  '@tryghost/zip@1.1.54':
-    resolution: {integrity: sha512-6JpuYYlNytFkWTgpZnbkkoH5rqd9FIHfY0ekNNHWZFBS32D6o6bwV4v2wqFmsd0GzMG/CxaHfxfGU+HfTVTJjw==}
-
   '@tryghost/zip@3.0.3':
     resolution: {integrity: sha512-gp8z5JYH5h1MGeS+MQSTsrf33XxSTOgFHJCLstcxIV5hg2pxSzo7N4Gg3+CrqrqIqLNO0aEkOkikAFtArpPwdQ==}
+
+  '@tryghost/zip@3.1.0':
+    resolution: {integrity: sha512-nHWRpZL8/y/Q6A22FIWgJLKjNdOgCAbXlVBK6nGp4pFNYacYXqS7h0jVllqFxqGq0KhA/vpXRKUhdhR95b0fSA==}
 
   '@tsconfig/node10@1.0.12':
     resolution: {integrity: sha512-UCYBaeFvM11aU2y3YPZ//O5Rhj+xKyzy7mvcIoAjASbigy8mHMryP5cK7dgjlz2hWxh1g5pLw084E0a/wlUSFQ==}
@@ -10445,21 +10454,9 @@ packages:
   aproba@2.1.0:
     resolution: {integrity: sha512-tLIEcj5GuR2RSTnxNKdkK0dJ/GrC7P38sUkiDmDuHfsHmbagTFAxDVIBltoklXEVIQ/f14IL8IMJ5pn9Hez1Ew==}
 
-  archiver-utils@2.1.0:
-    resolution: {integrity: sha512-bEL/yUb/fNNiNTuUz979Z0Yg5L+LzLxGJz8x79lYmR54fmTIb6ob/hNQgkQnIUDWIFjZVQwl9Xs356I6BAMHfw==}
-    engines: {node: '>= 6'}
-
-  archiver-utils@3.0.4:
-    resolution: {integrity: sha512-KVgf4XQVrTjhyWmx6cte4RxonPLR9onExufI1jhvw/MQ4BB6IsZD5gT8Lq+u/+pRkWna/6JoHpiQioaqFP5Rzw==}
-    engines: {node: '>= 10'}
-
   archiver-utils@5.0.2:
     resolution: {integrity: sha512-wuLJMmIBQYCsGZgYLTy5FIB2pF6Lfb6cXMSF8Qywwk3t20zWnAi7zLcQFdKQmIB8wyZpY5ER38x08GbwtR2cLA==}
     engines: {node: '>= 14'}
-
-  archiver@5.3.2:
-    resolution: {integrity: sha512-+25nxyyznAXF7Nef3y0EbBeqmGZgeN/BxHX29Rs39djAfaFalmQ89SE6CWyDCHzGL0yt/ycBtNOmGTW0FyGWNw==}
-    engines: {node: '>= 10'}
 
   archiver@7.0.1:
     resolution: {integrity: sha512-ZcbTaIqJOfCc03QwD468Unz/5Ir8ATtvAHsK+FdXbDIbGfihqh9mrvdcYunQzqn4HrvWWaFyaxJhGZagaJJpPQ==}
@@ -12149,10 +12146,6 @@ packages:
   component-emitter@1.3.1:
     resolution: {integrity: sha512-T0+barUSQRTUQASh8bx02dl+DhF54GtIDY13Y3m9oWTklKbb3Wv974meRpeZ3lp1JpLVECWWNHC4vaG2XHXouQ==}
 
-  compress-commons@4.1.2:
-    resolution: {integrity: sha512-D3uMHtGc/fcO1Gt1/L7i1e33VOvD4A9hfQLP+6ewd+BvG/gQ84Yh4oftEhAdjSMgBgwGL+jsppT7JYNpo6MHHg==}
-    engines: {node: '>= 10'}
-
   compress-commons@6.0.2:
     resolution: {integrity: sha512-6FqVXeETqWPoGcfzrXb37E50NP0LXT8kAMu5ooZayhWWdgEY4lBEEcbQNXtkuKQsGduxiIcI4gOTsxTmuq/bSg==}
     engines: {node: '>= 14'}
@@ -12656,10 +12649,6 @@ packages:
     resolution: {integrity: sha512-ROmzCKrTnOwybPcJApAA6WBWij23HVfGVNKqqrZpuyZOHqK2CwHSvpGuyt/UNNvaIjEd8X5IFGp4Mh+Ie1IHJQ==}
     engines: {node: '>=0.8'}
     hasBin: true
-
-  crc32-stream@4.0.3:
-    resolution: {integrity: sha512-NT7w2JVU7DFroFdYkeq8cywxrgjPHWkdX1wjpRQXPX5Asews3tA+Ght6lddQO5Mkumffp3X7GEqku3epj2toIw==}
-    engines: {node: '>= 10'}
 
   crc32-stream@6.0.0:
     resolution: {integrity: sha512-piICUB6ei4IlTv1+653yq5+KoqfBYmj9bw6LqXoOneTMDXk5nM1qt12mFW1caG3LlJXEKW1Bp0WggEmIfQB34g==}
@@ -17325,9 +17314,6 @@ packages:
   lodash.defaultsdeep@4.6.1:
     resolution: {integrity: sha512-3j8wdDzYuWO3lM3Reg03MuQR957t287Rpcxp1njpEa8oDrikb+FwGdW3n+FELh/A6qib6yPit0j/pv9G/yeAqA==}
 
-  lodash.difference@4.5.0:
-    resolution: {integrity: sha512-dS2j+W26TQ7taQBGN8Lbbq04ssV3emRw4NY58WErlTO29pIqS0HmoT5aJ9+TUQ1N3G+JOZSji4eugsWwGp9yPA==}
-
   lodash.filter@4.6.0:
     resolution: {integrity: sha512-pXYUy7PR8BCLwX5mgJ/aNtyOvuJTdZAo9EQFUvMIYugqmJxnrYaANvTbgndOzHSCSR0wnlBBfRXJL5SbWxo3FQ==}
 
@@ -17414,9 +17400,6 @@ packages:
 
   lodash.truncate@4.4.2:
     resolution: {integrity: sha512-jttmRe7bRse52OsWIMDLaXxWqRAmtIUccAQ3garviCqJjafXOfNMO0yMfNpdD6zbGaTU0P5Nz7e7gAT6cKmJRw==}
-
-  lodash.union@4.6.0:
-    resolution: {integrity: sha512-c4pB2CdGrGdjMKYLA+XiRDO7Y0PRQbm/Gzg8qMj+QH+pFVAoTp5sBpO0odL3FjoPCGjK96p6qsP+yQoiLoOBcw==}
 
   lodash.uniq@4.5.0:
     resolution: {integrity: sha512-xfBaXQd9ryd9dlSDvnvI0lvxfLJlYAZzXomUYzLKtUeOQvOP5piqAWuGtrhWeqaXK9hhoM/iyJc5AV+XfsX3HQ==}
@@ -23250,10 +23233,6 @@ packages:
   yup@0.32.9:
     resolution: {integrity: sha512-Ci1qN+i2H0XpY7syDQ0k5zKQ/DoxO0LzPg8PAR/X4Mpj6DqaeCoIYEEjDJwhArh3Fa7GWbQQVDZKeXYlSH4JMg==}
     engines: {node: '>=10'}
-
-  zip-stream@4.1.1:
-    resolution: {integrity: sha512-9qv4rlDiopXg4E69k+vMHjNN63YFMe9sZMrdlvKnCjlCRWeCBswPPMPUfx+ipsAWq1LXHe70RcbaHdJJpS6hyQ==}
-    engines: {node: '>= 10'}
 
   zip-stream@6.0.1:
     resolution: {integrity: sha512-zK7YHHz4ZXpW89AHXUPbQVGKI7uvkd3hzusTdotCg1UxyaVtg0zFJSTfW/Dq5f7OBBVnq6cZIaC8Ti4hb6dtCA==}
@@ -31153,14 +31132,14 @@ snapshots:
 
   '@tryghost/bookshelf-eager-load@2.0.3':
     dependencies:
-      '@tryghost/debug': 2.0.3
+      '@tryghost/debug': 2.1.0
       lodash: 4.17.23
     transitivePeerDependencies:
       - supports-color
 
   '@tryghost/bookshelf-filter@2.0.3':
     dependencies:
-      '@tryghost/debug': 2.0.3
+      '@tryghost/debug': 2.1.0
       '@tryghost/errors': 1.3.13
       '@tryghost/nql': 0.12.10
       '@tryghost/tpl': 2.0.3
@@ -31169,14 +31148,14 @@ snapshots:
 
   '@tryghost/bookshelf-has-posts@2.1.0':
     dependencies:
-      '@tryghost/debug': 2.0.3
+      '@tryghost/debug': 2.1.0
       lodash: 4.17.23
     transitivePeerDependencies:
       - supports-color
 
   '@tryghost/bookshelf-include-count@2.0.3':
     dependencies:
-      '@tryghost/debug': 2.0.3
+      '@tryghost/debug': 2.1.0
       lodash: 4.17.23
     transitivePeerDependencies:
       - supports-color
@@ -31225,7 +31204,7 @@ snapshots:
 
   '@tryghost/config@2.0.3':
     dependencies:
-      '@tryghost/root-utils': 2.0.3
+      '@tryghost/root-utils': 2.1.0
       nconf: 0.13.0
 
   '@tryghost/content-api@1.12.6':
@@ -31249,7 +31228,14 @@ snapshots:
 
   '@tryghost/debug@2.0.3':
     dependencies:
-      '@tryghost/root-utils': 2.0.3
+      '@tryghost/root-utils': 2.1.0
+      debug: 4.4.3(supports-color@5.5.0)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@tryghost/debug@2.1.0':
+    dependencies:
+      '@tryghost/root-utils': 2.1.0
       debug: 4.4.3(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
@@ -31635,12 +31621,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/pretty-cli@1.2.52':
+  '@tryghost/pretty-cli@3.0.3':
     dependencies:
       chalk: 5.6.2
       sywac: 1.3.0
 
-  '@tryghost/pretty-cli@3.0.3':
+  '@tryghost/pretty-cli@3.1.0':
     dependencies:
       chalk: 5.6.2
       sywac: 1.3.0
@@ -31663,6 +31649,8 @@ snapshots:
   '@tryghost/promise@0.3.20': {}
 
   '@tryghost/promise@0.3.8': {}
+
+  '@tryghost/promise@2.1.0': {}
 
   '@tryghost/referrer-parser@0.1.15': {}
 
@@ -31693,7 +31681,7 @@ snapshots:
       caller: 1.1.0
       find-root: 1.1.0
 
-  '@tryghost/root-utils@2.0.3':
+  '@tryghost/root-utils@2.1.0':
     dependencies:
       caller: 1.1.0
       find-root: 1.1.0
@@ -31705,7 +31693,7 @@ snapshots:
 
   '@tryghost/server@2.0.3':
     dependencies:
-      '@tryghost/debug': 2.0.3
+      '@tryghost/debug': 2.1.0
       '@tryghost/logging': 2.5.5
     transitivePeerDependencies:
       - supports-color
@@ -31763,19 +31751,27 @@ snapshots:
       '@tryghost/root-utils': 0.3.38
       semver: 7.7.4
 
+  '@tryghost/version@2.1.0':
+    dependencies:
+      '@tryghost/root-utils': 2.1.0
+      semver: 7.7.4
+
   '@tryghost/webhook-mock-receiver@2.1.0':
     dependencies:
       p-wait-for: 6.0.0
 
-  '@tryghost/zip@1.1.54':
+  '@tryghost/zip@3.0.3':
     dependencies:
       '@tryghost/errors': 1.3.13
-      archiver: 5.3.2
+      archiver: 7.0.1
       extract-zip: 2.0.1
     transitivePeerDependencies:
+      - bare-abort-controller
+      - bare-buffer
+      - react-native-b4a
       - supports-color
 
-  '@tryghost/zip@3.0.3':
+  '@tryghost/zip@3.1.0':
     dependencies:
       '@tryghost/errors': 1.3.13
       archiver: 7.0.1
@@ -33228,51 +33224,15 @@ snapshots:
   aproba@2.1.0:
     optional: true
 
-  archiver-utils@2.1.0:
-    dependencies:
-      glob: 7.2.3
-      graceful-fs: 4.2.11
-      lazystream: 1.0.1
-      lodash.defaults: 4.2.0
-      lodash.difference: 4.5.0
-      lodash.flatten: 4.4.0
-      lodash.isplainobject: 4.0.6
-      lodash.union: 4.6.0
-      normalize-path: 3.0.0
-      readable-stream: 2.3.8
-
-  archiver-utils@3.0.4:
-    dependencies:
-      glob: 7.2.3
-      graceful-fs: 4.2.11
-      lazystream: 1.0.1
-      lodash.defaults: 4.2.0
-      lodash.difference: 4.5.0
-      lodash.flatten: 4.4.0
-      lodash.isplainobject: 4.0.6
-      lodash.union: 4.6.0
-      normalize-path: 3.0.0
-      readable-stream: 3.6.2
-
   archiver-utils@5.0.2:
     dependencies:
       glob: 10.5.0
       graceful-fs: 4.2.11
       is-stream: 2.0.1
       lazystream: 1.0.1
-      lodash: 4.18.1
+      lodash: 4.17.23
       normalize-path: 3.0.0
       readable-stream: 4.7.0
-
-  archiver@5.3.2:
-    dependencies:
-      archiver-utils: 2.1.0
-      async: 3.2.6
-      buffer-crc32: 0.2.13
-      readable-stream: 3.6.2
-      readdir-glob: 1.1.3
-      tar-stream: 2.2.0
-      zip-stream: 4.1.1
 
   archiver@7.0.1:
     dependencies:
@@ -33594,7 +33554,7 @@ snapshots:
       babel-types: 6.26.0
       detect-indent: 4.0.0
       jsesc: 1.3.0
-      lodash: 4.18.1
+      lodash: 4.17.23
       source-map: 0.5.7
       trim-right: 1.0.1
 
@@ -33626,7 +33586,7 @@ snapshots:
       babel-helper-function-name: 6.24.1
       babel-runtime: 6.26.0
       babel-types: 6.26.0
-      lodash: 4.18.1
+      lodash: 4.17.23
     transitivePeerDependencies:
       - supports-color
 
@@ -33667,7 +33627,7 @@ snapshots:
     dependencies:
       babel-runtime: 6.26.0
       babel-types: 6.26.0
-      lodash: 4.18.1
+      lodash: 4.17.23
 
   babel-helper-remap-async-to-generator@6.24.1:
     dependencies:
@@ -33920,7 +33880,7 @@ snapshots:
       babel-template: 6.26.0
       babel-traverse: 6.26.0
       babel-types: 6.26.0
-      lodash: 4.18.1
+      lodash: 4.17.23
     transitivePeerDependencies:
       - supports-color
 
@@ -34145,7 +34105,7 @@ snapshots:
       babel-runtime: 6.26.0
       core-js: 2.6.12
       home-or-tmp: 2.0.0
-      lodash: 4.18.1
+      lodash: 4.17.23
       mkdirp: 0.5.6
       source-map-support: 0.4.18
     transitivePeerDependencies:
@@ -35825,13 +35785,6 @@ snapshots:
 
   component-emitter@1.3.1: {}
 
-  compress-commons@4.1.2:
-    dependencies:
-      buffer-crc32: 0.2.13
-      crc32-stream: 4.0.3
-      normalize-path: 3.0.0
-      readable-stream: 3.6.2
-
   compress-commons@6.0.2:
     dependencies:
       crc-32: 1.2.2
@@ -36062,11 +36015,6 @@ snapshots:
     optional: true
 
   crc-32@1.2.2: {}
-
-  crc32-stream@4.0.3:
-    dependencies:
-      crc-32: 1.2.2
-      readable-stream: 3.6.2
 
   crc32-stream@6.0.0:
     dependencies:
@@ -43052,8 +43000,6 @@ snapshots:
 
   lodash.defaultsdeep@4.6.1: {}
 
-  lodash.difference@4.5.0: {}
-
   lodash.filter@4.6.0: {}
 
   lodash.flatten@3.0.2:
@@ -43121,8 +43067,6 @@ snapshots:
       lodash._reinterpolate: 3.0.0
 
   lodash.truncate@4.4.2: {}
-
-  lodash.union@4.6.0: {}
 
   lodash.uniq@4.5.0: {}
 
@@ -50140,7 +50084,7 @@ snapshots:
 
   whatwg-url@8.7.0:
     dependencies:
-      lodash: 4.18.1
+      lodash: 4.17.23
       tr46: 2.1.0
       webidl-conversions: 6.1.0
 
@@ -50400,12 +50344,6 @@ snapshots:
       nanoclone: 0.2.1
       property-expr: 2.0.6
       toposort: 2.0.2
-
-  zip-stream@4.1.1:
-    dependencies:
-      archiver-utils: 3.0.4
-      compress-commons: 4.1.2
-      readable-stream: 3.6.2
 
   zip-stream@6.0.1:
     dependencies:

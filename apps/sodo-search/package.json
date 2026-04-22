@@ -14,7 +14,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.40",
+    "@tryghost/debug": "2.1.0",
     "@tryghost/i18n": "workspace:*",
     "flexsearch": "0.8.153",
     "react": "17.0.2",

@@ -133,7 +133,7 @@
     "vitest": "3.2.4"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.40"
+    "@tryghost/debug": "2.1.0"
   },
   "nx": {
     "tags": [
