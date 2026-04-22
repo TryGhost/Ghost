@@ -21,7 +21,9 @@ export const modalPaths: {[key: string]: ModalName} = {
     'newsletters/:id': 'NewsletterDetailModal',
     'history/view': 'HistoryModal',
     'history/view/:user': 'HistoryModal',
+    'integrations/contentapi': 'ContentApiModal',
     'integrations/zapier': 'ZapierModal',
+    'integrations/transistor': 'TransistorModal',
     'integrations/slack': 'SlackModal',
     'integrations/unsplash': 'UnsplashModal',
     'integrations/firstpromoter': 'FirstPromoterModal',
@@ -34,6 +36,7 @@ export const modalPaths: {[key: string]: ModalName} = {
     'embed-signup-form/show': 'EmbedSignupFormModal',
     'offers/edit': 'OffersContainerModal',
     'offers/edit/:id': 'OffersContainerModal',
+    'offers/edit/retention/:id': 'OffersContainerModal',
     'offers/new': 'OffersContainerModal',
     'explore/testimonial': 'TestimonialsModal',
     about: 'AboutModal'

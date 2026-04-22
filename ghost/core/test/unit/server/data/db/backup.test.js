@@ -1,10 +1,9 @@
-const should = require('should');
 const sinon = require('sinon');
 const fs = require('fs-extra');
 const models = require('../../../../../core/server/models');
 const exporter = require('../../../../../core/server/data/exporter');
 const dbBackup = require('../../../../../core/server/data/db/backup');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 
 describe('Backup', function () {
     let exportStub;
@@ -27,9 +26,9 @@ describe('Backup', function () {
 
     it('should create a backup JSON file', function (done) {
         dbBackup.backup().then(function () {
-            exportStub.calledOnce.should.be.true();
-            filenameStub.calledOnce.should.be.true();
-            fsStub.calledOnce.should.be.true();
+            sinon.assert.calledOnce(exportStub);
+            sinon.assert.calledOnce(filenameStub);
+            sinon.assert.calledOnce(fsStub);
 
             done();
         }).catch(done);
@@ -39,9 +38,9 @@ describe('Backup', function () {
         configUtils.set('disableJSBackups', true);
 
         dbBackup.backup().then(function () {
-            exportStub.called.should.be.false();
-            filenameStub.called.should.be.false();
-            fsStub.called.should.be.false();
+            sinon.assert.notCalled(exportStub);
+            sinon.assert.notCalled(filenameStub);
+            sinon.assert.notCalled(fsStub);
 
             done();
         }).catch(done);

@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {DEFAULT_NODES} = require('@tryghost/kg-default-nodes');
 const nodeRenderers = require('../../../../../core/server/services/koenig/node-renderers');
 

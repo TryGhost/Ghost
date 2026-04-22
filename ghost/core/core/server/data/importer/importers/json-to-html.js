@@ -1,7 +1,8 @@
 const SimpleDom = require('simple-dom');
 const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
-const imageCard = require('@tryghost/kg-default-cards/lib/cards/image.js');
-const embedCard = require('@tryghost/kg-default-cards/lib/cards/embed.js');
+const {cards} = require('@tryghost/kg-default-cards');
+const imageCard = cards.find(c => c.name === 'image');
+const embedCard = cards.find(c => c.name === 'embed');
 
 // Take the array of items for a specific post and return the converted HTML
 const itemsToHtml = (items) => {

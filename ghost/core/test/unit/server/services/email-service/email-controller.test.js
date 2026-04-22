@@ -1,5 +1,5 @@
-const assert = require('assert/strict');
-const EmailController = require('../../../../../core/server/services/email-service/EmailController');
+const assert = require('node:assert/strict');
+const EmailController = require('../../../../../core/server/services/email-service/email-controller');
 const {createModel, createModelClass} = require('./utils');
 
 describe('Email Controller', function () {

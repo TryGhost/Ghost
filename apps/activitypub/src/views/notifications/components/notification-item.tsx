@@ -22,7 +22,7 @@ interface NotificationItemProps {
 const NotificationItem = ({isGrouped, centerAlign, children, onClick, url, className}: NotificationItemProps) => {
     return (
         <NotificationContext.Provider value={{onClick, url}}>
-            <div className={`group relative -mx-4 -my-px ${isGrouped ? 'grid' : 'flex'} ${centerAlign ? 'items-center' : 'items-start'} cursor-pointer grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 rounded-lg px-4 py-5 text-left break-anywhere hover:bg-gray-75 ${className}`}
+            <div className={`group relative -mx-4 -my-px ${isGrouped ? 'grid' : 'flex'} ${centerAlign ? 'items-center' : 'items-start'} break-anywhere cursor-pointer grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 rounded-lg px-4 py-5 text-left hover:bg-gray-75 ${className}`}
                 role='button'
                 onClick={onClick}
             >

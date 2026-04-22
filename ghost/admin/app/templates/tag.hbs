@@ -3,9 +3,9 @@
         <GhCanvasHeader class="gh-canvas-header">
             <div class="flex flex-column">
                 <div class="gh-canvas-breadcrumb">
-                    <LinkTo @route="tags" data-test-link="tags-back">
+                    <a href="#/tags" data-test-link="tags-back">
                         Tags
-                    </LinkTo>
+                    </a>
                     {{svg-jar "arrow-right-small"}} {{if this.tag.isNew "New tag" "Edit tag"}}
                 </div>
                 <h2 class="gh-canvas-title" data-test-screen-title>

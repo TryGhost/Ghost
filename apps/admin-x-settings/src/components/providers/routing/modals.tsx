@@ -5,6 +5,7 @@ import type {RoutingModalProps} from '@tryghost/admin-x-framework/routing';
 import AboutModal from '../../settings/general/about';
 import AddIntegrationModal from '../../settings/advanced/integrations/add-integration-modal';
 import AddNewsletterModal from '../../settings/email/newsletters/add-newsletter-modal';
+import ContentApiModal from '../../settings/advanced/integrations/content-api-modal';
 // import AddOfferModal from '../../settings/growth/offers/AddOfferModal';
 import AddRecommendationModal from '../../settings/growth/recommendations/add-recommendation-modal';
 import AnnouncementBarModal from '../../settings/site/announcement-bar-modal';
@@ -27,6 +28,7 @@ import SlackModal from '../../settings/advanced/integrations/slack-modal';
 import StripeConnectModal from '../../settings/membership/stripe/stripe-connect-modal';
 import TestimonialsModal from '../../settings/growth/explore/testimonials-modal';
 import TierDetailModal from '../../settings/membership/tiers/tier-detail-modal';
+import TransistorModal from '../../settings/advanced/integrations/transistor-modal';
 import UnsplashModal from '../../settings/advanced/integrations/unsplash-modal';
 import UserDetailModal from '../../settings/general/user-detail-modal';
 import ZapierModal from '../../settings/advanced/integrations/zapier-modal';
@@ -34,6 +36,7 @@ import ZapierModal from '../../settings/advanced/integrations/zapier-modal';
 const modals = {
     AddIntegrationModal,
     AddNewsletterModal,
+    ContentApiModal,
     AddRecommendationModal,
     CustomIntegrationModal,
     DesignAndThemeModal,
@@ -49,6 +52,7 @@ const modals = {
     StripeConnectModal,
     TestimonialsModal,
     TierDetailModal,
+    TransistorModal,
     UnsplashModal,
     UserDetailModal,
     ZapierModal,

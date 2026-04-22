@@ -17,6 +17,7 @@
     "Best": "",
     "Cancel": "Annuller",
     "Comment": "Kommentér",
+    "Commenting disabled": "",
     "Complete your profile": "Færdiggør din profil",
     "Delete": "Slet",
     "Deleted": "Slettet",
@@ -66,9 +67,13 @@
     "Sign up now": "Tilmed dig nu",
     "Sort by": "Sorter efter",
     "Start the conversation": "Start samtalen",
+    "The linked comment is no longer available.": "",
     "This comment has been hidden.": "Denne kommentar er blevet skjult.",
     "This comment has been removed.": "Denne kommentar er blevet fjernet.",
     "Upgrade now": "Opgrader nu",
+    "View in admin": "",
     "Yesterday": "I går",
+    "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "Din anmodning vil blive sendt til ejeren af dette site."
 }

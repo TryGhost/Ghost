@@ -9,7 +9,6 @@ import mockIntegrations from './config/integrations';
 import mockInvites from './config/invites';
 import mockLabels from './config/labels';
 import mockMembers from './config/members';
-import mockMentions from './config/mentions';
 import mockNewsletters from './config/newsletters';
 import mockOffers from './config/offers';
 import mockPages from './config/pages';
@@ -60,7 +59,6 @@ export default function () {
     mockSnippets(this);
     mockNewsletters(this);
     mockStats(this);
-    mockMentions(this);
 
     /* Notifications -------------------------------------------------------- */
 

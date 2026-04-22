@@ -1,6 +1,6 @@
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 const forcePageFilter = (filter) => {
     if (filter) {

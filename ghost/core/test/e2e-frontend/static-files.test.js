@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {agentProvider} = require('../utils/e2e-framework');
 
 describe('Static files', function () {

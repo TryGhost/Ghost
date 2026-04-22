@@ -1,5 +1,5 @@
 const EmailSpamComplaintEvent = require('../../../../core/server/models/email-spam-complaint-event');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 describe('EmailSpamComplaintEvent', function () {
     describe('destroy', function () {

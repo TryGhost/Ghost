@@ -12,7 +12,7 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const StripeConnectedButton: React.FC<{className?: string; onClick: () => void;}> = ({className, onClick}) => {
     className = clsx(
-        'group flex shrink-0 items-center justify-center whitespace-nowrap rounded border border-grey-300 px-3 py-1.5 text-sm font-semibold text-grey-900 transition-all hover:border-grey-500 dark:border-grey-900 dark:text-white',
+        'group flex shrink-0 items-center justify-center rounded border border-grey-300 px-3 py-1.5 text-sm font-semibold whitespace-nowrap text-grey-900 transition-all hover:border-grey-500 dark:border-grey-900 dark:text-white',
         className
     );
     return (

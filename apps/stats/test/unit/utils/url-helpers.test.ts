@@ -3,6 +3,7 @@ import {
     generateTitleFromPath,
     getClickHandler,
     getFrontendUrl,
+    getPostDestination,
     shouldMakeClickable
 } from '@src/utils/url-helpers';
 
@@ -324,6 +325,70 @@ describe('url-helpers', () => {
         });
     });
 
+    describe('getPostDestination', () => {
+        it('returns editor route when analytics are disabled and the post has no email data', () => {
+            const destination = getPostDestination({
+                postId: 'post-1',
+                hasEmailData: false,
+                analytics: {
+                    webAnalytics: false,
+                    membersTrackSources: false
+                }
+            });
+
+            expect(destination).toBe('/editor/post/post-1');
+        });
+
+        it('returns post analytics route when analytics are disabled but the post has email data', () => {
+            const destination = getPostDestination({
+                postId: 'post-1',
+                hasEmailData: true,
+                analytics: {
+                    webAnalytics: false,
+                    membersTrackSources: false
+                }
+            });
+
+            expect(destination).toBe('/posts/analytics/post-1');
+        });
+
+        it('returns post analytics route when web analytics are enabled', () => {
+            const destination = getPostDestination({
+                postId: 'post-1',
+                hasEmailData: false,
+                analytics: {
+                    webAnalytics: true,
+                    membersTrackSources: false
+                }
+            });
+
+            expect(destination).toBe('/posts/analytics/post-1');
+        });
+
+        it('returns post analytics route when member source tracking is enabled', () => {
+            const destination = getPostDestination({
+                postId: 'post-1',
+                hasEmailData: false,
+                analytics: {
+                    webAnalytics: false,
+                    membersTrackSources: true
+                }
+            });
+
+            expect(destination).toBe('/posts/analytics/post-1');
+        });
+
+        it('returns editor route when analytics settings are unavailable and the post has no email data', () => {
+            const destination = getPostDestination({
+                postId: 'post-1',
+                hasEmailData: false,
+                analytics: undefined
+            });
+
+            expect(destination).toBe('/editor/post/post-1');
+        });
+    });
+    
     describe('integration tests', () => {
         it('getClickHandler integrates with getFrontendUrl correctly', () => {
             const mockNavigate = vi.fn();

@@ -1,19 +1,17 @@
 const path = require('path');
-const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../core/shared/config');
-const configUtils = require('../../../utils/configUtils');
 const settingsCache = require('../../../../core/shared/settings-cache');
-const models = require('../../../../core/server/models');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 
 const {mockManager} = require('../../../utils/e2e-framework');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
+const {setupEmailVerificationUtils, restoreEmailVerificationUtils} = require('../../../utils/email-verification-utils');
 
 let request;
-let emailMockReceiver;
 
 describe('Members Importer API', function () {
     before(async function () {
@@ -23,7 +21,7 @@ describe('Members Importer API', function () {
     });
 
     beforeEach(function () {
-        emailMockReceiver = mockManager.mockMail();
+        mockManager.mockMail();
     });
 
     afterEach(function () {
@@ -42,17 +40,17 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201)
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.meta);
-                should.exist(jsonResponse.meta.stats);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.meta);
+                assertExists(jsonResponse.meta.stats);
 
-                should.exist(jsonResponse.meta.import_label);
-                jsonResponse.meta.import_label.slug.should.match(/^import-/);
-                jsonResponse.meta.stats.imported.should.equal(2);
-                jsonResponse.meta.stats.invalid.length.should.equal(0);
+                assertExists(jsonResponse.meta.import_label);
+                assert.match(jsonResponse.meta.import_label.slug, /^import-/);
+                assert.equal(jsonResponse.meta.stats.imported, 2);
+                assert.equal(jsonResponse.meta.stats.invalid.length, 0);
 
                 importLabel = jsonResponse.meta.import_label.slug;
                 return request
@@ -63,37 +61,37 @@ describe('Members Importer API', function () {
                     .expect(200);
             })
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.members);
-                should.equal(jsonResponse.members.length, 2);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.members);
+                assert.equal(jsonResponse.members.length, 2);
 
                 const importedMember1 = jsonResponse.members.find(m => m.email === 'member+labels_1@example.com');
-                should.exist(importedMember1);
-                should(importedMember1.name).equal(null);
-                should(importedMember1.note).equal(null);
-                importedMember1.subscribed.should.equal(true);
-                importedMember1.comped.should.equal(false);
-                importedMember1.subscriptions.should.not.be.undefined();
-                importedMember1.subscriptions.length.should.equal(0);
+                assertExists(importedMember1);
+                assert.equal(importedMember1.name, null);
+                assert.equal(importedMember1.note, null);
+                assert.equal(importedMember1.subscribed, true);
+                assert.equal(importedMember1.comped, false);
+                assertExists(importedMember1.subscriptions);
+                assert.equal(importedMember1.subscriptions.length, 0);
 
                 // check label order
                 // 1 unique global + 1 record labels + 1 auto generated label
-                importedMember1.labels.length.should.equal(3);
-                should.exist(importedMember1.labels.find(({slug}) => slug === 'label'));
-                should.exist(importedMember1.labels.find(({slug}) => slug === 'global-label-1'));
-                should.exist(importedMember1.labels.find(({slug}) => slug.match(/^import-/)));
+                assert.equal(importedMember1.labels.length, 3);
+                assertExists(importedMember1.labels.find(({slug}) => slug === 'label'));
+                assertExists(importedMember1.labels.find(({slug}) => slug === 'global-label-1'));
+                assertExists(importedMember1.labels.find(({slug}) => slug.match(/^import-/)));
 
                 const importedMember2 = jsonResponse.members.find(m => m.email === 'member+labels_2@example.com');
-                should.exist(importedMember2);
+                assertExists(importedMember2);
                 // 1 unique global + 2 record labels
-                importedMember2.labels.length.should.equal(4);
-                should.exist(importedMember2.labels.find(({slug}) => slug === 'another-label'));
-                should.exist(importedMember2.labels.find(({slug}) => slug === 'and-one-more'));
-                should.exist(importedMember2.labels.find(({slug}) => slug === 'global-label-1'));
-                should.exist(importedMember2.labels.find(({slug}) => slug.match(/^import-/)));
+                assert.equal(importedMember2.labels.length, 4);
+                assertExists(importedMember2.labels.find(({slug}) => slug === 'another-label'));
+                assertExists(importedMember2.labels.find(({slug}) => slug === 'and-one-more'));
+                assertExists(importedMember2.labels.find(({slug}) => slug === 'global-label-1'));
+                assertExists(importedMember2.labels.find(({slug}) => slug.match(/^import-/)));
             });
     });
 
@@ -109,18 +107,18 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201)
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.meta);
-                should.exist(jsonResponse.meta.stats);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.meta);
+                assertExists(jsonResponse.meta.stats);
 
-                jsonResponse.meta.stats.imported.should.equal(1);
-                jsonResponse.meta.stats.invalid.length.should.equal(0);
+                assert.equal(jsonResponse.meta.stats.imported, 1);
+                assert.equal(jsonResponse.meta.stats.invalid.length, 0);
 
-                should.exist(jsonResponse.meta.import_label);
-                jsonResponse.meta.import_label.slug.should.match(/^import-/);
+                assertExists(jsonResponse.meta.import_label);
+                assert.match(jsonResponse.meta.import_label.slug, /^import-/);
             })
             .then(() => {
                 return request
@@ -131,22 +129,22 @@ describe('Members Importer API', function () {
                     .expect(200);
             })
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.members);
-                should.exist(jsonResponse.members[0]);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.members);
+                assertExists(jsonResponse.members[0]);
 
                 const importedMember1 = jsonResponse.members[0];
-                should(importedMember1.email).equal('member+mapped_1@example.com');
-                should(importedMember1.name).equal('Hannah');
-                should(importedMember1.note).equal('do map me');
-                importedMember1.subscribed.should.equal(true);
-                importedMember1.comped.should.equal(false);
-                importedMember1.subscriptions.should.not.be.undefined();
-                importedMember1.subscriptions.length.should.equal(0);
-                importedMember1.labels.length.should.equal(1); // auto-generated import label
+                assert.equal(importedMember1.email, 'member+mapped_1@example.com');
+                assert.equal(importedMember1.name, 'Hannah');
+                assert.equal(importedMember1.note, 'do map me');
+                assert.equal(importedMember1.subscribed, true);
+                assert.equal(importedMember1.comped, false);
+                assertExists(importedMember1.subscriptions);
+                assert.equal(importedMember1.subscriptions.length, 0);
+                assert.equal(importedMember1.labels.length, 1); // auto-generated import label
             });
     });
 
@@ -159,15 +157,15 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201)
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.meta);
-                should.exist(jsonResponse.meta.stats);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.meta);
+                assertExists(jsonResponse.meta.stats);
 
-                jsonResponse.meta.stats.imported.should.equal(2);
-                jsonResponse.meta.stats.invalid.length.should.equal(0);
+                assert.equal(jsonResponse.meta.stats.imported, 2);
+                assert.equal(jsonResponse.meta.stats.invalid.length, 0);
             })
             .then(() => {
                 return request
@@ -178,23 +176,23 @@ describe('Members Importer API', function () {
                     .expect(200);
             })
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.members);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.members);
 
                 const defaultMember1 = jsonResponse.members.find(member => (member.email === 'member+defaults_1@example.com'));
-                should(defaultMember1.name).equal(null);
-                should(defaultMember1.note).equal(null);
-                defaultMember1.subscribed.should.equal(true);
-                defaultMember1.comped.should.equal(false);
-                defaultMember1.subscriptions.should.not.be.undefined();
-                defaultMember1.subscriptions.length.should.equal(0);
-                defaultMember1.labels.length.should.equal(1); // auto-generated import label
+                assert.equal(defaultMember1.name, null);
+                assert.equal(defaultMember1.note, null);
+                assert.equal(defaultMember1.subscribed, true);
+                assert.equal(defaultMember1.comped, false);
+                assertExists(defaultMember1.subscriptions);
+                assert.equal(defaultMember1.subscriptions.length, 0);
+                assert.equal(defaultMember1.labels.length, 1); // auto-generated import label
 
                 const defaultMember2 = jsonResponse.members.find(member => (member.email === 'member+defaults_2@example.com'));
-                should(defaultMember2).not.be.undefined();
+                assertExists(defaultMember2);
             });
     });
 
@@ -207,12 +205,12 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(202)
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.meta);
-                should.not.exist(jsonResponse.meta.stats);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.meta);
+                assert.equal(jsonResponse.meta.stats, undefined);
             });
     });
 
@@ -226,128 +224,125 @@ describe('Members Importer API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201)
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.meta);
-                should.exist(jsonResponse.meta.stats);
+                assertExists(jsonResponse);
+                assertExists(jsonResponse.meta);
+                assertExists(jsonResponse.meta.stats);
 
-                jsonResponse.meta.stats.imported.should.equal(1);
-                jsonResponse.meta.stats.invalid.length.should.equal(2);
+                assert.equal(jsonResponse.meta.stats.imported, 1);
+                assert.equal(jsonResponse.meta.stats.invalid.length, 2);
 
-                jsonResponse.meta.stats.invalid[0].error.should.match(/Invalid Email/);
-                jsonResponse.meta.stats.invalid[1].error.should.match(/Invalid Email/);
+                assert.match(jsonResponse.meta.stats.invalid[0].error, /Invalid Email/);
+                assert.match(jsonResponse.meta.stats.invalid[1].error, /Invalid Email/);
 
-                should.exist(jsonResponse.meta.import_label);
-                jsonResponse.meta.import_label.slug.should.match(/^import-/);
+                assertExists(jsonResponse.meta.import_label);
+                assert.match(jsonResponse.meta.import_label.slug, /^import-/);
             });
     });
 
     it('Can import members with host emailVerification limits', async function () {
-        // If this test fails, check if the total members that have been created with fixtures has increased a lot, and if required, increase the amount of imported members
-        configUtils.set('hostSettings:emailVerification', {
-            apiThreshold: 2,
-            adminThreshold: 2,
-            importThreshold: 1, // note: this one isn't really used because (totalMembers - members_created_in_last_30_days) is larger and used instead
-            verified: false,
-            escalationAddress: 'test@example.com'
-        });
+        try {
+            // If this test fails, check if the total members that have been created with fixtures has increased a lot, and if required, increase the amount of imported members
+            const {receivedWebhookRequests} = await setupEmailVerificationUtils({
+                apiThreshold: 2,
+                adminThreshold: 2,
+                importThreshold: 1, // note: this one isn't really used because (totalMembers - members_created_in_last_30_days) is larger and used instead
+                persist: true
+            });
 
-        const res = await request
-            .post(localUtils.API.getApiQuery(`members/upload/`))
-            .field('labels', ['new-global-label'])
-            .attach('membersfile', path.join(__dirname, '/../../../utils/fixtures/csv/valid-members-import-large.csv'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201);
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
+            assert.equal(settingsCache.get('email_verification_required'), false, 'Email verification should not be required');
 
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.meta);
-        should.exist(jsonResponse.meta.stats);
+            const awaitCompletion = jobManager.awaitCompletion('members-import');
 
-        jsonResponse.meta.stats.imported.should.equal(10);
-        jsonResponse.meta.stats.invalid.length.should.equal(0);
+            const res = await request
+                .post(localUtils.API.getApiQuery(`members/upload/`))
+                .field('labels', ['new-global-label'])
+                .attach('membersfile', path.join(__dirname, '/../../../utils/fixtures/csv/valid-members-import-large-501.csv'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(202);
+            assert.equal(res.headers['x-cache-invalidate'], undefined);
+            const jsonResponse = res.body;
 
-        assert(!!settingsCache.get('email_verification_required'), 'Email verification should now be required');
+            assertExists(jsonResponse);
+            assertExists(jsonResponse.meta);
 
-        mockManager.assert.sentEmail({
-            subject: 'Email needs verification'
-        });
-    });
+            // Wait for the job to finish
+            await awaitCompletion;
 
-    it('Can still import members once email verification is required but does not send email', async function () {
-        const res = await request
-            .post(localUtils.API.getApiQuery(`members/upload/`))
-            .field('labels', ['new-global-label'])
-            .attach('membersfile', path.join(__dirname, '/../../../utils/fixtures/csv/valid-members-import-large.csv'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201);
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
+            assert.equal(settingsCache.get('email_verification_required'), true, 'Email verification should now be required');
 
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.meta);
-        should.exist(jsonResponse.meta.stats);
+            assert.equal(receivedWebhookRequests.length, 1, 'Expected to receive webhook requests');
 
-        jsonResponse.meta.stats.imported.should.equal(10);
-        jsonResponse.meta.stats.invalid.length.should.equal(0);
+            const secondImport = await request
+                .post(localUtils.API.getApiQuery(`members/upload/`))
+                .field('labels', ['new-global-label'])
+                .attach('membersfile', path.join(__dirname, '/../../../utils/fixtures/csv/valid-members-import-large.csv'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201);
+            assert.equal(secondImport.headers['x-cache-invalidate'], undefined);
+            const secondJsonResponse = secondImport.body;
 
-        assert(!!settingsCache.get('email_verification_required'), 'Email verification should now be required');
+            assertExists(secondJsonResponse);
+            assertExists(secondJsonResponse.meta);
+            assertExists(secondJsonResponse.meta.stats);
 
-        // Don't send another email
-        emailMockReceiver.assertSentEmailCount(0);
+            assert.equal(secondJsonResponse.meta.stats.imported, 10);
+            assert.equal(secondJsonResponse.meta.stats.invalid.length, 0);
+
+            assert.equal(settingsCache.get('email_verification_required'), true, 'Email verification should still be required');
+
+            // Don't send another email
+            assert.equal(receivedWebhookRequests.length, 1, 'Expected no further webhook requests after second import');
+        } finally {
+            await restoreEmailVerificationUtils();
+        }
     });
 
     it('Can import members with host emailVerification limits for large imports', async function () {
-        await models.Settings.edit([{
-            key: 'email_verification_required',
-            value: false
-        }], {context: {internal: true}});
+        try {
+            // If this test fails, check if the total members that have been created with fixtures has increased a lot, and if required, increase the amount of imported members
+            const {receivedWebhookRequests} = await setupEmailVerificationUtils({
+                apiThreshold: 2,
+                adminThreshold: 2,
+                importThreshold: 1 // note: this one isn't really used because (totalMembers - members_created_in_last_30_days) is larger and used instead
+            });
 
-        assert(!settingsCache.get('email_verification_required'), 'Email verification should not be required');
+            assert.equal(settingsCache.get('email_verification_required'), false, 'Email verification should not be required');
 
-        // If this test fails, check if the total members that have been created with fixtures has increased a lot, and if required, increase the amount of imported members
-        configUtils.set('hostSettings:emailVerification', {
-            apiThreshold: 2,
-            adminThreshold: 2,
-            importThreshold: 1, // note: this one isn't really used because (totalMembers - members_created_in_last_30_days) is larger and used instead
-            verified: false,
-            escalationAddress: 'test@example.com'
-        });
+            const awaitCompletion = jobManager.awaitCompletion('members-import');
 
-        const awaitCompletion = jobManager.awaitCompletion('members-import');
+            const res = await request
+                .post(localUtils.API.getApiQuery(`members/upload/`))
+                .field('labels', ['new-global-label'])
+                .attach('membersfile', path.join(__dirname, '/../../../utils/fixtures/csv/valid-members-import-large-501.csv'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(202);
+            assert.equal(res.headers['x-cache-invalidate'], undefined);
+            const jsonResponse = res.body;
 
-        const res = await request
-            .post(localUtils.API.getApiQuery(`members/upload/`))
-            .field('labels', ['new-global-label'])
-            .attach('membersfile', path.join(__dirname, '/../../../utils/fixtures/csv/valid-members-import-large-501.csv'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(202);
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
+            assertExists(jsonResponse);
+            assertExists(jsonResponse.meta);
 
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.meta);
+            // Wait for the job to finish
+            await awaitCompletion;
 
-        // Wait for the job to finish
-        await awaitCompletion;
+            assert.equal(settingsCache.get('email_verification_required'), true, 'Email verification should now be required');
 
-        assert(!!settingsCache.get('email_verification_required'), 'Email verification should now be required');
+            mockManager.assert.sentEmail({
+                subject: 'Your member import is complete'
+            });
 
-        mockManager.assert.sentEmail({
-            subject: 'Your member import is complete'
-        });
-
-        mockManager.assert.sentEmail({
-            subject: 'Email needs verification'
-        });
+            assert.equal(receivedWebhookRequests.length, 1, 'Expected to receive webhook requests');
+        } finally {
+            await restoreEmailVerificationUtils();
+        }
     });
 });

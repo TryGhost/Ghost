@@ -5,10 +5,9 @@ import {inject as service} from '@ember/service';
 
 export default class MembersActivityEventTypeFilter extends Component {
     @service settings;
-    @service feature;
 
     getAvailableEventTypes() {
-        return getAvailableEventTypes(this.settings, this.feature, this.args.hiddenEvents);
+        return getAvailableEventTypes(this.settings, this.args.hiddenEvents);
     }
 
     get eventTypes() {

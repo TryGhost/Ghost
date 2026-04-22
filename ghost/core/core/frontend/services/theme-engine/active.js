@@ -11,6 +11,7 @@
  * No properties marked with an _ should be used directly.
  *
  */
+const fs = require('fs-extra');
 const join = require('path').join;
 
 const _ = require('lodash');
@@ -20,6 +21,7 @@ const engine = require('./engine');
 const themeI18n = require('./i18n');
 const themeI18next = require('./i18next');
 const labs = require('../../../shared/labs');
+const assetHash = require('../asset-hash');
 // Current instance of ActiveTheme
 let currentActiveTheme;
 
@@ -54,6 +56,8 @@ class ActiveTheme {
         this._config = themeConfig.create(this._packageInfo);
 
         this.initI18n();
+
+        this._hasRobotsTxt = fs.existsSync(join(this._path, 'robots.txt'));
     }
 
     get name() {
@@ -84,6 +88,10 @@ class ActiveTheme {
         return this._templates.indexOf(templateName) > -1;
     }
 
+    hasRobotsTxt() {
+        return this._hasRobotsTxt;
+    }
+
     updateTemplateOptions(options) {
         engine.updateTemplateOptions(_.merge({}, engine.getTemplateOptions(), options));
     }
@@ -112,9 +120,10 @@ class ActiveTheme {
     }
 
     mount(siteApp) {
-        // reset the asset hash
-        // @TODO: set this on the theme instead of globally, or use proper file-based hash
+        // Reset the global asset hash (used as fallback for non-theme assets)
         config.set('assetHash', null);
+        // Clear the file-based asset hash cache (for theme assets)
+        assetHash.clearCache();
         // clear the view cache
         siteApp.cache = {};
         // Set the views and engine

@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const validators = require('../../../../../../../core/server/api/endpoints/utils/validators');
 
@@ -24,7 +24,7 @@ describe('Unit: endpoints/utils/validators/input/tags', function () {
                 return validators.input.tags.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 
@@ -39,7 +39,7 @@ describe('Unit: endpoints/utils/validators/input/tags', function () {
                 return validators.input.tags.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 
@@ -54,7 +54,7 @@ describe('Unit: endpoints/utils/validators/input/tags', function () {
                 return validators.input.tags.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 
@@ -70,7 +70,7 @@ describe('Unit: endpoints/utils/validators/input/tags', function () {
                 return validators.input.tags.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 
@@ -87,7 +87,7 @@ describe('Unit: endpoints/utils/validators/input/tags', function () {
                 return validators.input.tags.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 
@@ -119,10 +119,10 @@ describe('Unit: endpoints/utils/validators/input/tags', function () {
 
                 let result = validators.input.tags.add(apiConfig, frame);
 
-                should.exist(frame.data.tags[0].name);
-                should.not.exist(frame.data.tags[0].parent);
-                should.not.exist(frame.data.tags[0].created_at);
-                should.not.exist(frame.data.tags[0].updated_at);
+                assert(frame.data.tags[0].name);
+                assert.equal(frame.data.tags[0].parent, undefined);
+                assert.equal(frame.data.tags[0].created_at, undefined);
+                assert.equal(frame.data.tags[0].updated_at, undefined);
 
                 return result;
             });
@@ -161,7 +161,7 @@ describe('Unit: endpoints/utils/validators/input/tags', function () {
                         return validators.input.tags.add(apiConfig, frame)
                             .then(Promise.reject)
                             .catch((err) => {
-                                err.errorType.should.equal('ValidationError');
+                                assert.equal(err.errorType, 'ValidationError');
                             });
                     });
 
@@ -187,7 +187,7 @@ describe('Unit: endpoints/utils/validators/input/tags', function () {
                 return validators.input.tags.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 
@@ -202,7 +202,7 @@ describe('Unit: endpoints/utils/validators/input/tags', function () {
                 return validators.input.tags.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 
@@ -218,7 +218,7 @@ describe('Unit: endpoints/utils/validators/input/tags', function () {
                 return validators.input.tags.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 

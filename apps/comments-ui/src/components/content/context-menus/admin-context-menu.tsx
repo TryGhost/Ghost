@@ -1,11 +1,12 @@
-import {Comment, useAppContext} from '../../../app-context';
+import {Comment, useAppContext, useLabs} from '../../../app-context';
 
 type Props = {
     comment: Comment;
     close: () => void;
 };
 const AdminContextMenu: React.FC<Props> = ({comment, close}) => {
-    const {dispatchAction, t} = useAppContext();
+    const {dispatchAction, t, adminUrl} = useAppContext();
+    const labs = useLabs();
 
     const hideComment = () => {
         dispatchAction('hideComment', comment);
@@ -18,6 +19,7 @@ const AdminContextMenu: React.FC<Props> = ({comment, close}) => {
     };
 
     const isHidden = comment.status !== 'published';
+    const adminCommentUrl = adminUrl ? `${adminUrl}#/comments/?id=is:${comment.id}` : null;
 
     return (
         <div className="flex w-full flex-col gap-0.5">
@@ -31,6 +33,18 @@ const AdminContextMenu: React.FC<Props> = ({comment, close}) => {
                         <span className="hidden sm:inline">{t('Hide comment')}</span><span className="sm:hidden">{t('Hide')}</span>
                     </button>
             }
+            {labs?.commentModeration && adminCommentUrl && (
+                <a
+                    className="w-full rounded px-2.5 py-1.5 text-left text-[14px] transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                    data-testid="view-in-admin-button"
+                    href={adminCommentUrl}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    onClick={close}
+                >
+                    {t('View in admin')}
+                </a>
+            )}
         </div>
     );
 };

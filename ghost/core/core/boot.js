@@ -64,7 +64,7 @@ function notifyServerReady(error) {
   * @param {object} options.config
   */
 async function initDatabase({config}) {
-    const DatabaseStateManager = require('./server/data/db/DatabaseStateManager');
+    const DatabaseStateManager = require('./server/data/db/database-state-manager');
     const dbStateManager = new DatabaseStateManager({knexMigratorFilePath: config.get('paths:appRoot')});
     await dbStateManager.makeReady();
 
@@ -225,8 +225,8 @@ async function initFrontend(dataService) {
  * What we want is to be able to optionally load various components and mount them
  * So eventually this function should go away
  * @param {Object} options
- * @param {Boolean} options.backend
- * @param {Boolean} options.frontend
+ * @param {boolean} options.backend
+ * @param {boolean} options.frontend
  * @param {Object} options.config
  */
 async function initExpressApps({frontend, backend, config}) {
@@ -315,10 +315,10 @@ async function initServices() {
     const members = require('./server/services/members');
     const tiers = require('./server/services/tiers');
     const permissions = require('./server/services/permissions');
-    const xmlrpc = require('./server/services/xmlrpc');
+    const indexnow = require('./server/services/indexnow');
     const slack = require('./server/services/slack');
     const webhooks = require('./server/services/webhooks');
-    const scheduling = require('./server/adapters/scheduling');
+    const postScheduling = require('./server/services/post-scheduling');
     const comments = require('./server/services/comments');
     const staffService = require('./server/services/staff');
     const memberAttribution = require('./server/services/member-attribution');
@@ -329,31 +329,35 @@ async function initServices() {
     const emailService = require('./server/services/email-service');
     const emailAnalytics = require('./server/services/email-analytics');
     const mentionsService = require('./server/services/mentions');
-    const mentionsEmailReport = require('./server/services/mentions-email-report');
     const tagsPublic = require('./server/services/tags-public');
     const postsPublic = require('./server/services/posts-public');
     const slackNotifications = require('./server/services/slack-notifications');
     const mediaInliner = require('./server/services/media-inliner');
     const donationService = require('./server/services/donations');
+    const giftService = require('./server/services/gifts');
     const recommendationsService = require('./server/services/recommendations');
     const emailAddressService = require('./server/services/email-address');
     const statsService = require('./server/services/stats');
     const explorePingService = require('./server/services/explore-ping');
 
+    const {
+        createAdapter: createSchedulerAdapter,
+        getSchedulerIntegration
+    } = require('./server/adapters/scheduling/utils');
     const urlUtils = require('./shared/url-utils');
 
-    // NOTE: Members service depends on these
-    //       so they are initialized before it.
-    await stripe.init();
-
-    // NOTE: newsletter service and email service depend on email address service
-    await emailAddressService.init(),
+    // Initialize things that other services depend on first.
+    const schedulerAdapter = createSchedulerAdapter();
+    const [schedulerIntegration] = await Promise.all([
+        getSchedulerIntegration(),
+        stripe.init(),
+        emailAddressService.init()
+    ]);
 
     await Promise.all([
         identityTokens.init(),
         memberAttribution.init(),
         mentionsService.init(),
-        mentionsEmailReport.init(),
         staffService.init(),
         members.init(),
         tiers.init(),
@@ -361,14 +365,16 @@ async function initServices() {
         postsPublic.init(),
         membersEvents.init(),
         permissions.init(),
-        xmlrpc.listen(),
+        indexnow.listen(),
         slack.listen(),
         audienceFeedback.init(),
         emailService.init(),
         emailAnalytics.init(),
         webhooks.listen(),
-        scheduling.init({
-            apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true)
+        postScheduling.init({
+            apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true),
+            adapter: schedulerAdapter,
+            integration: schedulerIntegration
         }),
         comments.init(),
         linkTracking.init(),
@@ -378,8 +384,10 @@ async function initServices() {
         donationService.init(),
         recommendationsService.init(),
         statsService.init(),
-        explorePingService.init()
+        explorePingService.init(),
+        giftService.init()
     ]);
+
     debug('End: Services');
 
     debug('End: initServices');
@@ -419,9 +427,14 @@ async function initBackgroundServices({config}) {
     const milestonesService = require('./server/services/milestones');
     milestonesService.initAndRun();
 
+    // TODO(NY-1220): The outbox is deprecated and will soon be removed.
     const outboxService = require('./server/services/outbox');
     outboxService.init();
-    
+
+    const domainEvents = require('@tryghost/domain-events');
+    const WelcomeEmailAutomationsService = require('./server/services/welcome-email-automations');
+    new WelcomeEmailAutomationsService().init(domainEvents);
+
     debug('End: initBackgroundServices');
 }
 
@@ -498,7 +511,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         const rootApp = require('./app')();
 
         if (server) {
-            const GhostServer = require('./server/GhostServer');
+            const GhostServer = require('./server/ghost-server');
             ghostServer = new GhostServer({url: config.getSiteUrl(), env: config.get('env'), serverConfig: config.get('server')});
             await ghostServer.start(rootApp);
             bootLogger.log('server started');

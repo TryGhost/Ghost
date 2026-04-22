@@ -1,10 +1,10 @@
 const urlUtils = require('../../../shared/url-utils');
 const urlService = require('../../services/url');
 
-const AudienceFeedbackService = require('./AudienceFeedbackService');
-const AudienceFeedbackController = require('./AudienceFeedbackController');
-const Feedback = require('./Feedback');
-const FeedbackRepository = require('./FeedbackRepository');
+const AudienceFeedbackService = require('./audience-feedback-service');
+const AudienceFeedbackController = require('./audience-feedback-controller');
+const Feedback = require('./feedback');
+const FeedbackRepository = require('./feedback-repository');
 
 class AudienceFeedbackServiceWrapper {
     async init() {

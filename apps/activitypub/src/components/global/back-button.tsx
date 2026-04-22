@@ -1,5 +1,6 @@
 import React from 'react';
-import {Button, LucideIcon, cn} from '@tryghost/shade';
+import {Button} from '@tryghost/shade/components';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useNavigationStack} from '@tryghost/admin-x-framework';
 

@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 describe('Milestones Service', function () {
     let milestonesService;

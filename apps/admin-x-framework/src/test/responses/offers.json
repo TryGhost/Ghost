@@ -15,6 +15,7 @@
             "currency": null,
             "status": "active",
             "redemption_count": 0,
+            "redemption_type": "signup",
             "tier": {
                 "id": "645453f4d254799990dd0e22",
                 "name": "Supporter"
@@ -35,6 +36,7 @@
             "currency": null,
             "status": "active",
             "redemption_count": 0,
+            "redemption_type": "signup",
             "tier": {
                 "id": "645453f4d254799990dd0e22",
                 "name": "Supporter"
@@ -55,10 +57,29 @@
             "currency": null,
             "status": "archived",
             "redemption_count": 0,
+            "redemption_type": "signup",
             "tier": {
                 "id": "645453f4d254799990dd0e22",
                 "name": "Supporter"
             }
+        },
+        {
+            "id": "6487f0c364fca78ec2fff601",
+            "name": "Fourth offer",
+            "code": "fourth-offer",
+            "display_title": "Fourth offer",
+            "display_description": "",
+            "type": "percent",
+            "cadence": "month",
+            "amount": 10,
+            "duration": "forever",
+            "duration_in_months": null,
+            "currency_restriction": false,
+            "currency": null,
+            "status": "active",
+            "redemption_count": 0,
+            "redemption_type": "retention",
+            "tier": null
         }
     ]
 }

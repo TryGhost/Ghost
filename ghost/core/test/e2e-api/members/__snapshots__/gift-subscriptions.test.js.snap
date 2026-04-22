@@ -1,0 +1,97 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Gift Subscriptions Purchase Can purchase a gift as an anonymous visitor 1: [body] 1`] = `
+Object {
+  "url": "https://checkout.stripe.com/c/pay/fake-data",
+}
+`;
+
+exports[`Gift Subscriptions Purchase Can purchase a gift as an authenticated member 1: [body] 1`] = `
+Object {
+  "url": "https://checkout.stripe.com/c/pay/fake-data",
+}
+`;
+
+exports[`Gift Subscriptions Purchase Rejects purchase when labs flag is disabled 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Gift subscriptions are not enabled on this site.",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
+}
+`;
+
+exports[`Gift Subscriptions Purchase Rejects purchase with an offer 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Offers cannot be applied to gift subscriptions",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Bad Request.",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
+}
+`;
+
+exports[`Gift Subscriptions Purchase a gift Can purchase a gift as an anonymous visitor 1: [body] 1`] = `
+Object {
+  "url": "https://checkout.stripe.com/c/pay/fake-data",
+}
+`;
+
+exports[`Gift Subscriptions Purchase a gift Can purchase a gift as an authenticated member 1: [body] 1`] = `
+Object {
+  "url": "https://checkout.stripe.com/c/pay/fake-data",
+}
+`;
+
+exports[`Gift Subscriptions Purchase a gift Rejects purchase when labs flag is disabled 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Gift subscriptions are not enabled on this site.",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
+}
+`;
+
+exports[`Gift Subscriptions Purchase a gift Rejects purchase with an offer 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Offers cannot be applied to gift subscriptions",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Bad Request.",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
+}
+`;

@@ -17,6 +17,7 @@
     "Best": "",
     "Cancel": "انصراف",
     "Comment": "دیدگاه",
+    "Commenting disabled": "",
     "Complete your profile": "نمایه خود را کامل کنید",
     "Delete": "پاک کردن",
     "Deleted": "",
@@ -66,9 +67,13 @@
     "Sign up now": "ایجاد حساب",
     "Sort by": "",
     "Start the conversation": "گفت\u200cوگویی شروع کنید",
+    "The linked comment is no longer available.": "",
     "This comment has been hidden.": "این دیدگاه مخفی شده است",
     "This comment has been removed.": "این دیدگاه پاک شده است",
     "Upgrade now": "ارتقاء دهید",
+    "View in admin": "",
     "Yesterday": "دیروز",
+    "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "درخواست شما برای مدیر این وب\u200cسایت ارسال خواهد شد."
 }

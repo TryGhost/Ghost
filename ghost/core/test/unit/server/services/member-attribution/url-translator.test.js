@@ -1,6 +1,6 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 
-const UrlTranslator = require('../../../../../core/server/services/member-attribution/UrlTranslator');
+const UrlTranslator = require('../../../../../core/server/services/member-attribution/url-translator');
 
 const models = {
     Post: {
@@ -78,11 +78,11 @@ describe('UrlTranslator', function () {
         });
 
         it('skips items without path and type', async function () {
-            should(await translator.getResourceDetails({time: 123})).eql(null);
+            assert.equal(await translator.getResourceDetails({time: 123}), null);
         });
 
         it('returns posts for explicit items', async function () {
-            should(await translator.getResourceDetails({id: 'my-post', type: 'post', time: 123})).eql({
+            assert.deepEqual(await translator.getResourceDetails({id: 'my-post', type: 'post', time: 123}), {
                 type: 'post',
                 id: 'my-post',
                 url: '/path/my-post'
@@ -90,15 +90,15 @@ describe('UrlTranslator', function () {
         });
 
         it('returns null if explicit resource not found', async function () {
-            should(await translator.getResourceDetails({id: 'invalid', type: 'post', time: 123})).eql(null);
+            assert.equal(await translator.getResourceDetails({id: 'invalid', type: 'post', time: 123}), null);
         });
 
         it('returns null for invalid item', async function () {
-            should(await translator.getResourceDetails({time: 123})).eql(null);
+            assert.equal(await translator.getResourceDetails({time: 123}), null);
         });
 
         it('returns url type if no path not matching a resource', async function () {
-            should(await translator.getResourceDetails({path: '/test', time: 123})).eql({
+            assert.deepEqual(await translator.getResourceDetails({path: '/test', time: 123}), {
                 type: 'url',
                 id: null,
                 url: '/test'
@@ -106,7 +106,7 @@ describe('UrlTranslator', function () {
         });
 
         it('strips subdirectory for url types', async function () {
-            should(await translator.getResourceDetails({path: '/with-subdirectory/test', time: 123})).eql({
+            assert.deepEqual(await translator.getResourceDetails({path: '/with-subdirectory/test', time: 123}), {
                 type: 'url',
                 id: null,
                 url: '/test'
@@ -114,7 +114,7 @@ describe('UrlTranslator', function () {
         });
 
         it('returns post type if matching resource', async function () {
-            should(await translator.getResourceDetails({path: '/with-subdirectory/path/post', time: 123})).eql({
+            assert.deepEqual(await translator.getResourceDetails({path: '/with-subdirectory/path/post', time: 123}), {
                 type: 'post',
                 id: 'post',
                 url: '/path/post'
@@ -122,7 +122,7 @@ describe('UrlTranslator', function () {
         });
 
         it('returns page type if matching resource', async function () {
-            should(await translator.getResourceDetails({path: '/with-subdirectory/path/page', time: 123})).eql({
+            assert.deepEqual(await translator.getResourceDetails({path: '/with-subdirectory/path/page', time: 123}), {
                 type: 'page',
                 id: 'page',
                 url: '/path/page'
@@ -137,11 +137,11 @@ describe('UrlTranslator', function () {
         });
 
         it('returns homepage', function () {
-            should(translator.getUrlTitle('/')).eql('homepage');
+            assert.equal(translator.getUrlTitle('/'), 'homepage');
         });
 
         it('returns url', function () {
-            should(translator.getUrlTitle('/url')).eql('/url');
+            assert.equal(translator.getUrlTitle('/url'), '/url');
         });
     });
 
@@ -175,35 +175,35 @@ describe('UrlTranslator', function () {
         });
 
         it('returns posts', function () {
-            should(translator.getTypeAndIdFromPath('/post')).eql({
+            assert.deepEqual(translator.getTypeAndIdFromPath('/post'), {
                 type: 'post',
                 id: 'post'
             });
         });
 
         it('returns pages', function () {
-            should(translator.getTypeAndIdFromPath('/page')).eql({
+            assert.deepEqual(translator.getTypeAndIdFromPath('/page'), {
                 type: 'page',
                 id: 'page'
             });
         });
 
         it('returns authors', function () {
-            should(translator.getTypeAndIdFromPath('/author')).eql({
+            assert.deepEqual(translator.getTypeAndIdFromPath('/author'), {
                 type: 'author',
                 id: 'author'
             });
         });
 
         it('returns tags', function () {
-            should(translator.getTypeAndIdFromPath('/tag')).eql({
+            assert.deepEqual(translator.getTypeAndIdFromPath('/tag'), {
                 type: 'tag',
                 id: 'tag'
             });
         });
 
         it('returns undefined', function () {
-            should(translator.getTypeAndIdFromPath('/other')).eql(undefined);
+            assert.equal(translator.getTypeAndIdFromPath('/other'), undefined);
         });
     });
 
@@ -221,47 +221,43 @@ describe('UrlTranslator', function () {
         });
 
         it('returns for post', async function () {
-            should(await translator.getResourceById('id', 'post')).match({
-                id: 'post_id'
-            });
+            const result = await translator.getResourceById('id', 'post');
+            assert.equal(result.id, 'post_id');
         });
 
         it('returns for page', async function () {
-            should(await translator.getResourceById('id', 'page')).match({
-                id: 'post_id'
-            });
+            const result = await translator.getResourceById('id', 'page');
+            assert.equal(result.id, 'post_id');
         });
 
         it('returns for tag', async function () {
-            should(await translator.getResourceById('id', 'tag')).match({
-                id: 'tag_id'
-            });
+            const result = await translator.getResourceById('id', 'tag');
+            assert.equal(result.id, 'tag_id');
         });
 
         it('returns for user', async function () {
-            should(await translator.getResourceById('id', 'author')).match({
-                id: 'user_id'
-            });
+            const result = await translator.getResourceById('id', 'author');
+            assert.equal(result.id, 'user_id');
         });
 
         it('returns for invalid', async function () {
-            should(await translator.getResourceById('id', 'invalid')).eql(null);
+            assert.equal(await translator.getResourceById('id', 'invalid'), null);
         });
 
         it('returns null for not found post', async function () {
-            should(await translator.getResourceById('invalid', 'post')).eql(null);
+            assert.equal(await translator.getResourceById('invalid', 'post'), null);
         });
 
         it('returns null for not found page', async function () {
-            should(await translator.getResourceById('invalid', 'page')).eql(null);
+            assert.equal(await translator.getResourceById('invalid', 'page'), null);
         });
 
         it('returns null for not found author', async function () {
-            should(await translator.getResourceById('invalid', 'author')).eql(null);
+            assert.equal(await translator.getResourceById('invalid', 'author'), null);
         });
 
         it('returns null for not found tag', async function () {
-            should(await translator.getResourceById('invalid', 'tag')).eql(null);
+            assert.equal(await translator.getResourceById('invalid', 'tag'), null);
         });
     });
 
@@ -278,7 +274,7 @@ describe('UrlTranslator', function () {
         });
 
         it('passes relativeToAbsolute to urlUtils', async function () {
-            should(translator.relativeToAbsolute('relative')).eql('absolute/relative');
+            assert.equal(translator.relativeToAbsolute('relative'), 'absolute/relative');
         });
     });
 
@@ -302,7 +298,7 @@ describe('UrlTranslator', function () {
         });
 
         it('passes calls to urlUtils', async function () {
-            should(translator.stripSubdirectoryFromPath('/dir/relative')).eql('/relative');
+            assert.equal(translator.stripSubdirectoryFromPath('/dir/relative'), '/relative');
         });
     });
 });

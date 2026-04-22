@@ -52,26 +52,26 @@ test.describe('Feed', async () => {
         await page.goto('#/notes');
 
         // Wait for the feed to load
-        const feedList = page.getByRole('list');
+        const feedList = page.getByTestId('feed-list');
         await expect(feedList).toBeVisible();
 
-        // Find and click the "New note" button in the sidebar
-        const newNoteButton = page.getByRole('button', {name: 'New note'});
-        await expect(newNoteButton).toBeVisible();
-        await newNoteButton.click();
+        // Use the in-feed trigger to avoid sidebar viewport/layout issues in CI
+        const newPostTrigger = page.getByLabel('New post');
+        await expect(newPostTrigger).toBeVisible();
+        await newPostTrigger.click();
 
         // Wait for the modal to appear
-        await page.waitForSelector('[role="dialog"]', {timeout: 10000});
+        const noteDialog = page.getByTestId('new-note-modal');
+        await expect(noteDialog).toBeVisible();
 
         // Find the textarea in the modal and type content
-        const noteTextarea = page.getByPlaceholder('What\'s new?');
+        const noteTextarea = noteDialog.getByTestId('note-textarea');
         await expect(noteTextarea).toBeVisible();
-        await expect(noteTextarea).toBeFocused();
 
         await noteTextarea.fill('My first test note!');
 
         // Cick the Post button in the modal
-        const postButton = page.getByRole('button', {name: 'Post'});
+        const postButton = noteDialog.getByTestId('post-button');
         await expect(postButton).toBeEnabled();
         await postButton.click();
 

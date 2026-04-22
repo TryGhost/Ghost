@@ -25,21 +25,21 @@ describe('{{price}} helper', function () {
         const templateString = '{{price}}';
 
         shouldCompileToExpected(templateString, {}, '');
-        assert.equal(logWarnStub.calledOnce, true);
+        sinon.assert.calledOnce(logWarnStub);
     });
 
     it('throws an error for undefined parameter', function () {
         const templateString = '{{price @dont.exist}}';
 
         shouldCompileToExpected(templateString, {}, '');
-        assert.equal(logWarnStub.calledOnce, true);
+        sinon.assert.calledOnce(logWarnStub);
     });
 
     it('throws if argument is not a number', function () {
         const templateString = '{{price "not_a_number"}}';
 
         shouldCompileToExpected(templateString, {}, '');
-        assert.equal(logWarnStub.calledOnce, true);
+        sinon.assert.calledOnce(logWarnStub);
     });
 
     it('will format decimal adjusted amount', function () {
@@ -100,6 +100,11 @@ describe('{{price}} helper', function () {
     it('will format with short number format without decimal value', function () {
         const rendered = price.call({}, 500, {hash: {currency: 'EUR', numberFormat: 'short'}});
         assert.equal(rendered, '€5');
+    });
+
+    it('will format with short number format preserving trailing zero', function () {
+        const rendered = price.call({}, 3540, {hash: {currency: 'USD', numberFormat: 'short'}});
+        assert.equal(rendered, '$35.40');
     });
 
     it('will format with name currency format', function () {

@@ -1,6 +1,6 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
-import {click, currentURL, find, visit} from '@ember/test-helpers';
+import {currentURL, find, visit} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {enableMembers} from '../helpers/members';
 import {expect} from 'chai';
@@ -13,7 +13,6 @@ describe('Acceptance: Onboarding', function () {
     
     // Helper selectors for better readability
     const checklist = () => find('[data-test-dashboard="onboarding-checklist"]');
-    const skipOnboarding = '#ob-skip';
 
     beforeEach(async function () {
         mockAnalyticsApps();
@@ -44,32 +43,8 @@ describe('Acceptance: Onboarding', function () {
             expect(checklist()).to.not.exist;
         });
 
-        it('dashboard shows the checklist after accessing setup/done', async function () {
-            await visit('/setup/done');
-            expect(currentURL()).to.equal('/analytics');
-
-            // main onboarding list is visible
-            expect(checklist()).to.exist;
-        });
-
-        it('checklist is shown when members disabled', async function () {
-            this.server.db.settings.update({membersSignupAccess: 'none'});
-            await visit('/setup/done');
-            await visit('/analytics');
-
-            // onboarding is't shown
-            expect(checklist()).to.exist;
-        });
-
-        it('checklist is hidden when completed', async function () {
-            await visit('/setup/done');
-            await visit('/analytics');
-
-            expect(checklist()).to.exist;
-
-            await click(skipOnboarding);
-            expect(checklist()).to.not.exist;
-        });
+        // Onboarding checklist tests removed — checklist is now rendered by
+        // the React analytics app, not Ember.
     });
 
     describe('checklist (non-owner)', function () {

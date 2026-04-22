@@ -7,6 +7,7 @@ import {task} from 'ember-concurrency';
 export default ModalComponent.extend({
     router: service(),
     notifications: service(),
+    labelsManager: service(),
     model: null,
     showDeleteLabelModal: false,
 
@@ -74,6 +75,7 @@ export default ModalComponent.extend({
         }
         try {
             yield label.destroyRecord();
+            this.labelsManager.removeLabel(label);
             let routeName = this.router.currentRouteName;
             this.notifications.showNotification('Label deleted');
             this.send('closeModal');

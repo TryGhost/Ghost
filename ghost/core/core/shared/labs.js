@@ -21,13 +21,10 @@ const messages = {
 
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
-    'audienceFeedback',
-    'i18n',
-    'themeErrorsNotification',
-    'announcementBar',
     'customFonts',
-    'contentVisibility',
-    'explore'
+    'explore',
+    'commentModeration',
+    'featurebaseFeedback'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -40,23 +37,20 @@ const PUBLIC_BETA_FEATURES = [
 // These features are considered private they live in the private tab of the labs settings page
 // Which is only visible if the developer experiments flag is enabled
 const PRIVATE_FEATURES = [
+    'automations',
     'stripeAutomaticTax',
-    'webmentions',
     'importMemberTier',
     'urlCache',
     'lexicalIndicators',
-    'contentVisibilityAlpha',
+    'adminUIRefresh',
     'emailCustomization',
     'tagsX',
-    'utmTracking',
     'emailUniqueid',
-    'welcomeEmails',
-    'adminForward',
-    'domainWarmup',
     'themeTranslation',
-    'commentModeration',
-    'emailSizeWarnings',
-    'commentPermalinks'
+    'indexnow',
+    'pictureImageFormats',
+    'smarterCounts',
+    'giftSubscriptions'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

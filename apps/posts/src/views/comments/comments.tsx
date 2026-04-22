@@ -4,14 +4,14 @@ import CommentsHeader from './components/comments-header';
 import CommentsLayout from './components/comments-layout';
 import CommentsList from './components/comments-list';
 import React, {useCallback} from 'react';
-import {Button, EmptyIndicator, LoadingIndicator, LucideIcon, createFilter} from '@tryghost/shade';
+import {Button, EmptyIndicator, LoadingIndicator} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {createFilter} from '@tryghost/shade/patterns';
 import {useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
 import {useFilterState} from './hooks/use-filter-state';
-import {useKnownFilterValues} from './hooks/use-known-filter-values';
 
 const Comments: React.FC = () => {
-    const {filters, nql, setFilters} = useFilterState();
-
+    const {filters, nql, setFilters, clearFilters, isSingleIdFilter} = useFilterState();
     const handleAddFilter = useCallback((field: string, value: string, operator: string = 'is') => {
         setFilters((prevFilters) => {
             // Remove any existing filter for the same field
@@ -20,33 +20,34 @@ const Comments: React.FC = () => {
             return [...filtered, createFilter(field, operator, [value])];
         }, {replace: false});
     }, [setFilters]);
-    
+
     const {
         data,
         isError,
         isFetching,
         isFetchingNextPage,
+        isRefetching,
         fetchNextPage,
         hasNextPage
     } = useBrowseComments({
         searchParams: nql ? {filter: nql} : {},
         keepPreviousData: true
     });
-
-    const {knownPosts, knownMembers} = useKnownFilterValues({comments: data?.comments ?? []});
+    // If we are fetching comments, but not fetching the next page and not refetching, we should show the loading indicator
+    const shouldShowLoading = isFetching && !isFetchingNextPage && !isRefetching;
 
     return (
         <CommentsLayout>
             <CommentsHeader>
-                <CommentsFilters 
-                    filters={filters} 
-                    knownMembers={knownMembers}
-                    knownPosts={knownPosts}
-                    onFiltersChange={setFilters}
-                />
+                {!isSingleIdFilter && (
+                    <CommentsFilters
+                        filters={filters}
+                        onFiltersChange={setFilters}
+                    />
+                )}
             </CommentsHeader>
             <CommentsContent>
-                {(isFetching && !isFetchingNextPage) ? (
+                {shouldShowLoading ? (
                     <div className="flex h-full items-center justify-center">
                         <LoadingIndicator size="lg" />
                     </div>
@@ -71,15 +72,25 @@ const Comments: React.FC = () => {
                         </EmptyIndicator>
                     </div>
                 ) : (
-                    <CommentsList
-                        fetchNextPage={fetchNextPage}
-                        hasNextPage={hasNextPage}
-                        isFetchingNextPage={isFetchingNextPage}
-                        isLoading={isFetching && !isFetchingNextPage}
-                        items={data?.comments ?? []}
-                        totalItems={data?.meta?.pagination?.total ?? 0}
-                        onAddFilter={handleAddFilter}
-                    />
+                    <>
+                        <CommentsList
+                            fetchNextPage={fetchNextPage}
+                            hasNextPage={hasNextPage}
+                            isFetchingNextPage={isFetchingNextPage}
+                            isLoading={isFetching && !isFetchingNextPage}
+                            items={data?.comments ?? []}
+                            resetKey={nql ?? ''}
+                            totalItems={data?.meta?.pagination?.total ?? 0}
+                            onAddFilter={handleAddFilter}
+                        />
+                        {isSingleIdFilter && (
+                            <div className="flex justify-center py-8">
+                                <Button variant="outline" onClick={() => clearFilters({replace: false})}>
+                                    Show all comments
+                                </Button>
+                            </div>
+                        )}
+                    </>
                 )}
             </CommentsContent>
         </CommentsLayout>

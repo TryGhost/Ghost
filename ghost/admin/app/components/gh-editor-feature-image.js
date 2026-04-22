@@ -1,6 +1,6 @@
 import Component from '@glimmer/component';
-import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {action} from '@ember/object';
+import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 

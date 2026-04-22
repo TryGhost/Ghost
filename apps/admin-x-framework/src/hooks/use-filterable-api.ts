@@ -2,6 +2,16 @@ import {useRef} from 'react';
 import {apiUrl, useFetchApi} from '../utils/api/fetch-api';
 import {Meta} from '../utils/api/hooks';
 
+const filterData = <
+    Data extends {[k in FilterKey]: string},
+    FilterKey extends keyof Data
+>(data: Data[] = [], filterKey: FilterKey, input: string): Data[] => {
+    if (!data || !input) {
+        return data;
+    }
+    return data.filter(item => item[filterKey]?.toLowerCase().includes(input.toLowerCase()));
+};
+
 const escapeNqlString = (value: string) => {
     return '\'' + value.replace(/'/g, '\\\'') + '\'';
 };
@@ -26,7 +36,7 @@ const useFilterableApi = <
 
     const loadData = async (input: string) => {
         if ((result.current.allLoaded || result.current.lastInput === input) && result.current.data) {
-            return result.current.data.filter(item => item[filterKey]?.toLowerCase().includes(input.toLowerCase()));
+            return filterData(result.current.data, filterKey, input);
         }
 
         const response = await fetchApi<{meta?: Meta} & {[k in ResponseKey]: Data[]}>(apiUrl(path, {
@@ -38,7 +48,7 @@ const useFilterableApi = <
         result.current.allLoaded = !input && !response.meta?.pagination.next;
         result.current.lastInput = input;
 
-        return response[responseKey];
+        return filterData(response[responseKey], filterKey, input);
     };
 
     const loadInitialValues = async (values: string[], key: string) => {

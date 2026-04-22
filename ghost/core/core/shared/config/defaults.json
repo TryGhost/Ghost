@@ -14,6 +14,7 @@
     },
     "privacy": false,
     "security": {
+        "allowWebhookInternalIPs": false,
         "staffDeviceVerification": true
     },
     "useMinFiles": true,
@@ -186,6 +187,12 @@
         },
         "theme": {
             "maxAge": 31536000
+        },
+        "assets": {
+            "contentBasedHash": {
+                "enabled": false,
+                "maxSize": 100000
+            }
         }
     },
     "optimization": {
@@ -234,7 +241,7 @@
     },
     "portal": {
         "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
-        "version": "2.56"
+        "version": "2.68"
     },
     "sodoSearch": {
         "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
@@ -247,7 +254,7 @@
     },
     "comments": {
         "url": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/comments-ui.min.js",
-        "version": "1.2"
+        "version": "1.4"
     },
     "signupForm": {
         "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",
@@ -302,6 +309,5 @@
         "batchSize": 1000,
         "captureLinkClickBadMemberUuid": false
     },
-    "disableJSBackups": false,
-    "memberWelcomeEmailTestInbox": ""
+    "disableJSBackups": false
 }

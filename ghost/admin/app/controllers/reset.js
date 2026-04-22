@@ -57,16 +57,31 @@ export default class ResetController extends Controller.extend(ValidationEngine)
         try {
             yield this.validate();
             try {
-                let resp = yield this.ajax.put(authUrl, {
+                let {password_reset: [{message, emailVerificationToken: legacyEmailVerificationToken}]} = yield this.ajax.put(authUrl, {
                     data: {
                         password_reset: [{newPassword, ne2Password, token}]
                     }
                 });
+
                 this.notifications.showNotification(
-                    resp.password_reset[0].message,
+                    message,
                     {type: 'info', delayed: true, key: 'password.reset'}
                 );
-                this.session.authenticate('authenticator:cookie', {identification: email, password: newPassword, skipEmailVerification: true});
+
+                // Legacy backend response includes emailVerificationToken and still expects
+                // full session creation with credentials + token.
+                // New backend omits the token and has already verified the session during reset.
+                if (legacyEmailVerificationToken) {
+                    yield this.session.authenticate('authenticator:cookie', {
+                        identification: email,
+                        password: newPassword,
+                        token: legacyEmailVerificationToken
+                    });
+                } else {
+                    yield this.session.setup();
+                    yield this.session.handleAuthentication();
+                }
+
                 return true;
             } catch (error) {
                 this.notifications.showAPIError(error, {key: 'password.reset'});

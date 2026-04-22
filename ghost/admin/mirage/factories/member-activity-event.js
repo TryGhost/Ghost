@@ -15,7 +15,6 @@ const EVENT_TYPES = [
     'email_failed_event'
 ];
 
-/* eslint-disable camelcase */
 export default Factory.extend({
     type() { return faker.helpers.arrayElement([EVENT_TYPES]); },
     createdAt() { return moment.utc().format(); },

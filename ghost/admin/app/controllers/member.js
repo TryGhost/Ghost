@@ -1,5 +1,6 @@
 import Controller, {inject as controller} from '@ember/controller';
 import DeleteMemberModal from '../components/members/modals/delete-member';
+import DisableCommentingModal from '../components/members/modals/disable-commenting';
 import EmberObject, {action, defineProperty} from '@ember/object';
 import LogoutMemberModal from '../components/members/modals/logout-member';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
@@ -12,17 +13,22 @@ const SCRATCH_PROPS = ['name', 'email', 'note'];
 
 export default class MemberController extends Controller {
     @controller members;
+    @service ajax;
     @service session;
     @service dropdown;
+    @service feature;
+    @service ghostPaths;
     @service membersStats;
     @service membersCountCache;
     @service modals;
     @service notifications;
     @service router;
+    @service labelsManager;
     @service store;
 
     queryParams = [
-        {postAnalytics: 'post'}
+        {postAnalytics: 'post'},
+        {backPath: 'back'}
     ];
 
     @tracked isLoading = false;
@@ -35,12 +41,29 @@ export default class MemberController extends Controller {
 
     @tracked directlyFromAnalytics = false;
     @tracked postAnalytics = null;
+    @tracked backPath = null;
 
     get fromAnalytics() {
         if (!this.postAnalytics) {
             return null;
         }
         return [this.postAnalytics];
+    }
+
+    get membersListPath() {
+        if (this.backPath?.startsWith('/members')) {
+            return this.backPath;
+        }
+
+        if (this.postAnalytics) {
+            return `/members?post=${encodeURIComponent(this.postAnalytics)}`;
+        }
+
+        return '/members';
+    }
+
+    get membersListUrl() {
+        return `#${this.membersListPath}`;
     }
 
     constructor() {
@@ -141,7 +164,7 @@ export default class MemberController extends Controller {
                 this.membersStats.invalidate();
                 this.members.refreshData();
                 this.membersCountCache.clear();
-                this.transitionToRoute('members');
+                this.router.transitionTo(this.membersListPath);
             }
         });
     }
@@ -154,6 +177,36 @@ export default class MemberController extends Controller {
                 this.members.refreshData();
             }
         });
+    }
+
+    @action
+    confirmDisableCommenting() {
+        this.modals.open(DisableCommentingModal, {
+            member: this.member,
+            afterDisable: () => {
+                this.fetchMemberTask.perform(this.member.id);
+            }
+        });
+    }
+
+    @action
+    async confirmEnableCommenting() {
+        this.dropdown.closeDropdowns();
+        try {
+            const url = this.ghostPaths.url.api('members', this.member.id, 'commenting', 'enable');
+            await this.ajax.post(url);
+
+            // Invalidate React Query cache so comments list reflects changes
+            if (window.adminXQueryClient) {
+                window.adminXQueryClient.invalidateQueries({queryKey: ['CommentsResponseType']});
+                window.adminXQueryClient.invalidateQueries({queryKey: ['MembersResponseType']});
+            }
+
+            await this.fetchMemberTask.perform(this.member.id);
+            this.notifications.showNotification(`Commenting has been enabled for ${this.member.name || this.member.email}.`, {type: 'success'});
+        } catch (e) {
+            this.notifications.showAPIError(e, {key: 'member.enable-commenting'});
+        }
     }
 
     @action
@@ -187,6 +240,7 @@ export default class MemberController extends Controller {
 
             yield member.save();
             member.updateLabels();
+            member.labels.forEach(label => this.labelsManager.addLabel(label));
             this.members.refreshData();
 
             this.setInitialRelationshipValues();

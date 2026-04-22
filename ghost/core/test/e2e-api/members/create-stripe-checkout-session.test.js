@@ -1,7 +1,7 @@
+const assert = require('node:assert/strict');
 const querystring = require('querystring');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const nock = require('nock');
-const should = require('should');
 const models = require('../../../core/server/models');
 const urlService = require('../../../core/server/services/url');
 
@@ -320,9 +320,9 @@ describe('Create Stripe Checkout Session', function () {
                 .reply((uri, body) => {
                     if (uri === '/v1/checkout/sessions') {
                         const parsed = new URLSearchParams(body);
-                        should(parsed.get('metadata[attribution_url]')).eql('/test');
-                        should(parsed.get('metadata[attribution_type]')).eql('url');
-                        should(parsed.get('metadata[attribution_id]')).be.null();
+                        assert.equal(parsed.get('metadata[attribution_url]'), '/test');
+                        assert.equal(parsed.get('metadata[attribution_type]'), 'url');
+                        assert.equal(parsed.get('metadata[attribution_id]'), null);
 
                         return [200, {id: 'cs_123', url: 'https://site.com'}];
                     }
@@ -359,7 +359,7 @@ describe('Create Stripe Checkout Session', function () {
                 .matchBodySnapshot()
                 .matchHeaderSnapshot();
 
-            should(scope.isDone()).eql(true);
+            assert.equal(scope.isDone(), true);
         });
 
         it('Does pass post attribution source to session metadata', async function () {
@@ -404,9 +404,9 @@ describe('Create Stripe Checkout Session', function () {
                 .reply((uri, body) => {
                     if (uri === '/v1/checkout/sessions') {
                         const parsed = new URLSearchParams(body);
-                        should(parsed.get('metadata[attribution_url]')).eql(url);
-                        should(parsed.get('metadata[attribution_type]')).eql('post');
-                        should(parsed.get('metadata[attribution_id]')).eql(post.id);
+                        assert.equal(parsed.get('metadata[attribution_url]'), url);
+                        assert.equal(parsed.get('metadata[attribution_type]'), 'post');
+                        assert.equal(parsed.get('metadata[attribution_id]'), post.id);
 
                         return [200, {id: 'cs_123', url: 'https://site.com'}];
                     }
@@ -443,7 +443,7 @@ describe('Create Stripe Checkout Session', function () {
                 .matchBodySnapshot()
                 .matchHeaderSnapshot();
 
-            should(scope.isDone()).eql(true);
+            assert.equal(scope.isDone(), true);
         });
 
         it('Ignores attribution_* values in metadata', async function () {
@@ -485,9 +485,9 @@ describe('Create Stripe Checkout Session', function () {
                 .reply((uri, body) => {
                     if (uri === '/v1/checkout/sessions') {
                         const parsed = new URLSearchParams(body);
-                        should(parsed.get('metadata[attribution_url]')).be.null();
-                        should(parsed.get('metadata[attribution_type]')).be.null();
-                        should(parsed.get('metadata[attribution_id]')).be.null();
+                        assert.equal(parsed.get('metadata[attribution_url]'), null);
+                        assert.equal(parsed.get('metadata[attribution_type]'), null);
+                        assert.equal(parsed.get('metadata[attribution_id]'), null);
 
                         return [200, {id: 'cs_123', url: 'https://site.com'}];
                     }
@@ -521,7 +521,7 @@ describe('Create Stripe Checkout Session', function () {
                 .matchBodySnapshot()
                 .matchHeaderSnapshot();
 
-            should(scope.isDone()).eql(true);
+            assert.equal(scope.isDone(), true);
         });
 
         it('Does pass UTM parameters to session metadata', async function () {
@@ -565,11 +565,11 @@ describe('Create Stripe Checkout Session', function () {
                         const parsed = new URLSearchParams(body);
 
                         // Check UTM parameters are passed through
-                        should(parsed.get('subscription_data[metadata][utm_source]')).eql('newsletter');
-                        should(parsed.get('subscription_data[metadata][utm_medium]')).eql('email');
-                        should(parsed.get('subscription_data[metadata][utm_campaign]')).eql('spring_sale');
-                        should(parsed.get('subscription_data[metadata][utm_term]')).eql('ghost_pro');
-                        should(parsed.get('subscription_data[metadata][utm_content]')).eql('header_link');
+                        assert.equal(parsed.get('subscription_data[metadata][utm_source]'), 'newsletter');
+                        assert.equal(parsed.get('subscription_data[metadata][utm_medium]'), 'email');
+                        assert.equal(parsed.get('subscription_data[metadata][utm_campaign]'), 'spring_sale');
+                        assert.equal(parsed.get('subscription_data[metadata][utm_term]'), 'ghost_pro');
+                        assert.equal(parsed.get('subscription_data[metadata][utm_content]'), 'header_link');
 
                         return [200, {id: 'cs_123', url: 'https://site.com'}];
                     }
@@ -614,7 +614,7 @@ describe('Create Stripe Checkout Session', function () {
                 .matchBodySnapshot()
                 .matchHeaderSnapshot();
 
-            should(scope.isDone()).eql(true);
+            assert.equal(scope.isDone(), true);
         });
     });
 });

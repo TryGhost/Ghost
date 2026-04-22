@@ -1,0 +1,88 @@
+.kg-transistor-card {
+    display: flex;
+    justify-content: center;
+}
+
+.kg-transistor-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2.4rem;
+    width: 100%;
+    max-width: 100%;
+    padding: 3rem 2.4rem;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    background: color-mix(in srgb, currentColor 4%, transparent);
+    color: inherit;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.kg-transistor-icon {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 116px;
+    height: 116px;
+    border-radius: 14px;
+    background: var(--ghost-accent-color, #b8a5ac);
+    color: #fff;
+}
+
+.kg-transistor-icon svg {
+    display: block;
+    width: 56px;
+    height: 56px;
+}
+
+.kg-transistor-content {
+    min-width: 0;
+    max-width: 640px;
+}
+
+.kg-transistor-title {
+    margin: 0;
+    color: inherit;
+    font-size: 2.3rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.kg-transistor-description {
+    margin-top: 1.6rem;
+    color: inherit;
+    font-size: 1.6rem;
+    line-height: 1.5;
+    opacity: 0.65;
+}
+
+@media (max-width: 640px) {
+    .kg-transistor-placeholder {
+        gap: 1.6rem;
+        padding: 2.4rem 1.8rem;
+    }
+
+    .kg-transistor-icon {
+        width: 88px;
+        height: 88px;
+        border-radius: 12px;
+    }
+
+    .kg-transistor-icon svg {
+        width: 44px;
+        height: 44px;
+    }
+
+    .kg-transistor-title {
+        font-size: 1.8rem;
+    }
+
+    .kg-transistor-description {
+        margin-top: 1rem;
+        font-size: 1.45rem;
+    }
+}

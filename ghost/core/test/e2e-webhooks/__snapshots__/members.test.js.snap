@@ -15,6 +15,12 @@ Object {
   "member": Object {
     "current": Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "testemail@example.com",
@@ -23,6 +29,7 @@ Object {
       "email_opened_count": 0,
       "geolocation": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Array [],
       "last_seen_at": null,
       "name": "Test Member",
       "newsletters": Array [
@@ -61,6 +68,12 @@ Object {
   "member": Object {
     "current": Object {},
     "previous": Object {
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "testemail2@example.com",
       "email_count": 0,
@@ -102,6 +115,12 @@ Object {
   "member": Object {
     "current": Object {
       "avatar_image": null,
+      "can_comment": true,
+      "commenting": Object {
+        "disabled": false,
+        "disabled_reason": null,
+        "disabled_until": null,
+      },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "testemail3@example.com",
@@ -125,6 +144,7 @@ Object {
       "status": "free",
       "subscribed": true,
       "subscriptions": Array [],
+      "tiers": Array [],
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },

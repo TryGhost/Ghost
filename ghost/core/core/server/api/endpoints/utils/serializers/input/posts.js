@@ -10,7 +10,6 @@ const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
 const postsSchema = require('../../../../../data/schema').tables.posts;
 const clean = require('./utils/clean');
 const lexical = require('../../../../../lib/lexical');
-const sentry = require('../../../../../../shared/sentry');
 
 const messages = {
     failedHtmlToMobiledoc: 'Failed to convert HTML to Mobiledoc',
@@ -216,7 +215,6 @@ module.exports = {
                 try {
                     frame.data.posts[0].mobiledoc = JSON.stringify(mobiledoc.htmlToMobiledocConverter(html));
                 } catch (err) {
-                    sentry.captureException(err);
                     throw new ValidationError({
                         message: tpl(messages.failedHtmlToMobiledoc),
                         err
@@ -236,7 +234,6 @@ module.exports = {
                 try {
                     frame.data.posts[0].lexical = JSON.stringify(lexical.htmlToLexicalConverter(html));
                 } catch (err) {
-                    sentry.captureException(err);
                     throw new ValidationError({
                         message: tpl(messages.failedHtmlToLexical),
                         err

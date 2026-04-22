@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const getAuthorImage = require('../../../../core/frontend/meta/author-image');
 
@@ -17,7 +17,7 @@ describe('getAuthorImage', function () {
             }
         }, false);
 
-        imageUrl.should.equal('/content/images/2016/01/myimage.jpg');
+        assert.equal(imageUrl, '/content/images/2016/01/myimage.jpg');
     });
 
     it('should return absolute author image url if post and has url', function () {
@@ -29,8 +29,8 @@ describe('getAuthorImage', function () {
                 }
             }
         }, true);
-        imageUrl.should.not.equal('/content/images/2016/01/myimage.jpg');
-        imageUrl.should.match(/\/content\/images\/2016\/01\/myimage\.jpg$/);
+        assert.notEqual(imageUrl, '/content/images/2016/01/myimage.jpg');
+        assert.match(imageUrl, /\/content\/images\/2016\/01\/myimage\.jpg$/);
     });
 
     it('should return null if context does not contain author image url and is a post', function () {
@@ -43,7 +43,7 @@ describe('getAuthorImage', function () {
             }
         });
 
-        should(imageUrl).equal(null);
+        assert.equal(imageUrl, null);
     });
 
     it('should return null if context does not contain author and is a post', function () {
@@ -52,7 +52,7 @@ describe('getAuthorImage', function () {
             post: {}
         });
 
-        should(imageUrl).equal(null);
+        assert.equal(imageUrl, null);
     });
 
     it('should return null if context is not a post', function () {
@@ -60,6 +60,6 @@ describe('getAuthorImage', function () {
             context: ['tag']
         });
 
-        should(imageUrl).equal(null);
+        assert.equal(imageUrl, null);
     });
 });

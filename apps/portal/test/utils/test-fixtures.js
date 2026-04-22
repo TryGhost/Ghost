@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars*/
 import {getFreeProduct, getMemberData, getOfferData, getPriceData, getProductData, getSiteData, getSubscriptionData, getNewsletterData} from '../../src/utils/fixtures-generator';
 
 export const transformTierFixture = [
@@ -230,6 +229,7 @@ export const member = {
         firstname: 'Jamie',
         subscriptions: [],
         paid: false,
+        status: 'free',
         avatarImage: '',
         subscribed: true,
         newsletters: []
@@ -240,6 +240,7 @@ export const member = {
         firstname: 'Jimmie',
         subscriptions: [],
         paid: false,
+        status: 'free',
         avatarImage: '',
         subscribed: true
     }),
@@ -249,6 +250,7 @@ export const member = {
         firstname: 'Jamie',
         subscriptions: [],
         paid: false,
+        status: 'free',
         avatarImage: '',
         subscribed: true,
         email_suppression: {
@@ -261,6 +263,7 @@ export const member = {
     }),
     paid: getMemberData({
         paid: true,
+        status: 'paid',
         subscriptions: [
             getSubscriptionData({
                 status: 'active',
@@ -276,6 +279,7 @@ export const member = {
     }),
     paidWithCanceledSubscription: getMemberData({
         paid: true,
+        status: 'paid',
         subscriptions: [
             getSubscriptionData({
                 status: 'canceled',
@@ -301,18 +305,48 @@ export const member = {
     }),
     complimentary: getMemberData({
         paid: true,
+        status: 'comped',
+        subscriptions: []
+    }),
+    altComplimentary: getMemberData({
+        name: 'Jimmie Larson',
+        email: 'jimmie@example.com',
+        firstname: 'Jimmie',
+        paid: true,
+        status: 'comped',
         subscriptions: []
     }),
     complimentaryWithSubscription: getMemberData({
         paid: true,
+        status: 'comped',
         subscriptions: [
             getSubscriptionData({
                 amount: 0
             })
         ]
     }),
+    complimentaryWithCancelledSubscription: getMemberData({
+        name: 'Comped Former Paid',
+        email: 'comped-former-paid@example.com',
+        firstname: 'Comped',
+        paid: true,
+        status: 'comped',
+        subscriptions: [
+            getSubscriptionData({
+                status: 'canceled',
+                currency: 'USD',
+                interval: 'year',
+                amount: 5000,
+                cardLast4: '4242',
+                startDate: '2021-10-05T03:18:30.000Z',
+                currentPeriodEnd: '2022-10-05T03:18:30.000Z',
+                cancelAtPeriodEnd: false
+            })
+        ]
+    }),
     preview: getMemberData({
         paid: true,
+        status: 'paid',
         subscriptions: [
             getSubscriptionData({
                 amount: 1500,

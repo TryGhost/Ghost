@@ -284,13 +284,30 @@
 /* ---------------------------------------------------------- */
 
 .gh-editor {
-    max-width: calc(100vw - var(--editor-sidebar-width))
+    max-width: calc(100vw - var(--editor-sidebar-width));
+    min-height: 0;
 }
 
 @media (max-width: 1024px) {
     .gh-editor {
         max-width: 100%;
     }
+}
+
+.gh-editor-fullscreen-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure the editor flex row fills the fullscreen container */
+.gh-editor-fullscreen-container > .flex {
+    flex: 1;
+    min-height: 0;
 }
 
 .gh-editor-header {
@@ -977,7 +994,6 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     width: 1.2rem;
     height: 1.2rem;
     margin-right: .5em;
-    padding-top: 2px;
     fill: var(--darkgrey);
 }
 
@@ -1006,7 +1022,6 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     line-height: 34px;
     background: var(--white);
     border-radius: var(--border-radius);
-    margin-left: 8px;
 }
 
 @media (max-width: 500px) {
@@ -1062,6 +1077,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 .gh-editor-publish-buttons {
     display: flex;
     align-items: center;
+    gap: 8px;
     height: 100%;
     pointer-events: auto;
 }
@@ -1082,15 +1098,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     border-radius: var(--border-radius);
 }
 
-.gh-editor-save-trigger {
-    margin-right: 8px;
-}
 
-@media (max-width: 500px) {
-    .gh-editor-save-trigger {
-        margin-right: 0;
-    }
-}
 
 .gh-editor-preview-trigger {
     height: 34px;

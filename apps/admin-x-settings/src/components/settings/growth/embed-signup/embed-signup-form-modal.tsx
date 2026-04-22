@@ -11,8 +11,6 @@ import {useGlobalData} from '../../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const EmbedSignupFormModal = NiceModal.create(() => {
-    let i18nEnabled = false;
-
     const [selectedColor, setSelectedColor] = useState<string>('#08090c');
     const [selectedLabels, setSelectedLabels] = useState<SelectedLabelTypes[]>([]);
     const [selectedLayout, setSelectedLayout] = useState<string>('all-in-one');
@@ -23,12 +21,8 @@ const EmbedSignupFormModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();
     const {config} = useGlobalData();
     const {localSettings, siteData} = useSettingGroup();
-    const [accentColor, title, description, locale, labs, icon] = getSettingValues<string>(localSettings, ['accent_color', 'title', 'description', 'locale', 'labs', 'icon']);
+    const [accentColor, title, description, locale, icon] = getSettingValues<string>(localSettings, ['accent_color', 'title', 'description', 'locale', 'icon']);
     const [customColor, setCustomColor] = useState<{active: boolean}>({active: false});
-
-    if (labs) {
-        i18nEnabled = JSON.parse(labs).i18n;
-    }
 
     useEffect(() => {
         if (!siteData) {
@@ -52,8 +46,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
             },
             labels: selectedLabels.map(({label}) => ({name: label})),
             backgroundColor: selectedColor || '#08090c',
-            layout: selectedLayout,
-            i18nEnabled
+            layout: selectedLayout
         };
 
         const previewCode = generateCode({
@@ -67,7 +60,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
             ...defaultConfig
         });
         setGeneratedScript(generatedCode);
-    }, [siteData, accentColor, selectedLabels, config, title, selectedColor, selectedLayout, locale, i18nEnabled, icon, description]);
+    }, [siteData, accentColor, selectedLabels, config, title, selectedColor, selectedLayout, locale, icon, description]);
 
     const handleCopyClick = async () => {
         try {

@@ -26,7 +26,8 @@ export default defineConfig({
             // force GPU hardware acceleration
             // (even in headless mode)
             args: ['--use-gl=egl']
-        }
+        },
+        permissions: ['local-network-access']
     },
 
     /* Configure projects for major browsers */
@@ -49,7 +50,7 @@ export default defineConfig({
 
     /* Run local dev server before starting the tests */
     webServer: {
-        command: `yarn dev:test`,
+        command: `pnpm dev:test`,
         url: `http://localhost:${E2E_PORT}/signup-form.min.js`,
         reuseExistingServer: !process.env.CI,
         timeout: 10000

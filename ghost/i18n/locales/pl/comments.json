@@ -17,6 +17,7 @@
     "Best": "",
     "Cancel": "Anuluj",
     "Comment": "Skomentuj",
+    "Commenting disabled": "",
     "Complete your profile": "Skompletuj Twój profil",
     "Delete": "Usuń",
     "Deleted": "Usunięto",
@@ -66,9 +67,13 @@
     "Sign up now": "Zarejestruj się",
     "Sort by": "Sortuj według",
     "Start the conversation": "Rozpocznij dyskusję",
+    "The linked comment is no longer available.": "",
     "This comment has been hidden.": "Komentarz został ukryty.",
     "This comment has been removed.": "Komentarz został usunięty.",
     "Upgrade now": "Ulepsz teraz",
+    "View in admin": "",
     "Yesterday": "Wczoraj",
+    "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "Twoje zgłoszenie zostało przesłane do administratora strony."
 }

@@ -143,7 +143,7 @@ describe('content-helpers', () => {
             mockGetPeriodText.mockReturnValue('in the last 90 days');
             const result = getGrowthContentDescription(CONTENT_TYPES.SOURCES, 90, mockGetPeriodText);
             
-            expect(result).toBe('How readers found your site in the last 90 days');
+            expect(result).toBe('Which sources drove the most growth in the last 90 days');
             expect(mockGetPeriodText).toHaveBeenCalledWith(90);
         });
 

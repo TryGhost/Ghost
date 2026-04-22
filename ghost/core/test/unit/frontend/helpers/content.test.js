@@ -1,12 +1,16 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
+const sinon = require('sinon');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const path = require('path');
 
 // Stuff we are testing
 const content = require('../../../../core/frontend/helpers/content');
 const has = require('../../../../core/frontend/helpers/has');
 const is = require('../../../../core/frontend/helpers/is');
+const t = require('../../../../core/frontend/helpers/t');
+const {setupI18nTest, initLocale} = require('../../../utils/i18n-test-utils');
 
 describe('{{content}} helper', function () {
     before(function (done) {
@@ -21,16 +25,16 @@ describe('{{content}} helper', function () {
         const html = null;
         const rendered = content.call({html: html});
 
-        should.exist(rendered);
-        rendered.string.should.equal('');
+        assertExists(rendered);
+        assert.equal(rendered.string, '');
     });
 
     it('can render content', function () {
         const html = 'Hello World';
         const rendered = content.call({html: html});
 
-        should.exist(rendered);
-        rendered.string.should.equal(html);
+        assertExists(rendered);
+        assert.equal(rendered.string, html);
     });
 
     it('can truncate html by word', function () {
@@ -44,8 +48,8 @@ describe('{{content}} helper', function () {
                 )
         );
 
-        should.exist(rendered);
-        rendered.string.should.equal('<p>Hello <strong>World!</strong></p>');
+        assertExists(rendered);
+        assert.equal(rendered.string, '<p>Hello <strong>World!</strong></p>');
     });
 
     it('can truncate html to 0 words', function () {
@@ -59,8 +63,8 @@ describe('{{content}} helper', function () {
                 )
         );
 
-        should.exist(rendered);
-        rendered.string.should.equal('');
+        assertExists(rendered);
+        assert.equal(rendered.string, '');
     });
 
     it('can truncate html by character', function () {
@@ -74,13 +78,12 @@ describe('{{content}} helper', function () {
                 )
         );
 
-        should.exist(rendered);
-        rendered.string.should.equal('<p>Hello <strong>Wo</strong></p>');
+        assertExists(rendered);
+        assert.equal(rendered.string, '<p>Hello <strong>Wo</strong></p>');
     });
 });
 
 describe('{{content}} helper with no access', function () {
-    let optionsData;
     before(function (done) {
         hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
@@ -90,77 +93,130 @@ describe('{{content}} helper with no access', function () {
 
         hbs.registerHelper('has', has);
         hbs.registerHelper('is', is);
+        hbs.registerHelper('t', t);
     });
 
-    beforeEach(function () {
-        optionsData = {
-            data: {
-                site: {
-                    accent_color: '#abcdef'
-                }
-            }
-        };
-    });
+    // Run tests with both i18n implementations
+    const i18nImplementations = [
+        {name: 'themeI18n (legacy)', useNewTranslation: false},
+        {name: 'themeI18next (new)', useNewTranslation: true}
+    ];
 
-    it('can render default template', function () {
-        const html = '';
-        const rendered = content.call({html: html, access: false}, optionsData);
-        rendered.string.should.containEql('gh-post-upgrade-cta');
-        rendered.string.should.containEql('gh-post-upgrade-cta-content');
-        rendered.string.should.containEql('"background-color: #abcdef"');
-        rendered.string.should.containEql('"color:#abcdef"');
+    i18nImplementations.forEach(({name, useNewTranslation}) => {
+        describe(`with ${name}`, function () {
+            let optionsData;
+            let i18nSetup;
 
-        should.exist(rendered);
-    });
+            before(function () {
+                i18nSetup = setupI18nTest({useNewTranslation, locale: 'en'});
+            });
 
-    it('outputs free content if available via paywall card', function () {
-        // html will be included when there is free content available
-        const html = 'Free content';
-        const rendered = content.call({html: html, access: false}, optionsData);
-        rendered.string.should.containEql('Free content');
-        rendered.string.should.containEql('gh-post-upgrade-cta');
-        rendered.string.should.containEql('gh-post-upgrade-cta-content');
-        rendered.string.should.containEql('"background-color: #abcdef"');
-    });
+            afterEach(function () {
+                // Reset locale to English after each test to prevent leaking
+                initLocale({useNewTranslation, locale: 'en'});
+            });
 
-    it('can render default template with right message for post resource', function () {
-        // html will be included when there is free content available
-        const html = 'Free content';
-        optionsData.data.root = {
-            post: {}
-        };
-        const rendered = content.call({html: html, access: false, visibility: 'members'}, optionsData);
-        rendered.string.should.containEql('Free content');
-        rendered.string.should.containEql('gh-post-upgrade-cta');
-        rendered.string.should.containEql('gh-post-upgrade-cta-content');
-        rendered.string.should.containEql('"background-color: #abcdef"');
-        rendered.string.should.containEql('This post is for');
-    });
+            after(function () {
+                i18nSetup.teardown();
+                sinon.restore();
+            });
 
-    it('can render default template with right message for page resource', function () {
-        // html will be included when there is free content available
-        const html = 'Free content';
-        optionsData.data.root = {
-            context: ['page']
-        };
-        const rendered = content.call({html: html, access: false, visibility: 'members'}, optionsData);
-        rendered.string.should.containEql('Free content');
-        rendered.string.should.containEql('gh-post-upgrade-cta');
-        rendered.string.should.containEql('gh-post-upgrade-cta-content');
-        rendered.string.should.containEql('"background-color: #abcdef"');
-        rendered.string.should.containEql('This page is for');
-    });
+            beforeEach(function () {
+                optionsData = {
+                    data: {
+                        site: {
+                            accent_color: '#abcdef'
+                        }
+                    }
+                };
+            });
 
-    it('can render default template for upgrade case', function () {
-        // html will be included when there is free content available
-        const html = 'Free content';
-        optionsData.data.member = {
-            id: '123'
-        };
-        const rendered = content.call({html: html, access: false, visibility: 'members'}, optionsData);
-        rendered.string.should.containEql('Free content');
-        rendered.string.should.containEql('Upgrade your account');
-        rendered.string.should.containEql('color:#abcdef');
+            it('can render default template', function () {
+                const html = '';
+                const rendered = content.call({html: html, access: false}, optionsData);
+                assert(rendered.string.includes('gh-post-upgrade-cta'));
+                assert(rendered.string.includes('gh-post-upgrade-cta-content'));
+                assert(rendered.string.includes('"background-color: #abcdef"'));
+                assert(rendered.string.includes('"color:#abcdef"'));
+
+                assertExists(rendered);
+            });
+
+            it('outputs free content if available via paywall card', function () {
+                // html will be included when there is free content available
+                const html = 'Free content';
+                const rendered = content.call({html: html, access: false}, optionsData);
+                assert(rendered.string.includes('Free content'));
+                assert(rendered.string.includes('gh-post-upgrade-cta'));
+                assert(rendered.string.includes('gh-post-upgrade-cta-content'));
+                assert(rendered.string.includes('"background-color: #abcdef"'));
+            });
+
+            it('can render default template with right message for post resource', function () {
+                // html will be included when there is free content available
+                const html = 'Free content';
+                optionsData.data.root = {
+                    post: {}
+                };
+                const rendered = content.call({html: html, access: false, visibility: 'members'}, optionsData);
+                assert(rendered.string.includes('Free content'));
+                assert(rendered.string.includes('gh-post-upgrade-cta'));
+                assert(rendered.string.includes('gh-post-upgrade-cta-content'));
+                assert(rendered.string.includes('"background-color: #abcdef"'));
+                assert(rendered.string.includes('This post is for'));
+            });
+
+            it('can render default template with right message for page resource', function () {
+                // html will be included when there is free content available
+                const html = 'Free content';
+                optionsData.data.root = {
+                    context: ['page']
+                };
+                const rendered = content.call({html: html, access: false, visibility: 'members'}, optionsData);
+                assert(rendered.string.includes('Free content'));
+                assert(rendered.string.includes('gh-post-upgrade-cta'));
+                assert(rendered.string.includes('gh-post-upgrade-cta-content'));
+                assert(rendered.string.includes('"background-color: #abcdef"'));
+                assert(rendered.string.includes('This page is for'));
+            });
+
+            it('can render default template for upgrade case', function () {
+                // html will be included when there is free content available
+                const html = 'Free content';
+                optionsData.data.member = {
+                    id: '123'
+                };
+                const rendered = content.call({html: html, access: false, visibility: 'members'}, optionsData);
+                assert(rendered.string.includes('Free content'));
+                assert(rendered.string.includes('Upgrade your account'));
+                assert(rendered.string.includes('color:#abcdef'));
+            });
+
+            it('translates paywall message when locale is German', function () {
+                initLocale({useNewTranslation, locale: 'de'});
+                const html = 'Free content';
+                optionsData.data.root = {context: ['page']};
+                const rendered = content.call({html: html, access: false, visibility: 'paid'}, optionsData);
+                assert(rendered.string.includes('Diese Seite ist nur für bezahlte Abonnenten.'));
+            });
+
+            it('translates sign-in prompt when locale is German', function () {
+                initLocale({useNewTranslation, locale: 'de'});
+                const html = '';
+                const rendered = content.call({html: html, access: false}, optionsData);
+                assert(rendered.string.includes('Hast du bereits ein Konto?'));
+            });
+
+            it('falls back to English when locale is fr (no fr.json)', function () {
+                initLocale({useNewTranslation, locale: 'fr'});
+                const html = 'Free content';
+                optionsData.data.root = {context: ['page']};
+                const renderedPaid = content.call({html: html, access: false, visibility: 'paid'}, optionsData);
+                assert(renderedPaid.string.includes('This page is for paying subscribers only'));
+                const renderedNoMember = content.call({html: '', access: false}, optionsData);
+                assert(renderedNoMember.string.includes('Already have an account?'));
+            });
+        });
     });
 });
 
@@ -180,11 +236,11 @@ describe('{{content}} helper with custom template', function () {
     it('can render custom template', function () {
         const html = 'Hello World';
         const rendered = content.call({html: html, access: false}, optionsData);
-        rendered.string.should.not.containEql('gh-post-upgrade-cta');
-        rendered.string.should.containEql('custom-post-upgrade-cta');
-        rendered.string.should.containEql('custom-post-upgrade-cta-content');
+        assert(!rendered.string.includes('gh-post-upgrade-cta'));
+        assert(rendered.string.includes('custom-post-upgrade-cta'));
+        assert(rendered.string.includes('custom-post-upgrade-cta-content'));
 
-        should.exist(rendered);
+        assertExists(rendered);
     });
 
     it('can correctly render message for page', function () {
@@ -197,9 +253,9 @@ describe('{{content}} helper with custom template', function () {
                 }
             }
         });
-        rendered.string.should.not.containEql('gh-post-upgrade-cta');
-        rendered.string.should.containEql('custom-post-upgrade-cta');
-        rendered.string.should.containEql('custom-post-upgrade-cta-content');
-        rendered.string.should.containEql('This page is for');
+        assert(!rendered.string.includes('gh-post-upgrade-cta'));
+        assert(rendered.string.includes('custom-post-upgrade-cta'));
+        assert(rendered.string.includes('custom-post-upgrade-cta-content'));
+        assert(rendered.string.includes('This page is for'));
     });
 });

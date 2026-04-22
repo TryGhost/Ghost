@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const getOgType = require('../../../../core/frontend/meta/og-type');
 
 describe('getOgType', function () {
@@ -6,20 +6,20 @@ describe('getOgType', function () {
         const ogType = getOgType({
             context: ['author']
         });
-        should.equal(ogType, 'profile');
+        assert.equal(ogType, 'profile');
     });
 
     it('should return og type article if context is type post', function () {
         const ogType = getOgType({
             context: ['post']
         });
-        should.equal(ogType, 'article');
+        assert.equal(ogType, 'article');
     });
 
     it('should return og type website if context is not author or post', function () {
         const ogType = getOgType({
             context: ['tag']
         });
-        should.equal(ogType, 'website');
+        assert.equal(ogType, 'website');
     });
 });

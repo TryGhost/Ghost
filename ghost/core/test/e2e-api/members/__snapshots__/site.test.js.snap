@@ -20,12 +20,13 @@ Object {
 
 exports[`Site Public Settings Can retrieve site pubic config 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -50,12 +51,13 @@ Object {
 
 exports[`Site Public Settings Sets allow_external_signup to false when members are invite only 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -80,12 +82,13 @@ Object {
 
 exports[`Site Public Settings Sets allow_external_signup to false when portal requires checkbox 2: [headers] 1`] = `
 Object {
-  "access-control-allow-origin": "*",
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;

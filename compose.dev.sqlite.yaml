@@ -1,0 +1,16 @@
+services:
+  mysql:
+    # Prevents mysql container from starting up
+    profiles:
+      - mysql
+
+  ghost-dev:
+    volumes:
+      # Override the named volume so the SQLite DB is accessible on the host.
+      - ./ghost/core/content/data:/home/ghost/ghost/core/content/data
+    environment:
+      database__client: sqlite3
+      database__connection__filename: content/data/ghost-dev.db
+    depends_on:
+      mysql:
+        required: false

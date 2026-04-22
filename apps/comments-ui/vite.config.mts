@@ -4,6 +4,7 @@ import svgr from 'vite-plugin-svgr';
 import {SUPPORTED_LOCALES} from '@tryghost/i18n';
 import {defineConfig} from 'vitest/config';
 import {resolve} from 'path';
+import {stripFingerprintingPlugin} from './vite-plugin-strip-fingerprinting';
 
 const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
 
@@ -12,6 +13,7 @@ export default (function viteConfig() {
     return defineConfig({
         logLevel: process.env.CI ? 'info' : 'warn',
         plugins: [
+            stripFingerprintingPlugin(),
             svgr(),
             react()
         ],
@@ -56,12 +58,30 @@ export default (function viteConfig() {
                 dynamicRequireTargets: SUPPORTED_LOCALES.map(locale => `../../ghost/i18n/locales/${locale}/comments.json`)
             }
         },
+        resolve: {
+            // comments-ui uses React 17 while the monorepo hoists React 18;
+            // dedupe + alias ensures all deps (including @tiptap/react) use
+            // the same React 17 instance from comments-ui's node_modules
+            dedupe: ['react', 'react-dom', '@tryghost/debug'],
+            alias: {
+                'react': resolve(__dirname, 'node_modules/react'),
+                'react-dom': resolve(__dirname, 'node_modules/react-dom')
+            }
+        },
         test: {
             globals: true, // required for @testing-library/jest-dom extensions
             environment: 'jsdom',
             setupFiles: './src/setup-tests.ts',
-            include: ['src/**/*.test.jsx', 'src/**/*.test.js', 'src/**/*.test.ts', 'src/**/*.test.tsx'],
+            include: ['test/unit/**/*.test.{js,jsx,ts,tsx}'],
             testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
+            server: {
+                deps: {
+                    // Inline all deps so Vite's resolve.alias applies to their
+                    // React imports (prevents duplicate React 17 instances when
+                    // the monorepo hoists React 18)
+                    inline: [/@tiptap/, /@headlessui/]
+                }
+            },
             ...(process.env.CI && { // https://github.com/vitest-dev/vitest/issues/1674
                 minThreads: 1,
                 maxThreads: 2

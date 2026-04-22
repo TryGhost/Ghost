@@ -14,7 +14,7 @@ const settingsService = require('../../core/server/services/settings/settings-se
 const adapterManager = require('../../core/server/services/adapter-manager');
 
 // Other Test Utilities
-const configUtils = require('./configUtils');
+const configUtils = require('./config-utils');
 const dbUtils = require('./db-utils');
 const urlServiceUtils = require('./url-service-utils');
 const redirects = require('./redirects');
@@ -128,11 +128,11 @@ const _startGhost = async (options) => {
  * @param {boolean} [options.backend]
  * @param {boolean} [options.frontend]
  * @param {boolean} [options.redirectsFile]
- * @param {String} [options.redirectsFileExt]
+ * @param {string} [options.redirectsFileExt]
  * @param {boolean} [options.copyThemes]
  * @param {boolean} [options.copySettings]
- * @param {String} [options.routesFilePath] - path to a routes configuration file to start the instance with
- * @param {String} [options.contentFolder]
+ * @param {string} [options.routesFilePath] - path to a routes configuration file to start the instance with
+ * @param {string} [options.contentFolder]
  * @param {boolean} [options.subdir]
  * @returns {Promise<GhostServer>}
  */

@@ -12,7 +12,7 @@ export const searchKeywords = {
     newsletters: ['newsletters', 'emails', 'design', 'customization'],
     defaultRecipients: ['newsletters', 'default recipients', 'emails'],
     mailgun: ['mailgun', 'emails', 'newsletters'],
-    newslettersNavMenu: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off', 'design', 'customization', 'default recipients', 'emails', 'mailgun', 'tips', 'donations', 'one time', 'payment']
+    newslettersNavMenu: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off', 'design', 'customization', 'default recipients', 'mailgun', 'tips', 'donations', 'one time', 'payment']
 };
 
 const EmailSettings: React.FC = () => {
@@ -20,7 +20,7 @@ const EmailSettings: React.FC = () => {
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
 
     return (
-        <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Email newsletter'>
+        <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Newsletters'>
             <EnableNewsletters keywords={searchKeywords.enableNewsletters} />
             {newslettersEnabled !== 'disabled' && (
                 <>

@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const stylex = require('../../../../../../core/server/services/koenig/render-utils/stylex');
 
 describe('stylex', function () {

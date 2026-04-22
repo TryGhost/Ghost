@@ -1,73 +1,13 @@
 const i18next = require('i18next');
 const path = require('path');
 const fs = require('fs');
-const errors = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('i18n');
 
-const SUPPORTED_LOCALES = [
-    'af', // Afrikaans
-    'ar', // Arabic
-    'bg', // Bulgarian
-    'bn', // Bengali
-    'bs', // Bosnian
-    'ca', // Catalan
-    'cs', // Czech
-    'da', // Danish
-    'de', // German
-    'de-CH', // Swiss German
-    'el', // Greek
-    'en', // English
-    'eo', // Esperanto
-    'es', // Spanish
-    'et', // Estonian
-    'eu', // Basque
-    'fa', // Persian/Farsi
-    'fi', // Finnish
-    'fr', // French
-    'gd', // Gaelic (Scottish)
-    'he', // Hebrew
-    'hi', // Hindi
-    'hr', // Croatian
-    'hu', // Hungarian
-    'id', // Indonesian
-    'is', // Icelandic
-    'it', // Italian
-    'ja', // Japanese
-    'ko', // Korean
-    'kz', // Kazach
-    'lt', // Lithuanian
-    'lv', // Latvian
-    'mk', // Macedonian
-    'mn', // Mongolian
-    'ms', // Malay
-    'nb', // Norwegian Bokmål
-    'ne', // Nepali
-    'nl', // Dutch
-    'nn', // Norwegian Nynorsk
-    'pa', // Punjabi (Gurmukhi, India)
-    'pl', // Polish
-    'pt', // Portuguese
-    'pt-BR', // Portuguese (Brazil)
-    'ro', // Romanian
-    'ru', // Russian
-    'si', // Sinhala
-    'sk', // Slovak
-    'sl', // Slovenian
-    'sq', // Albanian
-    'sr', // Serbian
-    'sr-Cyrl', // Serbian (Cyrillic)
-    'sv', // Swedish
-    'th', // Thai
-    'tr', // Turkish
-    'uk', // Ukrainian
-    'ur', // Urdu
-    'uz', // Uzbek
-    'vi', // Vietnamese
-    'zh', // Chinese
-    'zh-Hant', // Traditional Chinese
-    'sw', // Swahili
-    'ta' // Tamil
-];
+// Locale data loaded from JSON (single source of truth)
+const LOCALE_DATA = require('./locale-data.json');
+
+// Export just the locale codes for backward compatibility
+const SUPPORTED_LOCALES = LOCALE_DATA.map(locale => locale.code);
 
 function generateResources(locales, ns) {
     return locales.reduce((acc, locale) => {
@@ -116,21 +56,23 @@ function generateThemeResources(lng, themeLocalesPath) {
 
     return locales.reduce((acc, locale) => {
         let res;
+        let needsFallback = false;
         // Try to load the locale file, fallback to English
-        try {
-            const localePath = path.join(themeLocalesPath, `${locale}.json`);
-            if (fs.existsSync(localePath)) {
+        const localePath = path.join(themeLocalesPath, `${locale}.json`);
+        if (fs.existsSync(localePath)) {
+            try {
                 // Delete from require cache to ensure fresh reads for theme files
                 delete require.cache[require.resolve(localePath)];
                 res = require(localePath);
-            } else {
-                throw new errors.IncorrectUsageError({
-                    message: `Locale file not found: ${locale}`,
-                    context: locale
-                });
+            } catch (err) {
+                debug(`Error loading theme locale file: ${locale}`);
+                needsFallback = true;
             }
-        } catch (err) {
-            debug(`Error loading theme locale file: ${locale}`);
+        } else {
+            needsFallback = true;
+        }
+
+        if (needsFallback) {
             // Fallback to English if it's not the locale we're already trying
             if (locale !== 'en') {
                 try {
@@ -209,4 +151,5 @@ module.exports = (lng = 'en', ns = 'portal', options = {}) => {
 };
 
 module.exports.SUPPORTED_LOCALES = SUPPORTED_LOCALES;
+module.exports.LOCALE_DATA = LOCALE_DATA;
 module.exports.generateResources = generateResources;

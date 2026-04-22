@@ -17,6 +17,7 @@
     "Best": "",
     "Cancel": "Atcelt",
     "Comment": "Komentēt",
+    "Commenting disabled": "",
     "Complete your profile": "Pabeidziet savu profilu",
     "Delete": "Dzēst",
     "Deleted": "Izdzēsts",
@@ -66,9 +67,13 @@
     "Sign up now": "Reģistrējieties tūlīt",
     "Sort by": "Kārtot pēc",
     "Start the conversation": "Sāciet sarunu",
+    "The linked comment is no longer available.": "",
     "This comment has been hidden.": "Šis komentārs ir paslēpts.",
     "This comment has been removed.": "Šis komentārs ir noņemts.",
     "Upgrade now": "Jauniniet tūlīt",
+    "View in admin": "",
     "Yesterday": "Vakar",
+    "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "Jūsu pieprasījums tiks nosūtīts šīs vietnes īpašniekam."
 }

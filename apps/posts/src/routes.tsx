@@ -1,4 +1,4 @@
-import {ErrorPage} from '@tryghost/shade';
+import {ErrorPage} from '@tryghost/shade/primitives';
 import {RouteObject, lazyComponent} from '@tryghost/admin-x-framework';
 // import {withFeatureFlag} from '@src/hooks/with-feature-flag';
 

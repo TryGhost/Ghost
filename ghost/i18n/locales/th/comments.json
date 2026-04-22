@@ -17,6 +17,7 @@
     "Best": "",
     "Cancel": "ยกเลิก",
     "Comment": "ความคิดเห็น",
+    "Commenting disabled": "",
     "Complete your profile": "กรอกโปรไฟล์ของคุณให้สมบูรณ์",
     "Delete": "ลบ",
     "Deleted": "",
@@ -66,9 +67,13 @@
     "Sign up now": "สมัครใช้งานตอนนี้เลย",
     "Sort by": "",
     "Start the conversation": "เริ่มการสนทนา",
+    "The linked comment is no longer available.": "",
     "This comment has been hidden.": "ความคิดเห็นนี้ถูกซ่อน",
     "This comment has been removed.": "ความคิดเห็นนี้ถูกลบ",
     "Upgrade now": "อัพเกรดตอนนี้เลย",
+    "View in admin": "",
     "Yesterday": "เมื่อวาน",
+    "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "คำขอของคุณจะถูกส่งไปยังผู้ดูแลเว็บไซต์"
 }

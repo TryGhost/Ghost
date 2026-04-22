@@ -38,11 +38,11 @@ export const Default = {
             },
             chrome: {
                 label: 'More like this',
-                color: 'hsl(var(--chart-blue))'
+                color: 'var(--chart-blue)'
             },
             safari: {
                 label: 'Less like this',
-                color: 'hsl(var(--chart-orange))'
+                color: 'var(--chart-orange)'
             }
         } satisfies ChartConfig;
 
@@ -122,7 +122,7 @@ export const BarChartExample = {
         const chartConfig = {
             visitors: {
                 label: 'Visitors',
-                color: 'hsl(var(--chart-blue))'
+                color: 'var(--chart-blue)'
             }
         } satisfies ChartConfig;
 
@@ -152,7 +152,7 @@ export const LineChartExample = {
         const chartConfig = {
             revenue: {
                 label: 'Revenue',
-                color: 'hsl(var(--chart-green))'
+                color: 'var(--chart-green)'
             }
         } satisfies ChartConfig;
 

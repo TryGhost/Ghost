@@ -1,5 +1,5 @@
 import React from 'react';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 export type NotificationType = 'like' | 'follow' | 'reply' | 'repost' | 'mention';
 export type NotificationIconSize = 'sm' | 'lg';
@@ -19,7 +19,7 @@ const NotificationIcon: React.FC<NotificationIconProps> = ({notificationType, si
 
     switch (notificationType) {
     case 'follow':
-        icon = <LucideIcon.UserRoundCheck className={`-mr-0.5 -mt-0.5 ${size === 'sm' && 'size-[11px]'}`} color={iconColor} size={iconSize} strokeWidth={strokeWidth} />;
+        icon = <LucideIcon.UserRoundCheck className={`-mt-0.5 -mr-0.5 ${size === 'sm' && 'size-[11px]'}`} color={iconColor} size={iconSize} strokeWidth={strokeWidth} />;
         badgeColor = 'bg-blue-600';
         break;
     case 'like':
@@ -27,7 +27,7 @@ const NotificationIcon: React.FC<NotificationIconProps> = ({notificationType, si
         badgeColor = 'bg-pink-600';
         break;
     case 'reply':
-        icon = <LucideIcon.Reply className='mb-px mr-px' color={iconColor} size={iconSize} strokeWidth={strokeWidth} />;
+        icon = <LucideIcon.Reply className='mr-px mb-px' color={iconColor} size={iconSize} strokeWidth={strokeWidth} />;
         badgeColor = 'bg-purple-600';
         break;
     case 'repost':

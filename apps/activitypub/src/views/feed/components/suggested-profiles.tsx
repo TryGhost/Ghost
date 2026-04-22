@@ -2,7 +2,9 @@ import APAvatar from '@src/components/global/ap-avatar';
 import FollowButton from '@src/components/global/follow-button';
 import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-card';
 import {Account} from '@src/api/activitypub';
-import {Button, H4, LucideIcon, Separator, Skeleton} from '@tryghost/shade';
+import {Button, Separator, Skeleton} from '@tryghost/shade/components';
+import {H4} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {useEffect, useRef, useState} from 'react';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useSuggestedProfilesForUser} from '@src/hooks/use-activity-pub-queries';
@@ -76,7 +78,7 @@ const SuggestedProfiles: React.FC = () => {
 
     return (
         <>
-            <div className='pb-7 pt-4'>
+            <div className='pt-4 pb-7'>
                 <div className='mb-3 flex items-center justify-between'>
                     <H4 className='text-lg font-semibold text-black dark:text-white'>More people to follow</H4>
                     <Button className='px-0 font-medium text-gray-700 hover:text-black dark:text-gray-600 dark:hover:text-white' variant='link' onClick={() => navigate('/explore')}>
@@ -87,21 +89,21 @@ const SuggestedProfiles: React.FC = () => {
                 <div className='relative'>
                     {canScrollLeft && (
                         <Button
-                            className='absolute -left-10 top-1/2 z-10 size-10 -translate-y-1/2 text-gray-700 hover:bg-transparent max-lg:hidden dark:text-gray-600 dark:hover:text-white'
+                            className='absolute top-1/2 -left-10 z-10 size-10 -translate-y-1/2 text-gray-700 hover:bg-transparent max-lg:hidden dark:text-gray-600 dark:hover:text-white'
                             variant='ghost'
                             onClick={scrollLeft}
                         >
-                            <LucideIcon.ChevronLeft className='!size-6' />
+                            <LucideIcon.ChevronLeft className='size-6!' />
                         </Button>
                     )}
 
                     {canScrollRight && (
                         <Button
-                            className='absolute -right-10 top-1/2 z-10 size-10 -translate-y-1/2 text-gray-700 hover:bg-transparent max-lg:hidden dark:text-gray-600 dark:hover:text-white'
+                            className='absolute top-1/2 -right-10 z-10 size-10 -translate-y-1/2 text-gray-700 hover:bg-transparent max-lg:hidden dark:text-gray-600 dark:hover:text-white'
                             variant='ghost'
                             onClick={scrollRight}
                         >
-                            <LucideIcon.ChevronRight className='!size-6' />
+                            <LucideIcon.ChevronRight className='size-6!' />
                         </Button>
                     )}
 
@@ -121,7 +123,7 @@ const SuggestedProfiles: React.FC = () => {
                                 onClick={!isLoadingSuggestedProfiles && profile ? () => navigate(`/profile/${profile.handle}`) : undefined}
                             >
                                 <Button
-                                    className='absolute right-2 top-1 hidden p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                                    className='absolute top-1 right-2 hidden p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                                     variant='link'
                                     onClick={(e) => {
                                         e.stopPropagation();

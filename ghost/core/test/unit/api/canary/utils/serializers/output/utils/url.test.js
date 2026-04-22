@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../../utils');
 const urlService = require('../../../../../../../../core/server/services/url');
@@ -42,10 +42,10 @@ describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
 
             urlUtil.forPost(post.id, post, {options: {}});
 
-            post.hasOwnProperty('url').should.be.true();
+            assert(Object.hasOwn(post, 'url'));
 
-            urlService.getUrlByResourceId.callCount.should.eql(1);
-            urlService.getUrlByResourceId.getCall(0).args.should.eql(['id1', {absolute: true}]);
+            sinon.assert.callCount(urlService.getUrlByResourceId, 1);
+            sinon.assert.calledWithExactly(urlService.getUrlByResourceId, 'id1', {absolute: true});
         });
     });
 });

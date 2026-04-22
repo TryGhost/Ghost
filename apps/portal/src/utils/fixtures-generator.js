@@ -13,6 +13,14 @@ export function objectId() {
     }).toLowerCase();
 }
 
+export function generateUuid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 export function getSiteData({
     title = 'The Blueprint',
     description = 'Thoughts, stories and ideas.',
@@ -89,7 +97,8 @@ export function getOfferData({
     currency = null,
     status = 'active',
     tierId = '',
-    tierName = 'Basic'
+    tierName = 'Basic',
+    redemptionType = 'signup'
 } = {}) {
     return {
         id: `offer_${objectId()}`,
@@ -108,7 +117,44 @@ export function getOfferData({
         tier: {
             id: `${tierId}`,
             name: tierName
-        }
+        },
+        redemption_type: redemptionType
+    };
+}
+
+export function getNextPaymentData({
+    originalAmount = 500,
+    amount = 500,
+    interval = 'month',
+    currency = 'USD',
+    discount = null
+} = {}) {
+    return {
+        original_amount: originalAmount,
+        amount,
+        interval,
+        currency,
+        discount
+    };
+}
+
+export function getDiscountData({
+    offerId = `offer_${objectId()}`,
+    start = '2025-01-01T00:00:00.000Z',
+    end = null,
+    duration = 'forever',
+    durationInMonths = null,
+    type = 'percent',
+    amount = 20
+} = {}) {
+    return {
+        offer_id: offerId,
+        start,
+        end,
+        duration,
+        ...(duration === 'repeating' ? {duration_in_months: durationInMonths ?? 1} : {}),
+        type,
+        amount
     };
 }
 
@@ -118,6 +164,7 @@ export function getMemberData({
     firstname = 'Jamie',
     subscriptions = [],
     paid = false,
+    status,
     avatarImage: avatar_image = '',
     subscribed = true,
     email_suppression = {
@@ -126,8 +173,8 @@ export function getMemberData({
     },
     newsletters = []
 } = {}) {
-    return {
-        uuid: `member_${objectId()}`,
+    const member = {
+        uuid: generateUuid(),
         email,
         name,
         firstname,
@@ -138,6 +185,16 @@ export function getMemberData({
         email_suppression,
         newsletters
     };
+
+    if (status !== undefined) {
+        member.status = status;
+    } else if (paid) {
+        member.status = 'paid';
+    } else {
+        member.status = 'free';
+    }
+
+    return member;
 }
 
 export function getNewsletterData({
@@ -347,7 +404,10 @@ export function getSubscriptionData({
     priceId: price_id = `price_${objectId()}`,
     startDate: start_date = '2021-10-05T03:18:30.000Z',
     currentPeriodEnd: current_period_end = '2022-10-05T03:18:30.000Z',
-    cancelAtPeriodEnd: cancel_at_period_end = false
+    cancelAtPeriodEnd: cancel_at_period_end = false,
+    trialEndAt: trial_end_at = null,
+    nextPayment: next_payment = null,
+    tier = null
 } = {}) {
     return {
         id,
@@ -370,6 +430,9 @@ export function getSubscriptionData({
         cancel_at_period_end,
         cancellation_reason: null,
         current_period_end,
+        trial_end_at,
+        next_payment,
+        tier,
         price: {
             id: `stripe_price_${objectId()}`,
             price_id,
@@ -408,18 +471,23 @@ export const offer = getOfferData({
 });
 
 export const member = {
-    free: getMemberData(),
+    free: getMemberData({
+        status: 'free'
+    }),
     paid: getMemberData({
+        status: 'paid',
         paid: true,
         subscriptions: [
             getSubscriptionData()
         ]
     }),
     complimentary: getMemberData({
+        status: 'comped',
         paid: true,
         subscriptions: []
     }),
     complimentaryWithSubscription: getMemberData({
+        status: 'comped',
         paid: true,
         subscriptions: [
             getSubscriptionData({
@@ -428,6 +496,7 @@ export const member = {
         ]
     }),
     preview: getMemberData({
+        status: 'paid',
         paid: true,
         subscriptions: [
             getSubscriptionData({

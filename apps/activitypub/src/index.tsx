@@ -1,6 +1,7 @@
 import './styles/index.css';
-import App from './app';
 
-export {
-    App as AdminXApp
-};
+export {default as AdminXApp} from './app';
+
+export {routes} from './routes';
+export {FeatureFlagsProvider} from './lib/feature-flags';
+export {useNotificationsCountForUser} from './hooks/use-activity-pub-queries';

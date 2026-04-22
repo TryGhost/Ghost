@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const models = require('../../../../core/server/models');
@@ -19,9 +19,9 @@ describe('Unit: models/MemberFeedback', function () {
                     throw new Error('expected ValidationError');
                 })
                 .catch(function (err) {
-                    should(err).lengthOf(1);
-                    (err[0] instanceof errors.ValidationError).should.eql(true);
-                    err[0].context.should.match(/members_feedback\.member_id/);
+                    assert.equal(err.length, 1);
+                    assert.equal((err[0] instanceof errors.ValidationError), true);
+                    assert.match(err[0].context, /members_feedback\.member_id/);
                 });
         });
 
@@ -31,9 +31,9 @@ describe('Unit: models/MemberFeedback', function () {
                     throw new Error('expected ValidationError');
                 })
                 .catch(function (err) {
-                    should(err).lengthOf(1);
-                    (err[0] instanceof errors.ValidationError).should.eql(true);
-                    err[0].context.should.match(/members_feedback\.post_id/);
+                    assert.equal(err.length, 1);
+                    assert.equal((err[0] instanceof errors.ValidationError), true);
+                    assert.match(err[0].context, /members_feedback\.post_id/);
                 });
         });
     });
@@ -44,7 +44,7 @@ describe('Unit: models/MemberFeedback', function () {
                 throw new Error('expected IncorrectUsageError');
             })
             .catch(function (err) {
-                (err instanceof errors.IncorrectUsageError).should.eql(true);
+                assert.equal((err instanceof errors.IncorrectUsageError), true);
             });
     });
 

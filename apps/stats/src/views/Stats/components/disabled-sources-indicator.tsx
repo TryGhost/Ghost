@@ -1,5 +1,6 @@
 import React from 'react';
-import {Button, EmptyIndicator, LucideIcon} from '@tryghost/shade';
+import {Button, EmptyIndicator} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface DisabledSourcesIndicatorProps {

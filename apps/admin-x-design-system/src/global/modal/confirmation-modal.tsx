@@ -57,7 +57,7 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
                 setTaskState('');
             }}
         >
-            <div className='py-4 leading-9'>
+            <div className='py-4'>
                 {prompt}
             </div>
         </Modal>

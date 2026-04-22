@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const handlebars = require('../../../../../core/frontend/services/theme-engine/engine').handlebars;
 
 module.exports.shouldCompileToExpected = (templateString, hash, expected) => {

@@ -17,6 +17,7 @@
     "Best": "",
     "Cancel": "Ghairi",
     "Comment": "Maoni",
+    "Commenting disabled": "",
     "Complete your profile": "Kamilisha wasifu wako",
     "Delete": "Futa",
     "Deleted": "",
@@ -66,9 +67,13 @@
     "Sign up now": "Jisajili sasa",
     "Sort by": "",
     "Start the conversation": "Anzisha mazungumzo",
+    "The linked comment is no longer available.": "",
     "This comment has been hidden.": "Maoni haya yamefichwa.",
     "This comment has been removed.": "Maoni haya yameondolewa.",
     "Upgrade now": "Boresha sasa",
+    "View in admin": "",
     "Yesterday": "Jana",
+    "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "Ombi lako litatumwa kwa mmiliki wa tovuti hii."
 }

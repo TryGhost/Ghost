@@ -1,6 +1,6 @@
 import {FeatureFlagsProvider} from './lib/feature-flags';
 import {FrameworkProvider, Outlet, RouterProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
-import {ShadeApp} from '@tryghost/shade';
+import {ShadeApp} from '@tryghost/shade/app';
 import {routes} from '@src/routes';
 
 interface AppProps {

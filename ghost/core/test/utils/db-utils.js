@@ -20,7 +20,7 @@ let dbInitialized = false;
 
 /**
  * Checks if the current active connection is a MySQL database
- * @returns {Boolean} isMySQL
+ * @returns {boolean} isMySQL
  */
 module.exports.isMySQL = () => {
     return DatabaseInfo.isMySQL(db.knex);
@@ -28,7 +28,7 @@ module.exports.isMySQL = () => {
 
 /**
  * Checks if the current active connection is a SQLite database
- * @returns {Boolean} isSQLite
+ * @returns {boolean} isSQLite
  */
 module.exports.isSQLite = () => {
     return DatabaseInfo.isSQLite(db.knex);
@@ -40,7 +40,7 @@ module.exports.isSQLite = () => {
  * - has many behind the scenes tricks to try to do this as fast as possible
  *
  * @param {Object} options
- * @param {Boolean} options.truncate whether to truncate rather thann fully reset
+ * @param {boolean} options.truncate whether to truncate rather thann fully reset
  */
 module.exports.reset = async ({truncate} = {truncate: false}) => {
     if (module.exports.isSQLite()) {

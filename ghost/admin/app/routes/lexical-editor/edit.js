@@ -1,5 +1,6 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {ALL_POST_INCLUDES} from '../../adapters/post';
+import {NotFoundError} from 'ember-ajax/errors';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
 export default class EditRoute extends AuthenticatedRoute {
@@ -17,13 +18,12 @@ export default class EditRoute extends AuthenticatedRoute {
         }
     }
 
-    async model(params, transition) {
+    async model(params) {
         // eslint-disable-next-line camelcase
         let {type: modelName, post_id} = params;
 
         if (!['post', 'page'].includes(modelName)) {
-            let path = transition.intent.url.replace(/^\//, '');
-            return this.replaceWith('error404', {path, status: 404});
+            throw new NotFoundError();
         }
 
         let query = {

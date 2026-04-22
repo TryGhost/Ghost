@@ -1,4 +1,4 @@
-const should = require('should');
+const {assertExists} = require('../../../../../utils/assertions');
 const sinon = require('sinon');
 
 const api = require('../../../../../../core/frontend/services/proxy').api;
@@ -8,7 +8,7 @@ const controllers = require('../../../../../../core/frontend/services/routing/co
 
 function failTest(done) {
     return function (err) {
-        should.exist(err);
+        assertExists(err);
         done(err);
     };
 }
@@ -77,8 +77,8 @@ describe('Unit - services/routing/controllers/static', function () {
 
     it('no extra data to fetch', function (done) {
         renderer.renderer.callsFake(function () {
-            renderer.formatResponse.entries.calledOnce.should.be.true();
-            tagsReadStub.called.should.be.false();
+            sinon.assert.calledOnce(renderer.formatResponse.entries);
+            sinon.assert.notCalled(tagsReadStub);
             done();
         });
 
@@ -100,8 +100,8 @@ describe('Unit - services/routing/controllers/static', function () {
         tagsReadStub = sinon.stub().resolves({tags: [{slug: 'bacon'}]});
 
         renderer.renderer.callsFake(function () {
-            tagsReadStub.called.should.be.true();
-            renderer.formatResponse.entries.calledOnce.should.be.true();
+            sinon.assert.called(tagsReadStub);
+            sinon.assert.calledOnce(renderer.formatResponse.entries);
             done();
         });
 

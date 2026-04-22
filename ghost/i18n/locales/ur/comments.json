@@ -17,6 +17,7 @@
     "Best": "",
     "Cancel": "منسوخ کریں",
     "Comment": "تبادلہ",
+    "Commenting disabled": "",
     "Complete your profile": "اپنا پروفائل مکمل کریں",
     "Delete": "حذف کریں",
     "Deleted": "",
@@ -66,9 +67,13 @@
     "Sign up now": "ابھی رجسٹر ہوں",
     "Sort by": "",
     "Start the conversation": "بات چیت شروع کریں",
+    "The linked comment is no longer available.": "",
     "This comment has been hidden.": "یہ تبادلہ چھپا گیا ہے۔",
     "This comment has been removed.": "یہ تبادلہ ہٹا دیا گیا ہے۔",
     "Upgrade now": "اب اپ گریڈ کریں",
+    "View in admin": "",
     "Yesterday": "کل",
+    "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "آپ کا درخواست اس سائٹ کے مالک کو بھیجا جائے گا۔"
 }

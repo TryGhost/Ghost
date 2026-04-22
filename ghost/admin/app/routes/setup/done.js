@@ -18,7 +18,7 @@ export default class SetupFinishingTouchesRoute extends AuthenticatedRoute {
         }
 
         if (this.session.user?.isAdmin) {
-            return this.router.transitionTo('stats-x');
+            return this.router.transitionTo('/analytics');
         }
     }
 }

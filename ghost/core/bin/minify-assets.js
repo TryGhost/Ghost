@@ -11,7 +11,6 @@
  * in the production build and be able to utilize bundler benefits.
  */
 
-/* eslint-disable no-console */
 const esbuild = require('esbuild');
 const path = require('path');
 const fs = require('fs');
@@ -73,6 +72,13 @@ const filesToMinify = [
     {
         src: 'core/frontend/src/admin-auth/message-handler.js',
         dest: 'core/frontend/public/admin-auth/admin-auth.min.js',
+        options: {
+            bundle: false
+        }
+    },
+    {
+        src: 'core/frontend/public/private.js',
+        dest: 'core/frontend/public/private.min.js',
         options: {
             bundle: false
         }

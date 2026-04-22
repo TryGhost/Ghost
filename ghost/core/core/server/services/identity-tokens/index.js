@@ -1,1 +1,1 @@
-module.exports = require('./IdentityTokenServiceWrapper');
+module.exports = require('./identity-token-service-wrapper');

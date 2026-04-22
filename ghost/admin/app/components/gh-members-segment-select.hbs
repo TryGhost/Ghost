@@ -1,17 +1,13 @@
-<GhTokenInput
-    @options={{this.options}}
-    @selected={{this.selectedOptions}}
+<GhSegmentTokenInput
+    @nonLabelOptions={{this.nonLabelOptions}}
+    @selectedSegments={{this.selectedSegments}}
+    @hideLabels={{this.hideLabelsComputed}}
     @disabled={{or @disabled this.fetchOptionsTask.isRunning}}
-    @optionsComponent={{component "power-select/options"}}
-    @allowCreation={{false}}
     @renderInPlace={{this.renderInPlace}}
     @onChange={{this.setSegment}}
     @class="select-members"
     @placeholder="Select a tier"
-    as |option|
->
-    {{option.name}}
-</GhTokenInput>
+/>
 
 <GhMembersSegmentCount
     @segment={{@segment}}

@@ -4,11 +4,11 @@ This file provides guidance to AI Agents when working with code in this reposito
 
 ## Package Manager
 
-**Always use `yarn` (v1) for all commands.** This repository uses yarn workspaces, not npm.
+**Always use `pnpm` for all commands.** This repository uses pnpm workspaces, not npm.
 
 ## Monorepo Structure
 
-Ghost is a Yarn v1 + Nx monorepo with three workspace groups:
+Ghost is a pnpm + Nx monorepo with three workspace groups:
 
 ### ghost/* - Core Ghost packages
 - **ghost/core** - Main Ghost application (Node.js/Express backend)
@@ -42,67 +42,61 @@ Two categories of apps:
 
 ### Development
 ```bash
-yarn                           # Install dependencies
-yarn setup                     # First-time setup (installs deps + submodules)
-yarn dev                       # Local dev (no Docker)
-yarn dev:debug                 # yarn dev with DEBUG=@tryghost*,ghost:* enabled
-yarn dev:forward               # Run Ghost backend with deps in Docker + frontend dev servers
+corepack enable pnpm           # Enable corepack to use the correct pnpm version
+pnpm run setup                 # First-time setup (installs deps + submodules)
+pnpm dev                       # Start development (Docker backend + host frontend dev servers)
 ```
 
 ### Building
 ```bash
-yarn build                     # Build all packages (Nx handles dependencies)
-yarn build:clean               # Clean build artifacts and rebuild
+pnpm build                     # Build all packages (Nx handles dependencies)
+pnpm build:clean               # Clean build artifacts and rebuild
 ```
 
 ### Testing
 ```bash
 # Unit tests (from root)
-yarn test:unit                 # Run all unit tests in all packages
+pnpm test:unit                 # Run all unit tests in all packages
 
 # Ghost core tests (from ghost/core/)
 cd ghost/core
-yarn test:unit                 # Unit tests only
-yarn test:integration          # Integration tests
-yarn test:e2e                  # E2E API tests (not browser)
-yarn test:browser              # Playwright browser tests for core
-yarn test:all                  # All test types
+pnpm test:unit                 # Unit tests only
+pnpm test:integration          # Integration tests
+pnpm test:e2e                  # E2E API tests (not browser)
+pnpm test:all                  # All test types
 
 # E2E browser tests (from root)
-yarn test:e2e                  # Run e2e/ Playwright tests
+pnpm test:e2e                  # Run e2e/ Playwright tests
 
 # Running a single test
 cd ghost/core
-yarn test:single test/unit/path/to/test.test.js
+pnpm test:single test/unit/path/to/test.test.js
 ```
 
 ### Linting
 ```bash
-yarn lint                      # Lint all packages
-cd ghost/core && yarn lint     # Lint Ghost core (server, shared, frontend, tests)
-cd ghost/admin && yarn lint    # Lint Ember admin
+pnpm lint                      # Lint all packages
+cd ghost/core && pnpm lint     # Lint Ghost core (server, shared, frontend, tests)
+cd ghost/admin && pnpm lint    # Lint Ember admin
 ```
 
 ### Database
 ```bash
-yarn knex-migrator migrate     # Run database migrations
-yarn reset:data                # Reset database with test data (1000 members, 100 posts)
-yarn reset:data:empty          # Reset database with no data
+pnpm knex-migrator migrate     # Run database migrations
+pnpm reset:data                # Reset database with test data (1000 members, 100 posts) (requires pnpm dev running)
+pnpm reset:data:empty          # Reset database with no data (requires pnpm dev running)
 ```
 
 ### Docker
 ```bash
-yarn docker:build              # Build Docker images and delete ephemeral volumes
-yarn docker:dev                # Start Ghost in Docker with hot reload
-yarn docker:shell              # Open shell in Ghost container
-yarn docker:mysql              # Open MySQL CLI
-yarn docker:test:unit          # Run unit tests in Docker
-yarn docker:reset              # Reset all Docker volumes (including database) and restart
+pnpm docker:build              # Build Docker images
+pnpm docker:clean              # Stop containers, remove volumes and local images
+pnpm docker:down               # Stop containers
 ```
 
-### Local development in Docker
+### How `pnpm dev` works
 
-The `yarn dev:forward` command uses a **hybrid Docker + host development** setup:
+The `pnpm dev` command uses a **hybrid Docker + host development** setup:
 
 **What runs in Docker:**
 - Ghost Core backend (with hot-reload via mounted source)
@@ -116,12 +110,12 @@ The `yarn dev:forward` command uses a **hybrid Docker + host development** setup
 **Setup:**
 ```bash
 # Start everything (Docker + frontend dev servers)
-yarn dev:forward
+pnpm dev
 
 # With optional services (uses Docker Compose file composition)
-yarn dev:analytics             # Include Tinybird analytics
-yarn dev:storage               # Include MinIO S3-compatible object storage
-yarn dev:all                   # Include all optional services
+pnpm dev:analytics             # Include Tinybird analytics
+pnpm dev:storage               # Include MinIO S3-compatible object storage
+pnpm dev:all                   # Include all optional services
 ```
 
 **Accessing Services:**
@@ -159,6 +153,39 @@ yarn dev:all                   # Include all optional services
 - Single source: `ghost/i18n/locales/{locale}/{namespace}.json`
 - Namespaces: `ghost`, `portal`, `signup-form`, `comments`, `search`
 - 60+ supported locales
+- Context descriptions: `ghost/i18n/locales/context.json` — every key must have a non-empty description
+
+**Translation Workflow:**
+```bash
+pnpm --filter @tryghost/i18n translate          # Extract keys from source, update all locale files + context.json
+pnpm --filter @tryghost/i18n lint:translations   # Validate interpolation variables across locales
+```
+
+`translate` is run as part of `pnpm --filter @tryghost/i18n test`. In CI, it fails if translation keys or `context.json` are out of date (`failOnUpdate: process.env.CI`). Always run `pnpm --filter @tryghost/i18n translate` after adding or changing `t()` calls.
+
+**Rules for Translation Keys:**
+1. **Never split sentences across multiple `t()` calls.** Translators cannot reorder words across separate keys. Instead, use `@doist/react-interpolate` to embed React elements (links, bold, etc.) within a single translatable string.
+2. **Always provide context descriptions.** When adding a new key, add a description in `context.json` explaining where the string appears and what it does. CI will reject empty descriptions.
+3. **Use interpolation for dynamic values.** Ghost uses `{variable}` syntax: `t('Welcome back, {name}!', {name: firstname})`
+4. **Use `<tag>` syntax for inline elements.** Combined with `@doist/react-interpolate`: `t('Click <a>here</a> to retry')` with `mapping={{ a: <a href="..." /> }}`
+
+**Correct pattern (using Interpolate):**
+```jsx
+import Interpolate from '@doist/react-interpolate';
+
+<Interpolate
+    mapping={{ a: <a href={link} /> }}
+    string={t('Could not sign in. <a>Click here to retry</a>')}
+/>
+```
+
+**Incorrect pattern (split sentences):**
+```jsx
+// BAD: translators cannot reorder "Click here to retry" relative to the first sentence
+{t('Could not sign in.')} <a href={link}>{t('Click here to retry')}</a>
+```
+
+See `apps/portal/src/components/pages/email-receiving-faq.js` for a canonical example of correct `Interpolate` usage.
 
 ### Build Dependencies (Nx)
 
@@ -169,29 +196,49 @@ Critical build order (Nx handles automatically):
 4. `ghost/admin` builds (depends on #3, copies via asset-delivery)
 5. `ghost/core` serves admin build
 
+## CSS Architecture
+
+### TailwindCSS v4 Setup
+
+Ghost Admin uses **TailwindCSS v4** via the `@tailwindcss/vite` plugin. CSS processing is centralized — only `apps/admin/vite.config.ts` loads the `@tailwindcss/vite` plugin. All embedded React apps (posts, stats, activitypub, admin-x-settings, admin-x-design-system) are scanned from this single entry point.
+
+### Entry Point
+
+`apps/admin/src/index.css` is the main CSS entry point. It contains:
+- `@source` directives that scan class usage in shade, posts, stats, activitypub, admin-x-settings, admin-x-design-system, and kg-unsplash-selector
+- `@import "@tryghost/shade/styles.css"` which loads the Shade design system styles
+
+### Shade Styles
+
+`apps/shade/styles.css` uses **unlayered** Tailwind imports:
+```css
+@import "tailwindcss/theme.css";
+@import "./preflight.css";
+@import "tailwindcss/utilities.css";
+@import "tw-animate-css";
+@import "./tailwind.theme.css";
+```
+
+**Why unlayered:** Ember's legacy CSS (`.flex`, `.hidden`, etc.) is unlayered. If Tailwind utilities were in a `@layer`, they would lose to Ember's unlayered CSS in the cascade. Keeping both unlayered means source order determines specificity.
+
+Theme tokens/variants/animations are defined in CSS (`apps/shade/tailwind.theme.css` + runtime vars in `styles.css`), so there is no JS `@config` bridge in the Admin runtime lane. `tw-animate-css` is the v4 replacement for `tailwindcss-animate`.
+
+### Critical Rule: Embedded Apps Must NOT Import Shade Independently
+
+Apps consumed via `@source` (posts, stats, activitypub) must **NOT** import `@tryghost/shade/styles.css` in their own CSS. Doing so causes duplicate Tailwind utilities and cascade conflicts. All Tailwind CSS is generated once via the admin entry point.
+
+### Public Apps
+
+Public-facing apps (`comments-ui`, `signup-form`, `sodo-search`, `portal`, `announcement-bar`) remain on **TailwindCSS v3**. They are built as UMD bundles for CDN distribution and are independent of the admin CSS pipeline.
+
+### Legacy Apps
+
+`admin-x-design-system` and `admin-x-settings` are consumed via `@source` in admin's centralized v4 pipeline for production, and both packages build with CSS-first Tailwind v4 setup.
+
 ## Code Guidelines
 
 ### Commit Messages
-Follow the project's commit message format:
-- **1st line:** Max 80 chars, past tense, with emoji if user-facing
-- **2nd line:** [blank]
-- **3rd line:** `ref`, `fixes`, or `closes` with issue link
-- **4th line:** Context (why this change, why now)
-
-**Emojis for user-facing changes:**
-- ✨ Feature
-- 🎨 Improvement/change
-- 🐛 Bug fix
-- 🌐 i18n/translation
-- 💡 Other user-facing changes
-
-Example:
-```
-✨ Added dark mode toggle to admin settings
-
-fixes https://github.com/TryGhost/Ghost/issues/12345
-Users requested ability to switch themes for better accessibility
-```
+When the user asks you to create a commit or draft a commit message, load and follow the `commit` skill from `.agents/skills/commit`.
 
 ### When Working on Admin UI
 - **New features:** Build in React (`apps/admin-x-*` or `apps/posts`)
@@ -217,7 +264,7 @@ Users requested ability to switch themes for better accessibility
 - **Legacy:** `admin-x-design-system` (being phased out, avoid for new work)
 
 ### Analytics (Tinybird)
-- **Local development:** `yarn docker:dev:analytics` (starts Tinybird + MySQL)
+- **Local development:** `pnpm dev:analytics` (starts Tinybird + MySQL)
 - **Config:** Add Tinybird config to `ghost/core/config.development.json`
 - **Scripts:** `ghost/core/core/server/data/tinybird/scripts/`
 - **Datafiles:** `ghost/core/core/server/data/tinybird/`
@@ -226,11 +273,11 @@ Users requested ability to switch themes for better accessibility
 
 ### Build Issues
 ```bash
-yarn fix                       # Clean cache + node_modules + reinstall
-yarn build:clean               # Clean build artifacts
-yarn nx reset                  # Reset Nx cache
+pnpm fix                       # Clean cache + node_modules + reinstall
+pnpm build:clean               # Clean build artifacts
+pnpm nx reset                  # Reset Nx cache
 ```
 
 ### Test Issues
 - **E2E failures:** Check `e2e/CLAUDE.md` for debugging tips
-- **Docker issues:** `yarn docker:clean && yarn docker:build`
+- **Docker issues:** `pnpm docker:clean && pnpm docker:build`

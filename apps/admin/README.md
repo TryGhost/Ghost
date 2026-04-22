@@ -12,15 +12,15 @@ Uses an **Ember Bridge** system for smooth migration:
 ## Development
 
 ```bash
-# Start development server
-yarn dev
+# Start development server (from monorepo root)
+pnpm dev
 ```
 
 ## Building for Production
 
 ```bash
 # Build production bundle
-yarn nx run @tryghost/admin:build
+pnpm nx run @tryghost/admin:build
 ```
 
 This outputs to `apps/admin/dist/` and updates the assets in `ghost/core/core/built/admin/`.

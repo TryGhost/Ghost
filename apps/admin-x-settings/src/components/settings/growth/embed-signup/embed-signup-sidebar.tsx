@@ -55,14 +55,14 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                                     key: 'all-in-one',
                                     label: 'Branded',
                                     size: 'md',
-                                    className: 'w-auto !px-3',
+                                    className: 'w-auto px-3!',
                                     onClick: () => handleLayoutSelect('all-in-one')
                                 },
                                 {
                                     key: 'minimal',
                                     label: 'Minimal',
                                     size: 'md',
-                                    className: 'w-auto !px-3',
+                                    className: 'w-auto px-3!',
                                     onClick: () => handleLayoutSelect('minimal')
                                 }
                             ]} 

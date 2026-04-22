@@ -1,16 +1,9 @@
 import React from "react"
 
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-    Indicator,
-    LucideIcon,
-    SidebarMenuButton,
-    Switch
-} from "@tryghost/shade"
+import {DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger, Indicator, SidebarMenuButton, Switch} from "@tryghost/shade/components"
+import {LucideIcon} from "@tryghost/shade/utils"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
+import { getGhostPaths } from "@tryghost/admin-x-framework/helpers";
 import { useUserPreferences, useEditUserPreferences } from "@/hooks/user-preferences";
 import { useWhatsNew } from "@/whats-new/hooks/use-whats-new";
 import { useUpgradeStatus } from "./hooks/use-upgrade-status";
@@ -65,10 +58,11 @@ function UserMenuDarkMode() {
 
 function UserMenuSignOut() {
     const handleSignOut = () => {
-        fetch("/ghost/api/admin/session", {
+        const {apiRoot, adminRoot} = getGhostPaths();
+        fetch(`${apiRoot}/session`, {
             method: "DELETE",
         }).then(() => {
-            window.location.href = "/ghost";
+            window.location.href = adminRoot;
         }).catch((error) => {
             console.error(error);
         });
@@ -116,7 +110,7 @@ function UserMenu(props: UserMenuProps) {
                     </div>
                     <div className="grid flex-1 text-left text-base leading-tight">
                         <span className="truncate font-semibold">{currentUser.data?.name}</span>
-                        <span className="text-muted-foreground truncate text-xs -mt-px">
+                        <span className="-mt-px truncate text-xs text-muted-foreground">
                             {currentUser.data?.email}
                         </span>
                     </div>
@@ -124,9 +118,9 @@ function UserMenu(props: UserMenuProps) {
                 </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-                align="end"
+                align="start"
                 sideOffset={10}
-                className={`w-full min-w-[240px] sidebar:min-w-[260px] ${showUpgradeBanner ? 'shadow-[0_18px_80px_0_rgba(0,0,0,0.07),0_7.52px_33.422px_0_rgba(0,0,0,0.05),0_4.021px_17.869px_0_rgba(0,0,0,0.04),0_2.254px_10.017px_0_rgba(0,0,0,0.04),0_1.197px_5.32px_0_rgba(0,0,0,0.03),0_0.498px_2.214px_0_rgba(0,0,0,0.02)]' : ''}`}
+                className={`w-[var(--radix-dropdown-menu-trigger-width)] ${showUpgradeBanner ? 'shadow-[0_18px_80px_0_rgba(0,0,0,0.07),0_7.52px_33.422px_0_rgba(0,0,0,0.05),0_4.021px_17.869px_0_rgba(0,0,0,0.04),0_2.254px_10.017px_0_rgba(0,0,0,0.04),0_1.197px_5.32px_0_rgba(0,0,0,0.03),0_0.498px_2.214px_0_rgba(0,0,0,0.02)]' : ''}`}
             >
                 <UserMenuHeader
                     name={currentUser.data?.name}
@@ -139,16 +133,13 @@ function UserMenu(props: UserMenuProps) {
                     data-test-nav="whatsnew"
                     asChild={false}
                     onSelect={() => {
-                        // Workaround for Radix UI bug where opening Dialog from DropdownMenu
-                        // leaves pointer-events: none on body, freezing the UI
-                        // https://github.com/radix-ui/primitives/issues/3317
-                        queueMicrotask(() => props.onOpenWhatsNew?.());
+                        props.onOpenWhatsNew?.();
                     }}
                 >
                     <LucideIcon.Sparkles />
                     <UserMenuItem.Label>What’s new?</UserMenuItem.Label>
                     {whatsNewData?.hasNew && (
-                        <div className="flex-1 flex justify-end">
+                        <div className="flex flex-1 justify-end">
                             <Indicator
                                 variant="success"
                                 size="sm"
@@ -203,17 +194,17 @@ function ContributorUserMenu() {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <button
-                    className="rounded-full shadow-lg hover:shadow-xl transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 p-0.5 flex items-center justify-center border border-border dark:bg-muted bg-background"
+                    className="flex items-center justify-center rounded-full border border-border bg-background p-0.5 shadow-lg transition-shadow hover:shadow-xl focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:bg-muted"
                     aria-label="Open user menu"
                 >
-                    <UserMenuAvatar className="w-11 h-11" />
+                    <UserMenuAvatar className="h-11 w-11" />
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 align="start"
                 side="top"
                 sideOffset={10}
-                className="w-full min-w-[240px] mb-2"
+                className="mb-2 min-w-56"
             >
                 <UserMenuHeader
                     name={currentUser.data?.name}
@@ -223,7 +214,7 @@ function ContributorUserMenu() {
                 </UserMenuHeader>
                 <DropdownMenuSeparator />
                 <UserMenuItem>
-                    <Link to="/">
+                    <Link to="/posts">
                         <LucideIcon.FileText />
                         <UserMenuItem.Label>Posts</UserMenuItem.Label>
                     </Link>

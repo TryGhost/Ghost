@@ -6,10 +6,16 @@
     @triggerClass={{@triggerClass}}
     @onChange={{this.updateLabels}}
     @onCreate={{this.createLabel}}
+    @onOpen={{this.loadInitialLabels}}
     @options={{this.availableLabels}}
+    @optionsComponent={{component "power-select-vertical-collection-options" lastReached=(perform this.loadMoreLabelsTask)}}
+    @registerAPI={{this.registerPowerSelectAPI}}
     @renderInPlace={{@renderInPlace}}
+    {{!-- null falls back to GhTokenInput's client-side search --}}
+    @search={{if this.useServerSideSearch (perform this.searchLabelsTask) null}}
     @selected={{this.selectedLabels}}
-    @showCreateWhen={{this.hideCreateOptionOnMatchingLabel}}
+    {{!-- null falls back to GhTokenInput's default of showing create option when nothing matches client-side search results --}}
+    @showCreateWhen={{if this.useServerSideSearch this.showCreateWhen null}}
     @triggerId={{this.triggerId}}
     @selectedItemComponent={{component "gh-token-input/label-selected-item"}}
     @disabled={{@disabled}}

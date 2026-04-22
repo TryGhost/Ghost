@@ -20,7 +20,6 @@ export default class EmailSizeWarningService extends Service {
 
     @inject config;
 
-    _newsletter = null;
     _lastPostId = null;
     _lastUpdatedAt = null;
 
@@ -49,18 +48,6 @@ export default class EmailSizeWarningService extends Service {
         this._lastUpdatedAt = updatedAt;
 
         return this._fetchTask.perform(post);
-    }
-
-    async _loadNewsletter() {
-        if (!this._newsletter) {
-            const newsletters = await this.store.query('newsletter', {
-                filter: 'status:active',
-                order: 'sort_order DESC',
-                limit: 1
-            });
-            this._newsletter = newsletters.firstObject;
-        }
-        return this._newsletter;
     }
 
     _calculateLinkRewritingAdjustment(html) {
@@ -105,17 +92,11 @@ export default class EmailSizeWarningService extends Service {
 
     @task
     *_fetchTask(post) {
-        yield this._loadNewsletter();
-        if (!this._newsletter) {
-            return {overLimit: false, emailSizeKb: null};
-        }
-
         try {
             const url = new URL(
                 this.ghostPaths.url.api('/email_previews/posts', post.id),
                 window.location.href
             );
-            url.searchParams.set('newsletter', this._newsletter.slug);
 
             const response = yield this.ajax.request(url.href);
             const [emailPreview] = response.email_previews;

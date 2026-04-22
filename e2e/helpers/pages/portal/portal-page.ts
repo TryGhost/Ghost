@@ -13,7 +13,7 @@ export class PortalPage extends BasePage {
         this.portalFrame = page.frameLocator(this.frameSelector);
         this.portalPopupFrame = page.locator(this.frameSelector);
 
-        this.closeButton = this.portalFrame.getByRole('button', {name: 'Close'});
+        this.closeButton = this.portalFrame.getByTestId('close-popup');
         this.portalFrameBody = this.portalFrame.locator('body');
     }
 

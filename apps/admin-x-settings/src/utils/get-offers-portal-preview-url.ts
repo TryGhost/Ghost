@@ -12,6 +12,7 @@ export type offerPortalPreviewUrlTypes = {
     currency: string;
     status: string;
     tierId: string;
+    redemptionType: 'signup' | 'retention';
 };
 
 export const getOfferPortalPreviewUrl = (overrides:offerPortalPreviewUrlTypes, baseUrl: string) : string => {
@@ -28,7 +29,8 @@ export const getOfferPortalPreviewUrl = (overrides:offerPortalPreviewUrlTypes, b
         durationInMonths,
         currency = 'usd',
         status,
-        tierId
+        tierId,
+        redemptionType = 'signup'
     } = overrides;
 
     baseUrl = baseUrl.replace(/\/$/, '');
@@ -48,6 +50,7 @@ export const getOfferPortalPreviewUrl = (overrides:offerPortalPreviewUrlTypes, b
     settingsParam.append('currency', encodeURIComponent(currency));
     settingsParam.append('status', encodeURIComponent(status));
     settingsParam.append('tier_id', encodeURIComponent(tierId));
+    settingsParam.append('redemption_type', encodeURIComponent(redemptionType));
 
     if (disableBackground) {
         settingsParam.append('disableBackground', 'true');

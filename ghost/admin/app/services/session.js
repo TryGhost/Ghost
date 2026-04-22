@@ -19,7 +19,6 @@ export default class SessionService extends ESASessionService {
     @service settings;
     @service ui;
     @service upgradeStatus;
-    @service whatsNew;
     @service membersUtils;
     @service stateBridge;
     @service themeManagement;
@@ -71,7 +70,6 @@ export default class SessionService extends ESASessionService {
         }
 
         this.loadServerNotifications();
-        this.whatsNew.fetchLatest.perform();
 
         // pre-emptively load editor code in the background to avoid loading state when opening editor
         this.koenig.fetch();
@@ -87,6 +85,13 @@ export default class SessionService extends ESASessionService {
 
             if (this.skipAuthSuccessHandler) {
                 this.skipAuthSuccessHandler = false;
+                return;
+            }
+
+            const redirectUrl = window.sessionStorage.getItem('ghost-signin-redirect');
+            window.sessionStorage.removeItem('ghost-signin-redirect');
+            if (redirectUrl && !redirectUrl.startsWith('/signin') && !redirectUrl.startsWith('/signup') && !redirectUrl.startsWith('/setup')) {
+                this.router.transitionTo(redirectUrl);
                 return;
             }
 

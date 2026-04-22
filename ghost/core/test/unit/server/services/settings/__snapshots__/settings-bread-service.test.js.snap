@@ -189,7 +189,6 @@ exports[`UNIT > Settings BREAD Service: edit setting members_support_address tri
 exports[`UNIT > Settings BREAD Service: edit setting members_support_address triggers email verification 3: [metadata 1] 1`] = `
 Object {
   "encoding": "base64",
-  "forceTextContent": true,
   "from": "\\"Ghost at 127.0.0.1\\" <noreply@example.com>",
   "generateTextFromHTML": false,
   "headers": Object {

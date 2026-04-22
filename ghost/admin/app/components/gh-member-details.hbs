@@ -50,6 +50,15 @@
                         <span>Not seen yet</span>
                     {{/if}}
                 </p>
+                {{#if (and this.feature.commentModeration (eq @member.canComment false))}}
+                    <p class="gh-member-commenting-disabled">
+                        {{svg-jar "comment-disabled"}}
+                        Comments disabled
+                        <span class="gh-member-details-enable-link">
+                            &nbsp;&mdash;&nbsp;<button type="button" {{on "click" @onEnableCommenting}}>Enable</button>
+                        </span>
+                    </p>
+                {{/if}}
             </div>
             <div class="gh-member-details-attribution">
                 <h4 class="gh-main-section-header small bn">Signup info</h4>

@@ -7,7 +7,7 @@ Minimal Docker image for running Ghost Core in development with hot-reload suppo
 This lightweight image:
 - Installs only Ghost Core dependencies
 - Mounts source code from the host at runtime
-- Enables `node --watch` for automatic restarts on file changes
+- Enables `nodemon` for automatic restarts on file changes
 - Works with the Caddy gateway to proxy frontend assets from host dev servers
 
 ## Key Differences from Main Dockerfile
@@ -21,13 +21,15 @@ This lightweight image:
 - Only installs dependencies
 - No frontend builds or bundling
 - Source code mounted at runtime 
-- Used for: Local development with `yarn dev`
+- Used for: Local development with `pnpm dev`
 
 ## Usage
 
 This image is used automatically when running:
 
 ```bash
-yarn dev              # Starts Docker + frontend dev servers
-yarn dev:ghost        # Starts only Docker services
+pnpm dev              # Starts Docker backend + frontend dev servers on host
+pnpm dev:analytics    # Include Tinybird analytics
+pnpm dev:storage      # Include MinIO S3-compatible object storage
+pnpm dev:all          # Include all optional services
 ```

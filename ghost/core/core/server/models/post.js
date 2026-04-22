@@ -913,7 +913,7 @@ Post = ghostBookshelf.Model.extend({
             });
         }
         if (!model.get('mobiledoc') && !options.importing && !options.migrating) {
-            const {PostRevisions} = require('../lib/PostRevisions');
+            const {PostRevisions} = require('../lib/post-revisions');
             const postRevisions = new PostRevisions({
                 config: {
                     max_revisions: POST_REVISIONS_COUNT,
@@ -1199,7 +1199,7 @@ Post = ghostBookshelf.Model.extend({
 
     /**
      * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
-     * @param {String} methodName The name of the method to check valid options for.
+     * @param {string} methodName The name of the method to check valid options for.
      * @return {Array} Keys allowed in the `options` hash of the model's method.
      */
     permittedOptions: function permittedOptions(methodName) {

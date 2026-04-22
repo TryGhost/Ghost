@@ -9,7 +9,6 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {typeInSearch} from 'ember-power-select/test-support/helpers';
 
-const SEARCH_BUTTON = '[data-test-button="search"]';
 const SEARCH_MODAL = '[data-test-modal="search"]';
 const SEARCH_TRIGGER = '[data-test-modal="search"] .ember-power-select-trigger';
 const MODAL_BACKDROP = '.epm-backdrop';
@@ -31,11 +30,6 @@ const assertSearchModalClosed = () => {
 
 // Helper functions for common test operations
 const openSearch = async () => {
-    await click(SEARCH_BUTTON);
-    assertSearchModalOpen();
-};
-
-const openSearchWithKeyboard = async () => {
     await triggerKeyEvent(document, 'keydown', 'K', {
         metaKey: ctrlOrCmd === 'command',
         ctrlKey: ctrlOrCmd === 'ctrl'
@@ -197,16 +191,10 @@ describe('Acceptance: Search', function () {
             expect(searchService.provider.constructor.name).to.equal('SearchProviderFlexService');
         });
 
-        it('opens search modal when clicking search icon', async function () {
+        it('opens search modal with Ctrl/Cmd+K', async function () {
             await visit('/analytics');
             assertSearchModalClosed();
             await openSearch();
-        });
-
-        it('opens search modal with keyboard shortcut Ctrl/Cmd+K', async function () {
-            await visit('/analytics');
-            assertSearchModalClosed();
-            await openSearchWithKeyboard();
         });
 
         it('closes search modal with Escape key', async function () {
@@ -219,17 +207,6 @@ describe('Acceptance: Search', function () {
             await visit('/analytics');
             await openSearch();
             await closeSearchWithBackdrop();
-        });
-
-        it('does not open search modal if the sidebar is hidden', async function () {
-            const post = this.server.create('post', {title: 'Test post', slug: 'test-post', status: 'draft'});
-            await visit(`/editor/post/${post.id}`);
-            assertSearchModalClosed();
-            await triggerKeyEvent(document, 'keydown', 'K', {
-                metaKey: ctrlOrCmd === 'command',
-                ctrlKey: ctrlOrCmd === 'ctrl'
-            });
-            assertSearchModalClosed();
         });
 
         it('finds all content types when searching for "first"', async function () {
@@ -414,16 +391,10 @@ describe('Acceptance: Search', function () {
             expect(searchService.provider.constructor.name).to.equal('SearchProviderBasicService');
         });
 
-        it('opens search modal when clicking search icon', async function () {
+        it('opens search modal with Ctrl/Cmd+K', async function () {
             await visit('/analytics');
             assertSearchModalClosed();
             await openSearch();
-        });
-
-        it('opens search modal with keyboard shortcut Ctrl/Cmd+K', async function () {
-            await visit('/analytics');
-            assertSearchModalClosed();
-            await openSearchWithKeyboard();
         });
 
         it('closes search modal with Escape key', async function () {

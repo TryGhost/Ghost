@@ -1,9 +1,9 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
 const limits = rewire('../../../../core/server/services/limits');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const logging = require('@tryghost/logging');
 
 const errors = require('@tryghost/errors');

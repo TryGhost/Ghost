@@ -1,7 +1,9 @@
 import React, {useMemo} from 'react';
 import Sources from '../../Web/components/sources';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, Separator} from '@tryghost/shade/components';
 import {BaseSourceData, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {HTable} from '@tryghost/shade/primitives';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {useGlobalData} from '@src/providers/post-analytics-context';
 
 interface WebOverviewProps {
@@ -48,7 +50,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                     <div>
                         <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0' data-testid='unique-visitors'>
                             <div className='flex grow flex-col gap-1.5 border-none pb-0'>
-                                <KpiCardHeaderLabel color='hsl(var(--chart-blue))'>
+                                <KpiCardHeaderLabel color='var(--chart-blue)'>
                             Unique visitors
                                 </KpiCardHeaderLabel>
                                 <KpiCardHeaderValue
@@ -65,7 +67,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                                 :
                                 <GhAreaChart
                                     className={'aspect-auto h-[240px] w-full'}
-                                    color='hsl(var(--chart-blue))'
+                                    color='var(--chart-blue)'
                                     data={chartData || []}
                                     id="visitors"
                                     range={range}

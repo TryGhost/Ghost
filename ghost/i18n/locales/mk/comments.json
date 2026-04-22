@@ -17,6 +17,7 @@
     "Best": "",
     "Cancel": "Откажете",
     "Comment": "Коментирајте",
+    "Commenting disabled": "",
     "Complete your profile": "Комплетирајте го вашиот профил",
     "Delete": "Избришете",
     "Deleted": "",
@@ -66,9 +67,13 @@
     "Sign up now": "Регистрирајте се",
     "Sort by": "",
     "Start the conversation": "Започнете го разговорот",
+    "The linked comment is no longer available.": "",
     "This comment has been hidden.": "Овој коментар беше скриен.",
     "This comment has been removed.": "Овој коментар беше отстранет.",
     "Upgrade now": "Надградете",
+    "View in admin": "",
     "Yesterday": "Вчера",
+    "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "Вашето барање ќе биде испратено на сопственикот на оваа страница."
 }

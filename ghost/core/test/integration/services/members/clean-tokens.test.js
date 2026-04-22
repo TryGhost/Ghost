@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const {agentProvider, fixtureManager} = require('../../../utils/e2e-framework');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const models = require('../../../../core/server/models');
 
 describe('Job: Clean tokens', function () {

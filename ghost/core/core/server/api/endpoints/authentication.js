@@ -10,7 +10,7 @@ const invitations = require('../../services/invitations');
 const dbBackup = require('../../data/db/backup');
 const apiMail = require('./index').mail;
 const apiSettings = require('./index').settings;
-const UsersService = require('../../services/Users');
+const UsersService = require('../../services/users');
 const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
 const {deleteAllSessions} = require('../../services/auth/session');
 
@@ -117,8 +117,14 @@ const controller = {
         async query() {
             const isSetup = await auth.setup.checkIsSetup();
 
+            if (isSetup) {
+                return {
+                    status: true
+                };
+            }
+
             return {
-                status: isSetup,
+                status: false,
                 title: config.title,
                 name: config.user_name,
                 email: config.user_email
@@ -166,8 +172,23 @@ const controller = {
             const internalOptions = Object.assign(options, {context: {internal: true}});
 
             const doResetParams = await auth.passwordreset.doReset(internalOptions, tokenParts, api.settings);
+
+            if (!frame.original.session) {
+                throw new errors.InternalServerError({
+                    message: 'Could not initialize an admin session during password reset.'
+                });
+            }
+
+            const origin = auth.session.getOriginOfRequest(frame.original);
+            await auth.session.sessionService.assignVerifiedUserToSession({
+                session: frame.original.session,
+                user: doResetParams.user,
+                origin,
+                ip: frame.options.ip
+            });
+
             web.shared.middleware.api.spamPrevention.userLogin().reset(frame.options.ip, `${tokenParts.email}login`);
-            return doResetParams;
+            return {};
         }
     },
 

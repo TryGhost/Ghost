@@ -19,6 +19,23 @@ export class HumanReadableError extends Error {
                 return undefined;
             }
         }
+        if (res.status === 404) {
+            const contentType = (res.headers.get('content-type') || '').toLowerCase();
+
+            if (!contentType.includes('application/json')) {
+                return undefined;
+            }
+
+            try {
+                const json = await res.json();
+                if (json.errors && Array.isArray(json.errors) && json.errors.length > 0 && json.errors[0].message) {
+                    return new HumanReadableError(json.errors[0].message);
+                }
+            } catch (e) {
+                // Failed to decode: ignore
+                return undefined;
+            }
+        }
         if (res.status === 500) {
             return new HumanReadableError('A server error occurred');
         }
@@ -50,7 +67,6 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage) {
         if (specialMessages.length === 0) {
             // This formatting is intentionally weird. It causes the i18n-parser to pick these strings up.
             // Do not redefine this t. It's a local function and needs to stay that way.
-            t('No member exists with this e-mail address. Please sign up first.');
             t('No member exists with this e-mail address.');
             t('This site is invite-only, contact the owner for access.');
             t('Unable to initiate checkout session');

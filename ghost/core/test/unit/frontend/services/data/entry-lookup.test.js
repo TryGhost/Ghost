@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 
 const api = require('../../../../../core/frontend/services/proxy').api;
@@ -54,11 +55,11 @@ describe('Unit - frontend/data/entry-lookup', function () {
             const testUrl = 'http://127.0.0.1:2369' + pages[0].url;
 
             return data.entryLookup(testUrl, routerOptions, locals).then(function (lookup) {
-                postsReadStub.called.should.be.false();
-                pagesReadStub.calledOnce.should.be.true();
-                should.exist(lookup.entry);
-                lookup.entry.should.have.property('url', pages[0].url);
-                lookup.isEditURL.should.be.false();
+                sinon.assert.notCalled(postsReadStub);
+                sinon.assert.calledOnce(pagesReadStub);
+                assertExists(lookup.entry);
+                assert.equal(lookup.entry.url, pages[0].url);
+                assert.equal(lookup.isEditURL, false);
             });
         });
     });
@@ -105,11 +106,11 @@ describe('Unit - frontend/data/entry-lookup', function () {
             const testUrl = 'http://127.0.0.1:2369' + posts[0].url;
 
             return data.entryLookup(testUrl, routerOptions, locals).then(function (lookup) {
-                postsReadStub.calledOnce.should.be.true();
-                pagesReadStub.called.should.be.false();
-                should.exist(lookup.entry);
-                lookup.entry.should.have.property('url', posts[0].url);
-                lookup.isEditURL.should.be.false();
+                sinon.assert.calledOnce(postsReadStub);
+                sinon.assert.notCalled(pagesReadStub);
+                assertExists(lookup.entry);
+                assert.equal(lookup.entry.url, posts[0].url);
+                assert.equal(lookup.isEditURL, false);
             });
         });
 
@@ -117,11 +118,11 @@ describe('Unit - frontend/data/entry-lookup', function () {
             const testUrl = `http://127.0.0.1:2369${posts[0].url}edit/`;
 
             return data.entryLookup(testUrl, routerOptions, locals).then(function (lookup) {
-                postsReadStub.calledOnce.should.be.true();
-                pagesReadStub.called.should.be.false();
-                should.exist(lookup.entry);
-                lookup.entry.should.have.property('url', posts[0].url);
-                lookup.isEditURL.should.be.true();
+                sinon.assert.calledOnce(postsReadStub);
+                sinon.assert.notCalled(pagesReadStub);
+                assertExists(lookup.entry);
+                assert.equal(lookup.entry.url, posts[0].url);
+                assert.equal(lookup.isEditURL, true);
             });
         });
     });

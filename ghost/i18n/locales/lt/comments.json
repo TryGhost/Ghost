@@ -17,6 +17,7 @@
     "Best": "",
     "Cancel": "Atšaukti",
     "Comment": "Komentuoti",
+    "Commenting disabled": "",
     "Complete your profile": "Pabaikite kurti savo profilį!",
     "Delete": "Ištrinti",
     "Deleted": "",
@@ -66,9 +67,13 @@
     "Sign up now": "Registruotis",
     "Sort by": "",
     "Start the conversation": "Parašykite pirmąjį komentarą",
+    "The linked comment is no longer available.": "",
     "This comment has been hidden.": "Šis komentaras buvo paslėptas.",
     "This comment has been removed.": "Šis komentaras buvo pašalintas.",
     "Upgrade now": "Prenumeruokite",
+    "View in admin": "",
     "Yesterday": "Vakar",
+    "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "Jūsų pranešimas bus išsiųstas svetainės savininkui."
 }

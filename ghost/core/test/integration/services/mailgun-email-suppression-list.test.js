@@ -1,9 +1,9 @@
 const sinon = require('sinon');
 const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const DomainEvents = require('@tryghost/domain-events');
 
-const MailgunClient = require('../../../core/server/services/lib/MailgunClient');
+const MailgunClient = require('../../../core/server/services/lib/mailgun-client');
 const emailAnalytics = require('../../../core/server/services/email-analytics');
 
 describe('MailgunEmailSuppressionList', function () {

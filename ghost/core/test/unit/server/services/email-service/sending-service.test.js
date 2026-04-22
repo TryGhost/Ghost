@@ -1,8 +1,7 @@
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
-const EmailBodyCache = require('../../../../../core/server/services/email-service/EmailBodyCache');
-const SendingService = require('../../../../../core/server/services/email-service/SendingService');
+const SendingService = require('../../../../../core/server/services/email-service/sending-service');
 
 describe('Sending service', function () {
     describe('send', function () {
@@ -234,7 +233,7 @@ describe('Sending service', function () {
         });
 
         it('supports cache', async function () {
-            const emailBodyCache = new EmailBodyCache();
+            const emailBodyCache = new Map();
             const sendingService = new SendingService({
                 emailRenderer,
                 emailProvider,

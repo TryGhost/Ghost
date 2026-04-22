@@ -17,6 +17,7 @@
     "Best": "Beste",
     "Cancel": "Abbrechen",
     "Comment": "Kommentar",
+    "Commenting disabled": "Kommentare deaktiviert",
     "Complete your profile": "Vervollständigen Sie Ihr Profil",
     "Delete": "Löschen",
     "Deleted": "Gelöscht",
@@ -66,9 +67,13 @@
     "Sign up now": "Jetzt registrieren",
     "Sort by": "Sortiere nach",
     "Start the conversation": "Beginnen Sie das Gespräch",
+    "The linked comment is no longer available.": "Der verlinkte Kommentar ist nicht mehr verfügbar.",
     "This comment has been hidden.": "Dieser Kommentar wurde ausgeblendet.",
     "This comment has been removed.": "Dieser Kommentar wurde entfernt.",
     "Upgrade now": "Jetzt upgraden",
+    "View in admin": "Im Admin anzeigen",
     "Yesterday": "Gestern",
+    "You can't post comments in this publication.": "Sie können in dieser Publikation keine Kommentare schreiben.",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "Sie können in dieser Publikation keine Kommentare schreiben. <a>Kontaktieren Sie den Support</a> für weitere Informationen.",
     "Your request will be sent to the owner of this site.": "Ihre Anfrage wird an den Seitenbesitzer gesendet."
 }

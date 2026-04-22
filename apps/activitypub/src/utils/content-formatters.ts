@@ -1,3 +1,29 @@
+import DOMPurify from 'dompurify';
+
+const SAFE_URL_PROTOCOLS = ['http:', 'https:', 'mailto:'];
+
+export function isSafeUrl(url: string): boolean {
+    try {
+        const parsed = new URL(url);
+        return SAFE_URL_PROTOCOLS.includes(parsed.protocol);
+    } catch {
+        return false;
+    }
+}
+
+export function escapeHtml(str: string): string {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;');
+}
+
+export function sanitizeHtml(html: string): string {
+    return DOMPurify.sanitize(html);
+}
+
 export function stripHtml(html: string, exclude: string[] = []): string {
     // If no exclusions, use the original logic
     if (exclude.length === 0) {

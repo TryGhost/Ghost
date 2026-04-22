@@ -40,6 +40,8 @@ interface SettingsAppContextType {
     upgradeStatus?: UpgradeStatusType;
     sortingState?: Sorting[];
     setSortingState?: (sortingState: Sorting[]) => void;
+    offersShowArchived: boolean;
+    setOffersShowArchived: (show: boolean) => void;
 }
 
 const SettingsAppContext = createContext<SettingsAppContextType>({
@@ -57,7 +59,9 @@ const SettingsAppContext = createContext<SettingsAppContextType>({
         getVisibleComponents: () => new Set<ComponentId>(),
         isOnlyVisibleComponent: () => false
     },
-    sortingState: []
+    sortingState: [],
+    offersShowArchived: false,
+    setOffersShowArchived: () => {}
 });
 
 type SettingsAppProviderProps = Partial<Omit<SettingsAppContextType, 'search'>> & {children: ReactNode};
@@ -72,6 +76,8 @@ const SettingsAppProvider: React.FC<SettingsAppProviderProps> = ({children, ...p
         direction: 'desc'
     }]);
 
+    const [offersShowArchived, setOffersShowArchived] = useState(false);
+
     return (
         <SettingsAppContext.Provider value={{
             // Use local data as default, allow props to override (for backward compatibility)
@@ -80,7 +86,9 @@ const SettingsAppProvider: React.FC<SettingsAppProviderProps> = ({children, ...p
             ...props,
             search,
             sortingState,
-            setSortingState
+            setSortingState,
+            offersShowArchived,
+            setOffersShowArchived
         }}>
             <GlobalDataProvider>
                 <ScrollSectionProvider>
@@ -104,4 +112,9 @@ export const useUpgradeStatus = () => useSettingsApp().upgradeStatus;
 export const useSortingState = () => {
     const {sortingState, setSortingState} = useSettingsApp();
     return {sortingState, setSortingState};
+};
+
+export const useOffersShowArchived = () => {
+    const {offersShowArchived, setOffersShowArchived} = useSettingsApp();
+    return {offersShowArchived, setOffersShowArchived};
 };

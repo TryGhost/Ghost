@@ -17,6 +17,7 @@
     "Best": "",
     "Cancel": "إلغاء",
     "Comment": "تعليق",
+    "Commenting disabled": "",
     "Complete your profile": "إكمال ملفك الشخصى",
     "Delete": "حذف",
     "Deleted": "",
@@ -66,9 +67,13 @@
     "Sign up now": "قم بالتسجيل الآن",
     "Sort by": "ترتيب بحسب",
     "Start the conversation": "ابدأ النقاش",
+    "The linked comment is no longer available.": "",
     "This comment has been hidden.": "تم اخفاء هذا التعليق",
     "This comment has been removed.": "تم حذف هذا التعليق",
     "Upgrade now": "قم بالترقية الآن",
+    "View in admin": "",
     "Yesterday": "أمس",
+    "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "سيتم ارسال طلبك لصاحب الموقع"
 }

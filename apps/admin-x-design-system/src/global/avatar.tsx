@@ -46,13 +46,13 @@ const Avatar: React.FC<AvatarProps> = ({image, label, labelColor, bgColor, size,
     }
 
     return (
-        <AvatarPrimitive.Root className={`relative inline-flex select-none items-center justify-center overflow-hidden rounded-full align-middle ${avatarSize}`}>
+        <AvatarPrimitive.Root className={`relative inline-flex items-center justify-center overflow-hidden rounded-full align-middle select-none ${avatarSize}`}>
             {image ?
-                <AvatarPrimitive.Image className={`absolute z-20 h-full w-full object-cover ${className && className}`} src={image} /> :
-                <span className={`${labelColor && `text-${labelColor}`} relative z-10 inline-flex h-full w-full items-center justify-center p-2 font-semibold ${className && className}`} style={bgColor ? {backgroundColor: bgColor} : {}}>{label}</span>
+                <AvatarPrimitive.Image className={`absolute z-20 size-full object-cover ${className && className}`} src={image} /> :
+                <span className={`${labelColor && `text-${labelColor}`} relative z-10 inline-flex size-full items-center justify-center p-2 font-semibold ${className && className}`} style={bgColor ? {backgroundColor: bgColor} : {}}>{label}</span>
             }
             <AvatarPrimitive.Fallback asChild>
-                <UserIcon className={`${fallbackPosition} absolute z-0 h-full w-full text-grey-300`} />
+                <UserIcon className={`${fallbackPosition} absolute z-0 size-full text-grey-300`} />
             </AvatarPrimitive.Fallback>
         </AvatarPrimitive.Root>
     );

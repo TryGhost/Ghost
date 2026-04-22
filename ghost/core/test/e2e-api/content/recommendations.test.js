@@ -2,7 +2,7 @@ const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-frame
 const recommendationsService = require('../../../core/server/services/recommendations');
 const {Recommendation} = require('../../../core/server/services/recommendations/service');
 const {anyObjectId, anyISODateTime} = matchers;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 describe('Recommendations Content API', function () {
     let agent;

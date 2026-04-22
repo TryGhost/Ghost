@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars*/
 import {getFreeProduct, getMemberData, getOfferData, getPriceData, getProductData, getSiteData, getSubscriptionData, getTestSite} from './fixtures-generator';
 
 export const testSite = getTestSite();
@@ -158,11 +157,13 @@ export const member = {
         firstname: 'Jamie',
         subscriptions: [],
         paid: false,
+        status: 'free',
         avatarImage: '',
         subscribed: true
     }),
     paid: getMemberData({
         paid: true,
+        status: 'paid',
         subscriptions: [
             getSubscriptionData({
                 status: 'active',
@@ -178,10 +179,12 @@ export const member = {
     }),
     complimentary: getMemberData({
         paid: true,
+        status: 'comped',
         subscriptions: []
     }),
     complimentaryWithSubscription: getMemberData({
         paid: true,
+        status: 'comped',
         subscriptions: [
             getSubscriptionData({
                 amount: 0
@@ -190,11 +193,12 @@ export const member = {
     }),
     preview: getMemberData({
         paid: true,
+        status: 'paid',
         subscriptions: [
             getSubscriptionData({
                 amount: 1500,
                 startDate: '2019-05-01T11:42:40.000Z',
-                currentPeriodEnd: '2021-06-05T11:42:40.000Z'
+                currentPeriodEnd: new Date().toISOString()
             })
         ]
     })
@@ -207,6 +211,7 @@ export function paidMemberOnTier() {
     let price = site?.products?.[1].monthlyPrice;
     let updatedMember = getMemberData({
         paid: true,
+        status: 'paid',
         subscriptions: [
             getSubscriptionData({
                 offer: null,

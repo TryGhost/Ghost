@@ -26,7 +26,11 @@ function formatter({amount, currency, numberFormat = 'short', currencyFormat = '
         currencyDisplay: currencyFormat
     };
     if (numberFormat === 'short') {
-        formatterOptions.minimumFractionDigits = 0;
+        if (_.isNumber(amount) && amount % 1 !== 0) {
+            formatterOptions.minimumFractionDigits = 2;
+        } else {
+            formatterOptions.minimumFractionDigits = 0;
+        }
     }
     if (_.isNumber(amount)) {
         return new Intl.NumberFormat(locale, formatterOptions).format(amount);

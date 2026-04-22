@@ -1,8 +1,8 @@
-const MembersCSVImporter = require('./MembersCSVImporter');
-const MembersCSVImporterStripeUtils = require('./MembersCSVImporterStripeUtils');
+const MembersCSVImporter = require('./members-csv-importer');
+const MembersCSVImporterStripeUtils = require('./members-csv-importer-stripe-utils');
 
 /**
- * @typedef {import('./MembersCSVImporter').MembersCSVImporterOptions} MembersCSVImporterOptions
+ * @typedef {import('./members-csv-importer').MembersCSVImporterOptions} MembersCSVImporterOptions
  */
 
 /**

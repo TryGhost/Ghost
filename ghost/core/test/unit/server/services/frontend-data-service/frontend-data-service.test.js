@@ -1,9 +1,9 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
 const models = require('../../../../../core/server/models');
 
-const FrontendDataService = require('../../../../../core/server/services/frontend-data-service/FrontendDataService');
+const FrontendDataService = require('../../../../../core/server/services/frontend-data-service/front-end-data-service');
 
 const logging = require('@tryghost/logging');
 

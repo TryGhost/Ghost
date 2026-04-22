@@ -12,7 +12,7 @@ The Caddy reverse proxy container:
 Caddy uses environment variables (set in `compose.dev.yaml`) to configure proxy targets:
 
 - `GHOST_BACKEND` - Ghost container hostname (e.g., `ghost-dev:2368`)
-- `ADMIN_DEV_SERVER` - React admin dev server (e.g., `host.docker.internal:5173`)
+- `ADMIN_DEV_SERVER` - React admin dev server (e.g., `host.docker.internal:5174`)
 - `ADMIN_LIVE_RELOAD_SERVER` - Ember live reload WebSocket (e.g., `host.docker.internal:4200`)
 - `PORTAL_DEV_SERVER` - Portal dev server (e.g., `host.docker.internal:4175`)
 - `COMMENTS_DEV_SERVER` - Comments UI (e.g., `host.docker.internal:7173`)
@@ -23,6 +23,9 @@ Caddy uses environment variables (set in `compose.dev.yaml`) to configure proxy 
   - For developing Lexical in the separate [Koenig repository](https://github.com/TryGhost/Koenig)
   - Requires `EDITOR_URL=/ghost/assets/koenig-lexical/` when starting admin dev server
   - Automatically falls back to Ghost backend (built package) if dev server is not running
+- `ACTIVITYPUB_PROXY_TARGET` - *Optional:* ActivityPub service (e.g., `host.docker.internal:8080`)
+  - For developing with the [ActivityPub project](https://github.com/TryGhost/ActivityPub) running locally
+  - Requires the ActivityPub docker-compose services to be running
 
 **Note:** AdminX React apps (admin-x-settings, activitypub, posts, stats) are served through the admin dev server so they don't need separate proxy entries.
 
@@ -36,14 +39,17 @@ The Caddyfile defines these routing rules:
 |--------------------------------------|-------------------------------------|------------------------------------------------------------------------|
 | `/ember-cli-live-reload.js`          | Admin live reload (port 4200)       | Ember hot-reload script and WebSocket                                  |
 | `/ghost/api/*`                       | Ghost backend                       | Ghost API (bypasses admin dev server)                                  |
+| `/.ghost/activitypub/*`              | ActivityPub server (port 8080)      | *Optional:* ActivityPub API (requires AP project running)              |
+| `/.well-known/webfinger`             | ActivityPub server (port 8080)      | *Optional:* WebFinger for federation                                   |
+| `/.well-known/nodeinfo`              | ActivityPub server (port 8080)      | *Optional:* NodeInfo for federation                                    |
 | `/ghost/assets/koenig-lexical/*`     | Lexical dev server (port 4173)      | *Optional:* Koenig Lexical editor (falls back to Ghost if not running) |
 | `/ghost/assets/portal/*`             | Portal dev server (port 4175)       | Membership UI                                                          |
 | `/ghost/assets/comments-ui/*`        | Comments dev server (port 7173)     | Comments widget                                                        |
 | `/ghost/assets/signup-form/*`        | Signup dev server (port 6174)       | Signup form widget                                                     |
 | `/ghost/assets/sodo-search/*`        | Search dev server (port 4178)       | Search widget (JS + CSS)                                               |
 | `/ghost/assets/announcement-bar/*`   | Announcement dev server (port 4177) | Announcement widget                                                    |
-| `/ghost/assets/*`                    | Admin dev server (port 5173)        | Other admin assets (fallback)                                          |
-| `/ghost/*`                           | Admin dev server (port 5173)        | Admin interface                                                        |
+| `/ghost/assets/*`                    | Admin dev server (port 5174)        | Other admin assets (fallback)                                          |
+| `/ghost/*`                           | Admin dev server (port 5174)        | Admin interface                                                        |
 | Everything else                      | Ghost backend                       | Main Ghost application                                                 |
 
 **Note:** All port numbers listed are the host ports where dev servers run by default.

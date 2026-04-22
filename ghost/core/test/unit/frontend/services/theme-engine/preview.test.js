@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+// No need for 'should' anymore
 
 const preview = require('../../../../../core/frontend/services/theme-engine/preview');
 
@@ -18,8 +19,7 @@ describe('Theme Preview', function () {
 
         let siteData = preview.handle(req, {});
 
-        siteData.should.be.an.Object().with.properties('logo');
-        should(siteData.logo).be.null();
+        assert.equal(siteData.logo, null);
     });
 
     it('can handle nulls', function () {
@@ -27,8 +27,7 @@ describe('Theme Preview', function () {
 
         let siteData = preview.handle(req, {});
 
-        siteData.should.be.an.Object().with.properties('cover_image');
-        should(siteData.cover_image).be.null();
+        assert.equal(siteData.cover_image, null);
     });
 
     it('can handle URIEncoded accent colors', function () {
@@ -36,19 +35,17 @@ describe('Theme Preview', function () {
 
         let siteData = preview.handle(req, {});
 
-        siteData.should.be.an.Object().with.properties('accent_color');
-        should(siteData.accent_color).eql('#f02d2d');
+        assert.equal(siteData.accent_color, '#f02d2d');
     });
 
     it('can handle multiple values', function () {
         previewString = 'c=%23f02d2d&icon=&logo=&cover=null';
 
         let siteData = preview.handle(req, {});
-        siteData.should.be.an.Object().with.properties('accent_color', 'icon', 'logo', 'cover_image');
 
-        should(siteData.accent_color).eql('#f02d2d');
-        should(siteData.icon).be.null();
-        should(siteData.logo).be.null();
-        should(siteData.cover_image).be.null();
+        assert.equal(siteData.accent_color, '#f02d2d');
+        assert.equal(siteData.icon, null);
+        assert.equal(siteData.logo, null);
+        assert.equal(siteData.cover_image, null);
     });
 });

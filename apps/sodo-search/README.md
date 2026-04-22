@@ -4,12 +4,17 @@
 
 ### Pre-requisites
 
-- Run `yarn` in Ghost monorepo root
-- Run `yarn` in this directory
+- Run `pnpm` in Ghost monorepo root
+- Run `pnpm` in this directory
 
-### Running via Ghost `yarn dev` in root folder
+### Running via Ghost `pnpm dev` in root folder
 
-You can automatically start the Sodo-Search dev server when developing Ghost by running Ghost (in root folder) via `yarn dev --all` or `yarn dev --search`.
+Sodo Search runs automatically when using Ghost's development command from the monorepo root:
+```bash
+pnpm dev
+```
+
+This starts all frontend apps (including Sodo Search.)
 
 ## Release
 
@@ -18,12 +23,12 @@ In either case, you need sufficient permissions to release `@tryghost` packages 
 
 ### Patch release
 
-1. Run `yarn ship` and select a patch version when prompted
+1. Run `pnpm ship` and select a patch version when prompted
 2. Merge the release commit to `main`
 
 ### Minor / major release
 
-1. Run `yarn ship` and select a minor or major version when prompted
+1. Run `pnpm ship` and select a minor or major version when prompted
 2. Merge the release commit to `main`
 3. Wait until a new version of Ghost is released
 
@@ -31,4 +36,4 @@ To use the new version of Sodo-Search in Ghost, update the version in Ghost core
 
 # Copyright & License 
 
-Copyright (c) 2013-2025 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).

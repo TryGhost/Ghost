@@ -1,3 +1,5 @@
+import {AppSettings} from '@tryghost/admin-x-framework';
+
 /**
  * Generate a frontend URL from an attribution path and site URL
  * @param attributionUrl - The path from attribution data (e.g., '/', '/tag/slug/', '/author/slug/')
@@ -113,3 +115,23 @@ export function getClickHandler(
         }
     };
 }
+
+type GetPostDestinationParams = {
+    postId?: string;
+    hasEmailData: boolean;
+    analytics?: Pick<AppSettings['analytics'], 'webAnalytics' | 'membersTrackSources'>;
+};
+
+export const getPostDestination = ({postId, hasEmailData, analytics}: GetPostDestinationParams) => {
+    if (!postId) {
+        return `/posts/analytics`;
+    }
+
+    const analyticsDisabled = !analytics?.webAnalytics && !analytics?.membersTrackSources;
+
+    if (analyticsDisabled && !hasEmailData) {
+        return `/editor/post/${postId}`;
+    }
+
+    return `/posts/analytics/${postId}`;
+};

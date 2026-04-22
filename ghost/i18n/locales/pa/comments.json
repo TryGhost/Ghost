@@ -17,6 +17,7 @@
     "Best": "ਸਭ ਤੋਂ ਵਧੀਆ",
     "Cancel": "ਰੱਦ ਕਰੋ",
     "Comment": "ਟਿੱਪਣੀ",
+    "Commenting disabled": "",
     "Complete your profile": "ਆਪਣਾ ਨਿੱਜੀ ਪੰਨਾ ਪੂਰਾ ਕਰੋ",
     "Delete": "ਮਿਟਾਓ",
     "Deleted": "ਮਿਟਾਇਆ ਗਿਆ",
@@ -66,9 +67,13 @@
     "Sign up now": "ਹੁਣੇ ਸਾਈਨ ਅੱਪ ਕਰੋ",
     "Sort by": "ਇਸ ਅਨੁਸਾਰ ਕ੍ਰਮਬੱਧ ਕਰੋ",
     "Start the conversation": "ਗੱਲਬਾਤ ਸ਼ੁਰੂ ਕਰੋ",
+    "The linked comment is no longer available.": "",
     "This comment has been hidden.": "ਇਹ ਟਿੱਪਣੀ ਛੁਪਾ ਦਿੱਤੀ ਗਈ ਹੈ।",
     "This comment has been removed.": "ਇਹ ਟਿੱਪਣੀ ਹਟਾ ਦਿੱਤੀ ਗਈ ਹੈ।",
     "Upgrade now": "ਹੁਣੇ ਅੱਪਗਰੇਡ ਕਰੋ",
+    "View in admin": "",
     "Yesterday": "ਕੱਲ੍ਹ",
+    "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "ਤੁਹਾਡੀ ਬੇਨਤੀ ਇਸ ਸਾਈਟ ਦੇ ਸੰਚਾਲਕ ਨੂੰ ਭੇਜੀ ਜਾਵੇਗੀ।"
 }

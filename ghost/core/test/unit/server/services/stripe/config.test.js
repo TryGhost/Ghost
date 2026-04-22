@@ -1,8 +1,9 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const UrlUtils = require('@tryghost/url-utils');
 
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 
 const {getConfig} = require('../../../../../core/server/services/stripe/config');
 
@@ -27,6 +28,8 @@ function createUrlUtilsMock() {
 }
 
 describe('Stripe - config', function () {
+    const ignoreCustomerConfigKey = 'stripeWebhookCustomerIgnoreList';
+
     beforeEach(function () {
         configUtils.set({
             url: 'http://domain.tld/subdir',
@@ -35,6 +38,7 @@ describe('Stripe - config', function () {
     });
 
     afterEach(async function () {
+        configUtils.set(ignoreCustomerConfigKey, null);
         await configUtils.restore();
     });
 
@@ -48,7 +52,7 @@ describe('Stripe - config', function () {
         };
         const config = getConfig({settingsHelpers, config: configUtils.config, urlUtils: {}});
 
-        should.equal(config, null);
+        assert.equal(config, null);
     });
 
     it('Includes the subdirectory in the webhookHandlerUrl', function () {
@@ -60,13 +64,24 @@ describe('Stripe - config', function () {
 
         const config = getConfig({settingsHelpers, config: configUtils.config, urlUtils: fakeUrlUtils});
 
-        should.equal(config.secretKey, 'direct_secret');
-        should.equal(config.publicKey, 'direct_publishable');
-        should.equal(config.webhookHandlerUrl, 'http://site.com/subdir/members/webhooks/stripe/');
+        assert.equal(config.secretKey, 'direct_secret');
+        assert.equal(config.publicKey, 'direct_publishable');
+        assert.equal(config.webhookHandlerUrl, 'http://site.com/subdir/members/webhooks/stripe/');
 
-        should.exist(config.checkoutSessionSuccessUrl);
-        should.exist(config.checkoutSessionCancelUrl);
-        should.exist(config.checkoutSetupSessionSuccessUrl);
-        should.exist(config.checkoutSetupSessionCancelUrl);
+        assertExists(config.checkoutSessionSuccessUrl);
+        assertExists(config.checkoutSessionCancelUrl);
+        assertExists(config.checkoutSetupSessionSuccessUrl);
+        assertExists(config.checkoutSetupSessionCancelUrl);
+        assertExists(config.billingPortalReturnUrl);
+    });
+
+    it('Parses Stripe webhook customer ignore list from config', function () {
+        configUtils.set(ignoreCustomerConfigKey, ['cust_123', ' cust_456 ']);
+        const settingsHelpers = createSettingsHelpersMock();
+        const fakeUrlUtils = createUrlUtilsMock();
+
+        const config = getConfig({settingsHelpers, config: configUtils.config, urlUtils: fakeUrlUtils});
+
+        assert.deepEqual(config.webhookCustomerIgnoreList, ['cust_123', 'cust_456']);
     });
 });

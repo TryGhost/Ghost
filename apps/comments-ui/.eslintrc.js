@@ -1,4 +1,6 @@
 /* eslint-env node */
+const tailwindConfig = `${__dirname}/tailwind.config.cjs`;
+
 module.exports = {
     root: true,
     extends: [
@@ -43,13 +45,13 @@ module.exports = {
         'react/button-has-type': 'error',
         'react/no-array-index-key': 'error',
 
-        'tailwindcss/classnames-order': ['error', {config: 'tailwind.config.cjs'}],
-        'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: 'tailwind.config.cjs'}],
-        'tailwindcss/enforces-shorthand': ['warn', {config: 'tailwind.config.cjs'}],
-        'tailwindcss/migration-from-tailwind-2': ['warn', {config: 'tailwind.config.cjs'}],
+        'tailwindcss/classnames-order': ['error', {config: tailwindConfig}],
+        'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: tailwindConfig}],
+        'tailwindcss/enforces-shorthand': ['warn', {config: tailwindConfig}],
+        'tailwindcss/migration-from-tailwind-2': ['warn', {config: tailwindConfig}],
         'tailwindcss/no-arbitrary-value': 'off',
         'tailwindcss/no-custom-classname': 'off',
-        'tailwindcss/no-contradicting-classname': ['error', {config: 'tailwind.config.cjs'}],
+        'tailwindcss/no-contradicting-classname': ['error', {config: tailwindConfig}],
 
         // This rule doesn't work correctly with TypeScript, and TypeScript has its own better version
         'no-undef': 'off'

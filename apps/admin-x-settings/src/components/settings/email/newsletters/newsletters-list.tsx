@@ -33,7 +33,7 @@ const NewsletterItemContainer: React.FC<Partial<SortableItemContainerProps>> = (
             style={style}
             onClick={showDetails}
         >
-            {(props.dragHandleAttributes || isDragging) && <TableCell className='w-10 !align-middle' >
+            {(props.dragHandleAttributes || isDragging) && <TableCell className='w-10 align-middle!' >
                 <DragIndicator className='h-10' isDragging={isDragging || false} {...props} />
             </TableCell>}
             {children}
@@ -62,16 +62,16 @@ const NewsletterItem: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
                     <span className='mt-0.5 text-xs leading-tight text-grey-700'>{newsletter.description || 'No description'}</span>
                 </div>
             </TableCell>
-            <TableCell className='hidden md:!visible md:!table-cell md:min-w-[11rem]' onClick={showDetails}>
+            <TableCell className='hidden md:visible! md:table-cell! md:min-w-[11rem]' onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
                     <span>{numberWithCommas(newsletter.count?.active_members || 0) }</span>
-                    <span className='mt-0.5 whitespace-nowrap text-xs leading-tight text-grey-700'>Subscribers</span>
+                    <span className='mt-0.5 text-xs leading-tight whitespace-nowrap text-grey-700'>Subscribers</span>
                 </div>
             </TableCell>
-            <TableCell className='hidden md:!visible md:!table-cell md:min-w-[11rem]' onClick={showDetails}>
+            <TableCell className='hidden md:visible! md:table-cell! md:min-w-[11rem]' onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
                     <span>{numberWithCommas(newsletter.count?.posts || 0)}</span>
-                    <span className='mt-0.5 whitespace-nowrap text-xs leading-tight text-grey-700'>Delivered</span>
+                    <span className='mt-0.5 text-xs leading-tight whitespace-nowrap text-grey-700'>Delivered</span>
                 </div>
             </TableCell>
         </>

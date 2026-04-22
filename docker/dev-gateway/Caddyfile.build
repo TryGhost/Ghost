@@ -1,0 +1,36 @@
+# Build mode Caddyfile
+# Used for testing pre-built images (local or registry)
+
+{
+    admin off
+}
+
+:80 {
+    log {
+        output stdout
+        format console
+    }
+
+    # Analytics API - proxy to analytics service
+    # Handles paths like /.ghost/analytics/* or /blog/.ghost/analytics/*
+    @analytics_paths path_regexp analytics_match ^(.*)/\.ghost/analytics(.*)$
+    handle @analytics_paths {
+        rewrite * {re.analytics_match.2}
+        reverse_proxy {env.ANALYTICS_PROXY_TARGET} {
+            header_up Host {host}
+            header_up X-Forwarded-Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+        }
+    }
+
+    # Everything else to Ghost
+    handle {
+        reverse_proxy {env.GHOST_BACKEND} {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
+        }
+    }
+}

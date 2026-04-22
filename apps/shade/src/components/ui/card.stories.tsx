@@ -120,7 +120,7 @@ export const KpiCardWithColorIndicator: Story = {
             <KpiCardHeader key="kpi-header" className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
                     <KpiCardHeaderLabel>
-                        <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: 'hsl(var(--chart-purple))'}}></span>
+                        <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: 'var(--chart-purple)'}}></span>
                         <Coins size={16} strokeWidth={1.5} />
                         MRR
                     </KpiCardHeaderLabel>
@@ -168,7 +168,7 @@ export const KpiCardWithHoverButton: Story = {
             <KpiCardHeader key="kpi-header" className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
                     <KpiCardHeaderLabel className='transition-all group-hover:text-foreground'>
-                        <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: 'hsl(var(--chart-teal))'}}></span>
+                        <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: 'var(--chart-teal)'}}></span>
                         <User size={16} strokeWidth={1.5} />
                         Members
                     </KpiCardHeaderLabel>

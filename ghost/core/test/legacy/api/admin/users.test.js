@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const supertest = require('supertest');
 const ObjectId = require('bson-objectid').default;
 const testUtils = require('../../../utils');
@@ -38,10 +39,10 @@ describe('User API', function () {
                             return done(err);
                         }
 
-                        should.not.exist(res.headers['x-cache-invalidate']);
+                        assert.equal(res.headers['x-cache-invalidate'], undefined);
                         const jsonResponse = res.body;
-                        should.exist(jsonResponse);
-                        should.exist(jsonResponse.errors);
+                        assertExists(jsonResponse);
+                        assertExists(jsonResponse.errors);
                         testUtils.API.checkResponseValue(jsonResponse.errors[0], [
                             'message',
                             'context',
@@ -69,10 +70,10 @@ describe('User API', function () {
                             return done(err);
                         }
 
-                        should.not.exist(res.headers['x-cache-invalidate']);
+                        assert.equal(res.headers['x-cache-invalidate'], undefined);
                         const jsonResponse = res.body;
-                        should.exist(jsonResponse);
-                        should.exist(jsonResponse.errors);
+                        assertExists(jsonResponse);
+                        assertExists(jsonResponse.errors);
                         testUtils.API.checkResponseValue(jsonResponse.errors[0], [
                             'message',
                             'context',
@@ -145,10 +146,10 @@ describe('User API', function () {
                     .expect(200);
 
                 const tags = await otherAuthorPost.related('tags').fetch();
-                should.equal(tags.length, 3);
+                assert.equal(tags.length, 3);
                 // user deletion results in a second tag being added with sort_order of 0, putting it at index 1 instead of at the end (index 2)
-                should.equal(tags.models[1].get('slug'), `hash-${otherAuthor.slug}`);
-                should.equal(tags.models[1].get('name'), `#${otherAuthor.slug}`);
+                assert.equal(tags.models[1].get('slug'), `hash-${otherAuthor.slug}`);
+                assert.equal(tags.models[1].get('name'), `#${otherAuthor.slug}`);
             });
         });
     });

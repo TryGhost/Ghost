@@ -3,13 +3,15 @@ const hbs = require('../engine');
 const urlUtils = require('../../../../shared/url-utils');
 const customThemeSettingsCache = require('../../../../shared/custom-theme-settings-cache');
 const preview = require('../preview');
+const config = require('../../../../shared/config');
 
 function updateLocalTemplateOptions(req, res, next) {
     const localTemplateOptions = hbs.getLocalTemplateOptions(res.locals);
 
     // adjust @site.url for http/https based on the incoming request
     const siteData = {
-        url: urlUtils.urlFor('home', {trailingSlash: false}, true)
+        url: urlUtils.urlFor('home', {trailingSlash: false}, true),
+        admin_url: urlUtils.urlFor('admin', true)
     };
 
     // @TODO: it would be nicer if this was proper middleware somehow...
@@ -37,11 +39,14 @@ function updateLocalTemplateOptions(req, res, next) {
         status: req.member.status
     } : null;
 
+    const enableDeduplication = config.get('optimization:getHelper:deduplication');
+
     hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {
         data: {
             member: member,
             site: siteData,
-            custom: customData
+            custom: customData,
+            ...(enableDeduplication && {_queryCache: new Map()})
         }
     }));
 

@@ -13,8 +13,8 @@ const SettingGroupHeader: React.FC<SettingGroupHeaderProps> = ({title, descripti
         <div className="flex items-start justify-between gap-4">
             {(title || description) &&
                 <div>
-                    <Heading className='font-semibold' level={5}>{title}{beta && <sup className='ml-0.5 text-[10px] font-semibold uppercase tracking-wide'>Beta</sup>}</Heading>
-                    {description && <p className="mr-5 mt-1 hidden text-pretty group-[.is-not-editing]/setting-group:!visible group-[.is-not-editing]/setting-group:!block md:!visible md:!block">{description}</p>}
+                    <Heading className='font-semibold' level={5}>{title}{beta && <sup className='ml-0.5 text-[10px] font-semibold tracking-wide uppercase'>Beta</sup>}</Heading>
+                    {description && <p className="mt-1 mr-5 hidden text-pretty group-[.is-not-editing]/setting-group:visible! group-[.is-not-editing]/setting-group:block! md:visible! md:block!">{description}</p>}
                 </div>
             }
             <div>

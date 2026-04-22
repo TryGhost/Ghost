@@ -6,7 +6,8 @@ const dbBackup = require('../../data/db/backup');
 const auth = require('../../services/auth');
 const apiMail = require('./index').mail;
 const apiSettings = require('./index').settings;
-const UsersService = require('../../services/Users');
+const {rejectAdminApiRestrictedFieldsTransformer} = require('./utils/api-filter-utils');
+const UsersService = require('../../services/users');
 const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
 const ALLOWED_INCLUDES = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
 const UNSAFE_ATTRS = ['status', 'roles'];
@@ -106,7 +107,11 @@ const controller = {
         },
         permissions: true,
         query(frame) {
-            return models.User.findPage(frame.options);
+            const options = {
+                ...frame.options,
+                mongoTransformer: rejectAdminApiRestrictedFieldsTransformer
+            };
+            return models.User.findPage(options);
         }
     },
 
@@ -116,7 +121,6 @@ const controller = {
         },
         options: [
             'include',
-            'filter',
             'fields',
             'debug'
         ],

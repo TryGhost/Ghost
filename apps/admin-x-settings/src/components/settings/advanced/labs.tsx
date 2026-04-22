@@ -57,7 +57,7 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 />
             ) : (
                 <div className='absolute inset-0 z-0 overflow-hidden opacity-70'>
-                    <img className='absolute -right-6 -top-6 dark:opacity-10' src={LabsBubbles} />
+                    <img className='absolute -top-6 -right-6 dark:opacity-10' src={LabsBubbles} />
                 </div>
             )}
         </TopLevelGroup>

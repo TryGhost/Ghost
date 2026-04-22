@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {registerHelpers} = require('../../../../../core/server/services/email-service/helpers/register-helpers');
 
 // load the i18n module

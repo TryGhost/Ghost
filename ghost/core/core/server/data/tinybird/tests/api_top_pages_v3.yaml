@@ -1,0 +1,112 @@
+
+- name: Date range
+  description: All fixture data - uses pre-aggregated daily MV
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":9}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+    {"post_uuid":"","pathname":"\/","visits":7}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: Filtered by pathname - /about/
+  description: Filtered by pathname - /about/
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&pathname=%2Fabout%2F
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+
+- name: Filtered by post_uuid - 06b1b0c9-fb53-4a15-a060-3db3fde7b1fc (/about/)
+  description: Filtered by post_uuid - 06b1b0c9-fb53-4a15-a060-3db3fde7b1fc (/about/)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&post_uuid=06b1b0c9-fb53-4a15-a060-3db3fde7b1fc
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+
+- name: Filtered by member status - paid
+  description: Filtered by member status - paid (includes comped)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&member_status=paid
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":3}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":3}
+    {"post_uuid":"","pathname":"\/","visits":2}
+
+- name: Filtered by member status - free
+  description: Filtered by member status - free
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&member_status=free
+  expected_result: |
+    {"post_uuid":"","pathname":"\/","visits":4}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":3}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":2}
+
+- name: Filtered by member status - undefined
+  description: Filtered by member status - undefined
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&member_status=undefined
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":4}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":2}
+    {"post_uuid":"","pathname":"\/","visits":1}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: Filtered by timezone - America/Los_Angeles
+  description: Filtered by timezone - America/Los_Angeles (8 hours behind UTC)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=America/Los_Angeles
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":9}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+    {"post_uuid":"","pathname":"\/","visits":7}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: Test with post_type - post
+  description: Test with post_type - post
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&post_type=post
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":9}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: Test with post_type - page
+  description: Test with post_type - page (includes empty post_type)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&post_type=page
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+    {"post_uuid":"","pathname":"\/","visits":7}
+
+- name: Test with multiple filters combined - member_status and pathname
+  description: Test combining member_status and pathname filters
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&member_status=paid&pathname=%2Fabout%2F
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":3}
+
+- name: Test with multiple filters combined - post_type and member_status
+  description: Test combining post_type and member_status filters
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&post_type=post&member_status=undefined
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":4}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: Test pagination - skip
+  description: Test pagination with skip parameter
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&skip=1&limit=2
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+    {"post_uuid":"","pathname":"\/","visits":7}
+
+- name: Test pagination - limit
+  description: Test pagination with limit parameter
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&limit=2
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":9}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":8}
+
+- name: Single day query
+  description: Test querying a single day
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-04&date_to=2100-01-04&timezone=Etc/UTC
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":3}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":2}
+    {"post_uuid":"","pathname":"\/","visits":1}
+
+- name: Partial date range
+  description: Test querying a partial date range (first 3 days)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-03&timezone=Etc/UTC
+  expected_result: |
+    {"post_uuid":"","pathname":"\/","visits":5}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":3}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":3}

@@ -1,0 +1,17 @@
+<GhTokenInput
+    @options={{this.mergedOptions}}
+    @selected={{this.selectedOptions}}
+    @disabled={{@disabled}}
+    @optionsComponent={{component "power-select-options-with-scroll" lastReached=(perform this.loadMoreLabelsTask)}}
+    @allowCreation={{false}}
+    @search={{if this.useServerSideSearch (perform this.searchTask) null}}
+    @renderInPlace={{this.renderInPlace}}
+    @onChange={{@onChange}}
+    @class={{@class}}
+    @dropdownClass={{@dropdownClass}}
+    @searchMessage={{@searchMessage}}
+    @placeholder={{@placeholder}}
+    as |option|
+>
+    {{option.name}}
+</GhTokenInput>

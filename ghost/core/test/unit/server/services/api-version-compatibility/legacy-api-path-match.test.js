@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 const legacyApiPathMatch = require('../../../../../core/server/services/api-version-compatibility/legacy-api-path-match');
 

@@ -17,6 +17,7 @@
     "Best": "",
     "Cancel": "Ακύρωση",
     "Comment": "Σχόλιο",
+    "Commenting disabled": "",
     "Complete your profile": "Ολοκληρώστε το προφίλ σας",
     "Delete": "Διαγραφή",
     "Deleted": "",
@@ -66,9 +67,13 @@
     "Sign up now": "Εγγραφείτε τώρα",
     "Sort by": "",
     "Start the conversation": "Ξεκινήστε τη συζήτηση",
+    "The linked comment is no longer available.": "",
     "This comment has been hidden.": "Αυτό το σχόλιο έχει κρυφτεί.",
     "This comment has been removed.": "Αυτό το σχόλιο έχει αφαιρεθεί.",
     "Upgrade now": "Αναβάθμιση τώρα",
+    "View in admin": "",
     "Yesterday": "Χθες",
+    "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "Το αίτημά σας θα σταλεί στον ιδιοκτήτη αυτού του ιστότοπου."
 }

@@ -58,7 +58,7 @@ describe('Queue request middleware', function () {
         mw(req, res, next);
 
         assert(queue.calledOnce, 'queue should be called once');
-        assert(queue.calledWith(req, res, next), 'queue should be called with the correct arguments');
+        sinon.assert.calledWith(queue, req, res, next);
     });
 
     it('should record the queue depth on a request', function () {

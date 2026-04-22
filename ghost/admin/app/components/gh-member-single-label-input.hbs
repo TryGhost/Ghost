@@ -1,11 +1,18 @@
-<span class="gh-select">
-    <OneWaySelect
-        @options={{this.availableLabels}}
-        @optionValuePath="id"
-        @optionLabelPath="name"
-        @optionTargetPath="id"
-        @update={{this.updateLabel}}
-        data-testid="label-select"
-    />
-    {{svg-jar "arrow-down-small"}}
-</span>
+<PowerSelect
+    @selected={{this._selectedLabel}}
+    @options={{this.availableLabels}}
+    @searchEnabled={{true}}
+    @search={{if this.useServerSideSearch (perform this.searchLabelsTask) null}}
+    @searchField="name"
+    @onChange={{this.updateLabel}}
+    @optionsComponent={{component "power-select-options-with-scroll" lastReached=(perform this.loadMoreLabelsTask)}}
+    @registerAPI={{this.registerPowerSelectAPI}}
+    @searchPlaceholder="Search labels..."
+    @dropdownClass="gh-resource-select-dropdown"
+    @renderInPlace={{true}}
+    @triggerId={{@triggerId}}
+    data-testid="label-select"
+    as |label|
+>
+    {{label.name}}
+</PowerSelect>

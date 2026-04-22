@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const extraAttrsUtil = require('../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/extra-attrs');
 
@@ -27,7 +27,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
             const attrs = {};
 
             extraAttrsUtil.forPost(options, model, attrs);
-            assert.ok(modelGetStub.called);
+            sinon.assert.called(modelGetStub);
             assert.equal(attrs.excerpt, new Array(501).join('A'));
         });
 
@@ -35,7 +35,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
             modelGetStub.withArgs('plaintext').returns(null);
             const attrs = {};
             extraAttrsUtil.forPost(options, model, attrs);
-            assert.ok(modelGetStub.called);
+            sinon.assert.called(modelGetStub);
             assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'excerpt'), true);
             assert.equal(attrs.excerpt, null);
         });
@@ -45,7 +45,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
             extraAttrsUtil.forPost({
                 columns: ['plaintext']
             }, model, attrs);
-            assert.ok(modelGetStub.called);
+            sinon.assert.called(modelGetStub);
             assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'plaintext'), true);
         });
 
@@ -54,14 +54,14 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
             extraAttrsUtil.forPost({
                 formats: ['plaintext']
             }, model, attrs);
-            assert.ok(modelGetStub.called);
+            sinon.assert.called(modelGetStub);
             assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'plaintext'), true);
         });
 
         it('has excerpt when no columns are passed', function () {
             const attrs = {};
             extraAttrsUtil.forPost({}, model, attrs);
-            assert.ok(modelGetStub.called);
+            sinon.assert.called(modelGetStub);
             assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'excerpt'), true);
         });
 

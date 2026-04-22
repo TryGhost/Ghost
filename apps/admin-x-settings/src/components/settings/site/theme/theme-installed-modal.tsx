@@ -11,20 +11,20 @@ export const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
     return <ListItem
         title={
             <>
-                <div className={`${problem.level === 'error' ? 'before:bg-red' : 'before:bg-yellow'} relative px-4 text-sm before:absolute before:left-0 before:top-1.5 before:block before:size-2 before:rounded-full before:content-['']`}>
+                <div className={`${problem.level === 'error' ? 'before:bg-red' : 'before:bg-yellow'} relative px-4 text-sm before:absolute before:top-1.5 before:left-0 before:block before:size-2 before:rounded-full before:content-['']`}>
                     <strong>{problem.level === 'error' ? 'Error: ' : 'Warning: '}</strong>
                     <span dangerouslySetInnerHTML={{__html: problem.rule}} />
-                    <div className='absolute -right-4 top-1'>
+                    <div className='absolute top-1 -right-4'>
                         <Button color="green" icon={isExpanded ? 'chevron-down' : 'chevron-right'} iconColorClass='text-grey-700' size='sm' link onClick={() => setExpanded(!isExpanded)} />
                     </div>
                 </div>
                 {
                     isExpanded ?
-                        <div className='mt-2 px-4 text-[13px] leading-8'>
+                        <div className='mt-2 px-4 text-[13px]'>
                             <div dangerouslySetInnerHTML={{__html: problem.details}} className='mb-4' />
                             <Heading level={6}>Affected files:</Heading>
                             <ul className='mt-1'>
-                                {problem.failures.map(failure => <li><code>{failure.ref}</code>{failure.message ? `: ${failure.message}` : ''}</li>)}
+                                {problem.failures.map(failure => <li key={failure.ref}><code>{failure.ref}</code>{failure.message ? `: ${failure.message}` : ''}</li>)}
                             </ul>
                         </div> :
                         null
@@ -46,11 +46,12 @@ const ThemeInstalledModal: React.FC<{
     const {refreshActiveThemeData} = useCustomFonts();
     const handleError = useHandleError();
 
+    /* eslint-disable react/no-array-index-key */
     let errorPrompt = null;
-    if (installedTheme && installedTheme.gscan_errors) {
+    if (installedTheme && installedTheme.errors) {
         errorPrompt = <div className="mt-6">
             <List hint={<>Highly recommended to fix, functionality <strong>could</strong> be restricted</>} title="Errors">
-                {installedTheme.gscan_errors?.map(error => <ThemeProblemView problem={error} />)}
+                {installedTheme.errors?.map((error, index) => <ThemeProblemView key={index} problem={error} />)}
             </List>
         </div>;
     }
@@ -59,12 +60,13 @@ const ThemeInstalledModal: React.FC<{
     if (installedTheme && installedTheme.warnings) {
         warningPrompt = <div className="mt-10">
             <List title="Warnings">
-                {installedTheme.warnings?.map(warning => <ThemeProblemView problem={warning} />)}
+                {installedTheme.warnings?.map((warning, index) => <ThemeProblemView key={index} problem={warning} />)}
             </List>
         </div>;
     }
+    /* eslint-enable react/no-array-index-key */
 
-    let okLabel = `Activate${installedTheme.gscan_errors?.length ? ' with errors' : ''}`;
+    let okLabel = `Activate${installedTheme.errors?.length ? ' with errors' : ''}`;
 
     if (installedTheme.active) {
         okLabel = 'OK';

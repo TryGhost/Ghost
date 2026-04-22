@@ -15,7 +15,7 @@ const messages = {
 
 /**
  * Takes a YAML formatted string and parses it and returns a JSON Object
- * @param {String} file the YAML file utf8 encoded
+ * @param {string} file the YAML file utf8 encoded
  * @returns {Object} parsed
  */
 module.exports = function parseYaml(file) {

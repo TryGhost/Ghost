@@ -93,7 +93,7 @@ export const Text: Story = {
                 <InputGroupAddon>
                     <InputGroupText>https://</InputGroupText>
                 </InputGroupAddon>
-                <InputGroupInput className="!pl-0.5" placeholder="example.com" />
+                <InputGroupInput className="pl-0.5!" placeholder="example.com" />
                 <InputGroupAddon align="inline-end">
                     <InputGroupText>.com</InputGroupText>
                 </InputGroupAddon>

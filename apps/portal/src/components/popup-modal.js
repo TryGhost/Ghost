@@ -185,6 +185,11 @@ class PopupContent extends React.Component {
             }
         }
 
+        if (page === 'gift') {
+            pageClass += ' full-size';
+            popupSize = 'full';
+        }
+
         const freeProduct = hasFreeProductPrice({site});
         if ((freeProduct && noOfProducts > 2) || (!freeProduct && noOfProducts > 1)) {
             if (page === 'accountPlan') {
@@ -227,9 +232,11 @@ class PopupContent extends React.Component {
                             : '')}
                     </div>
                 </div>
-                <div className={'gh-portal-powered outside ' + (hasMode(['preview']) ? 'hidden ' : '') + pageClass}>
-                    <PoweredBy />
-                </div>
+                {page !== 'share' && (
+                    <div className={'gh-portal-powered outside ' + (hasMode(['preview']) ? 'hidden ' : '') + pageClass}>
+                        <PoweredBy />
+                    </div>
+                )}
             </>
         );
     }
@@ -265,13 +272,11 @@ export default class PopupModal extends React.Component {
     }
 
     renderFrameStyles() {
-        const {site} = this.context;
+        const {site, brandColor} = this.context;
         const FrameStyle = getFrameStyles({site});
-        const styles = `
-            :root {
-                --brandcolor: ${this.context.brandColor}
-            }
-        ` + FrameStyle;
+        const styles = brandColor
+            ? `:root { --brandcolor: ${brandColor} }` + FrameStyle
+            : FrameStyle;
         return (
             <>
                 <style dangerouslySetInnerHTML={{__html: styles}} />

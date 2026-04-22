@@ -1,10 +1,10 @@
-require('should');
+const assert = require('node:assert/strict');
 
 const sinon = require('sinon');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 
-const EmailAnalyticsService = require('../../../../../core/server/services/email-analytics/EmailAnalyticsService');
-const EventProcessingResult = require('../../../../../core/server/services/email-analytics/EventProcessingResult');
+const EmailAnalyticsService = require('../../../../../core/server/services/email-analytics/email-analytics-service');
+const EventProcessingResult = require('../../../../../core/server/services/email-analytics/event-processing-result');
 
 /**
  * Create a mock config object that reads from configUtils
@@ -32,7 +32,7 @@ describe('EmailAnalyticsService', function () {
             // these are null because we're not running them before calling this
             const service = new EmailAnalyticsService({});
             const result = service.getStatus();
-            result.should.deepEqual({
+            assert.deepEqual(result, {
                 latest: {
                     jobName: 'email-analytics-latest-others',
                     running: false
@@ -63,7 +63,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             const result = await service.getLastNonOpenedEventTimestamp();
-            result.should.eql(new Date(1));
+            assert.deepEqual(result, new Date(1));
         });
 
         it('returns the fallback if nothing is found', async function () {
@@ -75,7 +75,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             const result = await service.getLastNonOpenedEventTimestamp();
-            result.should.eql(new Date(Date.now() - 30 * 60 * 1000)); // should be 30 mins prior
+            assert.deepEqual(result, new Date(Date.now() - 30 * 60 * 1000)); // should be 30 mins prior
         });
     });
 
@@ -89,7 +89,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             const result = await service.getLastOpenedEventTimestamp();
-            result.should.eql(new Date(1));
+            assert.deepEqual(result, new Date(1));
         });
 
         it('returns the fallback if nothing is found', async function () {
@@ -101,7 +101,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             const result = await service.getLastOpenedEventTimestamp();
-            result.should.eql(new Date(Date.now() - 30 * 60 * 1000)); // should be 30 mins prior
+            assert.deepEqual(result, new Date(Date.now() - 30 * 60 * 1000)); // should be 30 mins prior
         });
     });
 
@@ -124,8 +124,8 @@ describe('EmailAnalyticsService', function () {
                     }]
                 });
                 await service.fetchLatestOpenedEvents();
-                fetchLatestSpy.calledOnce.should.be.true();
-                fetchLatestSpy.getCall(0).args[1].should.have.property('events', ['opened']);
+                sinon.assert.calledOnce(fetchLatestSpy);
+                assert.deepEqual(fetchLatestSpy.getCall(0).args[1].events, ['opened']);
             });
 
             it('quits if the end is before the begin', async function () {
@@ -142,7 +142,7 @@ describe('EmailAnalyticsService', function () {
                     }]
                 });
                 await service.fetchLatestOpenedEvents();
-                fetchLatestSpy.calledOnce.should.be.false();
+                sinon.assert.notCalled(fetchLatestSpy);
             });
         });
 
@@ -161,8 +161,8 @@ describe('EmailAnalyticsService', function () {
                     }]
                 });
                 await service.fetchLatestNonOpenedEvents();
-                fetchLatestSpy.calledOnce.should.be.true();
-                fetchLatestSpy.getCall(0).args[1].should.have.property('events', ['delivered', 'failed', 'unsubscribed', 'complained']);
+                sinon.assert.calledOnce(fetchLatestSpy);
+                assert.deepEqual(fetchLatestSpy.getCall(0).args[1].events, ['delivered', 'failed', 'unsubscribed', 'complained']);
             });
 
             it('quits if the end is before the begin', async function () {
@@ -179,7 +179,7 @@ describe('EmailAnalyticsService', function () {
                     }]
                 });
                 await service.fetchLatestNonOpenedEvents();
-                fetchLatestSpy.calledOnce.should.be.false();
+                sinon.assert.notCalled(fetchLatestSpy);
             });
         });
         describe('fetchScheduled', function () {
@@ -188,15 +188,18 @@ describe('EmailAnalyticsService', function () {
             let aggregateStatsStub;
             let setJobTimestampStub;
             let setJobStatusStub;
+            let setJobMetadataStub;
 
             beforeEach(function () {
                 setJobTimestampStub = sinon.stub().resolves();
                 setJobStatusStub = sinon.stub().resolves();
+                setJobMetadataStub = sinon.stub().resolves();
                 service = new EmailAnalyticsService({
                     config: createMockConfig(),
                     queries: {
                         setJobTimestamp: setJobTimestampStub,
-                        setJobStatus: setJobStatusStub
+                        setJobStatus: setJobStatusStub,
+                        setJobMetadata: setJobMetadataStub
                     },
                     providers: [{
                         fetchLatest: (fn) => {
@@ -206,7 +209,7 @@ describe('EmailAnalyticsService', function () {
                     }]
                 });
                 processEventBatchStub = sinon.stub(service, 'processEventBatch').resolves();
-                aggregateStatsStub = sinon.stub(service, 'aggregateStats').resolves();
+                aggregateStatsStub = sinon.stub(service, 'aggregateStats').resolves({emailAggregationTimeMs: 0, memberAggregationTimeMs: 0});
             });
 
             afterEach(function () {
@@ -215,49 +218,79 @@ describe('EmailAnalyticsService', function () {
 
             it('returns 0 when nothing is scheduled', async function () {
                 const result = await service.fetchScheduled();
-                result.eventCount.should.equal(0);
-                processEventBatchStub.called.should.be.false();
-                aggregateStatsStub.called.should.be.false();
+                assert.equal(result.eventCount, 0);
+                sinon.assert.notCalled(processEventBatchStub);
+                sinon.assert.notCalled(aggregateStatsStub);
             });
 
             it('returns 0 when fetch is canceled', async function () {
-                service.schedule({
+                await service.schedule({
                     begin: new Date(2023, 0, 1),
                     end: new Date(2023, 0, 2)
                 });
                 service.cancelScheduled();
                 const result = await service.fetchScheduled();
-                result.eventCount.should.equal(0);
-                processEventBatchStub.called.should.be.false();
-                aggregateStatsStub.called.should.be.false();
+                assert.equal(result.eventCount, 0);
+                sinon.assert.notCalled(processEventBatchStub);
+                sinon.assert.notCalled(aggregateStatsStub);
             });
 
             it('fetches events with correct parameters', async function () {
-                service.schedule({
+                await service.schedule({
                     begin: new Date(2023, 0, 1),
                     end: new Date(2023, 0, 2)
                 });
 
                 const result = await service.fetchScheduled({maxEvents: 100});
 
-                result.eventCount.should.equal(10);
-                setJobStatusStub.calledOnce.should.be.true();
-                processEventBatchStub.calledOnce.should.be.true();
+                assert.equal(result.eventCount, 10);
+                sinon.assert.calledOnce(setJobStatusStub);
+                sinon.assert.calledOnce(processEventBatchStub);
             });
 
             it('bails when end date is before begin date', async function () {
-                service.schedule({
+                await service.schedule({
                     begin: new Date(2023, 0, 2),
                     end: new Date(2023, 0, 1)
                 });
                 const result = await service.fetchScheduled({maxEvents: 100});
-                result.eventCount.should.equal(0);
+                assert.equal(result.eventCount, 0);
             });
 
             it('resets fetchScheduledData when no events are fetched', async function () {
                 service = new EmailAnalyticsService({
                     config: createMockConfig(),
                     queries: {
+                        setJobTimestamp: sinon.stub().resolves(),
+                        setJobStatus: sinon.stub().resolves(),
+                        setJobMetadata: sinon.stub().resolves()
+                    },
+                    providers: [{
+                        fetchLatest: (fn) => {
+                            fn([]);
+                        }
+                    }]
+                });
+
+                await service.schedule({
+                    begin: new Date(2023, 0, 1),
+                    end: new Date(2023, 0, 2)
+                });
+                const result = await service.fetchScheduled({maxEvents: 100});
+                assert.equal(result.eventCount, 0);
+            });
+        });
+
+        describe('schedule persistence', function () {
+            let setJobMetadataStub;
+            let service;
+
+            beforeEach(function () {
+                setJobMetadataStub = sinon.stub().resolves();
+                service = new EmailAnalyticsService({
+                    config: createMockConfig(),
+                    queries: {
+                        setJobMetadata: setJobMetadataStub,
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves()
                     },
@@ -267,13 +300,192 @@ describe('EmailAnalyticsService', function () {
                         }
                     }]
                 });
+            });
 
-                service.schedule({
+            afterEach(function () {
+                sinon.restore();
+            });
+
+            it('persists metadata when scheduling', async function () {
+                const begin = new Date(2023, 0, 1);
+                const end = new Date(2023, 0, 2);
+                await service.schedule({begin, end});
+
+                sinon.assert.calledOnce(setJobMetadataStub);
+                sinon.assert.calledWith(setJobMetadataStub, 'email-analytics-scheduled', {
+                    begin: begin.toISOString(),
+                    end: end.toISOString()
+                });
+            });
+
+            it('clears metadata when canceling a non-running schedule', async function () {
+                await service.schedule({
                     begin: new Date(2023, 0, 1),
                     end: new Date(2023, 0, 2)
                 });
-                const result = await service.fetchScheduled({maxEvents: 100});
-                result.eventCount.should.equal(0);
+                setJobMetadataStub.resetHistory();
+
+                service.cancelScheduled();
+
+                sinon.assert.calledOnce(setJobMetadataStub);
+                sinon.assert.calledWith(setJobMetadataStub, 'email-analytics-scheduled', null);
+            });
+
+            it('clears metadata when fetchScheduled completes with no events', async function () {
+                await service.schedule({
+                    begin: new Date(2023, 0, 1),
+                    end: new Date(2023, 0, 2)
+                });
+                setJobMetadataStub.resetHistory();
+
+                await service.fetchScheduled({maxEvents: 100});
+
+                sinon.assert.calledOnce(setJobMetadataStub);
+                sinon.assert.calledWith(setJobMetadataStub, 'email-analytics-scheduled', null);
+            });
+
+            it('clears metadata when fetchScheduled finds end before begin', async function () {
+                await service.schedule({
+                    begin: new Date(2023, 0, 2),
+                    end: new Date(2023, 0, 1)
+                });
+                setJobMetadataStub.resetHistory();
+
+                await service.fetchScheduled({maxEvents: 100});
+
+                sinon.assert.calledOnce(setJobMetadataStub);
+                sinon.assert.calledWith(setJobMetadataStub, 'email-analytics-scheduled', null);
+            });
+
+            it('clears metadata when cancel is called on a non-running schedule', async function () {
+                await service.schedule({
+                    begin: new Date(2023, 0, 1),
+                    end: new Date(2023, 0, 2)
+                });
+                setJobMetadataStub.resetHistory();
+
+                service.cancelScheduled();
+
+                // cancelScheduled on non-running calls #clearScheduledData which clears metadata
+                sinon.assert.calledOnce(setJobMetadataStub);
+                sinon.assert.calledWith(setJobMetadataStub, 'email-analytics-scheduled', null);
+
+                // Subsequent fetchScheduled should be a no-op (nothing scheduled)
+                const result = await service.fetchScheduled();
+                assert.equal(result.eventCount, 0);
+            });
+        });
+
+        describe('restoreScheduled', function () {
+            afterEach(function () {
+                sinon.restore();
+            });
+
+            it('restores schedule from persisted metadata', async function () {
+                const begin = new Date(2023, 0, 1);
+                const end = new Date(2023, 0, 8);
+                const finishedAt = new Date(2023, 0, 3);
+
+                const service = new EmailAnalyticsService({
+                    config: createMockConfig(),
+                    queries: {
+                        getJobData: sinon.stub().resolves({
+                            finished_at: finishedAt,
+                            started_at: null,
+                            metadata: JSON.stringify({
+                                begin: begin.toISOString(),
+                                end: end.toISOString()
+                            })
+                        }),
+                        setJobMetadata: sinon.stub().resolves()
+                    }
+                });
+
+                await service.restoreScheduled();
+
+                const status = service.getStatus();
+                assert.deepEqual(status.scheduled.schedule, {begin, end});
+                assert.deepEqual(status.scheduled.lastEventTimestamp, finishedAt);
+                assert.equal(status.scheduled.running, false);
+            });
+
+            it('does nothing when no job data exists', async function () {
+                const service = new EmailAnalyticsService({
+                    config: createMockConfig(),
+                    queries: {
+                        getJobData: sinon.stub().resolves(null),
+                        setJobMetadata: sinon.stub().resolves()
+                    }
+                });
+
+                await service.restoreScheduled();
+
+                const status = service.getStatus();
+                assert.equal(status.scheduled.schedule, undefined);
+            });
+
+            it('does nothing when metadata is null', async function () {
+                const service = new EmailAnalyticsService({
+                    config: createMockConfig(),
+                    queries: {
+                        getJobData: sinon.stub().resolves({
+                            finished_at: null,
+                            started_at: null,
+                            metadata: null
+                        }),
+                        setJobMetadata: sinon.stub().resolves()
+                    }
+                });
+
+                await service.restoreScheduled();
+
+                const status = service.getStatus();
+                assert.equal(status.scheduled.schedule, undefined);
+            });
+
+            it('restores without resume cursor when finished_at is null', async function () {
+                const begin = new Date(2023, 0, 1);
+                const end = new Date(2023, 0, 8);
+
+                const service = new EmailAnalyticsService({
+                    config: createMockConfig(),
+                    queries: {
+                        getJobData: sinon.stub().resolves({
+                            finished_at: null,
+                            started_at: null,
+                            metadata: JSON.stringify({
+                                begin: begin.toISOString(),
+                                end: end.toISOString()
+                            })
+                        }),
+                        setJobMetadata: sinon.stub().resolves()
+                    }
+                });
+
+                await service.restoreScheduled();
+
+                const status = service.getStatus();
+                assert.deepEqual(status.scheduled.schedule, {begin, end});
+                assert.equal(status.scheduled.lastEventTimestamp, undefined);
+            });
+
+            it('handles corrupt metadata gracefully', async function () {
+                const service = new EmailAnalyticsService({
+                    config: createMockConfig(),
+                    queries: {
+                        getJobData: sinon.stub().resolves({
+                            finished_at: null,
+                            started_at: null,
+                            metadata: 'not-valid-json'
+                        }),
+                        setJobMetadata: sinon.stub().resolves()
+                    }
+                });
+
+                await service.restoreScheduled();
+
+                const status = service.getStatus();
+                assert.equal(status.scheduled.schedule, undefined);
             });
         });
 
@@ -292,7 +504,7 @@ describe('EmailAnalyticsService', function () {
                     }]
                 });
                 await service.fetchMissing();
-                fetchLatestSpy.calledOnce.should.be.true();
+                sinon.assert.calledOnce(fetchLatestSpy);
             });
         });
     });
@@ -383,10 +595,10 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(3)
                         }], result, fetchData);
 
-                        eventProcessor.handleDelivered.callCount.should.eql(2);
-                        eventProcessor.handleOpened.callCount.should.eql(1);
+                        sinon.assert.calledTwice(eventProcessor.handleDelivered);
+                        sinon.assert.calledOnce(eventProcessor.handleOpened);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             delivered: 2,
                             opened: 1,
                             unprocessable: 0,
@@ -394,7 +606,7 @@ describe('EmailAnalyticsService', function () {
                             memberIds: [1]
                         }));
 
-                        fetchData.should.deepEqual({
+                        assert.deepEqual(fetchData, {
                             lastEventTimestamp: new Date(3)
                         });
                     });
@@ -414,9 +626,9 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        eventProcessor.handleOpened.calledOnce.should.be.true();
+                        sinon.assert.calledOnce(eventProcessor.handleOpened);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             delivered: 0,
                             opened: 1,
                             unprocessable: 0,
@@ -424,7 +636,7 @@ describe('EmailAnalyticsService', function () {
                             memberIds: [1]
                         }));
 
-                        fetchData.should.deepEqual({
+                        assert.deepEqual(fetchData, {
                             lastEventTimestamp: new Date(1)
                         });
                     });
@@ -444,9 +656,9 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        eventProcessor.handleDelivered.calledOnce.should.be.true();
+                        sinon.assert.calledOnce(eventProcessor.handleDelivered);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             delivered: 1,
                             opened: 0,
                             unprocessable: 0,
@@ -454,7 +666,7 @@ describe('EmailAnalyticsService', function () {
                             memberIds: [1]
                         }));
 
-                        fetchData.should.deepEqual({
+                        assert.deepEqual(fetchData, {
                             lastEventTimestamp: new Date(1)
                         });
                     });
@@ -475,15 +687,15 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        eventProcessor.handlePermanentFailed.calledOnce.should.be.true();
+                        sinon.assert.calledOnce(eventProcessor.handlePermanentFailed);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             permanentFailed: 1,
                             emailIds: [1],
                             memberIds: [1]
                         }));
 
-                        fetchData.should.deepEqual({
+                        assert.deepEqual(fetchData, {
                             lastEventTimestamp: new Date(1)
                         });
                     });
@@ -504,15 +716,15 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        eventProcessor.handleTemporaryFailed.calledOnce.should.be.true();
+                        sinon.assert.calledOnce(eventProcessor.handleTemporaryFailed);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             temporaryFailed: 1,
                             emailIds: [1],
                             memberIds: [1]
                         }));
 
-                        fetchData.should.deepEqual({
+                        assert.deepEqual(fetchData, {
                             lastEventTimestamp: new Date(1)
                         });
                     });
@@ -532,17 +744,17 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        eventProcessor.handleUnsubscribed.calledOnce.should.be.true();
-                        eventProcessor.handleDelivered.called.should.be.false();
-                        eventProcessor.handleOpened.called.should.be.false();
+                        sinon.assert.calledOnce(eventProcessor.handleUnsubscribed);
+                        sinon.assert.notCalled(eventProcessor.handleDelivered);
+                        sinon.assert.notCalled(eventProcessor.handleOpened);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             unsubscribed: 1,
                             emailIds: [1],
                             memberIds: [1]
                         }));
 
-                        fetchData.should.deepEqual({
+                        assert.deepEqual(fetchData, {
                             lastEventTimestamp: new Date(1)
                         });
                     });
@@ -562,17 +774,17 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        eventProcessor.handleComplained.calledOnce.should.be.true();
-                        eventProcessor.handleDelivered.called.should.be.false();
-                        eventProcessor.handleOpened.called.should.be.false();
+                        sinon.assert.calledOnce(eventProcessor.handleComplained);
+                        sinon.assert.notCalled(eventProcessor.handleDelivered);
+                        sinon.assert.notCalled(eventProcessor.handleOpened);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             complained: 1,
                             emailIds: [1],
                             memberIds: [1]
                         }));
 
-                        fetchData.should.deepEqual({
+                        assert.deepEqual(fetchData, {
                             lastEventTimestamp: new Date(1)
                         });
                     });
@@ -592,14 +804,14 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        eventProcessor.handleDelivered.called.should.be.false();
-                        eventProcessor.handleOpened.called.should.be.false();
+                        sinon.assert.notCalled(eventProcessor.handleDelivered);
+                        sinon.assert.notCalled(eventProcessor.handleOpened);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             unhandled: 1
                         }));
 
-                        fetchData.should.deepEqual({
+                        assert.deepEqual(fetchData, {
                             lastEventTimestamp: new Date(1)
                         });
                     });
@@ -634,7 +846,7 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             unprocessable: 1
                         }));
                     });
@@ -654,7 +866,7 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             unprocessable: 1
                         }));
                     });
@@ -675,7 +887,7 @@ describe('EmailAnalyticsService', function () {
                             severity: 'permanent'
                         }], result, fetchData);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             unprocessable: 1
                         }));
                     });
@@ -696,7 +908,7 @@ describe('EmailAnalyticsService', function () {
                             severity: 'temporary'
                         }], result, fetchData);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             unprocessable: 1
                         }));
                     });
@@ -716,7 +928,7 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             unprocessable: 1
                         }));
                     });
@@ -736,7 +948,7 @@ describe('EmailAnalyticsService', function () {
                             timestamp: new Date(1)
                         }], result, fetchData);
 
-                        result.should.deepEqual(new EventProcessingResult({
+                        assert.deepEqual(result, new EventProcessingResult({
                             unprocessable: 1
                         }));
                     });
@@ -764,12 +976,12 @@ describe('EmailAnalyticsService', function () {
 
                     if (batchProcessing) {
                         // In batched mode, should call batchGetRecipients and flushBatchedUpdates
-                        eventProcessor.batchGetRecipients.calledOnce.should.be.true();
-                        eventProcessor.flushBatchedUpdates.calledOnce.should.be.true();
+                        sinon.assert.calledOnce(eventProcessor.batchGetRecipients);
+                        sinon.assert.calledOnce(eventProcessor.flushBatchedUpdates);
                     } else {
                         // In sequential mode, should not call batch methods
-                        eventProcessor.batchGetRecipients.called.should.be.false();
-                        eventProcessor.flushBatchedUpdates.called.should.be.false();
+                        sinon.assert.notCalled(eventProcessor.batchGetRecipients);
+                        sinon.assert.notCalled(eventProcessor.flushBatchedUpdates);
                     }
                 });
             });
@@ -805,16 +1017,16 @@ describe('EmailAnalyticsService', function () {
                     memberIds: ['m-1', 'm-2']
                 });
 
-                service.queries.aggregateEmailStats.calledTwice.should.be.true();
-                service.queries.aggregateEmailStats.calledWith('e-1').should.be.true();
-                service.queries.aggregateEmailStats.calledWith('e-2').should.be.true();
+                sinon.assert.calledTwice(service.queries.aggregateEmailStats);
+                sinon.assert.calledWith(service.queries.aggregateEmailStats, 'e-1');
+                sinon.assert.calledWith(service.queries.aggregateEmailStats, 'e-2');
 
                 // In batched mode, aggregateMemberStatsBatch should be called
-                service.queries.aggregateMemberStatsBatch.calledOnce.should.be.true();
-                service.queries.aggregateMemberStatsBatch.calledWith(['m-1', 'm-2']).should.be.true();
+                sinon.assert.calledOnce(service.queries.aggregateMemberStatsBatch);
+                sinon.assert.calledWith(service.queries.aggregateMemberStatsBatch, ['m-1', 'm-2']);
 
                 // Sequential method should not be called
-                service.queries.aggregateMemberStats.called.should.be.false();
+                sinon.assert.notCalled(service.queries.aggregateMemberStats);
             });
         });
 
@@ -843,17 +1055,17 @@ describe('EmailAnalyticsService', function () {
                     memberIds: ['m-1', 'm-2']
                 });
 
-                service.queries.aggregateEmailStats.calledTwice.should.be.true();
-                service.queries.aggregateEmailStats.calledWith('e-1').should.be.true();
-                service.queries.aggregateEmailStats.calledWith('e-2').should.be.true();
+                sinon.assert.calledTwice(service.queries.aggregateEmailStats);
+                sinon.assert.calledWith(service.queries.aggregateEmailStats, 'e-1');
+                sinon.assert.calledWith(service.queries.aggregateEmailStats, 'e-2');
 
                 // In sequential mode, aggregateMemberStats should be called for each member
-                service.queries.aggregateMemberStats.calledTwice.should.be.true();
-                service.queries.aggregateMemberStats.calledWith('m-1').should.be.true();
-                service.queries.aggregateMemberStats.calledWith('m-2').should.be.true();
+                sinon.assert.calledTwice(service.queries.aggregateMemberStats);
+                sinon.assert.calledWith(service.queries.aggregateMemberStats, 'm-1');
+                sinon.assert.calledWith(service.queries.aggregateMemberStats, 'm-2');
 
                 // Batch method should not be called
-                service.queries.aggregateMemberStatsBatch.called.should.be.false();
+                sinon.assert.notCalled(service.queries.aggregateMemberStatsBatch);
             });
         });
     });
@@ -869,8 +1081,8 @@ describe('EmailAnalyticsService', function () {
 
             await service.aggregateEmailStats('memberId');
 
-            service.queries.aggregateEmailStats.calledOnce.should.be.true();
-            service.queries.aggregateEmailStats.calledWith('memberId').should.be.true;
+            sinon.assert.calledOnce(service.queries.aggregateEmailStats);
+            sinon.assert.calledWith(service.queries.aggregateEmailStats, 'memberId');
         });
     });
 
@@ -885,8 +1097,8 @@ describe('EmailAnalyticsService', function () {
 
             await service.aggregateMemberStats('memberId');
 
-            service.queries.aggregateMemberStats.calledOnce.should.be.true();
-            service.queries.aggregateMemberStats.calledWith('memberId').should.be.true;
+            sinon.assert.calledOnce(service.queries.aggregateMemberStats);
+            sinon.assert.calledWith(service.queries.aggregateMemberStats, 'memberId');
         });
     });
 });

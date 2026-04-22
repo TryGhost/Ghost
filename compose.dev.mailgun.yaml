@@ -1,0 +1,10 @@
+services:
+  ghost-dev:
+    environment:
+      # Route Ghost transactional/test emails via Mailgun SMTP instead of Mailpit.
+      # Values come from the host environment/.env file.
+      mail__transport: SMTP
+      mail__options__host: smtp.mailgun.org
+      mail__options__port: 587
+      mail__options__auth__user: ${MAILGUN_SMTP_USER}
+      mail__options__auth__pass: ${MAILGUN_SMTP_PASS}

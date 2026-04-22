@@ -6,11 +6,14 @@ Comments widget that is embedded at the bottom of posts in Ghost.
 
 ### Pre-requisites
 
-- Run `yarn` in Ghost monorepo root
+- Run `pnpm` in Ghost monorepo root
 
-### Running via Ghost `yarn dev` in root folder
+### Running via Ghost `pnpm dev` in root folder
 
-You can automatically start the comments dev server when developing Ghost by running Ghost (in root folder) via `yarn dev --all` or `yarn dev --comments`. This will host the comments JavaScript files, and makes sure that Ghost uses these locally hosted assets instead of the ones from the CDN.
+Comments UI runs automatically when using Ghost's development command from the monorepo root:
+```bash
+pnpm dev
+```
 
 ## Release
 
@@ -18,12 +21,12 @@ A patch release can be rolled out instantly in production, whereas a minor/major
 
 ### Patch release
 
-1. Run `yarn ship` and select a patch version when prompted
+1. Run `pnpm ship` and select a patch version when prompted
 2. Merge the release commit to `main`
 
 ### Minor / major release
 
-1. Run `yarn ship` and select a minor or major version when prompted
+1. Run `pnpm ship` and select a minor or major version when prompted
 2. Merge the release commit to `main`
 3. Wait until a new version of Ghost is released
 
@@ -33,4 +36,4 @@ If the CI doesn't clear JsDelivr cache to get the new version out instantly, you
 
 # Copyright & License
 
-Copyright (c) 2013-2025 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).

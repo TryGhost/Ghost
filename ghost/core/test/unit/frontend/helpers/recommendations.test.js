@@ -1,9 +1,9 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 const api = require('../../../../core/server/api').endpoints;
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const {html} = require('common-tags');
 const loggingLib = require('@tryghost/logging');
 const proxy = require('../../../../core/frontend/services/proxy');
@@ -65,8 +65,6 @@ describe('{{#recommendations}} helper', function () {
             'recommendations'
         );
 
-        response.should.be.an.Object().with.property('string');
-
         const expected = html`
         <ul class="recommendations">
             <li class="recommendation">
@@ -91,6 +89,8 @@ describe('{{#recommendations}} helper', function () {
             </li>
         </ul>
         `;
+
+        assert(response !== null && typeof response === 'object');
         const actual = response.string;
 
         // Uncomment to debug
@@ -99,7 +99,7 @@ describe('{{#recommendations}} helper', function () {
         // console.log('Actual:');
         // console.log(actual);
 
-        trimSpaces(actual).should.equal(trimSpaces(expected));
+        assert.equal(trimSpaces(actual), trimSpaces(expected));
     });
 
     describe('when there are no recommendations', function () {
@@ -123,8 +123,8 @@ describe('{{#recommendations}} helper', function () {
             );
 
             // No HTML is rendered
-            response.should.be.an.Object().with.property('string');
-            response.string.should.equal('');
+            assert(response !== null && typeof response === 'object');
+            assert.equal(response.string, '');
         });
     });
 
@@ -140,8 +140,8 @@ describe('{{#recommendations}} helper', function () {
             );
 
             // No HTML is rendered
-            response.should.be.an.Object().with.property('string');
-            response.string.should.equal('');
+            assert(response !== null && typeof response === 'object');
+            assert.equal(response.string, '');
         });
     });
 
@@ -171,11 +171,11 @@ describe('{{#recommendations}} helper', function () {
             );
 
             // An error message is logged
-            logging.error.calledOnce.should.be.true();
+            sinon.assert.calledOnce(logging.error);
 
             // No HTML is rendered
-            response.should.be.an.Object().with.property('string');
-            response.string.should.equal('');
+            assert(response !== null && typeof response === 'object');
+            assert.equal(response.string, '');
         });
     });
 });

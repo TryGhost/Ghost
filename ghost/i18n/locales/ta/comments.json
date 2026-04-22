@@ -17,6 +17,7 @@
     "Best": "",
     "Cancel": "ரத்து செய்",
     "Comment": "கருத்து",
+    "Commenting disabled": "",
     "Complete your profile": "உங்கள் சுயவிவரத்தை பூர்த்தி செய்யவும்",
     "Delete": "நீக்கவும்",
     "Deleted": "",
@@ -66,9 +67,13 @@
     "Sign up now": "இப்பொழுதே பதிவு செய்யுங்கள்",
     "Sort by": "",
     "Start the conversation": "உரையாடலைத் தொடங்குங்கள்",
+    "The linked comment is no longer available.": "",
     "This comment has been hidden.": "இந்தக் கருத்து மறைக்கப்பட்டது.",
     "This comment has been removed.": "இந்தக் கருத்து நீக்கப்பட்டது.",
     "Upgrade now": "இப்போதே மேம்படுத்தவும்",
+    "View in admin": "",
     "Yesterday": "நேற்று",
+    "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "உங்கள் கோரிக்கை இந்த தளத்தின் உரிமையாளருக்கு அனுப்பப்படும்."
 }

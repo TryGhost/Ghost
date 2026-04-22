@@ -69,7 +69,10 @@ export type SelectProps = Props<SelectOption, false> & SelectOptionProps & {
 
 const DropdownIndicator: React.FC<DropdownIndicatorProps<SelectOption, false> & {clearBg: boolean}> = ({clearBg, ...props}) => (
     <components.DropdownIndicator {...props}>
-        <div className={`absolute top-1/2 mt-[-5px] block size-2 rotate-45 border-[1px] border-l-0 border-t-0 border-grey-900 content-[''] dark:border-grey-400 ${clearBg ? 'right-2' : 'right-[14px]'} `}></div>
+        <div
+            className={`absolute top-1/2 mt-[-5px] block size-2 border-[1px] border-t-0 border-l-0 border-grey-900 content-[''] dark:border-grey-400 ${clearBg ? 'right-2' : 'right-[14px]'} `}
+            style={{transform: 'rotate(45deg)'}}
+        ></div>
     </components.DropdownIndicator>
 );
 
@@ -159,7 +162,7 @@ const Select: React.FC<SelectProps> = ({
     const customClasses = {
         control: clsx(
             controlClasses?.control,
-            'h-9 min-h-[36px] w-full appearance-none rounded-lg border outline-none md:h-[38px] md:min-h-[38px] dark:text-white',
+            'h-9 min-h-[36px] w-full appearance-none rounded-lg border outline-hidden md:h-[38px] md:min-h-[38px] dark:text-white',
             size === 'xs' ? 'py-0 pr-2 text-xs' : 'py-1 pr-4',
             clearBg ? '' : 'bg-grey-150 px-3 dark:bg-grey-900',
             error ? 'border-red' : `border-transparent ${!clearBg && 'hover:bg-grey-100 dark:hover:bg-grey-925'}`,
@@ -169,13 +172,13 @@ const Select: React.FC<SelectProps> = ({
         valueContainer: clsx('mr-1.5 gap-1', controlClasses?.valueContainer),
         placeHolder: clsx('text-grey-700 dark:text-grey-800', controlClasses?.placeHolder),
         menu: clsx(
-            'z-[300] mt-0.5 overflow-hidden rounded-lg bg-white shadow-lg dark:border dark:border-grey-900 dark:bg-black',
+            '!z-[300] mt-0.5 overflow-hidden rounded-lg bg-white shadow-lg dark:border dark:border-grey-900 dark:bg-black',
             size === 'xs' && 'text-xs',
             controlClasses?.menu
         ),
         option: clsx('group px-3 py-[7px] hover:cursor-pointer hover:bg-grey-100 dark:text-white dark:hover:bg-grey-900', controlClasses?.option),
         noOptionsMessage: clsx('nowrap p-3 text-grey-600', controlClasses?.noOptionsMessage),
-        groupHeading: clsx('px-3 py-[7px] text-2xs font-semibold uppercase tracking-wide text-grey-700', controlClasses?.groupHeading),
+        groupHeading: clsx('px-3 py-[7px] text-2xs font-semibold tracking-wide text-grey-700 uppercase', controlClasses?.groupHeading),
         clearIndicator: clsx('', controlClasses?.clearIndicator)
     };
 
@@ -202,7 +205,7 @@ const Select: React.FC<SelectProps> = ({
 
     const customProps = {
         classNames: {
-            menuList: () => 'z-[300]',
+            menuList: () => '!z-[300]',
             valueContainer: () => customClasses.valueContainer,
             control: () => customClasses.control,
             placeholder: () => customClasses.placeHolder,
@@ -238,7 +241,7 @@ const Select: React.FC<SelectProps> = ({
             {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={selectedOption || !prompt ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
             <div className={containerClasses} data-testid={testId}>
                 {async ?
-                    <AsyncSelect<SelectOption, false> {...customProps} {...props} /> :
+                    <AsyncSelect<SelectOption, false> {...customProps} {...restProps} components={allComponents} /> :
                     <ReactSelect<SelectOption, false> {...customProps} {...restProps} components={allComponents} />
                 }
             </div>

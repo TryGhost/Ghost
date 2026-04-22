@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable ghost/filenames/match-exported-class */
 /* eslint-disable no-console */
 /* eslint-disable ghost/ghost-custom/no-native-error */
 /**
@@ -9,12 +8,12 @@
  * Generates and clears analytics events directly in the Tinybird local instance.
  *
  * Usage:
- *   yarn data:analytics:generate [count]  - Generate analytics events
- *   yarn data:analytics:clear             - Clear all analytics events for the site
+ *   pnpm data:analytics:generate [count]  - Generate analytics events
+ *   pnpm data:analytics:clear             - Clear all analytics events for the site
  *
  * Prerequisites:
- *   - Docker environment running: yarn dev:analytics
- *   - Ghost database populated with posts/members: yarn reset:data
+ *   - Docker environment running: pnpm dev:analytics
+ *   - Ghost database populated with posts/members: pnpm reset:data
  */
 
 const DockerDatabaseUtils = require('./docker-database-utils');
@@ -24,8 +23,10 @@ const {execSync} = require('child_process');
 const TINYBIRD_HOST = process.env.TINYBIRD_HOST || 'http://localhost:7181';
 const TINYBIRD_DATASOURCE = 'analytics_events';
 const TINYBIRD_MV_DATASOURCE = '_mv_hits';
+const TINYBIRD_MV_DAILY_PAGES = '_mv_daily_pages';
 const DEFAULT_EVENT_COUNT = 10000;
-const BATCH_SIZE = 1000; // Events per API request
+const BATCH_SIZE = 10000; // Events per API request (Tinybird handles large batches well)
+const PARALLEL_BATCHES = 5; // Number of concurrent batch uploads
 const DOCKER_VOLUME_NAME = 'ghost-dev_shared-config';
 
 class DockerAnalyticsManager {
@@ -201,13 +202,13 @@ class DockerAnalyticsManager {
         } catch (error) {
             if (error.message.includes('No such file') || error.message.includes('No token found')) {
                 console.error('Tinybird config not found in Docker volume.');
-                console.error('Make sure Tinybird is running: yarn dev:analytics');
+                console.error('Make sure Tinybird is running: pnpm dev:analytics');
             } else if (error.message.includes('Cannot connect to the Docker daemon')) {
                 console.error('Docker is not running. Please start Docker first.');
             } else {
                 console.error('Failed to fetch Tinybird token:', error.message);
             }
-            throw new Error('Could not retrieve Tinybird token. Ensure yarn dev:analytics is running.');
+            throw new Error('Could not retrieve Tinybird token. Ensure pnpm dev:analytics is running.');
         }
     }
 
@@ -240,7 +241,7 @@ class DockerAnalyticsManager {
         this.assignPostPopularity();
 
         if (this.posts.length === 0) {
-            console.warn('No posts found. Run "yarn reset:data" to generate Ghost data first.');
+            console.warn('No posts found. Run "pnpm reset:data" to generate Ghost data first.');
         }
 
         return true;
@@ -520,11 +521,13 @@ class DockerAnalyticsManager {
 
     /**
      * Send events to Tinybird Events API
+     * @param {Array} events - Events to send
+     * @param {boolean} wait - Whether to wait for processing (slower but confirms ingestion)
      */
-    async sendEventsToTinybird(events) {
+    async sendEventsToTinybird(events, wait = false) {
         const ndjson = events.map(e => JSON.stringify(e)).join('\n');
 
-        const url = `${TINYBIRD_HOST}/v0/events?name=${TINYBIRD_DATASOURCE}&wait=true`;
+        const url = `${TINYBIRD_HOST}/v0/events?name=${TINYBIRD_DATASOURCE}${wait ? '&wait=true' : ''}`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -685,22 +688,26 @@ class DockerAnalyticsManager {
         // Sort events by timestamp
         events.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
-        // Send in batches
-        console.log(`\nPushing events to Tinybird...`);
+        // Send in batches (parallel for speed)
+        console.log(`\nPushing events to Tinybird (batch size: ${BATCH_SIZE}, parallel: ${PARALLEL_BATCHES})...`);
         let sentCount = 0;
 
+        // Create all batches
+        const batches = [];
         for (let i = 0; i < events.length; i += BATCH_SIZE) {
-            const batch = events.slice(i, i + BATCH_SIZE);
+            batches.push(events.slice(i, i + BATCH_SIZE));
+        }
+
+        // Send batches in parallel chunks
+        for (let i = 0; i < batches.length; i += PARALLEL_BATCHES) {
+            const parallelBatches = batches.slice(i, i + PARALLEL_BATCHES);
 
             try {
-                await this.sendEventsToTinybird(batch);
-                sentCount += batch.length;
-
-                if (sentCount % 10000 === 0 || sentCount === events.length) {
-                    console.log(`Sent ${sentCount}/${events.length} events`);
-                }
+                await Promise.all(parallelBatches.map(batch => this.sendEventsToTinybird(batch)));
+                sentCount += parallelBatches.reduce((sum, b) => sum + b.length, 0);
+                console.log(`Sent ${sentCount}/${events.length} events`);
             } catch (error) {
-                console.error(`Failed to send batch at offset ${i}:`, error.message);
+                console.error(`Failed to send batch chunk at offset ${i * BATCH_SIZE}:`, error.message);
                 throw error;
             }
         }
@@ -711,7 +718,7 @@ class DockerAnalyticsManager {
 
     /**
      * Clear analytics events from Tinybird
-     * Truncates both the landing datasource and the materialized view
+     * Truncates the landing datasource and all materialized views
      */
     async clearAnalytics() {
         console.log(`\nClearing analytics events...`);
@@ -720,9 +727,17 @@ class DockerAnalyticsManager {
         console.log(`Truncating ${TINYBIRD_DATASOURCE}...`);
         await this.truncateDatasource(TINYBIRD_DATASOURCE);
 
-        // Truncate the materialized view datasource
+        // Truncate the materialized view datasources
         console.log(`Truncating ${TINYBIRD_MV_DATASOURCE}...`);
         await this.truncateDatasource(TINYBIRD_MV_DATASOURCE);
+
+        // Truncate the daily pages MV (may not exist in older setups)
+        console.log(`Truncating ${TINYBIRD_MV_DAILY_PAGES}...`);
+        try {
+            await this.truncateDatasource(TINYBIRD_MV_DAILY_PAGES);
+        } catch (error) {
+            console.log(`  ${TINYBIRD_MV_DAILY_PAGES} not found (may not be deployed yet)`);
+        }
 
         console.log('All analytics data cleared successfully');
         return {status: 'ok'};
@@ -781,13 +796,13 @@ Options:
   count  - Number of events to generate (default: ${DEFAULT_EVENT_COUNT})
 
 Prerequisites:
-  - Docker environment running: yarn dev:analytics
-  - Ghost database populated: yarn reset:data
+  - Docker environment running: pnpm dev:analytics
+  - Ghost database populated: pnpm reset:data
 
 Examples:
-  yarn data:analytics:generate          # Generate 10,000 events
-  yarn data:analytics:generate 10000    # Generate 10,000 events
-  yarn data:analytics:clear             # Clear all events
+  pnpm data:analytics:generate          # Generate 10,000 events
+  pnpm data:analytics:generate 10000    # Generate 10,000 events
+  pnpm data:analytics:clear             # Clear all events
 `);
 }
 

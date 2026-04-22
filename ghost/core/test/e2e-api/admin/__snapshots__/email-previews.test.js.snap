@@ -117,22 +117,119 @@ Object {
         <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch><o:AllowPNG/></o:OfficeDocumentSettings></xml><![endif]-->
         <title>Post with email-only card</title>
         <style>
-.post-title-link {
-  display: block;
-  margin-top: 32px;
-  color: #15212A;
-  text-align: center;
-  line-height: 1.1em;
+@media only screen and (max-width: 620px) {
+  table.body {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  table.body .content {
+    padding: 0 !important;
+  }
+
+  table.body .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table.body .main {
+    border-spacing: 10px 0 !important;
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.body .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
 }
-.post-title-link-left {
-  text-align: left;
+@media all {
+  .ExternalClass {
+    width: 100%;
+  }
+
+  .ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+  }
+
+  .apple-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
 }
-.view-online-link {
-  word-wrap: none;
-  white-space: nowrap;
-  color: #15212a;
-  color: rgba(0, 0, 0, 0.6);
-  text-decoration: underline !important;
+@media only screen and (max-width: 620px) {
+  table[class=body] h1 {
+    font-size: 28px !important;
+    margin-bottom: 10px !important;
+  }
+
+  table[class=body] p,
+table[class=body] ul,
+table[class=body] ol,
+table[class=body] td,
+table[class=body] span,
+table[class=body] a {
+    font-size: 16px !important;
+  }
+
+  table[class=body] .wrapper,
+table[class=body] .article {
+    padding: 10px !important;
+  }
+
+  table[class=body] .content {
+    padding: 0 !important;
+  }
+
+  table[class=body] .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table[class=body] .main {
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table[class=body] .btn table {
+    width: 100% !important;
+  }
+
+  table[class=body] .btn a {
+    width: 100% !important;
+  }
+
+  table[class=body] .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+
+  table[class=body] p[class=small],
+table[class=body] a[class=small] {
+    font-size: 11px !important;
+  }
 }
 .kg-nft-link {
   display: block;
@@ -140,7 +237,7 @@ Object {
   color: #15212A !important;
   font-family: inherit !important;
   font-size: 14px;
-  line-height: 1.3em;
+  line-height: 1.3;
   padding-top: 4px;
   padding-right: 20px;
   padding-left: 20px;
@@ -153,7 +250,7 @@ Object {
   font-family: inherit !important;
   font-size: 15px;
   padding: 8px;
-  line-height: 1.3em;
+  line-height: 1.3;
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
@@ -165,213 +262,7 @@ Object {
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
 }
-.kg-audio-link {
-  color: #15212a !important;
-  color: rgba(0, 0, 0, 0.6) !important;
-}
 @media only screen and (max-width: 620px) {
-  table.body {
-    width: 100%;
-    min-width: 100%;
-  }
-
-  .hide-mobile {
-    display: none;
-  }
-
-  .mobile-only {
-    display: initial !important;
-  }
-
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
-  table.body p,
-table.body ul,
-table.body ol,
-table.body td {
-    font-size: 16px;
-  }
-
-  table.header .post-excerpt {
-    font-size: 16px !important;
-  }
-
-  table.body .kg-callout-card {
-    padding: 16px 24px !important;
-  }
-
-  table.body .kg-callout-text {
-    font-size: 16px !important;
-    line-height: 1.5em !important;
-  }
-
-  table.body pre {
-    white-space: pre-wrap !important;
-    word-break: break-word !important;
-  }
-
-  table.body .content {
-    padding: 0 !important;
-  }
-
-  table.body .container {
-    padding: 0 !important;
-    width: 100% !important;
-  }
-
-  table.body .main,
-table.header .header-main {
-    border-spacing: 10px 0 !important;
-    border-left-width: 0 !important;
-    border-radius: 0 !important;
-    border-right-width: 0 !important;
-  }
-
-  table.body .img-responsive {
-    height: auto !important;
-    max-width: 100% !important;
-    width: auto !important;
-  }
-
-  table.header .site-icon {
-    padding-top: 0 !important;
-  }
-
-  table.header .site-info {
-    padding-top: 24px !important;
-  }
-
-  table.header .post-title-link {
-    margin-top: 24px !important;
-  }
-
-  table.header .post-meta-wrapper {
-    padding-bottom: 24px !important;
-  }
-
-  table.header .site-icon img {
-    width: 36px !important;
-    height: 36px !important;
-  }
-
-  table.header .site-url a {
-    font-size: 13px !important;
-    padding-bottom: 16px !important;
-  }
-
-  table.header .post-meta,
-table.header .post-meta-date {
-    white-space: normal !important;
-    font-size: 13px !important;
-    line-height: 1.2em;
-  }
-
-  table.header .post-meta,
-table.header .view-online {
-    width: 100% !important;
-  }
-
-  table.header .post-meta-left,
-table.header .post-meta-left.view-online {
-    width: 100% !important;
-    text-align: left !important;
-  }
-
-  table.header .post-meta.view-online-mobile {
-    display: table-row !important;
-  }
-
-  table.header .post-meta-left.view-online-mobile,
-table.header .post-meta-left.view-online-mobile .view-online {
-    text-align: left !important;
-  }
-
-  table.header .post-meta.view-online.desktop {
-    display: none !important;
-  }
-
-  table.header .view-online {
-    text-decoration: underline;
-  }
-
-  table.body .footer p,
-table.body .footer p span {
-    font-size: 13px !important;
-  }
-
-  table.header .view-online-link,
-table.body .footer,
-table.body .footer a {
-    font-size: 13px !important;
-  }
-
-  table.header .post-title a {
-    font-size: 26px !important;
-    line-height: 1.1em !important;
-  }
-
-  table.feedback-buttons {
-    display: table !important;
-    width: 100% !important;
-    max-width: 390px;
-  }
-
-  table.feedback-buttons img {
-    display: inherit !important;
-  }
-
-  table.body .feedback-button-text {
-    display: none!important;
-  }
-
-  table.body .latest-posts-header {
-    font-size: 12px !important;
-  }
-
-  table.body .latest-post-title {
-    padding-right: 8px !important;
-  }
-
-  table.body .latest-post h4,
-table.body .latest-post h4 span {
-    padding: 4px 0 6px !important;
-    font-size: 15px !important;
-  }
-
-  table.body .latest-post-excerpt,
-table.body .latest-post-excerpt a,
-table.body .latest-post-excerpt span {
-    font-size: 13px !important;
-    line-height: 1.2 !important;
-  }
-
-  table.body .subscription-box h3 {
-    font-size: 14px !important;
-  }
-
-  table.body .subscription-box p,
-table.body .subscription-box p span {
-    font-size: 13px !important;
-  }
-
-  table.body .subscription-details,
-table.body .manage-subscription {
-    display: inline-block;
-    width: 100%;
-    text-align: left !important;
-    font-size: 13px !important;
-  }
-
-  table.body .subscription-details {
-    padding-bottom: 12px;
-  }
-
   table.body .kg-bookmark-card {
     width: 90vw;
   }
@@ -386,77 +277,6 @@ table.body .manage-subscription {
 
   table.body .kg-embed-card {
     max-width: 90vw !important;
-  }
-
-  table.body h1 {
-    font-size: 32px !important;
-    line-height: 1.3em !important;
-  }
-
-  table.body h2,
-table.body h2 span {
-    font-size: 26px !important;
-    line-height: 1.22em !important;
-  }
-
-  table.body h3 {
-    font-size: 21px !important;
-    line-height: 1.25em !important;
-  }
-
-  table.body h4 {
-    font-size: 19px !important;
-    line-height: 1.3em !important;
-  }
-
-  table.body h5 {
-    font-size: 16px !important;
-    line-height: 1.4em !important;
-  }
-
-  table.body h6 {
-    font-size: 16px !important;
-    line-height: 1.4em !important;
-  }
-
-  table.body blockquote {
-    font-size: 16px !important;
-    line-height: 1.6em;
-    margin-bottom: 0;
-  }
-
-  table.body blockquote p {
-    margin-right: 15px !important;
-    margin-left: 15px !important;
-  }
-
-  table.body blockquote.kg-blockquote-alt {
-    border-left: 0 none !important;
-    margin: 0 !important;
-    font-size: 18px !important;
-    line-height: 1.4em !important;
-  }
-
-  table.body blockquote.kg-blockquote-alt p {
-    margin-right: 20px !important;
-    margin-left: 20px !important;
-  }
-
-  table.body hr {
-    margin: 2em 0 !important;
-  }
-
-  .feature-image-caption {
-    font-size: 13px!important;
-  }
-
-  .kg-card-figcaption {
-    font-size: 13px!important;
-  }
-
-  .kg-card-figcaption p,
-.kg-card-figcaption p span {
-    font-size: 13px!important;
   }
 
   table.body .kg-cta-card {
@@ -515,10 +335,6 @@ table.body h2 span {
   }
 }
 @media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-
   .ExternalClass {
     width: 100%;
   }
@@ -532,7 +348,7 @@ table.body h2 span {
     line-height: 100%;
   }
 
-  .apple-link a {
+  .recipient-link a {
     color: inherit !important;
     font-family: inherit !important;
     font-size: inherit !important;
@@ -548,6 +364,286 @@ table.body h2 span {
     font-family: inherit;
     font-weight: inherit;
     line-height: inherit;
+  }
+}
+.post-title-link {
+  display: block;
+  margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1;
+}
+.post-title-link-left {
+  text-align: left;
+}
+.view-online-link {
+  word-wrap: none;
+  white-space: nowrap;
+  color: #15212a;
+  color: rgba(0, 0, 0, 0.6);
+  text-decoration: underline !important;
+}
+.kg-audio-link {
+  color: #15212a !important;
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+@media only screen and (max-width: 620px) {
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  table.body p,
+table.body ul,
+table.body ol,
+table.body td {
+    font-size: 16px;
+  }
+
+  table.header .post-excerpt {
+    font-size: 16px !important;
+  }
+
+  table.body .kg-callout-card {
+    padding: 16px 24px !important;
+  }
+
+  table.body .kg-callout-text {
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+  }
+
+  table.body pre {
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+  }
+
+  table.body .main,
+table.header .header-main {
+    border-spacing: 10px 0 !important;
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.header .site-icon {
+    padding-top: 0 !important;
+  }
+
+  table.header .site-info {
+    padding-top: 24px !important;
+  }
+
+  table.header .post-title-link {
+    margin-top: 24px !important;
+  }
+
+  table.header .post-meta-wrapper {
+    padding-bottom: 24px !important;
+  }
+
+  table.header .site-icon img {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  table.header .site-url a {
+    font-size: 13px !important;
+    padding-bottom: 16px !important;
+  }
+
+  table.header .post-meta,
+table.header .post-meta-date {
+    white-space: normal !important;
+    font-size: 13px !important;
+    line-height: 1.2;
+  }
+
+  table.header .post-meta,
+table.header .view-online {
+    width: 100% !important;
+  }
+
+  table.header .post-meta-left,
+table.header .post-meta-left.view-online {
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  table.header .post-meta.view-online-mobile {
+    display: table-row !important;
+  }
+
+  table.header .post-meta-left.view-online-mobile,
+table.header .post-meta-left.view-online-mobile .view-online {
+    text-align: left !important;
+  }
+
+  table.header .post-meta.view-online.desktop {
+    display: none !important;
+  }
+
+  table.header .view-online {
+    text-decoration: underline;
+  }
+
+  table.body .footer p,
+table.body .footer p span {
+    font-size: 13px !important;
+  }
+
+  table.header .view-online-link,
+table.body .footer,
+table.body .footer a {
+    font-size: 13px !important;
+  }
+
+  table.header .post-title a {
+    font-size: 26px !important;
+    line-height: 1.1 !important;
+  }
+
+  table.feedback-buttons {
+    display: table !important;
+    width: 100% !important;
+    max-width: 390px;
+  }
+
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: none!important;
+  }
+
+  table.body .latest-posts-header {
+    font-size: 12px !important;
+  }
+
+  table.body .latest-post-title {
+    padding-right: 8px !important;
+  }
+
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
+  }
+
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+  }
+
+  table.body .subscription-box h3 {
+    font-size: 14px !important;
+  }
+
+  table.body .subscription-box p,
+table.body .subscription-box p span {
+    font-size: 13px !important;
+  }
+
+  table.body .subscription-details,
+table.body .manage-subscription {
+    display: inline-block;
+    width: 100%;
+    text-align: left !important;
+    font-size: 13px !important;
+  }
+
+  table.body .subscription-details {
+    padding-bottom: 12px;
+  }
+
+  table.body h1 {
+    font-size: 32px !important;
+    line-height: 1.3 !important;
+  }
+
+  table.body h2,
+table.body h2 span {
+    font-size: 26px !important;
+    line-height: 1.22 !important;
+  }
+
+  table.body h3 {
+    font-size: 21px !important;
+    line-height: 1.25 !important;
+  }
+
+  table.body h4 {
+    font-size: 19px !important;
+    line-height: 1.3 !important;
+  }
+
+  table.body h5 {
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+  }
+
+  table.body h6 {
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+  }
+
+  table.body blockquote {
+    font-size: 16px !important;
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
+
+  table.body blockquote p {
+    margin-right: 15px !important;
+    margin-left: 15px !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt {
+    border-left: 0 none !important;
+    margin: 0 !important;
+    font-size: 18px !important;
+    line-height: 1.4 !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    margin-right: 20px !important;
+    margin-left: 20px !important;
+  }
+
+  table.body hr {
+    margin: 2em 0 !important;
+  }
+
+  .feature-image-caption {
+    font-size: 13px!important;
+  }
+
+  .kg-card-figcaption {
+    font-size: 13px!important;
+  }
+
+  .kg-card-figcaption p,
+.kg-card-figcaption p span {
+    font-size: 13px!important;
+  }
+}
+@media all {
+  .subscription-details p.hidden {
+    display: none !important;
   }
 }
 </style>
@@ -602,7 +698,7 @@ table.body h2 span {
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                         <tr>
                                                             <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">Post with email-only card</a>
+                                                                <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">Post with email-only card</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -657,14 +753,13 @@ table.body h2 span {
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
                 <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
-                            <tr>
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">                            <tr>
                                 <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" data-testid=\\"email-preview-content\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                         <tr class=\\"post-content-row\\">
-                                            <td class=\\"post-content-sans-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 17px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
+                                            <td class=\\"post-content-sans-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 17px; line-height: 1.5; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
                                                 <!-- POST CONTENT START -->
-                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A;\\">Hey Jamie %%{unknown}%%</p><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A;\\"><strong style=\\"font-weight: 700;\\">Welcome to your first Ghost email!</strong></p><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A;\\">This is the actual post content...</p><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A;\\">Another email card with a similar replacement, Jamie</p>
+                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6; color: #15212A;\\">Hey Jamie %%{unknown}%%</p><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6; color: #15212A;\\"><strong style=\\"font-weight: 700;\\">Welcome to your first Ghost email!</strong></p><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6; color: #15212A;\\">This is the actual post content...</p><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6; color: #15212A;\\">Another email card with a similar replacement, Jamie</p>
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -682,7 +777,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -691,8 +786,7 @@ table.body h2 span {
                                     </table>
                                 </td>
                             </tr>
-
-                        </table>
+</table>
                         <!-- END CENTERED WHITE CONTAINER -->
                     </div>
                 </td>
@@ -840,7 +934,6 @@ View in browser [http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/]
 
 
 
-
 Hey Jamie %%{unknown}%%
 
 Welcome to your first Ghost email!
@@ -882,7 +975,6 @@ https://ghost.org/?via=pbg-newsletter
 
 
 
-
  
 
 
@@ -896,7 +988,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "33603",
+  "content-length": "35596",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -927,22 +1019,119 @@ Object {
         <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch><o:AllowPNG/></o:OfficeDocumentSettings></xml><![endif]-->
         <title>HTML Ipsum</title>
         <style>
-.post-title-link {
-  display: block;
-  margin-top: 32px;
-  color: #15212A;
-  text-align: center;
-  line-height: 1.1em;
+@media only screen and (max-width: 620px) {
+  table.body {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  table.body .content {
+    padding: 0 !important;
+  }
+
+  table.body .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table.body .main {
+    border-spacing: 10px 0 !important;
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.body .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
 }
-.post-title-link-left {
-  text-align: left;
+@media all {
+  .ExternalClass {
+    width: 100%;
+  }
+
+  .ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+  }
+
+  .apple-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
 }
-.view-online-link {
-  word-wrap: none;
-  white-space: nowrap;
-  color: #15212a;
-  color: rgba(0, 0, 0, 0.6);
-  text-decoration: underline !important;
+@media only screen and (max-width: 620px) {
+  table[class=body] h1 {
+    font-size: 28px !important;
+    margin-bottom: 10px !important;
+  }
+
+  table[class=body] p,
+table[class=body] ul,
+table[class=body] ol,
+table[class=body] td,
+table[class=body] span,
+table[class=body] a {
+    font-size: 16px !important;
+  }
+
+  table[class=body] .wrapper,
+table[class=body] .article {
+    padding: 10px !important;
+  }
+
+  table[class=body] .content {
+    padding: 0 !important;
+  }
+
+  table[class=body] .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table[class=body] .main {
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table[class=body] .btn table {
+    width: 100% !important;
+  }
+
+  table[class=body] .btn a {
+    width: 100% !important;
+  }
+
+  table[class=body] .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+
+  table[class=body] p[class=small],
+table[class=body] a[class=small] {
+    font-size: 11px !important;
+  }
 }
 .kg-nft-link {
   display: block;
@@ -950,7 +1139,7 @@ Object {
   color: #15212A !important;
   font-family: inherit !important;
   font-size: 14px;
-  line-height: 1.3em;
+  line-height: 1.3;
   padding-top: 4px;
   padding-right: 20px;
   padding-left: 20px;
@@ -963,7 +1152,7 @@ Object {
   font-family: inherit !important;
   font-size: 15px;
   padding: 8px;
-  line-height: 1.3em;
+  line-height: 1.3;
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
@@ -975,213 +1164,7 @@ Object {
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
 }
-.kg-audio-link {
-  color: #15212a !important;
-  color: rgba(0, 0, 0, 0.6) !important;
-}
 @media only screen and (max-width: 620px) {
-  table.body {
-    width: 100%;
-    min-width: 100%;
-  }
-
-  .hide-mobile {
-    display: none;
-  }
-
-  .mobile-only {
-    display: initial !important;
-  }
-
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
-  table.body p,
-table.body ul,
-table.body ol,
-table.body td {
-    font-size: 16px;
-  }
-
-  table.header .post-excerpt {
-    font-size: 16px !important;
-  }
-
-  table.body .kg-callout-card {
-    padding: 16px 24px !important;
-  }
-
-  table.body .kg-callout-text {
-    font-size: 16px !important;
-    line-height: 1.5em !important;
-  }
-
-  table.body pre {
-    white-space: pre-wrap !important;
-    word-break: break-word !important;
-  }
-
-  table.body .content {
-    padding: 0 !important;
-  }
-
-  table.body .container {
-    padding: 0 !important;
-    width: 100% !important;
-  }
-
-  table.body .main,
-table.header .header-main {
-    border-spacing: 10px 0 !important;
-    border-left-width: 0 !important;
-    border-radius: 0 !important;
-    border-right-width: 0 !important;
-  }
-
-  table.body .img-responsive {
-    height: auto !important;
-    max-width: 100% !important;
-    width: auto !important;
-  }
-
-  table.header .site-icon {
-    padding-top: 0 !important;
-  }
-
-  table.header .site-info {
-    padding-top: 24px !important;
-  }
-
-  table.header .post-title-link {
-    margin-top: 24px !important;
-  }
-
-  table.header .post-meta-wrapper {
-    padding-bottom: 24px !important;
-  }
-
-  table.header .site-icon img {
-    width: 36px !important;
-    height: 36px !important;
-  }
-
-  table.header .site-url a {
-    font-size: 13px !important;
-    padding-bottom: 16px !important;
-  }
-
-  table.header .post-meta,
-table.header .post-meta-date {
-    white-space: normal !important;
-    font-size: 13px !important;
-    line-height: 1.2em;
-  }
-
-  table.header .post-meta,
-table.header .view-online {
-    width: 100% !important;
-  }
-
-  table.header .post-meta-left,
-table.header .post-meta-left.view-online {
-    width: 100% !important;
-    text-align: left !important;
-  }
-
-  table.header .post-meta.view-online-mobile {
-    display: table-row !important;
-  }
-
-  table.header .post-meta-left.view-online-mobile,
-table.header .post-meta-left.view-online-mobile .view-online {
-    text-align: left !important;
-  }
-
-  table.header .post-meta.view-online.desktop {
-    display: none !important;
-  }
-
-  table.header .view-online {
-    text-decoration: underline;
-  }
-
-  table.body .footer p,
-table.body .footer p span {
-    font-size: 13px !important;
-  }
-
-  table.header .view-online-link,
-table.body .footer,
-table.body .footer a {
-    font-size: 13px !important;
-  }
-
-  table.header .post-title a {
-    font-size: 26px !important;
-    line-height: 1.1em !important;
-  }
-
-  table.feedback-buttons {
-    display: table !important;
-    width: 100% !important;
-    max-width: 390px;
-  }
-
-  table.feedback-buttons img {
-    display: inherit !important;
-  }
-
-  table.body .feedback-button-text {
-    display: none!important;
-  }
-
-  table.body .latest-posts-header {
-    font-size: 12px !important;
-  }
-
-  table.body .latest-post-title {
-    padding-right: 8px !important;
-  }
-
-  table.body .latest-post h4,
-table.body .latest-post h4 span {
-    padding: 4px 0 6px !important;
-    font-size: 15px !important;
-  }
-
-  table.body .latest-post-excerpt,
-table.body .latest-post-excerpt a,
-table.body .latest-post-excerpt span {
-    font-size: 13px !important;
-    line-height: 1.2 !important;
-  }
-
-  table.body .subscription-box h3 {
-    font-size: 14px !important;
-  }
-
-  table.body .subscription-box p,
-table.body .subscription-box p span {
-    font-size: 13px !important;
-  }
-
-  table.body .subscription-details,
-table.body .manage-subscription {
-    display: inline-block;
-    width: 100%;
-    text-align: left !important;
-    font-size: 13px !important;
-  }
-
-  table.body .subscription-details {
-    padding-bottom: 12px;
-  }
-
   table.body .kg-bookmark-card {
     width: 90vw;
   }
@@ -1196,77 +1179,6 @@ table.body .manage-subscription {
 
   table.body .kg-embed-card {
     max-width: 90vw !important;
-  }
-
-  table.body h1 {
-    font-size: 32px !important;
-    line-height: 1.3em !important;
-  }
-
-  table.body h2,
-table.body h2 span {
-    font-size: 26px !important;
-    line-height: 1.22em !important;
-  }
-
-  table.body h3 {
-    font-size: 21px !important;
-    line-height: 1.25em !important;
-  }
-
-  table.body h4 {
-    font-size: 19px !important;
-    line-height: 1.3em !important;
-  }
-
-  table.body h5 {
-    font-size: 16px !important;
-    line-height: 1.4em !important;
-  }
-
-  table.body h6 {
-    font-size: 16px !important;
-    line-height: 1.4em !important;
-  }
-
-  table.body blockquote {
-    font-size: 16px !important;
-    line-height: 1.6em;
-    margin-bottom: 0;
-  }
-
-  table.body blockquote p {
-    margin-right: 15px !important;
-    margin-left: 15px !important;
-  }
-
-  table.body blockquote.kg-blockquote-alt {
-    border-left: 0 none !important;
-    margin: 0 !important;
-    font-size: 18px !important;
-    line-height: 1.4em !important;
-  }
-
-  table.body blockquote.kg-blockquote-alt p {
-    margin-right: 20px !important;
-    margin-left: 20px !important;
-  }
-
-  table.body hr {
-    margin: 2em 0 !important;
-  }
-
-  .feature-image-caption {
-    font-size: 13px!important;
-  }
-
-  .kg-card-figcaption {
-    font-size: 13px!important;
-  }
-
-  .kg-card-figcaption p,
-.kg-card-figcaption p span {
-    font-size: 13px!important;
   }
 
   table.body .kg-cta-card {
@@ -1325,10 +1237,6 @@ table.body h2 span {
   }
 }
 @media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-
   .ExternalClass {
     width: 100%;
   }
@@ -1342,7 +1250,7 @@ table.body h2 span {
     line-height: 100%;
   }
 
-  .apple-link a {
+  .recipient-link a {
     color: inherit !important;
     font-family: inherit !important;
     font-size: inherit !important;
@@ -1358,6 +1266,286 @@ table.body h2 span {
     font-family: inherit;
     font-weight: inherit;
     line-height: inherit;
+  }
+}
+.post-title-link {
+  display: block;
+  margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1;
+}
+.post-title-link-left {
+  text-align: left;
+}
+.view-online-link {
+  word-wrap: none;
+  white-space: nowrap;
+  color: #15212a;
+  color: rgba(0, 0, 0, 0.6);
+  text-decoration: underline !important;
+}
+.kg-audio-link {
+  color: #15212a !important;
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+@media only screen and (max-width: 620px) {
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  table.body p,
+table.body ul,
+table.body ol,
+table.body td {
+    font-size: 16px;
+  }
+
+  table.header .post-excerpt {
+    font-size: 16px !important;
+  }
+
+  table.body .kg-callout-card {
+    padding: 16px 24px !important;
+  }
+
+  table.body .kg-callout-text {
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+  }
+
+  table.body pre {
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+  }
+
+  table.body .main,
+table.header .header-main {
+    border-spacing: 10px 0 !important;
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.header .site-icon {
+    padding-top: 0 !important;
+  }
+
+  table.header .site-info {
+    padding-top: 24px !important;
+  }
+
+  table.header .post-title-link {
+    margin-top: 24px !important;
+  }
+
+  table.header .post-meta-wrapper {
+    padding-bottom: 24px !important;
+  }
+
+  table.header .site-icon img {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  table.header .site-url a {
+    font-size: 13px !important;
+    padding-bottom: 16px !important;
+  }
+
+  table.header .post-meta,
+table.header .post-meta-date {
+    white-space: normal !important;
+    font-size: 13px !important;
+    line-height: 1.2;
+  }
+
+  table.header .post-meta,
+table.header .view-online {
+    width: 100% !important;
+  }
+
+  table.header .post-meta-left,
+table.header .post-meta-left.view-online {
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  table.header .post-meta.view-online-mobile {
+    display: table-row !important;
+  }
+
+  table.header .post-meta-left.view-online-mobile,
+table.header .post-meta-left.view-online-mobile .view-online {
+    text-align: left !important;
+  }
+
+  table.header .post-meta.view-online.desktop {
+    display: none !important;
+  }
+
+  table.header .view-online {
+    text-decoration: underline;
+  }
+
+  table.body .footer p,
+table.body .footer p span {
+    font-size: 13px !important;
+  }
+
+  table.header .view-online-link,
+table.body .footer,
+table.body .footer a {
+    font-size: 13px !important;
+  }
+
+  table.header .post-title a {
+    font-size: 26px !important;
+    line-height: 1.1 !important;
+  }
+
+  table.feedback-buttons {
+    display: table !important;
+    width: 100% !important;
+    max-width: 390px;
+  }
+
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: none!important;
+  }
+
+  table.body .latest-posts-header {
+    font-size: 12px !important;
+  }
+
+  table.body .latest-post-title {
+    padding-right: 8px !important;
+  }
+
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
+  }
+
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+  }
+
+  table.body .subscription-box h3 {
+    font-size: 14px !important;
+  }
+
+  table.body .subscription-box p,
+table.body .subscription-box p span {
+    font-size: 13px !important;
+  }
+
+  table.body .subscription-details,
+table.body .manage-subscription {
+    display: inline-block;
+    width: 100%;
+    text-align: left !important;
+    font-size: 13px !important;
+  }
+
+  table.body .subscription-details {
+    padding-bottom: 12px;
+  }
+
+  table.body h1 {
+    font-size: 32px !important;
+    line-height: 1.3 !important;
+  }
+
+  table.body h2,
+table.body h2 span {
+    font-size: 26px !important;
+    line-height: 1.22 !important;
+  }
+
+  table.body h3 {
+    font-size: 21px !important;
+    line-height: 1.25 !important;
+  }
+
+  table.body h4 {
+    font-size: 19px !important;
+    line-height: 1.3 !important;
+  }
+
+  table.body h5 {
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+  }
+
+  table.body h6 {
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+  }
+
+  table.body blockquote {
+    font-size: 16px !important;
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
+
+  table.body blockquote p {
+    margin-right: 15px !important;
+    margin-left: 15px !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt {
+    border-left: 0 none !important;
+    margin: 0 !important;
+    font-size: 18px !important;
+    line-height: 1.4 !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    margin-right: 20px !important;
+    margin-left: 20px !important;
+  }
+
+  table.body hr {
+    margin: 2em 0 !important;
+  }
+
+  .feature-image-caption {
+    font-size: 13px!important;
+  }
+
+  .kg-card-figcaption {
+    font-size: 13px!important;
+  }
+
+  .kg-card-figcaption p,
+.kg-card-figcaption p span {
+    font-size: 13px!important;
+  }
+}
+@media all {
+  .subscription-details p.hidden {
+    display: none !important;
   }
 }
 </style>
@@ -1412,7 +1600,7 @@ table.body h2 span {
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                         <tr>
                                                             <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/html-ipsum/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">HTML Ipsum</a>
+                                                                <a href=\\"http://127.0.0.1:2369/html-ipsum/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">HTML Ipsum</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -1472,14 +1660,13 @@ table.body h2 span {
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
                 <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
-                            <tr>
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">                            <tr>
                                 <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" data-testid=\\"email-preview-content\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                         <tr class=\\"post-content-row\\">
-                                            <td class=\\"post-content-sans-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 17px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
+                                            <td class=\\"post-content-sans-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 17px; line-height: 1.5; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
                                                 <!-- POST CONTENT START -->
-                                                <!--kg-card-begin: markdown--><h1 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px; color: #15212A;\\">HTML Ipsum Presents</h1><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A;\\"><strong style=\\"font-weight: 700;\\">Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code style=\\"font-size: 0.9em; background: #F2F7FA; word-break: break-all; padding: 1px 7px; border-radius: 3px; color: #FF1A75;\\">commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\"#\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline;\\" target=\\"_blank\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px; color: #15212A;\\">Header Level 2</h2><ol style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; padding-left: 1.3em; padding-right: 1.5em; list-style: decimal; max-width: 100%;\\"><li style=\\"margin: 0.5em 0; padding-left: 0.3em; line-height: 1.6em; color: #15212A;\\">Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li style=\\"margin: 0.5em 0; padding-left: 0.3em; line-height: 1.6em; color: #15212A;\\">Aliquam tincidunt mauris eu risus.</li></ol><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0; color: #15212A;\\">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px; color: #15212A;\\">Header Level 3</h3><ul style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; padding-left: 1.3em; padding-right: 1.5em; list-style: disc; max-width: 100%;\\"><li style=\\"margin: 0.5em 0; padding-left: 0.3em; line-height: 1.6em; color: #15212A;\\">Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li style=\\"margin: 0.5em 0; padding-left: 0.3em; line-height: 1.6em; color: #15212A;\\">Aliquam tincidunt mauris eu risus.</li></ul><pre style=\\"white-space: pre-wrap; overflow: auto; background: #15212A; padding: 15px; border-radius: 3px; line-height: 1.2em; color: #ffffff;\\"><code style=\\"font-size: 0.9em;\\">#header h1 a{display: block;width: 300px;height: 80px;}</code></pre><!--kg-card-end: markdown-->
+                                                <!--kg-card-begin: markdown--><h1 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px; color: #15212A;\\">HTML Ipsum Presents</h1><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6; color: #15212A;\\"><strong style=\\"font-weight: 700;\\">Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code style=\\"font-size: 0.9em; background: #F2F7FA; word-break: break-all; padding: 1px 7px; border-radius: 3px; color: #FF1A75;\\">commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\"#\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline;\\" target=\\"_blank\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px; color: #15212A;\\">Header Level 2</h2><ol style=\\"margin: 0 0 1.5em 0; line-height: 1.6; padding-left: 1.3em; padding-right: 1.5em; list-style: decimal; max-width: 100%;\\"><li style=\\"margin: 0.5em 0; padding-left: 0.3em; line-height: 1.6; color: #15212A;\\">Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li style=\\"margin: 0.5em 0; padding-left: 0.3em; line-height: 1.6; color: #15212A;\\">Aliquam tincidunt mauris eu risus.</li></ol><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6; margin: 2em 25px; font-size: 1em; padding: 0; color: #15212A;\\">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px; color: #15212A;\\">Header Level 3</h3><ul style=\\"margin: 0 0 1.5em 0; line-height: 1.6; padding-left: 1.3em; padding-right: 1.5em; list-style: disc; max-width: 100%;\\"><li style=\\"margin: 0.5em 0; padding-left: 0.3em; line-height: 1.6; color: #15212A;\\">Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li style=\\"margin: 0.5em 0; padding-left: 0.3em; line-height: 1.6; color: #15212A;\\">Aliquam tincidunt mauris eu risus.</li></ul><pre style=\\"white-space: pre-wrap; overflow: auto; background: #15212A; padding: 15px; border-radius: 3px; line-height: 1.2; color: #ffffff;\\"><code style=\\"font-size: 0.9em;\\">#header h1 a{display: block;width: 300px;height: 80px;}</code></pre><!--kg-card-end: markdown-->
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -1497,7 +1684,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -1506,8 +1693,7 @@ table.body h2 span {
                                     </table>
                                 </td>
                             </tr>
-
-                        </table>
+</table>
                         <!-- END CENTERED WHITE CONTAINER -->
                     </div>
                 </td>
@@ -1660,7 +1846,6 @@ View in browser [http://127.0.0.1:2369/html-ipsum/]
 
 
 
-
 HTML Ipsum Presents
 
 Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. Donec non enim in turpis pulvinar facilisis. Ut felis.
@@ -1714,7 +1899,6 @@ https://ghost.org/?via=pbg-newsletter
 
 
 
-
  
 
 
@@ -1728,7 +1912,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "38055",
+  "content-length": "40030",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1790,22 +1974,119 @@ Object {
         <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch><o:AllowPNG/></o:OfficeDocumentSettings></xml><![endif]-->
         <title>Post with email-only card</title>
         <style>
-.post-title-link {
-  display: block;
-  margin-top: 32px;
-  color: #15212A;
-  text-align: center;
-  line-height: 1.1em;
+@media only screen and (max-width: 620px) {
+  table.body {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  table.body .content {
+    padding: 0 !important;
+  }
+
+  table.body .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table.body .main {
+    border-spacing: 10px 0 !important;
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.body .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
 }
-.post-title-link-left {
-  text-align: left;
+@media all {
+  .ExternalClass {
+    width: 100%;
+  }
+
+  .ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+  }
+
+  .apple-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
 }
-.view-online-link {
-  word-wrap: none;
-  white-space: nowrap;
-  color: #15212a;
-  color: rgba(0, 0, 0, 0.6);
-  text-decoration: underline !important;
+@media only screen and (max-width: 620px) {
+  table[class=body] h1 {
+    font-size: 28px !important;
+    margin-bottom: 10px !important;
+  }
+
+  table[class=body] p,
+table[class=body] ul,
+table[class=body] ol,
+table[class=body] td,
+table[class=body] span,
+table[class=body] a {
+    font-size: 16px !important;
+  }
+
+  table[class=body] .wrapper,
+table[class=body] .article {
+    padding: 10px !important;
+  }
+
+  table[class=body] .content {
+    padding: 0 !important;
+  }
+
+  table[class=body] .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table[class=body] .main {
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table[class=body] .btn table {
+    width: 100% !important;
+  }
+
+  table[class=body] .btn a {
+    width: 100% !important;
+  }
+
+  table[class=body] .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+
+  table[class=body] p[class=small],
+table[class=body] a[class=small] {
+    font-size: 11px !important;
+  }
 }
 .kg-nft-link {
   display: block;
@@ -1813,7 +2094,7 @@ Object {
   color: #15212A !important;
   font-family: inherit !important;
   font-size: 14px;
-  line-height: 1.3em;
+  line-height: 1.3;
   padding-top: 4px;
   padding-right: 20px;
   padding-left: 20px;
@@ -1826,7 +2107,7 @@ Object {
   font-family: inherit !important;
   font-size: 15px;
   padding: 8px;
-  line-height: 1.3em;
+  line-height: 1.3;
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
@@ -1838,213 +2119,7 @@ Object {
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
 }
-.kg-audio-link {
-  color: #15212a !important;
-  color: rgba(0, 0, 0, 0.6) !important;
-}
 @media only screen and (max-width: 620px) {
-  table.body {
-    width: 100%;
-    min-width: 100%;
-  }
-
-  .hide-mobile {
-    display: none;
-  }
-
-  .mobile-only {
-    display: initial !important;
-  }
-
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
-  table.body p,
-table.body ul,
-table.body ol,
-table.body td {
-    font-size: 16px;
-  }
-
-  table.header .post-excerpt {
-    font-size: 16px !important;
-  }
-
-  table.body .kg-callout-card {
-    padding: 16px 24px !important;
-  }
-
-  table.body .kg-callout-text {
-    font-size: 16px !important;
-    line-height: 1.5em !important;
-  }
-
-  table.body pre {
-    white-space: pre-wrap !important;
-    word-break: break-word !important;
-  }
-
-  table.body .content {
-    padding: 0 !important;
-  }
-
-  table.body .container {
-    padding: 0 !important;
-    width: 100% !important;
-  }
-
-  table.body .main,
-table.header .header-main {
-    border-spacing: 10px 0 !important;
-    border-left-width: 0 !important;
-    border-radius: 0 !important;
-    border-right-width: 0 !important;
-  }
-
-  table.body .img-responsive {
-    height: auto !important;
-    max-width: 100% !important;
-    width: auto !important;
-  }
-
-  table.header .site-icon {
-    padding-top: 0 !important;
-  }
-
-  table.header .site-info {
-    padding-top: 24px !important;
-  }
-
-  table.header .post-title-link {
-    margin-top: 24px !important;
-  }
-
-  table.header .post-meta-wrapper {
-    padding-bottom: 24px !important;
-  }
-
-  table.header .site-icon img {
-    width: 36px !important;
-    height: 36px !important;
-  }
-
-  table.header .site-url a {
-    font-size: 13px !important;
-    padding-bottom: 16px !important;
-  }
-
-  table.header .post-meta,
-table.header .post-meta-date {
-    white-space: normal !important;
-    font-size: 13px !important;
-    line-height: 1.2em;
-  }
-
-  table.header .post-meta,
-table.header .view-online {
-    width: 100% !important;
-  }
-
-  table.header .post-meta-left,
-table.header .post-meta-left.view-online {
-    width: 100% !important;
-    text-align: left !important;
-  }
-
-  table.header .post-meta.view-online-mobile {
-    display: table-row !important;
-  }
-
-  table.header .post-meta-left.view-online-mobile,
-table.header .post-meta-left.view-online-mobile .view-online {
-    text-align: left !important;
-  }
-
-  table.header .post-meta.view-online.desktop {
-    display: none !important;
-  }
-
-  table.header .view-online {
-    text-decoration: underline;
-  }
-
-  table.body .footer p,
-table.body .footer p span {
-    font-size: 13px !important;
-  }
-
-  table.header .view-online-link,
-table.body .footer,
-table.body .footer a {
-    font-size: 13px !important;
-  }
-
-  table.header .post-title a {
-    font-size: 26px !important;
-    line-height: 1.1em !important;
-  }
-
-  table.feedback-buttons {
-    display: table !important;
-    width: 100% !important;
-    max-width: 390px;
-  }
-
-  table.feedback-buttons img {
-    display: inherit !important;
-  }
-
-  table.body .feedback-button-text {
-    display: none!important;
-  }
-
-  table.body .latest-posts-header {
-    font-size: 12px !important;
-  }
-
-  table.body .latest-post-title {
-    padding-right: 8px !important;
-  }
-
-  table.body .latest-post h4,
-table.body .latest-post h4 span {
-    padding: 4px 0 6px !important;
-    font-size: 15px !important;
-  }
-
-  table.body .latest-post-excerpt,
-table.body .latest-post-excerpt a,
-table.body .latest-post-excerpt span {
-    font-size: 13px !important;
-    line-height: 1.2 !important;
-  }
-
-  table.body .subscription-box h3 {
-    font-size: 14px !important;
-  }
-
-  table.body .subscription-box p,
-table.body .subscription-box p span {
-    font-size: 13px !important;
-  }
-
-  table.body .subscription-details,
-table.body .manage-subscription {
-    display: inline-block;
-    width: 100%;
-    text-align: left !important;
-    font-size: 13px !important;
-  }
-
-  table.body .subscription-details {
-    padding-bottom: 12px;
-  }
-
   table.body .kg-bookmark-card {
     width: 90vw;
   }
@@ -2059,77 +2134,6 @@ table.body .manage-subscription {
 
   table.body .kg-embed-card {
     max-width: 90vw !important;
-  }
-
-  table.body h1 {
-    font-size: 32px !important;
-    line-height: 1.3em !important;
-  }
-
-  table.body h2,
-table.body h2 span {
-    font-size: 26px !important;
-    line-height: 1.22em !important;
-  }
-
-  table.body h3 {
-    font-size: 21px !important;
-    line-height: 1.25em !important;
-  }
-
-  table.body h4 {
-    font-size: 19px !important;
-    line-height: 1.3em !important;
-  }
-
-  table.body h5 {
-    font-size: 16px !important;
-    line-height: 1.4em !important;
-  }
-
-  table.body h6 {
-    font-size: 16px !important;
-    line-height: 1.4em !important;
-  }
-
-  table.body blockquote {
-    font-size: 16px !important;
-    line-height: 1.6em;
-    margin-bottom: 0;
-  }
-
-  table.body blockquote p {
-    margin-right: 15px !important;
-    margin-left: 15px !important;
-  }
-
-  table.body blockquote.kg-blockquote-alt {
-    border-left: 0 none !important;
-    margin: 0 !important;
-    font-size: 18px !important;
-    line-height: 1.4em !important;
-  }
-
-  table.body blockquote.kg-blockquote-alt p {
-    margin-right: 20px !important;
-    margin-left: 20px !important;
-  }
-
-  table.body hr {
-    margin: 2em 0 !important;
-  }
-
-  .feature-image-caption {
-    font-size: 13px!important;
-  }
-
-  .kg-card-figcaption {
-    font-size: 13px!important;
-  }
-
-  .kg-card-figcaption p,
-.kg-card-figcaption p span {
-    font-size: 13px!important;
   }
 
   table.body .kg-cta-card {
@@ -2188,10 +2192,6 @@ table.body h2 span {
   }
 }
 @media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-
   .ExternalClass {
     width: 100%;
   }
@@ -2205,7 +2205,7 @@ table.body h2 span {
     line-height: 100%;
   }
 
-  .apple-link a {
+  .recipient-link a {
     color: inherit !important;
     font-family: inherit !important;
     font-size: inherit !important;
@@ -2221,6 +2221,286 @@ table.body h2 span {
     font-family: inherit;
     font-weight: inherit;
     line-height: inherit;
+  }
+}
+.post-title-link {
+  display: block;
+  margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1;
+}
+.post-title-link-left {
+  text-align: left;
+}
+.view-online-link {
+  word-wrap: none;
+  white-space: nowrap;
+  color: #15212a;
+  color: rgba(0, 0, 0, 0.6);
+  text-decoration: underline !important;
+}
+.kg-audio-link {
+  color: #15212a !important;
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+@media only screen and (max-width: 620px) {
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  table.body p,
+table.body ul,
+table.body ol,
+table.body td {
+    font-size: 16px;
+  }
+
+  table.header .post-excerpt {
+    font-size: 16px !important;
+  }
+
+  table.body .kg-callout-card {
+    padding: 16px 24px !important;
+  }
+
+  table.body .kg-callout-text {
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+  }
+
+  table.body pre {
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+  }
+
+  table.body .main,
+table.header .header-main {
+    border-spacing: 10px 0 !important;
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.header .site-icon {
+    padding-top: 0 !important;
+  }
+
+  table.header .site-info {
+    padding-top: 24px !important;
+  }
+
+  table.header .post-title-link {
+    margin-top: 24px !important;
+  }
+
+  table.header .post-meta-wrapper {
+    padding-bottom: 24px !important;
+  }
+
+  table.header .site-icon img {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  table.header .site-url a {
+    font-size: 13px !important;
+    padding-bottom: 16px !important;
+  }
+
+  table.header .post-meta,
+table.header .post-meta-date {
+    white-space: normal !important;
+    font-size: 13px !important;
+    line-height: 1.2;
+  }
+
+  table.header .post-meta,
+table.header .view-online {
+    width: 100% !important;
+  }
+
+  table.header .post-meta-left,
+table.header .post-meta-left.view-online {
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  table.header .post-meta.view-online-mobile {
+    display: table-row !important;
+  }
+
+  table.header .post-meta-left.view-online-mobile,
+table.header .post-meta-left.view-online-mobile .view-online {
+    text-align: left !important;
+  }
+
+  table.header .post-meta.view-online.desktop {
+    display: none !important;
+  }
+
+  table.header .view-online {
+    text-decoration: underline;
+  }
+
+  table.body .footer p,
+table.body .footer p span {
+    font-size: 13px !important;
+  }
+
+  table.header .view-online-link,
+table.body .footer,
+table.body .footer a {
+    font-size: 13px !important;
+  }
+
+  table.header .post-title a {
+    font-size: 26px !important;
+    line-height: 1.1 !important;
+  }
+
+  table.feedback-buttons {
+    display: table !important;
+    width: 100% !important;
+    max-width: 390px;
+  }
+
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: none!important;
+  }
+
+  table.body .latest-posts-header {
+    font-size: 12px !important;
+  }
+
+  table.body .latest-post-title {
+    padding-right: 8px !important;
+  }
+
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
+  }
+
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+  }
+
+  table.body .subscription-box h3 {
+    font-size: 14px !important;
+  }
+
+  table.body .subscription-box p,
+table.body .subscription-box p span {
+    font-size: 13px !important;
+  }
+
+  table.body .subscription-details,
+table.body .manage-subscription {
+    display: inline-block;
+    width: 100%;
+    text-align: left !important;
+    font-size: 13px !important;
+  }
+
+  table.body .subscription-details {
+    padding-bottom: 12px;
+  }
+
+  table.body h1 {
+    font-size: 32px !important;
+    line-height: 1.3 !important;
+  }
+
+  table.body h2,
+table.body h2 span {
+    font-size: 26px !important;
+    line-height: 1.22 !important;
+  }
+
+  table.body h3 {
+    font-size: 21px !important;
+    line-height: 1.25 !important;
+  }
+
+  table.body h4 {
+    font-size: 19px !important;
+    line-height: 1.3 !important;
+  }
+
+  table.body h5 {
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+  }
+
+  table.body h6 {
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+  }
+
+  table.body blockquote {
+    font-size: 16px !important;
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
+
+  table.body blockquote p {
+    margin-right: 15px !important;
+    margin-left: 15px !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt {
+    border-left: 0 none !important;
+    margin: 0 !important;
+    font-size: 18px !important;
+    line-height: 1.4 !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    margin-right: 20px !important;
+    margin-left: 20px !important;
+  }
+
+  table.body hr {
+    margin: 2em 0 !important;
+  }
+
+  .feature-image-caption {
+    font-size: 13px!important;
+  }
+
+  .kg-card-figcaption {
+    font-size: 13px!important;
+  }
+
+  .kg-card-figcaption p,
+.kg-card-figcaption p span {
+    font-size: 13px!important;
+  }
+}
+@media all {
+  .subscription-details p.hidden {
+    display: none !important;
   }
 }
 </style>
@@ -2275,7 +2555,7 @@ table.body h2 span {
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                         <tr>
                                                             <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">Post with email-only card</a>
+                                                                <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">Post with email-only card</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -2330,14 +2610,13 @@ table.body h2 span {
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
                 <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
-                            <tr>
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">                            <tr>
                                 <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" data-testid=\\"email-preview-content\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                         <tr class=\\"post-content-row\\">
-                                            <td class=\\"post-content-sans-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 17px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
+                                            <td class=\\"post-content-sans-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 17px; line-height: 1.5; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
                                                 <!-- POST CONTENT START -->
-                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A;\\">Testing <a href=\\"https://ghost.org/\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline;\\" target=\\"_blank\\">links</a> in email excerpt and apostrophes &#39;</p>
+                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6; color: #15212A;\\">Testing <a href=\\"https://ghost.org/\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline;\\" target=\\"_blank\\">links</a> in email excerpt and apostrophes &#39;</p>
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -2355,7 +2634,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -2364,8 +2643,7 @@ table.body h2 span {
                                     </table>
                                 </td>
                             </tr>
-
-                        </table>
+</table>
                         <!-- END CENTERED WHITE CONTAINER -->
                     </div>
                 </td>
@@ -2513,7 +2791,6 @@ View in browser [http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/]
 
 
 
-
 Testing links [https://ghost.org/] in email excerpt and apostrophes '
 
 
@@ -2539,7 +2816,6 @@ Ghost © 2025 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-u
 
 
 https://ghost.org/?via=pbg-newsletter
-
 
 
 
@@ -2576,7 +2852,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "33309",
+  "content-length": "35308",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2967,22 +3243,119 @@ Object {
         <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch><o:AllowPNG/></o:OfficeDocumentSettings></xml><![endif]-->
         <title>Post with email-only card</title>
         <style>
-.post-title-link {
-  display: block;
-  margin-top: 32px;
-  color: #15212A;
-  text-align: center;
-  line-height: 1.1em;
+@media only screen and (max-width: 620px) {
+  table.body {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  table.body .content {
+    padding: 0 !important;
+  }
+
+  table.body .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table.body .main {
+    border-spacing: 10px 0 !important;
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.body .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
 }
-.post-title-link-left {
-  text-align: left;
+@media all {
+  .ExternalClass {
+    width: 100%;
+  }
+
+  .ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+  }
+
+  .apple-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
 }
-.view-online-link {
-  word-wrap: none;
-  white-space: nowrap;
-  color: #15212a;
-  color: rgba(0, 0, 0, 0.6);
-  text-decoration: underline !important;
+@media only screen and (max-width: 620px) {
+  table[class=body] h1 {
+    font-size: 28px !important;
+    margin-bottom: 10px !important;
+  }
+
+  table[class=body] p,
+table[class=body] ul,
+table[class=body] ol,
+table[class=body] td,
+table[class=body] span,
+table[class=body] a {
+    font-size: 16px !important;
+  }
+
+  table[class=body] .wrapper,
+table[class=body] .article {
+    padding: 10px !important;
+  }
+
+  table[class=body] .content {
+    padding: 0 !important;
+  }
+
+  table[class=body] .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table[class=body] .main {
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table[class=body] .btn table {
+    width: 100% !important;
+  }
+
+  table[class=body] .btn a {
+    width: 100% !important;
+  }
+
+  table[class=body] .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+
+  table[class=body] p[class=small],
+table[class=body] a[class=small] {
+    font-size: 11px !important;
+  }
 }
 .kg-nft-link {
   display: block;
@@ -2990,7 +3363,7 @@ Object {
   color: #15212A !important;
   font-family: inherit !important;
   font-size: 14px;
-  line-height: 1.3em;
+  line-height: 1.3;
   padding-top: 4px;
   padding-right: 20px;
   padding-left: 20px;
@@ -3003,7 +3376,7 @@ Object {
   font-family: inherit !important;
   font-size: 15px;
   padding: 8px;
-  line-height: 1.3em;
+  line-height: 1.3;
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
@@ -3015,213 +3388,7 @@ Object {
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
 }
-.kg-audio-link {
-  color: #15212a !important;
-  color: rgba(0, 0, 0, 0.6) !important;
-}
 @media only screen and (max-width: 620px) {
-  table.body {
-    width: 100%;
-    min-width: 100%;
-  }
-
-  .hide-mobile {
-    display: none;
-  }
-
-  .mobile-only {
-    display: initial !important;
-  }
-
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
-  table.body p,
-table.body ul,
-table.body ol,
-table.body td {
-    font-size: 16px;
-  }
-
-  table.header .post-excerpt {
-    font-size: 16px !important;
-  }
-
-  table.body .kg-callout-card {
-    padding: 16px 24px !important;
-  }
-
-  table.body .kg-callout-text {
-    font-size: 16px !important;
-    line-height: 1.5em !important;
-  }
-
-  table.body pre {
-    white-space: pre-wrap !important;
-    word-break: break-word !important;
-  }
-
-  table.body .content {
-    padding: 0 !important;
-  }
-
-  table.body .container {
-    padding: 0 !important;
-    width: 100% !important;
-  }
-
-  table.body .main,
-table.header .header-main {
-    border-spacing: 10px 0 !important;
-    border-left-width: 0 !important;
-    border-radius: 0 !important;
-    border-right-width: 0 !important;
-  }
-
-  table.body .img-responsive {
-    height: auto !important;
-    max-width: 100% !important;
-    width: auto !important;
-  }
-
-  table.header .site-icon {
-    padding-top: 0 !important;
-  }
-
-  table.header .site-info {
-    padding-top: 24px !important;
-  }
-
-  table.header .post-title-link {
-    margin-top: 24px !important;
-  }
-
-  table.header .post-meta-wrapper {
-    padding-bottom: 24px !important;
-  }
-
-  table.header .site-icon img {
-    width: 36px !important;
-    height: 36px !important;
-  }
-
-  table.header .site-url a {
-    font-size: 13px !important;
-    padding-bottom: 16px !important;
-  }
-
-  table.header .post-meta,
-table.header .post-meta-date {
-    white-space: normal !important;
-    font-size: 13px !important;
-    line-height: 1.2em;
-  }
-
-  table.header .post-meta,
-table.header .view-online {
-    width: 100% !important;
-  }
-
-  table.header .post-meta-left,
-table.header .post-meta-left.view-online {
-    width: 100% !important;
-    text-align: left !important;
-  }
-
-  table.header .post-meta.view-online-mobile {
-    display: table-row !important;
-  }
-
-  table.header .post-meta-left.view-online-mobile,
-table.header .post-meta-left.view-online-mobile .view-online {
-    text-align: left !important;
-  }
-
-  table.header .post-meta.view-online.desktop {
-    display: none !important;
-  }
-
-  table.header .view-online {
-    text-decoration: underline;
-  }
-
-  table.body .footer p,
-table.body .footer p span {
-    font-size: 13px !important;
-  }
-
-  table.header .view-online-link,
-table.body .footer,
-table.body .footer a {
-    font-size: 13px !important;
-  }
-
-  table.header .post-title a {
-    font-size: 26px !important;
-    line-height: 1.1em !important;
-  }
-
-  table.feedback-buttons {
-    display: table !important;
-    width: 100% !important;
-    max-width: 390px;
-  }
-
-  table.feedback-buttons img {
-    display: inherit !important;
-  }
-
-  table.body .feedback-button-text {
-    display: none!important;
-  }
-
-  table.body .latest-posts-header {
-    font-size: 12px !important;
-  }
-
-  table.body .latest-post-title {
-    padding-right: 8px !important;
-  }
-
-  table.body .latest-post h4,
-table.body .latest-post h4 span {
-    padding: 4px 0 6px !important;
-    font-size: 15px !important;
-  }
-
-  table.body .latest-post-excerpt,
-table.body .latest-post-excerpt a,
-table.body .latest-post-excerpt span {
-    font-size: 13px !important;
-    line-height: 1.2 !important;
-  }
-
-  table.body .subscription-box h3 {
-    font-size: 14px !important;
-  }
-
-  table.body .subscription-box p,
-table.body .subscription-box p span {
-    font-size: 13px !important;
-  }
-
-  table.body .subscription-details,
-table.body .manage-subscription {
-    display: inline-block;
-    width: 100%;
-    text-align: left !important;
-    font-size: 13px !important;
-  }
-
-  table.body .subscription-details {
-    padding-bottom: 12px;
-  }
-
   table.body .kg-bookmark-card {
     width: 90vw;
   }
@@ -3236,77 +3403,6 @@ table.body .manage-subscription {
 
   table.body .kg-embed-card {
     max-width: 90vw !important;
-  }
-
-  table.body h1 {
-    font-size: 32px !important;
-    line-height: 1.3em !important;
-  }
-
-  table.body h2,
-table.body h2 span {
-    font-size: 26px !important;
-    line-height: 1.22em !important;
-  }
-
-  table.body h3 {
-    font-size: 21px !important;
-    line-height: 1.25em !important;
-  }
-
-  table.body h4 {
-    font-size: 19px !important;
-    line-height: 1.3em !important;
-  }
-
-  table.body h5 {
-    font-size: 16px !important;
-    line-height: 1.4em !important;
-  }
-
-  table.body h6 {
-    font-size: 16px !important;
-    line-height: 1.4em !important;
-  }
-
-  table.body blockquote {
-    font-size: 16px !important;
-    line-height: 1.6em;
-    margin-bottom: 0;
-  }
-
-  table.body blockquote p {
-    margin-right: 15px !important;
-    margin-left: 15px !important;
-  }
-
-  table.body blockquote.kg-blockquote-alt {
-    border-left: 0 none !important;
-    margin: 0 !important;
-    font-size: 18px !important;
-    line-height: 1.4em !important;
-  }
-
-  table.body blockquote.kg-blockquote-alt p {
-    margin-right: 20px !important;
-    margin-left: 20px !important;
-  }
-
-  table.body hr {
-    margin: 2em 0 !important;
-  }
-
-  .feature-image-caption {
-    font-size: 13px!important;
-  }
-
-  .kg-card-figcaption {
-    font-size: 13px!important;
-  }
-
-  .kg-card-figcaption p,
-.kg-card-figcaption p span {
-    font-size: 13px!important;
   }
 
   table.body .kg-cta-card {
@@ -3365,10 +3461,6 @@ table.body h2 span {
   }
 }
 @media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-
   .ExternalClass {
     width: 100%;
   }
@@ -3382,7 +3474,7 @@ table.body h2 span {
     line-height: 100%;
   }
 
-  .apple-link a {
+  .recipient-link a {
     color: inherit !important;
     font-family: inherit !important;
     font-size: inherit !important;
@@ -3398,6 +3490,286 @@ table.body h2 span {
     font-family: inherit;
     font-weight: inherit;
     line-height: inherit;
+  }
+}
+.post-title-link {
+  display: block;
+  margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1;
+}
+.post-title-link-left {
+  text-align: left;
+}
+.view-online-link {
+  word-wrap: none;
+  white-space: nowrap;
+  color: #15212a;
+  color: rgba(0, 0, 0, 0.6);
+  text-decoration: underline !important;
+}
+.kg-audio-link {
+  color: #15212a !important;
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+@media only screen and (max-width: 620px) {
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  table.body p,
+table.body ul,
+table.body ol,
+table.body td {
+    font-size: 16px;
+  }
+
+  table.header .post-excerpt {
+    font-size: 16px !important;
+  }
+
+  table.body .kg-callout-card {
+    padding: 16px 24px !important;
+  }
+
+  table.body .kg-callout-text {
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+  }
+
+  table.body pre {
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+  }
+
+  table.body .main,
+table.header .header-main {
+    border-spacing: 10px 0 !important;
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.header .site-icon {
+    padding-top: 0 !important;
+  }
+
+  table.header .site-info {
+    padding-top: 24px !important;
+  }
+
+  table.header .post-title-link {
+    margin-top: 24px !important;
+  }
+
+  table.header .post-meta-wrapper {
+    padding-bottom: 24px !important;
+  }
+
+  table.header .site-icon img {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  table.header .site-url a {
+    font-size: 13px !important;
+    padding-bottom: 16px !important;
+  }
+
+  table.header .post-meta,
+table.header .post-meta-date {
+    white-space: normal !important;
+    font-size: 13px !important;
+    line-height: 1.2;
+  }
+
+  table.header .post-meta,
+table.header .view-online {
+    width: 100% !important;
+  }
+
+  table.header .post-meta-left,
+table.header .post-meta-left.view-online {
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  table.header .post-meta.view-online-mobile {
+    display: table-row !important;
+  }
+
+  table.header .post-meta-left.view-online-mobile,
+table.header .post-meta-left.view-online-mobile .view-online {
+    text-align: left !important;
+  }
+
+  table.header .post-meta.view-online.desktop {
+    display: none !important;
+  }
+
+  table.header .view-online {
+    text-decoration: underline;
+  }
+
+  table.body .footer p,
+table.body .footer p span {
+    font-size: 13px !important;
+  }
+
+  table.header .view-online-link,
+table.body .footer,
+table.body .footer a {
+    font-size: 13px !important;
+  }
+
+  table.header .post-title a {
+    font-size: 26px !important;
+    line-height: 1.1 !important;
+  }
+
+  table.feedback-buttons {
+    display: table !important;
+    width: 100% !important;
+    max-width: 390px;
+  }
+
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: none!important;
+  }
+
+  table.body .latest-posts-header {
+    font-size: 12px !important;
+  }
+
+  table.body .latest-post-title {
+    padding-right: 8px !important;
+  }
+
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
+  }
+
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+  }
+
+  table.body .subscription-box h3 {
+    font-size: 14px !important;
+  }
+
+  table.body .subscription-box p,
+table.body .subscription-box p span {
+    font-size: 13px !important;
+  }
+
+  table.body .subscription-details,
+table.body .manage-subscription {
+    display: inline-block;
+    width: 100%;
+    text-align: left !important;
+    font-size: 13px !important;
+  }
+
+  table.body .subscription-details {
+    padding-bottom: 12px;
+  }
+
+  table.body h1 {
+    font-size: 32px !important;
+    line-height: 1.3 !important;
+  }
+
+  table.body h2,
+table.body h2 span {
+    font-size: 26px !important;
+    line-height: 1.22 !important;
+  }
+
+  table.body h3 {
+    font-size: 21px !important;
+    line-height: 1.25 !important;
+  }
+
+  table.body h4 {
+    font-size: 19px !important;
+    line-height: 1.3 !important;
+  }
+
+  table.body h5 {
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+  }
+
+  table.body h6 {
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+  }
+
+  table.body blockquote {
+    font-size: 16px !important;
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
+
+  table.body blockquote p {
+    margin-right: 15px !important;
+    margin-left: 15px !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt {
+    border-left: 0 none !important;
+    margin: 0 !important;
+    font-size: 18px !important;
+    line-height: 1.4 !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    margin-right: 20px !important;
+    margin-left: 20px !important;
+  }
+
+  table.body hr {
+    margin: 2em 0 !important;
+  }
+
+  .feature-image-caption {
+    font-size: 13px!important;
+  }
+
+  .kg-card-figcaption {
+    font-size: 13px!important;
+  }
+
+  .kg-card-figcaption p,
+.kg-card-figcaption p span {
+    font-size: 13px!important;
+  }
+}
+@media all {
+  .subscription-details p.hidden {
+    display: none !important;
   }
 }
 </style>
@@ -3459,7 +3831,7 @@ table.body h2 span {
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                         <tr>
                                                             <td style=\\"vertical-align: top; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">Post with email-only card</a>
+                                                                <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">Post with email-only card</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -3514,14 +3886,13 @@ table.body h2 span {
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
                 <td class=\\"container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
-                            <tr>
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">                            <tr>
                                 <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" data-testid=\\"email-preview-content\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                         <tr class=\\"post-content-row\\">
-                                            <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
+                                            <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
                                                 <!-- POST CONTENT START -->
-                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A;\\">Testing <a href=\\"https://ghost.org/\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline;\\" target=\\"_blank\\">links</a> in email excerpt and apostrophes &#39;</p>
+                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6; color: #15212A;\\">Testing <a href=\\"https://ghost.org/\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline;\\" target=\\"_blank\\">links</a> in email excerpt and apostrophes &#39;</p>
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -3539,7 +3910,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -3548,8 +3919,7 @@ table.body h2 span {
                                     </table>
                                 </td>
                             </tr>
-
-                        </table>
+</table>
                         <!-- END CENTERED WHITE CONTAINER -->
                     </div>
                 </td>
@@ -3704,7 +4074,6 @@ View in browser [http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/]
 
 
 
-
 Testing links [https://ghost.org/] in email excerpt and apostrophes '
 
 
@@ -3730,7 +4099,6 @@ Ghost © 2025 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-u
 
 
 https://ghost.org/?via=pbg-newsletter
-
 
 
 
@@ -3767,7 +4135,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "34186",
+  "content-length": "36185",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4184,22 +4552,119 @@ Object {
         <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch><o:AllowPNG/></o:OfficeDocumentSettings></xml><![endif]-->
         <title>Post with email-only card</title>
         <style>
-.post-title-link {
-  display: block;
-  margin-top: 32px;
-  color: #15212A;
-  text-align: center;
-  line-height: 1.1em;
+@media only screen and (max-width: 620px) {
+  table.body {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  table.body .content {
+    padding: 0 !important;
+  }
+
+  table.body .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table.body .main {
+    border-spacing: 10px 0 !important;
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.body .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
 }
-.post-title-link-left {
-  text-align: left;
+@media all {
+  .ExternalClass {
+    width: 100%;
+  }
+
+  .ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+  }
+
+  .apple-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
 }
-.view-online-link {
-  word-wrap: none;
-  white-space: nowrap;
-  color: #15212a;
-  color: rgba(0, 0, 0, 0.6);
-  text-decoration: underline !important;
+@media only screen and (max-width: 620px) {
+  table[class=body] h1 {
+    font-size: 28px !important;
+    margin-bottom: 10px !important;
+  }
+
+  table[class=body] p,
+table[class=body] ul,
+table[class=body] ol,
+table[class=body] td,
+table[class=body] span,
+table[class=body] a {
+    font-size: 16px !important;
+  }
+
+  table[class=body] .wrapper,
+table[class=body] .article {
+    padding: 10px !important;
+  }
+
+  table[class=body] .content {
+    padding: 0 !important;
+  }
+
+  table[class=body] .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table[class=body] .main {
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table[class=body] .btn table {
+    width: 100% !important;
+  }
+
+  table[class=body] .btn a {
+    width: 100% !important;
+  }
+
+  table[class=body] .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+
+  table[class=body] p[class=small],
+table[class=body] a[class=small] {
+    font-size: 11px !important;
+  }
 }
 .kg-nft-link {
   display: block;
@@ -4207,7 +4672,7 @@ Object {
   color: #15212A !important;
   font-family: inherit !important;
   font-size: 14px;
-  line-height: 1.3em;
+  line-height: 1.3;
   padding-top: 4px;
   padding-right: 20px;
   padding-left: 20px;
@@ -4220,7 +4685,7 @@ Object {
   font-family: inherit !important;
   font-size: 15px;
   padding: 8px;
-  line-height: 1.3em;
+  line-height: 1.3;
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
@@ -4232,213 +4697,7 @@ Object {
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
 }
-.kg-audio-link {
-  color: #15212a !important;
-  color: rgba(0, 0, 0, 0.6) !important;
-}
 @media only screen and (max-width: 620px) {
-  table.body {
-    width: 100%;
-    min-width: 100%;
-  }
-
-  .hide-mobile {
-    display: none;
-  }
-
-  .mobile-only {
-    display: initial !important;
-  }
-
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
-  table.body p,
-table.body ul,
-table.body ol,
-table.body td {
-    font-size: 16px;
-  }
-
-  table.header .post-excerpt {
-    font-size: 16px !important;
-  }
-
-  table.body .kg-callout-card {
-    padding: 16px 24px !important;
-  }
-
-  table.body .kg-callout-text {
-    font-size: 16px !important;
-    line-height: 1.5em !important;
-  }
-
-  table.body pre {
-    white-space: pre-wrap !important;
-    word-break: break-word !important;
-  }
-
-  table.body .content {
-    padding: 0 !important;
-  }
-
-  table.body .container {
-    padding: 0 !important;
-    width: 100% !important;
-  }
-
-  table.body .main,
-table.header .header-main {
-    border-spacing: 10px 0 !important;
-    border-left-width: 0 !important;
-    border-radius: 0 !important;
-    border-right-width: 0 !important;
-  }
-
-  table.body .img-responsive {
-    height: auto !important;
-    max-width: 100% !important;
-    width: auto !important;
-  }
-
-  table.header .site-icon {
-    padding-top: 0 !important;
-  }
-
-  table.header .site-info {
-    padding-top: 24px !important;
-  }
-
-  table.header .post-title-link {
-    margin-top: 24px !important;
-  }
-
-  table.header .post-meta-wrapper {
-    padding-bottom: 24px !important;
-  }
-
-  table.header .site-icon img {
-    width: 36px !important;
-    height: 36px !important;
-  }
-
-  table.header .site-url a {
-    font-size: 13px !important;
-    padding-bottom: 16px !important;
-  }
-
-  table.header .post-meta,
-table.header .post-meta-date {
-    white-space: normal !important;
-    font-size: 13px !important;
-    line-height: 1.2em;
-  }
-
-  table.header .post-meta,
-table.header .view-online {
-    width: 100% !important;
-  }
-
-  table.header .post-meta-left,
-table.header .post-meta-left.view-online {
-    width: 100% !important;
-    text-align: left !important;
-  }
-
-  table.header .post-meta.view-online-mobile {
-    display: table-row !important;
-  }
-
-  table.header .post-meta-left.view-online-mobile,
-table.header .post-meta-left.view-online-mobile .view-online {
-    text-align: left !important;
-  }
-
-  table.header .post-meta.view-online.desktop {
-    display: none !important;
-  }
-
-  table.header .view-online {
-    text-decoration: underline;
-  }
-
-  table.body .footer p,
-table.body .footer p span {
-    font-size: 13px !important;
-  }
-
-  table.header .view-online-link,
-table.body .footer,
-table.body .footer a {
-    font-size: 13px !important;
-  }
-
-  table.header .post-title a {
-    font-size: 26px !important;
-    line-height: 1.1em !important;
-  }
-
-  table.feedback-buttons {
-    display: table !important;
-    width: 100% !important;
-    max-width: 390px;
-  }
-
-  table.feedback-buttons img {
-    display: inherit !important;
-  }
-
-  table.body .feedback-button-text {
-    display: none!important;
-  }
-
-  table.body .latest-posts-header {
-    font-size: 12px !important;
-  }
-
-  table.body .latest-post-title {
-    padding-right: 8px !important;
-  }
-
-  table.body .latest-post h4,
-table.body .latest-post h4 span {
-    padding: 4px 0 6px !important;
-    font-size: 15px !important;
-  }
-
-  table.body .latest-post-excerpt,
-table.body .latest-post-excerpt a,
-table.body .latest-post-excerpt span {
-    font-size: 13px !important;
-    line-height: 1.2 !important;
-  }
-
-  table.body .subscription-box h3 {
-    font-size: 14px !important;
-  }
-
-  table.body .subscription-box p,
-table.body .subscription-box p span {
-    font-size: 13px !important;
-  }
-
-  table.body .subscription-details,
-table.body .manage-subscription {
-    display: inline-block;
-    width: 100%;
-    text-align: left !important;
-    font-size: 13px !important;
-  }
-
-  table.body .subscription-details {
-    padding-bottom: 12px;
-  }
-
   table.body .kg-bookmark-card {
     width: 90vw;
   }
@@ -4453,77 +4712,6 @@ table.body .manage-subscription {
 
   table.body .kg-embed-card {
     max-width: 90vw !important;
-  }
-
-  table.body h1 {
-    font-size: 32px !important;
-    line-height: 1.3em !important;
-  }
-
-  table.body h2,
-table.body h2 span {
-    font-size: 26px !important;
-    line-height: 1.22em !important;
-  }
-
-  table.body h3 {
-    font-size: 21px !important;
-    line-height: 1.25em !important;
-  }
-
-  table.body h4 {
-    font-size: 19px !important;
-    line-height: 1.3em !important;
-  }
-
-  table.body h5 {
-    font-size: 16px !important;
-    line-height: 1.4em !important;
-  }
-
-  table.body h6 {
-    font-size: 16px !important;
-    line-height: 1.4em !important;
-  }
-
-  table.body blockquote {
-    font-size: 16px !important;
-    line-height: 1.6em;
-    margin-bottom: 0;
-  }
-
-  table.body blockquote p {
-    margin-right: 15px !important;
-    margin-left: 15px !important;
-  }
-
-  table.body blockquote.kg-blockquote-alt {
-    border-left: 0 none !important;
-    margin: 0 !important;
-    font-size: 18px !important;
-    line-height: 1.4em !important;
-  }
-
-  table.body blockquote.kg-blockquote-alt p {
-    margin-right: 20px !important;
-    margin-left: 20px !important;
-  }
-
-  table.body hr {
-    margin: 2em 0 !important;
-  }
-
-  .feature-image-caption {
-    font-size: 13px!important;
-  }
-
-  .kg-card-figcaption {
-    font-size: 13px!important;
-  }
-
-  .kg-card-figcaption p,
-.kg-card-figcaption p span {
-    font-size: 13px!important;
   }
 
   table.body .kg-cta-card {
@@ -4582,10 +4770,6 @@ table.body h2 span {
   }
 }
 @media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-
   .ExternalClass {
     width: 100%;
   }
@@ -4599,7 +4783,7 @@ table.body h2 span {
     line-height: 100%;
   }
 
-  .apple-link a {
+  .recipient-link a {
     color: inherit !important;
     font-family: inherit !important;
     font-size: inherit !important;
@@ -4615,6 +4799,286 @@ table.body h2 span {
     font-family: inherit;
     font-weight: inherit;
     line-height: inherit;
+  }
+}
+.post-title-link {
+  display: block;
+  margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1;
+}
+.post-title-link-left {
+  text-align: left;
+}
+.view-online-link {
+  word-wrap: none;
+  white-space: nowrap;
+  color: #15212a;
+  color: rgba(0, 0, 0, 0.6);
+  text-decoration: underline !important;
+}
+.kg-audio-link {
+  color: #15212a !important;
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+@media only screen and (max-width: 620px) {
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  table.body p,
+table.body ul,
+table.body ol,
+table.body td {
+    font-size: 16px;
+  }
+
+  table.header .post-excerpt {
+    font-size: 16px !important;
+  }
+
+  table.body .kg-callout-card {
+    padding: 16px 24px !important;
+  }
+
+  table.body .kg-callout-text {
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+  }
+
+  table.body pre {
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+  }
+
+  table.body .main,
+table.header .header-main {
+    border-spacing: 10px 0 !important;
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.header .site-icon {
+    padding-top: 0 !important;
+  }
+
+  table.header .site-info {
+    padding-top: 24px !important;
+  }
+
+  table.header .post-title-link {
+    margin-top: 24px !important;
+  }
+
+  table.header .post-meta-wrapper {
+    padding-bottom: 24px !important;
+  }
+
+  table.header .site-icon img {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  table.header .site-url a {
+    font-size: 13px !important;
+    padding-bottom: 16px !important;
+  }
+
+  table.header .post-meta,
+table.header .post-meta-date {
+    white-space: normal !important;
+    font-size: 13px !important;
+    line-height: 1.2;
+  }
+
+  table.header .post-meta,
+table.header .view-online {
+    width: 100% !important;
+  }
+
+  table.header .post-meta-left,
+table.header .post-meta-left.view-online {
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  table.header .post-meta.view-online-mobile {
+    display: table-row !important;
+  }
+
+  table.header .post-meta-left.view-online-mobile,
+table.header .post-meta-left.view-online-mobile .view-online {
+    text-align: left !important;
+  }
+
+  table.header .post-meta.view-online.desktop {
+    display: none !important;
+  }
+
+  table.header .view-online {
+    text-decoration: underline;
+  }
+
+  table.body .footer p,
+table.body .footer p span {
+    font-size: 13px !important;
+  }
+
+  table.header .view-online-link,
+table.body .footer,
+table.body .footer a {
+    font-size: 13px !important;
+  }
+
+  table.header .post-title a {
+    font-size: 26px !important;
+    line-height: 1.1 !important;
+  }
+
+  table.feedback-buttons {
+    display: table !important;
+    width: 100% !important;
+    max-width: 390px;
+  }
+
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: none!important;
+  }
+
+  table.body .latest-posts-header {
+    font-size: 12px !important;
+  }
+
+  table.body .latest-post-title {
+    padding-right: 8px !important;
+  }
+
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
+  }
+
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+  }
+
+  table.body .subscription-box h3 {
+    font-size: 14px !important;
+  }
+
+  table.body .subscription-box p,
+table.body .subscription-box p span {
+    font-size: 13px !important;
+  }
+
+  table.body .subscription-details,
+table.body .manage-subscription {
+    display: inline-block;
+    width: 100%;
+    text-align: left !important;
+    font-size: 13px !important;
+  }
+
+  table.body .subscription-details {
+    padding-bottom: 12px;
+  }
+
+  table.body h1 {
+    font-size: 32px !important;
+    line-height: 1.3 !important;
+  }
+
+  table.body h2,
+table.body h2 span {
+    font-size: 26px !important;
+    line-height: 1.22 !important;
+  }
+
+  table.body h3 {
+    font-size: 21px !important;
+    line-height: 1.25 !important;
+  }
+
+  table.body h4 {
+    font-size: 19px !important;
+    line-height: 1.3 !important;
+  }
+
+  table.body h5 {
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+  }
+
+  table.body h6 {
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+  }
+
+  table.body blockquote {
+    font-size: 16px !important;
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
+
+  table.body blockquote p {
+    margin-right: 15px !important;
+    margin-left: 15px !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt {
+    border-left: 0 none !important;
+    margin: 0 !important;
+    font-size: 18px !important;
+    line-height: 1.4 !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    margin-right: 20px !important;
+    margin-left: 20px !important;
+  }
+
+  table.body hr {
+    margin: 2em 0 !important;
+  }
+
+  .feature-image-caption {
+    font-size: 13px!important;
+  }
+
+  .kg-card-figcaption {
+    font-size: 13px!important;
+  }
+
+  .kg-card-figcaption p,
+.kg-card-figcaption p span {
+    font-size: 13px!important;
+  }
+}
+@media all {
+  .subscription-details p.hidden {
+    display: none !important;
   }
 }
 </style>
@@ -4676,7 +5140,7 @@ table.body h2 span {
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                         <tr>
                                                             <td style=\\"vertical-align: top; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">Post with email-only card</a>
+                                                                <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">Post with email-only card</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -4731,14 +5195,13 @@ table.body h2 span {
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
                 <td class=\\"container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
-                            <tr>
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">                            <tr>
                                 <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" data-testid=\\"email-preview-content\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                         <tr class=\\"post-content-row\\">
-                                            <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
+                                            <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
                                                 <!-- POST CONTENT START -->
-                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A;\\">Testing <a href=\\"https://ghost.org/\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline;\\" target=\\"_blank\\">links</a> in email excerpt and apostrophes &#39;</p>
+                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6; color: #15212A;\\">Testing <a href=\\"https://ghost.org/\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline;\\" target=\\"_blank\\">links</a> in email excerpt and apostrophes &#39;</p>
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -4756,7 +5219,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -4765,8 +5228,7 @@ table.body h2 span {
                                     </table>
                                 </td>
                             </tr>
-
-                        </table>
+</table>
                         <!-- END CENTERED WHITE CONTAINER -->
                     </div>
                 </td>
@@ -4921,7 +5383,6 @@ View in browser [http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/]
 
 
 
-
 Testing links [https://ghost.org/] in email excerpt and apostrophes '
 
 
@@ -4947,7 +5408,6 @@ Ghost © 2025 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-u
 
 
 https://ghost.org/?via=pbg-newsletter
-
 
 
 
@@ -4984,7 +5444,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "34186",
+  "content-length": "36185",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

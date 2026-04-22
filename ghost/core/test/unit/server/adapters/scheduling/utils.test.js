@@ -1,6 +1,7 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const fs = require('fs-extra');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const schedulingUtils = require('../../../../../core/server/adapters/scheduling/utils');
 
 const schedulingPath = configUtils.config.getContentPath('adapters') + 'scheduling/';
@@ -23,14 +24,12 @@ describe('Scheduling: utils', function () {
     });
 
     describe('success', function () {
-        it('create good adapter', function (done) {
-            schedulingUtils.createAdapter().then(function (adapter) {
-                should.exist(adapter);
-                done();
-            }).catch(done);
+        it('create good adapter', function () {
+            const adapter = schedulingUtils.createAdapter();
+            assertExists(adapter);
         });
 
-        it('create good adapter from custom file', function (done) {
+        it('create good adapter from custom file', function () {
             scope.adapter = schedulingPath + 'another-scheduler.js';
 
             configUtils.set({
@@ -52,15 +51,13 @@ describe('Scheduling: utils', function () {
 
             fs.writeFileSync(scope.adapter, jsFile);
 
-            schedulingUtils.createAdapter().then(function (adapter) {
-                should.exist(adapter);
-                done();
-            }).catch(done);
+            const adapter = schedulingUtils.createAdapter();
+            assertExists(adapter);
         });
     });
 
     describe('error', function () {
-        it('create with adapter, but missing fn\'s', function (done) {
+        it('create with adapter, but missing fn\'s', function () {
             scope.adapter = schedulingPath + 'bad-adapter.js';
             const jsFile = '' +
                 'var util = require(\'util\');' +
@@ -77,11 +74,15 @@ describe('Scheduling: utils', function () {
                     active: 'bad-adapter'
                 }
             });
-            schedulingUtils.createAdapter().catch(function (err) {
-                should.exist(err);
-                should.equal(err.errorType, 'IncorrectUsageError');
-                done();
-            });
+
+            assert.throws(
+                () => schedulingUtils.createAdapter(),
+                (err) => {
+                    assertExists(err);
+                    assert.equal(err.errorType, 'IncorrectUsageError');
+                    return true;
+                }
+            );
         });
     });
 });

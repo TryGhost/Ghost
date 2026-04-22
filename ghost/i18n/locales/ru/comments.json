@@ -17,6 +17,7 @@
     "Best": "Лучший",
     "Cancel": "Отмена",
     "Comment": "Комментарий",
+    "Commenting disabled": "",
     "Complete your profile": "Заполните свой профиль",
     "Delete": "Удалить",
     "Deleted": "Удалено",
@@ -66,9 +67,13 @@
     "Sign up now": "Зарегистрироваться",
     "Sort by": "Сортировать по",
     "Start the conversation": "Начать обсуждение",
+    "The linked comment is no longer available.": "",
     "This comment has been hidden.": "Этот комментарий скрыт",
     "This comment has been removed.": "Этот комментарий был удалён",
     "Upgrade now": "Улучшить подписку",
+    "View in admin": "",
     "Yesterday": "Вчера",
+    "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "Ваш запрос будет отправлен владельцу сайта."
 }

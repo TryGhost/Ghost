@@ -18,13 +18,14 @@ test.describe('Announcement Bar', async () => {
             response: '<html><head><style></style></head><body><div>post preview</div></body></html>'
         });
 
-        await page.goto('/');
+        await page.goto('/#/settings/announcement-bar');
 
         const section = page.getByTestId('announcement-bar');
 
         await section.getByRole('button', {name: 'Customize'}).click();
-
-        await page.waitForSelector('[data-testid="announcement-bar-preview-iframe"]');
+        const modal = page.getByTestId('announcement-bar-modal');
+        await expect(modal).toBeVisible();
+        await expect(modal.getByTestId('announcement-bar-preview-iframe')).toBeVisible();
 
         const checkTextInIframes = async (iframesHandles: ElementHandle[], textToSearch: string) => {
             let textExists = false;
@@ -41,16 +42,14 @@ test.describe('Announcement Bar', async () => {
             return textExists;
         };
 
-        const iframesHandleHome = await page.$$('[data-testid="announcement-bar-preview-iframe"] > iframe');
+        const iframesHandleHome = await modal.getByTestId('announcement-bar-preview-iframe').locator('iframe').elementHandles();
         const textExistsInHomeIframes = await checkTextInIframes(iframesHandleHome, 'homepage preview');
         expect(textExistsInHomeIframes).toBeTruthy();
 
-        const modal = page.getByTestId('announcement-bar-modal');
         await modal.getByTestId('design-toolbar').getByRole('tab', {name: 'Post'}).click();
+        await expect(modal.getByTestId('announcement-bar-preview-iframe')).toBeVisible();
 
-        await page.waitForSelector('[data-testid="announcement-bar-preview-iframe"]');
-
-        const iframesHandlePost = await page.$$('[data-testid="announcement-bar-preview-iframe"] > iframe');
+        const iframesHandlePost = await modal.getByTestId('announcement-bar-preview-iframe').locator('iframe').elementHandles();
         const textExistsInPostIframes = await checkTextInIframes(iframesHandlePost, 'post preview');
         expect(textExistsInPostIframes).toBeTruthy();
     });
@@ -68,7 +67,7 @@ test.describe('Announcement Bar', async () => {
     //         response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
     //     });
 
-    //     await page.goto('/');
+    //     await page.goto('/#/settings/announcement-bar');
 
     //     const section = page.getByTestId('announcement-bar');
 
@@ -87,7 +86,7 @@ test.describe('Announcement Bar', async () => {
 
         // find label background color
 
-        await page.goto('/');
+        await page.goto('/#/settings/announcement-bar');
 
         const section = page.getByTestId('announcement-bar');
 
@@ -133,7 +132,7 @@ test.describe('Announcement Bar', async () => {
 
         // find label background color
 
-        await page.goto('/');
+        await page.goto('/#/settings/announcement-bar');
 
         const section = page.getByTestId('announcement-bar');
 

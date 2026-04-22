@@ -1,10 +1,12 @@
+const {decodeHTML} = require('entities');
+
 /**
  * Escape HTML special characters
  * @param {string} unsafe
  * @returns string
  */
 function escapeHtml(unsafe) {
-    return unsafe
+    return decodeHTML(unsafe ?? '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')

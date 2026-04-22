@@ -17,6 +17,7 @@
     "Best": "",
     "Cancel": "취소",
     "Comment": "댓글",
+    "Commenting disabled": "",
     "Complete your profile": "프로필을 완성해 주세요",
     "Delete": "삭제",
     "Deleted": "",
@@ -66,9 +67,13 @@
     "Sign up now": "회원가입",
     "Sort by": "정렬 기준",
     "Start the conversation": "댓글을 작성해 주세요",
+    "The linked comment is no longer available.": "",
     "This comment has been hidden.": "숨김처리 된 댓글이에요.",
     "This comment has been removed.": "삭제 된 댓글이에요.",
     "Upgrade now": "업그레이드",
+    "View in admin": "",
     "Yesterday": "어제",
+    "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "운영자에게 요구사항이 전달되었어요."
 }

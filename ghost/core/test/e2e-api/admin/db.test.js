@@ -3,7 +3,7 @@ const {anyContentVersion, anyErrorId, anyEtag, anyContentLength, stringMatching}
 const {cacheInvalidateHeaderNotSet, cacheInvalidateHeaderSetToWildcard} = assertions;
 const {exportedBodyLatest} = require('../../utils/fixtures/export/body-generator');
 const path = require('path');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 describe('DB API', function () {
     let agent;

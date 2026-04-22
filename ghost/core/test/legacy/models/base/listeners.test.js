@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const moment = require('moment-timezone');
 const rewire = require('rewire');
@@ -66,7 +66,7 @@ describe('Models: listeners', function () {
                 Promise.all(scope.posts.map(function (post) {
                     return models.Post.add(post, testUtils.context.owner);
                 })).then(function (result) {
-                    result.length.should.eql(3);
+                    assert.equal(result.length, 3);
                     posts = result;
                     done();
                 }).catch(function (err) {
@@ -262,7 +262,7 @@ describe('Models: listeners', function () {
 
                 models.Post.findAll({context: {internal: true}})
                     .then(function (results) {
-                        results.length.should.eql(0);
+                        assert.equal(results.length, 0);
                         done();
                     })
                     .catch(done);
@@ -297,7 +297,7 @@ describe('Models: listeners', function () {
 
                     return models.Settings.findOne({key: 'notifications'}, testUtils.context.internal);
                 }).then(function (model) {
-                    JSON.parse(model.get('value')).length.should.eql(3);
+                    assert.equal(JSON.parse(model.get('value')).length, 3);
                     done();
                 }).catch(done);
         });
@@ -326,7 +326,7 @@ describe('Models: listeners', function () {
                     setTimeout(function () {
                         return models.Settings.findOne({key: 'notifications'}, testUtils.context.internal)
                             .then(function (model) {
-                                JSON.parse(model.get('value')).length.should.eql(2);
+                                assert.equal(JSON.parse(model.get('value')).length, 2);
                                 done();
                             })
                             .catch(done);

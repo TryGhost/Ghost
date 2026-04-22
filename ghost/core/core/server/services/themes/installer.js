@@ -13,7 +13,7 @@ const messages = {
 
 /**
  *
- * @param {String} ref - theme reference in "Org/RepoName" format
+ * @param {string} ref - theme reference in "Org/RepoName" format
  * @returns {Promise<any>}
  */
 const installFromGithub = async (ref) => {

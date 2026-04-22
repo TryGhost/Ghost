@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {expectExternalNavigate, globalDataRequests, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Theme settings', async () => {
     test('Browsing and installing default themes', async ({page}) => {
@@ -35,7 +35,7 @@ test.describe('Theme settings', async () => {
             }
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/theme');
 
         const themeSection = page.getByTestId('theme');
 
@@ -55,12 +55,14 @@ test.describe('Theme settings', async () => {
         await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Activate'}).click();
         await expect(page.getByTestId('toast-success')).toHaveText(/casper is now your active theme/);
 
-        // 2. Go back to themes list
-        await modal.getByRole('button', {name: 'Change theme'}).click();
+        // 2. Re-open themes list after activation
+        await page.goto('/#/settings/theme');
+        await page.getByTestId('theme').getByRole('button', {name: 'Change theme'}).click();
+        const reopenedModal = page.getByTestId('theme-modal');
 
         // 3. Try to update Edition (which is already installed, should trigger overwrite)
-        await modal.getByRole('button', {name: /Edition/}).click();
-        await modal.getByRole('button', {name: 'Update Edition'}).click();
+        await reopenedModal.getByRole('button', {name: /Edition/}).click();
+        await reopenedModal.getByRole('button', {name: 'Update Edition'}).click();
 
         // Should show overwrite confirmation
         const overwriteModal = page.getByTestId('confirmation-modal');
@@ -74,14 +76,14 @@ test.describe('Theme settings', async () => {
         await expect(overwriteModal).not.toBeVisible();
 
         // Verify the theme modal is still open
-        await expect(modal).toBeVisible();
+        await expect(reopenedModal).toBeVisible();
 
         // Verify we're still on the Edition theme preview
-        await expect(modal).toHaveText(/Edition/);
-        await expect(modal.getByRole('button', {name: 'Update Edition'})).toBeVisible();
+        await expect(reopenedModal).toHaveText(/Edition/);
+        await expect(reopenedModal.getByRole('button', {name: 'Update Edition'})).toBeVisible();
 
         // Install Edition again and overwrite it
-        await modal.getByRole('button', {name: 'Update Edition'}).click();
+        await reopenedModal.getByRole('button', {name: 'Update Edition'}).click();
         await overwriteModal.getByRole('button', {name: 'Overwrite'}).click();
 
         // Verify that Casper activation was called
@@ -102,7 +104,7 @@ test.describe('Theme settings', async () => {
             deleteTheme: {method: 'DELETE', path: '/themes/edition/', response: {}}
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/theme');
 
         const themeSection = page.getByTestId('theme');
 
@@ -163,7 +165,7 @@ test.describe('Theme settings', async () => {
             }}
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/theme');
 
         const themeSection = page.getByTestId('theme');
 
@@ -210,7 +212,7 @@ test.describe('Theme settings', async () => {
             }
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/theme');
 
         const themeSection = page.getByTestId('theme');
 
@@ -229,13 +231,7 @@ test.describe('Theme settings', async () => {
 
         await limitModal.getByRole('button', {name: 'Upgrade'}).click();
 
-        // The route should be updated
-        const newPageUrl = page.url();
-        const newPageUrlObject = new URL(newPageUrl);
-        const decodedUrl = decodeURIComponent(newPageUrlObject.pathname);
-
-        // expect the route to be updated to /pro
-        expect(decodedUrl).toMatch(/\/\{\"route\":\"\/pro\",\"isExternal\":true\}$/);
+        await expectExternalNavigate(page, {route: '/pro'});
     });
 
     test('Prevents overwriting the default theme', async ({page}) => {
@@ -252,7 +248,7 @@ test.describe('Theme settings', async () => {
             }}
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/theme');
 
         const themeSection = page.getByTestId('theme');
 
@@ -328,7 +324,7 @@ test.describe('Theme settings', async () => {
             }
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/theme');
 
         const themeSection = page.getByTestId('theme');
 
@@ -355,12 +351,7 @@ test.describe('Theme settings', async () => {
         const limitModal = page.getByTestId('limit-modal');
         await limitModal.getByRole('button', {name: 'Upgrade'}).click();
 
-        // The route should be updated to /pro
-        const newPageUrl = page.url();
-        const newPageUrlObject = new URL(newPageUrl);
-        const decodedUrl = decodeURIComponent(newPageUrlObject.pathname);
-
-        expect(decodedUrl).toMatch(/\/\{"route":"\/pro","isExternal":true\}$/);
+        await expectExternalNavigate(page, {route: '/pro'});
     });
 
     test('Allows changing theme when multiple themes are allowed', async ({page}) => {
@@ -386,7 +377,7 @@ test.describe('Theme settings', async () => {
             }
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/theme');
 
         const themeSection = page.getByTestId('theme');
 
@@ -657,7 +648,7 @@ test.describe('Theme settings', async () => {
             }
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/theme');
 
         const themeSection = page.getByTestId('theme');
         await themeSection.getByRole('button', {name: 'Change theme'}).click();
@@ -702,7 +693,7 @@ test.describe('Theme settings', async () => {
             }
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/theme');
 
         const themeSection = page.getByTestId('theme');
         await themeSection.getByRole('button', {name: 'Change theme'}).click();

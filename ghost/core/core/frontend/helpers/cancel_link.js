@@ -4,7 +4,7 @@
 // Should be used inside of a subscription context, e.g.: `{{#foreach @member.subscriptions}} {{cancel_link}} {{/foreach}}`
 // Outputs cancel/renew links to manage subscription renewal after the subscription period ends.
 //
-// Defaults to class="cancel-subscription-link" errorClass="cancel-subscription-error" cancelLabel="Cancel subscription" continueLabel="Continue subscription"
+// Defaults to class="cancel-subscription-link" errorClass="cancel-subscription-error" cancelLabel="Cancel subscription" continueLabel="Resume subscription"
 const {labs} = require('../services/proxy');
 const {templates} = require('../services/handlebars');
 
@@ -28,7 +28,7 @@ function cancel_link(options) { // eslint-disable-line camelcase
         class: truncateOptions.class || 'gh-subscription-cancel',
         errorClass: truncateOptions.errorClass || 'gh-error gh-error-subscription-cancel',
         cancelLabel: truncateOptions.cancelLabel || 'Cancel subscription',
-        continueLabel: truncateOptions.continueLabel || 'Continue subscription'
+        continueLabel: truncateOptions.continueLabel || 'Resume subscription'
     };
 
     return templates.execute('cancel_link', data);

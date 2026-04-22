@@ -36,8 +36,8 @@ export default defineConfig((config) => {
             svgrPlugin()
         ],
         esbuild: {
-            loader: 'jsx',
-            include: [/src\/.*\.jsx?$/, /__mocks__\/.*\.jsx?$/, /test\/.*\.jsx?$/],
+            loader: 'tsx',
+            include: [/src\/.*\.[jt]sx?$/, /__mocks__\/.*\.[jt]sx?$/, /test\/.*\.[jt]sx?$/],
             exclude: []
         },
         optimizeDeps: {
@@ -54,6 +54,9 @@ export default defineConfig((config) => {
                     }
                 ]
             }
+        },
+        resolve: {
+            dedupe: ['@tryghost/debug']
         },
         build: {
             outDir: resolve(__dirname, 'umd'),

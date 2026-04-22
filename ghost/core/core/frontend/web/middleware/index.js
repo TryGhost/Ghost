@@ -4,6 +4,6 @@ module.exports = {
     frontendCaching: require('./frontend-caching'),
     handleImageSizes: require('./handle-image-sizes'),
     redirectGhostToAdmin: require('./redirect-ghost-to-admin'),
-    servePublicFile: require('./serve-public-file'),
+    serveIndexNowKey: require('./serve-indexnow-key'),
     staticTheme: require('./static-theme')
 };

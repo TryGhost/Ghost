@@ -8,8 +8,6 @@ export class LoginPage extends AdminPage {
     readonly forgotButton: Locator;
     readonly passwordResetSuccessMessage: Locator;
 
-    private setupNewUserUrl = 'setup';
-
     constructor(page: Page) {
         super(page);
         this.pageUrl = '/ghost/#/signin';
@@ -19,11 +17,9 @@ export class LoginPage extends AdminPage {
         this.signInButton = page.getByRole('button', {name: 'Sign in →'});
         this.forgotButton = page.getByRole('button', {name: 'Forgot?'});
         this.passwordResetSuccessMessage = page.getByRole('status');
-    };
+    }
 
     async signIn(email: string, password: string) {
-        await this.emailAddressField.waitFor({state: 'visible'});
-
         await this.emailAddressField.fill(email);
         await this.passwordField.fill(password);
         await this.signInButton.click();
@@ -37,27 +33,16 @@ export class LoginPage extends AdminPage {
 
     async logout() {
         await this.page.goto('/ghost/#/signout');
+        await this.signInButton.waitFor({state: 'visible'});
     }
 
     async waitForLoginPageAfterUserCreated(): Promise<void> {
-        let counter = 0;
-
-        while (counter < 5) {
-            await this.goto();
-
-            try {
-                await this.page.waitForURL(
-                    url => !url.href.includes(this.setupNewUserUrl),
-                    {timeout: 1000}
-                );
-
-                break;
-            } catch (error) {
-                counter += 1;
-                if (counter >= 5) {
-                    throw error;
-                }
-            }
+        const response = await this.goto();
+        if (!response) {
+            throw new Error('Error going to signin page (no response)');
+        }
+        if (!response.ok) {
+            throw new Error(`Error going to signin page (${response.status})`);
         }
     }
 }

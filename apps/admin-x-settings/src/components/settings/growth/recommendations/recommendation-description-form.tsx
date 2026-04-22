@@ -64,7 +64,7 @@ const RecommendationDescriptionForm: React.FC<Props<EditOrAddRecommendation | Re
         marginTop
     >
         <div>
-            <Heading className='mb-2 block text-2xs font-semibold uppercase tracking-wider' grey={true} level={6}>Preview</Heading>
+            <Heading className='mb-2 block text-2xs font-semibold tracking-wider uppercase' grey={true} level={6}>Preview</Heading>
             <div className="-mx-8 flex items-center justify-center overflow-hidden border-y border-grey-100 bg-grey-50 px-7 py-4 dark:border-grey-950 dark:bg-black">
                 <div className="w-full rounded bg-white py-3 shadow">
                     <div className="">
@@ -76,7 +76,7 @@ const RecommendationDescriptionForm: React.FC<Props<EditOrAddRecommendation | Re
                                 </div>
                                 {formState.description && <span className='pl-[31px] text-[1.35rem] leading-snug text-grey-700'>{formState.description}</span>}
                             </div>
-                            {formState.one_click_subscribe && <span className='flex whitespace-nowrap pl-6 text-md font-semibold text-green'>Subscribe</span>}
+                            {formState.one_click_subscribe && <span className='flex pl-6 text-md font-semibold whitespace-nowrap text-green'>Subscribe</span>}
                         </a>
                     </div>
                 </div>

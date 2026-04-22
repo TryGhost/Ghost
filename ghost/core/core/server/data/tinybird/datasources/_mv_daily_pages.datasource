@@ -1,0 +1,13 @@
+SCHEMA >
+    `site_uuid` String,
+    `day` Date,
+    `post_uuid` String,
+    `pathname` String,
+    `post_type` LowCardinality(String),
+    `member_status` LowCardinality(String),
+    `visits` AggregateFunction(uniqExact, String),
+    `hits` AggregateFunction(count, UInt64)
+
+ENGINE "AggregatingMergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(day)"
+ENGINE_SORTING_KEY "site_uuid, day, post_type, member_status, post_uuid, pathname"

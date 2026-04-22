@@ -62,7 +62,7 @@ export const WithCustomColor: Story = {
     args: {
         data: revenueData,
         range: 7,
-        color: 'hsl(var(--chart-green))',
+        color: 'var(--chart-green)',
         id: 'revenue-chart',
         className: 'h-[200px]'
     }

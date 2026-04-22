@@ -12,6 +12,10 @@ type Feature = {
 };
 
 const features: Feature[] = [{
+    title: 'Automations',
+    description: 'Enable automations management interface.',
+    flag: 'automations'
+}, {
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax'
@@ -24,6 +28,10 @@ const features: Feature[] = [{
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
 }, {
+    title: 'Admin UI Refresh',
+    description: 'Enable Admin UI refresh (exploration)',
+    flag: 'adminUIRefresh'
+}, {
     title: 'Explore',
     description: 'Enables keeping in touch with the new Explore API',
     flag: 'explore'
@@ -32,41 +40,33 @@ const features: Feature[] = [{
     description: 'Enables the new Tags UI',
     flag: 'tagsX'
 }, {
-    title: 'UTM tracking',
-    description: 'Enables UTM tracking for web traffic and member attribution',
-    flag: 'utmTracking'
-}, {
     title: 'Email Unique ID',
     description: 'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid'
 }, {
-    title: 'Welcome Emails',
-    description: 'Enables features related to sending welcome emails to new members',
-    flag: 'welcomeEmails'
-}, {
-    title: 'New Admin Experience',
-    description: 'Preview the next version of the admin interface',
-    flag: 'adminForward'
-}, {
-    title: 'Domain Warmup',
-    description: 'Enable custom sending domain warmup for gradual email volume increases',
-    flag: 'domainWarmup'
-},{
     title: 'Updated theme translation (beta)',
     description: 'Enable theme translation using i18next instead of the old translation package.',
     flag: 'themeTranslation'
 }, {
-    title: 'Comment Moderation',
-    description: 'Enhanced comment moderation interface with advanced filtering and management. Requires the new admin experience.',
-    flag: 'commentModeration'
+    title: 'IndexNow',
+    description: 'Automatically notify search engines when content is published or updated for faster indexing.',
+    flag: 'indexnow'
 }, {
-    title: 'Email Size Warnings',
-    description: 'Enable warnings in editor when content exceeds email cut-off size',
-    flag: 'emailSizeWarnings'
+    title: 'Featurebase Feedback',
+    description: 'Display a Feedback menu item in the admin sidebar. Requires the new admin experience.',
+    flag: 'featurebaseFeedback'
 }, {
-    title: 'Comment Permalinks',
-    description: 'Enable direct links to individual comments with automatic scrolling and highlighting',
-    flag: 'commentPermalinks'
+    title: 'Picture Element',
+    description: 'Use the HTML picture element to serve modern image formats (AVIF, WebP) with automatic fallbacks',
+    flag: 'pictureImageFormats'
+}, {
+    title: 'Smarter Counts',
+    description: 'Use optimized COUNT queries for API pagination when safe',
+    flag: 'smarterCounts'
+}, {
+    title: 'Gift Subscriptions',
+    description: 'Allow site visitors to purchase gift subscriptions for others',
+    flag: 'giftSubscriptions'
 }];
 
 const AlphaFeatures: React.FC = () => {
@@ -100,6 +100,7 @@ const AlphaFeatures: React.FC = () => {
         <List titleSeparator={false}>
             {allowedFeatures.map(feature => (
                 <LabItem
+                    key={feature.flag}
                     action={<FeatureToggle flag={feature.flag} label={feature.title} />}
                     detail={feature.description}
                     title={feature.title} />

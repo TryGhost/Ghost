@@ -1,6 +1,6 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, stringMatching, anyContentLength, anyUuid} = matchers;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const models = require('../../../core/server/models');
 
 const siteMatcherObject = {

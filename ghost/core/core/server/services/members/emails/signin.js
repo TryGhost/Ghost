@@ -5,6 +5,8 @@ module.exports = ({t, siteTitle, email, url, otc, accentColor = '#15212A', siteD
   <head>
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="color-scheme" content="light only">
+    <meta name="supported-color-schemes" content="light">
     ${otc
         ? `<title>🔑 ${t('Sign in to {siteTitle} with code {otc}', {siteTitle, otc, interpolation: {escapeValue: false}})}</title>`
         : `<title>🔑 ${t('Secure sign in link for {siteTitle}', {siteTitle, interpolation: {escapeValue: false}})}</title>`

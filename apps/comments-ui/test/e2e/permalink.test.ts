@@ -1,6 +1,6 @@
 import {E2E_PORT} from '../../playwright.config';
 import {FrameLocator, Page} from '@playwright/test';
-import {MOCKED_SITE_URL, MockedApi, initialize} from '../utils/e2e';
+import {MOCKED_SITE_URL, MockedApi, initialize, mockAdminAuthFrame} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 /**
@@ -14,14 +14,6 @@ async function setupPermalinkTest(
     bodyHtml = '<html><head><meta charset="UTF-8" /></head><body></body></html>'
 ): Promise<FrameLocator> {
     const sitePath = MOCKED_SITE_URL;
-
-    mockedApi.setSettings({
-        settings: {
-            labs: {
-                commentPermalinks: true
-            }
-        }
-    });
 
     await page.route(sitePath, async (route) => {
         await route.fulfill({status: 200, body: bodyHtml});
@@ -54,6 +46,8 @@ async function setupPermalinkTest(
     return page.frameLocator('iframe[title="comments-frame"]');
 }
 
+const TALL_BODY_HTML = '<html><head><meta charset="UTF-8" /></head><body><div style="width: 100%; height: 1500px;"></div></body></html>';
+
 test.describe('Comment Permalinks', async () => {
     test('timestamp is a link with correct permalink href', async ({page}) => {
         const mockedApi = new MockedApi({});
@@ -68,8 +62,7 @@ test.describe('Comment Permalinks', async () => {
         const {frame} = await initialize({
             mockedApi,
             page,
-            publication: 'Publisher Weekly',
-            labs: {commentPermalinks: true}
+            publication: 'Publisher Weekly'
         });
 
         // Check that the timestamp is an anchor with the correct href
@@ -89,8 +82,7 @@ test.describe('Comment Permalinks', async () => {
         const {frame} = await initialize({
             mockedApi,
             page,
-            publication: 'Publisher Weekly',
-            labs: {commentPermalinks: true}
+            publication: 'Publisher Weekly'
         });
 
         // Find timestamp link and verify it has the hover:underline class
@@ -110,8 +102,7 @@ test.describe('Comment Permalinks', async () => {
         });
 
         // Include a tall div to push comments below viewport (like lazy-loading test)
-        const tallBodyHtml = '<html><head><meta charset="UTF-8" /></head><body><div style="width: 100%; height: 1500px;"></div></body></html>';
-        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${commentId}`, tallBodyHtml);
+        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${commentId}`, TALL_BODY_HTML);
 
         await page.locator('iframe[title="comments-frame"]').waitFor({state: 'attached'});
 
@@ -143,6 +134,26 @@ test.describe('Comment Permalinks', async () => {
         await expect(commentElement).toBeVisible();
     });
 
+    test('shows highlight mark inside comment content when navigating via permalink', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({});
+
+        const commentId = '64a1b2c3d4e5f6a7b8c9d0e1';
+        mockedApi.addComment({
+            id: commentId,
+            html: '<p>Comment to highlight</p>'
+        });
+
+        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${commentId}`);
+
+        // The comment content container should contain a <mark> with the highlight class
+        const commentContent = commentsFrame.getByTestId('comment-content').first();
+        const mark = commentContent.locator('mark');
+        await expect(mark).toBeVisible();
+        await expect(mark).toHaveClass(/bg-yellow-300\/40/);
+        await expect(mark).toContainText('Comment to highlight');
+    });
+
     test('handles invalid comment ID gracefully', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.setMember({});
@@ -151,12 +162,16 @@ test.describe('Comment Permalinks', async () => {
             html: '<p>Regular comment</p>'
         });
 
-        const commentsFrame = await setupPermalinkTest(page, mockedApi, '#ghost-comments-nonexistent123');
+        const commentsFrame = await setupPermalinkTest(page, mockedApi, '#ghost-comments-dead00000000000000000000', TALL_BODY_HTML);
 
         // Comments should still load and display normally even with invalid ID
         await expect(commentsFrame.getByText('Regular comment')).toBeVisible();
 
-        // No errors should be thrown - page should function normally
+        // A permalink to a non-existent comment should show a notice and scroll to comments
+        await expect(commentsFrame.getByTestId('missing-comment-notice')).toContainText('The linked comment is no longer available.');
+        await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+
+        // Page should still function normally
         const comments = commentsFrame.getByTestId('comment-component');
         await expect(comments).toHaveCount(1);
     });
@@ -170,8 +185,7 @@ test.describe('Comment Permalinks', async () => {
         });
 
         // Include a tall div to push comments below viewport
-        const tallBodyHtml = '<html><head><meta charset="UTF-8" /></head><body><div style="width: 100%; height: 1500px;"></div></body></html>';
-        const commentsFrame = await setupPermalinkTest(page, mockedApi, '#some-other-hash', tallBodyHtml);
+        const commentsFrame = await setupPermalinkTest(page, mockedApi, '#some-other-hash', TALL_BODY_HTML);
 
         await page.locator('iframe[title="comments-frame"]').waitFor({state: 'attached'});
 
@@ -180,7 +194,7 @@ test.describe('Comment Permalinks', async () => {
         await expect(commentsFrame.getByTestId('loading')).toHaveCount(1);
     });
 
-    test('does not scroll to hidden comment', async ({page}) => {
+    test('shows missing-comment notice for hidden permalink and scrolls to comments area', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.setMember({});
 
@@ -197,22 +211,26 @@ test.describe('Comment Permalinks', async () => {
             status: 'hidden'
         });
 
-        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${hiddenCommentId}`);
+        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${hiddenCommentId}`, TALL_BODY_HTML);
 
         // The visible comment should be displayed
         await expect(commentsFrame.getByText('Visible comment')).toBeVisible();
 
-        // The hidden comment element should not be scrolled to or highlighted
+        // The hidden comment element should not be rendered
         // (hidden comments are not visible to regular members)
         const hiddenCommentElement = commentsFrame.locator(`[id="${hiddenCommentId}"]`);
         await expect(hiddenCommentElement).toHaveCount(0);
 
-        // Page should function normally with no errors
+        // A permalink to a non-available comment should show a notice and scroll to comments
+        await expect(commentsFrame.getByTestId('missing-comment-notice')).toContainText('The linked comment is no longer available.');
+        await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+
+        // Page should still function normally
         const comments = commentsFrame.getByTestId('comment-component');
         await expect(comments).toHaveCount(1);
     });
 
-    test('does not scroll to deleted comment', async ({page}) => {
+    test('shows missing-comment notice for deleted permalink and scrolls to comments area', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.setMember({});
 
@@ -229,16 +247,20 @@ test.describe('Comment Permalinks', async () => {
             status: 'deleted'
         });
 
-        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${deletedCommentId}`);
+        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${deletedCommentId}`, TALL_BODY_HTML);
 
         // The visible comment should be displayed
         await expect(commentsFrame.getByText('Visible comment')).toBeVisible();
 
-        // The deleted comment element should not be scrolled to or highlighted
+        // The deleted comment element should not be rendered
         const deletedCommentElement = commentsFrame.locator(`[id="${deletedCommentId}"]`);
         await expect(deletedCommentElement).toHaveCount(0);
 
-        // Page should function normally with no errors
+        // A permalink to a non-available comment should show a notice and scroll to comments
+        await expect(commentsFrame.getByTestId('missing-comment-notice')).toContainText('The linked comment is no longer available.');
+        await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+
+        // Page should still function normally
         const comments = commentsFrame.getByTestId('comment-component');
         await expect(comments).toHaveCount(1);
     });
@@ -255,7 +277,7 @@ test.describe('Comment Permalinks', async () => {
             replies: [] as any[]
         };
 
-        // Add 5 replies - only first 3 will be shown initially
+        // Add 5 replies - all returned by API but only first 3 shown in UI
         // Use hex IDs because parseCommentIdFromHash only accepts [a-f0-9]+
         const replyIds = ['aaa0000000000000000001', 'aaa0000000000000000002', 'aaa0000000000000000003', 'aaa0000000000000000004', 'aaa0000000000000000005'];
         for (let i = 0; i < 5; i++) {
@@ -362,5 +384,208 @@ test.describe('Comment Permalinks', async () => {
         // The element should have the correct ID for highlighting
         const targetElement = commentsFrame.locator(`[id="${targetReplyId}"]`);
         await expect(targetElement).toBeVisible();
+    });
+
+    test('loads reply via server fetch when permalink target is not in partial API response', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({});
+
+        const parentId = 'aaa0000000000000000000';
+        const parentComment = {
+            id: parentId,
+            html: '<p>Parent comment</p>',
+            replies: [] as any[]
+        };
+
+        // Add 5 replies to the parent
+        const replyIds = [
+            'bbb0000000000000000001',
+            'bbb0000000000000000002',
+            'bbb0000000000000000003',
+            'bbb0000000000000000004',
+            'bbb0000000000000000005'
+        ];
+        for (let i = 0; i < 5; i++) {
+            parentComment.replies.push(mockedApi.buildReply({
+                id: replyIds[i],
+                html: `<p>Reply ${i + 1}</p>`,
+                parent_id: parentId
+            }));
+        }
+
+        mockedApi.addComment(parentComment);
+
+        // Override browseComments to only return 3 replies (simulating old API LIMIT 3)
+        // while count.replies stays at 5
+        const originalBrowse = mockedApi.browseComments.bind(mockedApi);
+        mockedApi.browseComments = function (options) {
+            const result = originalBrowse(options);
+            result.comments = result.comments.map((c) => {
+                if (c.replies.length > 3) {
+                    return {...c, replies: c.replies.slice(0, 3)};
+                }
+                return c;
+            });
+            return result;
+        };
+
+        // Permalink to reply 5 — not in the initial 3 returned by browseComments
+        const targetReplyId = replyIds[4];
+        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${targetReplyId}`);
+
+        await expect(commentsFrame.getByText('Parent comment')).toBeVisible();
+
+        // Reply 5 must be loaded via server fetch and visible
+        await expect(commentsFrame.getByText('Reply 5')).toBeVisible();
+
+        const targetElement = commentsFrame.locator(`[id="${targetReplyId}"]`);
+        await expect(targetElement).toBeVisible();
+    });
+
+    test('admin auth does not overwrite paginated comments loaded for permalink', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({id: '1', uuid: '12345'});
+
+        const admin = MOCKED_SITE_URL + '/ghost/';
+        await mockAdminAuthFrame({page, admin});
+
+        // Add 25 comments — member API page size is 5, admin API page size is 20.
+        // The target (comment 25) is on member page 5 and admin page 2.
+        // initSetup paginates member API to find it, then initAdminAuth re-fetches
+        // admin page 1 only (20 comments), which must NOT overwrite the 25.
+        for (let i = 1; i <= 24; i++) {
+            mockedApi.addComment({
+                html: `<p>Filler comment ${i}</p>`
+            });
+        }
+
+        const targetId = 'aaa0000000000000000025';
+        mockedApi.addComment({
+            id: targetId,
+            html: '<p>Target comment beyond admin page 1</p>'
+        });
+
+        // Set up permalink test with admin URL in the script tag options
+        const sitePath = MOCKED_SITE_URL;
+
+        await page.route(sitePath, async (route) => {
+            await route.fulfill({status: 200, body: '<html><head><meta charset="UTF-8" /></head><body></body></html>'});
+        });
+
+        const url = `http://localhost:${E2E_PORT}/comments-ui.min.js`;
+        await page.setViewportSize({width: 1000, height: 1000});
+        await page.goto(`${sitePath}#ghost-comments-${targetId}`);
+        await mockedApi.listen({page, path: sitePath});
+
+        const options = {
+            publication: 'Publisher Weekly',
+            count: true,
+            title: 'Title',
+            ghostComments: MOCKED_SITE_URL,
+            postId: mockedApi.postId,
+            api: MOCKED_SITE_URL,
+            admin,
+            key: '12345678'
+        };
+
+        await page.evaluate((data) => {
+            const scriptTag = document.createElement('script');
+            scriptTag.src = data.url;
+            for (const option of Object.keys(data.options)) {
+                scriptTag.dataset[option] = data.options[option];
+            }
+            document.body.appendChild(scriptTag);
+        }, {url, options});
+
+        const commentsFrame = page.frameLocator('iframe[title="comments-frame"]');
+
+        // Target comment should be visible after permalink pagination
+        await expect(commentsFrame.getByText('Target comment beyond admin page 1')).toBeVisible();
+
+        // Wait for admin auth to complete — the more button only renders
+        // when isAdmin is true, so its presence proves initAdminAuth has
+        // finished and React has flushed the state update
+        await expect(commentsFrame.locator('[data-testid="more-button"]').first()).toBeVisible();
+
+        // The target comment (beyond admin page 1) must STILL be visible
+        await expect(commentsFrame.getByText('Target comment beyond admin page 1')).toBeVisible();
+    });
+
+    test('admin auth does not overwrite expanded replies loaded for permalink', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({id: '1', uuid: '12345'});
+
+        const admin = MOCKED_SITE_URL + '/ghost/';
+        await mockAdminAuthFrame({page, admin});
+
+        // Create a parent with 5 replies — all returned by API but only first 3
+        // shown in UI. The target (reply 5) is auto-expanded by the Replies
+        // component. initAdminAuth then re-fetches admin page 1, which must
+        // NOT overwrite the replies.
+        const parentId = 'aaa0000000000000parent';
+        const parentComment = {
+            id: parentId,
+            html: '<p>Parent comment</p>',
+            replies: [] as any[]
+        };
+
+        // Use hex IDs because parseCommentIdFromHash only accepts [a-f0-9]+
+        const targetId = 'aaa0000000000000000005';
+        for (let i = 1; i <= 4; i++) {
+            parentComment.replies.push(mockedApi.buildReply({
+                html: `<p>Reply ${i}</p>`,
+                parent_id: parentId
+            }));
+        }
+        parentComment.replies.push(mockedApi.buildReply({
+            id: targetId,
+            html: '<p>Target deep reply</p>',
+            parent_id: parentId
+        }));
+
+        mockedApi.addComment(parentComment);
+
+        const sitePath = MOCKED_SITE_URL;
+
+        await page.route(sitePath, async (route) => {
+            await route.fulfill({status: 200, body: '<html><head><meta charset="UTF-8" /></head><body></body></html>'});
+        });
+
+        const url = `http://localhost:${E2E_PORT}/comments-ui.min.js`;
+        await page.setViewportSize({width: 1000, height: 1000});
+        await page.goto(`${sitePath}#ghost-comments-${targetId}`);
+        await mockedApi.listen({page, path: sitePath});
+
+        const options = {
+            publication: 'Publisher Weekly',
+            count: true,
+            title: 'Title',
+            ghostComments: MOCKED_SITE_URL,
+            postId: mockedApi.postId,
+            api: MOCKED_SITE_URL,
+            admin,
+            key: '12345678'
+        };
+
+        await page.evaluate((data) => {
+            const scriptTag = document.createElement('script');
+            scriptTag.src = data.url;
+            for (const option of Object.keys(data.options)) {
+                scriptTag.dataset[option] = data.options[option];
+            }
+            document.body.appendChild(scriptTag);
+        }, {url, options});
+
+        const commentsFrame = page.frameLocator('iframe[title="comments-frame"]');
+
+        // Target reply should be visible after permalink reply expansion
+        await expect(commentsFrame.getByText('Target deep reply')).toBeVisible();
+
+        // Wait for admin auth to complete — the more button (admin context menu)
+        // only renders when isAdmin is true, proving initAdminAuth has finished
+        await expect(commentsFrame.locator('[data-testid="more-button"]').first()).toBeVisible();
+
+        // The target reply must STILL be visible after admin auth completes
+        await expect(commentsFrame.getByText('Target deep reply')).toBeVisible();
     });
 });

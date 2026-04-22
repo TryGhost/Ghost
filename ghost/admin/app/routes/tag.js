@@ -8,10 +8,12 @@ export default class TagRoute extends AuthenticatedRoute {
     @service modals;
     @service router;
     @service session;
+    @service('unsaved-changes') unsavedChanges;
 
     // ensures if a tag model is passed in directly we show it immediately
     // and refresh in the background
     _requiresBackgroundRefresh = true;
+    _unregisterUnsavedChanges = null;
 
     beforeModel() {
         super.beforeModel(...arguments);
@@ -41,53 +43,50 @@ export default class TagRoute extends AuthenticatedRoute {
         if (this._requiresBackgroundRefresh) {
             tag.reload();
         }
+
+        this._registerUnsavedChanges(controller);
     }
 
     deactivate() {
         this._requiresBackgroundRefresh = true;
-
-        this.confirmModal = null;
-        this.hasConfirmed = false;
+        this._unregisterUnsavedChanges?.();
+        this._unregisterUnsavedChanges = null;
     }
 
     @action
     async willTransition(transition) {
-        if (this.hasConfirmed) {
+        return this.unsavedChanges.guardTransition(transition);
+    }
+
+    _registerUnsavedChanges(controller) {
+        this._unregisterUnsavedChanges?.();
+        this._unregisterUnsavedChanges = this.unsavedChanges.register({
+            isDirty: () => controller.model?.hasDirtyAttributes,
+            confirmLeave: () => this._confirmUnsavedChanges(controller)
+        });
+    }
+
+    async _confirmUnsavedChanges(controller) {
+        if (controller.saveTask?.isRunning) {
+            try {
+                await controller.saveTask.last;
+            } catch (e) {
+                // ignore save errors — we'll check dirty state below
+            }
+        }
+
+        if (!controller.model?.hasDirtyAttributes) {
             return true;
         }
 
-        transition.abort();
-
-        // wait for any existing confirm modal to be closed before allowing transition
-        if (this.confirmModal) {
-            return;
-        }
-
-        if (this.controller.saveTask?.isRunning) {
-            await this.controller.saveTask.last;
-        }
-
-        const shouldLeave = await this.confirmUnsavedChanges();
+        Sentry.captureMessage('showing unsaved changes modal for tags route');
+        const shouldLeave = await this.modals.open(ConfirmUnsavedChangesModal);
 
         if (shouldLeave) {
-            this.controller.model.rollbackAttributes();
-            this.hasConfirmed = true;
-            return transition.retry();
-        }
-    }
-
-    async confirmUnsavedChanges() {
-        if (this.controller.model?.hasDirtyAttributes) {
-            Sentry.captureMessage('showing unsaved changes modal for tags route');
-            this.confirmModal = this.modals
-                .open(ConfirmUnsavedChangesModal)
-                .finally(() => {
-                    this.confirmModal = null;
-                });
-
-            return this.confirmModal;
+            controller.model.rollbackAttributes();
+            return true;
         }
 
-        return true;
+        return false;
     }
 }

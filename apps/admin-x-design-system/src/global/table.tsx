@@ -142,7 +142,7 @@ const Table: React.FC<TableProps> = ({
         'w-full',
         fillContainer ? 'min-w-full' : 'w-full',
         (borderTop || pageTitle) && 'border-t border-grey-300',
-        pageTitle ? 'mb-0 mt-14' : 'my-0',
+        pageTitle ? 'mt-14 mb-0' : 'my-0',
         className
     );
 

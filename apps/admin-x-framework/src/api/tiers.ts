@@ -1,5 +1,5 @@
 import {InfiniteData} from '@tanstack/react-query';
-import {Meta, createInfiniteQuery, createMutation} from '../utils/api/hooks';
+import {Meta, createInfiniteQuery, createMutation, createQueryWithId} from '../utils/api/hooks';
 import {updateQueryCache} from '../utils/api/update-queries';
 
 // Types
@@ -49,6 +49,11 @@ export const useBrowseTiers = createInfiniteQuery<TiersResponseType & {isEnd: bo
             isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
         };
     }
+});
+
+export const getTier = createQueryWithId<TiersResponseType>({
+    dataType,
+    path: id => `/tiers/${id}/`
 });
 
 export const useAddTier = createMutation<TiersResponseType, Partial<Tier>>({

@@ -1,5 +1,4 @@
 const membersService = require('../../../../../../services/members');
-const labs = require('../../../../../../../shared/labs');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
 const {PERMIT_ACCESS} = membersService.contentGating;
@@ -105,12 +104,16 @@ const forPost = (attrs, frame) => {
         }
     }
 
-    if (labs.isSet('contentVisibility')) {
-        const hasGatedBlocks = HAS_GATED_BLOCKS_REGEX.test(attrs.html);
-        if (hasGatedBlocks) {
-            attrs.html = module.exports.stripGatedBlocks(attrs.html, frame.original.context.member);
-            _updateTextAttrs(attrs);
-        }
+    const hasGatedBlocks = HAS_GATED_BLOCKS_REGEX.test(attrs.html);
+    if (hasGatedBlocks) {
+        attrs.html = module.exports.stripGatedBlocks(attrs.html, frame.original.context.member);
+        _updateTextAttrs(attrs);
+    }
+
+    // Replace member UUID placeholder for Transistor embeds (URL-encoded {uuid})
+    const member = frame.original.context.member;
+    if (member && member.uuid && attrs.html) {
+        attrs.html = attrs.html.replace(/%7Buuid%7D/gi, member.uuid);
     }
 
     if (!Object.prototype.hasOwnProperty.call(frame.options, 'columns') || (frame.options.columns.includes('access'))) {

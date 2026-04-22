@@ -53,11 +53,9 @@ class CanThisResult {
                     // Iterate through the user permissions looking for an affirmation
                     const userPermissions = loadedPermissions.user ? loadedPermissions.user.permissions : null;
                     const apiKeyPermissions = loadedPermissions.apiKey ? loadedPermissions.apiKey.permissions : null;
-                    const memberPermissions = loadedPermissions.member ? loadedPermissions.member.permissions : null;
 
                     let hasUserPermission;
                     let hasApiKeyPermission;
-                    let hasMemberPermission = false;
 
                     const checkPermission = function (perm) {
                         // Look for a matching action type and object type first
@@ -72,10 +70,6 @@ class CanThisResult {
                         hasUserPermission = true;
                     } else if (!_.isEmpty(userPermissions)) {
                         hasUserPermission = _.some(userPermissions, checkPermission);
-                    }
-
-                    if (loadedPermissions.member) {
-                        hasMemberPermission = _.some(memberPermissions, checkPermission);
                     }
 
                     // Check api key permissions if they were passed
@@ -96,7 +90,7 @@ class CanThisResult {
                     // Offer a chance for the TargetModel to override the results
                     if (TargetModel && _.isFunction(TargetModel.permissible)) {
                         return TargetModel.permissible(
-                            modelId, actType, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission, hasMemberPermission
+                            modelId, actType, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission
                         );
                     }
 
@@ -116,7 +110,6 @@ class CanThisResult {
         const self = this;
         let userPermissionLoad;
         let apiKeyPermissionLoad;
-        let memberPermissionLoad;
         let permissionsLoad;
 
         // Get context.user, context.api_key and context.app
@@ -142,16 +135,11 @@ class CanThisResult {
             apiKeyPermissionLoad = Promise.resolve(null);
         }
 
-        if (context.member) {
-            memberPermissionLoad = providers.member(context.member.id);
-        }
-
-        // Wait for both user and app permissions to load
-        permissionsLoad = Promise.all([userPermissionLoad, apiKeyPermissionLoad, memberPermissionLoad]).then(function (result) {
+        // Wait for both user and api key permissions to load
+        permissionsLoad = Promise.all([userPermissionLoad, apiKeyPermissionLoad]).then(function (result) {
             return {
                 user: result[0],
-                apiKey: result[1],
-                member: result[2]
+                apiKey: result[1]
             };
         });
 

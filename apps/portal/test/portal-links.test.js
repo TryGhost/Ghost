@@ -1,10 +1,27 @@
 import App from '../src/app';
 import {site as FixtureSite, member as FixtureMember} from './utils/test-fixtures';
-import {appRender, within} from './utils/test-utils';
+import {appRender, fireEvent, waitFor, within} from './utils/test-utils';
 import setupGhostApi from '../src/utils/api';
-import {fireEvent} from '@testing-library/react';
 
-const setup = async ({site, member = null, showPopup = true}) => {
+const defaultGiftResponse = {
+    gifts: [
+        {
+            token: 'gift-token-123',
+            cadence: 'year',
+            duration: 1,
+            tier: {
+                id: 'tier-gift',
+                name: 'Bronze',
+                benefits: [
+                    'Five great stories to read every day',
+                    'Videos and podcasts to charm and delight you'
+                ]
+            }
+        }
+    ]
+};
+
+const setup = async ({site, member = null, showPopup = true, giftResponse = defaultGiftResponse, giftError = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
 
     ghostApi.init = vi.fn(() => {
@@ -24,6 +41,27 @@ const setup = async ({site, member = null, showPopup = true}) => {
 
     ghostApi.member.checkoutPlan = vi.fn(() => {
         return Promise.resolve();
+    });
+
+    ghostApi.member.sessionData = vi.fn(() => {
+        return Promise.resolve(member);
+    });
+
+    ghostApi.gift.fetchRedemptionData = vi.fn(() => {
+        if (giftError) {
+            return Promise.reject(giftError);
+        }
+
+        return Promise.resolve(giftResponse);
+    });
+
+    ghostApi.gift.redeem = vi.fn(() => {
+        return Promise.resolve({
+            gifts: [{
+                token: giftResponse.gifts[0].token,
+                status: 'redeemed'
+            }]
+        });
     });
 
     const utils = appRender(
@@ -190,6 +228,25 @@ describe('Portal Data links:', () => {
         });
     });
 
+    describe('#/share', () => {
+        test('opens portal share page', async () => {
+            window.location.hash = '#/share';
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                showPopup: false
+            });
+            expect(triggerButtonFrame).toBeInTheDocument();
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+            const shareTitle = within(popupFrame.contentDocument).queryByText(/^Share$/i);
+            expect(shareTitle).toBeInTheDocument();
+            const poweredBy = within(popupFrame.contentDocument).queryByText(/Powered by Ghost/i);
+            expect(poweredBy).not.toBeInTheDocument();
+        });
+    });
+
     describe('#/portal/signup/free', () => {
         test('opens free signup page and completes signup even if free plan is hidden', async () => {
             window.location.hash = '#/portal/signup/free';
@@ -342,6 +399,351 @@ describe('Portal Data links:', () => {
             expect(popupFrame).toBeInTheDocument();
             const helpPageTitle = within(popupFrame.contentDocument).queryByText(/why has my email been disabled/i);
             expect(helpPageTitle).toBeInTheDocument();
+        });
+    });
+
+    describe('#/portal/gift', () => {
+        test('opens gift page when giftSubscriptions labs flag is enabled', async () => {
+            window.location.hash = '#/portal/gift';
+
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}},
+                showPopup: false
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+
+            const giftSubtitle = within(popupFrame.contentDocument).queryByText(/give the gift of a membership/i);
+            expect(giftSubtitle).toBeInTheDocument();
+        });
+
+        test('does not open when giftSubscriptions labs flag is disabled', async () => {
+            window.location.hash = '#/portal/gift';
+
+            let {
+                popupFrame, triggerButtonFrame
+            } = await setup({
+                site: {...FixtureSite.singleTier.basic, labs: {}},
+                showPopup: false
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(popupFrame).not.toBeInTheDocument();
+        });
+    });
+
+    describe('#/portal/gift/redeem/<token>', () => {
+        const giftRedemptionHash = '#/portal/gift/redeem/gift-token-123';
+
+        const setupGiftRedemption = async ({giftError = null, giftResponse = defaultGiftResponse} = {}) => {
+            window.location.hash = giftRedemptionHash;
+
+            return setup({
+                site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}},
+                member: FixtureMember.free,
+                showPopup: false,
+                giftError,
+                giftResponse
+            });
+        };
+
+        const expectGiftRedemptionErrorToast = async ({utils, subtitle}) => {
+            const notificationFrame = await utils.findByTitle(/portal-notification/i);
+            expect(notificationFrame).toBeInTheDocument();
+            expect(utils.queryByTitle(/portal-popup/i)).not.toBeInTheDocument();
+
+            const notificationIframeDocument = notificationFrame.contentDocument;
+            expect(await within(notificationIframeDocument).findByText(/Gift could not be redeemed/i)).toBeInTheDocument();
+            expect(within(notificationIframeDocument).queryByText(subtitle)).toBeInTheDocument();
+        };
+
+        test('renders a toast error when gift has expired', async () => {
+            let {
+                ghostApi, triggerButtonFrame, ...utils
+            } = await setupGiftRedemption({
+                giftError: new Error('This gift has expired.')
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(ghostApi.gift.fetchRedemptionData).toHaveBeenCalledWith({token: 'gift-token-123'});
+
+            await expectGiftRedemptionErrorToast({
+                utils,
+                subtitle: /This gift has expired\./i
+            });
+        });
+
+        test('renders a toast error when gift has already been redeemed', async () => {
+            let {
+                ghostApi, triggerButtonFrame, ...utils
+            } = await setupGiftRedemption({
+                giftError: new Error('This gift has already been redeemed.')
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(ghostApi.gift.fetchRedemptionData).toHaveBeenCalledWith({token: 'gift-token-123'});
+
+            await expectGiftRedemptionErrorToast({
+                utils,
+                subtitle: /This gift has already been redeemed\./i
+            });
+        });
+
+        test('renders a toast error when logged-in member already has an active subscription', async () => {
+            let {
+                ghostApi, triggerButtonFrame, ...utils
+            } = await setupGiftRedemption({
+                giftError: new Error('You already have an active subscription.')
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(ghostApi.gift.fetchRedemptionData).toHaveBeenCalledWith({token: 'gift-token-123'});
+
+            await expectGiftRedemptionErrorToast({
+                utils,
+                subtitle: /You already have an active subscription\./i
+            });
+        });
+
+        test('renders a toast error when gift link is invalid', async () => {
+            let {
+                ghostApi, triggerButtonFrame, ...utils
+            } = await setupGiftRedemption({
+                giftError: new Error('Failed to load gift data')
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(ghostApi.gift.fetchRedemptionData).toHaveBeenCalledWith({token: 'gift-token-123'});
+
+            await expectGiftRedemptionErrorToast({
+                utils,
+                subtitle: /Gift link is not valid/i
+            });
+        });
+
+        test('renders gift redemption popup without name/email inputs for a logged-in free member', async () => {
+            let {
+                ghostApi, popupFrame, triggerButtonFrame, ...utils
+            } = await setupGiftRedemption();
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+
+            const popupIframeDocument = popupFrame.contentDocument;
+            expect(await within(popupIframeDocument).findByText(/You've been gifted a membership/i)).toBeInTheDocument();
+            expect(within(popupIframeDocument).queryByText(/Bronze/i)).toBeInTheDocument();
+            expect(within(popupIframeDocument).queryByText(/1 year/i)).toBeInTheDocument();
+            expect(within(popupIframeDocument).queryByText(/Five great stories to read every day/i)).toBeInTheDocument();
+            expect(within(popupIframeDocument).queryByLabelText(/your name/i)).not.toBeInTheDocument();
+            expect(within(popupIframeDocument).queryByLabelText(/your email/i)).not.toBeInTheDocument();
+            expect(popupIframeDocument.querySelector('.gh-gift-redemption-form')).not.toBeInTheDocument();
+            expect(ghostApi.gift.fetchRedemptionData).toHaveBeenCalledWith({token: 'gift-token-123'});
+        });
+
+        test('renders name/email inputs for an anonymous visitor', async () => {
+            window.location.hash = giftRedemptionHash;
+
+            let {
+                ghostApi, popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}},
+                member: null,
+                showPopup: false
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+
+            const popupIframeDocument = popupFrame.contentDocument;
+            expect(within(popupIframeDocument).getByLabelText(/your name/i)).toBeInTheDocument();
+            expect(within(popupIframeDocument).getByLabelText(/your email/i)).toBeInTheDocument();
+            expect(ghostApi.gift.fetchRedemptionData).toHaveBeenCalledWith({token: 'gift-token-123'});
+        });
+
+        // TODO for GA: Remove test
+        test('does not open when giftSubscriptions labs flag is disabled', async () => {
+            window.location.hash = '#/portal/gift/redeem/gift-token-123';
+
+            let {
+                ghostApi, popupFrame, triggerButtonFrame
+            } = await setup({
+                site: {...FixtureSite.singleTier.basic, labs: {}},
+                showPopup: false
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(popupFrame).not.toBeInTheDocument();
+            expect(ghostApi.gift.fetchRedemptionData).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('?stripe=gift-purchase-success', () => {
+        test('opens gift success page when giftSubscriptions labs flag is enabled', async () => {
+            window.location.href = 'https://portal.localhost/?stripe=gift-purchase-success&gift_token=abc123';
+            window.location.search = '?stripe=gift-purchase-success&gift_token=abc123';
+            window.location.hash = '';
+            window.location.pathname = '/';
+
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}},
+                showPopup: false
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+
+            const giftTitle = within(popupFrame.contentDocument).queryByText(/gift ready to share/i);
+            expect(giftTitle).toBeInTheDocument();
+
+            const redeemUrl = within(popupFrame.contentDocument).queryByText(/\/gift\/abc123$/);
+            expect(redeemUrl).toBeInTheDocument();
+        });
+
+        test('does not open gift success page when gift_token is missing', async () => {
+            window.location.href = 'https://portal.localhost/?stripe=gift-purchase-success';
+            window.location.search = '?stripe=gift-purchase-success';
+            window.location.hash = '';
+            window.location.pathname = '/';
+
+            let {
+                popupFrame, triggerButtonFrame
+            } = await setup({
+                site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}},
+                showPopup: false
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(popupFrame).not.toBeInTheDocument();
+        });
+    });
+
+    describe('unauthenticated account page access', () => {
+        test.each([
+            {path: 'account', label: 'account'},
+            {path: 'account/plans', label: 'account/plans'},
+            {path: 'account/profile', label: 'account/profile'},
+            {path: 'account/newsletters', label: 'account/newsletters'}
+        ])('#/portal/$label redirects to signin with redirect URL when not logged in', async ({path}) => {
+            window.location.hash = `#/portal/${path}`;
+            let {
+                ghostApi, popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: null,
+                showPopup: false
+            });
+            expect(triggerButtonFrame).toBeInTheDocument();
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+
+            // Should show signin page instead of account page
+            const popupIframeDocument = popupFrame.contentDocument;
+            const signinTitle = within(popupIframeDocument).queryByText(/sign in/i);
+            expect(signinTitle).toBeInTheDocument();
+
+            // Fill in email and submit to verify the redirect URL is passed through
+            const emailInput = within(popupIframeDocument).getByLabelText(/email/i);
+            const submitButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
+            fireEvent.change(emailInput, {target: {value: 'test@example.com'}});
+            fireEvent.click(submitButton);
+
+            await waitFor(() => {
+                expect(ghostApi.member.sendMagicLink).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        email: 'test@example.com',
+                        emailType: 'signin',
+                        redirect: `https://portal.localhost#/portal/${path}/`
+                    })
+                );
+            });
+        });
+    });
+
+    describe('hashchange account page access', () => {
+        test.each([
+            {path: 'account', expectedText: /your account/i},
+            {path: 'account/plans', expectedText: /choose a plan/i},
+            {path: 'account/profile', expectedText: /account settings/i}
+        ])('#/portal/$path opens account page via hashchange when logged in', async ({path, expectedText}) => {
+            // Start with no hash — simulates an already-loaded page
+            window.location.hash = '';
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: FixtureMember.free,
+                showPopup: false
+            });
+            expect(triggerButtonFrame).toBeInTheDocument();
+
+            // Navigate via hash change (e.g. clicking <a href="#/portal/account/profile">)
+            window.location.hash = `#/portal/${path}`;
+            window.dispatchEvent(new HashChangeEvent('hashchange'));
+
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+
+            const pageTitle = within(popupFrame.contentDocument).queryByText(expectedText);
+            expect(pageTitle).toBeInTheDocument();
+        });
+
+        test.each([
+            {path: 'account', label: 'account'},
+            {path: 'account/plans', label: 'account/plans'},
+            {path: 'account/profile', label: 'account/profile'},
+            {path: 'account/newsletters', label: 'account/newsletters'}
+        ])('#/portal/$label redirects to signin via hashchange when not logged in', async ({path}) => {
+            // Start with no hash — simulates an already-loaded page
+            window.location.hash = '';
+            let {
+                ghostApi, popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: null,
+                showPopup: false
+            });
+            expect(triggerButtonFrame).toBeInTheDocument();
+
+            // Now navigate via hash change (e.g. clicking <a href="#/portal/account/profile">)
+            window.location.hash = `#/portal/${path}`;
+            window.dispatchEvent(new HashChangeEvent('hashchange'));
+
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+
+            // Should show signin page instead of account page
+            const popupIframeDocument = popupFrame.contentDocument;
+            const signinTitle = within(popupIframeDocument).queryByText(/sign in/i);
+            expect(signinTitle).toBeInTheDocument();
+
+            // Fill in email and submit to verify the redirect URL is passed through
+            const emailInput = within(popupIframeDocument).getByLabelText(/email/i);
+            const submitButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
+            fireEvent.change(emailInput, {target: {value: 'test@example.com'}});
+            fireEvent.click(submitButton);
+
+            await waitFor(() => {
+                expect(ghostApi.member.sendMagicLink).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        email: 'test@example.com',
+                        emailType: 'signin',
+                        redirect: `https://portal.localhost#/portal/${path}/`
+                    })
+                );
+            });
         });
     });
 });

@@ -17,6 +17,7 @@
     "Best": "",
     "Cancel": "Annuleren",
     "Comment": "Verstuur",
+    "Commenting disabled": "",
     "Complete your profile": "Vervolledig jouw profiel",
     "Delete": "Verwijderen",
     "Deleted": "Verwijderd",
@@ -66,9 +67,13 @@
     "Sign up now": "Registreren",
     "Sort by": "Sorteren op",
     "Start the conversation": "Begin het gesprek",
+    "The linked comment is no longer available.": "",
     "This comment has been hidden.": "Deze reactie is verborgen.",
     "This comment has been removed.": "Deze reactie is verwijderd.",
     "Upgrade now": "Upgrade nu",
+    "View in admin": "",
     "Yesterday": "Gisteren",
+    "You can't post comments in this publication.": "",
+    "You can't post comments in this publication. <a>Contact support</a> for more information.": "",
     "Your request will be sent to the owner of this site.": "Jouw melding zal worden verzonden naar de eigenaar van deze site."
 }

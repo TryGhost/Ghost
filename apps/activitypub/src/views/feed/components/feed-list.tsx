@@ -5,8 +5,9 @@ import NewNoteModal from '@src/components/modals/new-note-modal';
 import SuggestedProfiles from './suggested-profiles';
 import {Activity} from '@src/api/activitypub';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, LoadingIndicator, LucideIcon, Separator} from '@tryghost/shade';
+import {Button, LoadingIndicator, Separator} from '@tryghost/shade/components';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/empty-view-indicator';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {useEffect, useRef} from 'react';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
@@ -70,7 +71,7 @@ const FeedList:React.FC<FeedListProps> = ({
                         <div className='my-4'>
                             <div className='mx-auto flex items-start gap-11'>
                                 <div className='flex w-full min-w-0 flex-col items-center'>
-                                    <div className='flex w-full min-w-0 max-w-[620px] flex-col items-start'>
+                                    <div className='flex w-full max-w-[620px] min-w-0 flex-col items-start'>
                                         <FeedInput user={user} />
                                         <ul className='mx-auto flex w-full flex-col px-4 max-lg:px-0' data-testid="feed-list">
                                             {activities.map((activity, index) => (
@@ -107,7 +108,7 @@ const FeedList:React.FC<FeedListProps> = ({
                                                 </li>
                                             ))}
                                             {isFetchingNextPage && (
-                                                <li className='flex flex-col items-center justify-center space-y-4 text-center'>
+                                                <li className='flex flex-col items-center justify-center gap-4 text-center'>
                                                     <LoadingIndicator size='md' />
                                                 </li>
                                             )}

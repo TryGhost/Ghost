@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./app.tsx";
 import { FrameworkProvider, RouterProvider } from "@tryghost/admin-x-framework";
-import { ShadeApp } from "@tryghost/shade";
+import { ShadeApp } from "@tryghost/shade/app";
 
 import { routes } from "./routes.tsx";
 import { navigateTo } from "./utils/navigation";
@@ -15,10 +15,10 @@ const framework = {
         navigateTo(link.route);
     },
     unsplashConfig: {
-        Authorization: "",
-        "Accept-Version": "",
-        "Content-Type": "",
-        "App-Pragma": "",
+        Authorization: "Client-ID 8672af113b0a8573edae3aa3713886265d9bb741d707f6c01a486cde8c278980",
+        "Accept-Version": "v1",
+        "Content-Type": "application/json",
+        "App-Pragma": "no-cache",
         "X-Unsplash-Cache": true,
     },
     sentryDSN: null,

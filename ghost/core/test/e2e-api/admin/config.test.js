@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {agentProvider, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyContentLength, stringMatching} = matchers;
 

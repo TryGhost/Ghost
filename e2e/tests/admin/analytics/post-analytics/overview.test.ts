@@ -4,6 +4,7 @@ import {
     PostAnalyticsPage,
     PostAnalyticsWebTrafficPage
 } from '@/admin-pages';
+import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Post Analytics - Overview', () => {
@@ -44,5 +45,25 @@ test.describe('Ghost Admin - Post Analytics - Overview', () => {
         const postAnalyticsGrowthPage = new PostAnalyticsGrowthPage(page);
         await expect(postAnalyticsGrowthPage.topSourcesCard).toContainText('No sources data available');
     });
-});
 
+    test('growth tab and section - hidden when member sources tracking disabled', async ({page}) => {
+        const settingsService = new SettingsService(page.request);
+        const postAnalyticsPage = new PostAnalyticsPage(page);
+
+        await expect(postAnalyticsPage.growthButton).toBeVisible();
+        await expect(postAnalyticsPage.growthSection.card).toBeVisible();
+
+        try {
+            await settingsService.setMembersTrackSources(false);
+            await page.reload();
+
+            await expect(postAnalyticsPage.growthButton).toBeHidden();
+            await expect(postAnalyticsPage.growthSection.card).toBeHidden();
+            await expect(postAnalyticsPage.overviewButton).toBeVisible();
+            await expect(postAnalyticsPage.webTrafficButton).toBeVisible();
+        } finally {
+            await settingsService.setMembersTrackSources(true);
+            await page.reload();
+        }
+    });
+});

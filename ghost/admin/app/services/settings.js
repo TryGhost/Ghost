@@ -15,10 +15,6 @@ export default class SettingsService extends Service.extend(ValidationEngine) {
     validationType = 'setting';
     _loadingPromise = null;
 
-    // this is an odd case where we only want to react to changes that we get
-    // back from the API rather than local updates
-    @tracked settledIcon = '';
-
     init() {
         super.init(...arguments);
 
@@ -55,7 +51,7 @@ export default class SettingsService extends Service.extend(ValidationEngine) {
     _loadSettings() {
         if (!this._loadingPromise) {
             this._loadingPromise = this.store
-                .queryRecord('setting', {group: 'site,theme,private,members,portal,newsletter,email,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations,recommendations,security,social_web,explore'})
+                .queryRecord('setting', {group: 'site,theme,private,members,portal,newsletter,email,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations,recommendations,security,social_web,explore,transistor'})
                 .then((settings) => {
                     this._loadingPromise = null;
                     return settings;
@@ -77,7 +73,6 @@ export default class SettingsService extends Service.extend(ValidationEngine) {
         const settingsModel = await this._loadSettings();
 
         this.settingsModel = settingsModel;
-        this.settledIcon = settingsModel.icon;
 
         return this;
     }
@@ -91,8 +86,6 @@ export default class SettingsService extends Service.extend(ValidationEngine) {
 
         await settingsModel.save();
         await this.validate();
-
-        this.settledIcon = settingsModel.icon;
 
         return this;
     }

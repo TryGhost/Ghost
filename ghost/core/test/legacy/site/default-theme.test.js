@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {mockSetting} = require('../../utils/e2e-framework-mock-manager');
 
 // This test checks if the default theme passes the current gscan version

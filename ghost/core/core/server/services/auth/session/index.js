@@ -18,8 +18,18 @@ const url = require('url');
 /* eslint-disable max-lines */
 
 function getOriginOfRequest(req) {
-    const origin = req.get('origin');
-    const referrer = req.get('referrer') || urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
+    const getHeader = (name) => {
+        if (req && typeof req.get === 'function') {
+            return req.get(name);
+        }
+
+        const headers = req && req.headers ? req.headers : {};
+        const normalizedName = name.toLowerCase();
+        return headers[normalizedName];
+    };
+
+    const origin = getHeader('origin');
+    const referrer = getHeader('referrer') || getHeader('referer') || urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
 
     if (!origin && !referrer || origin === 'null') {
         return null;
@@ -74,5 +84,15 @@ module.exports.createSessionFromToken = () => {
     });
 };
 
+module.exports.initSession = async function initSession(req, res, next) {
+    try {
+        await expressSession.getSession(req, res);
+        next();
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports.getOriginOfRequest = getOriginOfRequest;
 module.exports.sessionService = sessionService;
 module.exports.deleteAllSessions = expressSession.deleteAllSessions;

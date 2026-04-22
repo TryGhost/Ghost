@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const tiersHelper = require('../../../../core/frontend/helpers/tiers');
 
 describe('{{tiers}} helper', function () {
@@ -10,9 +11,9 @@ describe('{{tiers}} helper', function () {
         ];
 
         const rendered = tiersHelper.call({tiers: tiers}, {hash: {}});
-        should.exist(rendered);
+        assertExists(rendered);
 
-        String(rendered).should.equal('tier 1, tier 2 and tier 3 tiers');
+        assert.equal(String(rendered), 'tier 1, tier 2 and tier 3 tiers');
     });
 
     it('can use a different separator', function () {
@@ -23,9 +24,9 @@ describe('{{tiers}} helper', function () {
         ];
 
         const rendered = tiersHelper.call({tiers: tiers}, {hash: {separator: '|'}});
-        should.exist(rendered);
+        assertExists(rendered);
 
-        String(rendered).should.equal('tier 1|tier 2 and tier 3 tiers');
+        assert.equal(String(rendered), 'tier 1|tier 2 and tier 3 tiers');
     });
 
     it('can use a different final separator', function () {
@@ -36,9 +37,9 @@ describe('{{tiers}} helper', function () {
         ];
 
         const rendered = tiersHelper.call({tiers: tiers}, {hash: {lastSeparator: ' as well as '}});
-        should.exist(rendered);
+        assertExists(rendered);
 
-        String(rendered).should.equal('tier 1, tier 2 as well as tier 3 tiers');
+        assert.equal(String(rendered), 'tier 1, tier 2 as well as tier 3 tiers');
     });
 
     it('can add a single prefix to multiple tiers', function () {
@@ -49,9 +50,9 @@ describe('{{tiers}} helper', function () {
         ];
 
         const rendered = tiersHelper.call({tiers: tiers}, {hash: {prefix: 'on '}});
-        should.exist(rendered);
+        assertExists(rendered);
 
-        String(rendered).should.equal('on tier 1, tier 2 and tier 3 tiers');
+        assert.equal(String(rendered), 'on tier 1, tier 2 and tier 3 tiers');
     });
 
     it('can add a single suffix to multiple tiers', function () {
@@ -62,9 +63,9 @@ describe('{{tiers}} helper', function () {
         ];
 
         const rendered = tiersHelper.call({tiers: tiers}, {hash: {suffix: ' products'}});
-        should.exist(rendered);
+        assertExists(rendered);
 
-        String(rendered).should.equal('tier 1, tier 2 and tier 3 products');
+        assert.equal(String(rendered), 'tier 1, tier 2 and tier 3 products');
     });
 
     it('can override empty suffix to multiple tiers', function () {
@@ -75,9 +76,9 @@ describe('{{tiers}} helper', function () {
         ];
 
         const rendered = tiersHelper.call({tiers: tiers}, {hash: {suffix: ''}});
-        should.exist(rendered);
+        assertExists(rendered);
 
-        String(rendered).should.equal('tier 1, tier 2 and tier 3');
+        assert.equal(String(rendered), 'tier 1, tier 2 and tier 3');
     });
 
     it('can add a prefix and suffix to multiple tiers', function () {
@@ -88,9 +89,9 @@ describe('{{tiers}} helper', function () {
         ];
 
         const rendered = tiersHelper.call({tiers: tiers}, {hash: {prefix: 'on ', suffix: ' products'}});
-        should.exist(rendered);
+        assertExists(rendered);
 
-        String(rendered).should.equal('on tier 1, tier 2 and tier 3 products');
+        assert.equal(String(rendered), 'on tier 1, tier 2 and tier 3 products');
     });
 
     it('can add a prefix and suffix with HTML', function () {
@@ -101,15 +102,15 @@ describe('{{tiers}} helper', function () {
         ];
 
         const rendered = tiersHelper.call({tiers: tiers}, {hash: {suffix: ' &bull;', prefix: '&hellip; '}});
-        should.exist(rendered);
+        assertExists(rendered);
 
-        String(rendered).should.equal('&hellip; tier 1, tier 2 and tier 3 &bull;');
+        assert.equal(String(rendered), '&hellip; tier 1, tier 2 and tier 3 &bull;');
     });
 
     it('does not add prefix or suffix if no tiers exist', function () {
         const rendered = tiersHelper.call({}, {hash: {prefix: 'on ', suffix: ' products'}});
-        should.exist(rendered);
+        assertExists(rendered);
 
-        String(rendered).should.equal('');
+        assert.equal(String(rendered), '');
     });
 });

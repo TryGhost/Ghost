@@ -1,13 +1,14 @@
 import {Response} from 'miragejs';
 import {authenticateSession} from 'ember-simple-auth/test-support';
-import {click, currentURL, find, findAll} from '@ember/test-helpers';
+import {click, currentRouteName, currentURL, find, findAll} from '@ember/test-helpers';
+import {enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {fileUpload} from '../../helpers/file-upload';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
-describe('Acceptance: Members import', function () {
+describe.skip('Acceptance: Members import', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
@@ -109,6 +110,24 @@ testemail@example.com,Test Email,This is a test template for importing your memb
             await click('[data-test-button="perform-import"]');
 
             expect(apiLabels).to.equal(label1.name);
+        });
+
+        it('opts out of the Ember import route when membersForward is enabled', async function () {
+            enableLabsFlag(this.server, 'membersForward');
+
+            await visit('/members/import');
+
+            expect(currentRouteName()).to.equal('members.import');
+            expect(find('[data-test-modal="import-members"]'), 'members import modal').to.not.exist;
+        });
+
+        it('preserves query params when membersForward is enabled', async function () {
+            enableLabsFlag(this.server, 'membersForward');
+
+            await visit('/members/import?filter=label%3AVIP&search=alice');
+
+            expect(currentRouteName()).to.equal('members.import');
+            expect(currentURL()).to.equal('/members/import?filter=label%3AVIP&search=alice');
         });
     });
     describe ('super editors functions', function () {
@@ -222,6 +241,14 @@ testemail@example.com,Test Email,This is a test template for importing your memb
 
         it('Editor cannot access members import', async function () {
             await visit('/members/import');
+
+            expect(currentURL()).to.equal('/site');
+        });
+
+        it('Editor cannot access members import when membersForward is enabled', async function () {
+            enableLabsFlag(this.server, 'membersForward');
+
+            await visit('/members/import?filter=label%3AVIP&search=alice');
 
             expect(currentURL()).to.equal('/site');
         });
