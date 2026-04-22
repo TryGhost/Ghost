@@ -1056,7 +1056,6 @@ User = ghostBookshelf.Model.extend({
         const userId = object.user_id;
         const oldPassword = object.oldPassword;
         const isLoggedInUser = userId === options.context.user;
-        const skipSessionID = unfilteredOptions.skipSessionID;
 
         options.require = true;
         options.withRelated = ['sessions'];
@@ -1072,11 +1071,13 @@ User = ghostBookshelf.Model.extend({
 
         const updatedUser = await user.save({password: newPassword});
 
+        // Destroy every active session for this user. The caller must mint a
+        // fresh session (with a new session_id) for self password-changes so
+        // that stolen or cloned cookies are invalidated alongside distinct
+        // concurrent sessions.
         const sessions = user.related('sessions');
         for (const session of sessions) {
-            if (session.get('session_id') !== skipSessionID) {
-                await session.destroy(options);
-            }
+            await session.destroy(options);
         }
 
         return updatedUser;

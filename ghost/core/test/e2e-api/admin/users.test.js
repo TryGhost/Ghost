@@ -3,7 +3,7 @@ const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyObject, anyObjectId, anyArray, anyISODateTime, anyString, nullable} = matchers;
+const {anyContentVersion, anyEtag, anyObject, anyObjectId, anyArray, anyISODateTime, anyString, nullable, stringMatching} = matchers;
 const {cacheInvalidateHeaderNotSet, cacheInvalidateHeaderSetToWildcard} = assertions;
 const localUtils = require('./utils');
 
@@ -549,7 +549,10 @@ describe('User API', function () {
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                etag: anyEtag
+                etag: anyEtag,
+                'set-cookie': [
+                    stringMatching(/^ghost-admin-api-session=/)
+                ]
             })
             .matchBodySnapshot()
             .expect(({body}) => {
