@@ -263,6 +263,13 @@ export const ShareModalStyles = `
         top: 20px;
     }
 
+    @media (max-width: 480px) {
+        .gh-portal-popup-container.share {
+            flex: 1 0 auto;
+            margin-bottom: 0;
+        }
+    }
+
     @media (max-width: 420px) {
         .gh-portal-share-actions {
             flex-direction: column;
@@ -292,11 +299,8 @@ export const ShareModalStyles = `
             order: 4;
         }
 
-        .gh-portal-share-action.more {
-            order: 5;
-        }
-
         .gh-portal-share-more {
+            order: 5;
             width: 100%;
         }
 
