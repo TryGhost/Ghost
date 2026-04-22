@@ -2,7 +2,7 @@ import React from 'react';
 import {Badge, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {formatNumber} from '@tryghost/shade/utils';
 
-type AutomationStatus = 'Active' | 'Draft';
+type AutomationStatus = 'active' | 'inactive';
 
 interface AutomationRow {
     id: string;
@@ -17,17 +17,30 @@ const automations: AutomationRow[] = [
         id: 'free-members-welcome-email',
         name: 'Free members welcome email',
         steps: 2,
-        status: 'Active',
+        status: 'active',
         lastRun: '2 hours ago'
     },
     {
         id: 'paid-members-welcome-email',
         name: 'Paid members welcome email',
         steps: 3,
-        status: 'Active',
+        status: 'active',
         lastRun: 'Yesterday'
     }
 ];
+
+const AutomationsStatusBadge: React.FC<{status: AutomationStatus}> = ({status}) => {
+    switch (status) {
+    case 'active':
+        return <Badge variant="success">Active</Badge>;
+    case 'inactive':
+        return <Badge variant="secondary">Inactive</Badge>;
+    default: {
+        const invalidStatus: never = status;
+        throw new Error(`Unhandled status: ${invalidStatus}`);
+    }
+    }
+};
 
 const AutomationsList: React.FC = () => {
     return (
@@ -63,9 +76,7 @@ const AutomationsList: React.FC = () => {
                             </span>
                         </TableCell>
                         <TableCell className="lg:p-4">
-                            <Badge variant={automation.status === 'Active' ? 'success' : 'secondary'}>
-                                {automation.status}
-                            </Badge>
+                            <AutomationsStatusBadge status={automation.status} />
                         </TableCell>
                         <TableCell className="lg:p-4">
                             <span className="text-muted-foreground">{automation.lastRun}</span>
