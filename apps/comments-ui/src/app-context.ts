@@ -23,10 +23,12 @@ export type Comment = {
     status: string,
     pinned: boolean,
     liked: boolean,
+    disliked: boolean,
     count: {
         replies: number,
         total_replies?: number,
         likes: number,
+        dislikes: number,
     },
     member: Member | null,
     edited_at: string,

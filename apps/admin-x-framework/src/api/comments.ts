@@ -32,6 +32,7 @@ export type Comment = {
         replies?: number;
         direct_replies?: number;
         likes?: number;
+        dislikes?: number;
         reports?: number;
     };
     // Optional nested replies for tree structures
@@ -48,6 +49,15 @@ export type CommentReport = {
 };
 
 export type CommentLike = {
+    id: string;
+    comment_id: string;
+    member_id: string;
+    created_at: string;
+    updated_at: string;
+    member?: Member;
+};
+
+export type CommentDislike = {
     id: string;
     comment_id: string;
     member_id: string;
@@ -171,7 +181,7 @@ export const useCommentReplies = createQueryWithId<CommentsResponseType>({
     dataType,
     path: (id: string) => `/comments/${id}/replies/`,
     defaultSearchParams: {
-        include: 'member,post,count.replies,count.likes,count.reports,parent',
+        include: 'member,post,count.replies,count.likes,count.dislikes,count.reports,parent',
         limit: '100' // Max limit allowed by API
     }
 });
@@ -180,7 +190,7 @@ export const useReadComment = createQueryWithId<CommentsResponseType>({
     dataType,
     path: (id: string) => `/comments/${id}/`,
     defaultSearchParams: {
-        include: 'member,post,count.replies,count.direct_replies,count.likes,count.reports,parent,in_reply_to'
+        include: 'member,post,count.replies,count.direct_replies,count.likes,count.dislikes,count.reports,parent,in_reply_to'
     }
 });
 
@@ -217,6 +227,25 @@ export const useBrowseCommentLikes = (commentId: string, options?: {enabled?: bo
     return useBrowseCommentLikesQuery(commentId, {...options});
 };
 
+export interface CommentDislikesResponseType {
+    meta?: Meta;
+    comment_dislikes: CommentDislike[];
+}
+
+const useBrowseCommentDislikesQuery = createQueryWithId<CommentDislikesResponseType>({
+    dataType: 'CommentDislikesResponseType',
+    path: id => `/comments/${id}/dislikes/`,
+    defaultSearchParams: {
+        include: 'member',
+        limit: '100',
+        order: 'created_at desc'
+    }
+});
+
+export const useBrowseCommentDislikes = (commentId: string, options?: {enabled?: boolean}) => {
+    return useBrowseCommentDislikesQuery(commentId, {...options});
+};
+
 /**
  * Fetches direct replies for a thread view.
  * - For top-level comments: returns comments where parent_id matches AND in_reply_to_id is null
@@ -228,7 +257,7 @@ export const useThreadComments = (commentId: string, options?: {enabled?: boolea
         searchParams: {
             filter: `(parent_id:${commentId}+in_reply_to_id:null),in_reply_to_id:${commentId}`,
             order: 'created_at asc',
-            include: 'member,post,count.direct_replies,count.likes,count.reports,parent,in_reply_to',
+            include: 'member,post,count.direct_replies,count.likes,count.dislikes,count.reports,parent,in_reply_to',
             limit: '100'
         }
     });

@@ -6,11 +6,11 @@ export const SortingForm: React.FC = () => {
     const {t} = useAppContext();
     const changeOrder = useOrderChange();
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedOption, setSelectedOption] = useState('count__likes desc, created_at desc');
+    const [selectedOption, setSelectedOption] = useState('count__net_score desc, created_at desc');
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const options = [
-        {value: 'count__likes desc, created_at desc', label: t('Best')},
+        {value: 'count__net_score desc, created_at desc', label: t('Best')},
         {value: 'created_at desc', label: t('Newest')},
         {value: 'created_at asc', label: t('Oldest')}
     ];

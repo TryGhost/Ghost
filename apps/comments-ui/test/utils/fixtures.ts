@@ -38,6 +38,7 @@ export function buildComment(override: any = {}) {
         html: '<p>Empty</p>',
         replies: [],
         liked: false,
+        disliked: false,
         created_at: '2022-08-11T09:26:34.000Z',
         edited_at: null,
         member: buildMember(),
@@ -47,6 +48,7 @@ export function buildComment(override: any = {}) {
         count: {
             replies: 0,
             likes: 0,
+            dislikes: 0,
             ...override.count
         }
     };
@@ -57,9 +59,11 @@ export function buildReply(override: any = {}) {
         id: ObjectId().toString(),
         html: '<p>Empty</p>',
         count: {
-            likes: 0
+            likes: 0,
+            dislikes: 0
         },
         liked: false,
+        disliked: false,
         created_at: '2022-08-11T09:26:34.000Z',
         edited_at: null,
         member: buildMember(),

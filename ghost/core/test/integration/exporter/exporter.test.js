@@ -32,6 +32,7 @@ describe('Exporter', function () {
             'collections',
             'collections_posts',
             'comments',
+            'comment_dislikes',
             'comment_likes',
             'comment_reports',
             'custom_theme_settings',
