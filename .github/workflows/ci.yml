@@ -149,7 +149,6 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Determine Affected Projects
-        if: env.IS_TAG != 'true'
         id: affected
         run: |
           # if the ci files have changed or we're in a tag, ensure we don't just look at affected
@@ -161,9 +160,12 @@ jobs:
 
           AFFECTED_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --json | tr -d '\n')
           echo "affected_projects=$AFFECTED_PROJECTS" >> "$GITHUB_OUTPUT"
-          # output string list for use in run-many commands
-          echo "affected_projects_str=$(echo $AFFECTED_PROJECTS | jq -r 'join(",")')" >> "$GITHUB_OUTPUT"
+          # string list for use in run-many commands
+          AFFECTED_PROJECTS_STR=$(pnpm -s nx show projects ${AFFECTED_ARG} --sep=, | tr -d '\n')
+          echo "affected_projects_str=$AFFECTED_PROJECTS_STR" >> "$GITHUB_OUTPUT"
 
+          # "i18n" tag = packages whose source is scanned by @tryghost/i18n's
+          # translate:* scripts (not packages that merely import @tryghost/i18n).
           I18N_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --projects 'tag:i18n' --sep=, | tr -d '\n')
           echo "affected_i18n_projects=${I18N_PROJECTS}" >> "$GITHUB_OUTPUT"
 
