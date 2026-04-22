@@ -111,6 +111,110 @@ describe('Adapter Cache Redis', function () {
             assert.equal(secondRead, 'Da Value');
         });
 
+        it('returns undefined and logs error when fetchData rejects on a cache miss', async function () {
+            const cacheStub = createCacheStub();
+            cacheStub.get.resolves(null);
+            const cache = new RedisCache({cache: cacheStub});
+
+            const fetchData = sinon.stub().rejects(new Error('DB is down'));
+
+            const value = await cache.get('key', fetchData);
+
+            assert.equal(value, undefined);
+            sinon.assert.calledOnce(fetchData);
+            sinon.assert.calledOnce(logging.error);
+        });
+
+        it('retries fetchData on next call after a previous fetchData rejection', async function () {
+            let cachedValue = null;
+            const cacheStub = createCacheStub();
+            cacheStub.get.callsFake(async () => cachedValue);
+            cacheStub.set.callsFake(async (_key, value) => {
+                cachedValue = value;
+            });
+            const cache = new RedisCache({cache: cacheStub});
+
+            const fetchData = sinon.stub();
+            fetchData.onFirstCall().rejects(new Error('transient failure'));
+            fetchData.onSecondCall().resolves('recovered value');
+
+            await cache.get('key', fetchData);
+
+            const value = await cache.get('key', fetchData);
+
+            assert.equal(fetchData.callCount, 2);
+            assert.equal(value, 'recovered value');
+        });
+
+        it('does not call fetchData when the underlying Redis get throws', async function () {
+            const redisCacheInstanceStub = {
+                get: sinon.stub().rejects(new Error('Redis connection lost')),
+                set: sinon.stub().resolves(),
+                store: {
+                    getClient: sinon.stub().returns({
+                        on: sinon.stub()
+                    })
+                }
+            };
+            const cache = new RedisCache({
+                cache: redisCacheInstanceStub
+            });
+
+            const fetchData = sinon.stub().resolves('fallback value');
+
+            const value = await cache.get('key', fetchData);
+
+            assert.equal(value, undefined);
+            assert.equal(fetchData.callCount, 0);
+            sinon.assert.calledOnce(logging.error);
+        });
+
+        it('returns the cached value when background refresh fails', async function () {
+            const KEY = 'bg-refresh-error';
+            let cachedValue = null;
+
+            const cacheStub = createCacheStub();
+            cacheStub.get.callsFake(async (key) => {
+                if (key === PREFIX_HASH + KEY) {
+                    return cachedValue;
+                }
+            });
+            cacheStub.set.callsFake(async (key, value) => {
+                if (key === PREFIX_HASH + KEY) {
+                    cachedValue = value;
+                }
+            });
+            cacheStub.ttl.callsFake(async (key) => {
+                if (key === PREFIX_HASH + KEY) {
+                    return 5;
+                }
+            });
+            const cache = new RedisCache({
+                cache: cacheStub,
+                ttl: 100,
+                refreshAheadFactor: 0.2
+            });
+
+            const fetchData = sinon.stub();
+            fetchData.onFirstCall().resolves('Original Value');
+            fetchData.onSecondCall().rejects(new Error('refresh failed'));
+
+            const first = await cache.get(KEY, fetchData);
+            assert.equal(first, 'Original Value');
+            sinon.assert.calledOnce(fetchData);
+
+            const second = await cache.get(KEY, fetchData);
+            assert.equal(second, 'Original Value');
+            sinon.assert.calledTwice(fetchData);
+
+            await new Promise((resolve) => {
+                setTimeout(resolve, 10);
+            });
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].message, 'There was an error refreshing cache data in the background');
+            assert.equal(logging.error.firstCall.args[0].error.message, 'refresh failed');
+        });
+
         it('Can do a background update of the cache', async function () {
             const KEY = 'update-cache-in-background';
             let cachedValue = null;
@@ -186,6 +290,25 @@ describe('Adapter Cache Redis', function () {
 
             assert.equal(value, 'new value');
             assert.equal(cacheStub.set.args[0][0], `${PREFIX_HASH}key-here`);
+        });
+
+        it('logs error and does not throw when the underlying Redis set throws', async function () {
+            const redisCacheInstanceStub = {
+                set: sinon.stub().rejects(new Error('Redis write failed')),
+                store: {
+                    getClient: sinon.stub().returns({
+                        on: sinon.stub()
+                    })
+                }
+            };
+            const cache = new RedisCache({
+                cache: redisCacheInstanceStub
+            });
+
+            const value = await cache.set('key-here', 'new value');
+
+            assert.equal(value, undefined);
+            sinon.assert.calledOnce(logging.error);
         });
 
         it('sets a key based on keyPrefix', async function () {
