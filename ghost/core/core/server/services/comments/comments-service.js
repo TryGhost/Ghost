@@ -9,6 +9,8 @@ const messages = {
     memberNotFound: 'Unable to find member',
     likeNotFound: 'Unable to find like',
     alreadyLiked: 'This comment was liked already',
+    dislikeNotFound: 'Unable to find dislike',
+    alreadyDisliked: 'This comment was disliked already',
     replyToReply: 'Can not reply to a reply',
     commentsNotEnabled: 'Comments are not enabled for this site.',
     cannotCommentOnPost: 'You do not have permission to comment on this post.',
@@ -118,6 +120,18 @@ class CommentsService {
             });
         }
 
+        // Remove any existing dislike (mutual exclusivity)
+        const existingDislike = await this.models.CommentDislike.findOne(data, options);
+        if (existingDislike) {
+            await this.models.CommentDislike.destroy({
+                ...options,
+                destroyBy: {
+                    member_id: memberModel.id,
+                    comment_id: commentId
+                }
+            });
+        }
+
         return await this.models.CommentLike.add(data, options);
     }
 
@@ -137,6 +151,70 @@ class CommentsService {
             if (err instanceof this.models.CommentLike.NotFoundError) {
                 return Promise.reject(new errors.NotFoundError({
                     message: tpl(messages.likeNotFound)
+                }));
+            }
+
+            throw err;
+        }
+    }
+
+    async dislikeComment(commentId, member, options = {}) {
+        this.checkEnabled();
+
+        const memberModel = await this.models.Member.findOne({
+            id: member.id
+        }, {
+            require: true,
+            ...options,
+            withRelated: ['products']
+        });
+
+        this.checkCommentAccess(memberModel);
+
+        const data = {
+            member_id: memberModel.id,
+            comment_id: commentId
+        };
+
+        const existing = await this.models.CommentDislike.findOne(data, options);
+
+        if (existing) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.alreadyDisliked)
+            });
+        }
+
+        // Remove any existing like (mutual exclusivity)
+        const existingLike = await this.models.CommentLike.findOne(data, options);
+        if (existingLike) {
+            await this.models.CommentLike.destroy({
+                ...options,
+                destroyBy: {
+                    member_id: memberModel.id,
+                    comment_id: commentId
+                }
+            });
+        }
+
+        return await this.models.CommentDislike.add(data, options);
+    }
+
+    async undislikeComment(commentId, member, options = {}) {
+        this.checkEnabled();
+
+        try {
+            await this.models.CommentDislike.destroy({
+                ...options,
+                destroyBy: {
+                    member_id: member.id,
+                    comment_id: commentId
+                },
+                require: true
+            });
+        } catch (err) {
+            if (err instanceof this.models.CommentDislike.NotFoundError) {
+                return Promise.reject(new errors.NotFoundError({
+                    message: tpl(messages.dislikeNotFound)
                 }));
             }
 
@@ -201,7 +279,7 @@ class CommentsService {
      */
     async getAdminAllComments({includeNested, filter, mongoTransformer, reportCount, order, page, limit}) {
         return await this.models.Comment.findPage({
-            withRelated: ['member', 'post', 'count.replies', 'count.direct_replies', 'count.likes', 'count.reports', 'in_reply_to', 'parent'],
+            withRelated: ['member', 'post', 'count.replies', 'count.direct_replies', 'count.likes', 'count.dislikes', 'count.net_score', 'count.reports', 'in_reply_to', 'parent'],
             filter,
             mongoTransformer,
             reportCount,
@@ -272,6 +350,31 @@ class CommentsService {
 
         const {page, limit} = options;
         const result = await this.models.CommentLike.findPage({
+            filter: `comment_id:'${commentId}'`,
+            withRelated: ['member'],
+            order: 'created_at desc',
+            page,
+            limit
+        });
+
+        return result;
+    }
+
+    /**
+     * Get dislikes for a comment (admin only)
+     * @param {string} commentId - The ID of the Comment to get dislikes for
+     * @param {any} options - Query options (page, limit)
+     */
+    async getCommentDislikes(commentId, options = {}) {
+        const comment = await this.models.Comment.findOne({id: commentId});
+        if (!comment) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.commentNotFound)
+            });
+        }
+
+        const {page, limit} = options;
+        const result = await this.models.CommentDislike.findPage({
             filter: `comment_id:'${commentId}'`,
             withRelated: ['member'],
             order: 'created_at desc',

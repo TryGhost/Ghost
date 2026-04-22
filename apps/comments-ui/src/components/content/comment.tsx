@@ -407,7 +407,7 @@ const CommentMenu: React.FC<CommentMenuProps> = ({comment, openReplyForm, highli
         <div className={`flex items-center gap-4 ${className}`}>
             {showLikeButton
                 ? <LikeButton comment={comment} />
-                : <LikeCount count={comment.count.likes} liked={comment.liked} />
+                : <LikeCount count={comment.count.likes} disliked={comment.disliked} dislikesCount={comment.count.dislikes} liked={comment.liked} />
             }
             {showReplyButton && <ReplyButton isReplying={highlightReplyButton} openReplyForm={openReplyForm} />}
             {showMoreButton && <MoreButton comment={comment} toggleEdit={openEditMode} />}

@@ -57,6 +57,8 @@ module.exports = function apiRoutes() {
     router.delete('/:id', checkMemberCommenting, http(api.commentsMembers.destroy));
     router.post('/:id/like', checkMemberCommenting, http(api.commentsMembers.like));
     router.delete('/:id/like', checkMemberCommenting, http(api.commentsMembers.unlike));
+    router.post('/:id/dislike', checkMemberCommenting, http(api.commentsMembers.dislike));
+    router.delete('/:id/dislike', checkMemberCommenting, http(api.commentsMembers.undislike));
 
     // Report is allowed even for members with commenting disabled (moderation action)
     router.post('/:id/report', http(api.commentsMembers.report));

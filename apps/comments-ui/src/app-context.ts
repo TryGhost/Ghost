@@ -22,9 +22,11 @@ export type Comment = {
     replies: Comment[],
     status: string,
     liked: boolean,
+    disliked: boolean,
     count: {
         replies: number,
         likes: number,
+        dislikes: number,
     },
     member: Member | null,
     edited_at: string,

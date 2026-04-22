@@ -8,7 +8,6 @@ const htmlToPlaintext = (html) => {
     return html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
 };
 
-
 export class MockedApi {
     comments: any[];
     postId: string;
@@ -32,7 +31,7 @@ export class MockedApi {
         this.comments = comments;
         this.member = member;
         this.settings = settings;
-        this.members = [];
+        this.members = members;
         this.delay = 0;
         this.labs = labs;
         this.failures = new Map();
@@ -137,10 +136,10 @@ export class MockedApi {
         // Sort comments on created at + id
         const setOrder = order || 'default';
 
-        if (setOrder === 'count__likes desc, created_at desc') {
-            // Sort by likes (desc) first, then by created_at (asc)
+        if (setOrder === 'count__net_score desc, created_at desc') {
+            // Sort by net score (likes - dislikes, desc) first, then by created_at (asc)
             this.comments.sort((a, b) => {
-                const likesDiff = b.count.likes - a.count.likes;
+                const likesDiff = (b.count.likes - b.count.dislikes) - (a.count.likes - a.count.dislikes);
                 if (likesDiff !== 0) {
                     return likesDiff;
                 } // Prioritize by likes
@@ -423,6 +422,11 @@ export class MockedApi {
             }
 
             if (route.request().method() === 'POST') {
+                // Mutual exclusivity: remove dislike if exists
+                if (comment.disliked) {
+                    comment.count.dislikes -= 1;
+                    comment.disliked = false;
+                }
                 comment.count.likes += 1;
                 comment.liked = true;
             }
@@ -430,6 +434,49 @@ export class MockedApi {
             if (route.request().method() === 'DELETE') {
                 comment.count.likes -= 1;
                 comment.liked = false;
+            }
+
+            await route.fulfill({
+                status: 200,
+                body: JSON.stringify(this.browseComments({
+                    limit: 1,
+                    filter: `id:'${commentId}'`,
+                    page: 1,
+                    order: ''
+                }))
+            });
+        },
+
+        async dislikeComment(route) {
+            const failureResponse = await this.#handleFailure('dislikeComment');
+            if (failureResponse) {
+                return route.fulfill(failureResponse);
+            }
+            await this.#delayResponse();
+            const url = new URL(route.request().url());
+            const commentId = url.pathname.split('/').reverse()[2];
+
+            const comment = flattenComments(this.comments).find(c => c.id === commentId);
+            if (!comment) {
+                return await route.fulfill({
+                    status: 404,
+                    body: 'Comment not found'
+                });
+            }
+
+            if (route.request().method() === 'POST') {
+                // Mutual exclusivity: remove like if exists
+                if (comment.liked) {
+                    comment.count.likes -= 1;
+                    comment.liked = false;
+                }
+                comment.count.dislikes += 1;
+                comment.disliked = true;
+            }
+
+            if (route.request().method() === 'DELETE') {
+                comment.count.dislikes -= 1;
+                comment.disliked = false;
             }
 
             await route.fulfill({
@@ -617,6 +664,7 @@ export class MockedApi {
         await page.route(`${path}/members/api/comments/post/*/*`, this.requestHandlers.browseComments.bind(this));
         await page.route(`${path}/members/api/comments/*/`, this.requestHandlers.getOrDeleteComment.bind(this));
         await page.route(`${path}/members/api/comments/*/like/`, this.requestHandlers.likeComment.bind(this));
+        await page.route(`${path}/members/api/comments/*/dislike/`, this.requestHandlers.dislikeComment.bind(this));
         await page.route(`${path}/members/api/comments/*/replies/*`, this.requestHandlers.getReplies.bind(this));
         await page.route(`${path}/members/api/comments/counts/*`, this.requestHandlers.getCommentCounts.bind(this));
         await page.route(`${path}/settings/*`, this.requestHandlers.getSettings.bind(this));
