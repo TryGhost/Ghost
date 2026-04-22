@@ -1,3 +1,5 @@
+import {getGiftRedemptionSuccessMessage} from './gift-redemption-notification';
+
 const getHashData = () => {
     const hash = window.location.hash || '';
     const [hashPath = '', hashQueryString = ''] = hash.replace(/^#/, '').split('?');
@@ -12,17 +14,21 @@ const getURLParam = ({searchParams, hashParams}, name) => {
     return searchParams.get(name) ?? hashParams.get(name);
 };
 
-export const handleGiftRedemptionAction = ({status}) => {
-    const successStatus = JSON.parse(status);
+export const handleGiftRedemptionAction = ({status, giftTier, giftCadence, giftDuration}) => {
+    const successStatus = status === 'true';
+    // TODO: Add translation strings once copy has been finalised
+    const successMessage = getGiftRedemptionSuccessMessage({
+        tierName: giftTier,
+        cadence: giftCadence,
+        duration: Number(giftDuration)
+    }) || 'Gift redeemed! You\'re all set.';
 
     return {
         type: 'giftRedeem',
         status: successStatus ? 'success' : 'error',
         duration: successStatus ? 5000 : 3000,
         autoHide: successStatus,
-        ...(successStatus ? {
-            message: 'Gift redeemed! You\'re all set.' // TODO: Add translation strings once copy has been finalised
-        } : {})
+        ...(successStatus ? {message: successMessage} : {})
     };
 };
 
@@ -101,7 +107,15 @@ export default function NotificationParser({billingOnly = false} = {}) {
     }
 
     if ((giftRedemption || action === 'giftRedeem') && successStatus && !billingOnly) {
-        return handleGiftRedemptionAction({status: successStatus});
+        const giftTier = getURLParam({searchParams, hashParams}, 'giftTier');
+        const giftCadence = getURLParam({searchParams, hashParams}, 'giftCadence');
+        const giftDuration = getURLParam({searchParams, hashParams}, 'giftDuration');
+        return handleGiftRedemptionAction({
+            status: successStatus,
+            giftTier,
+            giftCadence,
+            giftDuration
+        });
     }
 
     if (action && successStatus && !billingOnly) {

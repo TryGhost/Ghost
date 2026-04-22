@@ -107,10 +107,9 @@ const NotificationText = ({type, status, message, context}) => {
             </p>
         );
     } else if (type === 'giftRedeem' && status === 'success') {
-        // TODO: Add translation strings once copy has been finalised
         return (
             <p>
-                {'Gift redeemed! You\'re all set.'}
+                {message}
             </p>
         );
     } else if (type === 'giftRedeem' && status === 'error') {
@@ -290,7 +289,7 @@ export default class Notification extends React.Component {
             if (['signin', 'signup', 'giftRedeem'].includes(type)) {
                 deleteParams.push('action', 'success');
                 if (type === 'giftRedeem') {
-                    deleteParams.push('giftRedemption');
+                    deleteParams.push('giftRedemption', 'giftTier', 'giftCadence', 'giftDuration');
                 }
             } else if (['stripe:checkout'].includes(type)) {
                 deleteParams.push('stripe');

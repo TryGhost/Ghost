@@ -1,5 +1,6 @@
 import setupGhostApi from './utils/api';
 import {chooseBestErrorMessage} from './utils/errors';
+import {getGiftRedemptionSuccessMessage} from './utils/gift-redemption-notification';
 import {createNotification, createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
 import {t} from './utils/i18n';
 
@@ -218,6 +219,10 @@ async function signup({data, state, api}) {
 
 async function redeemGift({data, state, api}) {
     try {
+        const gift = state.pageData.gift;
+        if (!gift) {
+            throw new Error('Gift not found');
+        }
         let {email, name, giftToken} = data;
         name = name?.trim();
 
@@ -229,13 +234,22 @@ async function redeemGift({data, state, api}) {
                 status: 'success',
                 autoHide: true,
                 closeable: true,
-                state
+                state,
+                message: getGiftRedemptionSuccessMessage({
+                    tierName: gift.tier.name,
+                    cadence: gift.cadence,
+                    duration: gift.duration
+                })
             });
+            removePortalLinkFromUrl();
 
             return {
                 action: 'redeemGift:success',
                 member,
-                page: 'accountHome',
+                showPopup: false,
+                lastPage: null,
+                pageQuery: '',
+                popupNotification: null,
                 notification,
                 notificationSequence: notification.count
             };
@@ -243,10 +257,13 @@ async function redeemGift({data, state, api}) {
 
         const integrityToken = await api.member.getIntegrityToken();
         const redirectUrl = new URL(state?.site?.url || window.location.href);
-        const hashParams = new URLSearchParams({
-            giftRedemption: 'true'
-        });
-        redirectUrl.hash = `/portal/account?${hashParams.toString()}`;
+        redirectUrl.search = new URLSearchParams({
+            giftRedemption: 'true',
+            giftTier: gift.tier.name,
+            giftCadence: gift.cadence,
+            giftDuration: String(gift.duration)
+        }).toString();
+        redirectUrl.hash = '';
 
         const {otc_ref: otcRef, inboxLinks} = await api.member.sendMagicLink({
             email: (email || '').trim(),

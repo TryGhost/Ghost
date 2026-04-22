@@ -12,6 +12,15 @@ export function getGiftDurationLabel({cadence, duration} = {}) {
         : t('{months} months', {months: duration});
 }
 
+export function getGiftRedemptionSuccessMessage({tierName, cadence, duration} = {}) {
+    if (!tierName || !cadence || !duration) {
+        return null;
+    }
+    const durationLabel = getGiftDurationLabel({cadence, duration});
+    // TODO: Add translation strings once copy has been finalised
+    return `You now have access to ${tierName} for ${durationLabel}. Enjoy!`;
+}
+
 export function getGiftRedemptionErrorMessage(error) {
     const subtitle = error?.message && error.message !== 'Failed to load gift data'
         ? error.message
