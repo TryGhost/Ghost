@@ -381,7 +381,7 @@ test.describe('Ghost Admin - Welcome Email Customize Button', () => {
         await expect(page).toHaveURL(/\/ghost\/#\/settings\/memberemails$/);
     });
 
-    test.skip('Escape closes welcome email color picker without bypassing unsaved changes confirmation', async ({page}) => {
+    test('Escape closes welcome email color picker without bypassing unsaved changes confirmation', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
         await welcomeEmailsSection.goto();

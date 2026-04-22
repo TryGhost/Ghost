@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {ColorPicker} from '@tryghost/shade/patterns';
 import {Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 
@@ -59,16 +59,63 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({title, value, onChan
     const normalizedValue = normalizeColorValue(value, accentColor, swatches);
     const allowPickerChanges = useRef(false);
     const suppressPickerChanges = useRef(false);
+    const earlyEscapeHandler = useRef<((event: KeyboardEvent) => void) | null>(null);
     const selectedSwatch = swatches.find((swatch) => {
         return swatch.value === value || (value && swatch.hex.toLowerCase() === value.toLowerCase());
     });
+    const resetInteractionState = useCallback(() => {
+        allowPickerChanges.current = false;
+        suppressPickerChanges.current = false;
+    }, []);
+    const detachEarlyEscapeListener = useCallback(() => {
+        if (!earlyEscapeHandler.current) {
+            return;
+        }
+
+        window.removeEventListener('keydown', earlyEscapeHandler.current, true);
+        earlyEscapeHandler.current = null;
+    }, []);
+    const closePopover = useCallback(() => {
+        detachEarlyEscapeListener();
+        resetInteractionState();
+        setOpen(false);
+    }, [detachEarlyEscapeListener, resetInteractionState]);
+    const attachEarlyEscapeListener = useCallback(() => {
+        if (earlyEscapeHandler.current) {
+            return;
+        }
+
+        const handleEarlyEscape = (event: KeyboardEvent) => {
+            if (event.key !== 'Escape') {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+            detachEarlyEscapeListener();
+            closePopover();
+        };
+
+        earlyEscapeHandler.current = handleEarlyEscape;
+        window.addEventListener('keydown', handleEarlyEscape, true);
+    }, [closePopover, detachEarlyEscapeListener]);
+
+    useEffect(() => {
+        return () => {
+            detachEarlyEscapeListener();
+        };
+    }, [detachEarlyEscapeListener]);
 
     return (
         <Popover
             open={open}
             onOpenChange={(nextOpen) => {
-                allowPickerChanges.current = false;
-                suppressPickerChanges.current = false;
+                resetInteractionState();
+                if (nextOpen) {
+                    attachEarlyEscapeListener();
+                } else {
+                    detachEarlyEscapeListener();
+                }
                 setOpen(nextOpen);
             }}
         >
@@ -94,7 +141,7 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({title, value, onChan
                                                 allowPickerChanges.current = false;
                                                 suppressPickerChanges.current = true;
                                                 onChange(swatchValue);
-                                                setOpen(false);
+                                                closePopover();
                                             }}
                                         >
                                             {isTransparent(swatch.hex) && <TransparentIndicator />}

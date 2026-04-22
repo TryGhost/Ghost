@@ -30,13 +30,21 @@ const MainContent: React.FC = () => {
     const navigateAway = (escLocation: string) => {
         window.location.hash = escLocation;
     };
+    const hasOpenModal = () => {
+        if (document.getElementById('modal-backdrop')) {
+            return true;
+        }
+
+        return Boolean(document.querySelector(
+            '[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]'
+        ));
+    };
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 // Don't navigate away if a modal is open - let the modal handle ESC
-                const modalBackdrop = document.getElementById('modal-backdrop');
-                if (modalBackdrop) {
+                if (hasOpenModal()) {
                     return;
                 }
 
