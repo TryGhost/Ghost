@@ -82,16 +82,15 @@ describe('Welcome email customize modal', function () {
         assert.ok(screen.getByTestId('welcome-email-customize-modal'));
     });
 
-    it('keeps the customize modal open when Escape is pressed before the color picker has mounted', async function () {
+    it('keeps the customize modal open when Escape is pressed immediately after opening the color picker', async function () {
         vi.useFakeTimers();
         const onClose = vi.fn();
 
         render(<TestModal onClose={onClose} />);
 
-        fireEvent.click(screen.getByText('Button color'));
-        assert.equal(screen.queryByRole('textbox'), null);
-
         await act(async () => {
+            fireEvent.click(screen.getByText('Button color'));
+            assert.equal(screen.queryByRole('textbox'), null);
             fireEvent.keyDown(document, {key: 'Escape'});
         });
 
