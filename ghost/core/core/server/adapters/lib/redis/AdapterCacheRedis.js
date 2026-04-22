@@ -188,6 +188,10 @@ class AdapterCacheRedis extends BaseCacheAdapter {
             lookup.then((value) => {
                 clearTimeout(timer);
                 resolve(value);
+            }, () => {
+                // redis failure during lookup - treat as MISS, same as the timeout path
+                clearTimeout(timer);
+                resolve({internalKey: null, result: null});
             });
         });
     }
@@ -241,9 +245,9 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * @param {*} value
      */
     async set(key, value) {
-        const internalKey = await this._buildKey(key);
-        debug('set', internalKey);
         try {
+            const internalKey = await this._buildKey(key);
+            debug('set', internalKey);
             return await this.cache.set(internalKey, value);
         } catch (err) {
             logging.error(err);
