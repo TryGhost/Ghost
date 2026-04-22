@@ -37,7 +37,6 @@ interface PurchaseConfirmationData {
 
 interface ReminderData {
     memberEmail: string;
-    memberName: string | null;
     tierName: string;
     cadence: 'month' | 'year';
     duration: number;
@@ -116,7 +115,7 @@ export class GiftEmailService {
         });
     }
 
-    async sendReminder({memberEmail, memberName, tierName, cadence, duration, consumesAt}: ReminderData): Promise<void> {
+    async sendReminder({memberEmail, tierName, cadence, duration, consumesAt}: ReminderData): Promise<void> {
         const siteDomain = this.siteDomain;
         const siteUrl = this.urlUtils.getSiteUrl();
         const siteTitle = this.settingsCache.get('title') ?? siteDomain;
@@ -132,7 +131,6 @@ export class GiftEmailService {
             siteDomain,
             accentColor: this.settingsCache.get('accent_color'),
             memberEmail,
-            memberName,
             gift: {
                 tierName,
                 cadenceLabel,

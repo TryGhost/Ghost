@@ -61,7 +61,6 @@ interface GiftEmailService {
     }): Promise<void>;
     sendReminder(data: {
         memberEmail: string;
-        memberName: string | null;
         tierName: string;
         cadence: 'month' | 'year';
         duration: number;
@@ -114,7 +113,6 @@ interface GiftServiceDeps {
 
 interface ReminderSend {
     memberEmail: string;
-    memberName: string | null;
     cadence: 'month' | 'year';
     duration: number;
     consumesAt: Date;
@@ -537,7 +535,6 @@ export class GiftService {
 
             return {
                 memberEmail: member.get('email'),
-                memberName: member.get('name'),
                 cadence: locked.cadence,
                 duration: locked.duration,
                 consumesAt: locked.consumesAt
@@ -550,7 +547,6 @@ export class GiftService {
 
         await this.deps.giftEmailService.sendReminder({
             memberEmail: result.memberEmail,
-            memberName: result.memberName,
             tierName: tier.name,
             cadence: result.cadence,
             duration: result.duration,

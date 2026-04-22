@@ -134,7 +134,6 @@ describe('GiftEmailService', function () {
     describe('sendReminder', function () {
         const reminderData = {
             memberEmail: 'member@example.com',
-            memberName: 'Member Name',
             tierName: 'Gold',
             cadence: 'year',
             duration: 1,
@@ -165,21 +164,23 @@ describe('GiftEmailService', function () {
             }
         });
 
-        it('uses a generic greeting when the member has no name', async function () {
-            await service.sendReminder({...reminderData, memberName: null});
-
-            const msg = mailer.send.getCall(0).args[0];
-
-            sinon.assert.match(msg.text, sinon.match(/^Hi,/));
-        });
-
-        it('includes the member name when provided', async function () {
+        it('does not include a greeting', async function () {
             await service.sendReminder(reminderData);
 
             const msg = mailer.send.getCall(0).args[0];
 
-            sinon.assert.match(msg.text, sinon.match('Hi Member Name,'));
-            sinon.assert.match(msg.html, sinon.match('Hi Member Name,'));
+            sinon.assert.match(msg.text, sinon.match(/^Your gift subscription is ending soon/));
+            sinon.assert.match(msg.html, sinon.match(value => !/Hi,|Hi [^,]+,/.test(value)));
+            sinon.assert.match(msg.text, sinon.match(value => !/Hi,|Hi [^,]+,/.test(value)));
+        });
+
+        it('uses the new CTA copy "Continue subscription"', async function () {
+            await service.sendReminder(reminderData);
+
+            const msg = mailer.send.getCall(0).args[0];
+
+            sinon.assert.match(msg.html, sinon.match('Continue subscription'));
+            sinon.assert.match(msg.text, sinon.match('Continue subscription'));
         });
 
         it('formats month cadence correctly', async function () {

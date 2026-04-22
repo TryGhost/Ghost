@@ -765,7 +765,6 @@ describe('GiftService', function () {
             const emailArgs = giftEmailService.sendReminder.getCall(0).args[0];
 
             assert.equal(emailArgs.memberEmail, 'member_1@example.com');
-            assert.equal(emailArgs.memberName, 'Member Name');
             assert.equal(emailArgs.tierName, 'Bronze');
             assert.equal(emailArgs.cadence, gift.cadence);
             assert.equal(emailArgs.duration, gift.duration);
