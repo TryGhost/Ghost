@@ -9,19 +9,13 @@ on:
       - main
       - 'v[0-9]+.*' # Matches any release branch, e.g. v6.0.3, v12.1.0
       - '[0-9]+.x' # Matches any major version branch, e.g. 5.x, 23.x
-    tags:
-      - 'v[0-9]*' # Version tags trigger release publishing (npm, GitHub Release)
+    tags-ignore:
+      - '**' # Tags handled by ci-release.yml
+  workflow_call: # Called by ci-release.yml for uninterruptible release CI
 
 env:
   FORCE_COLOR: 1
   HEAD_COMMIT: ${{ github.sha }}
-  CACHED_DEPENDENCY_PATHS: |
-    ${{ github.workspace }}/node_modules
-    ${{ github.workspace }}/apps/*/node_modules
-    ${{ github.workspace }}/ghost/*/node_modules
-    ${{ github.workspace }}/e2e/node_modules
-    ~/.cache/ms-playwright/
-  NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
   NODE_VERSION: 22.18.0
   # Disable v8-compile-cache to prevent intermittent V8 deserializer crashes
   # when multiple parallel Nx workers race to read/write shared bytecode cache
@@ -31,7 +25,7 @@ env:
   DISABLE_V8_COMPILE_CACHE: 1
 
 concurrency:
-  group: ${{ github.head_ref || github.run_id }}
+  group: ${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -46,14 +40,21 @@ jobs:
       IS_SIX: ${{ github.ref == 'refs/heads/6.x' }}
       IS_SIX_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == '6.x' }}
     permissions:
+      actions: read
       contents: read
+      # Required by dorny/paths-filter, which calls pulls.listFiles on
+      # pull_request events. Private forks of this repo don't grant this
+      # implicitly when an explicit permissions block is present, so it must
+      # be listed here for the Setup job to succeed on those forks.
       pull-requests: read
     steps:
       - name: Checkout current commit
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ env.HEAD_COMMIT }}
-          fetch-depth: 2
+          fetch-depth: 0
+          # fetch a treeless clone to improve checkout speed, the job will fetch contents later if needed
+          filter: 'tree:0'
 
       - name: Output GitHub context
         if: env.RUNNER_DEBUG == '1'
@@ -61,19 +62,12 @@ jobs:
           echo "GITHUB_EVENT_NAME: ${{ github.event_name }}"
           echo "GITHUB_CONTEXT: ${{ toJson(github.event) }}"
 
-      - name: Get metadata (push)
-        if: github.event_name == 'push'
-        run: |
-          NUMBER_OF_COMMITS=$(printf "%s\n" '${{ toJson(github.event.commits.*.id) }}' | jq length)
-          echo "There are $NUMBER_OF_COMMITS commits in this push."
-          echo "BASE_COMMIT=$(git rev-parse HEAD~$NUMBER_OF_COMMITS)" >> $GITHUB_ENV
-
-      - name: Get metadata (pull_request)
-        if: github.event_name == 'pull_request'
-        run: |
-          BASE_COMMIT=$(curl --location --request GET 'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}' --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq -r .base.sha)
-          echo "Setting BASE_COMMIT to $BASE_COMMIT"
-          echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
+      - name: Set SHAs for Nx Commands
+        if: env.IS_TAG != 'true'
+        uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
+        with:
+          main-branch-name: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
+          error-on-no-successful-workflow: ${{ env.IS_MAIN == 'true' }}
 
       - name: Check user org membership
         id: check_user_org_membership
@@ -92,31 +86,28 @@ jobs:
             echo "is_member=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Determine added packages
-        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
-        id: added
-        with:
-          filters: |
-            new-package:
-              - added: 'ghost/**/package.json'
-
       - name: Determine changed packages
+        if: env.IS_TAG != 'true'
         uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
         id: changed
         with:
+          base: ${{ env.NX_BASE }}
           filters: |
             shared: &shared
               - '.github/**'
+              - '.npmrc'
               - 'package.json'
-              - 'yarn.lock'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+            ci:
+              - '.github/workflows/**'
+              - '.github/actions/**'
+              - '.github/scripts/**'
             core:
               - *shared
               - 'ghost/**'
               - '!ghost/admin/**'
               - '!ghost/core/core/server/data/tinybird/**'
-            admin:
-              - *shared
-              - 'ghost/admin/**'
             admin-x-settings:
               - *shared
               - 'apps/admin-x-settings/**'
@@ -128,100 +119,82 @@ jobs:
               - 'apps/shade/**'
               - 'apps/admin-x-framework/**'
               - 'apps/activitypub/**'
-            announcement-bar:
-              - *shared
-              - 'apps/announcement-bar/**'
             comments-ui:
               - *shared
               - 'apps/comments-ui/**'
-            portal:
-              - *shared
-              - 'apps/portal/**'
             signup-form:
               - *shared
               - 'apps/signup-form/**'
-            sodo-search:
-              - *shared
-              - 'apps/sodo-search/**'
             tinybird:
+              - '.github/workflows/ci.yml'
+              - 'compose.dev.analytics.yaml'
+              - 'ghost/core/core/server/data/tinybird/**'
+              - '!ghost/core/core/server/data/tinybird/**/*.md'
+            tinybird-datafiles:
               - 'ghost/core/core/server/data/tinybird/**'
               - '!ghost/core/core/server/data/tinybird/**/*.md'
             any-code:
               - '!**/*.md'
-
-      - name: Compute lockfile hash
-        run: echo "hash=lockfile-${{ hashFiles('yarn.lock') }}" >> "$GITHUB_ENV"
-
-      - name: Compute dependency cache key
-        run: echo "cachekey=dep-cache-${{ hashFiles('yarn.lock') }}-${{ env.HEAD_COMMIT }}" >> "$GITHUB_ENV"
-
-      - name: Compute dependency cache restore key
-        run: |
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "DEPENDENCY_CACHE_RESTORE_KEYS<<$EOF" >> "$GITHUB_ENV"
-          echo "dep-cache-${{ env.hash }}-${{ github.sha }}" >> "$GITHUB_ENV"
-          echo "dep-cache-${{ env.hash }}" >> "$GITHUB_ENV"
-          echo "dep-cache" >> "$GITHUB_ENV"
-          echo "$EOF" >> "$GITHUB_ENV"
-
-      - name: Nx cache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-        id: cache_nx
-        with:
-          path: .nxcache
-          key: nx-Linux-${{ github.ref }}-${{ env.HEAD_COMMIT }}
-          restore-keys: |
-            nx-Linux-${{ github.ref }}-${{ env.HEAD_COMMIT }}
-            nx-Linux-${{ github.ref }}
-            nx-Linux
-
-      - name: Check dependency cache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-        id: cache_dependencies
-        with:
-          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
-          key: ${{ env.cachekey }}
-          restore-keys: ${{ env.IS_DEVELOPMENT == 'false' && env.DEPENDENCY_CACHE_RESTORE_KEYS || 'dep-never-restore'}}
 
       - name: Define Node test matrix
         id: node_matrix
         run: |
           echo 'matrix=["22.18.0"]' >> $GITHUB_OUTPUT
 
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - name: Set up Node
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
       - name: Install dependencies
-        run: bash .github/scripts/install-deps.sh
+        run: pnpm install --frozen-lockfile
 
+      - name: Determine Affected Projects
+        id: affected
+        run: |
+          # if the ci files have changed or we're in a tag, ensure we don't just look at affected
+          # projects and we run the necessary jobs on all projects
+          AFFECTED_ARG="--affected"
+          if [[ "${{ steps.changed.outputs.ci }}" == 'true' || "${{ env.IS_TAG }}" == 'true' ]]; then
+            AFFECTED_ARG=""
+          fi
+
+          AFFECTED_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --json | tr -d '\n')
+          echo "affected_projects=$AFFECTED_PROJECTS" >> "$GITHUB_OUTPUT"
+          # string list for use in run-many commands
+          AFFECTED_PROJECTS_STR=$(pnpm -s nx show projects ${AFFECTED_ARG} --sep=, | tr -d '\n')
+          echo "affected_projects_str=$AFFECTED_PROJECTS_STR" >> "$GITHUB_OUTPUT"
+
+          # "i18n" tag = packages whose source is scanned by @tryghost/i18n's
+          # translate:* scripts (not packages that merely import @tryghost/i18n).
+          I18N_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --projects 'tag:i18n' --sep=, | tr -d '\n')
+          echo "affected_i18n_projects=${I18N_PROJECTS}" >> "$GITHUB_OUTPUT"
 
     outputs:
-      changed_admin: ${{ steps.changed.outputs.admin }}
+      affected_projects: ${{ steps.affected.outputs.affected_projects }}
+      affected_projects_str: ${{ steps.affected.outputs.affected_projects_str }}
+      changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_admin_x_settings: ${{ steps.changed.outputs.admin-x-settings }}
       changed_activitypub: ${{ steps.changed.outputs.activitypub }}
-      changed_announcement_bar: ${{ steps.changed.outputs.announcement-bar }}
       changed_comments_ui: ${{ steps.changed.outputs.comments-ui }}
-      changed_portal: ${{ steps.changed.outputs.portal }}
       changed_signup_form: ${{ steps.changed.outputs.signup-form }}
-      changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
       changed_tinybird: ${{ steps.changed.outputs.tinybird }}
+      changed_tinybird_datafiles: ${{ steps.changed.outputs.tinybird-datafiles }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
-      changed_new_package: ${{ steps.added.outputs.new-package }}
-      base_commit: ${{ env.BASE_COMMIT }}
       is_main: ${{ env.IS_MAIN }}
       is_tag: ${{ env.IS_TAG }}
       is_development: ${{ env.IS_DEVELOPMENT }}
       is_six: ${{ env.IS_SIX }}
       is_six_pr: ${{ env.IS_SIX_PR }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
-      dependency_cache_key: ${{ env.cachekey }}
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
+      nx_base: ${{ env.NX_BASE }}
 
   job_app_version_bump_check:
     name: Check app version bump
@@ -247,31 +220,35 @@ jobs:
   job_lint:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     name: Lint
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 1000
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - run: yarn nx affected -t lint --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+      - name: Lint projects
+        run: pnpm nx run-many -t lint -p "${{ needs.job_setup.outputs.affected_projects_str }}"
+        env:
+          NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
+          NX_HEAD: ${{ env.HEAD_COMMIT }}
 
-      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
+      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -283,30 +260,28 @@ jobs:
     needs: [job_setup]
     name: i18n
     if: |
-        needs.job_setup.outputs.is_tag != 'true'
-        && (needs.job_setup.outputs.changed_comments_ui == 'true'
-        || needs.job_setup.outputs.changed_signup_form == 'true'
-        || needs.job_setup.outputs.changed_sodo_search == 'true'
-        || needs.job_setup.outputs.changed_portal == 'true'
-        || needs.job_setup.outputs.changed_core == 'true')
+      needs.job_setup.outputs.is_tag == 'true'
+      || needs.job_setup.outputs.changed_i18n_apps == 'true'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Run i18n tests
-        run: yarn nx run @tryghost/i18n:test
+        run: pnpm nx run @tryghost/i18n:test
 
   job_admin-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_admin == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: |
+      needs.job_setup.outputs.is_tag == 'true'
+      || contains(fromJSON(needs.job_setup.outputs.affected_projects), 'ghost-admin')
     name: Admin tests - Chrome
     env:
       MOZ_HEADLESS: 1
@@ -315,29 +290,29 @@ jobs:
       COVERAGE: true
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - run: yarn nx run ghost-admin:test
+      - run: pnpm nx run ghost-admin:test
         env:
           BROWSER: Chrome
 
       # Merge coverage reports and upload
       - name: Merge Admin test coverage
-        run: yarn ember coverage-merge
+        run: pnpm ember coverage-merge
         working-directory: ghost/admin
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
+      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -347,7 +322,7 @@ jobs:
   job_unit-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     strategy:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
@@ -356,48 +331,50 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 1000
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
           node-version: ${{ matrix.node }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        # sqlite3 is an optionalDependency. Without --force, pnpm may skip
+        # installing/linking it when restoring from a cached store. --force
+        # ensures all optional deps are installed regardless.
+        # (ghost core's test:unit job requires sqlite3)
+        run: pnpm install --frozen-lockfile --force
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
         with:
           timezoneLinux: "America/New_York"
 
-      - name: Determine affected unit-test projects
-        id: affected_unit_projects
-        run: |
-          PROJECTS=$(yarn -s nx show projects --affected --withTarget=test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }} --sep=, | tr -d '\n')
-          echo "projects=$PROJECTS" >> "$GITHUB_OUTPUT"
-
-      # Build only projects that will run unit tests
-      - name: Build assets for affected unit tests
-        if: steps.affected_unit_projects.outputs.projects != ''
-        run: yarn nx run-many -t build --projects="${{ steps.affected_unit_projects.outputs.projects }}"
-
       - name: Run unit tests
-        run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+        run: pnpm nx run-many -t test:unit -p "${{ needs.job_setup.outputs.affected_projects_str }}"
         env:
           FORCE_COLOR: 0
           GHOST_UNIT_TEST_VARIANT: ci
           NX_SKIP_LOG_GROUPING: true
           logging__level: fatal
 
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      - name: Check for unexpected file changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Tests generated unexpected file changes. Commit them before merging:"
+            git status
+            git diff
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: matrix.node == env.NODE_VERSION
         with:
           name: unit-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
+      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -407,7 +384,7 @@ jobs:
   job_acceptance-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
       mysql:
         image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
@@ -419,6 +396,15 @@ jobs:
         options: >-
           --tmpfs /var/lib/mysql
           --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+      redis:
+        image: redis:7.0
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=12
@@ -439,19 +425,24 @@ jobs:
     name: Acceptance tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
           node-version: ${{ matrix.node }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
-
-      - name: Build TS packages
-        run: yarn nx run-many -t build --exclude=ghost-admin
+      - name: Install dependencies
+        # sqlite3 is an optionalDependency. Without --force, pnpm may skip
+        # installing/linking it when restoring from a cached store. --force
+        # ensures all optional deps are installed regardless.
+        run: |
+          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
+            pnpm install --frozen-lockfile --force
+          else
+            pnpm install --frozen-lockfile
+          fi
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -470,14 +461,21 @@ jobs:
           echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: E2E tests
-        working-directory: ghost/core
-        run: yarn test:ci:e2e
+        run: pnpm nx run ghost:test:ci:e2e
 
       - name: Integration tests
-        working-directory: ghost/core
-        run: yarn test:ci:integration
+        run: pnpm nx run ghost:test:ci:integration
 
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      - name: Check for unexpected file changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Tests generated unexpected file changes. Commit them before merging:"
+            git status
+            git diff
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
         with:
           name: e2e-coverage
@@ -485,7 +483,7 @@ jobs:
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
+      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -495,7 +493,7 @@ jobs:
   job_legacy-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
       mysql:
         image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
@@ -529,19 +527,24 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           submodules: true
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
           node-version: ${{ matrix.node }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
-
-      - name: Build TS packages
-        run: yarn nx run-many -t build --exclude=ghost-admin
+      - name: Install dependencies
+        # sqlite3 is an optionalDependency. Without --force, pnpm may skip
+        # installing/linking it when restoring from a cached store. --force
+        # ensures all optional deps are installed regardless.
+        run: |
+          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
+            pnpm install --frozen-lockfile --force
+          else
+            pnpm install --frozen-lockfile
+          fi
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
@@ -555,10 +558,18 @@ jobs:
           echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: Legacy tests
-        working-directory: ghost/core
-        run: yarn test:ci:legacy
+        run: pnpm nx run ghost:test:ci:legacy
 
-      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
+      - name: Check for unexpected file changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Tests generated unexpected file changes. Commit them before merging:"
+            git status
+            git diff
+            exit 1
+          fi
+
+      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -568,37 +579,37 @@ jobs:
   job_admin_x_settings:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_admin_x_settings == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_admin_x_settings == 'true'
     name: Admin-X Settings tests
     env:
       CI: true
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
-      - run: yarn nx run @tryghost/admin-x-settings:test:acceptance
+      - run: pnpm nx run @tryghost/admin-x-settings:test:acceptance
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: admin-x-settings-playwright-report
           path: apps/admin-x-settings/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
+      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -608,37 +619,37 @@ jobs:
   job_activitypub:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_activitypub == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_activitypub == 'true'
     name: ActivityPub tests
     env:
       CI: true
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
-      - run: yarn nx run @tryghost/activitypub:test:acceptance
+      - run: pnpm nx run @tryghost/activitypub:test:acceptance
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: activitypub-playwright-report
           path: apps/activitypub/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
+      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -648,37 +659,37 @@ jobs:
   job_comments_ui:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_comments_ui == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_comments_ui == 'true'
     name: Comments-UI tests
     env:
       CI: true
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
-      - run: yarn nx run @tryghost/comments-ui:test
+      - run: pnpm nx run @tryghost/comments-ui:test
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: comments-ui-playwright-report
           path: apps/comments-ui/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
+      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -688,37 +699,37 @@ jobs:
   job_signup_form:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_signup_form == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_signup_form == 'true'
     name: Signup-form tests
     env:
       CI: true
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
-      - run: yarn nx run @tryghost/signup-form:test:e2e
+      - run: pnpm nx run @tryghost/signup-form:test:e2e
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: signup-form-playwright-report
           path: apps/signup-form/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
+      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -729,13 +740,13 @@ jobs:
     name: Tinybird Tests
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_tinybird == 'true'
     defaults:
         run:
           working-directory: ghost/core/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:3bbfa58373928313a290f40193598d992f613173c67e9ed8c980d662a911f15a
+        image: tinybirdco/tinybird-local:latest@sha256:52ea15fc337547b13d06069c23479c293e23074d4e4a6be21253e4bd57ad12be
         ports:
           - 7181:7181
     steps:
@@ -747,77 +758,58 @@ jobs:
       - name: Test project
         run: tb test run
       - name: Trigger and watch traffic analytics infra Tinybird workflow
-        if: github.repository == 'TryGhost/Ghost'
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         env:
           GH_TOKEN: ${{ secrets.TRAFFIC_ANALYTICS_GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-
-          REPO="TryGhost/traffic-analytics-infra"
-          WORKFLOW="tinybird.yml"
-          BRANCH="main"
-          DISPATCH_RESPONSE=$(gh api \
-            --method POST \
-            -H "Accept: application/vnd.github+json" \
-            "repos/$REPO/actions/workflows/$WORKFLOW/dispatches" \
-            --input - <<EOF
-          {
-            "ref": "$BRANCH",
-            "return_run_details": true,
-            "inputs": {
+        uses: ./.github/actions/dispatch-workflow
+        with:
+          repo: TryGhost/traffic-analytics-infra
+          workflow: tinybird.yml
+          branch: main
+          dispatch-inputs: >-
+            {
               "ghost_ref": "${{ github.sha }}",
               "caller_run_id": "${{ github.run_id }}",
               "run_local_tests": false
             }
-          }
-          EOF
-          )
-
-          RUN_ID=$(printf '%s' "$DISPATCH_RESPONSE" | jq -r '.workflow_run_id // empty')
-          RUN_URL=$(printf '%s' "$DISPATCH_RESPONSE" | jq -r '.html_url // .run_url // empty')
-
-          if [ -z "$RUN_ID" ]; then
-            echo "::error::Unable to find the triggered workflow run in $REPO"
-            exit 1
-          fi
-
-          echo "Watching remote workflow run: $RUN_URL"
-          gh run watch "$RUN_ID" --repo "$REPO" --exit-status
 
   job_ghost-cli:
     name: Ghost-CLI tests
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_tag != 'true'
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           submodules: true
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
       - name: Install Ghost-CLI
         run: npm install -g ghost-cli@latest
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - run: node .github/scripts/bump-version.js canary
 
-      - run: yarn archive
+      - run: pnpm archive
 
       - run: mv ghost-*.tgz ghost.tgz
         working-directory: ghost/core
 
+      - name: Verify packaged package.json
+        run: tar -xOf ghost/core/ghost.tgz package/package.json | jq -e '.packageManager' >/dev/null
+
       - name: Save Ghost CLI Debug Logs
         if: failure()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ghost-cli-debug-logs
           path: /home/runner/.ghost/logs/
@@ -825,20 +817,26 @@ jobs:
       - name: Clean Install
         run: |
           DIR=$(mktemp -d)
-          ghost install local -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
+          ghost install local -d "$DIR" --archive "$(pwd)/ghost/core/ghost.tgz"
+          URL=$(ghost config get url -d "$DIR" --no-prompt --no-color | tail -n1)
+          curl --retry 10 --retry-connrefused --retry-delay 3 -fsSI "$URL"
+          ghost stop -d "$DIR"
 
       - name: Latest Release
         run: |
           DIR=$(mktemp -d)
-          ghost install local -d $DIR
-          ghost update -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
+          ghost install local -d "$DIR"
+          ghost update -d "$DIR" --archive "$(pwd)/ghost/core/ghost.tgz"
+          URL=$(ghost config get url -d "$DIR" --no-prompt --no-color | tail -n1)
+          curl --retry 10 --retry-connrefused --retry-delay 3 -fsSI "$URL"
+          ghost stop -d "$DIR"
 
       - name: Print debug logs
         if: failure()
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
+      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -858,16 +856,16 @@ jobs:
         with:
           submodules: true
 
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Build server and admin assets
         run: |
@@ -877,7 +875,7 @@ jobs:
             export GHOST_BUILD_VERSION="${PKG_VERSION}+${SHORT_SHA}"
             echo "GHOST_BUILD_VERSION=${GHOST_BUILD_VERSION}" >> $GITHUB_ENV
           fi
-          yarn build:production
+          pnpm build:production
 
       - name: Verify tag matches package.json
         if: startsWith(github.ref, 'refs/tags/v')
@@ -890,16 +888,12 @@ jobs:
             exit 1
           fi
 
-      - name: Pack standalone distribution
-        run: yarn workspace ghost pack:standalone
-
-      - name: Create npm tarball
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: yarn workspace ghost pack:tarball
+      - name: Build standalone distribution
+        run: pnpm --filter ghost archive
 
       - name: Upload npm tarball
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ghost-npm-tarball
           path: ghost/core/ghost-*.tgz
@@ -952,7 +946,7 @@ jobs:
 
       - name: Upload admin artifact for CD
         id: upload-admin
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: admin-build-cd
           path: apps/admin/dist
@@ -1007,7 +1001,7 @@ jobs:
             org.opencontainers.image.vendor=TryGhost
 
       - name: Build & push core image
-        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
         with:
           context: /tmp/ghost-production
           file: Dockerfile.production
@@ -1023,7 +1017,7 @@ jobs:
           cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-core-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
       - name: Build & push full image
-        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
         with:
           context: /tmp/ghost-production
           file: Dockerfile.production
@@ -1047,7 +1041,7 @@ jobs:
           ls -lh docker-image-production.tar.gz
 
       - name: Upload image artifact
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: docker-image-production
           path: docker-image-production.tar.gz
@@ -1110,25 +1104,25 @@ jobs:
   job_build_e2e_public_apps:
     name: Build E2E Public App Assets
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
 
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         env:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Build public apps for E2E
-        run: yarn workspace @tryghost/e2e build:apps
+        run: pnpm --filter @tryghost/e2e build:apps
 
       - name: Pack public app artifacts
         run: |
@@ -1141,7 +1135,7 @@ jobs:
           ls -lh e2e-public-apps.tar.gz
 
       - name: Upload public app artifacts
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: e2e-public-apps
           path: e2e-public-apps.tar.gz
@@ -1150,7 +1144,6 @@ jobs:
   job_build_e2e_image:
     name: Build E2E Docker Image
     needs: [job_setup, job_build_e2e_public_apps, job_build_artifacts]
-    if: needs.job_setup.outputs.is_tag != 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -1220,7 +1213,7 @@ jobs:
             org.opencontainers.image.vendor=TryGhost
 
       - name: Build & push E2E image
-        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
         with:
           context: .
           file: e2e/Dockerfile.e2e
@@ -1244,7 +1237,7 @@ jobs:
 
       - name: Upload E2E image artifact
         if: steps.strategy.outputs.use-artifact == 'true'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: docker-image-e2e
           path: docker-image-e2e.tar.gz
@@ -1258,7 +1251,6 @@ jobs:
     name: E2E Tests (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
     needs: [job_build_e2e_image, job_setup]
-    if: needs.job_setup.outputs.is_tag != 'true'
     strategy:
       fail-fast: true
       matrix:
@@ -1294,14 +1286,14 @@ jobs:
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
 
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Prepare E2E CI job
         env:
@@ -1325,11 +1317,11 @@ jobs:
 
       - name: Stop E2E infra
         if: always()
-        run: yarn workspace @tryghost/e2e infra:down
+        run: pnpm --filter @tryghost/e2e infra:down
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: blob-report-${{ matrix.shardIndex }}
           path: e2e/blob-report
@@ -1337,13 +1329,13 @@ jobs:
 
       - name: Upload test results artifacts
         if: failure()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: test-results-${{ matrix.shardIndex }}
           path: e2e/test-results
           retention-days: 7
 
-      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
+      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1361,14 +1353,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Download blob reports from GitHub Actions Artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
@@ -1402,7 +1394,7 @@ jobs:
 
       - name: Upload HTML report
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-report
           path: e2e/playwright-report
@@ -1410,7 +1402,7 @@ jobs:
 
       - name: Upload merged test results
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: test-results
           path: e2e/all-test-results
@@ -1498,7 +1490,8 @@ jobs:
         job_tinybird-tests,
         job_build_e2e_public_apps,
         job_build_e2e_image,
-        job_e2e_tests
+        job_e2e_tests,
+        publish_packages
       ]
     if: always()
     runs-on: ubuntu-latest
@@ -1506,12 +1499,8 @@ jobs:
       - name: Output needs
         run: echo "${{ toJson(needs) }}"
 
-      - name: Pass on tag pushes (tests already ran on branch)
-        if: needs.job_setup.outputs.is_tag == 'true'
-        run: echo "Tag push — tests skipped (already tested on branch commit)"
-
       - name: Check if any required jobs failed or been cancelled
-        if: needs.job_setup.outputs.is_tag != 'true' && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled'))
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
         run: |
           echo "One of the dependent jobs have failed or been cancelled. You may need to re-run it." && exit 1
 
@@ -1523,7 +1512,7 @@ jobs:
     ]
     name: Publish ${{ matrix.package_name }}
     runs-on: ubuntu-latest
-    if: always() && github.repository == 'TryGhost/Ghost' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    if: always() && github.repository == 'TryGhost/Ghost' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success'
     permissions:
       id-token: write
     strategy:
@@ -1553,17 +1542,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - name: Set up Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Check if version changed
+        if: needs.job_setup.outputs.is_main == 'true'
         id: version_check
         working-directory: ${{ matrix.package_path }}
         run: |
@@ -1588,28 +1578,28 @@ jobs:
           fi
 
       - name: Build the package
-        if: steps.version_check.outputs.version_changed == 'true'
-        run: yarn run nx build ${{ matrix.package_name }}
+        if: steps.version_check.outputs.version_changed == 'true' || github.event_name == 'pull_request'
+        run: pnpm nx build ${{ matrix.package_name }}
 
       - name: Configure .npmrc
-        if: steps.version_check.outputs.version_changed == 'true'
+        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true'
         run: |
           echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
 
       # TODO: Check we can remove this once we update Node to v24
       - name: Install v11 of NPM # We need this to install packages via OIDC.
-        if: steps.version_check.outputs.version_changed == 'true'
+        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true'
         run: npm install -g npm@11
 
       - name: Publish to npm
-        if: steps.version_check.outputs.version_changed == 'true'
+        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true'
         working-directory: ${{ matrix.package_path }}
         run: |
           npm publish --access public
 
       - name: Replace version placeholders in cdn-paths
         id: cdn_paths
-        if: steps.version_check.outputs.version_changed == 'true'
+        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true'
         run: |
           cdn_paths="${{ matrix.cdn_paths }}"
           echo "cdn_paths<<EOF" >> $GITHUB_OUTPUT
@@ -1617,59 +1607,48 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Print cdn_paths
-        if: steps.version_check.outputs.version_changed == 'true'
+        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true'
         run: echo "${{ steps.cdn_paths.outputs.cdn_paths }}"
 
       - name: Wait before purging jsDelivr cache
-        if: steps.version_check.outputs.version_changed == 'true' && matrix.package_name == '@tryghost/activitypub'
+        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true' && matrix.package_name == '@tryghost/activitypub'
         run: |
           echo "Purging jsDelivr cache immediately after publishing a new version on NPM is unreliable. Waiting 1 minute before purging cache..."
           sleep 60
 
       - name: Purge jsDelivr cache
-        if: steps.version_check.outputs.version_changed == 'true'
+        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true'
         uses: gacts/purge-jsdelivr-cache@8d92aea944f1a3e8ad70505379e1a8ac72d56b73 # v1
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
 
-  deploy_tinybird_staging:
-    name: Deploy Tinybird - Staging
+  deploy_tinybird:
+    name: Deploy Tinybird
     runs-on: ubuntu-latest
     needs: [
       job_setup,
       job_tinybird-tests
     ]
-    if: always() && github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    if: always() && github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird_datafiles == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Deploy to Staging
-        uses: ./.github/actions/deploy-tinybird
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Trigger and watch traffic analytics infra Tinybird workflow
+        if: github.repository == 'TryGhost/Ghost'
+        env:
+          GH_TOKEN: ${{ secrets.TRAFFIC_ANALYTICS_GITHUB_TOKEN }}
+        uses: ./.github/actions/dispatch-workflow
         with:
-          host: ${{ secrets.TINYBIRD_HOST_STAGING }}
-          token: ${{ secrets.TINYBIRD_TOKEN_STAGING }}
-          workspace: 'Staging'
-          slack-webhook: ${{ secrets.ANALYTICS_SLACK_WEBHOOK_URL }}
-
-  deploy_tinybird_production:
-    name: Deploy Tinybird - Production
-    runs-on: ubuntu-latest
-    needs: [
-      job_setup,
-      job_tinybird-tests,
-      deploy_tinybird_staging
-    ]
-    if: always() && github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.deploy_tinybird_staging.result == 'success' && needs.job_setup.outputs.is_main == 'true'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Deploy to Production
-        uses: ./.github/actions/deploy-tinybird
-        with:
-          host: ${{ secrets.TINYBIRD_HOST }}
-          token: ${{ secrets.TINYBIRD_TOKEN }}
-          workspace: 'Production'
-          slack-webhook: ${{ secrets.ANALYTICS_SLACK_WEBHOOK_URL }}
+          repo: TryGhost/traffic-analytics-infra
+          workflow: tinybird.yml
+          branch: main
+          dispatch-inputs: >-
+            {
+              "ghost_ref": "${{ github.sha }}",
+              "caller_run_id": "${{ github.run_id }}",
+              "run_local_tests": false,
+              "deploy_staging": true,
+              "deploy_production": true
+            }
 
   # --------------------------------------------------------------------------- #
   # Trigger Pro CD — dispatch to Ghost-Moya cd.yml (runs on main + PRs)
@@ -1689,6 +1668,9 @@ jobs:
         id: params
         run: |
           if [ "${{ needs.job_setup.outputs.is_main }}" = "true" ]; then
+            echo "pr_number=" >> $GITHUB_OUTPUT
+            echo "deploy=" >> $GITHUB_OUTPUT
+          elif [ "${{ needs.job_setup.outputs.is_tag }}" = "true" ]; then
             echo "pr_number=" >> $GITHUB_OUTPUT
             echo "deploy=" >> $GITHUB_OUTPUT
           elif [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -1726,7 +1708,7 @@ jobs:
   # Publish Ghost npm package — runs on version tags only (OIDC, no stored token)
   # --------------------------------------------------------------------------- #
   publish_ghost:
-    needs: [job_setup, job_build_artifacts]
+    needs: [job_setup, job_build_artifacts, job_ghost-cli]
     name: Publish Ghost to npm
     runs-on: ubuntu-latest
     if: |
@@ -1746,21 +1728,19 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          package-manager-cache: false
 
       # TODO: Remove once Node v24 ships with npm >= 11
       - name: Install npm v11 (required for OIDC publishing)
         run: npm install -g npm@11
 
       - name: Verify tarball contents
-        run: |
-          echo "Tarball contents:"
-          tar -tzf ghost-*.tgz | head -20
-          tar -tzf ghost-*.tgz | grep -q 'package/yarn.lock' || { echo "::error::yarn.lock not found in tarball"; exit 1; }
+        run: tar -xOf ghost-*.tgz package/package.json | jq -e '.packageManager' >/dev/null
 
       - name: Publish to npm
         run: npm publish ghost-*.tgz --access public
 
-      - uses: tryghost/actions/actions/slack-build@0cbdcbeb9030f46b109d5e6e44c14933026d8ca5 # main
+      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
         if: failure()
         with:
           status: ${{ job.status }}

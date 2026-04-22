@@ -1,5 +1,5 @@
 import {BasePage} from '@/helpers/pages';
-import {Locator, Page} from '@playwright/test';
+import {FrameLocator, Locator, Page} from '@playwright/test';
 
 export class MemberWelcomeEmailsSection extends BasePage {
     readonly section: Locator;
@@ -13,6 +13,7 @@ export class MemberWelcomeEmailsSection extends BasePage {
     readonly customizeModal: Locator;
     readonly customizeModalSaveButton: Locator;
     readonly customizeModalCloseButton: Locator;
+    readonly customizeModalUnsavedChangesDialog: Locator;
     readonly customizeModalGeneralTab: Locator;
     readonly customizeModalDesignTab: Locator;
 
@@ -26,6 +27,12 @@ export class MemberWelcomeEmailsSection extends BasePage {
     readonly customizeModalButtonStyleFill: Locator;
     readonly customizeModalButtonStyleOutline: Locator;
     readonly customizeModalBodyFontSelect: Locator;
+    readonly customizeModalBodyFontSerifOption: Locator;
+    readonly customizeModalButtonColorField: Locator;
+    readonly customizeModalButtonColorPickerTrigger: Locator;
+    readonly customizeModalButtonColorAccentSwatch: Locator;
+    readonly customizeModalButtonColorAutoSwatch: Locator;
+    readonly customizeModalColorPickerPopover: Locator;
 
     // Modal locators
     readonly welcomeEmailModal: Locator;
@@ -34,6 +41,11 @@ export class MemberWelcomeEmailsSection extends BasePage {
     readonly modalSaveButton: Locator;
     readonly modalSavedButton: Locator;
     readonly modalLexicalEditor: Locator;
+    readonly modalEditTab: Locator;
+    readonly modalPreviewTab: Locator;
+    readonly modalPreviewSubjectInput: Locator;
+    readonly modalPreviewIframe: Locator;
+    readonly modalPreviewFrame: FrameLocator;
 
     constructor(page: Page) {
         super(page, '/ghost/#/settings/memberemails');
@@ -48,6 +60,7 @@ export class MemberWelcomeEmailsSection extends BasePage {
         this.customizeModal = page.getByTestId('welcome-email-customize-modal');
         this.customizeModalSaveButton = this.customizeModal.getByRole('button', {name: 'Save'});
         this.customizeModalCloseButton = this.customizeModal.getByRole('button', {name: 'Close'});
+        this.customizeModalUnsavedChangesDialog = page.getByRole('alertdialog', {name: 'Are you sure you want to leave this page?'});
         this.customizeModalGeneralTab = this.customizeModal.getByRole('tab', {name: 'General'});
         this.customizeModalDesignTab = this.customizeModal.getByRole('tab', {name: 'Design'});
 
@@ -61,14 +74,25 @@ export class MemberWelcomeEmailsSection extends BasePage {
         this.customizeModalButtonStyleFill = this.customizeModal.getByLabel('Fill');
         this.customizeModalButtonStyleOutline = this.customizeModal.getByLabel('Outline');
         this.customizeModalBodyFontSelect = this.customizeModal.getByText('Body font').locator('..').getByRole('combobox');
+        this.customizeModalBodyFontSerifOption = page.getByRole('option', {name: 'Elegant serif', exact: true});
+        this.customizeModalButtonColorField = this.customizeModal.getByText('Button color').locator('..');
+        this.customizeModalButtonColorPickerTrigger = this.customizeModalButtonColorField.getByRole('button', {name: 'Pick color'});
+        this.customizeModalButtonColorAccentSwatch = this.customizeModal.getByRole('button', {name: 'Accent'});
+        this.customizeModalButtonColorAutoSwatch = this.customizeModal.getByRole('button', {name: 'Auto'});
+        this.customizeModalColorPickerPopover = page.locator('[data-radix-popper-content-wrapper]');
 
         // Modal locators
         this.welcomeEmailModal = page.getByTestId('welcome-email-modal');
         this.modalEditor = this.welcomeEmailModal.getByTestId('welcome-email-editor');
-        this.modalSubjectInput = this.welcomeEmailModal.locator('input').first();
+        this.modalEditTab = this.welcomeEmailModal.getByTestId('welcome-email-mode-edit');
+        this.modalPreviewTab = this.welcomeEmailModal.getByTestId('welcome-email-mode-preview');
+        this.modalPreviewSubjectInput = this.welcomeEmailModal.getByTestId('welcome-email-preview-subject');
+        this.modalSubjectInput = this.modalPreviewSubjectInput;
         this.modalSaveButton = this.welcomeEmailModal.getByRole('button', {name: 'Save'});
         this.modalSavedButton = this.welcomeEmailModal.getByRole('button', {name: 'Saved'});
         this.modalLexicalEditor = this.modalEditor.getByRole('textbox').first();
+        this.modalPreviewIframe = this.welcomeEmailModal.getByTestId('welcome-email-preview-iframe');
+        this.modalPreviewFrame = page.frameLocator('iframe[title="Welcome email preview"]');
     }
 
     async enableFreeWelcomeEmail(): Promise<void> {

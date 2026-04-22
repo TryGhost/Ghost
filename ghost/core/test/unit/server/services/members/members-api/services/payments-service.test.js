@@ -303,14 +303,17 @@ describe('PaymentsService', function () {
 
     describe('getGiftPaymentLink', function () {
         let createGiftCheckoutSessionStub;
+        let generateTokenStub;
         let service;
 
         beforeEach(function () {
             createGiftCheckoutSessionStub = sinon.fake.resolves({
                 url: 'https://checkout.stripe.com/gift-session'
             });
+            generateTokenStub = sinon.stub().returns('AbCdEfGhIjKl');
             service = new PaymentsService({
-                stripeAPIService: {createGiftCheckoutSession: createGiftCheckoutSessionStub}
+                stripeAPIService: {createGiftCheckoutSession: createGiftCheckoutSessionStub},
+                giftService: {service: {generateToken: generateTokenStub}}
             });
         });
 
@@ -328,7 +331,6 @@ describe('PaymentsService', function () {
         const defaultGiftOptions = {
             successUrl: 'https://example.com/',
             cancelUrl: 'https://example.com/',
-            email: 'buyer@example.com',
             duration: 1,
             metadata: {}
         };
@@ -360,9 +362,10 @@ describe('PaymentsService', function () {
             assert.equal(args.metadata.tier_id, tier.id.toHexString());
             assert.equal(args.metadata.cadence, 'month');
             assert.equal(args.metadata.duration, '1');
-            assert.equal(args.metadata.buyer_email, 'buyer@example.com');
+            assert.equal(args.metadata.buyer_email, undefined, 'buyer_email should not be in metadata');
             assert.equal(args.metadata.requestSrc, 'portal');
-            assert.match(args.metadata.gift_token, /^[A-Za-z0-9_-]{8}$/);
+            sinon.assert.calledOnce(generateTokenStub);
+            assert.equal(args.metadata.gift_token, 'AbCdEfGhIjKl');
         });
 
         it('appends gift token to success URL', async function () {
@@ -411,41 +414,6 @@ describe('PaymentsService', function () {
             sinon.assert.calledOnce(service.getCustomerForMember);
             sinon.assert.calledWith(service.getCustomerForMember, mockMember);
             assert.equal(getStripeArgs().customer, mockCustomer);
-            assert.equal(getStripeArgs().customerEmail, null);
-        });
-
-        it('passes customerEmail when purchaser is not authenticated', async function () {
-            const tier = await createTier();
-
-            await service.getGiftPaymentLink({
-                ...defaultGiftOptions,
-                tier,
-                cadence: 'month',
-                email: 'guest@example.com',
-                isAuthenticated: false
-            });
-
-            assert.equal(getStripeArgs().customer, null);
-            assert.equal(getStripeArgs().customerEmail, 'guest@example.com');
-        });
-
-        it('does not set customerEmail when customer is present', async function () {
-            const mockCustomer = {id: 'cus_123', email: 'member@example.com'};
-            sinon.stub(service, 'getCustomerForMember').resolves(mockCustomer);
-
-            const tier = await createTier();
-
-            await service.getGiftPaymentLink({
-                ...defaultGiftOptions,
-                tier,
-                cadence: 'month',
-                email: 'should-be-ignored@example.com',
-                member: {id: 'member_123', get: sinon.stub().returns('member@example.com')},
-                isAuthenticated: true
-            });
-
-            assert.equal(getStripeArgs().customer, mockCustomer);
-            assert.equal(getStripeArgs().customerEmail, null);
         });
     });
 });

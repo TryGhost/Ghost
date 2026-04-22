@@ -79,7 +79,7 @@ class ParentRouter {
      * @param {Object} req
      * @param {Object} res
      * @param {Function} next
-     * @param {String} slug
+     * @param {string} slug
      * @private
      */
     _respectDominantRouter(req, res, next, slug) {
@@ -133,7 +133,7 @@ class ParentRouter {
 
     /**
      * @description Mount a route on this router.
-     * @param {String} path
+     * @param {string} path
      * @param {Function} controller
      */
     mountRoute(path, controller) {
@@ -148,7 +148,7 @@ class ParentRouter {
      *
      * Not used at the moment, but useful to keep for e.g. deregister routes on runtime.
      *
-     * @param {String} path
+     * @param {string} path
      */
     unmountRoute(path) {
         let indexToRemove = null;
@@ -187,7 +187,7 @@ class ParentRouter {
      * because the subdirectory is already mounted as exclusive feature (independent of dynamic routing).
      *
      * @param {Object} options
-     * @returns {String}
+     * @returns {string}
      */
     getRoute(options) {
         options = options || {};
@@ -197,8 +197,8 @@ class ParentRouter {
 
     /**
      * @description Figure out if the router has a redirect enabled.
-     * @param {String} routerType
-     * @param {String} slug
+     * @param {string} routerType
+     * @param {string} slug
      * @returns {boolean}
      */
     isRedirectEnabled(routerType, slug) {

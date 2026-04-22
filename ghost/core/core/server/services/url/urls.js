@@ -68,7 +68,7 @@ class Urls {
 
     /**
      * @description Get url by resource id.
-     * @param {String} id
+     * @param {string} id
      * @returns {Url}
      */
     getByResourceId(id) {
@@ -77,7 +77,7 @@ class Urls {
 
     /**
      * @description Get all urls by generator id.
-     * @param {String} generatorId
+     * @param {string} generatorId
      * @returns {Url[]}
      */
     getByGeneratorId(generatorId) {

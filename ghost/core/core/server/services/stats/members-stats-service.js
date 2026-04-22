@@ -22,11 +22,13 @@ class MembersStatsService {
         const paidEvent = rows.find(c => c.status === 'paid');
         const freeEvent = rows.find(c => c.status === 'free');
         const compedEvent = rows.find(c => c.status === 'comped');
+        const giftEvent = rows.find(c => c.status === 'gift');
 
         return {
             paid: paidEvent ? paidEvent.total : 0,
             free: freeEvent ? freeEvent.total : 0,
-            comped: compedEvent ? compedEvent.total : 0
+            comped: compedEvent ? compedEvent.total : 0,
+            gift: giftEvent ? giftEvent.total : 0
         };
     }
 
@@ -279,6 +281,7 @@ module.exports = MembersStatsService;
  * @property {number} paid Total paid members
  * @property {number} free Total free members
  * @property {number} comped Total comped members
+ * @property {number} gift Total gift members
  */
 
 /**

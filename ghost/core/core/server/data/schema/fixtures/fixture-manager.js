@@ -141,7 +141,7 @@ class FixtureManager {
      * ### Find Model Fixture
      * Finds a model fixture based on model name
      * @api private
-     * @param {String} modelName
+     * @param {string} modelName
      * @returns {Object} model fixture
      */
     findModelFixture(modelName) {
@@ -153,7 +153,7 @@ class FixtureManager {
     /**
      * ### Find Model Fixture Entry
      * Find a single model fixture entry by model name & a matching expression for the FIND function
-     * @param {String} modelName
+     * @param {string} modelName
      * @param {String|Object|Function} matchExpr
      * @returns {Object} model fixture entry
      */
@@ -164,7 +164,7 @@ class FixtureManager {
     /**
      * ### Find Model Fixtures
      * Find a  model fixture name & a matching expression for the FILTER function
-     * @param {String} modelName
+     * @param {string} modelName
      * @param {String|Object|Function} matchExpr
      * @returns {Object} model fixture
      */
@@ -178,8 +178,8 @@ class FixtureManager {
      * ### Find Relation Fixture
      * Find a relation fixture by from & to models
      * @api private
-     * @param {String} from
-     * @param {String} to
+     * @param {string} from
+     * @param {string} to
      * @returns {Object} relation fixture
      */
     findRelationFixture(from, to) {
@@ -191,7 +191,7 @@ class FixtureManager {
     /**
      * ### Find Permission Relations For Object
      * Specialist function can return the permission relation fixture with only entries for a particular object.model
-     * @param {String} objName
+     * @param {string} objName
      * @returns {Object} fixture relation
      */
     findPermissionRelationsForObject(objName, role) {

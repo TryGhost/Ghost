@@ -90,7 +90,9 @@ describe('ShareModal', () => {
         expect(getByTestId('share-preview-image')).toHaveAttribute('src', 'https://example.com/post.jpg');
         expect(getByTestId('share-preview-favicon')).toHaveAttribute('src', 'https://example.com/favicon.png');
         expect(getByText('Example site')).toBeInTheDocument();
-        expect(getByText('| Jane Doe')).toBeInTheDocument();
+        expect(getByText('|')).toBeInTheDocument();
+        expect(getByText('Jane Doe')).toBeInTheDocument();
+        expect(container.querySelector('.gh-portal-share-preview-meta')).not.toHaveTextContent('Example site| Jane Doe');
 
         const actions = Array.from(container.querySelector('.gh-portal-share-actions').children);
         expect(actions[0]).toHaveClass('gh-portal-share-action', 'copy');
@@ -214,7 +216,7 @@ describe('ShareModal', () => {
         expect(getByRole('menu')).toBeInTheDocument();
         expect(moreButton).toHaveAttribute('aria-expanded', 'true');
 
-        fireEvent.mouseDown(getByText('Share'));
+        fireEvent.click(getByText('Share'));
         expect(queryByRole('menu')).not.toBeInTheDocument();
         expect(moreButton).toHaveAttribute('aria-expanded', 'false');
 

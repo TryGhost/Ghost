@@ -71,7 +71,8 @@ User = ghostBookshelf.Model.extend({
             mention_notifications: true,
             recommendation_notifications: true,
             milestone_notifications: true,
-            donation_notifications: true
+            donation_notifications: true,
+            gift_subscription_purchase_notification: true
         };
     },
 
@@ -383,7 +384,7 @@ User = ghostBookshelf.Model.extend({
 
     /**
      * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
-     * @param {String} methodName The name of the method to check valid options for.
+     * @param {string} methodName The name of the method to check valid options for.
      * @return {Array} Keys allowed in the `options` hash of the model's method.
      */
     permittedOptions: function permittedOptions(methodName, options) {
@@ -512,6 +513,8 @@ User = ghostBookshelf.Model.extend({
             filter += '+donation_notifications:true';
         } else if (type === 'recommendation-received') {
             filter += '+recommendation_notifications:true';
+        } else if (type === 'gift-subscription-purchased') {
+            filter += '+gift_subscription_purchase_notification:true';
         }
         const updatedOptions = Object.assign({}, options, {filter, withRelated: ['roles']});
         return this.findAll(updatedOptions).then((users) => {

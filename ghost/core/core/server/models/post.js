@@ -31,7 +31,8 @@ const messages = {
     invalidMobiledocStructure: 'Invalid mobiledoc structure.',
     invalidMobiledocStructureHelp: 'https://ghost.org/docs/publishing/',
     invalidLexicalStructure: 'Invalid lexical structure.',
-    invalidLexicalStructureHelp: 'https://ghost.org/docs/publishing/'
+    invalidLexicalStructureHelp: 'https://ghost.org/docs/publishing/',
+    emailOnlyWithoutNewsletter: 'Scheduling an email requires a newsletter reference.'
 };
 
 const MOBILEDOC_REVISIONS_COUNT = 10;
@@ -817,6 +818,14 @@ Post = ghostBookshelf.Model.extend({
         // NOTE: this is a stopgap solution for email-only posts where their status is unchanged after publish
         //       but the usual publis/send newsletter flow continues
         const hasEmailOnlyFlag = _.get(attrs, 'posts_meta.email_only') || model.related('posts_meta').get('email_only');
+
+        // Require newsletter reference for scheduled email-only posts
+        if (hasEmailOnlyFlag && newStatus === 'scheduled' && this.hasChanged('status') && !this.get('newsletter_id') && !options.newsletter) {
+            return Promise.reject(new errors.ValidationError({
+                message: tpl(messages.emailOnlyWithoutNewsletter)
+            }));
+        }
+
         if (hasEmailOnlyFlag && (newStatus === 'published') && this.hasChanged('status')) {
             this.set('status', 'sent');
         } else if (!hasEmailOnlyFlag && (newStatus === 'sent') && this.hasChanged('status')) {
@@ -1190,7 +1199,7 @@ Post = ghostBookshelf.Model.extend({
 
     /**
      * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
-     * @param {String} methodName The name of the method to check valid options for.
+     * @param {string} methodName The name of the method to check valid options for.
      * @return {Array} Keys allowed in the `options` hash of the model's method.
      */
     permittedOptions: function permittedOptions(methodName) {

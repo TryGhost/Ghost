@@ -11,7 +11,7 @@ const messages = {
  * @param {Object} req
  * @param {Object} res
  * @param {Function} next
- * @param {Number} page
+ * @param {number} page
  * @returns {*}
  */
 module.exports = function handlePageParam(req, res, next, page) {

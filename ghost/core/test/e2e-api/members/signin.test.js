@@ -4,7 +4,6 @@ const models = require('../../../core/server/models');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const members = require('../../../core/server/services/members');
-
 let membersAgent, membersService;
 
 async function assertMemberEvents({eventType, memberId, asserts}) {

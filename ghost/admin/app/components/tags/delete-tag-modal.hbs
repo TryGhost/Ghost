@@ -5,10 +5,11 @@
     <button type="button" class="close"title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     <div class="modal-body">
+        You’re about to delete the tag "<strong>{{@data.tag.name}}</strong>".
         {{#if @data.tag.count.posts}}
-            <span class="red">This tag is attached to <span data-test-text="posts-count">{{gh-pluralize @data.tag.count.posts "post"}}</span>.</span>
+            It will be removed from <span data-test-text="posts-count">{{gh-pluralize @data.tag.count.posts "post"}}</span>.
         {{/if}}
-        You’re about to delete "<strong>{{@data.tag.name}}</strong>". This is permanent! We warned you, k?
+        This is permanent! We warned you, k?
     </div>
 
     <div class="modal-footer">

@@ -24,6 +24,20 @@ export default class MembersRoute extends MembersManagementRoute {
         });
     }
 
+    beforeModel(transition) {
+        super.beforeModel(...arguments);
+
+        // The outer React shell owns sibling URLs like /members/import.
+        // Ember's recognizer can still match this dynamic route for those
+        // paths and fire a bogus queryRecord that surfaces as an alert.
+        // Abort the transition for known React-owned siblings so the React
+        // shell keeps rendering the page.
+        const memberId = transition.to?.params?.member_id;
+        if (memberId === 'import') {
+            transition.abort();
+        }
+    }
+
     model(params) {
         this._requiresBackgroundRefresh = false;
 
@@ -55,9 +69,13 @@ export default class MembersRoute extends MembersManagementRoute {
         super.resetController(...arguments);
 
         // Make sure we clear
+        if (isExiting) {
+            controller.set('backPath', null);
+            controller.set('directlyFromAnalytics', false);
+        }
+
         if (isExiting && controller.postAnalytics) {
             controller.set('postAnalytics', null);
-            controller.set('directlyFromAnalytics', false);
         }
     }
 

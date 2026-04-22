@@ -182,6 +182,7 @@ module.exports = {
         recommendation_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         milestone_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         donation_notifications: {type: 'boolean', nullable: false, defaultTo: true},
+        gift_subscription_purchase_notification: {type: 'boolean', nullable: false, defaultTo: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
@@ -1149,6 +1150,7 @@ module.exports = {
         background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'light'},
         header_background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'transparent'},
         header_image: {type: 'string', maxlength: 2000, nullable: true},
+        show_header_icon: {type: 'boolean', nullable: false, defaultTo: true},
         show_header_title: {type: 'boolean', nullable: false, defaultTo: true},
         footer_content: {type: 'text', maxlength: 1000000000, nullable: true},
         button_color: {type: 'string', maxlength: 50, nullable: true, defaultTo: 'accent'},
@@ -1189,6 +1191,21 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
+    welcome_email_automation_runs: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        welcome_email_automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'welcome_email_automations.id', constraintName: 'wear_automation_id_foreign', cascadeDelete: true},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', constraintName: 'wear_member_id_foreign', cascadeDelete: true},
+        next_welcome_email_automated_email_id: {type: 'string', maxlength: 24, nullable: true, references: 'welcome_email_automated_emails.id', constraintName: 'wear_next_email_id_foreign', cascadeDelete: false},
+        ready_at: {type: 'dateTime', nullable: true},
+        step_started_at: {type: 'dateTime', nullable: true},
+        step_attempts: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
+        exit_reason: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['member not found', 'email send failed', 'member unsubscribed', 'member changed status', 'finished']]}},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            ['ready_at']
+        ]
+    },
     automated_email_recipients: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         automated_email_id: {type: 'string', maxlength: 24, nullable: false, references: 'welcome_email_automated_emails.id'},
@@ -1223,7 +1240,7 @@ module.exports = {
         stripe_payment_intent_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
 
         consumes_at: {type: 'dateTime', nullable: true},
-        expires_at: {type: 'dateTime', nullable: true},
+        expires_at: {type: 'dateTime', nullable: false},
 
         status: {
             type: 'string', maxlength: 50, nullable: false, validations: {
@@ -1234,6 +1251,11 @@ module.exports = {
         redeemed_at: {type: 'dateTime', nullable: true},
         consumed_at: {type: 'dateTime', nullable: true},
         expired_at: {type: 'dateTime', nullable: true},
-        refunded_at: {type: 'dateTime', nullable: true}
+        refunded_at: {type: 'dateTime', nullable: true},
+        consumes_soon_reminder_sent_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            ['status', 'consumes_at'],
+            ['status', 'expires_at']
+        ]
     }
 };

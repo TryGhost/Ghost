@@ -1,26 +1,28 @@
+const crypto = require('crypto');
 const BaseCacheAdapter = require('@tryghost/adapter-base-cache');
+const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const metrics = require('@tryghost/metrics');
 const debug = require('@tryghost/debug')('redis-cache');
 const cacheManager = require('cache-manager');
 const redisStoreFactory = require('./redis-store-factory');
-const calculateSlot = require('cluster-key-slot');
+
+const PREFIX_HASH_KEY = 'prefix_hash';
 
 class AdapterCacheRedis extends BaseCacheAdapter {
     /**
      *
      * @param {Object} config
      * @param {Object} [config.cache] - caching instance compatible with cache-manager's redis store
-     * @param {String} [config.host] - redis host used in case no cache instance provided
-     * @param {Number} [config.port] - redis port used in case no cache instance provided
-     * @param {String} [config.password] - redis password used in case no cache instance provided
+     * @param {string} [config.host] - redis host used in case no cache instance provided
+     * @param {number} [config.port] - redis port used in case no cache instance provided
+     * @param {string} [config.password] - redis password used in case no cache instance provided
      * @param {Object} [config.clusterConfig] - redis cluster config used in case no cache instance provided
      * @param {Object} [config.storeConfig] - extra redis client config used in case no cache instance provided
-     * @param {Number} [config.ttl] - default cached value Time To Live (expiration) in *seconds*
-     * @param {Number} [config.getTimeoutMilliseconds] - default timeout for cache get operations in *milliseconds*
-     * @param {Number} [config.refreshAheadFactor] - 0-1 number to use to determine how old (as a percentage of ttl) an entry should be before refreshing it
-     * @param {String} [config.keyPrefix] - prefix to use when building a unique cache key, e.g.: 'some_id:image-sizes:'
-     * @param {Boolean} [config.reuseConnection] - specifies if the redis store/connection should be reused within the process
+     * @param {number} [config.ttl] - default cached value Time To Live (expiration) in *seconds*
+     * @param {number} [config.getTimeoutMilliseconds] - default timeout for cache get operations in *milliseconds*
+     * @param {number} [config.refreshAheadFactor] - 0-1 number to use to determine how old (as a percentage of ttl) an entry should be before refreshing it
+     * @param {string} [config.keyPrefix] - prefix to use when building a unique cache key, e.g.: 'some_id:image-sizes:'
+     * @param {boolean} [config.reuseConnection] - specifies if the redis store/connection should be reused within the process
      */
     constructor(config) {
         super();
@@ -63,55 +65,74 @@ class AdapterCacheRedis extends BaseCacheAdapter {
         this.refreshAheadFactor = config.refreshAheadFactor || 0;
         this.getTimeoutMilliseconds = config.getTimeoutMilliseconds || null;
         this.currentlyExecutingBackgroundRefreshes = new Set();
-        this.keyPrefix = config.keyPrefix;
-        this._keysPattern = config.keyPrefix ? `${config.keyPrefix}*` : '';
-        this.redisClient = this.cache.store.getClient();
+        this._keyPrefix = config.keyPrefix || '';
+        this._prefixHashInitInFlight = null;
         this.redisClient.on('error', this.handleRedisError);
+    }
+
+    /**
+     * api-framework's pipeline _.cloneDeep's controllers (and the cache
+     * adapter alongside them). Caching the redis client as `this.redisClient`
+     * was breaking on clones because the cloned ioredis instance has the
+     * prototype but no live socket. Going through cache-manager's
+     * `store.getClient()` works because that function captures the original
+     * client via closure, so even on a clone it returns the live one.
+     */
+    get redisClient() {
+        return this.cache.store.getClient();
+    }
+
+    /**
+     * NOTE: this adds an extra round-trip to every cache operation. The
+     * trade-off is intentional for now (reset becomes O(1) instead of an
+     * O(n) SCAN).
+     *
+     * NOTE: the prefix_hash key is written without a TTL, but redis can
+     * still evict it under allkeys-lru / allkeys-random eviction policies.
+     * Eviction will silently invalidate the entire cache as a side effect.
+     * Operators who need stricter invalidation guarantees should configure
+     * a noeviction policy or pin this key out-of-band.
+     */
+    async prefixHash() {
+        const currentPrefixHash = await this.redisClient.get(this._keyPrefix + PREFIX_HASH_KEY);
+        if (currentPrefixHash) {
+            return currentPrefixHash;
+        }
+        return this._initPrefixHash();
+    }
+
+    /**
+     * Lazily creates the prefix_hash. Concurrent callers in this process
+     * share one in-flight init via _prefixHashInitInFlight; SET NX ensures
+     * only one writer wins across processes.
+     */
+    _initPrefixHash() {
+        if (this._prefixHashInitInFlight) {
+            return this._prefixHashInitInFlight;
+        }
+        const value = crypto.randomBytes(12).toString('hex');
+        this._prefixHashInitInFlight = this.redisClient
+            .set(this._keyPrefix + PREFIX_HASH_KEY, value, 'NX')
+            .then(async (result) => {
+                if (result === 'OK') {
+                    return value;
+                }
+                // someone else wrote it first; return their value
+                return await this.redisClient.get(this._keyPrefix + PREFIX_HASH_KEY);
+            })
+            .finally(() => {
+                this._prefixHashInitInFlight = null;
+            });
+        return this._prefixHashInitInFlight;
+    }
+
+    async keyPrefix() {
+        const prefixHash = await this.prefixHash();
+        return this._keyPrefix + prefixHash;
     }
 
     handleRedisError(error) {
         logging.error(error);
-    }
-
-    #getPrimaryRedisNode() {
-        debug('getPrimaryRedisNode');
-        if (this.redisClient.constructor.name !== 'Cluster') {
-            return this.redisClient;
-        }
-        const slot = calculateSlot(this.keyPrefix);
-        const [ip, port] = this.redisClient.slots[slot][0].split(':');
-        for (const node of this.redisClient.nodes()) {
-            if (node.options.host === ip && node.options.port === parseInt(port)) {
-                return node;
-            }
-        }
-        return null;
-    }
-
-    #scanNodeForKeys(node) {
-        debug(`scanNodeForKeys matching ${this._keysPattern}`);
-        return new Promise((resolve, reject) => {
-            const stream = node.scanStream({match: this._keysPattern, count: 100});
-            let keys = [];
-            stream.on('data', (resultKeys) => {
-                keys = keys.concat(resultKeys);
-            });
-            stream.on('error', (e) => {
-                reject(e);
-            });
-            stream.on('end', () => {
-                resolve(keys);
-            });
-        });
-    }
-
-    async #getKeys() {
-        debug('#getKeys');
-        const primaryNode = this.#getPrimaryRedisNode();
-        if (primaryNode === null) {
-            return [];
-        }
-        return await this.#scanNodeForKeys(primaryNode);
     }
 
     /**
@@ -119,28 +140,16 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * the cache-manager package. Might be a good contribution to make
      * in the package itself (https://github.com/node-cache-manager/node-cache-manager/issues/158)
      * @param {string} key
-     * @returns {string}
+     * @returns {Promise<string>}
      */
-    _buildKey(key) {
-        if (this.keyPrefix) {
-            return `${this.keyPrefix}${key}`;
-        }
-
-        return key;
-    }
-
-    /**
-     * This is a method to remove the key prefix from any raw key returned from redis.
-     * @param {string} key
-     * @returns {string}
-     */
-    _removeKeyPrefix(key) {
-        return key.slice(this.keyPrefix.length);
+    async _buildKey(key) {
+        const keyPrefix = await this.keyPrefix();
+        return `${keyPrefix}${key}`;
     }
 
     /**
      *
-     * @param {String} internalKey
+     * @param {string} internalKey
      */
     async shouldRefresh(internalKey) {
         if (this.refreshAheadFactor === 0) {
@@ -163,27 +172,38 @@ class AdapterCacheRedis extends BaseCacheAdapter {
     }
 
     /**
-     * Returns the specified key from the cache if it exists, otherwise returns null
-     * - If getTimeoutMilliseconds is set, the method will return a promise that resolves with the value or null if the timeout is exceeded
-     * 
-     * @param {string} key 
+     * Performs the buildKey + cache.get sequence, bounded by
+     * getTimeoutMilliseconds if configured. On timeout resolves with
+     * {internalKey: null, result: null} so the caller treats it as a MISS.
+     *
+     * @param {string} key
+     * @returns {Promise<{internalKey: string|null, result: any}>}
      */
-    async _get(key) {
+    _lookupWithTimeout(key) {
+        const lookup = (async () => {
+            const internalKey = await this._buildKey(key);
+            const result = await this.cache.get(internalKey);
+            return {internalKey, result};
+        })();
+
         if (typeof this.getTimeoutMilliseconds !== 'number') {
-            return this.cache.get(key);
-        } else {
-            return new Promise((resolve) => {
-                const timer = setTimeout(() => {
-                    debug('get', key, 'timeout');
-                    resolve(null);
-                }, this.getTimeoutMilliseconds);
-    
-                this.cache.get(key).then((result) => {
-                    clearTimeout(timer);
-                    resolve(result);
-                });
-            });
+            return lookup;
         }
+
+        return new Promise((resolve) => {
+            const timer = setTimeout(() => {
+                debug('get', key, 'timeout');
+                resolve({internalKey: null, result: null});
+            }, this.getTimeoutMilliseconds);
+            lookup.then((value) => {
+                clearTimeout(timer);
+                resolve(value);
+            }, () => {
+                // redis failure during lookup - treat as MISS, same as the timeout path
+                clearTimeout(timer);
+                resolve({internalKey: null, result: null});
+            });
+        });
     }
 
     /**
@@ -192,10 +212,9 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * @param {() => Promise<any>} [fetchData] An optional function to fetch the data, which will be used in the case of a cache MISS or a background refresh
      */
     async get(key, fetchData) {
-        const internalKey = this._buildKey(key);
         try {
-            const result = await this._get(internalKey);
-            debug(`get ${internalKey}: Cache ${result ? 'HIT' : 'MISS'}`);
+            const {internalKey, result} = await this._lookupWithTimeout(key);
+            debug(`get ${key}: Cache ${result ? 'HIT' : 'MISS'}`);
             if (!fetchData) {
                 return result;
             }
@@ -203,10 +222,10 @@ class AdapterCacheRedis extends BaseCacheAdapter {
                 const shouldRefresh = await this.shouldRefresh(internalKey);
                 const isRefreshing = this.currentlyExecutingBackgroundRefreshes.has(internalKey);
                 if (isRefreshing) {
-                    debug(`Background refresh already happening for ${internalKey}`);
+                    debug(`Background refresh already happening for ${key}`);
                 }
                 if (!isRefreshing && shouldRefresh) {
-                    debug(`Doing background refresh for ${internalKey}`);
+                    debug(`Doing background refresh for ${key}`);
                     this.currentlyExecutingBackgroundRefreshes.add(internalKey);
                     fetchData().then(async (data) => {
                         await this.set(key, data); // We don't use `internalKey` here because `set` handles it
@@ -232,55 +251,44 @@ class AdapterCacheRedis extends BaseCacheAdapter {
 
     /**
      *
-     * @param {String} key
+     * @param {string} key
      * @param {*} value
      */
     async set(key, value) {
-        const internalKey = this._buildKey(key);
-        debug('set', internalKey);
         try {
+            const internalKey = await this._buildKey(key);
+            debug('set', internalKey);
             return await this.cache.set(internalKey, value);
         } catch (err) {
             logging.error(err);
         }
     }
 
-    /**
-     * Reset the cache by deleting everything from redis
-     */
+    async cyclePrefixHash() {
+        const value = crypto.randomBytes(12).toString('hex');
+        // Raw client: cache-manager would JSON-wrap, and reset needs an unconditional overwrite (no NX).
+        await this.redisClient.set(this._keyPrefix + PREFIX_HASH_KEY, value);
+        return value;
+    }
+
     async reset() {
         debug('reset');
         try {
-            const t0 = performance.now();
-            logging.debug(`[RedisAdapter] Clearing cache: scanning for keys matching ${this._keysPattern}`);
-            const keys = await this.#getKeys();
-            logging.debug(`[RedisAdapter] Clearing cache: found ${keys.length} keys matching ${this._keysPattern} in ${(performance.now() - t0).toFixed(1)}ms`);
-            metrics.metric('cache-reset-scan', (performance.now() - t0).toFixed(1));
-            const t1 = performance.now();
-            for (const key of keys) {
-                await this.cache.del(key);
-            }
-            logging.debug(`[RedisAdapter] Clearing cache: deleted ${keys.length} keys matching ${this._keysPattern} in ${(performance.now() - t1).toFixed(1)}ms`);
-            metrics.metric('cache-reset-delete', (performance.now() - t1).toFixed(1));
-            metrics.metric('cache-reset', (performance.now() - t0).toFixed(1));
-            metrics.metric('cache-reset-key-count', keys.length);
+            await this.cyclePrefixHash();
         } catch (err) {
             logging.error(err);
         }
     }
 
     /**
-     * Helper method to assist "getAll" type of operations
-     * @returns {Promise<Array<String>>} all keys present in the cache
+     * @deprecated The cache adapter interface still requires a `keys` method
+     *             (see @tryghost/adapter-base-cache#requiredFns), but the
+     *             redis adapter does not support enumerating its keys.
      */
-    async keys() {
-        try {
-            return (await this.#getKeys()).map((key) => {
-                return this._removeKeyPrefix(key);
-            });
-        } catch (err) {
-            logging.error(err);
-        }
+    keys() {
+        throw new errors.IncorrectUsageError({
+            message: 'AdapterCacheRedis does not support keys()'
+        });
     }
 }
 

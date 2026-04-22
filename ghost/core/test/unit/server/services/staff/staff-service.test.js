@@ -981,10 +981,13 @@ describe('StaffService', function () {
                     email: 'alice@example.com',
                     memberId: null,
                     amount: 6000,
-                    currency: 'usd'
+                    currency: 'usd',
+                    tierName: 'Gold',
+                    cadence: 'year',
+                    duration: 1
                 });
 
-                sinon.assert.calledWith(getEmailAlertUsersStub, 'gift-purchased');
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'gift-subscription-purchased');
                 sinon.assert.calledOnce(mailStub);
                 sinon.assert.calledWith(mailStub, sinon.match.has('subject', sinon.match('Gift subscription purchased: $60.00 from Alice')));
             });
@@ -995,7 +998,10 @@ describe('StaffService', function () {
                     email: 'bob@example.com',
                     memberId: null,
                     amount: 1500,
-                    currency: 'eur'
+                    currency: 'eur',
+                    tierName: 'Gold',
+                    cadence: 'year',
+                    duration: 1
                 });
 
                 sinon.assert.calledOnce(mailStub);
@@ -1008,7 +1014,10 @@ describe('StaffService', function () {
                     email: 'charlie@example.com',
                     memberId: null,
                     amount: 5000,
-                    currency: 'usd'
+                    currency: 'usd',
+                    tierName: 'Gold',
+                    cadence: 'year',
+                    duration: 1
                 });
 
                 sinon.assert.calledOnce(mailStub);
@@ -1021,7 +1030,10 @@ describe('StaffService', function () {
                     email: 'diana@example.com',
                     memberId: null,
                     amount: 2000,
-                    currency: 'gbp'
+                    currency: 'gbp',
+                    tierName: 'Gold',
+                    cadence: 'year',
+                    duration: 1
                 });
 
                 sinon.assert.calledOnce(mailStub);
@@ -1034,11 +1046,130 @@ describe('StaffService', function () {
                     email: 'anon@example.com',
                     memberId: null,
                     amount: 3000,
-                    currency: 'usd'
+                    currency: 'usd',
+                    tierName: 'Gold',
+                    cadence: 'year',
+                    duration: 1
                 });
 
                 sinon.assert.calledOnce(mailStub);
                 sinon.assert.calledWith(mailStub, sinon.match.has('subject', sinon.match('from anon@example.com')));
+            });
+
+            it('includes tier and cadence in HTML when provided', async function () {
+                await service.emails.notifyGiftReceived({
+                    name: 'Erin',
+                    email: 'erin@example.com',
+                    memberId: null,
+                    amount: 12000,
+                    currency: 'usd',
+                    tierName: 'Premium',
+                    cadence: 'year',
+                    duration: 1
+                });
+
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Premium')));
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('1 year')));
+            });
+
+            it('formats cadence with pluralized unit when duration is greater than 1', async function () {
+                await service.emails.notifyGiftReceived({
+                    name: 'Erin',
+                    email: 'erin@example.com',
+                    memberId: null,
+                    amount: 12000,
+                    currency: 'usd',
+                    tierName: 'Premium',
+                    cadence: 'month',
+                    duration: 3
+                });
+
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('3 months')));
+            });
+        });
+
+        describe('notifyGiftSubscriptionStarted', function () {
+            it('sends gift subscription email with correct subject', async function () {
+                await service.emails.notifyGiftSubscriptionStarted({
+                    memberName: 'Jamie',
+                    memberEmail: 'jamie@example.com',
+                    memberId: 'abc',
+                    tierName: 'Premium',
+                    cadence: 'year',
+                    duration: 1,
+                    buyerEmail: 'gifter@example.com'
+                });
+
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'paid-started');
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('subject', sinon.match('🎁 Paid subscription started: Jamie')));
+            });
+
+            it('includes the tier and cadence in HTML and plain text', async function () {
+                await service.emails.notifyGiftSubscriptionStarted({
+                    memberName: 'Jamie',
+                    memberEmail: 'jamie@example.com',
+                    memberId: 'abc',
+                    tierName: 'Premium',
+                    cadence: 'year',
+                    duration: 1,
+                    buyerEmail: 'gifter@example.com'
+                });
+
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Premium')));
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('1 year')));
+                sinon.assert.calledWith(mailStub, sinon.match.has('text', sinon.match('Tier: Premium • 1 year')));
+            });
+
+            it('pluralises the cadence when duration is greater than 1', async function () {
+                await service.emails.notifyGiftSubscriptionStarted({
+                    memberName: 'Jamie',
+                    memberEmail: 'jamie@example.com',
+                    memberId: 'abc',
+                    tierName: 'Premium',
+                    cadence: 'month',
+                    duration: 3,
+                    buyerEmail: 'gifter@example.com'
+                });
+
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('3 months')));
+                sinon.assert.calledWith(mailStub, sinon.match.has('text', sinon.match('Tier: Premium • 3 months')));
+            });
+
+            it('includes the member name in HTML and plain text', async function () {
+                await service.emails.notifyGiftSubscriptionStarted({
+                    memberName: 'Jamie',
+                    memberEmail: 'jamie@example.com',
+                    memberId: 'abc',
+                    tierName: 'Premium',
+                    cadence: 'year',
+                    duration: 1,
+                    buyerEmail: 'gifter@example.com'
+                });
+
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Jamie')));
+                sinon.assert.calledWith(mailStub, sinon.match.has('text', sinon.match('Jamie')));
+            });
+
+            it('includes the buyer email in HTML and plain text', async function () {
+                await service.emails.notifyGiftSubscriptionStarted({
+                    memberName: 'Jamie',
+                    memberEmail: 'jamie@example.com',
+                    memberId: 'abc',
+                    tierName: 'Premium',
+                    cadence: 'year',
+                    duration: 1,
+                    buyerEmail: 'gifter@example.com'
+                });
+
+                sinon.assert.calledOnce(mailStub);
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('gifter@example.com')));
+                sinon.assert.calledWith(mailStub, sinon.match.has('text', sinon.match('Gifted by: gifter@example.com')));
             });
         });
     });

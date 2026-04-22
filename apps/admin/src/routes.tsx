@@ -1,15 +1,13 @@
 import {type RouteObject, Outlet, lazyComponent, redirect} from "@tryghost/admin-x-framework";
 
 // ActivityPub
-import { FeatureFlagsProvider, routes as activityPubRoutes } from "@tryghost/activitypub/src/index";
+import { FeatureFlagsProvider, routes as activityPubRoutes } from "@tryghost/activitypub/api";
 
 // Posts (aka tags and post analytics)
-import PostsAppContextProvider from "@tryghost/posts/src/providers/posts-app-context";
-import { routes as postRoutes } from "@tryghost/posts/src/routes";
+import { PostsAppContextProvider, routes as postRoutes } from "@tryghost/posts/api";
 
 // Stats (aka analytics)
-import GlobalDataProvider from "@tryghost/stats/src/providers/global-data-provider";
-import { routes as statsRoutes } from "@tryghost/stats/src/routes";
+import { GlobalDataProvider, routes as statsRoutes } from "@tryghost/stats/api";
 import MyProfileRedirect from "./my-profile-redirect";
 
 // Ember
@@ -63,23 +61,13 @@ const membersRoute: RouteObject = {
     children: [
         {
             index: true,
-            lazy: lazyComponent(() => import("@tryghost/posts/src/views/members/members"))
+            lazy: lazyComponent(() => import("@tryghost/posts/members"))
         },
         {
             path: "import",
-            lazy: lazyComponent(() => import("@tryghost/posts/src/views/members/members"))
+            lazy: lazyComponent(() => import("@tryghost/posts/members"))
         }
     ]
-};
-
-const membersForwardRedirectRoute: RouteObject = {
-    path: "/members-forward",
-    // TODO: Remove once the legacy Ember members list is deleted.
-    handle: emberFallbackHandle,
-    loader: ({request}) => {
-        const url = new URL(request.url);
-        return redirect(`/members${url.search}`);
-    }
 };
 
 export const routes: RouteObject[] = [
@@ -99,7 +87,6 @@ export const routes: RouteObject[] = [
                 handle: emberFallbackHandle,
             },
             membersRoute,
-            membersForwardRedirectRoute,
             {
                 element: (
                     <PostsAppContextProvider value={{ fromAnalytics: true }}>

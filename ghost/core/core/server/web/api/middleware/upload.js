@@ -167,7 +167,7 @@ const checkFileIsValid = (fileData, types, extensions) => {
 
 /**
  *
- * @param {String} filepath
+ * @param {string} filepath
  * @returns {Promise<String | null>}
  *
  * Reads the SVG file, sanitizes it, and writes the sanitized content back to the file.
@@ -193,7 +193,7 @@ const sanitizeSvg = async (filepath, isZipped = false) => {
 
 /**
  *
- * @param {String} content
+ * @param {string} content
  * @returns {String | null}
  *
  * Returns sanitized SVG content, or null if the content is invalid.
@@ -218,8 +218,8 @@ const sanitizeSvgContent = (content) => {
 
 /**
  *
- * @param {String} filepath
- * @param {Boolean} isZipped
+ * @param {string} filepath
+ * @param {boolean} isZipped
  * @returns {Promise<String | null>}
  *
  * Reads .svg or .svgz files and returns the content as a string.
@@ -236,9 +236,9 @@ const readSvg = async (filepath, isZipped = false) => {
 
 /**
  *
- * @param {String} filepath
- * @param {String} content
- * @param {Boolean} isZipped
+ * @param {string} filepath
+ * @param {string} content
+ * @param {boolean} isZipped
  *
  * Writes SVG content to a .svg or .svgz file.
  */
@@ -253,7 +253,7 @@ const writeSvg = async (filepath, content, isZipped = false) => {
 /**
  *
  * @param {Object} options
- * @param {String} options.type - type of the file
+ * @param {string} options.type - type of the file
  * @returns {import('express').RequestHandler}
  */
 const validation = function ({type}) {
@@ -306,7 +306,7 @@ const validation = function ({type}) {
 /**
  *
  * @param {Object} options
- * @param {String} options.type - type of the file
+ * @param {string} options.type - type of the file
  * @returns {import('express').RequestHandler}
  */
 const mediaValidation = function ({type}) {
@@ -367,7 +367,7 @@ const mediaValidation = function ({type}) {
  * we derive the storage content type from the extension via getStorageContentType().
  *
  * @param {Object} options
- * @param {String} options.type - config key under uploads (e.g. 'files')
+ * @param {string} options.type - config key under uploads (e.g. 'files')
  * @returns {import('express').RequestHandler}
  */
 const fileValidation = function ({type}) {

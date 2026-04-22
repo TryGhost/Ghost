@@ -29,7 +29,7 @@ services:
         condition: service_completed_successfully
 
   tinybird-local:
-    image: tinybirdco/tinybird-local:latest@sha256:3bbfa58373928313a290f40193598d992f613173c67e9ed8c980d662a911f15a
+    image: tinybirdco/tinybird-local:latest@sha256:52ea15fc337547b13d06069c23479c293e23074d4e4a6be21253e4bd57ad12be
     container_name: ghost-dev-tinybird
     platform: linux/amd64
     stop_grace_period: 2s

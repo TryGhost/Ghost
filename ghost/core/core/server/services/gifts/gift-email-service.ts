@@ -35,6 +35,15 @@ interface PurchaseConfirmationData {
     expiresAt: Date;
 }
 
+interface ReminderData {
+    memberEmail: string;
+    memberName: string | null;
+    tierName: string;
+    cadence: 'month' | 'year';
+    duration: number;
+    consumesAt: Date;
+}
+
 export class GiftEmailService {
     private readonly mailer: Mailer;
     private readonly settingsCache: SettingsCache;
@@ -65,14 +74,21 @@ export class GiftEmailService {
         const formattedAmount = this.formatAmount({currency, amount: amount / 100});
         const siteDomain = this.siteDomain;
         const siteUrl = this.urlUtils.getSiteUrl();
+        const siteTitle = this.settingsCache.get('title') ?? siteDomain;
 
         const giftLink = `${siteUrl.replace(/\/$/, '')}/gift/${token}`;
 
-        const unit = cadence === 'month' ? 'month' : 'year';
-        const cadenceLabel = duration === 1 ? `1 ${unit}` : `${duration} ${unit}s`;
+        const cadenceLabel = duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
+
+        // Pre-build a mailto: URL the buyer can click to open their default mail
+        // client with a friendly draft already filled in. Recipient is left blank
+        // — that's the one thing only the buyer knows.
+        const mailtoSubject = `I got you a gift subscription to ${siteTitle}`;
+        const mailtoBody = `Hi,\n\nI bought you a subscription to ${siteTitle}. You can redeem it here:\n\n${giftLink}`;
+        const mailtoUrl = `mailto:?subject=${encodeURIComponent(mailtoSubject)}&body=${encodeURIComponent(mailtoBody)}`;
 
         const templateData = {
-            siteTitle: this.settingsCache.get('title') ?? siteDomain,
+            siteTitle,
             siteUrl,
             siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
             siteDomain,
@@ -83,6 +99,7 @@ export class GiftEmailService {
                 tierName,
                 cadenceLabel,
                 link: giftLink,
+                mailtoUrl,
                 expiresAt: moment(expiresAt).format('D MMM YYYY')
             }
         };
@@ -92,6 +109,43 @@ export class GiftEmailService {
         await this.mailer.send({
             to: buyerEmail,
             subject: 'Gift subscription purchase confirmation',
+            html,
+            text,
+            from: this.getFromAddress(),
+            forceTextContent: true
+        });
+    }
+
+    async sendReminder({memberEmail, memberName, tierName, cadence, duration, consumesAt}: ReminderData): Promise<void> {
+        const siteDomain = this.siteDomain;
+        const siteUrl = this.urlUtils.getSiteUrl();
+        const siteTitle = this.settingsCache.get('title') ?? siteDomain;
+
+        const cadenceLabel = duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
+
+        const manageSubscriptionUrl = new URL('#/portal/account', siteUrl).href;
+
+        const templateData = {
+            siteTitle,
+            siteUrl,
+            siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
+            siteDomain,
+            accentColor: this.settingsCache.get('accent_color'),
+            memberEmail,
+            memberName,
+            gift: {
+                tierName,
+                cadenceLabel,
+                consumesAt: moment(consumesAt).format('D MMM YYYY'),
+                manageSubscriptionUrl
+            }
+        };
+
+        const {html, text} = await this.renderer.renderReminder(templateData);
+
+        await this.mailer.send({
+            to: memberEmail,
+            subject: `Your gift subscription to ${siteTitle} is ending soon`,
             html,
             text,
             from: this.getFromAddress(),

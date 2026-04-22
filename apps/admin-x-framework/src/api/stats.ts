@@ -33,6 +33,7 @@ export type MemberCountHistoryResponseType = {
             paid: number;
             free: number;
             comped: number;
+            gift: number;
         }
     };
 }

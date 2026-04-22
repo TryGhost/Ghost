@@ -330,8 +330,8 @@ async function hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, trans
  * @param {string} configuration.toTable - name of the table to point the foreign key to
  * @param {string} configuration.toColumn - column of the table to point the foreign key to
  * @param {string} [configuration.constraintName] - name of the FK to create
- * @param {Boolean} [configuration.cascadeDelete] - adds the "on delete cascade" option if true
- * @param {Boolean} [configuration.setNullDelete] - adds the "on delete SET NULL" option if true
+ * @param {boolean} [configuration.cascadeDelete] - adds the "on delete cascade" option if true
+ * @param {boolean} [configuration.setNullDelete] - adds the "on delete SET NULL" option if true
  * @param {import('knex').Knex} [configuration.transaction] - connection object containing knex reference
  */
 async function addForeign({fromTable, fromColumn, toTable, toColumn, constraintName, cascadeDelete = false, setNullDelete = false, transaction = db.knex}) {
@@ -487,7 +487,7 @@ async function addPrimaryKey(tableName, columns, transaction = db.knex) {
  * NOTE: this function does NOT check if the table already exists - use the migration
  * utils if you want that
  *
- * @param {String} table - name of the table to create
+ * @param {string} table - name of the table to create
  * @param {import('knex').Knex} [transaction] - connection to the DB
  * @param {Object} [tableSpec] - table schema to generate table with
  */

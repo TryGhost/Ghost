@@ -28,6 +28,16 @@ export interface AutomatedEmailsVerifyResponseType extends AutomatedEmailsRespon
     meta?: Meta & {email_verified: string};
 }
 
+export type AutomatedEmailPreview = {
+    html: string;
+    plaintext: string;
+    subject: string;
+}
+
+export interface AutomatedEmailsPreviewResponseType {
+    automated_emails: AutomatedEmailPreview[];
+}
+
 const dataType = 'AutomatedEmailsResponseType';
 
 export const useBrowseAutomatedEmails = createQuery<AutomatedEmailsResponseType>({
@@ -89,4 +99,10 @@ export const useSendTestWelcomeEmail = createMutation<unknown, {id: string; emai
     method: 'POST',
     path: ({id}) => `/automated_emails/${id}/test/`,
     body: ({email, subject, lexical}) => ({email, subject, lexical})
+});
+
+export const usePreviewWelcomeEmail = createMutation<AutomatedEmailsPreviewResponseType, {id: string; subject: string; lexical: string}>({
+    method: 'POST',
+    path: ({id}) => `/automated_emails/${id}/preview/`,
+    body: ({subject, lexical}) => ({subject, lexical})
 });

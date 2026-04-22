@@ -2,27 +2,27 @@
 
 set -euo pipefail
 
-# Runs `yarn install` if `yarn.lock` has changed to avoid a full `docker build` when changing branches/dependencies
-## Dockerfile calculates a hash and stores it in `.yarnhash/yarn.lock.md5`
-## compose.yml mounts a named volume to persist the `.yarnhash` directory
+# Runs `pnpm install` if `pnpm-lock.yaml` has changed to avoid a full `docker build` when changing branches/dependencies
+## Dockerfile calculates a hash and stores it in `.pnpmhash/pnpm-lock.yaml.md5`
+## compose.yml mounts a named volume to persist the `.pnpmhash` directory
 (
     cd /home/ghost
-    yarn_lock_hash_file_path=".yarnhash/yarn.lock.md5"
-    calculated_hash=$(md5sum yarn.lock | awk '{print $1}')
+    pnpm_lock_hash_file_path=".pnpmhash/pnpm-lock.yaml.md5"
+    calculated_hash=$(md5sum pnpm-lock.yaml | awk '{print $1}')
 
-    if [ -f "$yarn_lock_hash_file_path" ]; then
-        stored_hash=$(cat "$yarn_lock_hash_file_path")
+    if [ -f "$pnpm_lock_hash_file_path" ]; then
+        stored_hash=$(cat "$pnpm_lock_hash_file_path")
         if [ "$calculated_hash" != "$stored_hash" ]; then
-            echo "INFO: yarn.lock has changed. Running yarn install..."
-            bash .github/scripts/install-deps.sh
-            mkdir -p .yarnhash
-            echo "$calculated_hash" > "$yarn_lock_hash_file_path"
+            echo "INFO: pnpm-lock.yaml has changed. Running pnpm install..."
+            pnpm install
+            mkdir -p .pnpmhash
+            echo "$calculated_hash" > "$pnpm_lock_hash_file_path"
         fi
     else
-        echo "WARNING: yarn.lock hash file ($yarn_lock_hash_file_path) not found. Running yarn install as a precaution."
-        bash .github/scripts/install-deps.sh
-        mkdir -p .yarnhash
-        echo "$calculated_hash" > "$yarn_lock_hash_file_path"
+        echo "WARNING: pnpm-lock.yaml hash file ($pnpm_lock_hash_file_path) not found. Running pnpm install as a precaution."
+        pnpm install
+        mkdir -p .pnpmhash
+        echo "$calculated_hash" > "$pnpm_lock_hash_file_path"
     fi
 )
 
@@ -50,7 +50,7 @@ if [ -f /mnt/shared-config/.env.stripe ]; then
     fi
 fi
 
-yarn nx reset
+pnpm nx reset
 
 # Execute the CMD
 exec "$@"

@@ -1,8 +1,10 @@
 const path = require('path');
 
-const FLAT_CONFIG_WORKSPACES = [
+const SCOPED_WORKSPACES = [
     'e2e',
-    'apps/admin'
+    'apps/admin',
+    'apps/posts',
+    'apps/shade'
 ];
 
 function normalize(file) {
@@ -30,7 +32,7 @@ function buildScopedEslintCommand(workspace, files) {
         .map(shellQuote)
         .join(' ');
 
-    return `yarn --cwd ${shellQuote(workspace)} eslint --cache ${relativeFiles}`;
+    return `pnpm --dir ${shellQuote(workspace)} exec eslint --cache ${relativeFiles}`;
 }
 
 function buildRootEslintCommand(files) {
@@ -44,11 +46,11 @@ function buildRootEslintCommand(files) {
 
 module.exports = {
     '*.{js,ts,tsx,jsx,cjs}': (files) => {
-        const workspaceGroups = new Map(FLAT_CONFIG_WORKSPACES.map(workspace => [workspace, []]));
+        const workspaceGroups = new Map(SCOPED_WORKSPACES.map(workspace => [workspace, []]));
         const rootFiles = [];
 
         for (const file of files) {
-            const workspace = FLAT_CONFIG_WORKSPACES.find(candidate => isInWorkspace(file, candidate));
+            const workspace = SCOPED_WORKSPACES.find(candidate => isInWorkspace(file, candidate));
 
             if (workspace) {
                 workspaceGroups.get(workspace).push(file);
@@ -58,7 +60,7 @@ module.exports = {
         }
 
         return [
-            ...FLAT_CONFIG_WORKSPACES
+            ...SCOPED_WORKSPACES
                 .map(workspace => buildScopedEslintCommand(workspace, workspaceGroups.get(workspace)))
                 .filter(Boolean),
             buildRootEslintCommand(rootFiles)

@@ -2,27 +2,16 @@ const sinon = require('sinon');
 const i18nLib = require('@tryghost/i18n');
 const testUtils = require('../../utils');
 const {assertMatchSnapshot} = require('../../utils/assertions');
-const labs = require('../../../core/shared/labs');
 const MemberWelcomeEmailRenderer = require('../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');
 
 describe('Member Welcome Email Renderer Snapshots', function () {
     let renderer;
-    let originalLabsIsSet;
 
     before(async function () {
         await testUtils.setup('default')();
     });
 
     beforeEach(function () {
-        originalLabsIsSet = labs.isSet;
-        sinon.stub(labs, 'isSet').callsFake((flag) => {
-            if (flag === 'welcomeEmailsDesignCustomization') {
-                return false;
-            }
-
-            return originalLabsIsSet(flag);
-        });
-
         const i18n = i18nLib('en', 'ghost');
         renderer = new MemberWelcomeEmailRenderer({t: i18n.t});
 
@@ -130,90 +119,6 @@ describe('Member Welcome Email Renderer Snapshots', function () {
         assertMatchSnapshot({
             html: result.html,
             plaintext: result.text
-        });
-    });
-
-    describe('labs flag on', function () {
-        beforeEach(function () {
-            labs.isSet.restore();
-            sinon.stub(labs, 'isSet').callsFake((flag) => {
-                if (flag === 'welcomeEmailsDesignCustomization') {
-                    return true;
-                }
-
-                return originalLabsIsSet(flag);
-            });
-
-            const i18n = i18nLib('en', 'ghost');
-            renderer = new MemberWelcomeEmailRenderer({t: i18n.t});
-        });
-
-        it('renders a simple paragraph welcome email', async function () {
-            const result = await renderer.render({
-                lexical: makeLexical([makeParagraph('Welcome to our site!')]),
-                subject: 'Welcome to Test Site',
-                member: defaultMember,
-                siteSettings: defaultSiteSettings
-            });
-
-            assertMatchSnapshot({
-                html: result.html,
-                plaintext: result.text
-            });
-        });
-
-        it('renders template variable replacements', async function () {
-            const result = await renderer.render({
-                lexical: makeLexical([
-                    makeParagraph('Hello {first_name}, welcome to {site_title}! Your email is {email}.')
-                ]),
-                subject: 'Welcome to {site_title}, {name}',
-                member: defaultMember,
-                siteSettings: defaultSiteSettings
-            });
-
-            assertMatchSnapshot({
-                html: result.html,
-                plaintext: result.text,
-                subject: result.subject
-            });
-        });
-
-        it('renders fallback values when member has no name', async function () {
-            const result = await renderer.render({
-                lexical: makeLexical([
-                    makeParagraph('Hello {first_name, "friend"}, welcome!')
-                ]),
-                subject: 'Welcome!',
-                member: {
-                    name: '',
-                    email: 'anonymous@example.com',
-                    uuid: '00000000-0000-4000-8000-000000000001'
-                },
-                siteSettings: defaultSiteSettings
-            });
-
-            assertMatchSnapshot({
-                html: result.html,
-                plaintext: result.text
-            });
-        });
-
-        it('renders with a custom accent color', async function () {
-            const result = await renderer.render({
-                lexical: makeLexical([makeParagraph('Welcome!')]),
-                subject: 'Welcome',
-                member: defaultMember,
-                siteSettings: {
-                    ...defaultSiteSettings,
-                    accentColor: '#FF0000'
-                }
-            });
-
-            assertMatchSnapshot({
-                html: result.html,
-                plaintext: result.text
-            });
         });
     });
 });

@@ -9,14 +9,13 @@
   "types": "build/index.d.ts",
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput --sourceMap",
-    "build": "yarn build:tsc",
+    "build": "pnpm build:tsc",
     "build:tsc": "tsc",
-    "prepare": "tsc",
-    "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --100 --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
-    "test": "yarn test:types && yarn test:unit",
+    "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --lines 100 --functions 100 --statements 100 --branches 80 --reporter text --reporter cobertura mocha --node-option import=tsx './test/**/*.test.ts'",
+    "test": "pnpm test:types && pnpm test:unit",
     "test:types": "tsc --noEmit",
     "lint:code": "eslint src/ --ext .ts --cache",
-    "lint": "yarn lint:code && yarn lint:test",
+    "lint": "pnpm lint:code && pnpm lint:test",
     "lint:test": "eslint -c test/.eslintrc.js test/ --ext .ts --cache"
   },
   "files": [
@@ -26,13 +25,22 @@
     "access": "public"
   },
   "devDependencies": {
+    "@types/node": "25.6.0",
     "c8": "10.1.3",
     "mocha": "11.7.5",
     "sinon": "21.0.1",
     "ts-node": "10.9.2",
+    "tsx": "4.21.0",
     "typescript": "5.9.3"
   },
   "dependencies": {
     "parse-email-address": "0.0.2"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": ["{projectRoot}/build"]
+      }
+    }
   }
 }

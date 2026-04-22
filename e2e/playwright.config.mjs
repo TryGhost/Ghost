@@ -17,7 +17,7 @@ const getWorkerCount = () => {
 
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
-    timeout: process.env.CI ? 30 * 1000 : 30 * 1000,
+    timeout: process.env.CI ? 60 * 1000 : 30 * 1000,
     expect: {
         timeout: process.env.CI ? 10 * 1000 : 10 * 1000
     },
@@ -25,7 +25,7 @@ const config = {
     maxFailures: process.argv.includes('--ui') ? 0 : 1,
     workers: parseInt(process.env.TEST_WORKERS_COUNT, 10) || getWorkerCount(),
     fullyParallel: false,
-    reporter: process.env.CI ? [['list', {printSteps: true}], ['blob']] : [['list', {printSteps: true}], ['html']],
+    reporter: process.env.CI ? [['list', {printSteps: true}], ['blob']] : [['list', {printSteps: true}], ['html', {open: 'never'}]],
     use: {
         // Base URL will be set dynamically per test via fixture
         baseURL: process.env.GHOST_BASE_URL || 'http://localhost:2368',

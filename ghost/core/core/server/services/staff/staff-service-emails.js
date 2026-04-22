@@ -301,11 +301,14 @@ class StaffServiceEmails {
      * @param {string|null} eventData.memberId
      * @param {number} eventData.amount - amount in cents
      * @param {string} eventData.currency
+     * @param {string} eventData.tierName
+     * @param {'month'|'year'} eventData.cadence
+     * @param {number} eventData.duration
      *
      * @returns {Promise<void>}
      */
-    async notifyGiftReceived({name, email, memberId, amount, currency}) {
-        const users = await this.models.User.getEmailAlertUsers('gift-purchased');
+    async notifyGiftReceived({name, email, memberId, amount, currency, tierName, cadence, duration}) {
+        const users = await this.models.User.getEmailAlertUsers('gift-subscription-purchased');
         const formattedAmount = this.getFormattedAmount({currency, amount: amount / 100});
 
         const displayName = name ?? email;
@@ -316,6 +319,8 @@ class StaffServiceEmails {
             email
         }) : null;
 
+        const cadenceLabel = duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
+
         await this.sendToStaff({
             users,
             subject,
@@ -324,8 +329,35 @@ class StaffServiceEmails {
             templateData: {
                 gift: {
                     name: displayName,
-                    amount: formattedAmount
+                    amount: formattedAmount,
+                    tierName,
+                    cadenceLabel
                 }
+            }
+        });
+    }
+
+    async notifyGiftSubscriptionStarted({memberId, memberName, memberEmail, tierName, cadence, duration, buyerEmail}, options = {}) {
+        const users = await this.models.User.getEmailAlertUsers('paid-started', options);
+        const memberData = this.getMemberData({
+            id: memberId,
+            name: memberName ?? null,
+            email: memberEmail
+        });
+        const subject = `🎁 Paid subscription started: ${memberData.name}`;
+        const cadenceLabel = duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
+
+        await this.sendToStaff({
+            users,
+            subject,
+            template: 'new-gift-subscription',
+            memberData,
+            templateData: {
+                tierData: {
+                    name: tierName,
+                    details: cadenceLabel
+                },
+                giftedByEmail: buyerEmail
             }
         });
     }

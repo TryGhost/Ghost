@@ -19,8 +19,8 @@ replaceImage = function (markdown, image) {
  * @param {Object} data
  * @param {Object[]} data.posts
  * @param {Object} contentFile
- * @param {String} contentFile.originalPath
- * @param {String} contentFile.newPath
+ * @param {string} contentFile.originalPath
+ * @param {string} contentFile.newPath
  */
 preProcessPosts = function (data, contentFile) {
     _.each(data.posts, function (post) {

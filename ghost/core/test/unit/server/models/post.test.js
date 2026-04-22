@@ -131,6 +131,61 @@ describe('Unit: models/post', function () {
             });
         });
 
+        it('can fetch a limited page without a pagination count', function () {
+            const queries = [];
+            tracker.install();
+
+            tracker.on('query', (query) => {
+                queries.push(query);
+                query.response([]);
+            });
+
+            return models.Post.findPage({
+                filter: 'published_at:>\'2015-07-20\'',
+                limit: 1,
+                skipPagination: true,
+                withRelated: ['tags']
+            }).then((result) => {
+                assert.equal(queries.length, 1);
+                assert.equal(queries[0].sql, 'select `posts`.* from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                assert.deepEqual(queries[0].bindings, [
+                    '2015-07-20',
+                    'post',
+                    'published',
+                    1
+                ]);
+                assert.deepEqual(result.meta, {});
+            });
+        });
+
+        it('clamps pagination inputs when fetching a limited page without a pagination count', function () {
+            const queries = [];
+            tracker.install();
+
+            tracker.on('query', (query) => {
+                queries.push(query);
+                query.response([]);
+            });
+
+            return models.Post.findPage({
+                filter: 'published_at:>\'2015-07-20\'',
+                limit: -5,
+                page: -2,
+                skipPagination: true,
+                withRelated: ['tags']
+            }).then((result) => {
+                assert.equal(queries.length, 1);
+                assert.equal(queries[0].sql, 'select `posts`.* from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                assert.deepEqual(queries[0].bindings, [
+                    '2015-07-20',
+                    'post',
+                    'published',
+                    1
+                ]);
+                assert.deepEqual(result.meta, {});
+            });
+        });
+
         describe('primary_tag/primary_author', function () {
             it('generates correct query for - filter: primary_tag:photo, with related: tags', function () {
                 const queries = [];
