@@ -24,6 +24,6 @@
     "lint": "oxlint -c ../../.oxlintrc.json ."
   },
   "devDependencies": {
-    "@tryghost/logging": "^4.0.3"
+    "@tryghost/logging": "workspace:*"
   }
 }
