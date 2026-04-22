@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const _ = require('lodash');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
@@ -357,6 +358,46 @@ describe('Adapter Cache Redis', function () {
                 () => cache.keys(),
                 err => err instanceof errors.IncorrectUsageError
             );
+        });
+    });
+
+    describe('survives deep cloning', function () {
+        // Regression: api-framework's pipeline calls _.cloneDeep on the
+        // controller, which deep-clones the cache adapter instance. The clone
+        // keeps the prototype but loses the per-instance internal slot used
+        // for #-private methods, so any this.#privateMethod() call throws
+        // "Receiver must be an instance of class AdapterCacheRedis". Using
+        // `_`-prefixed private members keeps this working.
+        it('cache.get works on a cloned instance', async function () {
+            const cacheStub = createCacheStub();
+            cacheStub.get.resolves('value from cache');
+            const cache = new RedisCache({cache: cacheStub});
+
+            const cloned = _.cloneDeep(cache);
+
+            const value = await cloned.get('key');
+            assert.equal(value, 'value from cache');
+        });
+
+        it('cache.set works on a cloned instance', async function () {
+            const cacheStub = createCacheStub();
+            const cache = new RedisCache({cache: cacheStub});
+
+            const cloned = _.cloneDeep(cache);
+
+            const value = await cloned.set('key', 'value');
+            assert.equal(value, 'value');
+        });
+
+        it('cache.reset works on a cloned instance', async function () {
+            const cacheStub = createCacheStub();
+            const cache = new RedisCache({cache: cacheStub});
+
+            const cloned = _.cloneDeep(cache);
+
+            await cloned.reset();
+            const redisSet = cacheStub.store.getClient().set;
+            assert.equal(redisSet.lastCall.args[0], 'prefix_hash');
         });
     });
 });
