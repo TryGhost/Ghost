@@ -30,7 +30,8 @@ const ReplyForm: React.FC<Props> = ({openForm, parent}) => {
                 in_reply_to_id: openForm.in_reply_to_id,
                 status: 'published',
                 html
-            }
+            },
+            focusOnReply: openForm.focusOnReply
         });
     }, [parent, postId, openForm, dispatchAction]);
 

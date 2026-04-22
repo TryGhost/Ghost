@@ -10,7 +10,7 @@ import ThreadedReplies from './threaded-replies';
 import {Avatar, BlankAvatar} from './avatar';
 import {Comment, OpenCommentForm, useAppContext} from '../../app-context';
 import {Transition} from '@headlessui/react';
-import {buildCommentPermalink, formatExplicitTime, getCommentInReplyToSnippet, getMemberNameFromComment} from '../../utils/helpers';
+import {buildCommentPermalink, formatExplicitTime, getMemberNameFromComment} from '../../utils/helpers';
 import {useRelativeTime} from '../../utils/hooks';
 
 type AnimatedCommentProps = {
@@ -100,31 +100,21 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, ope
     const editForm = openCommentForms.find(openForm => openForm.id === comment.id && openForm.type === 'edit');
     const isInEditMode = !!editForm;
 
-    // currently a reply-to-reply form is displayed inside the top-level PublishedComment component
-    // so we need to check for a match of either the comment id or the parent id
-    const openForm = openCommentForms.find(f => (f.id === comment.id || f.parent_id === comment.id) && f.type === 'reply');
-    // avoid displaying the reply form inside RepliesContainer
-    const displayReplyForm = openForm && (!openForm.parent_id || openForm.parent_id === comment.id);
-    // only highlight the reply button for the comment that is being replied to
-    const highlightReplyButton = !!(openForm && openForm.id === comment.id);
+    const openForm = openCommentForms.find(f => f.id === comment.id && f.type === 'reply');
+    const displayReplyForm = !!openForm;
+    const highlightReplyButton = displayReplyForm;
 
     const openReplyForm = useCallback(async () => {
         if (openForm && openForm.id === comment.id) {
             dispatchAction('closeCommentForm', openForm.id);
         } else {
-            const inReplyToDetails: Partial<OpenCommentForm> = {};
-
-            if (parent) {
-                inReplyToDetails.in_reply_to_id = comment.id;
-                inReplyToDetails.in_reply_to_snippet = getCommentInReplyToSnippet(comment);
-            }
-
             const newForm: OpenCommentForm = {
                 id: comment.id,
                 parent_id: parent?.id,
                 type: 'reply',
                 hasUnsavedChanges: false,
-                ...inReplyToDetails
+                ...(parent ? {in_reply_to_id: comment.id} : {}),
+                ...(treeChildrenCompact ? {focusOnReply: comment.id} : {})
             };
 
             await dispatchAction('openCommentForm', newForm);
@@ -166,8 +156,9 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, ope
                     </>
                 )}
             </div>
+            {displayReplyForm && treeChildrenCompact && <ReplyFormBox comment={comment} openForm={openForm} />}
             {repliesSection}
-            {displayReplyForm && <ReplyFormBox comment={comment} openForm={openForm} />}
+            {displayReplyForm && !treeChildrenCompact && <ReplyFormBox comment={comment} openForm={openForm} />}
         </CommentLayout>
     );
 };
@@ -185,7 +176,6 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
     const avatar = (isAdmin && comment.status !== 'deleted')
         ? <Avatar member={comment.member} />
         : <BlankAvatar />;
-    const hasReplies = hasTreeChildren || (comment.replies && comment.replies.length > 0);
 
     const notPublishedMessage = comment.status === 'hidden' ?
         t('This comment has been hidden.') :
@@ -193,11 +183,10 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
             t('This comment has been removed.') :
             '';
 
-    // currently a reply-to-reply form is displayed inside the top-level PublishedComment component
-    // so we need to check for a match of either the comment id or the parent id
-    const openForm = openCommentForms.find(f => (f.id === comment.id || f.parent_id === comment.id) && f.type === 'reply');
-    // avoid displaying the reply form inside RepliesContainer
-    const displayReplyForm = openForm && (!openForm.parent_id || openForm.parent_id === comment.id);
+    const openForm = openCommentForms.find(f => f.id === comment.id && f.type === 'reply');
+    const displayReplyForm = !!openForm;
+
+    const hasReplies = displayReplyForm || hasTreeChildren || (comment.replies && comment.replies.length > 0);
 
     // Only show MoreButton for hidden (not deleted) comments when admin
     const showMoreButton = isAdmin && comment.status === 'hidden';
@@ -226,8 +215,9 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
                     )}
                 </div>
             </div>
+            {displayReplyForm && treeChildrenCompact && <ReplyFormBox comment={comment} openForm={openForm} />}
             {repliesSection}
-            {displayReplyForm && <ReplyFormBox comment={comment} openForm={openForm} />}
+            {displayReplyForm && !treeChildrenCompact && <ReplyFormBox comment={comment} openForm={openForm} />}
         </CommentLayout>
     );
 };

@@ -115,7 +115,7 @@ async function addComment({state, api, data: comment}: {state: EditableAppContex
     };
 }
 
-async function addReply({state, api, data: {reply, parent}}: {state: EditableAppContext, api: GhostApi, data: {reply: any, parent: any}}) {
+async function addReply({state, api, data: {reply, parent, focusOnReply}}: {state: EditableAppContext, api: GhostApi, data: {reply: any, parent: any, focusOnReply?: string}}) {
     // parent_id must always refer to a top-level comment, not a nested reply.
     // In focused-thread mode, `parent` can be a reply itself, so resolve upward.
     const topLevelId = parent.parent_id || parent.id;
@@ -142,7 +142,8 @@ async function addReply({state, api, data: {reply, parent}}: {state: EditableApp
             return c;
         }),
         commentCount: state.commentCount + 1,
-        commentIdToScrollTo: newComment.id
+        commentIdToScrollTo: newComment.id,
+        ...(focusOnReply ? {focusedThreadId: focusOnReply} : {})
     };
 }
 

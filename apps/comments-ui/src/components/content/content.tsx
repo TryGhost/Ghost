@@ -167,6 +167,14 @@ const Content = () => {
         scrollToElement(root);
     }, [showMissingCommentNotice, commentsIsLoading]);
 
+    useEffect(() => {
+        if (!focusedThreadId || !containerRef.current) {
+            return;
+        }
+
+        containerRef.current.scrollIntoView({behavior: 'smooth', block: 'start'});
+    }, [focusedThreadId]);
+
     const isFirst = pagination?.total === 0;
     const canComment = isMember && hasRequiredTier && !isCommentingDisabled;
 

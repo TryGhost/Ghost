@@ -162,15 +162,12 @@ type FormHeaderProps = {
     show: boolean;
     name: string | null;
     expertise: string | null;
-    replyingToText?: string;
     editName: () => void;
     editExpertise: () => void;
 };
 
-const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingToText, editName, editExpertise}) => {
+const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, editName, editExpertise}) => {
     const {t} = useAppContext();
-
-    const isReplyingToReply = !!replyingToText;
 
     return (
         <Transition
@@ -203,11 +200,6 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingT
                     </button>
                 </div>
             </div>
-            {isReplyingToReply && (
-                <div className="mt-0.5 line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60" data-testid="replying-to">
-                    <span>{t('Reply to')}:</span>&nbsp;<span className="font-semibold text-neutral-900/60 dark:text-white/70">{replyingToText}</span>
-                </div>
-            )}
         </Transition>
     );
 };
@@ -299,7 +291,6 @@ const FormWrapper: React.FC<FormWrapperProps> = ({
     editor,
     isOpen,
     reduced,
-    openForm,
     children
 }) => {
     const {member, dispatchAction} = useAppContext();
@@ -309,8 +300,7 @@ const FormWrapper: React.FC<FormWrapperProps> = ({
 
     let openStyles = '';
     if (isOpen) {
-        const isReplyToReply = !!openForm?.in_reply_to_snippet;
-        openStyles = isReplyToReply ? 'pl-[1px] pt-[68px] sm:pl-[44px] sm:pt-[56px]' : 'pl-[1px] pt-[48px] sm:pl-[44px] sm:pt-[40px]';
+        openStyles = 'pl-[1px] pt-[48px] sm:pl-[44px] sm:pt-[40px]';
     }
 
     const openEditDetails = useCallback((options) => {
@@ -378,7 +368,6 @@ const FormWrapper: React.FC<FormWrapperProps> = ({
                             editName={editName}
                             expertise={memberExpertise}
                             name={memberName}
-                            replyingToText={openForm?.in_reply_to_snippet}
                             show={isOpen}
                         />
                     </div>
