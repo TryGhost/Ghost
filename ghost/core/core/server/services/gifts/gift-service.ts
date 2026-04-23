@@ -383,6 +383,30 @@ export class GiftService {
         return true;
     }
 
+    async consumeOnPaidSubscription(memberId: string): Promise<boolean> {
+        if (!memberId) {
+            return false;
+        }
+
+        return this.deps.giftRepository.transaction(async (transacting) => {
+            const gift = await this.deps.giftRepository.getActiveByMember(memberId, {transacting, forUpdate: true});
+
+            if (!gift || gift.status !== 'redeemed') {
+                return false;
+            }
+
+            const consumed = gift.consume();
+
+            if (!consumed) {
+                return false;
+            }
+
+            await this.deps.giftRepository.update(consumed, {transacting});
+
+            return true;
+        });
+    }
+
     async processConsumed(): Promise<{consumedCount: number; updatedMemberCount: number}> {
         const toConsume = await this.deps.giftRepository.findPendingConsumption();
 

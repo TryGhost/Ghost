@@ -32,7 +32,7 @@ describe('GiftService', function () {
         existsByCheckoutSessionId: sinon.SinonStub<[string], Promise<boolean>>;
         getByToken: sinon.SinonStub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>;
         getByPaymentIntentId: sinon.SinonStub<[string], Promise<Gift | null>>;
-        getActiveByMember: sinon.SinonStub<[string], Promise<Gift | null>>;
+        getActiveByMember: sinon.SinonStub<Parameters<GiftRepository['getActiveByMember']>, ReturnType<GiftRepository['getActiveByMember']>>;
         findPendingConsumption: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingExpiration: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingReminder: sinon.SinonStub<[FindPendingReminderOptions], Promise<Gift[]>>;
@@ -77,7 +77,7 @@ describe('GiftService', function () {
             existsByCheckoutSessionId: sinon.stub<[string], Promise<boolean>>().resolves(false),
             getByToken: sinon.stub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>().resolves(null),
             getByPaymentIntentId: sinon.stub<[string], Promise<Gift | null>>().resolves(null),
-            getActiveByMember: sinon.stub<[string], Promise<Gift | null>>().resolves(null),
+            getActiveByMember: sinon.stub<Parameters<GiftRepository['getActiveByMember']>, ReturnType<GiftRepository['getActiveByMember']>>().resolves(null),
             findPendingConsumption: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingExpiration: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingReminder: sinon.stub<[FindPendingReminderOptions], Promise<Gift[]>>().resolves([]),
@@ -626,6 +626,80 @@ describe('GiftService', function () {
             assert.equal(result.updatedMemberCount, 2);
             assert.equal(memberRepository.update.callCount, 2);
             assert.equal(giftRepository.update.callCount, 2);
+        });
+    });
+
+    describe('consumeOnPaidSubscription', function () {
+        it('marks the gift redeemed by the member as consumed', async function () {
+            const gift = buildRedeemedGift();
+
+            giftRepository.getActiveByMember.resolves(gift);
+
+            const service = createService();
+            const result = await service.consumeOnPaidSubscription('member_1');
+
+            assert.equal(result, true);
+
+            sinon.assert.calledOnce(giftRepository.transaction);
+            sinon.assert.calledOnceWithExactly(giftRepository.getActiveByMember, 'member_1', {transacting: 'trx', forUpdate: true});
+
+            sinon.assert.calledOnce(giftRepository.update);
+
+            const [saved, options] = giftRepository.update.getCall(0).args;
+
+            assert.equal(saved.status, 'consumed');
+            assert.notEqual(saved.consumedAt, null);
+            assert.deepEqual(options, {transacting: 'trx'});
+        });
+
+        it('returns false when the member has no active gift', async function () {
+            giftRepository.getActiveByMember.resolves(null);
+
+            const service = createService();
+            const result = await service.consumeOnPaidSubscription('member_without_gift');
+
+            assert.equal(result, false);
+            sinon.assert.notCalled(giftRepository.update);
+        });
+
+        it('returns false when the gift is no longer in redeemed status', async function () {
+            giftRepository.getActiveByMember.resolves(buildGift({
+                status: 'consumed',
+                redeemerMemberId: 'member_1',
+                redeemedAt: new Date('2025-04-01T00:00:00.000Z'),
+                consumesAt: new Date('2026-04-01T00:00:00.000Z'),
+                consumedAt: new Date('2026-04-01T00:00:00.000Z')
+            }));
+
+            const service = createService();
+            const result = await service.consumeOnPaidSubscription('member_1');
+
+            assert.equal(result, false);
+            sinon.assert.notCalled(giftRepository.update);
+        });
+
+        it('returns false without hitting the repository when memberId is falsy', async function () {
+            const service = createService();
+            const result = await service.consumeOnPaidSubscription('');
+
+            assert.equal(result, false);
+            sinon.assert.notCalled(giftRepository.transaction);
+            sinon.assert.notCalled(giftRepository.getActiveByMember);
+            sinon.assert.notCalled(giftRepository.update);
+        });
+
+        it('propagates errors from the repository update', async function () {
+            const gift = buildRedeemedGift();
+
+            giftRepository.getActiveByMember.resolves(gift);
+            giftRepository.update.rejects(new Error('DB error'));
+
+            const service = createService();
+
+            await assert.rejects(
+                () => service.consumeOnPaidSubscription('member_1'),
+                {message: 'DB error'}
+            );
         });
     });
 
