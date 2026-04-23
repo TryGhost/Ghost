@@ -8,6 +8,10 @@ const localUtils = require('./utils');
 /* eslint-disable max-lines */
 
 module.exports = {
+    get automations() {
+        return apiFramework.pipeline(require('./automations'), localUtils);
+    },
+
     get authentication() {
         return apiFramework.pipeline(require('./authentication'), localUtils);
     },

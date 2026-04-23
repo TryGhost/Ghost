@@ -339,6 +339,8 @@ async function initServices() {
     const emailAddressService = require('./server/services/email-address');
     const statsService = require('./server/services/stats');
     const explorePingService = require('./server/services/explore-ping');
+    const domainEvents = require('@tryghost/domain-events');
+    const WelcomeEmailAutomationsService = require('./server/services/welcome-email-automations');
 
     const {
         createAdapter: createSchedulerAdapter,
@@ -347,6 +349,7 @@ async function initServices() {
     const urlUtils = require('./shared/url-utils');
 
     // Initialize things that other services depend on first.
+    const apiUrl = urlUtils.urlFor('api', {type: 'admin'}, true);
     const schedulerAdapter = createSchedulerAdapter();
     const [schedulerIntegration] = await Promise.all([
         getSchedulerIntegration(),
@@ -372,7 +375,7 @@ async function initServices() {
         emailAnalytics.init(),
         webhooks.listen(),
         postScheduling.init({
-            apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true),
+            apiUrl,
             adapter: schedulerAdapter,
             integration: schedulerIntegration
         }),
@@ -385,7 +388,13 @@ async function initServices() {
         recommendationsService.init(),
         statsService.init(),
         explorePingService.init(),
-        giftService.init()
+        giftService.init(),
+        new WelcomeEmailAutomationsService().init({
+            domainEvents,
+            apiUrl,
+            schedulerAdapter,
+            schedulerIntegration
+        })
     ]);
 
     debug('End: Services');
@@ -430,10 +439,6 @@ async function initBackgroundServices({config}) {
     // TODO(NY-1220): The outbox is deprecated and will soon be removed.
     const outboxService = require('./server/services/outbox');
     outboxService.init();
-
-    const domainEvents = require('@tryghost/domain-events');
-    const WelcomeEmailAutomationsService = require('./server/services/welcome-email-automations');
-    new WelcomeEmailAutomationsService().init(domainEvents);
 
     debug('End: initBackgroundServices');
 }
