@@ -7,6 +7,21 @@ const Frame = require('./Frame');
 const serializers = require('./serializers');
 const validators = require('./validators');
 
+// Replacer for JSON.stringify that returns every plain object with its keys
+// sorted, so the serialized output is deterministic at every depth. Unlike an
+// array replacer — which acts as a recursive key whitelist and silently drops
+// any key not present in the top-level list — this preserves all nested keys.
+function sortKeysReplacer(_key, value) {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+        const sorted = {};
+        for (const k of Object.keys(value).sort()) {
+            sorted[k] = value[k];
+        }
+        return sorted;
+    }
+    return value;
+}
+
 const STAGES = {
     validation: {
         /**
@@ -247,7 +262,7 @@ const pipeline = (apiController, apiUtils, apiType) => {
                 cacheKeyData = await apiImpl.generateCacheKeyData(frame);
             }
 
-            const cacheKey = JSON.stringify(cacheKeyData, Object.keys(cacheKeyData).sort());
+            const cacheKey = JSON.stringify(cacheKeyData, sortKeysReplacer);
 
             if (apiImpl.cache) {
                 const response = await apiImpl.cache.get(cacheKey, getResponse);
