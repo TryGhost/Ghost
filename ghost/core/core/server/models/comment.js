@@ -194,10 +194,11 @@ const Comment = ghostBookshelf.Model.extend({
         if (['findAll', 'findPage', 'edit', 'findOne', 'destroy'].indexOf(methodName) !== -1) {
             if (!options.withRelated || options.withRelated.length === 0) {
                 if (options.parentId) {
-                    // Do not include replies for replies
+                    // Do not include replies for replies, but include count.replies
+                    // so the UI can show reply counts for drill-down navigation
                     options.withRelated = [
                         // Relations
-                        'in_reply_to', 'member', 'count.direct_replies', 'count.likes', 'count.liked'
+                        'in_reply_to', 'member', 'count.replies', 'count.direct_replies', 'count.likes', 'count.liked'
                     ];
 
                     // Add count.reports for admin requests only

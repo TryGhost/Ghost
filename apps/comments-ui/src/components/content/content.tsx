@@ -8,7 +8,7 @@ import {ROOT_DIV_ID} from '../../utils/constants';
 import {SortingForm} from './forms/sorting-form';
 import {parseCommentIdFromHash, scrollToElement} from '../../utils/helpers';
 import {useAppContext, useLabs} from '../../app-context';
-import {useCallback, useEffect, useRef} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 
 /**
  * Find the iframe element that contains the current window, if any.
@@ -71,10 +71,49 @@ function onIframeResize(
     };
 }
 
+const BackButton: React.FC = () => {
+    const {dispatchAction, t} = useAppContext();
+
+    return (
+        <div className="mb-5">
+            <button
+                className="flex items-center gap-1 font-sans text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-white/45 dark:hover:text-white/80"
+                data-testid="back-button"
+                type="button"
+                onClick={() => dispatchAction('navigateBack', {})}
+            >
+                <svg className="size-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <polyline points="15 18 9 12 15 6" />
+                </svg>
+                {t('Back')}
+            </button>
+        </div>
+    );
+};
+
+const ParentComment: React.FC = () => {
+    const {focusedComment} = useAppContext();
+
+    if (!focusedComment) {
+        return null;
+    }
+
+    return (
+        <div className="mb-7 border-b border-neutral-100 pb-2 dark:border-white/10">
+            <Comment comment={focusedComment} isParent={true} />
+        </div>
+    );
+};
+
 const Content = () => {
     const labs = useLabs();
-    const {pagination, comments, commentCount, title, showCount, commentsIsLoading, t, dispatchAction, commentIdToScrollTo, showMissingCommentNotice, isMember, isPaidOnly, hasRequiredTier, isCommentingDisabled} = useAppContext();
+    const {pagination, comments, commentCount, title, showCount, commentsIsLoading, t, dispatchAction, commentIdToScrollTo, showMissingCommentNotice, isMember, isPaidOnly, hasRequiredTier, isCommentingDisabled, focusedComment, focusedCommentReplies, navigationStack} = useAppContext();
     const containerRef = useRef<HTMLDivElement>(null);
+    const [slideKey, setSlideKey] = useState(0);
+    const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null);
+    const prevStackLength = useRef(navigationStack.length);
+
+    const isDrilledIn = focusedComment !== null;
 
     const scrollToComment = useCallback((element: HTMLElement, commentId: string) => {
         element.scrollIntoView({behavior: 'smooth', block: 'center'});
@@ -166,6 +205,17 @@ const Content = () => {
         scrollToElement(root);
     }, [showMissingCommentNotice, commentsIsLoading]);
 
+    // Detect navigation direction and trigger slide animation
+    useEffect(() => {
+        const currentLength = navigationStack.length;
+        const prevLength = prevStackLength.current;
+        if (currentLength !== prevLength) {
+            setSlideDirection(currentLength > prevLength ? 'left' : 'right');
+            setSlideKey((k: number) => k + 1);
+            prevStackLength.current = currentLength;
+        }
+    }, [navigationStack.length]);
+
     const isFirst = pagination?.total === 0;
     const canComment = isMember && hasRequiredTier && !isCommentingDisabled;
 
@@ -174,7 +224,8 @@ const Content = () => {
     const showDisabledBox = !canComment && isCommentingDisabled;
     const showCtaBox = !canComment && !isCommentingDisabled;
 
-    const commentsComponents = comments.map(comment => <Comment key={comment.id} comment={comment} />);
+    // Determine which comments to display
+    const visibleComments = isDrilledIn ? focusedCommentReplies : comments;
 
     return (
         <>
@@ -184,30 +235,36 @@ const Content = () => {
                     {t('The linked comment is no longer available.')}
                 </div>
             )}
-            <div>
-                {showMainForm && <MainForm commentsCount={comments.length} />}
-                {showDisabledBox && (
-                    <section className="flex flex-col items-center py-6 sm:px-8 sm:py-10" data-testid="commenting-disabled-box">
-                        <CommentingDisabledBox />
-                    </section>
-                )}
-                {showCtaBox && (
-                    <section className="flex flex-col items-center py-6 sm:px-8 sm:py-10" data-testid="cta-box">
-                        <CTABox isFirst={isFirst} isPaid={isPaidOnly} />
-                    </section>
-                )}
-            </div>
-            {commentCount > 1 && (
+            {!isDrilledIn && (
+                <div>
+                    {showMainForm && <MainForm commentsCount={comments.length} />}
+                    {showDisabledBox && (
+                        <section className="flex flex-col items-center py-6 sm:px-8 sm:py-10" data-testid="commenting-disabled-box">
+                            <CommentingDisabledBox />
+                        </section>
+                    )}
+                    {showCtaBox && (
+                        <section className="flex flex-col items-center py-6 sm:px-8 sm:py-10" data-testid="cta-box">
+                            <CTABox isFirst={isFirst} isPaid={isPaidOnly} />
+                        </section>
+                    )}
+                </div>
+            )}
+            {!isDrilledIn && commentCount > 1 && (
                 <div className="z-20 mb-7 mt-3">
                     <span className="flex items-center gap-1.5 text-sm font-medium text-neutral-900 dark:text-neutral-100">
                         {t('Sort by')}: <SortingForm/>
                     </span>
                 </div>
             )}
-            <div ref={containerRef} className={`z-10 transition-opacity duration-100 ${commentsIsLoading ? 'opacity-50' : ''}`} data-testid="comment-elements">
-                {commentsComponents}
+            <div key={slideKey} className={slideDirection === 'left' ? 'animate-[slideFromRight_220ms_ease-out]' : slideDirection === 'right' ? 'animate-[slideFromLeft_220ms_ease-out]' : ''}>
+                {isDrilledIn && <BackButton />}
+                {isDrilledIn && <ParentComment />}
+                <div ref={containerRef} className={`z-10 transition-opacity duration-100 ${commentsIsLoading ? 'opacity-50' : ''}`} data-testid="comment-elements">
+                    {visibleComments.map(comment => <Comment key={comment.id} comment={comment} />)}
+                </div>
             </div>
-            <Pagination />
+            {!isDrilledIn && <Pagination />}
             {
                 labs?.testFlag ? <div data-testid="this-comes-from-a-flag" style={{display: 'none'}}></div> : null
             }

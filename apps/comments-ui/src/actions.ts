@@ -486,6 +486,53 @@ function setScrollTarget({data: commentId}: {data: string | null}) {
     return {commentIdToScrollTo: commentId};
 }
 
+// Drill-down navigation actions
+
+async function drillIntoComment({state, api, data: {comment}}: {state: EditableAppContext, api: GhostApi, data: {comment: Comment}}) {
+    let replies;
+    if (state.admin && state.adminApi) {
+        replies = await state.adminApi.replies({commentId: comment.id, limit: 100, memberUuid: state.member?.uuid});
+    } else {
+        replies = await api.comments.replies({commentId: comment.id, limit: 100});
+    }
+
+    return {
+        focusedComment: comment,
+        focusedCommentReplies: replies.comments,
+        focusedPagination: replies.meta?.pagination || null,
+        navigationStack: [...state.navigationStack, comment]
+    };
+}
+
+async function navigateBack({state, api}: {state: EditableAppContext, api: GhostApi}) {
+    const newStack = state.navigationStack.slice(0, -1);
+    const previousComment = newStack.length > 0 ? newStack[newStack.length - 1] : null;
+
+    if (!previousComment) {
+        return {
+            focusedComment: null,
+            focusedCommentReplies: [],
+            focusedPagination: null,
+            navigationStack: []
+        };
+    }
+
+    // Re-fetch replies for the previous comment to get fresh data
+    let replies;
+    if (state.admin && state.adminApi) {
+        replies = await state.adminApi.replies({commentId: previousComment.id, limit: 100, memberUuid: state.member?.uuid});
+    } else {
+        replies = await api.comments.replies({commentId: previousComment.id, limit: 100});
+    }
+
+    return {
+        focusedComment: previousComment,
+        focusedCommentReplies: replies.comments,
+        focusedPagination: replies.meta?.pagination || null,
+        navigationStack: newStack
+    };
+}
+
 // Sync actions make use of setState((currentState) => newState), to avoid 'race' conditions
 export const SyncActions = {
     openPopup,
@@ -515,7 +562,9 @@ export const Actions = {
     highlightComment,
     setHighlightComment,
     setCommentsIsLoading,
-    updateCommentLikeState
+    updateCommentLikeState,
+    drillIntoComment,
+    navigateBack
 };
 
 export type ActionType = keyof typeof Actions;

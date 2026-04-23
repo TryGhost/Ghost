@@ -1,6 +1,6 @@
 import Content from '../../../../src/components/content/content';
 import {AppContext} from '../../../../src/app-context';
-import {render, screen, act} from '@testing-library/react';
+import {act, render, screen} from '@testing-library/react';
 
 const contextualRender = (ui, {appContext, ...renderOptions}) => {
     const member = appContext?.member ?? null;
@@ -22,6 +22,10 @@ const contextualRender = (ui, {appContext, ...renderOptions}) => {
         isPaidOnly,
         hasRequiredTier,
         isCommentingDisabled,
+        focusedComment: null,
+        focusedCommentReplies: [],
+        focusedPagination: null,
+        navigationStack: [],
         t: str => str,
         ...appContext
     };

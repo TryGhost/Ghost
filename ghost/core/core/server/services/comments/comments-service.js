@@ -9,7 +9,6 @@ const messages = {
     memberNotFound: 'Unable to find member',
     likeNotFound: 'Unable to find like',
     alreadyLiked: 'This comment was liked already',
-    replyToReply: 'Can not reply to a reply',
     commentsNotEnabled: 'Comments are not enabled for this site.',
     cannotCommentOnPost: 'You do not have permission to comment on this post.',
     cannotEditComment: 'You do not have permission to edit comments'
@@ -383,12 +382,6 @@ class CommentsService {
             });
         }
 
-        if (parentComment.get('parent_id') !== null) {
-            throw new errors.BadRequestError({
-                message: tpl(messages.replyToReply)
-            });
-        }
-
         const postModel = await this.models.Post.findOne({
             id: parentComment.get('post_id')
         }, {
@@ -406,11 +399,6 @@ class CommentsService {
             // we only allow references to published comments to avoid leaking
             // hidden data via the snippet included in API responses
             if (inReplyToComment && inReplyToComment.get('status') !== 'published') {
-                inReplyToComment = null;
-            }
-
-            // we don't allow in_reply_to references across different parents
-            if (inReplyToComment && inReplyToComment.get('parent_id') !== parent) {
                 inReplyToComment = null;
             }
         }

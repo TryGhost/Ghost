@@ -67,17 +67,19 @@ export type CommentsOptions = {
     publication: string
 };
 
+export type Pagination = {
+    page: number,
+    limit: number,
+    pages: number,
+    total: number
+};
+
 export type EditableAppContext = {
     initStatus: string,
     member: null | any,
     admin: null | any,
     comments: Comment[],
-    pagination: {
-        page: number,
-        limit: number,
-        pages: number,
-        total: number
-    } | null,
+    pagination: Pagination | null,
     commentCount: number,
     openCommentForms: OpenCommentForm[],
     popup: Page | null,
@@ -94,7 +96,13 @@ export type EditableAppContext = {
     isAdmin: boolean,
     isPaidOnly: boolean,
     hasRequiredTier: boolean,
-    isCommentingDisabled: boolean
+    isCommentingDisabled: boolean,
+
+    // Drill-down navigation
+    focusedComment: Comment | null,
+    focusedCommentReplies: Comment[],
+    focusedPagination: Pagination | null,
+    navigationStack: Comment[]
 }
 
 export type TranslationFunction = (key: string, replacements?: Record<string, string | number>) => string;

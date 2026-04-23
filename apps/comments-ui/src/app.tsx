@@ -51,7 +51,13 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         isAdmin: false,
         isPaidOnly: false,
         hasRequiredTier: true,
-        isCommentingDisabled: false
+        isCommentingDisabled: false,
+
+        // Drill-down navigation
+        focusedComment: null,
+        focusedCommentReplies: [],
+        focusedPagination: null,
+        navigationStack: []
     });
 
     const iframeRef = React.createRef<HTMLIFrameElement>();

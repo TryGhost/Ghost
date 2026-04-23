@@ -180,6 +180,14 @@ module.exports = {
             },
             highlight: {
                 '100%': {backgroundColor: 'transparent'}
+            },
+            slideFromRight: {
+                '0%': {transform: 'translateX(40px)', opacity: '0'},
+                '100%': {transform: 'translateX(0)', opacity: '1'}
+            },
+            slideFromLeft: {
+                '0%': {transform: 'translateX(-40px)', opacity: '0'},
+                '100%': {transform: 'translateX(0)', opacity: '1'}
             }
         }
     },
