@@ -1064,7 +1064,7 @@ const AutomationEditor: React.FC = () => {
                         />
                     </aside>
                     <div className="flex flex-1 flex-col bg-grey-75">
-                        <div className="flex items-center justify-between gap-4 border-b bg-background px-6 py-3">
+                        <div className="flex h-[68px] shrink-0 items-center justify-between gap-4 border-b bg-background px-6">
                             <div className="flex flex-col">
                                 <span className="text-xs font-medium text-grey-600">Member</span>
                                 <span className="text-sm font-medium">{selectedRun.member}</span>
