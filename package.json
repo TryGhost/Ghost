@@ -17,8 +17,7 @@
   },
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test:unit": "NODE_ENV=testing vitest run --coverage --config ../../vitest.config.ts",
-    "test": "pnpm run test:unit",
+    "test": "NODE_ENV=testing vitest run --coverage",
     "lint": "oxlint -c ../../.oxlintrc.json ."
   },
   "dependencies": {
