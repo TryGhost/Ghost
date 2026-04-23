@@ -316,6 +316,20 @@ async function checkoutPlan({data, state, api}) {
     }
 }
 
+async function continueGiftSubscription({state, api}) {
+    try {
+        await api.member.continueGiftCheckout();
+    } catch (e) {
+        return {
+            action: 'continueGiftSubscription:failed',
+            popupNotification: createPopupNotification({
+                type: 'continueGiftSubscription:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: t('Failed to process checkout, please try again')
+            })
+        };
+    }
+}
+
 async function checkoutGift({data, state, api}) {
     try {
         const {tierId, cadence} = data;
@@ -790,6 +804,7 @@ const Actions = {
     editBilling,
     manageBilling,
     checkoutPlan,
+    continueGiftSubscription,
     checkoutGift,
     updateNewsletterPreference,
     showPopupNotification,

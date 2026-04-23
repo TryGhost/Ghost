@@ -71,6 +71,10 @@ export function isPaidMember({member = {}}) {
     return (member && member.paid);
 }
 
+export function isGiftMember({member = {}}) {
+    return member?.status === 'gift';
+}
+
 export function getProductCurrency({product}) {
     if (!product?.monthlyPrice) {
         return null;

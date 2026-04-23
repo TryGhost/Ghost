@@ -18,6 +18,7 @@ import {
     isActiveOffer,
     isRetentionOffer,
     isInviteOnly,
+    isGiftMember,
     isPaidMember,
     isPaidMembersOnly,
     isSameCurrency,
@@ -77,6 +78,38 @@ describe('Helpers - ', () => {
 
         test('returns false for free member', () => {
             const value = isPaidMember({member: FixtureMember.free});
+            expect(value).toBe(false);
+        });
+    });
+
+    describe('isGiftMember -', () => {
+        test('returns true when member status is "gift"', () => {
+            const value = isGiftMember({member: {status: 'gift'}});
+            expect(value).toBe(true);
+        });
+
+        test('returns false for free member', () => {
+            const value = isGiftMember({member: FixtureMember.free});
+            expect(value).toBe(false);
+        });
+
+        test('returns false for paid member', () => {
+            const value = isGiftMember({member: FixtureMember.paid});
+            expect(value).toBe(false);
+        });
+
+        test('returns false for complimentary member', () => {
+            const value = isGiftMember({member: FixtureMember.complimentary});
+            expect(value).toBe(false);
+        });
+
+        test('returns false when member is null', () => {
+            const value = isGiftMember({member: null});
+            expect(value).toBe(false);
+        });
+
+        test('returns false when member arg is omitted', () => {
+            const value = isGiftMember({});
             expect(value).toBe(false);
         });
     });

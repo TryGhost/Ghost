@@ -1,5 +1,5 @@
 import AppContext from '../../../../app-context';
-import {getSubscriptionExpiry, getMemberSubscription, hasOnlyFreePlan, isComplimentaryMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
+import {getSubscriptionExpiry, getMemberSubscription, hasOnlyFreePlan, isComplimentaryMember, isGiftMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
 import {useContext} from 'react';
 
@@ -15,14 +15,16 @@ const AccountWelcome = () => {
     }
     const subscription = getMemberSubscription({member});
     const isComplimentary = isComplimentaryMember({member});
-    const isGiftMember = member?.status === 'gift';
     if (isComplimentary && !subscription) {
         return null;
     }
     if (subscription) {
         const currentPeriodEnd = subscription?.current_period_end;
         const subscriptionExpiry = getSubscriptionExpiry({member});
-        if ((isComplimentary || isGiftMember) && subscriptionExpiry) {
+        if (isGiftMember({member})) {
+            return null;
+        }
+        if (isComplimentary && subscriptionExpiry) {
             return (
                 <div className='gh-portal-section'>
                     <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your subscription will expire on {expiryDate}`, {expiryDate: subscriptionExpiry})}</p>

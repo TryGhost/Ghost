@@ -34,7 +34,8 @@ const messages = {
     archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}',
     otcNotSupported: 'OTC verification not supported.',
     invalidCode: 'Invalid verification code.',
-    failedToVerifyCode: 'Failed to verify code, please try again.'
+    failedToVerifyCode: 'Failed to verify code, please try again.',
+    signInRequired: 'You must be signed in to continue.'
 };
 
 // helper utility for logic shared between sendMagicLink and verifyOTC
@@ -107,7 +108,8 @@ module.exports = class RouterController {
         settingsCache,
         settingsHelpers,
         urlUtils,
-        emailAddressService
+        emailAddressService,
+        giftService
     }) {
         this._offersAPI = offersAPI;
         this._paymentsService = paymentsService;
@@ -127,6 +129,7 @@ module.exports = class RouterController {
         this._settingsHelpers = settingsHelpers;
         this._urlUtils = urlUtils;
         this._emailAddressService = emailAddressService;
+        this._giftService = giftService;
     }
 
     async ensureStripe(_req, res, next) {
@@ -455,6 +458,7 @@ module.exports = class RouterController {
      * @param {string} options.cancelUrl URL to redirect to after cancelled checkout
      * @param {string} [options.email] Email address of the customer
      * @param {object} [options.member] Currently authenticated member OR member associated with the email address
+     * @param {object} [options.gift] Active gift subscription for the member
      * @param {boolean} options.isAuthenticated
      * @param {object} options.metadata Metadata to be passed to Stripe
      * @returns
@@ -708,18 +712,52 @@ module.exports = class RouterController {
                 });
             }
 
-            // Get selected tier, offer and cadence
-            const data = await this._getSubscriptionCheckoutData(req.body);
+            let tier;
+            let cadence;
+            let offer;
+            let gift;
+
+            if (req.body.continueFromGift) {
+                if (!isAuthenticated || !member) {
+                    throw new UnauthorizedError({
+                        message: tpl(messages.signInRequired)
+                    });
+                }
+                if (member.get('status') !== 'gift') {
+                    throw new BadRequestError({
+                        message: tpl(messages.badRequest),
+                        context: 'Member does not have an active gift subscription'
+                    });
+                }
+
+                gift = await this._giftService.service.getActiveByMember(member.id);
+                if (!gift) {
+                    throw new BadRequestError({
+                        message: tpl(messages.badRequest),
+                        context: 'No active gift subscription found for member'
+                    });
+                }
+
+                ({tier, cadence} = await this._getSubscriptionCheckoutData({
+                    tierId: gift.tierId,
+                    cadence: gift.cadence
+                }));
+            } else {
+                ({tier, cadence, offer} = await this._getSubscriptionCheckoutData(req.body));
+            }
 
             // Check the checkout session
             response = await this._createSubscriptionCheckoutSession({
                 ...options,
-                ...data
+                tier,
+                cadence,
+                offer,
+                gift
             });
 
             // Add welcome_page_url to the response if available and member is authenticated
-            if (isAuthenticated && data.tier && data.tier.welcomePageURL) {
-                response.welcomePageUrl = data.tier.welcomePageURL;
+            if (isAuthenticated && tier && tier.welcomePageURL) {
+                response.welcomePageUrl = tier.welcomePageURL;
             }
         } else if (type === 'donation') {
             options.personalNote = parsePersonalNote(req.body.personalNote);
