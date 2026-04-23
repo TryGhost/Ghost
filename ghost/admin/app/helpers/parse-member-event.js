@@ -270,12 +270,11 @@ export default class ParseMemberEventHelper extends Helper {
             const duration = event.data.duration;
             const cadenceLabel = duration === 1 ? event.data.cadence : event.data.cadence + 's';
 
-            return `Purchased a gift subscription for ${formattedAmount} (${tierName}, ${duration} ${cadenceLabel})`;
+            return `Purchased gift subscription for ${formattedAmount} (${tierName}, ${duration} ${cadenceLabel})`;
         }
 
         if (event.type === 'gift_redemption_event') {
-            const tierName = event.data.tier_name;
-            return `Started paid subscription (${tierName}) via gift`;
+            return 'started paid subscription via gift';
         }
     }
 
@@ -356,6 +355,10 @@ export default class ParseMemberEventHelper extends Helper {
             const symbol = getSymbol(event.data.currency);
             const formattedAmount = symbol + getNonDecimal(event.data.amount, event.data.currency);
             return formattedAmount;
+        }
+
+        if (event.type === 'gift_redemption_event') {
+            return event.data.tier_name;
         }
 
         return;

@@ -48,6 +48,8 @@ describe('signup action', () => {
 
 describe('redeemGift action', () => {
     test('redeems a gift directly for a logged-in member and refreshes member data', async () => {
+        window.history.replaceState({}, '', '/#/portal/gift/redeem/gift-token-123');
+
         const mockApi = {
             gift: {
                 redeem: vi.fn(() => Promise.resolve({
@@ -62,7 +64,14 @@ describe('redeemGift action', () => {
                     name: 'Jamie Larson',
                     email: 'jamie@example.com',
                     paid: true,
-                    status: 'gift'
+                    status: 'gift',
+                    subscriptions: [{
+                        status: 'active',
+                        tier: {
+                            name: 'Premium',
+                            expiry_at: '2027-05-29T12:00:00.000Z'
+                        }
+                    }]
                 })),
                 getIntegrityToken: vi.fn(),
                 sendMagicLink: vi.fn()
@@ -101,15 +110,23 @@ describe('redeemGift action', () => {
         expect(mockApi.member.sendMagicLink).not.toHaveBeenCalled();
         expect(result).toMatchObject({
             action: 'redeemGift:success',
-            page: 'accountHome',
+            showPopup: false,
+            lastPage: null,
+            pageQuery: '',
+            popupNotification: null,
             member: {
                 status: 'gift'
             },
             notification: {
                 type: 'giftRedeem',
-                status: 'success'
+                status: 'success',
+                message: 'You now have access to Premium until 29 May 2027. Enjoy!'
             }
         });
+        // Ensure the account page is no longer rendered after redemption.
+        expect(result).not.toHaveProperty('page');
+        // Redemption hash is cleared so a refresh doesn't re-trigger the redeemed-token flow.
+        expect(window.location.hash).toBe('');
     });
 
     test('sends a subscribe magic link with the gift token and redirects back to Portal account', async () => {
@@ -124,7 +141,14 @@ describe('redeemGift action', () => {
                 url: 'https://example.com/'
             },
             pageData: {
-                token: 'gift-token-123'
+                token: 'gift-token-123',
+                gift: {
+                    cadence: 'month',
+                    duration: 3,
+                    tier: {
+                        name: 'Ultra'
+                    }
+                }
             }
         };
 
@@ -139,12 +163,14 @@ describe('redeemGift action', () => {
             api: mockApi
         });
 
+        const expectedRedirect = 'https://example.com/?giftRedemption=true';
+
         expect(mockApi.member.sendMagicLink).toHaveBeenCalledWith({
             email: 'jamie@example.com',
             emailType: 'subscribe',
             integrityToken: 'token-123',
             includeOTC: true,
-            redirect: 'https://example.com/#/portal/account?giftRedemption=true',
+            redirect: expectedRedirect,
             giftToken: 'gift-token-123',
             name: 'Jamie Larson'
         });
@@ -156,7 +182,7 @@ describe('redeemGift action', () => {
             pageData: {
                 token: 'gift-token-123',
                 email: 'jamie@example.com',
-                redirect: 'https://example.com/#/portal/account?giftRedemption=true'
+                redirect: expectedRedirect
             }
         });
     });

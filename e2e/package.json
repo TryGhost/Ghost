@@ -31,7 +31,7 @@
     "@eslint/js": "catalog:",
     "@faker-js/faker": "8.4.1",
     "@playwright/test": "1.59.1",
-    "@tryghost/debug": "0.1.40",
+    "@tryghost/debug": "2.1.0",
     "@tryghost/logging": "2.5.5",
     "@types/dockerode": "3.3.47",
     "@types/express": "4.17.25",
