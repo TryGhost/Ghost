@@ -1,18 +1,24 @@
 import {dirname} from 'node:path';
+import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
 import type { StorybookConfig } from "@storybook/react-vite";
 import path from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const require = createRequire(import.meta.url);
+
+function getAbsolutePath(value: string) {
+    return dirname(require.resolve(path.join(value, 'package.json')));
+}
 
 const config: StorybookConfig = {
     stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
 
     addons: [
-        "@storybook/addon-links",
+        getAbsolutePath('@storybook/addon-links'),
         {
-            name: "@storybook/addon-docs",
+            name: getAbsolutePath('@storybook/addon-docs'),
             options: {
                 mdxPluginOptions: {
                     mdxCompileOptions: {
@@ -23,8 +29,12 @@ const config: StorybookConfig = {
         }
     ],
 
+    core: {
+        builder: require.resolve('@storybook/builder-vite')
+    },
+
     framework: {
-		name: "@storybook/react-vite",
+		name: getAbsolutePath('@storybook/react-vite'),
 		options: {},
 	},
 
