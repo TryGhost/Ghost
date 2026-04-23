@@ -17,9 +17,9 @@ import {
     useReactFlow,
     useViewport
 } from '@xyflow/react';
-import {Badge, Button, Checkbox, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Input, Label, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {Badge, Button, Checkbox, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Input, Label, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {getAutomationById} from './mock-data';
+import {getAutomationById, mockAutomations} from './mock-data';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 
 const nodeDefaults = {
@@ -115,6 +115,92 @@ const RunEdge: React.FC<EdgeProps> = ({sourceX, sourceY, targetX, targetY, sourc
 };
 
 const edgeTypes = {plus: PlusEdge, run: RunEdge};
+
+type StopConditionKind = 'upgrade' | 'unsubscribe' | 'cancel' | 'label-added';
+
+type StopCondition = {id: string; kind: StopConditionKind};
+
+const stopConditionCatalog: Record<StopConditionKind, {icon: React.ElementType; label: string}> = {
+    upgrade: {icon: LucideIcon.Sparkles, label: 'Member upgrades'},
+    unsubscribe: {icon: LucideIcon.LogOut, label: 'Member unsubscribes'},
+    cancel: {icon: LucideIcon.X, label: 'Subscription cancelled'},
+    'label-added': {icon: LucideIcon.Tag, label: 'Label added'}
+};
+
+const defaultStopConditions: StopCondition[] = [
+    {id: 'ec-1', kind: 'upgrade'},
+    {id: 'ec-2', kind: 'unsubscribe'}
+];
+
+const mockMemberLabels = [
+    {value: 'onboarding', label: 'Onboarding'},
+    {value: 'paid', label: 'Paid'},
+    {value: 'vip', label: 'VIP'},
+    {value: 'inactive', label: 'Inactive'}
+];
+
+const StopConditionsBar: React.FC<{
+    conditions: StopCondition[];
+    editable: boolean;
+    onAdd?: (kind: StopConditionKind) => void;
+    onRemove?: (id: string) => void;
+}> = ({conditions, editable, onAdd, onRemove}) => {
+    const availableKinds = (Object.keys(stopConditionCatalog) as StopConditionKind[])
+        .filter(kind => !conditions.some(c => c.kind === kind));
+    return (
+        <div className="flex flex-wrap items-center gap-2">
+            {conditions.map((condition) => {
+                const meta = stopConditionCatalog[condition.kind];
+                const Icon = meta.icon;
+                return (
+                    <span
+                        key={condition.id}
+                        className="inline-flex items-center gap-1 rounded-full bg-grey-100 px-2 py-1 text-xs font-medium text-grey-800"
+                    >
+                        <Icon className="size-3" />
+                        <span>{meta.label}</span>
+                        {editable && onRemove && (
+                            <button
+                                aria-label={`Remove stop condition ${meta.label}`}
+                                className="ml-0.5 flex size-4 items-center justify-center rounded-full text-grey-600 hover:bg-grey-200 hover:text-grey-800"
+                                type="button"
+                                onClick={() => onRemove(condition.id)}
+                            >
+                                <LucideIcon.X className="size-3" />
+                            </button>
+                        )}
+                    </span>
+                );
+            })}
+            {editable && onAdd && availableKinds.length > 0 && (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <button
+                            aria-label="Add stop condition"
+                            className="inline-flex items-center gap-1 rounded-full border border-dashed border-grey-300 px-2 py-1 text-xs font-medium text-grey-700 hover:border-solid hover:bg-grey-100"
+                            type="button"
+                        >
+                            <LucideIcon.Plus className="size-3" />
+                            Add
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                        {availableKinds.map((kind) => {
+                            const meta = stopConditionCatalog[kind];
+                            const Icon = meta.icon;
+                            return (
+                                <DropdownMenuItem key={kind} onClick={() => onAdd(kind)}>
+                                    <Icon />
+                                    {meta.label}
+                                </DropdownMenuItem>
+                            );
+                        })}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )}
+        </div>
+    );
+};
 
 const ZoomControls: React.FC = () => {
     const {zoomIn, zoomOut, zoomTo} = useReactFlow();
@@ -443,13 +529,13 @@ const StepSidebarBody: React.FC<{nodeId: string; onDelete: () => void; onEditEma
     );
 };
 
-type RunStatus = 'completed' | 'failed' | 'running';
+type RunStatus = 'completed' | 'failed' | 'running' | 'stopped';
 
-type RunStepStatus = 'completed' | 'failed' | 'pending' | 'skipped';
+type RunStepStatus = 'completed' | 'failed' | 'pending' | 'skipped' | 'stopped';
 
 type RunStep = {stepId: string; at?: string; status: RunStepStatus; note?: string; durationMs?: number};
 
-type Run = {id: string; member: string; startedAt: string; status: RunStatus; durationMs?: number; timeline: RunStep[]};
+type Run = {id: string; member: string; startedAt: string; status: RunStatus; durationMs?: number; timeline: RunStep[]; stopReason?: string};
 
 const FIVE_DAYS_MS = 5 * 86_400_000;
 const TWO_DAYS_MS = 2 * 86_400_000;
@@ -477,17 +563,36 @@ const mockRuns: Run[] = [
         id: 'r-1041',
         member: 'danielle.kumar@example.com',
         startedAt: '2026-04-18T08:02:00Z',
-        status: 'completed',
-        durationMs: FIVE_DAYS_MS,
+        status: 'stopped',
+        stopReason: 'Member upgraded',
+        durationMs: TWO_DAYS_MS + 4_000,
         timeline: [
             {stepId: 'trigger', at: '2026-04-18T08:02:00Z', status: 'completed', durationMs: 65},
             {stepId: 'email-1', at: '2026-04-18T08:02:00Z', status: 'completed', note: 'Opened', durationMs: 410},
             {stepId: 'wait-1', at: '2026-04-18T08:02:01Z', status: 'completed', durationMs: TWO_DAYS_MS},
-            {stepId: 'email-2', at: '2026-04-20T08:02:01Z', status: 'completed', note: 'Clicked', durationMs: 395},
-            {stepId: 'wait-2', at: '2026-04-20T08:02:02Z', status: 'completed', durationMs: THREE_DAYS_MS},
-            {stepId: 'email-3', at: '2026-04-23T08:02:02Z', status: 'completed', note: 'Opened', durationMs: 360},
-            {stepId: 'add-label', at: '2026-04-23T08:02:02Z', status: 'completed', durationMs: 51},
-            {stepId: 'end', at: '2026-04-23T08:02:02Z', status: 'completed', durationMs: 9}
+            {stepId: 'email-2', at: '2026-04-20T08:02:04Z', status: 'stopped', note: 'Stopped: Member upgraded', durationMs: 120},
+            {stepId: 'wait-2', status: 'skipped'},
+            {stepId: 'email-3', status: 'skipped'},
+            {stepId: 'add-label', status: 'skipped'},
+            {stepId: 'end', status: 'skipped'}
+        ]
+    },
+    {
+        id: 'r-1037',
+        member: 'taylor.nguyen@example.com',
+        startedAt: '2026-04-16T10:12:00Z',
+        status: 'stopped',
+        stopReason: 'Member unsubscribed',
+        durationMs: THREE_DAYS_MS + 45_000,
+        timeline: [
+            {stepId: 'trigger', at: '2026-04-16T10:12:00Z', status: 'completed', durationMs: 70},
+            {stepId: 'email-1', at: '2026-04-16T10:12:00Z', status: 'completed', note: 'Delivered', durationMs: 392},
+            {stepId: 'wait-1', at: '2026-04-16T10:12:01Z', status: 'completed', durationMs: TWO_DAYS_MS},
+            {stepId: 'email-2', at: '2026-04-18T10:12:01Z', status: 'completed', note: 'Clicked unsubscribe', durationMs: 402},
+            {stepId: 'wait-2', at: '2026-04-18T10:12:02Z', status: 'stopped', note: 'Stopped: Member unsubscribed', durationMs: 45_000},
+            {stepId: 'email-3', status: 'skipped'},
+            {stepId: 'add-label', status: 'skipped'},
+            {stepId: 'end', status: 'skipped'}
         ]
     },
     {
@@ -546,7 +651,8 @@ const runStepPillStyles: Record<RunStepStatus, string> = {
     completed: 'bg-green-100 text-green-800',
     failed: 'bg-red-100 text-red-800',
     pending: 'bg-blue-100 text-blue-800',
-    skipped: 'bg-grey-100 text-grey-600'
+    skipped: 'bg-grey-100 text-grey-600',
+    stopped: 'bg-orange-100 text-orange-600'
 };
 
 const formatStepDuration = (ms: number): string => {
@@ -581,7 +687,8 @@ const formatDuration = (ms: number): string => {
 const runStatusStyles: Record<RunStatus, string> = {
     completed: 'bg-green-100 text-green-800',
     failed: 'bg-red-100 text-red-800',
-    running: 'bg-blue-100 text-blue-800'
+    running: 'bg-blue-100 text-blue-800',
+    stopped: 'bg-orange-100 text-orange-600'
 };
 
 const formatRunTime = (iso: string): string => new Date(iso).toLocaleString(undefined, {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
@@ -660,6 +767,9 @@ const edgeColorForRun = (sourceStatus?: RunStepStatus, targetStatus?: RunStepSta
     if (targetStatus === 'failed') {
         return 'var(--color-red-500)';
     }
+    if (targetStatus === 'stopped') {
+        return 'var(--color-orange-500)';
+    }
     if (sourceStatus === 'completed' && targetStatus === 'completed') {
         return 'var(--color-green-500)';
     }
@@ -702,6 +812,13 @@ const AutomationEditor: React.FC = () => {
     const [sidebar, setSidebar] = useState<SidebarState>(null);
     const [emailEditorOpen, setEmailEditorOpen] = useState(false);
     const [selectedRunId, setSelectedRunId] = useState<string>(mockRuns[0].id);
+    const [stopConditions, setStopConditions] = useState<StopCondition[]>(defaultStopConditions);
+    const addStopCondition = (kind: StopConditionKind) => setStopConditions(curr => [...curr, {id: `ec-${Date.now()}`, kind}]);
+    const removeStopCondition = (conditionId: string) => setStopConditions(curr => curr.filter(c => c.id !== conditionId));
+    const [settingsOpen, setSettingsOpen] = useState(false);
+    const [allowRepeat, setAllowRepeat] = useState(false);
+    const [excludeLabel, setExcludeLabel] = useState<string>('');
+    const [excludeWorkflow, setExcludeWorkflow] = useState<string>('');
     const selectedRun = mockRuns.find(r => r.id === selectedRunId) ?? mockRuns[0];
     const workflowCanvasRef = useRef<HTMLDivElement>(null);
     const analyticsCanvasRef = useRef<HTMLDivElement>(null);
@@ -747,7 +864,7 @@ const AutomationEditor: React.FC = () => {
             <header className="relative z-10 flex h-14 shrink-0 items-center justify-between bg-background px-4 shadow-sm">
                 <div className="flex items-center gap-3">
                     <Button aria-label="Back to automations" size="icon" variant="ghost" onClick={goBack}>
-                        <LucideIcon.ArrowLeft />
+                        <LucideIcon.ArrowLeft strokeWidth={2} />
                     </Button>
                     <span className="font-medium">{title}</span>
                 </div>
@@ -760,10 +877,13 @@ const AutomationEditor: React.FC = () => {
                     </Tabs>
                 </div>
                 <div className="flex items-center gap-2">
+                    <Button aria-label="Settings" size="icon" variant="ghost" onClick={() => setSettingsOpen(true)}>
+                        <LucideIcon.Settings strokeWidth={2} />
+                    </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button aria-label="More actions" size="icon" variant="ghost">
-                                <LucideIcon.MoreHorizontal />
+                                <LucideIcon.MoreHorizontal strokeWidth={2} />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -772,9 +892,6 @@ const AutomationEditor: React.FC = () => {
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                                 <LucideIcon.Copy /> Duplicate
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <LucideIcon.Settings /> Settings
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className="text-red-600 focus:text-red-600">
@@ -862,7 +979,12 @@ const AutomationEditor: React.FC = () => {
                                 <span className="text-xs font-medium text-grey-600">Duration</span>
                                 <span className="text-sm">{selectedRun.durationMs !== undefined ? formatDuration(selectedRun.durationMs) : '—'}</span>
                             </div>
-                            <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${runStatusStyles[selectedRun.status]}`}>{selectedRun.status}</span>
+                            <div className="flex items-center gap-2">
+                                <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${runStatusStyles[selectedRun.status]}`}>{selectedRun.status}</span>
+                                {selectedRun.stopReason && (
+                                    <span className="text-xs text-grey-600">·&nbsp;{selectedRun.stopReason}</span>
+                                )}
+                            </div>
                         </div>
                         <div ref={analyticsCanvasRef} className="flex-1">
                             <ReactFlow
@@ -887,6 +1009,71 @@ const AutomationEditor: React.FC = () => {
                 </div>
             )}
             {emailEditorOpen && <EmailEditorModal onClose={() => setEmailEditorOpen(false)} />}
+            <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+                <DialogContent className="max-w-xl">
+                    <DialogHeader>
+                        <DialogTitle>Settings</DialogTitle>
+                        <DialogDescription className="sr-only">Configure this automation.</DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-6 py-2">
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="flex flex-col gap-1">
+                                <span className="font-medium">Allow repeat members</span>
+                                <span className="text-sm text-grey-600">Enable members to go through this workflow multiple times</span>
+                            </div>
+                            <Switch checked={allowRepeat} onCheckedChange={setAllowRepeat} />
+                        </div>
+                        <div className="border-t" />
+                        <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-1">
+                                <span className="font-medium">Exclude members</span>
+                                <span className="text-sm text-grey-600">Prevent members from entering or continuing in this workflow</span>
+                            </div>
+                            <SidebarField label="Exclude by label">
+                                <Select value={excludeLabel} onValueChange={setExcludeLabel}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Find a label" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {mockMemberLabels.map(opt => (
+                                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </SidebarField>
+                            <SidebarField label="Exclude by workflow">
+                                <Select value={excludeWorkflow} onValueChange={setExcludeWorkflow}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Find a workflow" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {mockAutomations.filter(a => a.id !== id).map(automation => (
+                                            <SelectItem key={automation.id} value={automation.id}>{automation.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </SidebarField>
+                        </div>
+                        <div className="border-t" />
+                        <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-1">
+                                <span className="font-medium">Stop criteria</span>
+                                <span className="text-sm text-grey-600">Automatically stop the workflow for a member when any of these happens</span>
+                            </div>
+                            <StopConditionsBar
+                                conditions={stopConditions}
+                                editable
+                                onAdd={addStopCondition}
+                                onRemove={removeStopCondition}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setSettingsOpen(false)}>Cancel</Button>
+                        <Button onClick={() => setSettingsOpen(false)}>Save</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
