@@ -52,3 +52,9 @@
     transition: all 0.2s ease-in-out;
     top: 25px;
 }
+
+@media (max-width: 500px) {
+    .gh-billing {
+        z-index: var(--z-index-iframe-mobile);
+    }
+}
