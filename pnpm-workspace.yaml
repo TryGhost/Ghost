@@ -8,9 +8,6 @@ strictDepBuilds: true
 catalog:
   '@eslint/js': 8.57.1
   eslint: 8.57.1
-  # Framework-monorepo pins used across multiple workspaces. Keep these in
-  # lockstep with .github/renovate.json5 "TryGhost runtime packages" group
-  # so renovate keeps updating them together.
   '@tryghost/debug': 2.1.0
   '@tryghost/errors': 1.3.13
   '@tryghost/logging': 2.5.5
