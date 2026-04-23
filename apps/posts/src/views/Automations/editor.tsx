@@ -1,5 +1,5 @@
 import '@xyflow/react/dist/style.css';
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {
     Background,
     BaseEdge,
@@ -42,7 +42,7 @@ const addStepOptions: AddStepOption[] = [
     {id: 'delay', icon: LucideIcon.Clock, title: 'Delay', description: 'Wait for a time or a date'},
     {id: 'wait-until', icon: LucideIcon.Hourglass, title: 'Wait until', description: 'Wait until an event or condition'},
     {id: 'branch', icon: LucideIcon.GitBranch, title: 'Branch', description: 'Split based on a condition'},
-    {id: 'exit', icon: LucideIcon.LogOut, title: 'Exit', description: 'End automation flow'}
+    {id: 'stop', icon: LucideIcon.Square, title: 'Stop', description: 'End automation flow'}
 ];
 
 const AddStepMenu: React.FC<{children: React.ReactNode}> = ({children}) => (
@@ -101,7 +101,20 @@ const PlusEdge: React.FC<EdgeProps> = ({sourceX, sourceY, targetX, targetY, sour
     );
 };
 
-const edgeTypes = {plus: PlusEdge};
+const RunEdge: React.FC<EdgeProps> = ({sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, markerEnd}) => {
+    const [path] = getSmoothStepPath({
+        sourceX,
+        sourceY,
+        targetX,
+        targetY,
+        sourcePosition,
+        targetPosition,
+        borderRadius: 40
+    });
+    return <BaseEdge interactionWidth={0} markerEnd={markerEnd} path={path} style={style} />;
+};
+
+const edgeTypes = {plus: PlusEdge, run: RunEdge};
 
 const ZoomControls: React.FC = () => {
     const {zoomIn, zoomOut, zoomTo} = useReactFlow();
@@ -140,10 +153,13 @@ type StepMeta = {icon: React.ElementType; type: string; value?: string; descript
 
 const stepMeta: Record<string, StepMeta> = {
     trigger: {icon: LucideIcon.Zap, type: 'Trigger', value: 'Member signs up', description: 'Runs when a new member completes signup.'},
-    delay: {icon: LucideIcon.Clock, type: 'Wait', value: '1 day', description: 'Pauses the flow before moving to the next step.'},
-    'send-email': {icon: LucideIcon.Mail, type: 'Send email', value: 'Welcome to The Blueprint', description: 'Sends the selected email to the member.'},
-    'add-label': {icon: LucideIcon.Tag, type: 'Add label', value: 'Onboarding', description: 'Applies a label to the member for segmentation.'},
-    end: {icon: LucideIcon.LogOut, type: 'Exit', description: 'Marks the completion of the automation.'}
+    'email-1': {icon: LucideIcon.Mail, type: 'Send email', value: 'Welcome to The Blueprint', description: 'Sends the selected email to the member.'},
+    'wait-1': {icon: LucideIcon.Clock, type: 'Wait', value: '2 days', description: 'Pauses the flow before moving to the next step.'},
+    'email-2': {icon: LucideIcon.Mail, type: 'Send email', value: 'Reader favorites', description: 'Sends the selected email to the member.'},
+    'wait-2': {icon: LucideIcon.Clock, type: 'Wait', value: '3 days', description: 'Pauses the flow before moving to the next step.'},
+    'email-3': {icon: LucideIcon.Mail, type: 'Send email', value: 'Become a paid member', description: 'Sends the selected email to the member.'},
+    'add-label': {icon: LucideIcon.Tag, type: 'Add label', value: 'Onboarded', description: 'Applies a label to the member for segmentation.'},
+    end: {icon: LucideIcon.Square, type: 'Stop', description: 'Marks the completion of the automation.'}
 };
 
 const buildNode = (id: string, position: {x: number; y: number}, type?: 'input' | 'output'): Node => {
@@ -162,17 +178,23 @@ const buildNode = (id: string, position: {x: number; y: number}, type?: 'input' 
 
 const initialNodes: Node[] = [
     buildNode('trigger', {x: 240, y: 0}, 'input'),
-    buildNode('delay', {x: 240, y: 180}),
-    buildNode('add-label', {x: 240, y: 360}),
-    buildNode('send-email', {x: 240, y: 540}),
-    buildNode('end', {x: 240, y: 720}, 'output')
+    buildNode('email-1', {x: 240, y: 180}),
+    buildNode('wait-1', {x: 240, y: 360}),
+    buildNode('email-2', {x: 240, y: 540}),
+    buildNode('wait-2', {x: 240, y: 720}),
+    buildNode('email-3', {x: 240, y: 900}),
+    buildNode('add-label', {x: 240, y: 1080}),
+    buildNode('end', {x: 240, y: 1260}, 'output')
 ];
 
 const initialEdges: Edge[] = [
-    {id: 'e1', source: 'trigger', target: 'delay'},
-    {id: 'e2', source: 'delay', target: 'add-label'},
-    {id: 'e3', source: 'add-label', target: 'send-email'},
-    {id: 'e4', source: 'send-email', target: 'end'}
+    {id: 'e1', source: 'trigger', target: 'email-1'},
+    {id: 'e2', source: 'email-1', target: 'wait-1'},
+    {id: 'e3', source: 'wait-1', target: 'email-2'},
+    {id: 'e4', source: 'email-2', target: 'wait-2'},
+    {id: 'e5', source: 'wait-2', target: 'email-3'},
+    {id: 'e6', source: 'email-3', target: 'add-label'},
+    {id: 'e7', source: 'add-label', target: 'end'}
 ];
 
 const SidebarField: React.FC<{label: string; children: React.ReactNode}> = ({label, children}) => (
@@ -273,9 +295,21 @@ const delayUnits = [
     {value: 'days', label: 'Days'}
 ];
 
-const DelayStepBody: React.FC = () => {
-    const [amount, setAmount] = useState('1');
-    const [unit, setUnit] = useState('days');
+const parseDelay = (value: string | undefined): {amount: string; unit: string} => {
+    if (!value) {
+        return {amount: '1', unit: 'days'};
+    }
+    const match = value.match(/^(\d+)\s*(minute|hour|day)s?$/i);
+    if (!match) {
+        return {amount: '1', unit: 'days'};
+    }
+    return {amount: match[1], unit: `${match[2].toLowerCase()}s`};
+};
+
+const DelayStepBody: React.FC<{initialValue?: string}> = ({initialValue}) => {
+    const parsed = parseDelay(initialValue);
+    const [amount, setAmount] = useState(parsed.amount);
+    const [unit, setUnit] = useState(parsed.unit);
     return (
         <SidebarField label="Wait for">
             <div className="flex items-center gap-2">
@@ -301,8 +335,8 @@ const DelayStepBody: React.FC = () => {
     );
 };
 
-const SendEmailStepBody: React.FC<{onEdit: () => void}> = ({onEdit}) => {
-    const [subject, setSubject] = useState('Welcome to The Blueprint');
+const SendEmailStepBody: React.FC<{onEdit: () => void; initialSubject?: string}> = ({onEdit, initialSubject}) => {
+    const [subject, setSubject] = useState(initialSubject ?? 'Welcome to The Blueprint');
     const [preview, setPreview] = useState('Your first issue is on the way');
     return (
         <div className="flex flex-col gap-5">
@@ -371,10 +405,10 @@ const StepSidebarBody: React.FC<{nodeId: string; onDelete: () => void; onEditEma
                     <h2 className="text-base leading-tight font-semibold">{meta.type}</h2>
                 </div>
             </div>
-            {nodeId === 'trigger' && <TriggerStepBody />}
-            {nodeId === 'delay' && <DelayStepBody />}
-            {nodeId === 'send-email' && <SendEmailStepBody onEdit={onEditEmail} />}
-            {nodeId === 'add-label' && (
+            {meta.type === 'Trigger' && <TriggerStepBody />}
+            {meta.type === 'Wait' && <DelayStepBody initialValue={meta.value} />}
+            {meta.type === 'Send email' && <SendEmailStepBody initialSubject={meta.value} onEdit={onEditEmail} />}
+            {meta.type === 'Add label' && (
                 <SidebarField label="Label">
                     <div className="flex flex-wrap items-center gap-2 rounded-md border bg-background px-3 py-2">
                         <Badge variant="secondary">
@@ -384,7 +418,7 @@ const StepSidebarBody: React.FC<{nodeId: string; onDelete: () => void; onEditEma
                     </div>
                 </SidebarField>
             )}
-            {nodeId !== 'trigger' && nodeId !== 'delay' && nodeId !== 'add-label' && nodeId !== 'send-email' && (
+            {meta.type !== 'Trigger' && meta.type !== 'Wait' && meta.type !== 'Add label' && meta.type !== 'Send email' && (
                 <>
                     {meta.description && (
                         <p className="text-sm text-grey-700">{meta.description}</p>
@@ -413,87 +447,122 @@ type RunStatus = 'completed' | 'failed' | 'running';
 
 type RunStepStatus = 'completed' | 'failed' | 'pending' | 'skipped';
 
-type RunStep = {stepId: string; at?: string; status: RunStepStatus; note?: string};
+type RunStep = {stepId: string; at?: string; status: RunStepStatus; note?: string; durationMs?: number};
 
 type Run = {id: string; member: string; startedAt: string; status: RunStatus; durationMs?: number; timeline: RunStep[]};
+
+const FIVE_DAYS_MS = 5 * 86_400_000;
+const TWO_DAYS_MS = 2 * 86_400_000;
+const THREE_DAYS_MS = 3 * 86_400_000;
 
 const mockRuns: Run[] = [
     {
         id: 'r-1042',
         member: 'amelia.harris@example.com',
-        startedAt: '2026-04-21T09:14:00Z',
+        startedAt: '2026-04-18T09:14:00Z',
         status: 'completed',
-        durationMs: 86_400_000,
+        durationMs: FIVE_DAYS_MS,
         timeline: [
-            {stepId: 'trigger', at: '2026-04-21T09:14:00Z', status: 'completed'},
-            {stepId: 'delay', at: '2026-04-21T09:14:01Z', status: 'completed', note: 'Waited 1 day'},
-            {stepId: 'add-label', at: '2026-04-22T09:14:02Z', status: 'completed'},
-            {stepId: 'send-email', at: '2026-04-22T09:14:02Z', status: 'completed', note: 'Delivered'},
-            {stepId: 'end', at: '2026-04-22T09:14:02Z', status: 'completed'}
+            {stepId: 'trigger', at: '2026-04-18T09:14:00Z', status: 'completed', durationMs: 80},
+            {stepId: 'email-1', at: '2026-04-18T09:14:00Z', status: 'completed', note: 'Delivered', durationMs: 380},
+            {stepId: 'wait-1', at: '2026-04-18T09:14:01Z', status: 'completed', note: 'Waited 2 days', durationMs: TWO_DAYS_MS},
+            {stepId: 'email-2', at: '2026-04-20T09:14:01Z', status: 'completed', note: 'Delivered', durationMs: 410},
+            {stepId: 'wait-2', at: '2026-04-20T09:14:02Z', status: 'completed', note: 'Waited 3 days', durationMs: THREE_DAYS_MS},
+            {stepId: 'email-3', at: '2026-04-23T09:14:02Z', status: 'completed', note: 'Delivered', durationMs: 320},
+            {stepId: 'add-label', at: '2026-04-23T09:14:02Z', status: 'completed', durationMs: 42},
+            {stepId: 'end', at: '2026-04-23T09:14:02Z', status: 'completed', durationMs: 12}
         ]
     },
     {
         id: 'r-1041',
         member: 'danielle.kumar@example.com',
-        startedAt: '2026-04-21T08:02:00Z',
+        startedAt: '2026-04-18T08:02:00Z',
         status: 'completed',
-        durationMs: 86_400_000,
+        durationMs: FIVE_DAYS_MS,
         timeline: [
-            {stepId: 'trigger', at: '2026-04-21T08:02:00Z', status: 'completed'},
-            {stepId: 'delay', at: '2026-04-21T08:02:00Z', status: 'completed'},
-            {stepId: 'add-label', at: '2026-04-22T08:02:00Z', status: 'completed'},
-            {stepId: 'send-email', at: '2026-04-22T08:02:01Z', status: 'completed', note: 'Opened'},
-            {stepId: 'end', at: '2026-04-22T08:02:01Z', status: 'completed'}
+            {stepId: 'trigger', at: '2026-04-18T08:02:00Z', status: 'completed', durationMs: 65},
+            {stepId: 'email-1', at: '2026-04-18T08:02:00Z', status: 'completed', note: 'Opened', durationMs: 410},
+            {stepId: 'wait-1', at: '2026-04-18T08:02:01Z', status: 'completed', durationMs: TWO_DAYS_MS},
+            {stepId: 'email-2', at: '2026-04-20T08:02:01Z', status: 'completed', note: 'Clicked', durationMs: 395},
+            {stepId: 'wait-2', at: '2026-04-20T08:02:02Z', status: 'completed', durationMs: THREE_DAYS_MS},
+            {stepId: 'email-3', at: '2026-04-23T08:02:02Z', status: 'completed', note: 'Opened', durationMs: 360},
+            {stepId: 'add-label', at: '2026-04-23T08:02:02Z', status: 'completed', durationMs: 51},
+            {stepId: 'end', at: '2026-04-23T08:02:02Z', status: 'completed', durationMs: 9}
         ]
     },
     {
         id: 'r-1040',
         member: 'noah.bennet@example.com',
-        startedAt: '2026-04-21T07:47:00Z',
+        startedAt: '2026-04-22T07:47:00Z',
         status: 'running',
         timeline: [
-            {stepId: 'trigger', at: '2026-04-21T07:47:00Z', status: 'completed'},
-            {stepId: 'delay', at: '2026-04-21T07:47:00Z', status: 'pending', note: 'Waiting 1 day'},
+            {stepId: 'trigger', at: '2026-04-22T07:47:00Z', status: 'completed', durationMs: 73},
+            {stepId: 'email-1', at: '2026-04-22T07:47:00Z', status: 'completed', note: 'Delivered', durationMs: 360},
+            {stepId: 'wait-1', at: '2026-04-22T07:47:01Z', status: 'pending', note: 'Waiting 2 days'},
+            {stepId: 'email-2', status: 'pending'},
+            {stepId: 'wait-2', status: 'pending'},
+            {stepId: 'email-3', status: 'pending'},
             {stepId: 'add-label', status: 'pending'},
-            {stepId: 'send-email', status: 'pending'},
             {stepId: 'end', status: 'pending'}
         ]
     },
     {
         id: 'r-1039',
         member: 'priya.shah@example.com',
-        startedAt: '2026-04-20T22:31:00Z',
+        startedAt: '2026-04-18T22:31:00Z',
         status: 'failed',
-        durationMs: 86_400_000 + 12_000,
+        durationMs: TWO_DAYS_MS + 12_000,
         timeline: [
-            {stepId: 'trigger', at: '2026-04-20T22:31:00Z', status: 'completed'},
-            {stepId: 'delay', at: '2026-04-20T22:31:01Z', status: 'completed'},
-            {stepId: 'add-label', at: '2026-04-21T22:31:11Z', status: 'completed'},
-            {stepId: 'send-email', at: '2026-04-21T22:31:12Z', status: 'failed', note: 'Bounced: mailbox full'},
+            {stepId: 'trigger', at: '2026-04-18T22:31:00Z', status: 'completed', durationMs: 58},
+            {stepId: 'email-1', at: '2026-04-18T22:31:00Z', status: 'completed', note: 'Delivered', durationMs: 402},
+            {stepId: 'wait-1', at: '2026-04-18T22:31:01Z', status: 'completed', durationMs: TWO_DAYS_MS},
+            {stepId: 'email-2', at: '2026-04-20T22:31:12Z', status: 'failed', note: 'Bounced: mailbox full', durationMs: 1_120},
+            {stepId: 'wait-2', status: 'skipped'},
+            {stepId: 'email-3', status: 'skipped'},
+            {stepId: 'add-label', status: 'skipped'},
             {stepId: 'end', status: 'skipped'}
         ]
     },
     {
         id: 'r-1038',
         member: 'jake.thompson@example.com',
-        startedAt: '2026-04-20T18:09:00Z',
+        startedAt: '2026-04-17T18:09:00Z',
         status: 'completed',
-        durationMs: 86_400_000,
+        durationMs: FIVE_DAYS_MS,
         timeline: [
-            {stepId: 'trigger', at: '2026-04-20T18:09:00Z', status: 'completed'},
-            {stepId: 'delay', at: '2026-04-20T18:09:00Z', status: 'completed'},
-            {stepId: 'add-label', at: '2026-04-21T18:09:01Z', status: 'completed'},
-            {stepId: 'send-email', at: '2026-04-21T18:09:01Z', status: 'completed'},
-            {stepId: 'end', at: '2026-04-21T18:09:01Z', status: 'completed'}
+            {stepId: 'trigger', at: '2026-04-17T18:09:00Z', status: 'completed', durationMs: 91},
+            {stepId: 'email-1', at: '2026-04-17T18:09:00Z', status: 'completed', durationMs: 340},
+            {stepId: 'wait-1', at: '2026-04-17T18:09:01Z', status: 'completed', durationMs: TWO_DAYS_MS},
+            {stepId: 'email-2', at: '2026-04-19T18:09:01Z', status: 'completed', durationMs: 372},
+            {stepId: 'wait-2', at: '2026-04-19T18:09:02Z', status: 'completed', durationMs: THREE_DAYS_MS},
+            {stepId: 'email-3', at: '2026-04-22T18:09:02Z', status: 'completed', durationMs: 318},
+            {stepId: 'add-label', at: '2026-04-22T18:09:02Z', status: 'completed', durationMs: 37},
+            {stepId: 'end', at: '2026-04-22T18:09:02Z', status: 'completed', durationMs: 8}
         ]
     }
 ];
 
-const runStepDotStyles: Record<RunStepStatus, string> = {
-    completed: 'bg-green-500',
-    failed: 'bg-red-500',
-    pending: 'bg-grey-400',
-    skipped: 'bg-grey-300'
+const runStepPillStyles: Record<RunStepStatus, string> = {
+    completed: 'bg-green-100 text-green-800',
+    failed: 'bg-red-100 text-red-800',
+    pending: 'bg-blue-100 text-blue-800',
+    skipped: 'bg-grey-100 text-grey-600'
+};
+
+const formatStepDuration = (ms: number): string => {
+    if (ms < 1000) {
+        return '<1s';
+    }
+    if (ms < 60_000) {
+        return `${Math.round(ms / 1000)}s`;
+    }
+    if (ms < 3_600_000) {
+        return `${Math.round(ms / 60_000)}m`;
+    }
+    if (ms < 86_400_000) {
+        return `${Math.round(ms / 3_600_000)}h`;
+    }
+    return `${Math.round(ms / 86_400_000)}d`;
 };
 
 const formatDuration = (ms: number): string => {
@@ -517,104 +586,65 @@ const runStatusStyles: Record<RunStatus, string> = {
 
 const formatRunTime = (iso: string): string => new Date(iso).toLocaleString(undefined, {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
 
-const RunItem: React.FC<{run: Run}> = ({run}) => {
-    const [expanded, setExpanded] = useState(false);
-    return (
-        <li className="flex flex-col rounded-md border bg-grey-75">
-            <button
-                aria-expanded={expanded}
-                className="flex flex-col gap-1 p-3 text-left hover:bg-grey-100"
-                type="button"
-                onClick={() => setExpanded(v => !v)}
-            >
-                <div className="flex items-center justify-between gap-2">
-                    <span className="truncate text-sm font-medium">{run.member}</span>
-                    <div className="flex items-center gap-2">
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${runStatusStyles[run.status]}`}>{run.status}</span>
-                        <LucideIcon.ChevronRight
-                            className="size-4 text-grey-600 transition-transform duration-150"
-                            style={{transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)'}}
-                        />
-                    </div>
-                </div>
-                <div className="text-xs text-grey-600">{formatRunTime(run.startedAt)}</div>
-            </button>
-            {expanded && (
-                <div className="flex animate-in flex-col gap-3 border-t px-3 py-3 duration-150 fade-in-0 slide-in-from-top-1">
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                        <span className="text-grey-600">Started</span>
-                        <span>{formatRunTime(run.startedAt)}</span>
-                        {run.durationMs !== undefined && (
-                            <>
-                                <span className="text-grey-600">Duration</span>
-                                <span>{formatDuration(run.durationMs)}</span>
-                            </>
-                        )}
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <span className="text-xs font-medium text-grey-600">Timeline</span>
-                        <ol className="flex flex-col gap-1">
-                            {run.timeline.map((step) => {
-                                const meta = stepMeta[step.stepId];
-                                return (
-                                    <li key={`${run.id}-${step.stepId}`} className="flex items-start gap-2 text-xs">
-                                        <span className={`mt-1.5 size-2 shrink-0 rounded-full ${runStepDotStyles[step.status]}`} />
-                                        <div className="flex flex-1 flex-col">
-                                            <div className="flex items-center justify-between gap-2">
-                                                <span className="font-medium">{meta?.type ?? step.stepId}</span>
-                                                {step.at && <span className="text-grey-600">{formatRunTime(step.at)}</span>}
-                                            </div>
-                                            {step.note && <span className="text-grey-600">{step.note}</span>}
-                                        </div>
-                                    </li>
-                                );
-                            })}
-                        </ol>
-                    </div>
-                </div>
-            )}
-        </li>
-    );
-};
+const RunItem: React.FC<{run: Run; selected: boolean; onSelect: (id: string) => void}> = ({run, selected, onSelect}) => (
+    <li className={`rounded-md border bg-grey-75 ${selected ? 'ring-2 ring-blue-500' : ''}`}>
+        <button
+            aria-pressed={selected}
+            className="flex w-full flex-col gap-1 p-3 text-left hover:bg-grey-100"
+            type="button"
+            onClick={() => onSelect(run.id)}
+        >
+            <div className="flex items-center justify-between gap-2">
+                <span className="truncate text-sm font-medium">{run.member}</span>
+                <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${runStatusStyles[run.status]}`}>{run.status}</span>
+            </div>
+            <div className="text-xs text-grey-600">{formatRunTime(run.startedAt)}</div>
+        </button>
+    </li>
+);
 
-const RunsSidebarBody: React.FC = () => {
+const AnalyticsPanel: React.FC<{selectedRunId: string; onSelectRun: (id: string) => void}> = ({selectedRunId, onSelectRun}) => {
     const [tab, setTab] = useState('runs');
     return (
         <Tabs className="flex flex-col gap-6" value={tab} onValueChange={setTab}>
-            <div className="flex items-center justify-between gap-4">
-                <h2 className="text-base leading-tight font-semibold">Analytics</h2>
-                <div className="flex items-center gap-2">
-                    {tab === 'runs' && (
-                        <TooltipProvider delayDuration={200}>
-                            <div className="flex items-center gap-1">
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button aria-label="Filter runs" className="size-7 [&_svg]:size-3.5" size="icon" variant="ghost">
-                                            <LucideIcon.ListFilter />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Filter runs</TooltipContent>
-                                </Tooltip>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button aria-label="Export runs" className="size-7 [&_svg]:size-3.5" size="icon" variant="ghost">
-                                            <LucideIcon.Download />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Export runs</TooltipContent>
-                                </Tooltip>
-                            </div>
-                        </TooltipProvider>
-                    )}
-                    <TabsList>
-                        <TabsTrigger value="runs">Runs</TabsTrigger>
-                        <TabsTrigger value="metrics">Metrics</TabsTrigger>
-                    </TabsList>
-                </div>
+            <div className="flex items-center justify-between gap-2">
+                <TabsList>
+                    <TabsTrigger value="runs">Runs</TabsTrigger>
+                    <TabsTrigger value="metrics">Metrics</TabsTrigger>
+                </TabsList>
+                {tab === 'runs' && (
+                    <TooltipProvider delayDuration={200}>
+                        <div className="flex items-center gap-1">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button aria-label="Filter runs" className="size-7 [&_svg]:size-3.5" size="icon" variant="ghost">
+                                        <LucideIcon.ListFilter />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Filter runs</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button aria-label="Export runs" className="size-7 [&_svg]:size-3.5" size="icon" variant="ghost">
+                                        <LucideIcon.Download />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Export runs</TooltipContent>
+                            </Tooltip>
+                        </div>
+                    </TooltipProvider>
+                )}
             </div>
             <TabsContent className="flex flex-col gap-2" value="runs">
                 <ul className="flex flex-col gap-2">
-                    {mockRuns.map(run => <RunItem key={run.id} run={run} />)}
+                    {mockRuns.map(run => (
+                        <RunItem
+                            key={run.id}
+                            run={run}
+                            selected={run.id === selectedRunId}
+                            onSelect={onSelectRun}
+                        />
+                    ))}
                 </ul>
             </TabsContent>
             <TabsContent value="metrics">
@@ -624,18 +654,79 @@ const RunsSidebarBody: React.FC = () => {
     );
 };
 
-type SidebarState = {mode: 'step'; nodeId: string} | {mode: 'runs'} | null;
+type SidebarState = {mode: 'step'; nodeId: string} | null;
+
+const edgeColorForRun = (sourceStatus?: RunStepStatus, targetStatus?: RunStepStatus): string => {
+    if (targetStatus === 'failed') {
+        return 'var(--color-red-500)';
+    }
+    if (sourceStatus === 'completed' && targetStatus === 'completed') {
+        return 'var(--color-green-500)';
+    }
+    return 'var(--color-grey-500)';
+};
+
+const AnalyticsNodeLabel: React.FC<{
+    icon: React.ElementType;
+    type: string;
+    value?: string;
+    step?: RunStep;
+}> = ({icon: Icon, type, value, step}) => (
+    <div className="flex w-full flex-col gap-2">
+        <div className="flex flex-col items-center gap-1">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-grey-600">
+                <Icon className="size-3.5" />
+                <span>{type}</span>
+            </div>
+            {value && <div className="font-medium">{value}</div>}
+        </div>
+        {step && (
+            <div className="flex items-center justify-between gap-2 border-t pt-2 text-xs">
+                <span className={`rounded-full px-2 py-0.5 font-medium capitalize ${runStepPillStyles[step.status]}`}>{step.status}</span>
+                <span className="text-grey-600">{step.durationMs !== undefined ? formatStepDuration(step.durationMs) : '\u2014'}</span>
+            </div>
+        )}
+    </div>
+);
 
 const AutomationEditor: React.FC = () => {
     const navigate = useNavigate();
     const {id} = useParams<{id: string}>();
     const existing = id && id !== 'new' ? getAutomationById(id) : undefined;
     const title = existing?.name ?? (id === 'new' ? 'New automation' : 'Automation');
+    const initialView: 'workflow' | 'analytics' = existing?.status === 'draft' || id === 'new' ? 'workflow' : 'analytics';
 
+    const [view, setView] = useState<'workflow' | 'analytics'>(initialView);
     const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
     const [sidebar, setSidebar] = useState<SidebarState>(null);
     const [emailEditorOpen, setEmailEditorOpen] = useState(false);
+    const [selectedRunId, setSelectedRunId] = useState<string>(mockRuns[0].id);
+    const selectedRun = mockRuns.find(r => r.id === selectedRunId) ?? mockRuns[0];
+
+    const analyticsNodes = useMemo<Node[]>(() => initialNodes.map((node) => {
+        const meta = stepMeta[node.id];
+        const step = selectedRun.timeline.find(t => t.stepId === node.id);
+        return {
+            ...node,
+            selectable: false,
+            className: 'border-0! shadow-sm text-sm! px-5! py-4! rounded-lg! w-64!',
+            data: {
+                ...node.data,
+                label: <AnalyticsNodeLabel icon={meta.icon} step={step} type={meta.type} value={meta.value} />
+            }
+        };
+    }), [selectedRun]);
+
+    const analyticsEdges = useMemo<Edge[]>(() => initialEdges.map((edge) => {
+        const src = selectedRun.timeline.find(t => t.stepId === edge.source)?.status;
+        const tgt = selectedRun.timeline.find(t => t.stepId === edge.target)?.status;
+        return {
+            ...edge,
+            type: 'run',
+            style: {stroke: edgeColorForRun(src, tgt), strokeWidth: 2}
+        };
+    }), [selectedRun]);
 
     const onConnect = useCallback(
         (connection: Connection) => setEdges(eds => addEdge(connection, eds)),
@@ -653,16 +744,15 @@ const AutomationEditor: React.FC = () => {
                     </Button>
                     <span className="font-medium">{title}</span>
                 </div>
+                <div className="absolute left-1/2 -translate-x-1/2">
+                    <Tabs value={view} onValueChange={v => setView(v as 'workflow' | 'analytics')}>
+                        <TabsList>
+                            <TabsTrigger value="workflow">Workflow</TabsTrigger>
+                            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                </div>
                 <div className="flex items-center gap-2">
-                    <Button
-                        aria-label="Previous runs"
-                        className={sidebar?.mode === 'runs' ? 'bg-muted' : ''}
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => setSidebar(current => (current?.mode === 'runs' ? null : {mode: 'runs'}))}
-                    >
-                        <LucideIcon.BarChart3 />
-                    </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button aria-label="More actions" size="icon" variant="ghost">
@@ -701,34 +791,34 @@ const AutomationEditor: React.FC = () => {
                 }
                 .react-flow__edge:hover .automation-edge-plus > button,
                 .automation-edge-plus > button:hover { opacity: 1; }
-                .react-flow__edge:hover .react-flow__edge-path,
+                .react-flow__edge:has(.automation-edge-plus):hover .react-flow__edge-path,
                 .automation-edge-plus > button:hover ~ .react-flow__edge-path { stroke: var(--color-blue-500) !important; }
             `}</style>
-            <div className="relative flex min-h-0 flex-1 overflow-hidden">
-                <div className="flex-1 bg-grey-75">
-                    <ReactFlow
-                        defaultEdgeOptions={{type: 'plus', style: {stroke: 'var(--color-grey-500)'}}}
-                        edges={edges}
-                        edgeTypes={edgeTypes}
-                        fitViewOptions={{maxZoom: 1}}
-                        nodes={nodes}
-                        nodesDraggable={false}
-                        fitView
-                        onConnect={onConnect}
-                        onEdgesChange={onEdgesChange}
-                        onNodeClick={(_, node) => setSidebar({mode: 'step', nodeId: node.id})}
-                        onNodesChange={onNodesChange}
-                        onPaneClick={() => setSidebar(null)}
-                    >
-                        <Background color="var(--color-grey-400)" />
-                        <Panel position="bottom-left">
-                            <ZoomControls />
-                        </Panel>
-                    </ReactFlow>
-                </div>
-                {sidebar && (
-                    <SidebarShell width={sidebar.mode === 'runs' ? '60rem' : '36rem'}>
-                        {sidebar.mode === 'step' && (
+            {view === 'workflow' ? (
+                <div className="relative flex min-h-0 flex-1 overflow-hidden">
+                    <div className="flex-1 bg-grey-75">
+                        <ReactFlow
+                            defaultEdgeOptions={{type: 'plus', style: {stroke: 'var(--color-grey-500)'}}}
+                            edges={edges}
+                            edgeTypes={edgeTypes}
+                            fitViewOptions={{maxZoom: 1}}
+                            nodes={nodes}
+                            nodesDraggable={false}
+                            fitView
+                            onConnect={onConnect}
+                            onEdgesChange={onEdgesChange}
+                            onNodeClick={(_, node) => setSidebar({mode: 'step', nodeId: node.id})}
+                            onNodesChange={onNodesChange}
+                            onPaneClick={() => setSidebar(null)}
+                        >
+                            <Background color="var(--color-grey-400)" />
+                            <Panel position="bottom-left">
+                                <ZoomControls />
+                            </Panel>
+                        </ReactFlow>
+                    </div>
+                    {sidebar && (
+                        <SidebarShell width="36rem">
                             <StepSidebarBody
                                 nodeId={sidebar.nodeId}
                                 onDelete={() => {
@@ -739,11 +829,54 @@ const AutomationEditor: React.FC = () => {
                                 }}
                                 onEditEmail={() => setEmailEditorOpen(true)}
                             />
-                        )}
-                        {sidebar.mode === 'runs' && <RunsSidebarBody />}
-                    </SidebarShell>
-                )}
-            </div>
+                        </SidebarShell>
+                    )}
+                </div>
+            ) : (
+                <div className="flex min-h-0 flex-1">
+                    <aside className="flex w-1/2 shrink-0 flex-col gap-6 overflow-y-auto border-r bg-background p-6">
+                        <AnalyticsPanel
+                            selectedRunId={selectedRunId}
+                            onSelectRun={setSelectedRunId}
+                        />
+                    </aside>
+                    <div className="flex flex-1 flex-col bg-grey-75">
+                        <div className="flex items-center justify-between gap-4 border-b bg-background px-6 py-3">
+                            <div className="flex flex-col">
+                                <span className="text-xs font-medium text-grey-600">Member</span>
+                                <span className="text-sm font-medium">{selectedRun.member}</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-xs font-medium text-grey-600">Started</span>
+                                <span className="text-sm">{formatRunTime(selectedRun.startedAt)}</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-xs font-medium text-grey-600">Duration</span>
+                                <span className="text-sm">{selectedRun.durationMs !== undefined ? formatDuration(selectedRun.durationMs) : '—'}</span>
+                            </div>
+                            <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${runStatusStyles[selectedRun.status]}`}>{selectedRun.status}</span>
+                        </div>
+                        <div className="flex-1">
+                            <ReactFlow
+                                defaultEdgeOptions={{type: 'run'}}
+                                edges={analyticsEdges}
+                                edgeTypes={edgeTypes}
+                                fitViewOptions={{maxZoom: 1}}
+                                nodes={analyticsNodes}
+                                nodesConnectable={false}
+                                nodesDraggable={false}
+                                fitView
+                                panOnDrag
+                            >
+                                <Background color="var(--color-grey-400)" />
+                                <Panel position="bottom-left">
+                                    <ZoomControls />
+                                </Panel>
+                            </ReactFlow>
+                        </div>
+                    </div>
+                </div>
+            )}
             {emailEditorOpen && <EmailEditorModal onClose={() => setEmailEditorOpen(false)} />}
         </div>
     );
