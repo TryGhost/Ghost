@@ -119,7 +119,7 @@
     "@tryghost/kg-markdown-html-renderer": "7.2.0",
     "@tryghost/kg-mobiledoc-html-renderer": "7.2.0",
     "@tryghost/limit-service": "1.5.2",
-    "@tryghost/logging": "2.5.5",
+    "@tryghost/logging": "4.1.0",
     "@tryghost/members-csv": "2.0.5",
     "@tryghost/metrics": "1.0.43",
     "@tryghost/mongo-utils": "0.6.3",
