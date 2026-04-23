@@ -923,6 +923,37 @@ const AutomationEditor: React.FC = () => {
     const runningOriginalIdx = runningStepId ? initialNodes.findIndex(n => n.id === runningStepId) : -1;
 
     const ANALYTICS_STEP_GAP = 180;
+    const TAIL_NODE_ID = '__tail__';
+
+    const workflowNodes = useMemo<Node[]>(() => {
+        if (nodes.length === 0) {
+            return nodes;
+        }
+        const last = nodes[nodes.length - 1];
+        return [...nodes, {
+            id: TAIL_NODE_ID,
+            position: {x: 240, y: last.position.y + 180},
+            selectable: false,
+            draggable: false,
+            connectable: false,
+            data: {label: <LucideIcon.Plus className="size-5 text-grey-500" strokeWidth={1.5} />},
+            className: 'flex! items-center! justify-center! border! border-dashed! border-grey-300! rounded-lg! w-64! h-12!'
+        }];
+    }, [nodes]);
+
+    const workflowEdges = useMemo<Edge[]>(() => {
+        if (nodes.length === 0) {
+            return edges;
+        }
+        const last = nodes[nodes.length - 1];
+        return [...edges, {
+            id: 'e-tail',
+            source: last.id,
+            target: TAIL_NODE_ID,
+            type: 'run',
+            style: {stroke: 'var(--color-grey-500)'}
+        }];
+    }, [nodes, edges]);
 
     const analyticsNodes = useMemo<Node[]>(() => {
         const result: Node[] = initialNodes.map((node, idx) => {
@@ -1089,16 +1120,16 @@ const AutomationEditor: React.FC = () => {
                     <div ref={workflowCanvasRef} className="flex-1 bg-grey-75">
                         <ReactFlow
                             defaultEdgeOptions={{type: 'plus', style: {stroke: 'var(--color-grey-500)'}}}
-                            edges={edges}
+                            edges={workflowEdges}
                             edgeTypes={edgeTypes}
-                            nodes={nodes}
+                            nodes={workflowNodes}
                             nodesDraggable={false}
                             zoomOnScroll={false}
                             panOnScroll
                             onConnect={onConnect}
                             onEdgesChange={onEdgesChange}
                             onInit={instance => snapToTop(workflowCanvasRef.current, instance)}
-                            onNodeClick={(_, node) => setSidebar({mode: 'step', nodeId: node.id})}
+                            onNodeClick={(_, node) => node.id !== TAIL_NODE_ID && setSidebar({mode: 'step', nodeId: node.id})}
                             onNodesChange={onNodesChange}
                             onPaneClick={() => setSidebar(null)}
                         >
