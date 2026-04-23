@@ -778,30 +778,47 @@ const edgeColorForRun = (sourceStatus?: RunStepStatus, targetStatus?: RunStepSta
     return 'var(--color-grey-500)';
 };
 
+const toSentenceCase = (value: string): string => (value ? value.charAt(0).toUpperCase() + value.slice(1) : value);
+
+const stripReasonPrefix = (note: string): string => toSentenceCase(note.replace(/^(Stopped|Bounced|Failed):\s*/i, ''));
+
 const AnalyticsNodeLabel: React.FC<{
     icon: React.ElementType;
     type: string;
     value?: string;
     step?: RunStep;
-}> = ({icon: Icon, type, value, step}) => (
-    <div className="flex w-full flex-col gap-2">
-        <div className="flex items-center gap-3">
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-grey-100 text-grey-700">
-                <Icon className="size-4" />
+    memberEmail?: string;
+}> = ({icon: Icon, type, value, step, memberEmail}) => {
+    const showReason = step && (step.status === 'stopped' || step.status === 'failed') && step.note;
+    const isSkipped = step?.status === 'skipped';
+    return (
+        <div className="flex w-full flex-col gap-2">
+            <div className="flex items-center gap-3">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-grey-100 text-grey-700">
+                    <Icon className="size-4" />
+                </div>
+                <div className="flex min-w-0 flex-col">
+                    <span className="text-xs text-grey-600">{type}</span>
+                    {value && <span className={`truncate font-medium ${isSkipped ? 'text-grey-600' : ''}`}>{value}</span>}
+                </div>
             </div>
-            <div className="flex min-w-0 flex-col">
-                <span className="text-xs text-grey-600">{type}</span>
-                {value && <span className="truncate font-medium">{value}</span>}
-            </div>
+            {step && (
+                <div className="flex flex-col gap-1 border-t pt-2">
+                    {memberEmail && (
+                        <span className="truncate text-xs text-grey-700">{memberEmail}</span>
+                    )}
+                    <div className="flex items-center justify-between gap-2 text-xs">
+                        <span className={`rounded-full px-2 py-0.5 font-medium capitalize ${runStepPillStyles[step.status]}`}>{step.status}</span>
+                        <span className="text-grey-600">{step.durationMs !== undefined ? formatStepDuration(step.durationMs) : '\u2014'}</span>
+                    </div>
+                    {showReason && step.note && (
+                        <span className="text-xs text-grey-600">{stripReasonPrefix(step.note)}</span>
+                    )}
+                </div>
+            )}
         </div>
-        {step && (
-            <div className="flex items-center justify-between gap-2 border-t pt-2 text-xs">
-                <span className={`rounded-full px-2 py-0.5 font-medium capitalize ${runStepPillStyles[step.status]}`}>{step.status}</span>
-                <span className="text-grey-600">{step.durationMs !== undefined ? formatStepDuration(step.durationMs) : '\u2014'}</span>
-            </div>
-        )}
-    </div>
-);
+    );
+};
 
 const AutomationEditor: React.FC = () => {
     const navigate = useNavigate();
@@ -835,13 +852,14 @@ const AutomationEditor: React.FC = () => {
     const analyticsNodes = useMemo<Node[]>(() => initialNodes.map((node) => {
         const meta = stepMeta[node.id];
         const step = selectedRun.timeline.find(t => t.stepId === node.id);
+        const dimmed = step?.status === 'skipped';
         return {
             ...node,
             selectable: false,
-            className: 'border-0! shadow-sm text-sm! px-4! py-3! rounded-lg! w-64! text-left!',
+            className: `border-0! shadow-sm text-sm! px-4! py-3! rounded-lg! w-64! text-left!${dimmed ? ' opacity-70' : ''}`,
             data: {
                 ...node.data,
-                label: <AnalyticsNodeLabel icon={meta.icon} step={step} type={meta.type} value={meta.value} />
+                label: <AnalyticsNodeLabel icon={meta.icon} memberEmail={node.id === 'trigger' ? selectedRun.member : undefined} step={step} type={meta.type} value={meta.value} />
             }
         };
     }), [selectedRun]);
@@ -849,10 +867,15 @@ const AutomationEditor: React.FC = () => {
     const analyticsEdges = useMemo<Edge[]>(() => initialEdges.map((edge) => {
         const src = selectedRun.timeline.find(t => t.stepId === edge.source)?.status;
         const tgt = selectedRun.timeline.find(t => t.stepId === edge.target)?.status;
+        const dashed = tgt === 'skipped';
         return {
             ...edge,
             type: 'run',
-            style: {stroke: edgeColorForRun(src, tgt), strokeWidth: 2}
+            style: {
+                stroke: edgeColorForRun(src, tgt),
+                strokeWidth: dashed ? 1 : 2,
+                strokeDasharray: dashed ? '6 6' : undefined
+            }
         };
     }), [selectedRun]);
 
@@ -983,10 +1006,10 @@ const AutomationEditor: React.FC = () => {
                                 <span className="text-xs font-medium text-grey-600">Duration</span>
                                 <span className="text-sm">{selectedRun.durationMs !== undefined ? formatDuration(selectedRun.durationMs) : '—'}</span>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-col items-end gap-1">
                                 <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${runStatusStyles[selectedRun.status]}`}>{selectedRun.status}</span>
                                 {selectedRun.stopReason && (
-                                    <span className="text-xs text-grey-600">·&nbsp;{selectedRun.stopReason}</span>
+                                    <span className="text-xs text-grey-600">{selectedRun.stopReason}</span>
                                 )}
                             </div>
                         </div>
