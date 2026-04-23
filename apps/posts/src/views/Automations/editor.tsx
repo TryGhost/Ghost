@@ -933,11 +933,19 @@ const AutomationEditor: React.FC = () => {
         return [...nodes, {
             id: TAIL_NODE_ID,
             position: {x: 240, y: last.position.y + 180},
-            selectable: false,
             draggable: false,
             connectable: false,
-            data: {label: <LucideIcon.Plus className="size-5 text-grey-500" strokeWidth={1.5} />},
-            className: 'flex! items-center! justify-center! border! border-dashed! border-grey-300! rounded-lg! w-64! h-12!'
+            data: {
+                label: (
+                    <div
+                        className="flex size-full cursor-pointer items-center justify-center"
+                        onClick={() => window.alert('Tail node clicked!')}
+                    >
+                        <LucideIcon.Plus className="size-5 text-grey-500" strokeWidth={1.5} />
+                    </div>
+                )
+            },
+            className: 'border! border-dashed! border-grey-300! rounded-lg! w-64! h-12! p-0!'
         }];
     }, [nodes]);
 
