@@ -143,6 +143,28 @@ SCENARIOS.forEach(({label, wrap}) => {
             });
         });
 
+        describe('concurrent cache miss coalescing', function () {
+            it('calls fetchData only once when multiple callers miss simultaneously', async function () {
+                const cache = createCache();
+                const fetcher = sinon.stub().resolves('shared');
+
+                const [v1, v2, v3] = await Promise.all([
+                    cache.get('same-key', fetcher),
+                    cache.get('same-key', fetcher),
+                    cache.get('same-key', fetcher)
+                ]);
+
+                assert.equal(fetcher.callCount, 1);
+                assert.equal(v1, 'shared');
+                assert.equal(v2, 'shared');
+                assert.equal(v3, 'shared');
+
+                const cached = await cache.get('same-key', fetcher);
+                assert.equal(fetcher.callCount, 1);
+                assert.equal(cached, 'shared');
+            });
+        });
+
         describe('get with fetchData (error paths)', function () {
             it('does not cache errors — a subsequent call retries fetchData', async function () {
                 const cache = createCache();
