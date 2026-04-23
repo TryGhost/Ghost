@@ -82,7 +82,7 @@ const meta = {
         });
 
         const submitButton = canvas.getByTestId('button');
-        userEvent.click(submitButton);
+        await userEvent.click(submitButton);
     }
 } satisfies Meta<typeof Preview>;
 
