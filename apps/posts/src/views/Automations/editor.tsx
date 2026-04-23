@@ -563,7 +563,7 @@ const StepSidebarBody: React.FC<{nodeId: string; onDelete: () => void; onEditEma
 
 type RunStatus = 'completed' | 'failed' | 'running' | 'stopped';
 
-type RunStepStatus = 'completed' | 'failed' | 'pending' | 'skipped' | 'stopped';
+type RunStepStatus = 'completed' | 'failed' | 'pending' | 'skipped' | 'stopped' | 'running';
 
 type RunStep = {stepId: string; at?: string; status: RunStepStatus; note?: string; durationMs?: number};
 
@@ -678,7 +678,8 @@ const runStepPillStyles: Record<RunStepStatus, string> = {
     failed: 'bg-red-100 text-red-800',
     pending: 'bg-blue-100 text-blue-800',
     skipped: 'bg-grey-100 text-grey-600',
-    stopped: 'bg-orange-100 text-orange-600'
+    stopped: 'bg-orange-100 text-orange-600',
+    running: 'bg-blue-100 text-blue-800'
 };
 
 const formatStepDuration = (ms: number): string => {
@@ -832,7 +833,10 @@ const AnalyticsNodeLabel: React.FC<{
                         <span className="truncate text-xs text-grey-700">{memberEmail}</span>
                     )}
                     <div className="flex items-center justify-between gap-2 text-xs">
-                        <span className={`rounded-full px-2 py-0.5 font-medium capitalize ${runStepPillStyles[step.status]}`}>{step.status}</span>
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium capitalize ${runStepPillStyles[step.status]}`}>
+                            {step.status === 'running' && <LucideIcon.Loader2 className="size-3 animate-spin" strokeWidth={2.5} />}
+                            {step.status}
+                        </span>
                         <span className="text-grey-600">{step.durationMs !== undefined ? formatStepDuration(step.durationMs) : '\u2014'}</span>
                     </div>
                     {showReason && step.note && (
@@ -882,15 +886,24 @@ const AutomationEditor: React.FC = () => {
         : undefined;
     const stopOriginalIdx = stoppedStepId ? initialNodes.findIndex(n => n.id === stoppedStepId) : -1;
 
+    const runningStepId = selectedRun.status === 'running'
+        ? selectedRun.timeline.find(t => t.status === 'pending')?.stepId
+        : undefined;
+    const runningOriginalIdx = runningStepId ? initialNodes.findIndex(n => n.id === runningStepId) : -1;
+
     const analyticsNodes = useMemo<Node[]>(() => {
         const result: Node[] = initialNodes.map((node, idx) => {
             const meta = stepMeta[node.id];
             const timelineStep = selectedRun.timeline.find(t => t.stepId === node.id);
-            const effectiveStep = (stoppedStepId && timelineStep?.stepId === stoppedStepId)
-                ? {...timelineStep, status: 'skipped' as RunStepStatus, note: undefined}
-                : timelineStep;
+            let effectiveStep: RunStep | undefined = timelineStep;
+            if (stoppedStepId && timelineStep?.stepId === stoppedStepId) {
+                effectiveStep = {...timelineStep, status: 'skipped', note: undefined};
+            } else if (runningStepId && node.id === runningStepId && timelineStep) {
+                effectiveStep = {...timelineStep, status: 'running'};
+            }
             const shift = (stopOriginalIdx >= 0 && idx >= stopOriginalIdx) ? STOP_MARKER_SHIFT : 0;
-            const dimmed = effectiveStep?.status === 'skipped';
+            const isLaterPending = runningOriginalIdx >= 0 && idx > runningOriginalIdx;
+            const dimmed = effectiveStep?.status === 'skipped' || isLaterPending;
             return {
                 ...node,
                 position: {x: node.position.x, y: node.position.y + shift},
