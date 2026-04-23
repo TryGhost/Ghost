@@ -25,7 +25,7 @@ import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 const nodeDefaults = {
     sourcePosition: Position.Bottom,
     targetPosition: Position.Top,
-    className: 'border-0! shadow-sm text-sm! px-5! py-4! rounded-lg! w-56!'
+    className: 'border-0! shadow-sm text-sm! px-4! py-3! rounded-lg! w-64! text-left!'
 };
 
 type NodeLabelProps = {
@@ -226,12 +226,14 @@ const ZoomControls: React.FC = () => {
 };
 
 const NodeLabel: React.FC<NodeLabelProps> = ({icon: Icon, type, value}) => (
-    <div className="flex flex-col items-center gap-1">
-        <div className="flex items-center gap-1.5 text-xs font-medium text-grey-600">
-            <Icon className="size-3.5" />
-            <span>{type}</span>
+    <div className="flex items-center gap-3">
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-grey-100 text-grey-700">
+            <Icon className="size-4" />
         </div>
-        {value && <div className="font-medium">{value}</div>}
+        <div className="flex min-w-0 flex-col">
+            <span className="text-xs text-grey-600">{type}</span>
+            {value && <span className="truncate font-medium">{value}</span>}
+        </div>
     </div>
 );
 
@@ -783,12 +785,14 @@ const AnalyticsNodeLabel: React.FC<{
     step?: RunStep;
 }> = ({icon: Icon, type, value, step}) => (
     <div className="flex w-full flex-col gap-2">
-        <div className="flex flex-col items-center gap-1">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-grey-600">
-                <Icon className="size-3.5" />
-                <span>{type}</span>
+        <div className="flex items-center gap-3">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-grey-100 text-grey-700">
+                <Icon className="size-4" />
             </div>
-            {value && <div className="font-medium">{value}</div>}
+            <div className="flex min-w-0 flex-col">
+                <span className="text-xs text-grey-600">{type}</span>
+                {value && <span className="truncate font-medium">{value}</span>}
+            </div>
         </div>
         {step && (
             <div className="flex items-center justify-between gap-2 border-t pt-2 text-xs">
@@ -834,7 +838,7 @@ const AutomationEditor: React.FC = () => {
         return {
             ...node,
             selectable: false,
-            className: 'border-0! shadow-sm text-sm! px-5! py-4! rounded-lg! w-64!',
+            className: 'border-0! shadow-sm text-sm! px-4! py-3! rounded-lg! w-64! text-left!',
             data: {
                 ...node.data,
                 label: <AnalyticsNodeLabel icon={meta.icon} step={step} type={meta.type} value={meta.value} />
