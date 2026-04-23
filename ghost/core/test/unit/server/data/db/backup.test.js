@@ -1,6 +1,5 @@
 const sinon = require('sinon');
 const fs = require('fs-extra');
-const models = require('../../../../../core/server/models');
 const exporter = require('../../../../../core/server/data/exporter');
 const dbBackup = require('../../../../../core/server/data/db/backup');
 const configUtils = require('../../../../utils/config-utils');
@@ -9,10 +8,6 @@ describe('Backup', function () {
     let exportStub;
     let filenameStub;
     let fsStub;
-
-    before(function () {
-        models.init();
-    });
 
     afterEach(function () {
         sinon.restore();
