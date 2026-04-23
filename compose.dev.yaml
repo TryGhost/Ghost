@@ -39,7 +39,7 @@ services:
       retries: 120
 
   mailpit:
-    image: axllent/mailpit@sha256:0b5c5f7ffd3c93474baa7fd3869c1462e5a3d03256ed0933dfc0e7d81d794036
+    image: axllent/mailpit@sha256:757f22b56c1da03570afdb3d259effe5091018008a81bbedc8158cee7e16fdbc
     container_name: ghost-dev-mailpit
     ports:
       - "1025:1025"  # SMTP server
