@@ -9,24 +9,11 @@ describe('notifications utils', () => {
     test('reads gift redemption params from action subscribe plus portal hash query', () => {
         window.history.replaceState({}, '', '/?action=subscribe&success=true#/portal/account?giftRedemption=true');
 
-        expect(NotificationParser()).toMatchObject({
+        expect(NotificationParser()).toEqual({
             type: 'giftRedeem',
             status: 'success',
             autoHide: true,
-            duration: 5000,
-            message: 'Gift redeemed! You\'re all set.'
-        });
-    });
-
-    test('reads gift redemption params from legacy giftRedeem action', () => {
-        window.history.replaceState({}, '', '/#/portal/account?action=giftRedeem&success=true');
-
-        expect(NotificationParser()).toMatchObject({
-            type: 'giftRedeem',
-            status: 'success',
-            autoHide: true,
-            duration: 5000,
-            message: 'Gift redeemed! You\'re all set.'
+            duration: 5000
         });
     });
 

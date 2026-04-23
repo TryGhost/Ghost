@@ -91,7 +91,6 @@ describe('Notification', () => {
         NotificationParser.mockReturnValue({
             type: 'giftRedeem',
             status: 'success',
-            message: 'Gift redeemed! You\'re all set.',
             autoHide: true,
             duration: 5000
         });
@@ -130,7 +129,6 @@ describe('Notification', () => {
         NotificationParser.mockReturnValue({
             type: 'giftRedeem',
             status: 'success',
-            message: 'Gift redeemed! You\'re all set.',
             autoHide: true,
             duration: 5000
         });
@@ -164,5 +162,47 @@ describe('Notification', () => {
         });
 
         expect(container.querySelector('.gh-portal-notification')).not.toHaveClass('slideout');
+    });
+
+    test('derives gift redemption success message from member tier in context', async () => {
+        NotificationParser.mockReturnValue({
+            type: 'giftRedeem',
+            status: 'success',
+            autoHide: true,
+            duration: 5000
+        });
+
+        const doAction = vi.fn();
+        const site = {
+            url: 'https://example.com',
+            title: 'Example Site'
+        };
+
+        const {getByText} = render(
+            <AppContext.Provider value={{
+                site,
+                member: {
+                    paid: true,
+                    subscriptions: [{
+                        status: 'active',
+                        tier: {
+                            name: 'Ultra',
+                            expiry_at: '2027-05-29T12:00:00.000Z'
+                        }
+                    }]
+                },
+                brandColor: '#000000',
+                showPopup: true,
+                doAction,
+                notification: null
+            }}
+            >
+                <Notification />
+            </AppContext.Provider>
+        );
+
+        await waitFor(() => {
+            expect(getByText('You now have access to Ultra until 29 May 2027. Enjoy!')).toBeInTheDocument();
+        });
     });
 });
