@@ -93,7 +93,7 @@ const PaidMembersTooltipContent = ({active, payload, range, color, showBreakdown
                         {showGift && (
                             <div className='flex items-center gap-2'>
                                 <div className='flex grow items-center justify-between gap-5'>
-                                    <div className="text-sm text-muted-foreground">Gift</div>
+                                    <div className="text-sm text-muted-foreground">Gift subscriptions</div>
                                     <div className="font-mono text-xs">{(gift !== undefined && gift > 0) ? (formatNumber(gift)) : '0'}</div>
                                 </div>
                             </div>
