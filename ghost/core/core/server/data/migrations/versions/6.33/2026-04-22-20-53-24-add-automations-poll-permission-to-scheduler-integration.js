@@ -1,13 +1,9 @@
-const {combineTransactionalMigrations, addPermission, addPermissionToRole} = require('../../utils');
+const {addPermissionWithRoles} = require('../../utils');
 
-module.exports = combineTransactionalMigrations(
-    addPermission({
-        name: 'Poll automations',
-        action: 'poll',
-        object: 'automation'
-    }),
-    addPermissionToRole({
-        permission: 'Poll automations',
-        role: 'Scheduler Integration'
-    })
-);
+module.exports = addPermissionWithRoles({
+    name: 'Poll automations',
+    action: 'poll',
+    object: 'automation'
+}, [
+    'Scheduler Integration'
+]);
