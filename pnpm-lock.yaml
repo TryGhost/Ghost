@@ -9,9 +9,6 @@ catalogs:
     '@eslint/js':
       specifier: 8.57.1
       version: 8.57.1
-    '@tryghost/debug':
-      specifier: 2.1.0
-      version: 2.1.0
     eslint:
       specifier: 8.57.1
       version: 8.57.1
@@ -24,7 +21,7 @@ catalogs:
       version: 9.37.0
 
 overrides:
-  '@tryghost/errors': 1.3.13
+  '@tryghost/errors': ^1.3.7
   '@tryghost/logging': 2.5.5
   jackspeak: 2.3.6
   moment: 2.24.0
@@ -780,7 +777,7 @@ importers:
         specifier: 2.26.3
         version: 2.26.3(@tiptap/core@2.26.3(@tiptap/pm@2.26.3))(@tiptap/pm@2.26.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@tryghost/debug':
-        specifier: 'catalog:'
+        specifier: 2.1.0
         version: 2.1.0
       react:
         specifier: 17.0.2
@@ -868,7 +865,7 @@ importers:
   apps/portal:
     dependencies:
       '@tryghost/debug':
-        specifier: 'catalog:'
+        specifier: 2.1.0
         version: 2.1.0
     devDependencies:
       '@babel/eslint-parser':
@@ -1276,7 +1273,7 @@ importers:
   apps/signup-form:
     dependencies:
       '@tryghost/debug':
-        specifier: 'catalog:'
+        specifier: 2.1.0
         version: 2.1.0
       react:
         specifier: 18.3.1
@@ -1382,7 +1379,7 @@ importers:
   apps/sodo-search:
     dependencies:
       '@tryghost/debug':
-        specifier: 'catalog:'
+        specifier: 2.1.0
         version: 2.1.0
       '@tryghost/i18n':
         specifier: workspace:*
@@ -1522,7 +1519,7 @@ importers:
         specifier: 1.59.1
         version: 1.59.1
       '@tryghost/debug':
-        specifier: 'catalog:'
+        specifier: 2.1.0
         version: 2.1.0
       '@tryghost/logging':
         specifier: 2.5.5
@@ -2015,7 +2012,7 @@ importers:
         specifier: 0.3.35
         version: 0.3.35
       '@tryghost/debug':
-        specifier: 'catalog:'
+        specifier: 2.1.0
         version: 2.1.0
       '@tryghost/domain-events':
         specifier: 1.0.8
@@ -2024,7 +2021,7 @@ importers:
         specifier: 2.1.0
         version: 2.1.0
       '@tryghost/errors':
-        specifier: 1.3.13
+        specifier: ^1.3.7
         version: 1.3.13
       '@tryghost/helpers':
         specifier: 1.1.103
@@ -2602,7 +2599,7 @@ importers:
   ghost/i18n:
     dependencies:
       '@tryghost/debug':
-        specifier: 'catalog:'
+        specifier: 2.1.0
         version: 2.1.0
       i18next:
         specifier: 23.16.8
