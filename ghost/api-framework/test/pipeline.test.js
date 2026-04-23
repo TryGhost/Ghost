@@ -646,11 +646,7 @@ describe('Pipeline', function () {
             const firstKey = cache.get.firstCall.args[0];
             const secondKey = cache.get.secondCall.args[0];
 
-            assert.equal(
-                firstKey,
-                secondKey,
-                'key insertion order must not affect the cache key',
-            );
+            assert.equal(firstKey, secondKey, 'key insertion order must not affect the cache key');
         });
     });
 });
