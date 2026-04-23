@@ -52,7 +52,7 @@ async function testOutput(member, asserts, filters = []) {
                 'content-disposition': anyString
             });
 
-        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
+        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_subscription/);
 
         let csv = Papa.parse(res.text, {header: true});
         let row = csv.data.find(r => r.id === member.id);
@@ -175,7 +175,26 @@ describe('Members API — exportCSV', function () {
             assert.equal(row.complimentary_plan, 'true');
             assert.equal(row.labels, '');
             assert.equal(row.tiers, '');
+            assert.equal(row.gift_subscription, '');
         }, ['filter=status:comped', 'filter=subscribed:false']);
+    });
+
+    it('Can export gift subscription', async function () {
+        const tier = tiers[0];
+        const member = await createMember({
+            name: 'Test gift member',
+            note: 'A gift',
+            status: 'gift',
+            products: [{id: tier.id}]
+        });
+
+        await testOutput(member, (row) => {
+            basicAsserts(member, row);
+            assert.equal(row.subscribed_to_emails, 'false');
+            assert.equal(row.complimentary_plan, '');
+            assert.equal(row.gift_subscription, 'true');
+            assert.equal(row.tiers, tier.get('name'));
+        }, ['filter=status:gift', 'filter=subscribed:false']);
     });
 
     it('Can export newsletters', async function () {

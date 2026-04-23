@@ -36,6 +36,7 @@ function processMembersData(members, tiersMap, labelsMap, stripeCustomerMap, sub
         row.subscribed = subscribedSet.has(row.id);
         row.comped = row.status === 'comped';
         row.complimentary_plan = row.status === 'complimentary';
+        row.gift_subscription = row.status === 'gift';
         row.stripe_customer_id = stripeCustomerMap.get(row.id) || null;
         row.created_at = moment(row.created_at).toISOString();
     }

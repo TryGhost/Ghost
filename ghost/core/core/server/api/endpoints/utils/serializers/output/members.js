@@ -36,7 +36,8 @@ const CSV_HEADERS = [
     'created_at',
     'deleted_at',
     'labels',
-    'tiers'
+    'tiers',
+    'gift_subscription'
 ];
 
 /**
@@ -62,7 +63,11 @@ function formatMemberForCSV(member) {
     // Convert boolean 'false' to empty string for tests to pass
     // Only comped = true should result in 'true', otherwise empty string
     const complimentaryPlan = member.comped === true ? 'true' : '';
-    
+
+    // Convert boolean 'false' to empty string for tests to pass
+    // Only gift_subscription = true should result in 'true', otherwise empty string
+    const giftSubscription = member.gift_subscription === true ? 'true' : '';
+
     // Convert subscribed boolean to string representation
     const subscribedToEmails = member.subscribed === true ? 'true' : 'false';
 
@@ -77,7 +82,8 @@ function formatMemberForCSV(member) {
         created_at: member.created_at,
         deleted_at: member.deleted_at || null,
         labels: labels,
-        tiers: tiers
+        tiers: tiers,
+        gift_subscription: giftSubscription
     };
 }
 

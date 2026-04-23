@@ -11,7 +11,8 @@ const logging = require('@tryghost/logging');
 const messages = {
     filenameCollision: 'Filename already exists, please try again.',
     freeMemberNotAllowedImportTier: 'You cannot import a free member with a specified tier.',
-    invalidImportTier: '"{tier}" is not a valid tier.'
+    invalidImportTier: '"{tier}" is not a valid tier.',
+    giftMemberNotAllowedImport: 'Gift subscriptions cannot be imported.'
 };
 
 // The key should correspond to a member model field (unless it's a special purpose field like 'complimentary_plan')
@@ -62,6 +63,8 @@ module.exports = class MembersCSVImporter {
         this._context = context;
         this._stripeUtils = stripeUtils;
         this._tierIdCache = new Map();
+        // Rows rejected during `prepare()`, keyed by output file path and drained by `perform()`.
+        this._rejectedRowsByFile = new Map();
     }
 
     /**
@@ -79,6 +82,12 @@ module.exports = class MembersCSVImporter {
      */
     async prepare(inputFilePath, headerMapping, defaultLabels) {
         headerMapping = headerMapping || DEFAULT_CSV_HEADER_MAPPING;
+        // Force-recognise `gift_subscription` so the rejection below fires even when the
+        // user-supplied mapping doesn't include it (the column is not exposed in the UI).
+        headerMapping = {
+            ...headerMapping,
+            gift_subscription: 'gift_subscription'
+        };
         // @NOTE: investigate why is it "1" and do we even need this concept anymore?
         const batchSize = 1;
 
@@ -94,9 +103,29 @@ module.exports = class MembersCSVImporter {
         }
 
         // completely rely on explicit user input for header mappings
-        const rows = await membersCSV.parse(inputFilePath, headerMapping, defaultLabels);
-        const columns = Object.keys(rows[0]);
-        const numberOfBatches = Math.ceil(rows.length / batchSize);
+        const allRows = await membersCSV.parse(inputFilePath, headerMapping, defaultLabels);
+
+        // Reject gift rows here rather than in `perform()`: `membersCSV.unparse()` below
+        // strips unknown columns, so `gift_subscription` wouldn't survive that round-trip.
+        const rejectedGiftRows = [];
+        const rows = [];
+        for (const row of allRows) {
+            if (row.gift_subscription === true) {
+                rejectedGiftRows.push({
+                    ...row,
+                    error: tpl(messages.giftMemberNotAllowedImport)
+                });
+            } else {
+                rows.push(row);
+            }
+        }
+        this._rejectedRowsByFile.set(outputFilePath, rejectedGiftRows);
+
+        const columns = Object.keys(rows[0] || allRows[0] || {});
+        // Batch count reflects the original CSV size (including pre-rejected rows) so
+        // meta.originalImportSize matches what the user uploaded. The intermediate CSV
+        // still only contains non-rejected rows — gifts must never reach `perform()`.
+        const numberOfBatches = Math.ceil(allRows.length / batchSize);
         const mappedCSV = membersCSV.unparse(rows, columns);
 
         const hasStripeData = !!(rows.find(function rowHasStripeData(row) {
@@ -121,6 +150,11 @@ module.exports = class MembersCSVImporter {
      */
     async perform(filePath) {
         const performStart = Date.now();
+        // Drain rows pre-rejected by `prepare()` up front and delete the map entry
+        // immediately, so state does not leak if anything below throws.
+        const preRejected = this._rejectedRowsByFile.get(filePath) || [];
+        this._rejectedRowsByFile.delete(filePath);
+
         const rows = await membersCSV.parse(filePath, DEFAULT_CSV_HEADER_MAPPING);
 
         const defaultTier = await this._getDefaultTier();
@@ -283,15 +317,18 @@ module.exports = class MembersCSVImporter {
             archivableStripePriceIds.map(stripePriceId => this._stripeUtils.archivePrice(stripePriceId))
         );
 
+        const combinedErrors = [...preRejected, ...result.errors];
+
         metrics.metric({
             imported: result.imported,
-            errors: result.errors.length,
+            errors: combinedErrors.length,
             value: Date.now() - performStart
         });
 
         return {
-            total: result.imported + result.errors.length,
-            ...result
+            total: result.imported + combinedErrors.length,
+            imported: result.imported,
+            errors: combinedErrors
         };
     }
 

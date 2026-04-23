@@ -758,6 +758,39 @@ describe('MembersCSVImporter', function () {
             assert.equal(result.errors[0].error, '"Invalid Tier" is not a valid tier.');
         });
 
+        it('rejects gift_subscription rows during the full process() flow even when the UI omits gift_subscription from the mapping', async function () {
+            // Simulates a user importing an exported CSV via the UI: the mapping UI does
+            // not include gift_subscription, so without server-side handling the column
+            // would be stripped by the parser and never reach `perform()`.
+            const LabelModelStub = {
+                findOne: sinon.stub().resolves(null)
+            };
+            const importer = buildMockImporterInstance();
+
+            const result = await importer.process({
+                pathToCSV: `${csvPath}/gift-member-import.csv`,
+                headerMapping: defaultAllowedFields,
+                importLabel: {name: 'Test Import'},
+                user: {email: 'test@example.com'},
+                LabelModel: LabelModelStub,
+                forceInline: true,
+                verificationTrigger: {
+                    testImportThreshold: () => {}
+                }
+            });
+
+            assert.equal(result.meta.stats.imported, 0);
+            assert.equal(result.meta.stats.invalid.length, 1);
+            assert.equal(
+                result.meta.stats.invalid[0].error,
+                'Gift subscriptions cannot be imported.'
+            );
+            // originalImportSize should reflect what the user uploaded, not what survived
+            // the gift filter. The CSV had 1 row; the user sees 1 row accounted for.
+            assert.equal(result.meta.originalImportSize, 1);
+            sinon.assert.notCalled(membersRepositoryStub.create);
+        });
+
         it('imports a paid member with an import tier', async function () {
             const tier = {
                 id: {
