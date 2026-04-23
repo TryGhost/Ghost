@@ -3,6 +3,7 @@ const _ = require('lodash');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+const metrics = require('@tryghost/metrics');
 const RedisCache = require('../../../../../../core/server/adapters/lib/redis/AdapterCacheRedis');
 
 const PREFIX_HASH = 'mock-prefix-hash';
@@ -33,13 +34,26 @@ function createCacheStub({keyPrefix = ''} = {}) {
 }
 
 describe('Adapter Cache Redis', function () {
+    let metricStub;
+
     beforeEach(function () {
         sinon.stub(logging, 'error');
+        metricStub = sinon.stub(metrics, 'metric');
     });
 
     afterEach(function () {
         sinon.restore();
     });
+
+    function metricCall(name) {
+        return metricStub.getCalls().find(c => c.args[0] === name);
+    }
+
+    function flushMicrotasks() {
+        return new Promise((resolve) => {
+            setImmediate(resolve);
+        });
+    }
 
     it('can initialize Redis cache instance directly', async function () {
         const cache = new RedisCache({cache: createCacheStub()});
@@ -497,6 +511,251 @@ describe('Adapter Cache Redis', function () {
                 () => cache.keys(),
                 err => err instanceof errors.IncorrectUsageError
             );
+        });
+    });
+
+    describe('metrics', function () {
+        it('emits cache-hit with feature on a hit', async function () {
+            const cacheStub = createCacheStub();
+            cacheStub.get.resolves('v');
+            const cache = new RedisCache({cache: cacheStub, featureName: 'postsPublic'});
+
+            await cache.get('k');
+
+            const call = metricCall('cache-hit');
+            assert.ok(call, 'cache-hit was emitted');
+            assert.equal(call.args[1].feature, 'postsPublic');
+            assert.equal(metricCall('cache-miss'), undefined);
+        });
+
+        it('emits cache-miss with feature on a genuine miss', async function () {
+            const cacheStub = createCacheStub();
+            cacheStub.get.resolves(null);
+            const cache = new RedisCache({cache: cacheStub, featureName: 'postsPublic'});
+
+            await cache.get('k');
+
+            const call = metricCall('cache-miss');
+            assert.ok(call, 'cache-miss was emitted');
+            assert.equal(call.args[1].feature, 'postsPublic');
+            assert.equal(metricCall('cache-hit'), undefined);
+        });
+
+        it('omits feature when featureName is not set', async function () {
+            const cacheStub = createCacheStub({keyPrefix: 'postsPublic:'});
+            cacheStub.get.resolves('v');
+            const cache = new RedisCache({cache: cacheStub, keyPrefix: 'postsPublic:'});
+
+            await cache.get('k');
+
+            assert.equal('feature' in metricCall('cache-hit').args[1], false);
+        });
+
+        it('emits cache-timeout (but not cache-miss) when the get exceeds the timeout', async function () {
+            const cacheStub = createCacheStub();
+            cacheStub.get.callsFake(() => new Promise((resolve) => {
+                setTimeout(() => resolve('v'), 200);
+            }));
+            const cache = new RedisCache({
+                cache: cacheStub,
+                featureName: 'postsPublic',
+                getTimeoutMilliseconds: 10
+            });
+
+            await cache.get('k');
+
+            const timeoutCall = metricCall('cache-timeout');
+            assert.ok(timeoutCall, 'cache-timeout was emitted');
+            assert.equal(timeoutCall.args[1].feature, 'postsPublic');
+            assert.equal(metricCall('cache-miss'), undefined, 'timeout is not also counted as a miss');
+        });
+
+        it('does not double-emit when a timed-out lookup rejects later', async function () {
+            // If the timer fires first and the underlying redis read rejects
+            // afterwards, we should count the request once (as a timeout),
+            // not both as a timeout and as an error.
+            let rejectLookup;
+            const cacheStub = createCacheStub();
+            cacheStub.get.callsFake(() => new Promise((_resolve, reject) => {
+                rejectLookup = reject;
+            }));
+            const cache = new RedisCache({
+                cache: cacheStub,
+                featureName: 'postsPublic',
+                getTimeoutMilliseconds: 10
+            });
+
+            await cache.get('k');
+            rejectLookup(new Error('late failure'));
+            await new Promise((resolve) => {
+                setTimeout(resolve, 20);
+            });
+
+            assert.ok(metricCall('cache-timeout'));
+            assert.equal(metricCall('cache-error'), undefined, 'no cache-error emitted after timeout');
+        });
+
+        it('emits cache-error (but not cache-miss) when a redis get rejects in timeout mode', async function () {
+            const cacheStub = createCacheStub();
+            cacheStub.get.rejects(new Error('redis down'));
+            const cache = new RedisCache({
+                cache: cacheStub,
+                featureName: 'postsPublic',
+                getTimeoutMilliseconds: 1000
+            });
+
+            await cache.get('k');
+
+            const errorCall = metricCall('cache-error');
+            assert.ok(errorCall, 'cache-error was emitted');
+            assert.equal(errorCall.args[1].operation, 'get');
+            assert.equal(errorCall.args[1].feature, 'postsPublic');
+            assert.equal(metricCall('cache-miss'), undefined, 'redis error is not also counted as a miss');
+        });
+
+        it('emits cache-error on a set failure', async function () {
+            const cacheStub = createCacheStub();
+            cacheStub.set = sinon.stub().rejects(new Error('write failed'));
+            const cache = new RedisCache({cache: cacheStub, featureName: 'postsPublic'});
+
+            await cache.set('k', 'v');
+
+            const call = metricCall('cache-error');
+            assert.ok(call);
+            assert.equal(call.args[1].operation, 'set');
+            assert.equal(call.args[1].feature, 'postsPublic');
+        });
+
+        it('emits cache-reset on successful reset', async function () {
+            const cacheStub = createCacheStub();
+            const cache = new RedisCache({cache: cacheStub, featureName: 'postsPublic'});
+
+            await cache.reset();
+
+            const call = metricCall('cache-reset');
+            assert.ok(call);
+            assert.equal(call.args[1].feature, 'postsPublic');
+            assert.equal(typeof call.args[1].value, 'number');
+            assert.equal(metricCall('cache-error'), undefined);
+        });
+
+        it('emits cache-error on a reset failure', async function () {
+            const cacheStub = createCacheStub();
+            cacheStub.store.getClient().set.rejects(new Error('cycle failed'));
+            const cache = new RedisCache({cache: cacheStub, featureName: 'postsPublic'});
+
+            await cache.reset();
+
+            const errorCalls = metricStub.getCalls().filter(c => c.args[0] === 'cache-error');
+            assert.equal(errorCalls.length, 1);
+            assert.equal(errorCalls[0].args[1].operation, 'reset');
+            assert.equal(metricCall('cache-reset'), undefined);
+        });
+
+        it('emits background refresh triggered + succeeded on a successful refresh', async function () {
+            const KEY = 'bg-success';
+            let cachedValue = 'Original';
+            const cacheStub = createCacheStub();
+            cacheStub.get.callsFake(async (key) => {
+                if (key === PREFIX_HASH + KEY) {
+                    return cachedValue;
+                }
+            });
+            cacheStub.set.callsFake(async (key, value) => {
+                if (key === PREFIX_HASH + KEY) {
+                    cachedValue = value;
+                }
+            });
+            cacheStub.ttl.resolves(5);
+            const cache = new RedisCache({
+                cache: cacheStub,
+                featureName: 'postsPublic',
+                ttl: 100,
+                refreshAheadFactor: 0.2
+            });
+
+            const fetchData = sinon.stub().resolves('Fresh');
+            await cache.get(KEY, fetchData);
+            await flushMicrotasks();
+            await flushMicrotasks();
+
+            assert.ok(metricCall('cache-background-refresh-triggered'));
+            assert.ok(metricCall('cache-background-refresh-succeeded'));
+            assert.equal(metricCall('cache-background-refresh-triggered').args[1].feature, 'postsPublic');
+            assert.equal(typeof metricCall('cache-background-refresh-succeeded').args[1].value, 'number');
+            assert.equal(metricCall('cache-background-refresh-failed'), undefined);
+        });
+
+        it('emits cache-background-refresh-failed when the refresh fetch rejects', async function () {
+            const KEY = 'bg-fetch-fail';
+            const cachedValue = 'Original';
+            const cacheStub = createCacheStub();
+            cacheStub.get.callsFake(async (key) => {
+                if (key === PREFIX_HASH + KEY) {
+                    return cachedValue;
+                }
+            });
+            cacheStub.ttl.resolves(5);
+            const cache = new RedisCache({
+                cache: cacheStub,
+                featureName: 'postsPublic',
+                ttl: 100,
+                refreshAheadFactor: 0.2
+            });
+
+            const fetchData = sinon.stub().rejects(new Error('upstream down'));
+            await cache.get(KEY, fetchData);
+            await flushMicrotasks();
+            await flushMicrotasks();
+
+            assert.ok(metricCall('cache-background-refresh-triggered'));
+            assert.ok(metricCall('cache-background-refresh-failed'));
+            assert.equal(metricCall('cache-background-refresh-succeeded'), undefined);
+        });
+
+        it('emits cache-background-refresh-failed when the cache write fails', async function () {
+            const KEY = 'bg-write-fail';
+            const cachedValue = 'Original';
+            const cacheStub = createCacheStub();
+            cacheStub.get.callsFake(async (key) => {
+                if (key === PREFIX_HASH + KEY) {
+                    return cachedValue;
+                }
+            });
+            cacheStub.set = sinon.stub().rejects(new Error('write failed'));
+            cacheStub.ttl.resolves(5);
+            const cache = new RedisCache({
+                cache: cacheStub,
+                featureName: 'postsPublic',
+                ttl: 100,
+                refreshAheadFactor: 0.2
+            });
+
+            const fetchData = sinon.stub().resolves('Fresh');
+            await cache.get(KEY, fetchData);
+
+            await new Promise((resolve) => {
+                setTimeout(resolve, 10);
+            });
+
+            assert.ok(metricCall('cache-background-refresh-triggered'));
+            assert.ok(metricCall('cache-background-refresh-failed'));
+            assert.equal(metricCall('cache-background-refresh-succeeded'), undefined);
+        });
+
+        it('emits metrics correctly on a cloned adapter', async function () {
+            // Regression: `_metric` is underscore-private (not `#`-private) so
+            // that api-framework's _.cloneDeep doesn't turn metric emissions
+            // into "Receiver must be an instance of..." errors.
+            const cacheStub = createCacheStub();
+            cacheStub.get.resolves('v');
+            const cache = new RedisCache({cache: cacheStub, featureName: 'postsPublic'});
+
+            const cloned = _.cloneDeep(cache);
+            await cloned.get('k');
+
+            assert.ok(metricCall('cache-hit'), 'cache-hit was emitted on clone');
+            assert.equal(metricCall('cache-hit').args[1].feature, 'postsPublic');
         });
     });
 
