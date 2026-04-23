@@ -6,7 +6,9 @@ import {
     Connection,
     Edge,
     EdgeProps,
+    Handle,
     Node,
+    NodeProps,
     Panel,
     Position,
     ReactFlow,
@@ -115,6 +117,28 @@ const RunEdge: React.FC<EdgeProps> = ({sourceX, sourceY, targetX, targetY, sourc
 };
 
 const edgeTypes = {plus: PlusEdge, run: RunEdge};
+
+const StopMarkerNode: React.FC<NodeProps> = ({data}) => {
+    const reason = (data as {reason?: string}).reason;
+    return (
+        <>
+            <Handle position={Position.Top} type="target" />
+            <div className="flex w-64 items-center gap-2 rounded-full bg-orange-100 px-3 py-1.5 text-xs font-medium text-orange-700">
+                <LucideIcon.Square className="size-3" strokeWidth={2.5} />
+                <span>Stopped</span>
+                {reason && (
+                    <>
+                        <span className="text-orange-600">·</span>
+                        <span className="truncate text-orange-600">{reason}</span>
+                    </>
+                )}
+            </div>
+            <Handle position={Position.Bottom} type="source" />
+        </>
+    );
+};
+
+const nodeTypes = {'stop-marker': StopMarkerNode};
 
 type StopConditionKind = 'upgrade' | 'unsubscribe' | 'cancel' | 'label-added';
 
@@ -849,35 +873,82 @@ const AutomationEditor: React.FC = () => {
         instance.setViewport({x: Math.round(width / 2 - NODE_COLUMN_CENTER_X), y: 40, zoom: 1});
     };
 
-    const analyticsNodes = useMemo<Node[]>(() => initialNodes.map((node) => {
-        const meta = stepMeta[node.id];
-        const step = selectedRun.timeline.find(t => t.stepId === node.id);
-        const dimmed = step?.status === 'skipped';
-        return {
-            ...node,
-            selectable: false,
-            className: `border-0! shadow-sm text-sm! px-4! py-3! rounded-lg! w-64! text-left!${dimmed ? ' opacity-70' : ''}`,
-            data: {
-                ...node.data,
-                label: <AnalyticsNodeLabel icon={meta.icon} memberEmail={node.id === 'trigger' ? selectedRun.member : undefined} step={step} type={meta.type} value={meta.value} />
-            }
-        };
-    }), [selectedRun]);
+    const STOP_MARKER_ID = '__stop_marker__';
+    const STOP_MARKER_SHIFT = 100;
 
-    const analyticsEdges = useMemo<Edge[]>(() => initialEdges.map((edge) => {
-        const src = selectedRun.timeline.find(t => t.stepId === edge.source)?.status;
-        const tgt = selectedRun.timeline.find(t => t.stepId === edge.target)?.status;
-        const dashed = tgt === 'skipped';
-        return {
-            ...edge,
-            type: 'run',
-            style: {
-                stroke: edgeColorForRun(src, tgt),
-                strokeWidth: dashed ? 1 : 2,
-                strokeDasharray: dashed ? '6 6' : undefined
+    const stoppedStepId = selectedRun.status === 'stopped'
+        ? selectedRun.timeline.find(t => t.status === 'stopped')?.stepId
+        : undefined;
+    const stopOriginalIdx = stoppedStepId ? initialNodes.findIndex(n => n.id === stoppedStepId) : -1;
+
+    const analyticsNodes = useMemo<Node[]>(() => {
+        const result: Node[] = initialNodes.map((node, idx) => {
+            const meta = stepMeta[node.id];
+            const timelineStep = selectedRun.timeline.find(t => t.stepId === node.id);
+            const effectiveStep = (stoppedStepId && timelineStep?.stepId === stoppedStepId)
+                ? {...timelineStep, status: 'skipped' as RunStepStatus, note: undefined}
+                : timelineStep;
+            const shift = (stopOriginalIdx >= 0 && idx >= stopOriginalIdx) ? STOP_MARKER_SHIFT : 0;
+            const dimmed = effectiveStep?.status === 'skipped';
+            return {
+                ...node,
+                position: {x: node.position.x, y: node.position.y + shift},
+                selectable: false,
+                className: `border-0! shadow-sm text-sm! px-4! py-3! rounded-lg! w-64! text-left!${dimmed ? ' opacity-70' : ''}`,
+                data: {
+                    ...node.data,
+                    label: <AnalyticsNodeLabel icon={meta.icon} memberEmail={node.id === 'trigger' ? selectedRun.member : undefined} step={effectiveStep} type={meta.type} value={meta.value} />
+                }
+            };
+        });
+        if (stopOriginalIdx >= 0) {
+            const markerY = initialNodes[stopOriginalIdx].position.y;
+            result.splice(stopOriginalIdx, 0, {
+                id: STOP_MARKER_ID,
+                type: 'stop-marker',
+                position: {x: 240, y: markerY},
+                selectable: false,
+                data: {reason: selectedRun.stopReason}
+            });
+        }
+        return result;
+    }, [selectedRun, stoppedStepId, stopOriginalIdx]);
+
+    const analyticsEdges = useMemo<Edge[]>(() => {
+        const result: Edge[] = [];
+        initialEdges.forEach((edge) => {
+            const src = selectedRun.timeline.find(t => t.stepId === edge.source)?.status;
+            const tgt = selectedRun.timeline.find(t => t.stepId === edge.target)?.status;
+            if (stoppedStepId && edge.target === stoppedStepId) {
+                result.push({
+                    ...edge,
+                    target: STOP_MARKER_ID,
+                    type: 'run',
+                    style: {stroke: edgeColorForRun(src, 'stopped'), strokeWidth: 2}
+                });
+                result.push({
+                    id: `${edge.id}-marker`,
+                    source: STOP_MARKER_ID,
+                    target: edge.target,
+                    type: 'run',
+                    style: {stroke: 'var(--color-grey-500)', strokeWidth: 1, strokeDasharray: '6 6'}
+                });
+                return;
             }
-        };
-    }), [selectedRun]);
+            const effectiveTgt = (stoppedStepId && edge.target === stoppedStepId) ? 'skipped' : tgt;
+            const dashed = effectiveTgt === 'skipped' || Boolean(stoppedStepId && edge.source === stoppedStepId);
+            result.push({
+                ...edge,
+                type: 'run',
+                style: {
+                    stroke: edgeColorForRun(src, tgt),
+                    strokeWidth: dashed ? 1 : 2,
+                    strokeDasharray: dashed ? '6 6' : undefined
+                }
+            });
+        });
+        return result;
+    }, [selectedRun, stoppedStepId]);
 
     const onConnect = useCallback(
         (connection: Connection) => setEdges(eds => addEdge(connection, eds)),
@@ -1021,6 +1092,7 @@ const AutomationEditor: React.FC = () => {
                                 nodes={analyticsNodes}
                                 nodesConnectable={false}
                                 nodesDraggable={false}
+                                nodeTypes={nodeTypes}
                                 zoomOnScroll={false}
                                 panOnDrag
                                 panOnScroll
