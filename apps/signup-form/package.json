@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/signup-form",
-  "version": "0.3.16",
+  "version": "0.3.17",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -31,7 +31,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@tryghost/debug": "2.1.0",
+    "@tryghost/debug": "catalog:",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },

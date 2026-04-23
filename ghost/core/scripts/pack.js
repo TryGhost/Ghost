@@ -23,10 +23,30 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {execFileSync} = require('node:child_process');
 const fsExtra = require('fs-extra');
+const yaml = require('js-yaml');
 
 const CORE_DIR = path.resolve(__dirname, '..');
 const ROOT_DIR = path.resolve(CORE_DIR, '../..');
 const DEPLOY_DIR = path.join(CORE_DIR, 'package');
+
+// pnpm-workspace.yaml's `catalog:` entries are only understood inside the
+// pnpm workspace. After ghost-cli unpacks this tarball the install runs
+// outside any workspace, so any `catalog:` specifier that leaks through
+// would crash pnpm with ERR_PNPM_SPEC_NOT_SUPPORTED_BY_ANY_RESOLVER.
+// We resolve them here with the exact versions from the workspace yaml.
+const workspaceYaml = yaml.load(fs.readFileSync(path.join(ROOT_DIR, 'pnpm-workspace.yaml'), 'utf8'));
+const catalog = workspaceYaml.catalog || {};
+
+function resolveCatalogSpec(name, spec) {
+    if (spec === 'catalog:' || spec === `catalog:${name}` || spec === 'catalog:default') {
+        const resolved = catalog[name];
+        if (!resolved) {
+            throw new Error(`Catalog reference for ${name} not found in pnpm-workspace.yaml`);
+        }
+        return resolved;
+    }
+    return spec;
+}
 
 // 1. Run pnpm deploy
 // inject-workspace-packages is enabled only for deploy (not workspace-wide)
@@ -84,8 +104,12 @@ for (const [key, val] of Object.entries(pkg.dependencies || {})) {
     const tgzName = `${slug}-${depPkg.version}.tgz`;
 
     console.log(`  Packing ${key} → components/${tgzName}`);
+    // pnpm pack (vs npm pack) substitutes `workspace:` and `catalog:`
+    // specifiers in the packed package.json with concrete versions,
+    // which is required once the tarball is installed outside the
+    // workspace by ghost-cli.
     execFileSync(
-        'npm',
+        'pnpm',
         ['pack', '--pack-destination', componentsDir],
         {cwd: depDir, stdio: 'pipe'}
     );
@@ -107,8 +131,11 @@ console.log(`  Set packageManager: ${rootPkg.packageManager.split('+')[0]}`);
 // creates a standalone context where these don't apply, so we merge them in.
 if (rootPkg.pnpm?.overrides || rootPkg.overrides) {
     const rootOverrides = rootPkg.pnpm?.overrides || rootPkg.overrides;
+    const resolvedOverrides = Object.fromEntries(
+        Object.entries(rootOverrides).map(([name, spec]) => [name, resolveCatalogSpec(name, spec)])
+    );
     pkg.pnpm = pkg.pnpm || {};
-    pkg.pnpm.overrides = {...rootOverrides, ...pkg.pnpm.overrides};
+    pkg.pnpm.overrides = {...resolvedOverrides, ...pkg.pnpm.overrides};
     console.log(`  Merged ${Object.keys(rootOverrides).length} root overrides into package.json`);
 }
 
