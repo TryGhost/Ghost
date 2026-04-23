@@ -64,6 +64,7 @@ class PaymentsService {
      * @param {Tier.Cadence} params.cadence
      * @param {Offer} [params.offer]
      * @param {Member} [params.member]
+     * @param {import('../../../gifts/gift').Gift} [params.gift]
      * @param {Object.<string, any>} [params.metadata]
      * @param {string} params.successUrl
      * @param {string} params.cancelUrl
@@ -71,7 +72,7 @@ class PaymentsService {
      *
      * @returns {Promise<URL>}
      */
-    async getPaymentLink({tier, cadence, offer, member, metadata, successUrl, cancelUrl, email}) {
+    async getPaymentLink({tier, cadence, offer, member, gift, metadata, successUrl, cancelUrl, email}) {
         let coupon = null;
         let trialDays = null;
         if (offer) {
@@ -89,6 +90,14 @@ class PaymentsService {
                 trialDays = offer.amount;
             } else {
                 coupon = await this.getCouponForOffer(offer.id);
+            }
+        }
+
+        // If continuing from a gift subscription, add gift remaining days as trial
+        if (trialDays === null && gift) {
+            const remainingDays = this.giftService.service.getRemainingActiveDays(gift);
+            if (remainingDays > 0) {
+                trialDays = Math.min(remainingDays, 730); // Stripe max trial period
             }
         }
 
