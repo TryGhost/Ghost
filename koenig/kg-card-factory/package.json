@@ -45,6 +45,6 @@
     "sinon": "21.1.2",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.58.2"
+    "typescript-eslint": "8.59.0"
   }
 }
