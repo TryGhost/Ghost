@@ -60,6 +60,7 @@ const tokenPermissionCheck = function tokenPermissionCheck(req, res, next) {
         tiers: ['GET', 'PUT', 'POST'],
         offers: ['GET', 'PUT', 'POST'],
         newsletters: ['GET', 'PUT', 'POST'],
+        automations: ['PUT'],
         config: ['GET'],
         explore: ['GET'],
         schedules: ['PUT'],
