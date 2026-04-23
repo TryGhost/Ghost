@@ -8,9 +8,6 @@ strictDepBuilds: true
 catalog:
   '@eslint/js': 8.57.1
   eslint: 8.57.1
-  '@tryghost/debug': 2.1.0
-  '@tryghost/errors': 1.3.13
-  '@tryghost/logging': 2.5.5
 
 catalogs:
   eslint9:
