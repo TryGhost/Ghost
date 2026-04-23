@@ -2135,8 +2135,8 @@ importers:
         specifier: 0.3.2
         version: 0.3.2
       '@tryghost/tpl':
-        specifier: 0.1.40
-        version: 0.1.40
+        specifier: 2.1.0
+        version: 2.1.0
       '@tryghost/url-utils':
         specifier: 5.1.2
         version: 5.1.2
@@ -9345,8 +9345,8 @@ packages:
   '@tryghost/tpl@0.1.40':
     resolution: {integrity: sha512-8w94lbNxXptRCIS8pe/IHjzgVFLxljxXx8+UQLO8NRFKraoEXthkPjAphN2MXKp1UGtj5ldh4Ye4D82bUWceOw==}
 
-  '@tryghost/tpl@2.0.3':
-    resolution: {integrity: sha512-v3BCkpcjEpYG7gPBntOjUYhADYfxbb+3tlt0KxqhZ9RYm+1sQ6wdsfZ+6Yh0akOwp/caifWIVuuvfcbL7x4SFA==}
+  '@tryghost/tpl@2.1.0':
+    resolution: {integrity: sha512-NIzGwyHcFUnJRmaDkd5wx6X+lXfqXqUbsICKO4KcPFtwmqLVButlbidNZsXLdoblyI2J5jS6JIGY22TB+mtiBw==}
 
   '@tryghost/url-utils@5.1.2':
     resolution: {integrity: sha512-GGZRfdVdk7jE1puqfBCeaAMeQ/Gd0NUkbqhj4gRSCWKW97JDpoiu5Fwyutt3vq3U3X4ZsfLfKs0NtAfUez0oog==}
@@ -31142,7 +31142,7 @@ snapshots:
       '@tryghost/debug': 2.1.0
       '@tryghost/errors': 1.3.13
       '@tryghost/nql': 0.12.10
-      '@tryghost/tpl': 2.0.3
+      '@tryghost/tpl': 2.1.0
     transitivePeerDependencies:
       - supports-color
 
@@ -31167,7 +31167,7 @@ snapshots:
   '@tryghost/bookshelf-pagination@2.0.3':
     dependencies:
       '@tryghost/errors': 1.3.13
-      '@tryghost/tpl': 2.0.3
+      '@tryghost/tpl': 2.1.0
       lodash: 4.17.23
     transitivePeerDependencies:
       - supports-color
@@ -31714,7 +31714,7 @@ snapshots:
     dependencies:
       lodash.template: 4.5.0
 
-  '@tryghost/tpl@2.0.3': {}
+  '@tryghost/tpl@2.1.0': {}
 
   '@tryghost/url-utils@5.1.2':
     dependencies:
