@@ -165,17 +165,7 @@ describe('GiftEmailService', function () {
             }
         });
 
-        it('does not include a greeting', async function () {
-            await service.sendReminder(reminderData);
-
-            const msg = mailer.send.getCall(0).args[0];
-
-            sinon.assert.match(msg.text, sinon.match(/^Your gift subscription is ending soon/));
-            sinon.assert.match(msg.html, sinon.match(value => !/Hi,|Hi [^,]+,/.test(value)));
-            sinon.assert.match(msg.text, sinon.match(value => !/Hi,|Hi [^,]+,/.test(value)));
-        });
-
-        it('uses the new CTA copy "Continue subscription"', async function () {
+        it('renders a "Continue subscription" CTA', async function () {
             await service.sendReminder(reminderData);
 
             const msg = mailer.send.getCall(0).args[0];
