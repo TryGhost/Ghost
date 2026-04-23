@@ -94,12 +94,10 @@ class PaymentsService {
         }
 
         // If continuing from a gift subscription, add gift remaining days as trial
-        if (trialDays === null && gift && gift.consumesAt) {
-            const now = new Date();
-            const diffMs = gift.consumesAt.getTime() - now.getTime();
-            const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-            if (diffDays > 0) {
-                trialDays = Math.min(diffDays, 730); // Stripe max trial period
+        if (trialDays === null && gift) {
+            const remainingDays = this.giftService.service.getRemainingActiveDays(gift);
+            if (remainingDays > 0) {
+                trialDays = Math.min(remainingDays, 730); // Stripe max trial period
             }
         }
 

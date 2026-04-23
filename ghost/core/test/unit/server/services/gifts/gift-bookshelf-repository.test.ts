@@ -507,7 +507,7 @@ describe('GiftBookshelfRepository', function () {
         assert.ok(filterDate <= after);
     });
 
-    describe('getActiveGift', function () {
+    describe('getActiveByMember', function () {
         function stubGiftModel({model}: {model: {toJSON(): {status?: string}} | null}) {
             // Mimic bookshelf's findOne: only matches when every field in the
             // query equals the corresponding field on the row.
@@ -558,7 +558,7 @@ describe('GiftBookshelfRepository', function () {
             });
             const repository = new GiftBookshelfRepository({GiftModel});
 
-            const gift = await repository.getActiveGift('member_2');
+            const gift = await repository.getActiveByMember('member_2');
 
             assert.ok(gift instanceof Gift);
             assert.equal(gift?.token, 'gift-token');
@@ -575,7 +575,7 @@ describe('GiftBookshelfRepository', function () {
             const GiftModel = stubGiftModel({model: null});
             const repository = new GiftBookshelfRepository({GiftModel});
 
-            const gift = await repository.getActiveGift('member_without_gift');
+            const gift = await repository.getActiveByMember('member_without_gift');
 
             assert.equal(gift, null);
         });
@@ -591,7 +591,7 @@ describe('GiftBookshelfRepository', function () {
             });
             const repository = new GiftBookshelfRepository({GiftModel});
 
-            const gift = await repository.getActiveGift('member_2');
+            const gift = await repository.getActiveByMember('member_2');
 
             assert.equal(gift, null);
         });
@@ -607,7 +607,7 @@ describe('GiftBookshelfRepository', function () {
             });
             const repository = new GiftBookshelfRepository({GiftModel});
 
-            const gift = await repository.getActiveGift('member_2');
+            const gift = await repository.getActiveByMember('member_2');
 
             assert.equal(gift, null);
         });

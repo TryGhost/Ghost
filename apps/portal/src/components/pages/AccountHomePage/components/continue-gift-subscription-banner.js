@@ -15,7 +15,7 @@ const ContinueGiftSubscriptionBanner = () => {
         return null;
     }
 
-    const isRunning = ['continueGiftSubscription:running'].includes(action);
+    const isRunning = action === 'continueGiftSubscription:running';
 
     // TODO: Add translation strings once copy has been finalised
     /* eslint-disable i18next/no-literal-string */

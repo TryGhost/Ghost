@@ -34,7 +34,8 @@ const messages = {
     archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}',
     otcNotSupported: 'OTC verification not supported.',
     invalidCode: 'Invalid verification code.',
-    failedToVerifyCode: 'Failed to verify code, please try again.'
+    failedToVerifyCode: 'Failed to verify code, please try again.',
+    signInRequired: 'You must be signed in to continue.'
 };
 
 // helper utility for logic shared between sendMagicLink and verifyOTC
@@ -719,7 +720,7 @@ module.exports = class RouterController {
             if (req.body.continueFromGift) {
                 if (!isAuthenticated || !member) {
                     throw new UnauthorizedError({
-                        message: tpl(messages.badRequest)
+                        message: tpl(messages.signInRequired)
                     });
                 }
                 if (member.get('status') !== 'gift') {
@@ -729,7 +730,7 @@ module.exports = class RouterController {
                     });
                 }
 
-                gift = await this._giftService.service.getActiveGift(member.id);
+                gift = await this._giftService.service.getActiveByMember(member.id);
                 if (!gift) {
                     throw new BadRequestError({
                         message: tpl(messages.badRequest),

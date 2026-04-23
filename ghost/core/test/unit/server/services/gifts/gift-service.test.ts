@@ -32,7 +32,7 @@ describe('GiftService', function () {
         existsByCheckoutSessionId: sinon.SinonStub<[string], Promise<boolean>>;
         getByToken: sinon.SinonStub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>;
         getByPaymentIntentId: sinon.SinonStub<[string], Promise<Gift | null>>;
-        getActiveGift: sinon.SinonStub<[string], Promise<Gift | null>>;
+        getActiveByMember: sinon.SinonStub<[string], Promise<Gift | null>>;
         findPendingConsumption: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingExpiration: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingReminder: sinon.SinonStub<[FindPendingReminderOptions], Promise<Gift[]>>;
@@ -77,7 +77,7 @@ describe('GiftService', function () {
             existsByCheckoutSessionId: sinon.stub<[string], Promise<boolean>>().resolves(false),
             getByToken: sinon.stub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>().resolves(null),
             getByPaymentIntentId: sinon.stub<[string], Promise<Gift | null>>().resolves(null),
-            getActiveGift: sinon.stub<[string], Promise<Gift | null>>().resolves(null),
+            getActiveByMember: sinon.stub<[string], Promise<Gift | null>>().resolves(null),
             findPendingConsumption: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingExpiration: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingReminder: sinon.stub<[FindPendingReminderOptions], Promise<Gift[]>>().resolves([]),
@@ -1316,39 +1316,137 @@ describe('GiftService', function () {
         });
     });
 
-    describe('getActiveGift', function () {
+    describe('getActiveByMember', function () {
+        const MS_PER_DAY = 24 * 60 * 60 * 1000;
+        const daysFromNow = (days: number) => new Date(Date.now() + days * MS_PER_DAY);
+
         it('returns the redeemed gift from the repository', async function () {
             const gift = buildGift({
                 status: 'redeemed',
                 redeemerMemberId: 'member_1',
-                redeemedAt: new Date('2026-06-01T00:00:00.000Z'),
-                consumesAt: new Date('2027-06-01T00:00:00.000Z')
+                redeemedAt: daysFromNow(-30),
+                consumesAt: daysFromNow(335)
             });
 
-            giftRepository.getActiveGift.resolves(gift);
+            giftRepository.getActiveByMember.resolves(gift);
 
             const service = createService();
-            const result = await service.getActiveGift('member_1');
+            const result = await service.getActiveByMember('member_1');
 
             assert.equal(result, gift);
-            sinon.assert.calledOnceWithExactly(giftRepository.getActiveGift, 'member_1');
+            sinon.assert.calledOnceWithExactly(giftRepository.getActiveByMember, 'member_1');
         });
 
         it('returns null when the repository has no redeemed gift for the member', async function () {
-            giftRepository.getActiveGift.resolves(null);
+            giftRepository.getActiveByMember.resolves(null);
 
             const service = createService();
-            const result = await service.getActiveGift('member_without_gift');
+            const result = await service.getActiveByMember('member_without_gift');
 
             assert.equal(result, null);
         });
 
         it('returns null without hitting the repository when memberId is falsy', async function () {
             const service = createService();
-            const result = await service.getActiveGift('');
+            const result = await service.getActiveByMember('');
 
             assert.equal(result, null);
-            sinon.assert.notCalled(giftRepository.getActiveGift);
+            sinon.assert.notCalled(giftRepository.getActiveByMember);
+        });
+    });
+
+    describe('getRemainingActiveDays', function () {
+        const MS_PER_DAY = 24 * 60 * 60 * 1000;
+        let now: Date;
+        let redeemedAt: Date;
+        const daysFromNow = (days: number) => new Date(now.getTime() + days * MS_PER_DAY);
+
+        beforeEach(function () {
+            now = new Date();
+            redeemedAt = new Date(now.getTime() - 30 * MS_PER_DAY);
+        });
+
+        it('returns 0 when the gift has not been redeemed', function () {
+            const gift = buildGift({
+                status: 'purchased',
+                redeemedAt: null,
+                consumesAt: daysFromNow(10)
+            });
+            const service = createService();
+
+            assert.equal(service.getRemainingActiveDays(gift, now), 0);
+        });
+
+        it('returns 0 when a redeemed gift has no consumesAt', function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemedAt,
+                consumesAt: null
+            });
+            const service = createService();
+
+            assert.equal(service.getRemainingActiveDays(gift, now), 0);
+        });
+
+        it('returns 0 when the redeemed gift has already been consumed', function () {
+            const consumedAt = daysFromNow(-1);
+            const gift = buildGift({
+                status: 'consumed',
+                redeemedAt,
+                consumesAt: consumedAt,
+                consumedAt
+            });
+            const service = createService();
+
+            assert.equal(service.getRemainingActiveDays(gift, now), 0);
+        });
+
+        it('returns the number of whole days until consumesAt, rounded up', function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemedAt,
+                consumesAt: daysFromNow(10.5)
+            });
+            const service = createService();
+
+            // 10.5 days → ceil → 11
+            assert.equal(service.getRemainingActiveDays(gift, now), 11);
+        });
+
+        it('returns 0 when consumesAt is in the past', function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemedAt,
+                consumesAt: daysFromNow(-5)
+            });
+            const service = createService();
+
+            assert.equal(service.getRemainingActiveDays(gift, now), 0);
+        });
+
+        it('returns 0 when consumesAt equals now', function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemedAt,
+                consumesAt: now
+            });
+            const service = createService();
+
+            assert.equal(service.getRemainingActiveDays(gift, now), 0);
+        });
+
+        it('defaults `now` to the current time when omitted', function () {
+            const consumesAt = daysFromNow(5);
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemedAt,
+                consumesAt
+            });
+            const service = createService();
+
+            const result = service.getRemainingActiveDays(gift);
+
+            assert.ok(result === 5 || result === 4, `expected 4 or 5, got ${result}`);
         });
     });
 });

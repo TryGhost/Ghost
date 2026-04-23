@@ -335,11 +335,21 @@ export class GiftService {
         return redeemed;
     }
 
-    async getActiveGift(memberId: string): Promise<Gift | null> {
+    async getActiveByMember(memberId: string): Promise<Gift | null> {
         if (!memberId) {
             return null;
         }
-        return this.deps.giftRepository.getActiveGift(memberId);
+        return this.deps.giftRepository.getActiveByMember(memberId);
+    }
+
+    getRemainingActiveDays(gift: Gift, now: Date = new Date()): number {
+        if (!gift.isRedeemed() || !gift.consumesAt || gift.isConsumed()) {
+            return 0;
+        }
+
+        const diffDays = Math.ceil((gift.consumesAt.getTime() - now.getTime()) / MS_PER_DAY);
+
+        return Math.max(0, diffDays);
     }
 
     async refund(paymentIntentId: string): Promise<boolean> {
