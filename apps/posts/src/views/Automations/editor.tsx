@@ -34,6 +34,7 @@ type NodeLabelProps = {
     icon: React.ElementType;
     type: string;
     value?: string;
+    stats?: {sent: number; opened: number; clicked: number};
 };
 
 type AddStepOption = {id: string; icon: React.ElementType; title: string; description: string};
@@ -258,17 +259,39 @@ const ZoomControls: React.FC = () => {
     );
 };
 
-const NodeLabel: React.FC<NodeLabelProps> = ({icon: Icon, type, value}) => (
-    <div className="flex items-center gap-3">
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-grey-100 text-grey-700">
-            <Icon className="size-4" />
+const NodeLabel: React.FC<NodeLabelProps> = ({icon: Icon, type, value, stats}) => {
+    const openRate = stats && stats.sent > 0 ? Math.round((stats.opened / stats.sent) * 100) : 0;
+    const clickRate = stats && stats.sent > 0 ? Math.round((stats.clicked / stats.sent) * 100) : 0;
+    return (
+        <div className="flex w-full flex-col gap-3">
+            <div className="flex items-center gap-3">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-grey-100 text-grey-700">
+                    <Icon className="size-4" />
+                </div>
+                <div className="flex min-w-0 flex-col">
+                    <span className="text-xs text-grey-600">{type}</span>
+                    {value && <span className="truncate font-medium">{value}</span>}
+                </div>
+            </div>
+            {stats && (
+                <div className="grid grid-cols-3 divide-x divide-grey-200 border-t pt-2 text-xs">
+                    <div className="flex flex-col px-3">
+                        <span className="text-grey-600">Sent</span>
+                        <span className="font-medium">{stats.sent.toLocaleString()}</span>
+                    </div>
+                    <div className="flex flex-col px-3">
+                        <span className="text-grey-600">Opened</span>
+                        <span className="font-medium">{openRate}%</span>
+                    </div>
+                    <div className="flex flex-col px-3">
+                        <span className="text-grey-600">Clicked</span>
+                        <span className="font-medium">{clickRate}%</span>
+                    </div>
+                </div>
+            )}
         </div>
-        <div className="flex min-w-0 flex-col">
-            <span className="text-xs text-grey-600">{type}</span>
-            {value && <span className="truncate font-medium">{value}</span>}
-        </div>
-    </div>
-);
+    );
+};
 
 type StepMeta = {icon: React.ElementType; type: string; value?: string; description?: string};
 
@@ -282,6 +305,14 @@ const stepMeta: Record<string, StepMeta> = {
     'add-label': {icon: LucideIcon.Tag, type: 'Add label', value: 'Onboarded', description: 'Applies a label to the member for segmentation.'}
 };
 
+type EmailStats = {sent: number; opened: number; clicked: number};
+
+const mockEmailStats: Record<string, EmailStats> = {
+    'email-1': {sent: 1247, opened: 1189, clicked: 324},
+    'email-2': {sent: 1180, opened: 1043, clicked: 287},
+    'email-3': {sent: 1098, opened: 921, clicked: 156}
+};
+
 const buildNode = (id: string, position: {x: number; y: number}, type?: 'input' | 'output'): Node => {
     const meta = stepMeta[id];
     return {
@@ -290,7 +321,7 @@ const buildNode = (id: string, position: {x: number; y: number}, type?: 'input' 
         position,
         data: {
             ...meta,
-            label: <NodeLabel icon={meta.icon} type={meta.type} value={meta.value} />
+            label: <NodeLabel icon={meta.icon} stats={mockEmailStats[id]} type={meta.type} value={meta.value} />
         },
         ...nodeDefaults
     };
@@ -299,11 +330,11 @@ const buildNode = (id: string, position: {x: number; y: number}, type?: 'input' 
 const initialNodes: Node[] = [
     buildNode('trigger', {x: 240, y: 0}, 'input'),
     buildNode('email-1', {x: 240, y: 180}),
-    buildNode('wait-1', {x: 240, y: 360}),
-    buildNode('email-2', {x: 240, y: 540}),
-    buildNode('wait-2', {x: 240, y: 720}),
-    buildNode('email-3', {x: 240, y: 900}),
-    buildNode('add-label', {x: 240, y: 1080})
+    buildNode('wait-1', {x: 240, y: 420}),
+    buildNode('email-2', {x: 240, y: 600}),
+    buildNode('wait-2', {x: 240, y: 840}),
+    buildNode('email-3', {x: 240, y: 1020}),
+    buildNode('add-label', {x: 240, y: 1260})
 ];
 
 const initialEdges: Edge[] = [
@@ -891,6 +922,8 @@ const AutomationEditor: React.FC = () => {
         : undefined;
     const runningOriginalIdx = runningStepId ? initialNodes.findIndex(n => n.id === runningStepId) : -1;
 
+    const ANALYTICS_STEP_GAP = 180;
+
     const analyticsNodes = useMemo<Node[]>(() => {
         const result: Node[] = initialNodes.map((node, idx) => {
             const meta = stepMeta[node.id];
@@ -901,12 +934,13 @@ const AutomationEditor: React.FC = () => {
             } else if (runningStepId && node.id === runningStepId && timelineStep) {
                 effectiveStep = {...timelineStep, status: 'running'};
             }
+            const baseY = idx * ANALYTICS_STEP_GAP;
             const shift = (stopOriginalIdx >= 0 && idx >= stopOriginalIdx) ? STOP_MARKER_SHIFT : 0;
             const isLaterPending = runningOriginalIdx >= 0 && idx > runningOriginalIdx;
             const dimmed = effectiveStep?.status === 'skipped' || isLaterPending;
             return {
                 ...node,
-                position: {x: node.position.x, y: node.position.y + shift},
+                position: {x: node.position.x, y: baseY + shift},
                 selectable: false,
                 className: `border-0! shadow-sm text-sm! px-4! py-3! rounded-lg! w-64! text-left!${dimmed ? ' opacity-70' : ''}`,
                 data: {
@@ -916,7 +950,7 @@ const AutomationEditor: React.FC = () => {
             };
         });
         if (stopOriginalIdx >= 0) {
-            const markerY = initialNodes[stopOriginalIdx].position.y;
+            const markerY = stopOriginalIdx * ANALYTICS_STEP_GAP;
             result.splice(stopOriginalIdx, 0, {
                 id: STOP_MARKER_ID,
                 type: 'stop-marker',
@@ -926,11 +960,11 @@ const AutomationEditor: React.FC = () => {
             });
         }
         if (selectedRun.status === 'completed') {
-            const lastNode = initialNodes[initialNodes.length - 1];
+            const lastIdx = initialNodes.length - 1;
             result.push({
                 id: COMPLETED_MARKER_ID,
                 type: 'completed-marker',
-                position: {x: 240, y: lastNode.position.y + 180},
+                position: {x: 240, y: lastIdx * ANALYTICS_STEP_GAP + ANALYTICS_STEP_GAP},
                 selectable: false,
                 data: {}
             });
