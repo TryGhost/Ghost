@@ -10,6 +10,7 @@ import {useGlobalData} from './components/providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const EMPTY_KEYWORDS: string[] = [];
+const OPEN_SHADE_MODAL_SELECTOR = ':is([role="dialog"], [role="alertdialog"])[data-state="open"]';
 
 const Page: React.FC<{children: ReactNode}> = ({children}) => {
     return <>
@@ -30,13 +31,21 @@ const MainContent: React.FC = () => {
     const navigateAway = (escLocation: string) => {
         window.location.hash = escLocation;
     };
+    const hasOpenModal = () => {
+        // Legacy admin-x-design-system modals render a dedicated backdrop element.
+        if (document.getElementById('modal-backdrop')) {
+            return true;
+        }
+
+        // Newer Shade/Radix dialogs expose their open state via dialog roles.
+        return Boolean(document.querySelector(OPEN_SHADE_MODAL_SELECTOR));
+    };
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 // Don't navigate away if a modal is open - let the modal handle ESC
-                const modalBackdrop = document.getElementById('modal-backdrop');
-                if (modalBackdrop) {
+                if (hasOpenModal()) {
                     return;
                 }
 

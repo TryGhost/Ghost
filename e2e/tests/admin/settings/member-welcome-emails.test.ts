@@ -347,7 +347,7 @@ test.describe('Ghost Admin - Welcome Email Customize Button', () => {
         await expect(welcomeEmailsSection.customizeModalFooterTextarea).toHaveValue('Persisted footer');
     });
 
-    test('Escape shows unsaved changes confirmation for welcome email customization', async ({page}) => {
+    test('escape behavior - shows unsaved changes confirmation for welcome email customization', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
         await welcomeEmailsSection.goto();
@@ -363,7 +363,7 @@ test.describe('Ghost Admin - Welcome Email Customize Button', () => {
         await expect(page).toHaveURL(/\/ghost\/#\/settings\/memberemails$/);
     });
 
-    test('Escape closes welcome email customization confirmation without closing the customize modal', async ({page}) => {
+    test('escape behavior - closes welcome email customization confirmation without closing the customize modal', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
         await welcomeEmailsSection.goto();
@@ -381,7 +381,7 @@ test.describe('Ghost Admin - Welcome Email Customize Button', () => {
         await expect(page).toHaveURL(/\/ghost\/#\/settings\/memberemails$/);
     });
 
-    test.skip('Escape closes welcome email color picker without bypassing unsaved changes confirmation', async ({page}) => {
+    test('escape behavior - closes welcome email color picker without bypassing unsaved changes confirmation', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
         await welcomeEmailsSection.goto();
@@ -411,7 +411,7 @@ test.describe('Ghost Admin - Welcome Email Customize Button', () => {
         await expect(page).toHaveURL(/\/ghost\/#\/settings\/memberemails$/);
     });
 
-    test('Escape closes welcome email font select without bypassing unsaved changes confirmation', async ({page}) => {
+    test('escape behavior - closes welcome email font select without bypassing unsaved changes confirmation', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
         await welcomeEmailsSection.goto();
