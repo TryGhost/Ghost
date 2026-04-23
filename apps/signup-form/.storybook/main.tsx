@@ -10,9 +10,6 @@ const config: StorybookConfig = {
 		name: "@storybook/react-vite",
 		options: {},
 	},
-	docs: {
-		autodocs: "tag",
-	},
 	// staticDirs: ['../public/fonts'],
 	async viteFinal(config) {
 		config.resolve = config.resolve ?? {};
