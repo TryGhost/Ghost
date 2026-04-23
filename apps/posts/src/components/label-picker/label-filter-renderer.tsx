@@ -138,6 +138,10 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
             onOpenChange={(open) => {
                 if (open) {
                     updateAlignOffset();
+                } else {
+                    // MultiSelectCombobox remounts with an empty input, so clear the picker query
+                    // too or the hidden search state keeps filtering labels after reopen.
+                    picker.onSearchChange('');
                 }
             }}
         >
