@@ -43,8 +43,7 @@ const addStepOptions: AddStepOption[] = [
     {id: 'action', icon: LucideIcon.UserCog, title: 'Action', description: 'Manage subscribers'},
     {id: 'delay', icon: LucideIcon.Clock, title: 'Delay', description: 'Wait for a time or a date'},
     {id: 'wait-until', icon: LucideIcon.Hourglass, title: 'Wait until', description: 'Wait until an event or condition'},
-    {id: 'branch', icon: LucideIcon.GitBranch, title: 'Branch', description: 'Split based on a condition'},
-    {id: 'stop', icon: LucideIcon.Square, title: 'Stop', description: 'End automation flow'}
+    {id: 'branch', icon: LucideIcon.GitBranch, title: 'Branch', description: 'Split based on a condition'}
 ];
 
 const AddStepMenu: React.FC<{children: React.ReactNode}> = ({children}) => (
@@ -123,7 +122,7 @@ const StopMarkerNode: React.FC<NodeProps> = ({data}) => {
     return (
         <>
             <Handle position={Position.Top} type="target" />
-            <div className="flex w-64 items-center gap-2 rounded-full bg-orange-100 px-3 py-1.5 text-xs font-medium text-orange-700">
+            <div className="flex w-64 items-center justify-center gap-2 rounded-full bg-orange-100 px-3 py-1.5 text-xs font-medium text-orange-700">
                 <LucideIcon.Square className="size-3" strokeWidth={2.5} />
                 <span>Stopped</span>
                 {reason && (
@@ -138,7 +137,17 @@ const StopMarkerNode: React.FC<NodeProps> = ({data}) => {
     );
 };
 
-const nodeTypes = {'stop-marker': StopMarkerNode};
+const CompletedMarkerNode: React.FC<NodeProps> = () => (
+    <>
+        <Handle position={Position.Top} type="target" />
+        <div className="flex w-64 items-center justify-center gap-2 rounded-full bg-green-100 px-3 py-1.5 text-xs font-medium text-green-800">
+            <LucideIcon.Check className="size-3" strokeWidth={2.5} />
+            <span>Completed workflow</span>
+        </div>
+    </>
+);
+
+const nodeTypes = {'stop-marker': StopMarkerNode, 'completed-marker': CompletedMarkerNode};
 
 type StopConditionKind = 'upgrade' | 'unsubscribe' | 'cancel' | 'label-added';
 
@@ -270,8 +279,7 @@ const stepMeta: Record<string, StepMeta> = {
     'email-2': {icon: LucideIcon.Mail, type: 'Send email', value: 'Reader favorites', description: 'Sends the selected email to the member.'},
     'wait-2': {icon: LucideIcon.Clock, type: 'Wait', value: '3 days', description: 'Pauses the flow before moving to the next step.'},
     'email-3': {icon: LucideIcon.Mail, type: 'Send email', value: 'Become a paid member', description: 'Sends the selected email to the member.'},
-    'add-label': {icon: LucideIcon.Tag, type: 'Add label', value: 'Onboarded', description: 'Applies a label to the member for segmentation.'},
-    end: {icon: LucideIcon.Square, type: 'Stop', description: 'Marks the completion of the automation.'}
+    'add-label': {icon: LucideIcon.Tag, type: 'Add label', value: 'Onboarded', description: 'Applies a label to the member for segmentation.'}
 };
 
 const buildNode = (id: string, position: {x: number; y: number}, type?: 'input' | 'output'): Node => {
@@ -295,8 +303,7 @@ const initialNodes: Node[] = [
     buildNode('email-2', {x: 240, y: 540}),
     buildNode('wait-2', {x: 240, y: 720}),
     buildNode('email-3', {x: 240, y: 900}),
-    buildNode('add-label', {x: 240, y: 1080}),
-    buildNode('end', {x: 240, y: 1260}, 'output')
+    buildNode('add-label', {x: 240, y: 1080})
 ];
 
 const initialEdges: Edge[] = [
@@ -305,8 +312,7 @@ const initialEdges: Edge[] = [
     {id: 'e3', source: 'wait-1', target: 'email-2'},
     {id: 'e4', source: 'email-2', target: 'wait-2'},
     {id: 'e5', source: 'wait-2', target: 'email-3'},
-    {id: 'e6', source: 'email-3', target: 'add-label'},
-    {id: 'e7', source: 'add-label', target: 'end'}
+    {id: 'e6', source: 'email-3', target: 'add-label'}
 ];
 
 const SidebarField: React.FC<{label: string; children: React.ReactNode}> = ({label, children}) => (
@@ -581,8 +587,7 @@ const mockRuns: Run[] = [
             {stepId: 'email-2', at: '2026-04-20T09:14:01Z', status: 'completed', note: 'Delivered', durationMs: 410},
             {stepId: 'wait-2', at: '2026-04-20T09:14:02Z', status: 'completed', note: 'Waited 3 days', durationMs: THREE_DAYS_MS},
             {stepId: 'email-3', at: '2026-04-23T09:14:02Z', status: 'completed', note: 'Delivered', durationMs: 320},
-            {stepId: 'add-label', at: '2026-04-23T09:14:02Z', status: 'completed', durationMs: 42},
-            {stepId: 'end', at: '2026-04-23T09:14:02Z', status: 'completed', durationMs: 12}
+            {stepId: 'add-label', at: '2026-04-23T09:14:02Z', status: 'completed', durationMs: 42}
         ]
     },
     {
@@ -599,8 +604,7 @@ const mockRuns: Run[] = [
             {stepId: 'email-2', at: '2026-04-20T08:02:04Z', status: 'stopped', note: 'Stopped: Member upgraded', durationMs: 120},
             {stepId: 'wait-2', status: 'skipped'},
             {stepId: 'email-3', status: 'skipped'},
-            {stepId: 'add-label', status: 'skipped'},
-            {stepId: 'end', status: 'skipped'}
+            {stepId: 'add-label', status: 'skipped'}
         ]
     },
     {
@@ -617,8 +621,7 @@ const mockRuns: Run[] = [
             {stepId: 'email-2', at: '2026-04-18T10:12:01Z', status: 'completed', note: 'Clicked unsubscribe', durationMs: 402},
             {stepId: 'wait-2', at: '2026-04-18T10:12:02Z', status: 'stopped', note: 'Stopped: Member unsubscribed', durationMs: 45_000},
             {stepId: 'email-3', status: 'skipped'},
-            {stepId: 'add-label', status: 'skipped'},
-            {stepId: 'end', status: 'skipped'}
+            {stepId: 'add-label', status: 'skipped'}
         ]
     },
     {
@@ -633,8 +636,7 @@ const mockRuns: Run[] = [
             {stepId: 'email-2', status: 'pending'},
             {stepId: 'wait-2', status: 'pending'},
             {stepId: 'email-3', status: 'pending'},
-            {stepId: 'add-label', status: 'pending'},
-            {stepId: 'end', status: 'pending'}
+            {stepId: 'add-label', status: 'pending'}
         ]
     },
     {
@@ -650,8 +652,7 @@ const mockRuns: Run[] = [
             {stepId: 'email-2', at: '2026-04-20T22:31:12Z', status: 'failed', note: 'Bounced: mailbox full', durationMs: 1_120},
             {stepId: 'wait-2', status: 'skipped'},
             {stepId: 'email-3', status: 'skipped'},
-            {stepId: 'add-label', status: 'skipped'},
-            {stepId: 'end', status: 'skipped'}
+            {stepId: 'add-label', status: 'skipped'}
         ]
     },
     {
@@ -667,8 +668,7 @@ const mockRuns: Run[] = [
             {stepId: 'email-2', at: '2026-04-19T18:09:01Z', status: 'completed', durationMs: 372},
             {stepId: 'wait-2', at: '2026-04-19T18:09:02Z', status: 'completed', durationMs: THREE_DAYS_MS},
             {stepId: 'email-3', at: '2026-04-22T18:09:02Z', status: 'completed', durationMs: 318},
-            {stepId: 'add-label', at: '2026-04-22T18:09:02Z', status: 'completed', durationMs: 37},
-            {stepId: 'end', at: '2026-04-22T18:09:02Z', status: 'completed', durationMs: 8}
+            {stepId: 'add-label', at: '2026-04-22T18:09:02Z', status: 'completed', durationMs: 37}
         ]
     }
 ];
@@ -875,6 +875,7 @@ const AutomationEditor: React.FC = () => {
 
     const STOP_MARKER_ID = '__stop_marker__';
     const STOP_MARKER_SHIFT = 100;
+    const COMPLETED_MARKER_ID = '__completed_marker__';
 
     const stoppedStepId = selectedRun.status === 'stopped'
         ? selectedRun.timeline.find(t => t.status === 'stopped')?.stepId
@@ -909,6 +910,16 @@ const AutomationEditor: React.FC = () => {
                 position: {x: 240, y: markerY},
                 selectable: false,
                 data: {reason: selectedRun.stopReason}
+            });
+        }
+        if (selectedRun.status === 'completed') {
+            const lastNode = initialNodes[initialNodes.length - 1];
+            result.push({
+                id: COMPLETED_MARKER_ID,
+                type: 'completed-marker',
+                position: {x: 240, y: lastNode.position.y + 180},
+                selectable: false,
+                data: {}
             });
         }
         return result;
@@ -947,6 +958,16 @@ const AutomationEditor: React.FC = () => {
                 }
             });
         });
+        if (selectedRun.status === 'completed') {
+            const lastNode = initialNodes[initialNodes.length - 1];
+            result.push({
+                id: 'e-completed-marker',
+                source: lastNode.id,
+                target: COMPLETED_MARKER_ID,
+                type: 'run',
+                style: {stroke: 'var(--color-green-500)', strokeWidth: 2}
+            });
+        }
         return result;
     }, [selectedRun, stoppedStepId]);
 
