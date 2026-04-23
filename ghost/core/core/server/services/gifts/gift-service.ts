@@ -34,6 +34,9 @@ interface MemberRepository {
 
 type Tier = {
     name: string;
+    currency: string | null;
+    monthlyPrice: number | null;
+    yearlyPrice: number | null;
     toJSON?: () => {
         id: string;
         name: string;
@@ -61,10 +64,10 @@ interface GiftEmailService {
     }): Promise<void>;
     sendReminder(data: {
         memberEmail: string;
-        memberName: string | null;
         tierName: string;
+        tierPrice: number;
+        tierCurrency: string;
         cadence: 'month' | 'year';
-        duration: number;
         consumesAt: Date;
     }): Promise<void>;
 }
@@ -114,9 +117,7 @@ interface GiftServiceDeps {
 
 interface ReminderSend {
     memberEmail: string;
-    memberName: string | null;
     cadence: 'month' | 'year';
-    duration: number;
     consumesAt: Date;
 }
 
@@ -491,6 +492,16 @@ export class GiftService {
             throw new errors.NotFoundError({message: `Tier not found for gift: ${gift.tierId}`});
         }
 
+        // Throw before the transaction so the gift isn't marked as reminded;
+        // the next run recovers after an admin restores pricing.
+        const tierPrice = gift.cadence === 'month' ? tier.monthlyPrice : tier.yearlyPrice;
+
+        if (tierPrice === null || tier.currency === null) {
+            throw new errors.NotFoundError({
+                message: `Tier missing ${gift.cadence}ly pricing for gift: ${gift.tierId}`
+            });
+        }
+
         const result = await this.deps.giftRepository.transaction(async (transacting): Promise<ReminderSend | null> => {
             const locked = await this.deps.giftRepository.getByToken(token, {transacting, forUpdate: true});
 
@@ -537,9 +548,7 @@ export class GiftService {
 
             return {
                 memberEmail: member.get('email'),
-                memberName: member.get('name'),
                 cadence: locked.cadence,
-                duration: locked.duration,
                 consumesAt: locked.consumesAt
             };
         });
@@ -550,10 +559,10 @@ export class GiftService {
 
         await this.deps.giftEmailService.sendReminder({
             memberEmail: result.memberEmail,
-            memberName: result.memberName,
             tierName: tier.name,
+            tierPrice,
+            tierCurrency: tier.currency,
             cadence: result.cadence,
-            duration: result.duration,
             consumesAt: result.consumesAt
         });
 

@@ -5,25 +5,24 @@ export interface GiftReminderData {
     siteDomain: string;
     accentColor: string | undefined;
     memberEmail: string;
-    memberName: string | null;
     gift: {
         tierName: string;
-        cadenceLabel: string;
         consumesAt: string;
+        priceAfter: string;
         manageSubscriptionUrl: string;
     };
 }
 
 export function renderText(data: GiftReminderData): string {
-    const greeting = data.memberName ? `Hi ${data.memberName},` : 'Hi,';
+    return `Your gift subscription is ending soon
 
-    return `${greeting}
+Your gift subscription to ${data.siteTitle} ends on ${data.gift.consumesAt}. Continue with a paid subscription to keep reading.
 
-Your gift subscription to ${data.siteTitle} ends on ${data.gift.consumesAt}.
+Gift subscription: ${data.gift.tierName}
+Ends on: ${data.gift.consumesAt}
+Price after gift ends: ${data.gift.priceAfter}
 
-Gift subscription: ${data.gift.tierName} • ${data.gift.cadenceLabel}
-
-To keep your access, continue with a paid subscription before your gift ends:
+Continue subscription:
 ${data.gift.manageSubscriptionUrl}
 
 ---

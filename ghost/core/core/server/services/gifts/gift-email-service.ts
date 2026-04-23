@@ -37,10 +37,10 @@ interface PurchaseConfirmationData {
 
 interface ReminderData {
     memberEmail: string;
-    memberName: string | null;
     tierName: string;
+    tierPrice: number;
+    tierCurrency: string;
     cadence: 'month' | 'year';
-    duration: number;
     consumesAt: Date;
 }
 
@@ -116,12 +116,13 @@ export class GiftEmailService {
         });
     }
 
-    async sendReminder({memberEmail, memberName, tierName, cadence, duration, consumesAt}: ReminderData): Promise<void> {
+    async sendReminder({memberEmail, tierName, tierPrice, tierCurrency, cadence, consumesAt}: ReminderData): Promise<void> {
         const siteDomain = this.siteDomain;
         const siteUrl = this.urlUtils.getSiteUrl();
         const siteTitle = this.settingsCache.get('title') ?? siteDomain;
 
-        const cadenceLabel = duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
+        const formattedPrice = this.formatAmount({currency: tierCurrency, amount: tierPrice / 100});
+        const priceAfter = `${formattedPrice}/${cadence}`;
 
         const manageSubscriptionUrl = new URL('#/portal/account', siteUrl).href;
 
@@ -132,11 +133,10 @@ export class GiftEmailService {
             siteDomain,
             accentColor: this.settingsCache.get('accent_color'),
             memberEmail,
-            memberName,
             gift: {
                 tierName,
-                cadenceLabel,
                 consumesAt: moment(consumesAt).format('D MMM YYYY'),
+                priceAfter,
                 manageSubscriptionUrl
             }
         };
