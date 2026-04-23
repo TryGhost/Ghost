@@ -371,6 +371,21 @@ describe('MemberWelcomeEmailRenderer', function () {
             assert.equal(result.subject, 'Welcome <script>alert("xss")</script>!');
         });
 
+        it('uses &#39;, not &apos;, for Outlook support', async function () {
+            lexicalRenderStub.resolves('<p>It\'s great to have you!</p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            assert(!result.html.includes('&apos;'), 'HTML should not contain &apos;');
+            assert(result.html.includes('&#39;'), 'HTML should contain &#39;');
+        });
+
         it('removes unknown tokens from output', async function () {
             lexicalRenderStub.resolves('<p>Hello {unknown_token} and {another}</p>');
             const renderer = new MemberWelcomeEmailRenderer({t: key => key});
@@ -902,7 +917,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 assert(!$button.attr('style')?.includes('margin: 0 auto'), 'button should not have margin: 0 auto');
             });
 
-            it('inlines figcaption styles for image card captions', async function () {
+            it('uses <div>s with inline styles for image cards', async function () {
                 lexicalRenderStub.resolves(`
                     <figure class="kg-card kg-image-card kg-card-hascaption">
                         <img src="https://example.com/photo.jpg" class="kg-image" alt="alt text" loading="lazy" width="600" height="400">
@@ -919,10 +934,15 @@ describe('MemberWelcomeEmailRenderer', function () {
                 });
 
                 const $ = cheerio.load(result.html);
-                const $figcaption = $('figcaption');
-                assert.equal($figcaption.text(), 'A caption');
-                assert($figcaption.attr('style').includes('text-align: center'), 'figcaption should be centered');
-                assert($figcaption.attr('style').includes('font-size: 13px'), 'figcaption should have 13px font');
+
+                assert.equal($('figure').length, 0);
+                assert.equal($('figcaption').length, 0);
+
+                const $caption = $('.kg-image-card .kg-card-figcaption');
+                assert.equal($caption.text(), 'A caption');
+                assert($caption.attr('style').includes('text-align: center'), 'caption should be centered');
+                assert($caption.attr('style').includes('font-size: 13px'), 'caption should have 13px font');
+                assert($caption.attr('style').includes('font-family: -apple-system'), 'caption should keep caption font family');
             });
 
             it('inlines figure margin and image max-width for image cards', async function () {
@@ -941,8 +961,9 @@ describe('MemberWelcomeEmailRenderer', function () {
                 });
 
                 const $ = cheerio.load(result.html);
-                assert($('figure').attr('style').includes('margin: 0 0 1.5em'), 'figure should have bottom margin');
-                assert($('figure img.kg-image').attr('style').includes('max-width: 100%'), 'img should have max-width: 100%');
+                const $figure = $('.kg-image-card');
+                assert($figure.attr('style').includes('margin: 0 0 1.5em'), 'figure should have bottom margin');
+                assert($figure.find('img').attr('style').includes('max-width: 100%'), 'img should have max-width: 100%');
             });
 
             it('inlines width 100% on button card outer table', async function () {
