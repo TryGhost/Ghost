@@ -773,6 +773,11 @@
                     "name": "Delete recommendations",
                     "action_type": "destroy",
                     "object_type": "recommendation"
+                },
+                {
+                    "name": "Poll automations",
+                    "action_type": "poll",
+                    "object_type": "automation"
                 }
             ]
         },
@@ -948,7 +953,8 @@
                     "member": "browse"
                 },
                 "Scheduler Integration": {
-                    "post": "publish"
+                    "post": "publish",
+                    "automation": "poll"
                 },
                 "Ghost Explore Integration": {
                     "explore": "read"
