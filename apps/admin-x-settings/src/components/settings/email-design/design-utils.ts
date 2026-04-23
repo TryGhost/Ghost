@@ -4,7 +4,6 @@ import type {EmailDesignSettings} from './types';
 export interface ResolvedEmailColors {
     backgroundColor: string;
     headerBackgroundColor: string;
-    postTitleColor: string;
     sectionTitleColor: string;
     buttonColor: string;
     buttonTextColor: string | undefined;
@@ -66,17 +65,6 @@ function resolveLinkColor(value: string | null | undefined, accentColor: string,
     return textColorForBackgroundColor(bgColor).hex();
 }
 
-function resolvePostTitleColor(value: string | null, accentColor: string, bgColor: string, headerBgColor: string): string {
-    if (VALID_HEX.test(value || '')) {
-        return value!;
-    }
-    if (value === 'accent') {
-        return accentColor;
-    }
-    const effectiveBg = headerBgColor === 'transparent' ? bgColor : headerBgColor;
-    return textColorForBackgroundColor(effectiveBg).hex();
-}
-
 function resolveSectionTitleColor(value: string | null, accentColor: string, bgColor: string): string {
     if (VALID_HEX.test(value || '')) {
         return value!;
@@ -110,7 +98,6 @@ export function resolveAllColors(settings: EmailDesignSettings, accentColor: str
     return {
         backgroundColor: bgColor,
         headerBackgroundColor: headerBgColor,
-        postTitleColor: resolvePostTitleColor(settings.post_title_color, accentColor, bgColor, headerBgColor),
         sectionTitleColor: resolveSectionTitleColor(settings.section_title_color, accentColor, bgColor),
         buttonColor,
         buttonTextColor: resolveButtonTextColor(settings.button_style, buttonColor),
