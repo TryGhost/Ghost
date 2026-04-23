@@ -1,5 +1,5 @@
 import '@xyflow/react/dist/style.css';
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {
     Background,
     BaseEdge,
@@ -703,6 +703,13 @@ const AutomationEditor: React.FC = () => {
     const [emailEditorOpen, setEmailEditorOpen] = useState(false);
     const [selectedRunId, setSelectedRunId] = useState<string>(mockRuns[0].id);
     const selectedRun = mockRuns.find(r => r.id === selectedRunId) ?? mockRuns[0];
+    const workflowCanvasRef = useRef<HTMLDivElement>(null);
+    const analyticsCanvasRef = useRef<HTMLDivElement>(null);
+    const NODE_COLUMN_CENTER_X = 240 + 128; // x=240 + half of w-64 (256px)
+    const snapToTop = (canvasEl: HTMLDivElement | null, instance: {setViewport: (v: {x: number; y: number; zoom: number}) => void}) => {
+        const width = canvasEl?.clientWidth ?? 1200;
+        instance.setViewport({x: Math.round(width / 2 - NODE_COLUMN_CENTER_X), y: 40, zoom: 1});
+    };
 
     const analyticsNodes = useMemo<Node[]>(() => initialNodes.map((node) => {
         const meta = stepMeta[node.id];
@@ -796,17 +803,18 @@ const AutomationEditor: React.FC = () => {
             `}</style>
             {view === 'workflow' ? (
                 <div className="relative flex min-h-0 flex-1 overflow-hidden">
-                    <div className="flex-1 bg-grey-75">
+                    <div ref={workflowCanvasRef} className="flex-1 bg-grey-75">
                         <ReactFlow
                             defaultEdgeOptions={{type: 'plus', style: {stroke: 'var(--color-grey-500)'}}}
                             edges={edges}
                             edgeTypes={edgeTypes}
-                            fitViewOptions={{maxZoom: 1}}
                             nodes={nodes}
                             nodesDraggable={false}
-                            fitView
+                            zoomOnScroll={false}
+                            panOnScroll
                             onConnect={onConnect}
                             onEdgesChange={onEdgesChange}
+                            onInit={instance => snapToTop(workflowCanvasRef.current, instance)}
                             onNodeClick={(_, node) => setSidebar({mode: 'step', nodeId: node.id})}
                             onNodesChange={onNodesChange}
                             onPaneClick={() => setSidebar(null)}
@@ -856,17 +864,18 @@ const AutomationEditor: React.FC = () => {
                             </div>
                             <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${runStatusStyles[selectedRun.status]}`}>{selectedRun.status}</span>
                         </div>
-                        <div className="flex-1">
+                        <div ref={analyticsCanvasRef} className="flex-1">
                             <ReactFlow
                                 defaultEdgeOptions={{type: 'run'}}
                                 edges={analyticsEdges}
                                 edgeTypes={edgeTypes}
-                                fitViewOptions={{maxZoom: 1}}
                                 nodes={analyticsNodes}
                                 nodesConnectable={false}
                                 nodesDraggable={false}
-                                fitView
+                                zoomOnScroll={false}
                                 panOnDrag
+                                panOnScroll
+                                onInit={instance => snapToTop(analyticsCanvasRef.current, instance)}
                             >
                                 <Background color="var(--color-grey-400)" />
                                 <Panel position="bottom-left">
