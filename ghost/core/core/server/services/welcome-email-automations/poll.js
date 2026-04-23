@@ -199,7 +199,11 @@ async function processRun({
         }
 
         // TODO(NY-1193): Bail if member is unsubscribed
-        // TODO(NY-1194): Bail if member's status has changed
+
+        if (member.get('status') !== memberStatus) {
+            await markExited(run.id, 'member changed status');
+            return;
+        }
 
         await memberWelcomeEmailService.api.send({
             member: {

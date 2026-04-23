@@ -429,6 +429,43 @@ describe('welcome email automations poll', function () {
         assert.deepEqual(await readTrackedRecipients(), []);
     });
 
+    it('bails out if member status has changed since the run was created', async function () {
+        const automation = await createAutomation({
+            slug: MEMBER_WELCOME_EMAIL_SLUGS.free
+        });
+        const automatedEmail = await createAutomatedEmail({
+            welcome_email_automation_id: automation.id
+        });
+        const member = await createMember({
+            status: 'free'
+        });
+        const run = await createRun({
+            welcome_email_automation_id: automation.id,
+            member_id: member.id,
+            next_welcome_email_automated_email_id: automatedEmail.id,
+            ready_at: new Date(Date.now() - 1000)
+        });
+
+        await testUtils.knex('members').where({id: member.id}).update({
+            status: 'paid',
+            updated_at: new Date()
+        });
+
+        await poll(options);
+
+        sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
+        sinon.assert.notCalled(options.enqueueAnotherPollNow);
+        sinon.assert.notCalled(options.enqueueAnotherPollAt);
+        assert.deepEqual(await readTrackedRecipients(), []);
+
+        const updatedRun = await readRun(run.id);
+        assert.equal(updatedRun.exit_reason, 'member changed status');
+        assert.equal(updatedRun.next_welcome_email_automated_email_id, null);
+        assert.equal(updatedRun.ready_at, null);
+        assert.equal(updatedRun.step_started_at, null);
+        assert.equal(updatedRun.step_attempts, 0);
+    });
+
     it('fails if run stored with more attempts than now supported', async function () {
         const automation = await createAutomation();
         const automatedEmail = await createAutomatedEmail({
