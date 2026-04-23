@@ -270,7 +270,7 @@ export default class ParseMemberEventHelper extends Helper {
             const duration = event.data.duration;
             const cadenceLabel = duration === 1 ? event.data.cadence : event.data.cadence + 's';
 
-            return `Purchased a gift subscription for ${formattedAmount} (${tierName}, ${duration} ${cadenceLabel})`;
+            return `Purchased gift subscription for ${formattedAmount} (${tierName}, ${duration} ${cadenceLabel})`;
         }
 
         if (event.type === 'gift_redemption_event') {
