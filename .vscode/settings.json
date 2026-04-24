@@ -18,8 +18,19 @@
         "**/ghost.map": true,
         "**/node_modules": true,
         "ghost/core/core/built/**": true,
+        ".claude/worktrees/**": true,
         "**/config.*.json": false,
         "**/config.*.jsonc": false
+    },
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/**": true,
+        "**/dist/**": true,
+        "**/build/**": true,
+        "**/coverage/**": true,
+        "ghost/core/core/built/**": true,
+        ".claude/worktrees/**": true
     },
     "tailwindCSS.experimental.classRegex": [
         ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
