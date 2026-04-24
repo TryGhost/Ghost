@@ -371,7 +371,7 @@ const Step3: React.FC = () => {
                         Integrated reader
                     </TabButton>
                 </div>
-                <div className='pointer-events-none relative -mx-14 mt-5 w-[calc(100%+112px)] overflow-y-hidden px-14'>
+                <div className='pointer-events-none relative -mx-14 mt-5 w-[calc(100%+112px)] overflow-y-hidden px-14' style={{maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)'}}>
                     <div className='mx-auto h-[694px] w-full max-w-6xl overflow-hidden rounded-md bg-white shadow-xl dark:bg-[#101114]'>
                         <div className='flex h-5 w-full items-center gap-1.5 bg-gray-100 pl-2 dark:bg-gray-950'>
                             <div className='size-2 rounded-full bg-gray-300'></div>
@@ -384,7 +384,6 @@ const Step3: React.FC = () => {
                             {activeTab === 3 && <Reader />}
                         </div>
                     </div>
-                    <div className='absolute inset-x-0 bottom-0 h-18 bg-gradient-to-t from-white via-[rgba(255,255,255,0.71)] to-[rgba(255,255,255,0)] dark:from-black dark:via-[rgba(0,0,0,0.71)] dark:to-[rgba(0,0,0,0)]'></div>
                 </div>
             </div>
         </div>
