@@ -9,6 +9,16 @@
     "shutdownAction": "stopCompose",
     "remoteUser": "root",
 
+    // Installs docker CLI and mounts the host docker socket into ghost-dev so
+    // developers can run `docker ps / logs / inspect / exec` against peer
+    // compose services (mysql, redis, mailpit, gateway) from inside the dev
+    // container. Without this, diagnosing any compose-peer failure requires
+    // SSHing to the Codespaces host, which our image doesn't support out of
+    // the box.
+    "features": {
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+    },
+
     // Codespaces prebuild step — runs once when the image is built.
     // Primes the pnpm store so first-open is fast.
     "onCreateCommand": "corepack enable && corepack prepare --activate && cd /workspaces/Ghost && pnpm install --prefer-offline || true",
