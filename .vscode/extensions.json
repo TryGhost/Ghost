@@ -1,9 +1,5 @@
 {
     "recommendations": [
-        "ms-vscode-remote.remote-containers",
-        "dbaeumer.vscode-eslint",
-        "bradlc.vscode-tailwindcss",
-        "ms-playwright.playwright",
-        "editorconfig.editorconfig"
+        "ms-vscode-remote.remote-containers"
     ]
 }
