@@ -41,8 +41,8 @@ describe('getInboxLinks', function () {
                 dnsResolver: resolverThatShouldNeverBeUsed
             });
             assert.equal(result?.provider, 'gmail');
-            assert(result?.desktop.startsWith('https://mail.google.com/'));
-            assert(result?.desktop.includes(recipient));
+            assert(result?.desktop.startsWith('https://mail.google.com/mail/u/0/'));
+            assert(result?.desktop.includes(`authuser=${encodeURIComponent(recipient)}`));
             assert(result?.desktop.includes(encodeURIComponent('sender@example.com')));
             assert(result?.android.startsWith('intent:'));
             assert(result?.android.includes('com.google.android.gm'));
@@ -54,7 +54,7 @@ describe('getInboxLinks', function () {
             sender: 'sendér@example.com',
             dnsResolver: resolverThatShouldNeverBeUsed
         });
-        assert(nonAsciiResult?.desktop.includes('exampl%C3%A9@gmail.com'));
+        assert(nonAsciiResult?.desktop.includes(`authuser=${encodeURIComponent('examplé@gmail.com')}`));
         assert(nonAsciiResult?.desktop.includes(encodeURIComponent('sendér@example.com')));
     });
 
