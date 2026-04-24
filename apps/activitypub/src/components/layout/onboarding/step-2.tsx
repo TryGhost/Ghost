@@ -83,7 +83,7 @@ const Step2: React.FC = () => {
                 <Button className='min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90 dark:text-white' size='lg' onClick={() => navigate('/welcome/3')}>Next &rarr;</Button>
             </Header>
             <div className='mt-8 flex h-full max-h-[670px] flex-col items-stretch justify-end'>
-                <div className='relative -mx-14 mt-5 w-[calc(100%+112px)] overflow-y-hidden px-14 pt-8'>
+                <div className='relative -mx-14 mt-5 w-[calc(100%+112px)] overflow-y-hidden px-14 pt-8' style={{maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)'}}>
                     <div className='relative mx-auto h-[694px] w-full max-w-xl rounded-2xl border border-gray-200/70 bg-white shadow-xl dark:border-gray-900 dark:bg-[#101114] dark:shadow-xl dark:shadow-[#1e1b4b]/10'>
                         <div className='animate-onboarding-followers absolute -top-4 -right-8 flex h-8 items-center gap-1.5 rounded-full bg-gradient-to-t from-black to-gray-900 px-3 font-semibold text-white opacity-0'>
                             <LucideIcon.TrendingUp size={18} />
@@ -154,7 +154,6 @@ const Step2: React.FC = () => {
                             </Reaction>
                         </div>
                     </div>
-                    <div className='absolute inset-x-0 bottom-0 h-18 bg-gradient-to-t from-white via-[rgba(255,255,255,0.71)] to-[rgba(255,255,255,0)] dark:from-black dark:via-[rgba(0,0,0,0.71)] dark:to-[rgba(0,0,0,0)]'></div>
                 </div>
             </div>
         </div>
