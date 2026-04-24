@@ -27,8 +27,7 @@
             ],
             "dependsOrder": "parallel",
             "problemMatcher": [],
-            "group": {"kind": "build", "isDefault": true},
-            "runOptions": {"runOn": "folderOpen"}
+            "group": {"kind": "build", "isDefault": true}
         },
         {
             "label": "Ghost: Reset data (empty)",
