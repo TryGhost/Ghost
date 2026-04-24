@@ -16,6 +16,12 @@
     // Runs after the workspace mount is ready on every container create.
     "postCreateCommand": ".devcontainer/postCreate.sh",
 
+    // Runs whenever VS Code attaches to the container. Fires only inside the
+    // container, so this is safe (unlike a tasks.json runOn: folderOpen which
+    // also fires on host VS Code where node_modules doesn't exist yet).
+    // The script guards against double-starting if the stack is already up.
+    "postAttachCommand": "bash .devcontainer/start-dev-stack.sh",
+
     "forwardPorts": [
         2368,
         3306,
