@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/sodo-search",
-  "version": "1.8.12",
+  "version": "1.8.15",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -14,7 +14,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.40",
+    "@tryghost/debug": "2.1.0",
     "@tryghost/i18n": "workspace:*",
     "flexsearch": "0.8.153",
     "react": "17.0.2",

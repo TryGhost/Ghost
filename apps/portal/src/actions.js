@@ -1,5 +1,6 @@
 import setupGhostApi from './utils/api';
 import {chooseBestErrorMessage} from './utils/errors';
+import {getGiftRedemptionSuccessMessage} from './utils/gift-redemption-notification';
 import {createNotification, createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
 import {t} from './utils/i18n';
 
@@ -229,13 +230,18 @@ async function redeemGift({data, state, api}) {
                 status: 'success',
                 autoHide: true,
                 closeable: true,
-                state
+                state,
+                message: getGiftRedemptionSuccessMessage({member})
             });
+            removePortalLinkFromUrl();
 
             return {
                 action: 'redeemGift:success',
                 member,
-                page: 'accountHome',
+                showPopup: false,
+                lastPage: null,
+                pageQuery: '',
+                popupNotification: null,
                 notification,
                 notificationSequence: notification.count
             };
@@ -243,10 +249,10 @@ async function redeemGift({data, state, api}) {
 
         const integrityToken = await api.member.getIntegrityToken();
         const redirectUrl = new URL(state?.site?.url || window.location.href);
-        const hashParams = new URLSearchParams({
+        redirectUrl.search = new URLSearchParams({
             giftRedemption: 'true'
-        });
-        redirectUrl.hash = `/portal/account?${hashParams.toString()}`;
+        }).toString();
+        redirectUrl.hash = '';
 
         const {otc_ref: otcRef, inboxLinks} = await api.member.sendMagicLink({
             email: (email || '').trim(),
@@ -304,6 +310,20 @@ async function checkoutPlan({data, state, api}) {
             action: 'checkoutPlan:failed',
             popupNotification: createPopupNotification({
                 type: 'checkoutPlan:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: t('Failed to process checkout, please try again')
+            })
+        };
+    }
+}
+
+async function continueGiftSubscription({state, api}) {
+    try {
+        await api.member.continueGiftCheckout();
+    } catch (e) {
+        return {
+            action: 'continueGiftSubscription:failed',
+            popupNotification: createPopupNotification({
+                type: 'continueGiftSubscription:failed', autoHide: false, closeable: true, state, status: 'error',
                 message: t('Failed to process checkout, please try again')
             })
         };
@@ -784,6 +804,7 @@ const Actions = {
     editBilling,
     manageBilling,
     checkoutPlan,
+    continueGiftSubscription,
     checkoutGift,
     updateNewsletterPreference,
     showPopupNotification,

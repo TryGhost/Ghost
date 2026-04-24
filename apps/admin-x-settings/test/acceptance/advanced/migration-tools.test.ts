@@ -14,6 +14,7 @@ test.describe('Migration tools', async () => {
 
         const migrators = [
             {name: 'Substack', route: '/migrate/substack'},
+            {name: 'beehiiv', route: '/migrate/beehiiv'},
             {name: 'WordPress', route: '/migrate/wordpress'},
             {name: 'Medium', route: '/migrate/medium'},
             {name: 'Mailchimp', route: '/migrate/mailchimp'}

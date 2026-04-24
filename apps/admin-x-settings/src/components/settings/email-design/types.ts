@@ -1,4 +1,4 @@
-export interface PersistedEmailDesignSettings {
+export interface EmailDesignSettings {
     background_color: string;
     title_font_category: string;
     title_font_weight: string;
@@ -14,13 +14,6 @@ export interface PersistedEmailDesignSettings {
     divider_color: string | null;
 }
 
-export interface EmailDesignPreviewSettings {
-    post_title_color: string | null;
-    title_alignment: string;
-}
-
-export type EmailDesignSettings = PersistedEmailDesignSettings & EmailDesignPreviewSettings;
-
 export const DEFAULT_EMAIL_DESIGN: EmailDesignSettings = {
     background_color: 'light',
     title_font_category: 'sans_serif',
@@ -34,7 +27,5 @@ export const DEFAULT_EMAIL_DESIGN: EmailDesignSettings = {
     link_color: 'accent',
     link_style: 'underline',
     image_corners: 'square',
-    divider_color: null,
-    post_title_color: null,
-    title_alignment: 'center'
+    divider_color: null
 };

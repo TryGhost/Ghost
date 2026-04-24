@@ -103,7 +103,7 @@ async function updateRun(runId, attrs, transacting) {
 
 /**
  * @param {string} runId
- * @param {'finished' | 'email send failed' | 'member changed status' | 'member not found' | 'member unsubscribed'} exitReason
+ * @param {'finished' | 'email send failed' | 'member changed status' | 'member unsubscribed'} exitReason
  * @param {Knex.Transaction} [transacting]
  * @returns {Promise<void>}
  */
@@ -199,7 +199,11 @@ async function processRun({
         }
 
         // TODO(NY-1193): Bail if member is unsubscribed
-        // TODO(NY-1194): Bail if member's status has changed
+
+        if (member.get('status') !== memberStatus) {
+            await markExited(run.id, 'member changed status');
+            return;
+        }
 
         await memberWelcomeEmailService.api.send({
             member: {
