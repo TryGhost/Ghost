@@ -1,0 +1,36 @@
+services:
+  ghost-dev:
+    # Mount the full repo so VS Code can edit apps/, e2e/, and root config files.
+    # The original ./ghost:/home/ghost/ghost mount from compose.dev.yaml is
+    # preserved via merge semantics so nodemon hot-reload still works for anyone
+    # running the backend the original way.
+    volumes:
+      - ./:/workspaces/Ghost:cached
+    # Override the default `pnpm dev` command. VS Code controls startup and the
+    # user runs backend/frontend dev servers as tasks (see .vscode/tasks.json).
+    command: ["sleep", "infinity"]
+    working_dir: /workspaces/Ghost
+    # The baseline healthcheck in compose.dev.yaml hits Ghost on :2368, but in
+    # the devcontainer Ghost isn't running until the user starts the dev task.
+    # Replace with a trivial check so the gateway's depends_on doesn't time out.
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 5s
+      timeout: 2s
+      retries: 1
+      start_period: 0s
+
+  ghost-dev-gateway:
+    # Point Caddy at the dev servers running inside the ghost-dev container
+    # instead of host.docker.internal (which is the default for the hybrid
+    # host/container dev setup).
+    environment:
+      GHOST_BACKEND: ghost-dev:2368
+      ADMIN_DEV_SERVER: ghost-dev:5174
+      ADMIN_LIVE_RELOAD_SERVER: ghost-dev:4200
+      PORTAL_DEV_SERVER: ghost-dev:4175
+      COMMENTS_DEV_SERVER: ghost-dev:7173
+      SIGNUP_DEV_SERVER: ghost-dev:6174
+      SEARCH_DEV_SERVER: ghost-dev:4178
+      ANNOUNCEMENT_DEV_SERVER: ghost-dev:4177
+      LEXICAL_DEV_SERVER: ghost-dev:4173

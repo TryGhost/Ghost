@@ -1,0 +1,60 @@
+{
+    "name": "Ghost",
+    "dockerComposeFile": [
+        "../compose.dev.yaml",
+        "compose.devcontainer.yaml"
+    ],
+    "service": "ghost-dev",
+    "workspaceFolder": "/workspaces/Ghost",
+    "shutdownAction": "stopCompose",
+    "remoteUser": "root",
+
+    // Codespaces prebuild step — runs once when the image is built.
+    // Primes the pnpm store so first-open is fast.
+    "onCreateCommand": "corepack enable && corepack prepare --activate && cd /workspaces/Ghost && pnpm install --prefer-offline || true",
+
+    // Runs after the workspace mount is ready on every container create.
+    "postCreateCommand": ".devcontainer/postCreate.sh",
+
+    "forwardPorts": [
+        2368,
+        3306,
+        6379,
+        1025,
+        8025,
+        5174,
+        4200,
+        4175,
+        7173,
+        6174,
+        4178,
+        4177,
+        4173
+    ],
+    "portsAttributes": {
+        "2368": {"label": "Ghost (via gateway)", "onAutoForward": "notify"},
+        "3306": {"label": "MySQL"},
+        "6379": {"label": "Redis"},
+        "1025": {"label": "Mailpit SMTP"},
+        "8025": {"label": "Mailpit Web"},
+        "5174": {"label": "Admin (Vite)"},
+        "4200": {"label": "Ember live-reload"},
+        "4175": {"label": "Portal"},
+        "7173": {"label": "Comments UI"},
+        "6174": {"label": "Signup Form"},
+        "4178": {"label": "Sodo Search"},
+        "4177": {"label": "Announcement Bar"},
+        "4173": {"label": "Koenig Lexical"}
+    },
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dbaeumer.vscode-eslint",
+                "bradlc.vscode-tailwindcss",
+                "ms-playwright.playwright",
+                "editorconfig.editorconfig"
+            ]
+        }
+    }
+}
