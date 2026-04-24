@@ -1,4 +1,4 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 
 import DynamicTable, {DynamicTableColumn, DynamicTableRow} from './dynamic-table';
 import Avatar from '../avatar';
