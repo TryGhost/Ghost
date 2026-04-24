@@ -15,6 +15,14 @@
     // container. Without this, diagnosing any compose-peer failure requires
     // SSHing to the Codespaces host, which our image doesn't support out of
     // the box.
+    //
+    // Security note: mounting the host's docker socket combined with
+    // `remoteUser: "root"` effectively gives the dev container root-equivalent
+    // control over the host Docker daemon (spawn privileged containers, mount
+    // host paths, etc.). This is the standard pattern for local / Codespaces
+    // dev containers where the host is the developer's own machine, but do
+    // NOT replicate this pattern in shared build agents, CI runners, or
+    // environments where untrusted code runs in the container.
     "features": {
         "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
     },

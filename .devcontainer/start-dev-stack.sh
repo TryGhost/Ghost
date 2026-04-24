@@ -13,12 +13,16 @@ fi
 
 echo "Starting Ghost dev stack..."
 
-nohup pnpm --filter ghost dev > /tmp/ghost-backend.log 2>&1 &
+# Append to log files (don't truncate) so previous crash tails survive a
+# restart and the user can still tail them for context.
+{ echo "=== $(date -Is) starting backend ==="; } >> /tmp/ghost-backend.log
+nohup pnpm --filter ghost dev >> /tmp/ghost-backend.log 2>&1 &
 disown
 
+{ echo "=== $(date -Is) starting frontends ==="; } >> /tmp/ghost-frontends.log
 nohup pnpm nx run-many -t dev \
     --projects=@tryghost/admin,@tryghost/portal,@tryghost/comments-ui,@tryghost/signup-form,@tryghost/sodo-search,@tryghost/announcement-bar \
-    > /tmp/ghost-frontends.log 2>&1 &
+    >> /tmp/ghost-frontends.log 2>&1 &
 disown
 
 cat <<'MSG'
