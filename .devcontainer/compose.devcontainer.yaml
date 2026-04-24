@@ -1,4 +1,19 @@
 services:
+  mysql:
+    # Smaller InnoDB buffer pool than the baseline compose.dev.yaml (1G).
+    # Lets the dev stack stay within a 2-core / 8 GB Codespace's budget
+    # after Ghost + 6 Vite dev servers are running. 256 MB is plenty for
+    # dev data volumes.
+    command: --innodb-buffer-pool-size=256M --innodb-log-buffer-size=64M --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
+    mem_limit: 512m
+    restart: unless-stopped
+
+  redis:
+    restart: unless-stopped
+
+  mailpit:
+    restart: unless-stopped
+
   ghost-dev:
     # Mount the full repo so VS Code can edit apps/, e2e/, and root config files.
     # The original ./ghost:/home/ghost/ghost mount from compose.dev.yaml is
