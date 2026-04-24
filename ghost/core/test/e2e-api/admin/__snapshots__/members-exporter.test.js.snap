@@ -132,7 +132,7 @@ Object {
 }
 `;
 
-exports[`Members API — exportCSV Can export gift subscription 1: [headers] 1`] = `
+exports[`Members API — exportCSV Can export gift_id for gift members 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -144,7 +144,7 @@ Object {
 }
 `;
 
-exports[`Members API — exportCSV Can export gift subscription 2: [headers] 1`] = `
+exports[`Members API — exportCSV Can export gift_id for gift members 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -156,7 +156,7 @@ Object {
 }
 `;
 
-exports[`Members API — exportCSV Can export gift subscription 3: [headers] 1`] = `
+exports[`Members API — exportCSV Can export gift_id for gift members 3: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -168,7 +168,7 @@ Object {
 }
 `;
 
-exports[`Members API — exportCSV Can export gift subscription 4: [headers] 1`] = `
+exports[`Members API — exportCSV Can export gift_id for gift members 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",

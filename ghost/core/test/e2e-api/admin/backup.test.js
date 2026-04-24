@@ -85,7 +85,7 @@ describe('Backup Integration', function () {
                         'content-disposition': stringMatching(/attachment; filename="members\./)
                     })
                     .expect(({text}) => {
-                        assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_subscription/);
+                        assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
                     });
             });
         });
@@ -136,7 +136,7 @@ describe('Backup Integration', function () {
                         'content-disposition': stringMatching(/attachment; filename="members\./)
                     })
                     .expect(({text}) => {
-                        assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_subscription/);
+                        assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
                     });
             });
         });
@@ -181,7 +181,7 @@ describe('Backup Integration', function () {
                         'content-disposition': stringMatching(/attachment; filename="members\./)
                     })
                     .expect(({text}) => {
-                        assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_subscription/);
+                        assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
                     });
             });
         });
@@ -226,7 +226,7 @@ describe('Backup Integration', function () {
                         'content-disposition': stringMatching(/attachment; filename="members\./)
                     })
                     .expect(({text}) => {
-                        assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_subscription/);
+                        assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
                     });
             });
         });

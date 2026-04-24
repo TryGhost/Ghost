@@ -12,8 +12,43 @@ const messages = {
     filenameCollision: 'Filename already exists, please try again.',
     freeMemberNotAllowedImportTier: 'You cannot import a free member with a specified tier.',
     invalidImportTier: '"{tier}" is not a valid tier.',
-    giftMemberNotAllowedImport: 'Gift subscriptions cannot be imported.'
+    giftNotFound: 'Gift record not found.',
+    giftAlreadyAssigned: 'Gift is already assigned to another member.',
+    giftNotReassignable: 'Gift cannot be reassigned to a member in its current state.',
+    giftCannotCombineWithImportTier: 'Cannot specify both gift_id and import_tier.',
+    giftCannotCombineWithComplimentary: 'Cannot specify both gift_id and complimentary_plan.',
+    giftMemberAlreadyHasGift: 'Cannot reassign gift to a member with an existing gift.',
+    giftCannotReassignToPaidMember: 'Cannot reassign gift to a member with an active paid subscription.',
+    giftMissingExpiry: 'Cannot compute expiry for gift; gift cannot be reassigned.'
 };
+
+function translateGiftError(error) {
+    if (error instanceof errors.DataImportError) {
+        return error;
+    }
+
+    const isNotFound = error && error.errorType === 'NotFoundError';
+    if (isNotFound) {
+        return new errors.DataImportError({message: tpl(messages.giftNotFound)});
+    }
+
+    const message = error && typeof error.message === 'string' ? error.message : '';
+    if (message.includes('already assigned')) {
+        return new errors.DataImportError({message: tpl(messages.giftAlreadyAssigned)});
+    }
+    if (message.includes('reassignable status')) {
+        return new errors.DataImportError({message: tpl(messages.giftNotReassignable)});
+    }
+    if (message.includes('active subscription')) {
+        return new errors.DataImportError({message: tpl(messages.giftCannotReassignToPaidMember)});
+    }
+    if (message.includes('"consumes at" date')) {
+        return new errors.DataImportError({message: tpl(messages.giftMissingExpiry)});
+    }
+
+    // Unknown/unexpected error — surface the raw message so the user can see what failed.
+    return new errors.DataImportError({message: message || tpl(messages.giftNotReassignable)});
+}
 
 // The key should correspond to a member model field (unless it's a special purpose field like 'complimentary_plan')
 // the value should represent an allowed field name coming from user input
@@ -26,7 +61,8 @@ const DEFAULT_CSV_HEADER_MAPPING = {
     complimentary_plan: 'complimentary_plan',
     stripe_customer_id: 'stripe_customer_id',
     labels: 'labels',
-    import_tier: 'import_tier'
+    import_tier: 'import_tier',
+    gift_id: 'gift_id'
 };
 
 /**
@@ -36,6 +72,7 @@ const DEFAULT_CSV_HEADER_MAPPING = {
  * @property {() => Object} getMembersRepository - member model access instance for data access and manipulation
  * @property {() => Promise<import('../../tiers/tier')>} getDefaultTier - async function returning default Member Tier
  * @property {(string) => Promise<import('../../tiers/tier')>} getTierByName - async function returning Member Tier by name
+ * @property {() => Promise<import('../../gifts/gift-service').GiftService>} getGiftService - async function returning the GiftService instance
  * @property {Function} sendEmail - function sending an email
  * @property {(string) => boolean} isSet - Method checking if specific feature is enabled
  * @property {({job, offloaded, name}) => void} addJob - Method registering an async job
@@ -49,12 +86,13 @@ module.exports = class MembersCSVImporter {
     /**
      * @param {MembersCSVImporterOptions} options
      */
-    constructor({storagePath, getTimezone, getMembersRepository, getDefaultTier, getTierByName, sendEmail, isSet, addJob, knex, urlFor, context, stripeUtils}) {
+    constructor({storagePath, getTimezone, getMembersRepository, getDefaultTier, getTierByName, getGiftService, sendEmail, isSet, addJob, knex, urlFor, context, stripeUtils}) {
         this._storagePath = storagePath;
         this._getTimezone = getTimezone;
         this._getMembersRepository = getMembersRepository;
         this._getDefaultTier = getDefaultTier;
         this._getTierByName = getTierByName;
+        this._getGiftService = getGiftService;
         this._sendEmail = sendEmail;
         this._isSet = isSet;
         this._addJob = addJob;
@@ -63,8 +101,6 @@ module.exports = class MembersCSVImporter {
         this._context = context;
         this._stripeUtils = stripeUtils;
         this._tierIdCache = new Map();
-        // Rows rejected during `prepare()`, keyed by output file path and drained by `perform()`.
-        this._rejectedRowsByFile = new Map();
     }
 
     /**
@@ -82,11 +118,11 @@ module.exports = class MembersCSVImporter {
      */
     async prepare(inputFilePath, headerMapping, defaultLabels) {
         headerMapping = headerMapping || DEFAULT_CSV_HEADER_MAPPING;
-        // Force-recognise `gift_subscription` so the rejection below fires even when the
+        // Force-recognise `gift_id` so the importer can reassign gift rows even when the
         // user-supplied mapping doesn't include it (the column is not exposed in the UI).
         headerMapping = {
             ...headerMapping,
-            gift_subscription: 'gift_subscription'
+            gift_id: 'gift_id'
         };
         // @NOTE: investigate why is it "1" and do we even need this concept anymore?
         const batchSize = 1;
@@ -103,29 +139,9 @@ module.exports = class MembersCSVImporter {
         }
 
         // completely rely on explicit user input for header mappings
-        const allRows = await membersCSV.parse(inputFilePath, headerMapping, defaultLabels);
-
-        // Reject gift rows here rather than in `perform()`: `membersCSV.unparse()` below
-        // strips unknown columns, so `gift_subscription` wouldn't survive that round-trip.
-        const rejectedGiftRows = [];
-        const rows = [];
-        for (const row of allRows) {
-            if (row.gift_subscription === true) {
-                rejectedGiftRows.push({
-                    ...row,
-                    error: tpl(messages.giftMemberNotAllowedImport)
-                });
-            } else {
-                rows.push(row);
-            }
-        }
-        this._rejectedRowsByFile.set(outputFilePath, rejectedGiftRows);
-
-        const columns = Object.keys(rows[0] || allRows[0] || {});
-        // Batch count reflects the original CSV size (including pre-rejected rows) so
-        // meta.originalImportSize matches what the user uploaded. The intermediate CSV
-        // still only contains non-rejected rows — gifts must never reach `perform()`.
-        const numberOfBatches = Math.ceil(allRows.length / batchSize);
+        const rows = await membersCSV.parse(inputFilePath, headerMapping, defaultLabels);
+        const columns = Object.keys(rows[0]);
+        const numberOfBatches = Math.ceil(rows.length / batchSize);
         const mappedCSV = membersCSV.unparse(rows, columns);
 
         const hasStripeData = !!(rows.find(function rowHasStripeData(row) {
@@ -150,15 +166,11 @@ module.exports = class MembersCSVImporter {
      */
     async perform(filePath) {
         const performStart = Date.now();
-        // Drain rows pre-rejected by `prepare()` up front and delete the map entry
-        // immediately, so state does not leak if anything below throws.
-        const preRejected = this._rejectedRowsByFile.get(filePath) || [];
-        this._rejectedRowsByFile.delete(filePath);
-
         const rows = await membersCSV.parse(filePath, DEFAULT_CSV_HEADER_MAPPING);
 
         const defaultTier = await this._getDefaultTier();
         const membersRepository = await this._getMembersRepository();
+        const giftService = this._getGiftService ? await this._getGiftService() : null;
 
         // Clear tier ID cache before each import in-case tiers have been updated since last import
         this._tierIdCache.clear();
@@ -180,6 +192,17 @@ module.exports = class MembersCSVImporter {
             };
 
             try {
+                // Early validation of mutually exclusive columns so we fail the row before
+                // any member/tier work.
+                if (row.gift_id) {
+                    if (row.import_tier) {
+                        throw new errors.DataImportError({message: tpl(messages.giftCannotCombineWithImportTier)});
+                    }
+                    if (row.complimentary_plan) {
+                        throw new errors.DataImportError({message: tpl(messages.giftCannotCombineWithComplimentary)});
+                    }
+                }
+
                 // If the member is created in the future, set created_at to now
                 // Members created in the future will not appear in admin members list
                 // Refs https://github.com/TryGhost/Team/issues/2793
@@ -290,6 +313,25 @@ module.exports = class MembersCSVImporter {
                     throw new errors.DataImportError({message: tpl(messages.freeMemberNotAllowedImportTier)});
                 }
 
+                if (row.gift_id) {
+                    if (!giftService) {
+                        throw new errors.DataImportError({message: tpl(messages.giftNotFound)});
+                    }
+
+                    // Reject if the member already has a different gift attached; we don't
+                    // want to silently orphan or overwrite the existing one.
+                    const conflictingGift = await this.#findConflictingGift(member.id, row.gift_id, trx);
+                    if (conflictingGift) {
+                        throw new errors.DataImportError({message: tpl(messages.giftMemberAlreadyHasGift)});
+                    }
+
+                    try {
+                        await giftService.reassignRedeemer(row.gift_id, member.id, {transacting: trx});
+                    } catch (giftError) {
+                        throw translateGiftError(giftError);
+                    }
+                }
+
                 await trx.commit();
                 return {
                     ...resultAccumulator,
@@ -317,18 +359,15 @@ module.exports = class MembersCSVImporter {
             archivableStripePriceIds.map(stripePriceId => this._stripeUtils.archivePrice(stripePriceId))
         );
 
-        const combinedErrors = [...preRejected, ...result.errors];
-
         metrics.metric({
             imported: result.imported,
-            errors: combinedErrors.length,
+            errors: result.errors.length,
             value: Date.now() - performStart
         });
 
         return {
-            total: result.imported + combinedErrors.length,
-            imported: result.imported,
-            errors: combinedErrors
+            total: result.imported + result.errors.length,
+            ...result
         };
     }
 
@@ -497,5 +536,25 @@ module.exports = class MembersCSVImporter {
         }
 
         return this._tierIdCache.get(name);
+    }
+
+    /**
+     * Returns the id of any gift already attached to `memberId` that is not `incomingGiftId`,
+     * or null if no conflict exists. Uses the caller-supplied transaction so the check is
+     * part of the same atomic unit as the subsequent reassignment.
+     *
+     * @param {string} memberId
+     * @param {string} incomingGiftId
+     * @param {import('knex').Knex.Transaction} trx
+     * @returns {Promise<string|null>}
+     */
+    async #findConflictingGift(memberId, incomingGiftId, trx) {
+        const row = await trx('gifts')
+            .where({redeemer_member_id: memberId})
+            .whereNot({id: incomingGiftId})
+            .select('id')
+            .first();
+
+        return row ? row.id : null;
     }
 };

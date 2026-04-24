@@ -17,7 +17,7 @@ const DOWNLOADED_CONTENT_FIELDS = [
     'deleted_at,',
     'labels,',
     'tiers,',
-    'gift_subscription'
+    'gift_id'
 ];
 
 const MEMBERS_FIXTURE = [

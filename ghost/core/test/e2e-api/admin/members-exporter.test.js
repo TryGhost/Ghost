@@ -52,7 +52,7 @@ async function testOutput(member, asserts, filters = []) {
                 'content-disposition': anyString
             });
 
-        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_subscription/);
+        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
 
         let csv = Papa.parse(res.text, {header: true});
         let row = csv.data.find(r => r.id === member.id);
@@ -175,11 +175,11 @@ describe('Members API — exportCSV', function () {
             assert.equal(row.complimentary_plan, 'true');
             assert.equal(row.labels, '');
             assert.equal(row.tiers, '');
-            assert.equal(row.gift_subscription, '');
+            assert.equal(row.gift_id, '');
         }, ['filter=status:comped', 'filter=subscribed:false']);
     });
 
-    it('Can export gift subscription', async function () {
+    it('Can export gift_id for gift members', async function () {
         const tier = tiers[0];
         const member = await createMember({
             name: 'Test gift member',
@@ -188,11 +188,34 @@ describe('Members API — exportCSV', function () {
             products: [{id: tier.id}]
         });
 
+        const now = new Date();
+        const gift = await models.Gift.add({
+            token: `exporter-test-token-${Date.now()}`,
+            buyer_email: 'buyer@example.com',
+            buyer_member_id: null,
+            redeemer_member_id: member.id,
+            tier_id: tier.id,
+            cadence: 'year',
+            duration: 1,
+            currency: 'usd',
+            amount: 5000,
+            stripe_checkout_session_id: `cs_exporter_${Date.now()}`,
+            stripe_payment_intent_id: `pi_exporter_${Date.now()}`,
+            consumes_at: new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000),
+            expires_at: new Date(now.getTime() + 10 * 365 * 24 * 60 * 60 * 1000),
+            status: 'redeemed',
+            purchased_at: now,
+            redeemed_at: now,
+            consumed_at: null,
+            expired_at: null,
+            refunded_at: null
+        });
+
         await testOutput(member, (row) => {
             basicAsserts(member, row);
             assert.equal(row.subscribed_to_emails, 'false');
             assert.equal(row.complimentary_plan, '');
-            assert.equal(row.gift_subscription, 'true');
+            assert.equal(row.gift_id, gift.id);
             assert.equal(row.tiers, tier.get('name'));
         }, ['filter=status:gift', 'filter=subscribed:false']);
     });

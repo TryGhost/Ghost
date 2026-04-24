@@ -11,11 +11,12 @@ const {Transform} = require('stream');
  * @param {Object} labelsMap - Map of member_id to labels
  * @param {Object} stripeCustomerMap - Map of member_id to stripe customer IDs
  * @param {Set} subscribedSet - Set of subscribed member IDs
+ * @param {Map} giftIdMap - Map of member_id to gift id (for gift members only)
  * @param {Object} allProducts - Map of product IDs to product names
  * @param {Object} allLabels - Map of label IDs to label names
  * @returns {Array} Processed member records
  */
-function processMembersData(members, tiersMap, labelsMap, stripeCustomerMap, subscribedSet, allProducts, allLabels) {
+function processMembersData(members, tiersMap, labelsMap, stripeCustomerMap, subscribedSet, giftIdMap, allProducts, allLabels) {
     for (const row of members) {
         const tierIds = tiersMap.get(row.id) ? tiersMap.get(row.id).split(',') : [];
         const tierDetails = tierIds.map((id) => {
@@ -36,7 +37,7 @@ function processMembersData(members, tiersMap, labelsMap, stripeCustomerMap, sub
         row.subscribed = subscribedSet.has(row.id);
         row.comped = row.status === 'comped';
         row.complimentary_plan = row.status === 'complimentary';
-        row.gift_subscription = row.status === 'gift';
+        row.gift_id = giftIdMap.get(row.id) || null;
         row.stripe_customer_id = stripeCustomerMap.get(row.id) || null;
         row.created_at = moment(row.created_at).toISOString();
     }
@@ -91,7 +92,7 @@ async function createExportStream(options) {
                 const memberIds = batch.map(member => member.id);
                 
                 // Fetch related data for this batch
-                const [tiers, labels, stripeCustomers, subscriptions] = await Promise.all([
+                const [tiers, labels, stripeCustomers, subscriptions, gifts] = await Promise.all([
                     knex('members_products')
                         .select('member_id', knex.raw('GROUP_CONCAT(product_id) as tiers'))
                         .whereIn('member_id', memberIds)
@@ -109,7 +110,11 @@ async function createExportStream(options) {
                     
                     knex('members_newsletters')
                         .distinct('member_id')
-                        .whereIn('member_id', memberIds)
+                        .whereIn('member_id', memberIds),
+
+                    knex('gifts')
+                        .select('id', 'redeemer_member_id')
+                        .whereIn('redeemer_member_id', memberIds)
                 ]);
 
                 // Create maps for quick lookups
@@ -117,6 +122,7 @@ async function createExportStream(options) {
                 const labelsMap = new Map(labels.map(row => [row.member_id, row.labels]));
                 const stripeCustomerMap = new Map(stripeCustomers.map(row => [row.member_id, row.stripe_customer_id]));
                 const subscribedSet = new Set(subscriptions.map(row => row.member_id));
+                const giftIdMap = new Map(gifts.map(row => [row.redeemer_member_id, row.id]));
 
                 // Process the batch
                 const processedMembers = processMembersData(
@@ -125,6 +131,7 @@ async function createExportStream(options) {
                     labelsMap, 
                     stripeCustomerMap, 
                     subscribedSet, 
+                    giftIdMap,
                     allProducts, 
                     allLabels
                 );

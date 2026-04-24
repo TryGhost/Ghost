@@ -1,2 +1,0 @@
-id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_subscription
-634e48e056ef99c6a7af5851,giftmember@example.com,Some Gift Member,This is a gift member,true,,,2023-07-26T11:50:00.000Z,,,Premium Tier,true

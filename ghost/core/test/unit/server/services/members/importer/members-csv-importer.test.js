@@ -62,11 +62,22 @@ describe('MembersCSVImporter', function () {
             linkStripeCustomer: sinon.stub().resolves(null),
             getCustomerIdByEmail: sinon.stub().resolves('cus_mock_123456')
         };
+        // The `trx` returned by knex.transaction() is used both as a commit/rollback handle
+        // AND as a callable knex query builder (e.g. trx('gifts').where(...)). The stubbed
+        // callable returns a minimal chainable query builder whose terminators resolve to
+        // `null`, simulating "no rows found". Tests that care about a specific result can
+        // override via deps.knex.
+        const trxStub = sinon.stub().callsFake(() => ({
+            where: sinon.stub().returnsThis(),
+            whereNot: sinon.stub().returnsThis(),
+            select: sinon.stub().returnsThis(),
+            first: sinon.stub().resolves(null)
+        }));
+        trxStub.rollback = () => {};
+        trxStub.commit = () => {};
+
         knexStub = {
-            transaction: sinon.stub().resolves({
-                rollback: () => {},
-                commit: () => {}
-            })
+            transaction: sinon.stub().resolves(trxStub)
         };
         sendEmailStub = sinon.stub();
         stripeUtilsStub = {
@@ -758,37 +769,138 @@ describe('MembersCSVImporter', function () {
             assert.equal(result.errors[0].error, '"Invalid Tier" is not a valid tier.');
         });
 
-        it('rejects gift_subscription rows during the full process() flow even when the UI omits gift_subscription from the mapping', async function () {
-            // Simulates a user importing an exported CSV via the UI: the mapping UI does
-            // not include gift_subscription, so without server-side handling the column
-            // would be stripped by the parser and never reach `perform()`.
-            const LabelModelStub = {
-                findOne: sinon.stub().resolves(null)
+        it('reassigns an orphaned gift to the imported member', async function () {
+            const giftServiceStub = {
+                reassignRedeemer: sinon.stub().resolves({})
             };
-            const importer = buildMockImporterInstance();
-
-            const result = await importer.process({
-                pathToCSV: `${csvPath}/gift-member-import.csv`,
-                headerMapping: defaultAllowedFields,
-                importLabel: {name: 'Test Import'},
-                user: {email: 'test@example.com'},
-                LabelModel: LabelModelStub,
-                forceInline: true,
-                verificationTrigger: {
-                    testImportThreshold: () => {}
-                }
+            const importer = buildMockImporterInstance({
+                getGiftService: async () => giftServiceStub
             });
 
-            assert.equal(result.meta.stats.imported, 0);
-            assert.equal(result.meta.stats.invalid.length, 1);
-            assert.equal(
-                result.meta.stats.invalid[0].error,
-                'Gift subscriptions cannot be imported.'
-            );
-            // originalImportSize should reflect what the user uploaded, not what survived
-            // the gift filter. The CSV had 1 row; the user sees 1 row accounted for.
-            assert.equal(result.meta.originalImportSize, 1);
-            sinon.assert.notCalled(membersRepositoryStub.create);
+            const result = await importer.perform(`${csvPath}/gift-member-reassign.csv`);
+
+            assert.equal(result.total, 1);
+            assert.equal(result.imported, 1);
+            assert.equal(result.errors.length, 0);
+            sinon.assert.calledOnce(giftServiceStub.reassignRedeemer);
+            const [giftId, memberId] = giftServiceStub.reassignRedeemer.getCall(0).args;
+            assert.equal(giftId, 'abc123abc123abc123abc123');
+            assert.equal(memberId, 'test_member_id');
+        });
+
+        it('rejects a row that specifies both gift_id and import_tier', async function () {
+            const giftServiceStub = {
+                reassignRedeemer: sinon.stub().resolves({})
+            };
+            const importer = buildMockImporterInstance({
+                getGiftService: async () => giftServiceStub
+            });
+
+            const result = await importer.perform(`${csvPath}/gift-member-reassign-with-tier.csv`);
+
+            assert.equal(result.imported, 0);
+            assert.equal(result.errors.length, 1);
+            assert.equal(result.errors[0].error, 'Cannot specify both gift_id and import_tier.');
+            sinon.assert.notCalled(giftServiceStub.reassignRedeemer);
+        });
+
+        it('rejects a row that specifies both gift_id and complimentary_plan', async function () {
+            const giftServiceStub = {
+                reassignRedeemer: sinon.stub().resolves({})
+            };
+            const importer = buildMockImporterInstance({
+                getGiftService: async () => giftServiceStub
+            });
+
+            const result = await importer.perform(`${csvPath}/gift-member-reassign-with-complimentary.csv`);
+
+            assert.equal(result.imported, 0);
+            assert.equal(result.errors.length, 1);
+            assert.equal(result.errors[0].error, 'Cannot specify both gift_id and complimentary_plan.');
+            sinon.assert.notCalled(giftServiceStub.reassignRedeemer);
+        });
+
+        it('translates NotFoundError from GiftService into a user-facing gift-not-found error', async function () {
+            const NotFoundError = class extends Error {
+                constructor(message) {
+                    super(message);
+                    this.errorType = 'NotFoundError';
+                }
+            };
+            const giftServiceStub = {
+                reassignRedeemer: sinon.stub().rejects(new NotFoundError('This gift does not exist.'))
+            };
+            const importer = buildMockImporterInstance({
+                getGiftService: async () => giftServiceStub
+            });
+
+            const result = await importer.perform(`${csvPath}/gift-member-reassign.csv`);
+
+            assert.equal(result.imported, 0);
+            assert.equal(result.errors.length, 1);
+            assert.equal(result.errors[0].error, 'Gift record not found.');
+        });
+
+        it('translates already-assigned error from GiftService into a user-facing message', async function () {
+            const giftServiceStub = {
+                reassignRedeemer: sinon.stub().rejects(new Error('This gift is already assigned to another member.'))
+            };
+            const importer = buildMockImporterInstance({
+                getGiftService: async () => giftServiceStub
+            });
+
+            const result = await importer.perform(`${csvPath}/gift-member-reassign.csv`);
+
+            assert.equal(result.imported, 0);
+            assert.equal(result.errors.length, 1);
+            assert.equal(result.errors[0].error, 'Gift is already assigned to another member.');
+        });
+
+        it('translates not-reassignable error from GiftService into a user-facing message', async function () {
+            const giftServiceStub = {
+                reassignRedeemer: sinon.stub().rejects(new Error('This gift does not have a reassignable status.'))
+            };
+            const importer = buildMockImporterInstance({
+                getGiftService: async () => giftServiceStub
+            });
+
+            const result = await importer.perform(`${csvPath}/gift-member-reassign.csv`);
+
+            assert.equal(result.imported, 0);
+            assert.equal(result.errors.length, 1);
+            assert.equal(result.errors[0].error, 'Gift cannot be reassigned to a member in its current state.');
+        });
+
+        it('rejects when the matched member already has a different gift attached', async function () {
+            const giftServiceStub = {
+                reassignRedeemer: sinon.stub().resolves({})
+            };
+
+            // Simulate a conflicting gift already attached to the existing member.
+            const conflictingTrx = sinon.stub().callsFake(() => ({
+                where: sinon.stub().returnsThis(),
+                whereNot: sinon.stub().returnsThis(),
+                select: sinon.stub().returnsThis(),
+                first: sinon.stub().resolves({id: 'other_gift_id'})
+            }));
+            conflictingTrx.rollback = () => {};
+            conflictingTrx.commit = () => {};
+
+            const knexWithConflict = {
+                transaction: sinon.stub().resolves(conflictingTrx)
+            };
+
+            const importer = buildMockImporterInstance({
+                getGiftService: async () => giftServiceStub,
+                knex: knexWithConflict
+            });
+
+            const result = await importer.perform(`${csvPath}/gift-member-reassign.csv`);
+
+            assert.equal(result.imported, 0);
+            assert.equal(result.errors.length, 1);
+            assert.equal(result.errors[0].error, 'Cannot reassign gift to a member with an existing gift.');
+            sinon.assert.notCalled(giftServiceStub.reassignRedeemer);
         });
 
         it('imports a paid member with an import tier', async function () {

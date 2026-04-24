@@ -16,6 +16,7 @@ const models = require('../../models');
 const {GhostMailer} = require('../mail');
 const jobsService = require('../jobs');
 const tiersService = require('../tiers');
+const giftService = require('../gifts');
 const VerificationTrigger = require('../verification-trigger');
 const {verificationWebhookService} = require('../verification/verification-webhook-service');
 const DatabaseInfo = require('@tryghost/database-info');
@@ -71,6 +72,10 @@ const initMembersCSVImporter = ({stripeAPIService}) => {
             }
 
             return null;
+        },
+        getGiftService: async () => {
+            await giftService.init();
+            return giftService.service;
         },
         sendEmail: ghostMailer.send.bind(ghostMailer),
         isSet: flag => labsService.isSet(flag),

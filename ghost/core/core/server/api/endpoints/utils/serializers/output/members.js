@@ -37,7 +37,7 @@ const CSV_HEADERS = [
     'deleted_at',
     'labels',
     'tiers',
-    'gift_subscription'
+    'gift_id'
 ];
 
 /**
@@ -64,9 +64,9 @@ function formatMemberForCSV(member) {
     // Only comped = true should result in 'true', otherwise empty string
     const complimentaryPlan = member.comped === true ? 'true' : '';
 
-    // Convert boolean 'false' to empty string for tests to pass
-    // Only gift_subscription = true should result in 'true', otherwise empty string
-    const giftSubscription = member.gift_subscription === true ? 'true' : '';
+    // Gift members carry the gift id so an exported CSV can be re-imported and reassigned
+    // back to a (possibly new) member record via the gifts table
+    const giftId = member.gift_id || '';
 
     // Convert subscribed boolean to string representation
     const subscribedToEmails = member.subscribed === true ? 'true' : 'false';
@@ -83,7 +83,7 @@ function formatMemberForCSV(member) {
         deleted_at: member.deleted_at || null,
         labels: labels,
         tiers: tiers,
-        gift_subscription: giftSubscription
+        gift_id: giftId
     };
 }
 
