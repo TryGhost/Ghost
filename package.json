@@ -61,7 +61,7 @@
   "pnpm": {
     "overrides": {
       "@tryghost/errors": "^1.3.7",
-      "@tryghost/logging": "2.5.5",
+      "@tryghost/logging": "4.1.0",
       "jackspeak": "2.3.6",
       "moment": "2.24.0",
       "moment-timezone": "0.5.45",
