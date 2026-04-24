@@ -1,5 +1,5 @@
 import {ReactNode} from 'react';
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 
 import * as SettingGroupContentStories from './setting-group-content.stories';
 import * as SettingGroupHeaderStories from './setting-group-header.stories';

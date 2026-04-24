@@ -1,11 +1,13 @@
+import * as i18nLibModule from '@tryghost/i18n';
 import React, {ComponentProps} from 'react';
-import i18nLib from '@tryghost/i18n';
 import pages, {Page, PageName} from './pages';
 import {AppContextProvider, AppContextType} from './app-context';
 import {ContentBox} from './components/content-box';
 import {Frame} from './components/frame';
 import {setupGhostApi} from './utils/api';
 import {useOptions} from './utils/options';
+
+const i18nLib = 'default' in i18nLibModule ? Reflect.get(i18nLibModule, 'default') : i18nLibModule;
 
 type AppProps = {
     scriptTag: HTMLElement;

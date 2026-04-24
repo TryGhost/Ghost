@@ -3,7 +3,7 @@ import React from 'react';
 import '../styles.css';
 import './storybook.css';
 
-import type { Preview } from "@storybook/react";
+import type { Preview } from "@storybook/react-vite";
 import DesignSystemProvider from '../src/providers/design-system-provider';
 import adminxTheme from './adminx-theme';
 
