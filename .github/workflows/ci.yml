@@ -1491,6 +1491,7 @@ jobs:
         job_build_e2e_public_apps,
         job_build_e2e_image,
         job_e2e_tests,
+        build_packages,
         publish_packages
       ]
     if: always()
@@ -1504,15 +1505,73 @@ jobs:
         run: |
           echo "One of the dependent jobs have failed or been cancelled. You may need to re-run it." && exit 1
 
-  publish_packages:
+  # Build verification for @tryghost/* public apps.
+  # Runs on PRs and pushes. Intentionally has no `id-token: write` — PR-controlled
+  # code (nx build) must never execute in a job that can mint an npm OIDC token.
+  # The privileged publish flow lives in publish_packages below, gated to main pushes.
+  build_packages:
     needs: [
       job_setup,
       job_lint,
       job_unit-tests
     ]
-    name: Publish ${{ matrix.package_name }}
+    name: Build ${{ matrix.package_name }}
     runs-on: ubuntu-latest
     if: always() && github.repository == 'TryGhost/Ghost' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success'
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        include:
+          - package_name: '@tryghost/activitypub'
+            package_path: 'apps/activitypub'
+          - package_name: '@tryghost/portal'
+            package_path: 'apps/portal'
+          - package_name: '@tryghost/sodo-search'
+            package_path: 'apps/sodo-search'
+          - package_name: '@tryghost/comments-ui'
+            package_path: 'apps/comments-ui'
+          - package_name: '@tryghost/signup-form'
+            package_path: 'apps/signup-form'
+          - package_name: '@tryghost/announcement-bar'
+            package_path: 'apps/announcement-bar'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - name: Set up Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the package
+        run: pnpm nx build ${{ matrix.package_name }}
+
+  # Publishes @tryghost/* public apps to npm via OIDC trusted publishing.
+  # Runs only on push-to-main — never on pull_request — so the `id-token: write`
+  # permission is never exposed to PR-controlled code (ref: ONC-1677).
+  publish_packages:
+    needs: [
+      job_setup,
+      job_lint,
+      job_unit-tests,
+      build_packages
+    ]
+    name: Publish ${{ matrix.package_name }}
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name != 'pull_request'
+      && github.repository == 'TryGhost/Ghost'
+      && needs.job_setup.outputs.is_main == 'true'
+      && needs.job_setup.result == 'success'
+      && needs.job_lint.result == 'success'
+      && needs.job_unit-tests.result == 'success'
+      && needs.build_packages.result == 'success'
     permissions:
       id-token: write
     strategy:
@@ -1553,7 +1612,6 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Check if version changed
-        if: needs.job_setup.outputs.is_main == 'true'
         id: version_check
         working-directory: ${{ matrix.package_path }}
         run: |
@@ -1578,28 +1636,28 @@ jobs:
           fi
 
       - name: Build the package
-        if: steps.version_check.outputs.version_changed == 'true' || github.event_name == 'pull_request'
+        if: steps.version_check.outputs.version_changed == 'true'
         run: pnpm nx build ${{ matrix.package_name }}
 
       - name: Configure .npmrc
-        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true'
+        if: steps.version_check.outputs.version_changed == 'true'
         run: |
           echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
 
       # TODO: Check we can remove this once we update Node to v24
       - name: Install v11 of NPM # We need this to install packages via OIDC.
-        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true'
+        if: steps.version_check.outputs.version_changed == 'true'
         run: npm install -g npm@11
 
       - name: Publish to npm
-        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true'
+        if: steps.version_check.outputs.version_changed == 'true'
         working-directory: ${{ matrix.package_path }}
         run: |
           npm publish --access public
 
       - name: Replace version placeholders in cdn-paths
         id: cdn_paths
-        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true'
+        if: steps.version_check.outputs.version_changed == 'true'
         run: |
           cdn_paths="${{ matrix.cdn_paths }}"
           echo "cdn_paths<<EOF" >> $GITHUB_OUTPUT
@@ -1607,17 +1665,17 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Print cdn_paths
-        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true'
+        if: steps.version_check.outputs.version_changed == 'true'
         run: echo "${{ steps.cdn_paths.outputs.cdn_paths }}"
 
       - name: Wait before purging jsDelivr cache
-        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true' && matrix.package_name == '@tryghost/activitypub'
+        if: steps.version_check.outputs.version_changed == 'true' && matrix.package_name == '@tryghost/activitypub'
         run: |
           echo "Purging jsDelivr cache immediately after publishing a new version on NPM is unreliable. Waiting 1 minute before purging cache..."
           sleep 60
 
       - name: Purge jsDelivr cache
-        if: needs.job_setup.outputs.is_main == 'true' && steps.version_check.outputs.version_changed == 'true'
+        if: steps.version_check.outputs.version_changed == 'true'
         uses: gacts/purge-jsdelivr-cache@8d92aea944f1a3e8ad70505379e1a8ac72d56b73 # v1
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}

@@ -1,4 +1,4 @@
-import type {Meta, StoryContext, StoryObj} from '@storybook/react';
+import type {Meta, StoryContext, StoryObj} from '@storybook/react-vite';
 import {ReactNode} from 'react';
 
 import NiceModal from '@ebay/nice-modal-react';
