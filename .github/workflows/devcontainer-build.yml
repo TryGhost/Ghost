@@ -1,0 +1,74 @@
+name: Publish ghost-devcontainer Image
+
+# Builds the dev container base image used by .devcontainer/devcontainer.json
+# (VS Code Dev Containers + GitHub Codespaces) and publishes it to GHCR on
+# merges to main. Publishing means a new Codespace or `Reopen in Container`
+# can pull the pre-built image (with pnpm already installed) instead of
+# building the Dockerfile from scratch — saving ~3–5 min of cold-start time.
+
+on:
+  workflow_dispatch: # manual trigger from the Actions UI / gh CLI
+  pull_request:
+    paths:
+      - 'docker/ghost-dev/**'
+      - '.github/workflows/devcontainer-build.yml'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.npmrc'
+      - 'ghost/core/package.json'
+      - 'ghost/i18n/package.json'
+      - 'ghost/parse-email-address/package.json'
+  push:
+    branches: [main]
+    paths:
+      - 'docker/ghost-dev/**'
+      - '.github/workflows/devcontainer-build.yml'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.npmrc'
+      - 'ghost/core/package.json'
+      - 'ghost/i18n/package.json'
+      - 'ghost/parse-email-address/package.json'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: Build and push ghost-devcontainer to GHCR
+    runs-on: ubuntu-latest
+    if: github.repository == 'TryGhost/Ghost'
+    concurrency:
+      group: publish-ghost-devcontainer-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
+
+      - name: Login to GHCR
+        # Only log in when we're going to push, i.e. on push-to-main and
+        # workflow_dispatch. PR builds are validation-only.
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build (PR) / Build and push (main)
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
+        with:
+          context: .
+          file: docker/ghost-dev/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ghcr.io/tryghost/ghost-devcontainer:latest
+            ghcr.io/tryghost/ghost-devcontainer:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
