@@ -1,0 +1,41 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Ghost: Backend (nodemon)",
+            "type": "shell",
+            "command": "pnpm --filter ghost dev",
+            "options": {"cwd": "${workspaceFolder}"},
+            "isBackground": true,
+            "presentation": {"panel": "dedicated", "group": "dev"},
+            "problemMatcher": []
+        },
+        {
+            "label": "Ghost: Frontend dev servers",
+            "type": "shell",
+            "command": "pnpm nx run-many -t dev --projects=@tryghost/admin,@tryghost/portal,@tryghost/comments-ui,@tryghost/signup-form,@tryghost/sodo-search,@tryghost/announcement-bar",
+            "options": {"cwd": "${workspaceFolder}"},
+            "isBackground": true,
+            "presentation": {"panel": "dedicated", "group": "dev"},
+            "problemMatcher": []
+        },
+        {
+            "label": "Ghost: Full dev stack",
+            "dependsOn": [
+                "Ghost: Backend (nodemon)",
+                "Ghost: Frontend dev servers"
+            ],
+            "dependsOrder": "parallel",
+            "problemMatcher": [],
+            "group": {"kind": "build", "isDefault": true},
+            "runOptions": {"runOn": "folderOpen"}
+        },
+        {
+            "label": "Ghost: Reset data (empty)",
+            "type": "shell",
+            "command": "node index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123",
+            "options": {"cwd": "${workspaceFolder}/ghost/core"},
+            "problemMatcher": []
+        }
+    ]
+}
