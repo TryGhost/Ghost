@@ -9,7 +9,7 @@ function getSystemTheme(): 'dark' | 'light' {
 
 export function useTheme() {
     const {data: preferences} = useUserPreferences();
-    const {mutateAsync: editPreferences} = useEditUserPreferences();
+    const {mutate: editPreferences} = useEditUserPreferences();
 
     const theme: ThemeMode = preferences?.nightShift ?? 'system';
 
@@ -25,7 +25,7 @@ export function useTheme() {
     const resolvedTheme: 'dark' | 'light' = theme !== 'system' ? theme : systemTheme;
 
     const setTheme = (mode: ThemeMode) => {
-        void editPreferences({nightShift: mode});
+        editPreferences({nightShift: mode});
     };
 
     return {theme, resolvedTheme, setTheme} as const;

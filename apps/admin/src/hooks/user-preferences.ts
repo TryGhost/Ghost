@@ -51,7 +51,11 @@ export function useUserPreferences<TData = Preferences>(
             }
 
             const raw = user.accessibility || "{}";
-            const parsed = JSON.parse(raw) as Record<string, unknown>;
+            const parsedRaw: unknown = JSON.parse(raw);
+            const parsed: Record<string, unknown> =
+                parsedRaw && typeof parsedRaw === 'object' && !Array.isArray(parsedRaw)
+                    ? parsedRaw as Record<string, unknown>
+                    : {};
 
             if (parsed.nightShift === true) {
                 parsed.nightShift = 'dark';

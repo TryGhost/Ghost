@@ -150,7 +150,7 @@ test.describe('Ghost Admin - Sidebar Navigation', () => {
             await sidebar.waitForDarkMode(true);
 
             await sidebar.themeSystemButton.click();
-            await expect(sidebar.themeSystemButton).toHaveAttribute('aria-label', /system/i);
+            await sidebar.waitForDarkMode(false);
         });
 
         test('sign out link - is visible in dropdown', async ({page}) => {
