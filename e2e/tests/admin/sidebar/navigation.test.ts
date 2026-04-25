@@ -117,21 +117,27 @@ test.describe('Ghost Admin - Sidebar Navigation', () => {
             await expect(page).toHaveURL(/\/ghost\/#\/settings\/staff\//);
         });
 
-        test('night shift toggle - changes state on click', async ({page}) => {
+        test('theme pill - switches to dark mode', async ({page}) => {
             const sidebar = new SidebarPage(page);
 
             await sidebar.goto('/ghost');
             await sidebar.userDropdownTrigger.click();
 
-            const initialState = await sidebar.isNightShiftEnabled();
+            await sidebar.themeDarkButton.click();
+            await sidebar.waitForDarkMode(true);
+        });
 
-            await sidebar.nightShiftToggle.click();
+        test('theme pill - switches to light mode', async ({page}) => {
+            const sidebar = new SidebarPage(page);
 
-            const expectedState = !initialState;
-            await sidebar.waitForNightShiftEnabled(expectedState);
+            await sidebar.goto('/ghost');
+            await sidebar.userDropdownTrigger.click();
 
-            const newState = await sidebar.isNightShiftEnabled();
-            expect(newState).toBe(expectedState);
+            await sidebar.themeDarkButton.click();
+            await sidebar.waitForDarkMode(true);
+
+            await sidebar.themeLightButton.click();
+            await sidebar.waitForDarkMode(false);
         });
 
         test('sign out link - is visible in dropdown', async ({page}) => {
