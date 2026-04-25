@@ -25,7 +25,7 @@ export function feature(name, options = {}) {
             return enabled;
         },
         set(key, value) {
-            this.update(key, value, options);
+            this.update(name, value, options);
 
             if (onChange) {
                 // value must be passed here because the value isn't set until
@@ -54,7 +54,18 @@ export default class FeatureService extends Service {
 
     // user-specific flags
     @feature('nightShift', {user: true, onChange: '_setAdminTheme'})
-        nightShift;
+        _nightShiftPref;
+
+    _osPrefersDark = false;
+
+    @computed('_nightShiftPref', '_osPrefersDark')
+    get nightShift() {
+        const pref = this._nightShiftPref;
+        if (pref === 'system' || pref === undefined || pref === null) {
+            return this._osPrefersDark;
+        }
+        return pref === 'dark' || pref === true;
+    }
 
     // user-specific referral invitation
     @feature('referralInviteDismissed', {user: true}) referralInviteDismissed;
@@ -137,21 +148,60 @@ export default class FeatureService extends Service {
         });
     }
 
-    _setAdminTheme(enabled) {
-        let nightShift = enabled;
+    _setAdminTheme(value) {
+        let mode = value;
 
-        if (typeof nightShift === 'undefined') {
-            nightShift = enabled || this.nightShift;
+        if (typeof mode === 'undefined') {
+            mode = this._nightShiftPref;
         }
 
-        document.documentElement.classList.toggle('dark', nightShift ?? false);
+        if (this._systemThemeListener) {
+            this._systemThemeMediaQuery?.removeEventListener('change', this._systemThemeListener);
+            this._systemThemeListener = null;
+            this._systemThemeMediaQuery = null;
+        }
+
+        if (mode === true) {
+            mode = 'dark';
+        } else if (mode === false) {
+            mode = 'light';
+        } else if (mode !== 'dark' && mode !== 'light' && mode !== 'system') {
+            mode = 'system';
+        }
+
+        let isDark;
+        if (mode === 'system') {
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            isDark = mediaQuery.matches;
+            set(this, '_osPrefersDark', isDark);
+
+            this._systemThemeMediaQuery = mediaQuery;
+            this._systemThemeListener = (e) => {
+                document.documentElement.classList.toggle('dark', e.matches);
+                $('link[title=dark]').prop('disabled', !e.matches);
+                set(this, '_osPrefersDark', e.matches);
+            };
+            mediaQuery.addEventListener('change', this._systemThemeListener);
+        } else {
+            isDark = mode === 'dark';
+        }
+
+        document.documentElement.classList.toggle('dark', isDark);
 
         return this.lazyLoader.loadStyle('dark', 'assets/ghost-dark.css', true).then(() => {
-            $('link[title=dark]').prop('disabled', !nightShift);
+            $('link[title=dark]').prop('disabled', !isDark);
         }).catch(() => {
-            //TODO: Also disable toggle from settings and Labs hover
             $('link[title=dark]').prop('disabled', true);
             document.documentElement.classList.remove('dark');
         });
+    }
+
+    willDestroy() {
+        super.willDestroy(...arguments);
+        if (this._systemThemeListener) {
+            this._systemThemeMediaQuery?.removeEventListener('change', this._systemThemeListener);
+            this._systemThemeListener = null;
+            this._systemThemeMediaQuery = null;
+        }
     }
 }

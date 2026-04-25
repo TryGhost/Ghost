@@ -1,10 +1,10 @@
 import React from "react"
 
-import {DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger, Indicator, SidebarMenuButton, Switch} from "@tryghost/shade/components"
-import {LucideIcon} from "@tryghost/shade/utils"
+import {DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger, Indicator, SidebarMenuButton} from "@tryghost/shade/components"
+import {cn, LucideIcon} from "@tryghost/shade/utils"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { getGhostPaths } from "@tryghost/admin-x-framework/helpers";
-import { useUserPreferences, useEditUserPreferences } from "@/hooks/user-preferences";
+import { useTheme, type ThemeMode } from "@/hooks/use-theme";
 import { useWhatsNew } from "@/whats-new/hooks/use-whats-new";
 import { useUpgradeStatus } from "./hooks/use-upgrade-status";
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
@@ -26,33 +26,49 @@ function UserMenuProfile() {
     );
 }
 
-function UserMenuDarkMode() {
-    const {data: preferences} = useUserPreferences();
-    const {mutateAsync: editPreferences, isLoading: isEditingPreferences} = useEditUserPreferences();
+const THEME_OPTIONS: Array<{value: ThemeMode; Icon: typeof LucideIcon.Sun; label: string}> = [
+    {value: 'light', Icon: LucideIcon.Sun, label: 'Light'},
+    {value: 'system', Icon: LucideIcon.Monitor, label: 'System'},
+    {value: 'dark', Icon: LucideIcon.Moon, label: 'Dark'},
+];
 
-    const setNightShift = (nightShift: boolean) => {
-        void editPreferences({nightShift});
-    };
+function UserMenuDarkMode() {
+    const {theme, setTheme} = useTheme();
+
+    const activeIndex = THEME_OPTIONS.findIndex(o => o.value === theme);
 
     return (
-        <UserMenuItem
-            asChild={false}
-            onSelect={(e: Event) => {
-                e.preventDefault();
-                setNightShift(!preferences?.nightShift);
-            }}
-        >
-            <LucideIcon.Moon />
-            <UserMenuItem.Label className="flex-1">Dark mode</UserMenuItem.Label>
-            <Switch
-                size='sm'
-                checked={preferences?.nightShift ?? false}
-                disabled={isEditingPreferences}
-                onCheckedChange={setNightShift}
-                onClick={(e: React.MouseEvent<HTMLElement>) => e.stopPropagation()}
-                tabIndex={-1}
-            />
-        </UserMenuItem>
+        <div className="px-2 py-1.5">
+            <div className="relative flex items-center rounded-full bg-muted p-[3px]">
+                <div
+                    className="absolute top-[3px] bottom-[3px] rounded-full bg-background shadow-xs transition-[left] duration-200"
+                    style={{
+                        width: 'calc((100% - 6px) / 3)',
+                        left: `calc(3px + ${activeIndex} * (100% - 6px) / 3)`,
+                    }}
+                />
+                {THEME_OPTIONS.map(({value, Icon, label}) => (
+                    <button
+                        key={value}
+                        type="button"
+                        className={cn(
+                            'relative z-10 flex flex-1 items-center justify-center gap-1 rounded-full py-[5px] text-xs font-medium transition-colors duration-150',
+                            theme === value
+                                ? 'text-foreground'
+                                : 'text-muted-foreground hover:text-foreground'
+                        )}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setTheme(value);
+                        }}
+                        aria-label={`${label} theme`}
+                    >
+                        <Icon className="size-3.5 stroke-[1.5px]" />
+                        <span>{label}</span>
+                    </button>
+                ))}
+            </div>
+        </div>
     );
 }
 
