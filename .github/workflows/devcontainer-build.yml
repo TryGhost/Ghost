@@ -1,36 +1,23 @@
-name: Publish ghost-devcontainer Image
+name: Devcontainer image
 
 # Builds the dev container base image used by .devcontainer/devcontainer.json
-# (VS Code Dev Containers + GitHub Codespaces) and publishes it to GHCR on
-# merges to main. Publishing means a new Codespace or `Reopen in Container`
-# can pull the pre-built image (with pnpm already installed) instead of
-# building the Dockerfile from scratch — saving ~3–5 min of cold-start time.
+# (VS Code Dev Containers + GitHub Codespaces) and publishes it to GHCR.
+#
+# Currently triggered only by manual dispatch — auto-triggers on
+# pull_request and push were removed pending a one-time TryGhost org-admin
+# bootstrap of the ghost-devcontainer package on GHCR. Until then,
+# GITHUB_TOKEN can't create the package on first push (`denied:
+# permission_denied: write_package`), and we don't want every PR's CI to
+# show a noisy failed check.
+#
+# Once the package shell exists at github.com/orgs/TryGhost/packages and
+# is linked to this repo with Actions write access, restore the
+# `pull_request:` and `push:` triggers in a tiny follow-up PR so the
+# image rebuilds automatically on changes to docker/ghost-dev/** and
+# pnpm-install inputs.
 
 on:
-  workflow_dispatch: # manual trigger from the Actions UI / gh CLI
-  pull_request:
-    paths:
-      - 'docker/ghost-dev/**'
-      - '.github/workflows/devcontainer-build.yml'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
-      - '.npmrc'
-      - 'ghost/core/package.json'
-      - 'ghost/i18n/package.json'
-      - 'ghost/parse-email-address/package.json'
-  push:
-    branches: [main]
-    paths:
-      - 'docker/ghost-dev/**'
-      - '.github/workflows/devcontainer-build.yml'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
-      - '.npmrc'
-      - 'ghost/core/package.json'
-      - 'ghost/i18n/package.json'
-      - 'ghost/parse-email-address/package.json'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -38,11 +25,11 @@ permissions:
 
 jobs:
   publish:
-    name: Build and push ghost-devcontainer to GHCR
+    name: Build & push
     runs-on: ubuntu-latest
     if: github.repository == 'TryGhost/Ghost'
     concurrency:
-      group: publish-ghost-devcontainer-${{ github.ref }}
+      group: devcontainer-image-${{ github.ref }}
       cancel-in-progress: true
     steps:
       - name: Checkout
@@ -52,21 +39,18 @@ jobs:
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
 
       - name: Login to GHCR
-        # Only log in when we're going to push, i.e. on push-to-main and
-        # workflow_dispatch. PR builds are validation-only.
-        if: github.event_name != 'pull_request'
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build (PR) / Build and push (main)
+      - name: Build & push
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
         with:
           context: .
           file: docker/ghost-dev/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: |
             ghcr.io/tryghost/ghost-devcontainer:latest
             ghcr.io/tryghost/ghost-devcontainer:${{ github.sha }}
