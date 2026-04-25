@@ -1007,6 +1007,19 @@ describe('RouterController', function () {
                 await controller.sendMagicLink(req, res);
                 assert.equal(sendEmailWithMagicLinkStub.notCalled, true);
             });
+
+            it('Accepts email addresses with modern gTLDs', async function () {
+                const controller = createRouterController();
+
+                req.body.email = 'jamie@example.rocks';
+                req.body.honeypot = 'filled!';
+
+                await controller.sendMagicLink(req, res);
+
+                sinon.assert.calledWith(res.writeHead, 201, {'Content-Type': 'application/json'});
+                assert.equal(res.end.calledOnceWith('{}'), true);
+                assert.equal(sendEmailWithMagicLinkStub.notCalled, true);
+            });
         });
 
         describe('OTC response handling', function () {

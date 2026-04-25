@@ -72,7 +72,7 @@ class MagicLink {
     async sendMagicLink(options) {
         this.sentry?.captureMessage?.(`[Magic Link] Generating magic link`, {extra: options});
 
-        if (!isEmail(options.email)) {
+        if (!isEmail(options.email, {legacy: false})) {
             throw new BadRequestError({
                 message: tpl(messages.invalidEmail)
             });
