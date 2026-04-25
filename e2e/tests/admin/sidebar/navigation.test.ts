@@ -140,6 +140,19 @@ test.describe('Ghost Admin - Sidebar Navigation', () => {
             await sidebar.waitForDarkMode(false);
         });
 
+        test('theme pill - switches to system mode from dark', async ({page}) => {
+            const sidebar = new SidebarPage(page);
+
+            await sidebar.goto('/ghost');
+            await sidebar.userDropdownTrigger.click();
+
+            await sidebar.themeDarkButton.click();
+            await sidebar.waitForDarkMode(true);
+
+            await sidebar.themeSystemButton.click();
+            await expect(sidebar.themeSystemButton).toHaveAttribute('aria-label', /system/i);
+        });
+
         test('sign out link - is visible in dropdown', async ({page}) => {
             const sidebar = new SidebarPage(page);
 
