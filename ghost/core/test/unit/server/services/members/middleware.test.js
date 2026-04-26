@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const crypto = require('crypto');
 const sinon = require('sinon');
-const onHeaders = require('on-headers');
 
 const urlUtils = require('../../../../../core/shared/url-utils');
 const config = require('../../../../../core/shared/config');
@@ -344,8 +343,6 @@ describe('Members Service Middleware', function () {
                     this.statusCode = statusCode;
                 }
             };
-            // on-headers patches writeHead so registered callbacks fire before it
-            onHeaders(res, function () {});
             next = sinon.stub();
 
             // tiersService.api is null until init() runs; assign a mock directly
@@ -406,7 +403,6 @@ describe('Members Service Middleware', function () {
         it('clears cookies with Path=/ for root site installs', async function () {
             sinon.stub(urlUtils, 'getSubdir').returns('');
             req.headers.cookie = 'ghost-access=stale';
-            res.getHeader.returns([]);
 
             await runAndFlushHeaders(null);
 
@@ -419,7 +415,6 @@ describe('Members Service Middleware', function () {
         it('clears cookies with Path=/subdir for subdirectory site installs', async function () {
             sinon.stub(urlUtils, 'getSubdir').returns('/subdir');
             req.headers.cookie = 'ghost-access=stale';
-            res.getHeader.returns([]);
 
             await runAndFlushHeaders(null);
 
