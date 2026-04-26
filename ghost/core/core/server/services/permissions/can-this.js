@@ -1,3 +1,10 @@
+// CUTOVER: delete this file when the soak ends; switch index.js to require
+// can-this-v2.js as `canThis`. The base-permission logic lives in
+// `compute-base-permission.js` and `dispatch-permissible.js`, which both V1
+// and V2 share — this file is the V1 wrapper that performs the per-request
+// DB load via providers.user/apiKey and (during the soak) fires the V2
+// comparator as a side effect.
+
 const _ = require('lodash');
 const models = require('../../models');
 const errors = require('@tryghost/errors');
@@ -5,10 +12,10 @@ const tpl = require('@tryghost/tpl');
 const providers = require('./providers');
 const parseContext = require('./parse-context');
 const actionsMap = require('./actions-map-cache');
-const {setIsRoles} = require('../../models/role-utils');
+const dispatchPermissible = require('./dispatch-permissible');
+const {runParallel} = require('./parallel-check');
 
 const messages = {
-    noPermissionToAction: 'You do not have permission to perform this action',
     noActionsMapFoundError: 'No actions map found, ensure you have loaded permissions into database and then call permissions.init() before use.'
 };
 
@@ -33,7 +40,6 @@ class CanThisResult {
             // Create the 'handler' for the object type;
             // the '.post()' in canThis(user).edit.post()
             objTypeHandlers[objType] = function (modelOrId, unsafeAttrs) {
-                let modelId;
                 unsafeAttrs = unsafeAttrs || {};
 
                 // If it's an internal request, resolve immediately
@@ -41,65 +47,42 @@ class CanThisResult {
                     return Promise.resolve();
                 }
 
-                if (_.isNumber(modelOrId) || _.isString(modelOrId)) {
-                    // It's an id already, do nothing
-                    modelId = modelOrId;
-                } else if (modelOrId) {
-                    // It's a model, get the id
-                    modelId = modelOrId.id;
-                }
-                // Wait for the user loading to finish
-                return permissionLoad.then(function (loadedPermissions) {
-                    // Iterate through the user permissions looking for an affirmation
-                    const userPermissions = loadedPermissions.user ? loadedPermissions.user.permissions : null;
-                    const apiKeyPermissions = loadedPermissions.apiKey ? loadedPermissions.apiKey.permissions : null;
-
-                    let hasUserPermission;
-                    let hasApiKeyPermission;
-
-                    const checkPermission = function (perm) {
-                        // Look for a matching action type and object type first
-                        if (perm.get('action_type') !== actType || perm.get('object_type') !== objType) {
-                            return false;
-                        }
-
-                        return true;
-                    };
-                    const {isOwner} = setIsRoles(loadedPermissions);
-                    if (isOwner) {
-                        hasUserPermission = true;
-                    } else if (!_.isEmpty(userPermissions)) {
-                        hasUserPermission = _.some(userPermissions, checkPermission);
-                    }
-
-                    // Check api key permissions if they were passed
-                    hasApiKeyPermission = true;
-                    if (!_.isNull(apiKeyPermissions)) {
-                        if (loadedPermissions.user) {
-                            // Staff API key scenario: both user and API key present
-                            // Use USER permissions and ignore API key permissions
-                            hasApiKeyPermission = true; // Allow API key check to pass
-                        } else {
-                            // Traditional API key scenario: API key only, no user
-                            // Use API key permissions as before
-                            hasUserPermission = true;
-                            hasApiKeyPermission = _.some(apiKeyPermissions, checkPermission);
-                        }
-                    }
-
-                    // Offer a chance for the TargetModel to override the results
-                    if (TargetModel && _.isFunction(TargetModel.permissible)) {
-                        return TargetModel.permissible(
-                            modelId, actType, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission
-                        );
-                    }
-
-                    if (hasUserPermission && hasApiKeyPermission) {
-                        return;
-                    }
-
-                    return Promise.reject(new errors.NoPermissionError({message: tpl(messages.noPermissionToAction)}));
+                const v1Promise = permissionLoad.then(function (loadedPermissions) {
+                    return dispatchPermissible({
+                        TargetModel,
+                        action: actType,
+                        objectType: objType,
+                        modelOrId,
+                        unsafeAttrs,
+                        parsedContext: context,
+                        loadedPermissions
+                    });
                 });
+
+                // CUTOVER: delete this side-effect block when the soak ends.
+                // V1's `v1Promise` above is the actual outcome; V2 cannot
+                // affect it. Attach to the same `permissionLoad` chain so V2
+                // can read the role off V1's loaded permissions without a
+                // second DB query. Errors are absorbed inside runParallel.
+                permissionLoad.then(function (loadedPermissions) {
+                    runParallel(v1Promise, {
+                        parsedContext: context,
+                        action: actType,
+                        objectType: objType,
+                        modelOrId,
+                        unsafeAttrs,
+                        loadedPermissions,
+                        TargetModel
+                    });
+                }, function () {
+                    // permissionLoad rejected; nothing for V2 to compare against.
+                }).catch(function () {
+                    // Defensive: the synchronous body of either branch above
+                    // should never throw, but a `.catch` on the detached
+                    // chain ensures we never produce an unhandled rejection.
+                });
+
+                return v1Promise;
             };
 
             return objTypeHandlers;
