@@ -1,27 +1,6 @@
-const nql = require('@tryghost/nql');
 const debug = require('@tryghost/debug')('services:url:generator');
 const localUtils = require('../../../shared/url-utils');
-
-// @TODO: merge with filter plugin
-const EXPANSIONS = [{
-    key: 'author',
-    replacement: 'authors.slug'
-}, {
-    key: 'tags',
-    replacement: 'tags.slug'
-}, {
-    key: 'tag',
-    replacement: 'tags.slug'
-}, {
-    key: 'authors',
-    replacement: 'authors.slug'
-}, {
-    key: 'primary_tag',
-    replacement: 'primary_tag.slug'
-}, {
-    key: 'primary_author',
-    replacement: 'primary_author.slug'
-}];
+const BaseUrlGenerator = require('./base-url-generator');
 
 /**
  * The UrlGenerator class is responsible to generate urls based on a router's conditions.
@@ -31,7 +10,7 @@ const EXPANSIONS = [{
  *
  * Each router is represented by a url generator.
  */
-class UrlGenerator {
+class UrlGenerator extends BaseUrlGenerator {
     /**
      * @param {Object} options
      * @param {string} options.identifier frontend router ID reference
@@ -44,35 +23,10 @@ class UrlGenerator {
      * @param {number} options.position an ID of the generator
      */
     constructor({identifier, filter, resourceType, permalink, queue, resources, urls, position}) {
-        this.identifier = identifier;
-        this.resourceType = resourceType;
-        this.permalink = permalink;
+        super({identifier, filter, resourceType, permalink, position});
         this.queue = queue;
         this.urls = urls;
         this.resources = resources;
-        this.uid = position;
-
-        // CASE: routers can define custom filters, but not required.
-        if (filter) {
-            this.filter = filter;
-            this.nql = nql(this.filter, {
-                expansions: EXPANSIONS,
-                transformer: nql.utils.mapKeyValues({
-                    key: {
-                        from: 'page',
-                        to: 'type'
-                    },
-                    values: [{
-                        from: false,
-                        to: 'post'
-                    }, {
-                        from: true,
-                        to: 'page'
-                    }]
-                })
-            });
-            debug('filter', this.filter);
-        }
 
         this._listeners();
     }
@@ -166,21 +120,7 @@ class UrlGenerator {
             return false;
         }
 
-        // CASE 1: route has no custom filter, it will own the resource for sure
-        let shouldReserve = !this.filter;
-
-        // CASE 2: find out if my filter matches the resource
-        if (!shouldReserve) {
-            try {
-                shouldReserve = this.nql.queryJSON(resource.data);
-            } catch (err) {
-                debug(`Failed to queryJSON with filter "${this.filter}"`, err);
-
-                return false;
-            }
-        }
-
-        if (shouldReserve) {
+        if (this.matches(resource.data)) {
             const url = this._generateUrl(resource);
             this.urls.add({
                 url: url,
