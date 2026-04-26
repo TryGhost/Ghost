@@ -349,12 +349,12 @@ async function initServices() {
     const urlUtils = require('./shared/url-utils');
 
     // Initialize things that other services depend on first.
+    emailAddressService.init();
     const apiUrl = urlUtils.urlFor('api', {type: 'admin'}, true);
     const schedulerAdapter = createSchedulerAdapter();
     const [schedulerIntegration] = await Promise.all([
         getSchedulerIntegration(),
-        stripe.init(),
-        emailAddressService.init()
+        stripe.init()
     ]);
 
     await Promise.all([
