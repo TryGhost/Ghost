@@ -378,11 +378,15 @@ describe('Members Service Middleware', function () {
             };
             await runAndFlushHeaders(member);
 
-            sinon.assert.called(res.setHeader);
             const setCookieArgs = res.setHeader.args.find(args => args[0] === 'Set-Cookie');
             assert.ok(setCookieArgs, 'Set-Cookie header should be set');
             const cookies = setCookieArgs[1];
-            assert.ok(cookies.some(c => c.includes('Path=/;')), `Expected Path=/ in cookies: ${cookies}`);
+            const accessCookie = cookies.find(c => c.startsWith('ghost-access='));
+            const hmacCookie = cookies.find(c => c.startsWith('ghost-access-hmac='));
+            assert.ok(accessCookie, 'ghost-access cookie should be set');
+            assert.ok(hmacCookie, 'ghost-access-hmac cookie should be set');
+            assert.ok(accessCookie.includes('Path=/;'), `Expected Path=/ in ghost-access: ${accessCookie}`);
+            assert.ok(hmacCookie.includes('Path=/;'), `Expected Path=/ in ghost-access-hmac: ${hmacCookie}`);
         });
 
         it('uses Path=/subdir for subdirectory site installs', async function () {
@@ -393,11 +397,15 @@ describe('Members Service Middleware', function () {
             };
             await runAndFlushHeaders(member);
 
-            sinon.assert.called(res.setHeader);
             const setCookieArgs = res.setHeader.args.find(args => args[0] === 'Set-Cookie');
             assert.ok(setCookieArgs, 'Set-Cookie header should be set');
             const cookies = setCookieArgs[1];
-            assert.ok(cookies.some(c => c.includes('Path=/subdir;')), `Expected Path=/subdir in cookies: ${cookies}`);
+            const accessCookie = cookies.find(c => c.startsWith('ghost-access='));
+            const hmacCookie = cookies.find(c => c.startsWith('ghost-access-hmac='));
+            assert.ok(accessCookie, 'ghost-access cookie should be set');
+            assert.ok(hmacCookie, 'ghost-access-hmac cookie should be set');
+            assert.ok(accessCookie.includes('Path=/subdir;'), `Expected Path=/subdir in ghost-access: ${accessCookie}`);
+            assert.ok(hmacCookie.includes('Path=/subdir;'), `Expected Path=/subdir in ghost-access-hmac: ${hmacCookie}`);
         });
 
         it('clears cookies with Path=/ for root site installs', async function () {
@@ -409,7 +417,12 @@ describe('Members Service Middleware', function () {
             const setCookieArgs = res.setHeader.args.find(args => args[0] === 'Set-Cookie');
             assert.ok(setCookieArgs, 'Set-Cookie header should be set');
             const cookies = setCookieArgs[1];
-            assert.ok(cookies.some(c => /ghost-access=null.*Path=\/;/.test(c)), `Expected null cookie with Path=/ in: ${cookies}`);
+            const accessCookie = cookies.find(c => c.startsWith('ghost-access='));
+            const hmacCookie = cookies.find(c => c.startsWith('ghost-access-hmac='));
+            assert.ok(accessCookie, 'ghost-access cookie should be set');
+            assert.ok(hmacCookie, 'ghost-access-hmac cookie should be set');
+            assert.match(accessCookie, /^ghost-access=null;.*Path=\/;/, `Expected null with Path=/ in ghost-access: ${accessCookie}`);
+            assert.match(hmacCookie, /^ghost-access-hmac=null;.*Path=\/;/, `Expected null with Path=/ in ghost-access-hmac: ${hmacCookie}`);
         });
 
         it('clears cookies with Path=/subdir for subdirectory site installs', async function () {
@@ -421,7 +434,12 @@ describe('Members Service Middleware', function () {
             const setCookieArgs = res.setHeader.args.find(args => args[0] === 'Set-Cookie');
             assert.ok(setCookieArgs, 'Set-Cookie header should be set');
             const cookies = setCookieArgs[1];
-            assert.ok(cookies.some(c => /ghost-access=null.*Path=\/subdir;/.test(c)), `Expected null cookie with Path=/subdir in: ${cookies}`);
+            const accessCookie = cookies.find(c => c.startsWith('ghost-access='));
+            const hmacCookie = cookies.find(c => c.startsWith('ghost-access-hmac='));
+            assert.ok(accessCookie, 'ghost-access cookie should be set');
+            assert.ok(hmacCookie, 'ghost-access-hmac cookie should be set');
+            assert.match(accessCookie, /^ghost-access=null;.*Path=\/subdir;/, `Expected null with Path=/subdir in ghost-access: ${accessCookie}`);
+            assert.match(hmacCookie, /^ghost-access-hmac=null;.*Path=\/subdir;/, `Expected null with Path=/subdir in ghost-access-hmac: ${hmacCookie}`);
         });
     });
 });
