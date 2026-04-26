@@ -332,6 +332,8 @@ describe('Members Service Middleware', function () {
         const hmacSecret = crypto.randomBytes(64).toString('base64');
         const freeTierId = '000000000000000000000001';
 
+        let originalTiersApi;
+
         beforeEach(function () {
             req = {headers: {}, member: null};
             res = {
@@ -346,15 +348,21 @@ describe('Members Service Middleware', function () {
             onHeaders(res, function () {});
             next = sinon.stub();
 
-            sinon.stub(tiersService.api, 'browse').resolves({
-                data: [{id: freeTierId, type: 'free'}]
+            // tiersService.api is null until init() runs; assign a mock directly
+            originalTiersApi = tiersService.api;
+            tiersService.api = /** @type {any} */ ({
+                browse: sinon.stub().resolves({
+                    data: [{id: freeTierId, type: 'free'}]
+                })
             });
+
             sinon.stub(config, 'get')
                 .withArgs('cacheMembersContent:hmacSecret').returns(hmacSecret)
                 .withArgs('cacheMembersContent:enabled').returns(true);
         });
 
         afterEach(function () {
+            tiersService.api = originalTiersApi;
             sinon.restore();
         });
 
