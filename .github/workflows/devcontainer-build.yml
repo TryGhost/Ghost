@@ -3,21 +3,27 @@ name: Devcontainer image
 # Builds the dev container base image used by .devcontainer/devcontainer.json
 # (VS Code Dev Containers + GitHub Codespaces) and publishes it to GHCR.
 #
-# Currently triggered only by manual dispatch — auto-triggers on
-# pull_request and push were removed pending a one-time TryGhost org-admin
-# bootstrap of the ghost-devcontainer package on GHCR. Until then,
-# GITHUB_TOKEN can't create the package on first push (`denied:
-# permission_denied: write_package`), and we don't want every PR's CI to
-# show a noisy failed check.
-#
-# Once the package shell exists at github.com/orgs/TryGhost/packages and
-# is linked to this repo with Actions write access, restore the
-# `pull_request:` and `push:` triggers in a tiny follow-up PR so the
-# image rebuilds automatically on changes to docker/ghost-dev/** and
-# pnpm-install inputs.
+# Triggers only on push to main (path-filtered) and manual dispatch. PRs
+# don't trigger this workflow — devcontainer.json references the :latest
+# tag, so pre-publishing per-PR images would just produce unused tags.
+# A broken Dockerfile change in a PR will surface when the merge to main
+# fires this workflow; the previously-good :latest stays in place until
+# the next successful run.
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'docker/ghost-dev/**'
+      - '.github/workflows/devcontainer-build.yml'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.npmrc'
+      - 'ghost/core/package.json'
+      - 'ghost/i18n/package.json'
+      - 'ghost/parse-email-address/package.json'
 
 permissions:
   contents: read
@@ -27,13 +33,16 @@ jobs:
   publish:
     name: Build & push
     runs-on: ubuntu-latest
-    if: github.repository == 'TryGhost/Ghost'
+    if: github.repository == 'TryGhost/Ghost' && github.ref == 'refs/heads/main'
     concurrency:
       group: devcontainer-image-${{ github.ref }}
       cancel-in-progress: true
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
@@ -50,6 +59,7 @@ jobs:
         with:
           context: .
           file: docker/ghost-dev/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ghcr.io/tryghost/ghost-devcontainer:latest
