@@ -442,19 +442,21 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     mockPostObj.get.withArgs('status').returns('draft');
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                    await assert.rejects(() => models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        true,
-                        true,
-                        false
-                    ), (error) => {
-                        assert(error instanceof errors.NoPermissionError);
-                        return true;
-                    });
+                    await assert.rejects(
+                        async () => {
+                            await models.Post.permissible(
+                                mockPostObj,
+                                'edit',
+                                context,
+                                unsafeAttrs,
+                                testUtils.permissions.contributor,
+                                true,
+                                true,
+                                false
+                            );
+                        },
+                        errors.NoPermissionError
+                    );
                 });
 
                 it('rejects if changing visibility', async function () {
@@ -479,10 +481,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                             true,
                             false
                         ),
-                        (error) => {
-                            assert(error instanceof errors.NoPermissionError);
-                            return true;
-                        }
+                        errors.NoPermissionError
                     );
                 });
 
@@ -507,13 +506,10 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                             true,
                             false
                         ),
-                        (error) => {
-                            assert(error instanceof errors.NoPermissionError);
-                            sinon.assert.notCalled(mockPostObj.get);
-                            assert.equal(mockPostObj.related.calledTwice, false);
-                            return true;
-                        }
+                        errors.NoPermissionError
                     );
+                    sinon.assert.notCalled(mockPostObj.get);
+                    assert.equal(mockPostObj.related.calledTwice, false);
                 });
 
                 it('ignores if changes authors.1', async function () {
@@ -565,13 +561,10 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                             true,
                             false
                         ),
-                        (error) => {
-                            assert(error instanceof errors.NoPermissionError);
-                            sinon.assert.calledTwice(mockPostObj.get);
-                            sinon.assert.calledOnce(mockPostObj.related);
-                            return true;
-                        }
+                        errors.NoPermissionError
                     );
+                    sinon.assert.calledTwice(mockPostObj.get);
+                    sinon.assert.calledOnce(mockPostObj.related);
                 });
 
                 it('rejects if contributor is not author of post', async function () {
@@ -595,12 +588,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                             true,
                             false
                         ),
-                        (error) => {
-                            assert(error instanceof errors.NoPermissionError);
-                            sinon.assert.calledOnce(mockPostObj.related);
-                            return true;
-                        }
+                        errors.NoPermissionError
                     );
+                    sinon.assert.calledOnce(mockPostObj.related);
                 });
 
                 it('resolves if none of the above cases are true', function () {
@@ -651,12 +641,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                             true,
                             true
                         ),
-                        (error) => {
-                            assert(error instanceof errors.NoPermissionError);
-                            sinon.assert.notCalled(mockPostObj.get);
-                            return true;
-                        }
+                        errors.NoPermissionError
                     );
+                    sinon.assert.notCalled(mockPostObj.get);
                 });
 
                 it('rejects if different author id', async function () {
@@ -677,12 +664,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                             true,
                             true
                         ),
-                        (error) => {
-                            assert(error instanceof errors.NoPermissionError);
-                            sinon.assert.notCalled(mockPostObj.get);
-                            return true;
-                        }
+                        errors.NoPermissionError
                     );
+                    sinon.assert.notCalled(mockPostObj.get);
                 });
 
                 it('rejects if different logged in user and `authors.0`', async function () {
@@ -703,12 +687,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                             true,
                             true
                         ),
-                        (error) => {
-                            assert(error instanceof errors.NoPermissionError);
-                            sinon.assert.notCalled(mockPostObj.get);
-                            return true;
-                        }
+                        errors.NoPermissionError
                     );
+                    sinon.assert.notCalled(mockPostObj.get);
                 });
 
                 it('resolves if same logged in user and `authors.0`', async function () {
@@ -732,7 +713,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     assert.deepEqual(result.excludedAttrs, ['authors', 'tags']);
                     sinon.assert.notCalled(mockPostObj.get);
                 });
+            });
 
+            describe('Destroying', function () {
                 it('rejects if destroying another author\'s post', async function () {
                     const mockPostObj = {
                         get: sinon.stub(),
@@ -780,13 +763,10 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                             true,
                             true
                         ),
-                        (error) => {
-                            assert(error instanceof errors.NoPermissionError);
-                            sinon.assert.calledOnce(mockPostObj.get);
-                            sinon.assert.calledOnce(mockPostObj.related);
-                            return true;
-                        }
+                        errors.NoPermissionError
                     );
+                    sinon.assert.calledOnce(mockPostObj.get);
+                    sinon.assert.calledOnce(mockPostObj.related);
                 });
 
                 it('resolves if none of the above cases are true', function () {
@@ -841,13 +821,10 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                             true,
                             true
                         ),
-                        (error) => {
-                            assert(error instanceof errors.NoPermissionError);
-                            sinon.assert.notCalled(mockPostObj.get);
-                            sinon.assert.calledOnce(mockPostObj.related);
-                            return true;
-                        }
+                        errors.NoPermissionError
                     );
+                    sinon.assert.notCalled(mockPostObj.get);
+                    sinon.assert.calledOnce(mockPostObj.related);
                 });
 
                 it('rejects if changing visibility', async function () {
@@ -872,13 +849,10 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                             false,
                             true
                         ),
-                        (error) => {
-                            assert(error instanceof errors.NoPermissionError);
-                            sinon.assert.notCalled(mockPostObj.get);
-                            sinon.assert.calledOnce(mockPostObj.related);
-                            return true;
-                        }
+                        errors.NoPermissionError
                     );
+                    sinon.assert.notCalled(mockPostObj.get);
+                    sinon.assert.calledOnce(mockPostObj.related);
                 });
 
                 it('rejects if editing another\'s post (using `authors`)', async function () {
@@ -902,13 +876,10 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                             true,
                             true
                         ),
-                        (error) => {
-                            assert(error instanceof errors.NoPermissionError);
-                            sinon.assert.notCalled(mockPostObj.get);
-                            sinon.assert.calledTwice(mockPostObj.related);
-                            return true;
-                        }
+                        errors.NoPermissionError
                     );
+                    sinon.assert.notCalled(mockPostObj.get);
+                    sinon.assert.calledTwice(mockPostObj.related);
                 });
 
                 it('rejects if changing authors', async function () {
@@ -932,13 +903,10 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                             true,
                             true
                         ),
-                        (error) => {
-                            assert(error instanceof errors.NoPermissionError);
-                            sinon.assert.notCalled(mockPostObj.get);
-                            sinon.assert.calledTwice(mockPostObj.related);
-                            return true;
-                        }
+                        errors.NoPermissionError
                     );
+                    sinon.assert.notCalled(mockPostObj.get);
+                    sinon.assert.calledTwice(mockPostObj.related);
                 });
 
                 it('resolves if none of the above cases are true', function () {
@@ -984,12 +952,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                             true,
                             true
                         ),
-                        (error) => {
-                            assert(error instanceof errors.NoPermissionError);
-                            sinon.assert.notCalled(mockPostObj.get);
-                            return true;
-                        }
+                        errors.NoPermissionError
                     );
+                    sinon.assert.notCalled(mockPostObj.get);
                 });
 
                 it('rejects if different authors', async function () {
@@ -1013,12 +978,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                             true,
                             true
                         ),
-                        (error) => {
-                            assert(error instanceof errors.NoPermissionError);
-                            sinon.assert.notCalled(mockPostObj.get);
-                            return true;
-                        }
+                        errors.NoPermissionError
                     );
+                    sinon.assert.notCalled(mockPostObj.get);
                 });
             });
         });
@@ -1045,13 +1007,10 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         true,
                         true
                     ),
-                    (error) => {
-                        assert(error instanceof errors.NoPermissionError);
-                        sinon.assert.notCalled(mockPostObj.get);
-                        sinon.assert.calledOnce(mockPostObj.related);
-                        return true;
-                    }
+                    errors.NoPermissionError
                 );
+                sinon.assert.notCalled(mockPostObj.get);
+                sinon.assert.calledOnce(mockPostObj.related);
             });
 
             it('resolves if hasUserPermission is true', function () {
