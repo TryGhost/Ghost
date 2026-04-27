@@ -24,7 +24,7 @@ describe('Unit | Utility | event-type-utils', function () {
 
         const newExcludedEvents = toggleEventType('payment_event', eventTypes);
 
-        expect(newExcludedEvents).to.equal('payment_event,donation_event,gift_purchase_event,gift_redemption_event');
+        expect(newExcludedEvents).to.equal('payment_event,donation_event');
     });
 
     it('should toggle both payment_event and donation_event off when toggling payment_event off', function () {
@@ -33,6 +33,26 @@ describe('Unit | Utility | event-type-utils', function () {
         ];
 
         const newExcludedEvents = toggleEventType('payment_event', eventTypes);
+
+        expect(newExcludedEvents).to.equal('');
+    });
+
+    it('should toggle both gift_purchase_event and gift_redemption_event when toggling gift_purchase_event', function () {
+        const eventTypes = [
+            {event: 'gift_purchase_event', isSelected: true}
+        ];
+
+        const newExcludedEvents = toggleEventType('gift_purchase_event', eventTypes);
+
+        expect(newExcludedEvents).to.equal('gift_purchase_event,gift_redemption_event');
+    });
+
+    it('should toggle both gift_purchase_event and gift_redemption_event off when toggling gift_purchase_event off', function () {
+        const eventTypes = [
+            {event: 'gift_purchase_event', isSelected: false}
+        ];
+
+        const newExcludedEvents = toggleEventType('gift_purchase_event', eventTypes);
 
         expect(newExcludedEvents).to.equal('');
     });

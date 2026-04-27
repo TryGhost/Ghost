@@ -3,6 +3,7 @@ export const ALL_EVENT_TYPES = [
     {event: 'login_event', icon: 'filter-dropdown-logins', name: 'Logins', group: 'auth'},
     {event: 'subscription_event', icon: 'filter-dropdown-paid-subscriptions', name: 'Paid subscriptions', group: 'payments'},
     {event: 'payment_event', icon: 'filter-dropdown-payments', name: 'Payments', group: 'payments'},
+    {event: 'gift_purchase_event', icon: 'filter-dropdown-gifts', name: 'Gifts', group: 'payments'},
     {event: 'newsletter_event', icon: 'filter-dropdown-email-subscriptions', name: 'Email subscriptions', group: 'emails'},
     {event: 'email_opened_event', icon: 'filter-dropdown-email-opened', name: 'Email opened', group: 'emails'},
     {event: 'email_delivered_event', icon: 'filter-dropdown-email-received', name: 'Email received', group: 'emails'},
@@ -33,11 +34,15 @@ export function toggleEventType(eventType, eventTypes) {
         if (excludedEvents.has('payment_event')) {
             excludedEvents.delete('payment_event');
             excludedEvents.delete('donation_event');
-            excludedEvents.delete('gift_purchase_event');
-            excludedEvents.delete('gift_redemption_event');
         } else {
             excludedEvents.add('payment_event');
             excludedEvents.add('donation_event');
+        }
+    } else if (eventType === 'gift_purchase_event') {
+        if (excludedEvents.has('gift_purchase_event')) {
+            excludedEvents.delete('gift_purchase_event');
+            excludedEvents.delete('gift_redemption_event');
+        } else {
             excludedEvents.add('gift_purchase_event');
             excludedEvents.add('gift_redemption_event');
         }
