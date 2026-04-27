@@ -1757,6 +1757,24 @@ describe('GiftService', function () {
             sinon.assert.notCalled(staffServiceEmails.notifyGiftSubscriptionStarted);
         });
 
+        it('is a no-op when the gift is already assigned to the same member', async function () {
+            const existingGift = buildGift({
+                status: 'redeemed',
+                redeemerMemberId: 'member_existing',
+                redeemedAt: new Date('2025-04-01T00:00:00.000Z'),
+                consumesAt: new Date('2026-04-01T00:00:00.000Z')
+            });
+            giftRepository.getById.resolves(existingGift);
+
+            const service = createService();
+            const result = await service.reassignRedeemer('gift_id_1', 'member_existing');
+
+            assert.equal(result.redeemerMemberId, 'member_existing');
+            sinon.assert.notCalled(memberRepository.get);
+            sinon.assert.notCalled(memberRepository.update);
+            sinon.assert.notCalled(giftRepository.update);
+        });
+
         it('throws NotFoundError when the gift id does not exist', async function () {
             giftRepository.getById.resolves(null);
 

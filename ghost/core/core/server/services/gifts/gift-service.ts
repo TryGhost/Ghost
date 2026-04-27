@@ -393,6 +393,10 @@ export class GiftService {
                 throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
             }
 
+            if (gift.redeemerMemberId === memberId) {
+                return gift;
+            }
+
             const check = gift.checkReassignable();
 
             if (!check.reassignable) {
