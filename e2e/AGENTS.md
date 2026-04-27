@@ -2,7 +2,7 @@
 
 E2E testing guidance for AI assistants (Claude, Codex, etc.) working with Ghost tests.
 
-**IMPORTANT**: When creating or modifying E2E tests, always refer to `.claude/E2E_TEST_WRITING_GUIDE.md` for comprehensive testing guidelines and patterns.
+**IMPORTANT**: When creating or modifying E2E tests, always refer to `./.claude/E2E_TEST_WRITING_GUIDE.md` for comprehensive testing guidelines and patterns.
 
 ## Critical Rules
 1. **Always follow ADRs** in `../adr/` folder (ADR-0001: AAA pattern, ADR-0002: Page Objects)
@@ -49,10 +49,10 @@ test('action performed - expected result', async ({page}) => {
     const analyticsPage = new AnalyticsGrowthPage(page);
     const postFactory = createPostFactory(page.request);
     const post = await postFactory.create({status: 'published'});
-    
+
     await analyticsPage.goto();
     await analyticsPage.topContent.postsButton.click();
-    
+
     await expect(analyticsPage.topContent.contentCard).toContainText('No conversions');
 });
 ```
