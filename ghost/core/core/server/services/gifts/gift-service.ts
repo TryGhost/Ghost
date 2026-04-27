@@ -19,6 +19,7 @@ const errorMessages = {
     giftRefunded: 'This gift has been refunded.',
     paidMember: 'You already have an active subscription.',
     giftInvalidReassignStatus: 'This gift does not have a reassignable status.',
+    giftInvalidReassignMember: 'Member already has an active subscription.',
     giftAlreadyAssigned: 'This gift is already assigned to another member.',
     giftMissingConsumesAt: 'This gift is missing a "consumes at" date.'
 };
@@ -426,7 +427,7 @@ export class GiftService {
 
             const memberStatus = member.get('status');
             if (memberStatus !== 'free' && memberStatus !== 'gift') {
-                throw new errors.BadRequestError({message: tpl(errorMessages.paidMember)});
+                throw new errors.BadRequestError({message: tpl(errorMessages.giftInvalidReassignMember)});
             }
 
             const reassignedGift = gift.reassignRedeemer(memberId);

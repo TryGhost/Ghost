@@ -820,7 +820,7 @@ describe('MembersCSVImporter', function () {
             sinon.assert.notCalled(giftServiceStub.reassignRedeemer);
         });
 
-        it('translates NotFoundError from GiftService into a user-facing gift-not-found error', async function () {
+        it('surfaces NotFoundError from GiftService as a row error', async function () {
             const NotFoundError = class extends Error {
                 constructor(message) {
                     super(message);
@@ -838,10 +838,10 @@ describe('MembersCSVImporter', function () {
 
             assert.equal(result.imported, 0);
             assert.equal(result.errors.length, 1);
-            assert.equal(result.errors[0].error, 'Gift record not found.');
+            assert.equal(result.errors[0].error, 'This gift does not exist.');
         });
 
-        it('translates already-assigned error from GiftService into a user-facing message', async function () {
+        it('surfaces already-assigned error from GiftService as a row error', async function () {
             const giftServiceStub = {
                 reassignRedeemer: sinon.stub().rejects(new Error('This gift is already assigned to another member.'))
             };
@@ -853,10 +853,10 @@ describe('MembersCSVImporter', function () {
 
             assert.equal(result.imported, 0);
             assert.equal(result.errors.length, 1);
-            assert.equal(result.errors[0].error, 'Gift is already assigned to another member.');
+            assert.equal(result.errors[0].error, 'This gift is already assigned to another member.');
         });
 
-        it('translates not-reassignable error from GiftService into a user-facing message', async function () {
+        it('surfaces not-reassignable error from GiftService as a row error', async function () {
             const giftServiceStub = {
                 reassignRedeemer: sinon.stub().rejects(new Error('This gift does not have a reassignable status.'))
             };
@@ -868,7 +868,7 @@ describe('MembersCSVImporter', function () {
 
             assert.equal(result.imported, 0);
             assert.equal(result.errors.length, 1);
-            assert.equal(result.errors[0].error, 'Gift cannot be reassigned to a member in its current state.');
+            assert.equal(result.errors[0].error, 'This gift does not have a reassignable status.');
         });
 
         it('rejects when the matched member already has a different gift attached', async function () {

@@ -12,42 +12,19 @@ const messages = {
     filenameCollision: 'Filename already exists, please try again.',
     freeMemberNotAllowedImportTier: 'You cannot import a free member with a specified tier.',
     invalidImportTier: '"{tier}" is not a valid tier.',
-    giftNotFound: 'Gift record not found.',
-    giftAlreadyAssigned: 'Gift is already assigned to another member.',
-    giftNotReassignable: 'Gift cannot be reassigned to a member in its current state.',
+    giftServiceUnavailable: 'Gift service is not available.',
     giftCannotCombineWithImportTier: 'Cannot specify both gift_id and import_tier.',
     giftCannotCombineWithComplimentary: 'Cannot specify both gift_id and complimentary_plan.',
-    giftMemberAlreadyHasGift: 'Cannot reassign gift to a member with an existing gift.',
-    giftCannotReassignToPaidMember: 'Cannot reassign gift to a member with an active paid subscription.',
-    giftMissingExpiry: 'Cannot compute expiry for gift; gift cannot be reassigned.'
+    giftMemberAlreadyHasGift: 'Cannot reassign gift to a member with an existing gift.'
 };
 
-function translateGiftError(error) {
+function wrapGiftError(error) {
     if (error instanceof errors.DataImportError) {
         return error;
     }
-
-    const isNotFound = error && error.errorType === 'NotFoundError';
-    if (isNotFound) {
-        return new errors.DataImportError({message: tpl(messages.giftNotFound)});
-    }
-
-    const message = error && typeof error.message === 'string' ? error.message : '';
-    if (message.includes('already assigned')) {
-        return new errors.DataImportError({message: tpl(messages.giftAlreadyAssigned)});
-    }
-    if (message.includes('reassignable status')) {
-        return new errors.DataImportError({message: tpl(messages.giftNotReassignable)});
-    }
-    if (message.includes('active subscription')) {
-        return new errors.DataImportError({message: tpl(messages.giftCannotReassignToPaidMember)});
-    }
-    if (message.includes('"consumes at" date')) {
-        return new errors.DataImportError({message: tpl(messages.giftMissingExpiry)});
-    }
-
-    // Unknown/unexpected error — surface the raw message so the user can see what failed.
-    return new errors.DataImportError({message: message || tpl(messages.giftNotReassignable)});
+    return new errors.DataImportError({
+        message: (error && typeof error.message === 'string' && error.message) || ''
+    });
 }
 
 // The key should correspond to a member model field (unless it's a special purpose field like 'complimentary_plan')
@@ -315,7 +292,7 @@ module.exports = class MembersCSVImporter {
 
                 if (row.gift_id) {
                     if (!giftService) {
-                        throw new errors.DataImportError({message: tpl(messages.giftNotFound)});
+                        throw new errors.DataImportError({message: tpl(messages.giftServiceUnavailable)});
                     }
 
                     // Reject if the member already has a different gift attached; we don't
@@ -328,7 +305,7 @@ module.exports = class MembersCSVImporter {
                     try {
                         await giftService.reassignRedeemer(row.gift_id, member.id, {transacting: trx});
                     } catch (giftError) {
-                        throw translateGiftError(giftError);
+                        throw wrapGiftError(giftError);
                     }
                 }
 
