@@ -733,6 +733,32 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     sinon.assert.notCalled(mockPostObj.get);
                 });
 
+                it('rejects if destroying another author\'s post', async function () {
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+
+                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+
+                    await assert.rejects(
+                        models.Post.permissible(
+                            mockPostObj,
+                            'destroy',
+                            context,
+                            {},
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            true
+                        ),
+                        errors.NoPermissionError
+                    );
+                    sinon.assert.calledOnce(mockPostObj.get);
+                    sinon.assert.calledOnce(mockPostObj.related);
+                });
+
                 it('rejects if destroying a published post', async function () {
                     const mockPostObj = {
                         get: sinon.stub(),
