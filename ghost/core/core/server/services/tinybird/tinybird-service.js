@@ -171,7 +171,7 @@ class TinybirdService {
      */
     _isJWTExpired(token, bufferSeconds = 300) {
         try {
-            const decoded = jwt.verify(token, this.tinybirdConfig.adminToken);
+            const decoded = jwt.verify(token, this.tinybirdConfig.adminToken, {algorithms: ['HS256']});
             if (typeof decoded !== 'object' || !decoded.exp) {
                 return true;
             }
