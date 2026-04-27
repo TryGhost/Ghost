@@ -32,14 +32,12 @@ describe('{{comments}} helper', function () {
         await configUtils.restore();
     });
 
-    it('returns undefined if not used withing post context', function (done) {
+    it('returns undefined if not used withing post context', async function () {
         settingsCacheGetStub.withArgs('members_enabled').returns(true);
         settingsCacheGetStub.withArgs('comments_enabled').returns('all');
 
-        comments({}).then(function (rendered) {
-            assert.equal(rendered, undefined);
-            done();
-        }).catch(done);
+        const rendered = await comments({});
+        assert.equal(rendered, undefined);
     });
 
     it('returns a script tag', async function () {

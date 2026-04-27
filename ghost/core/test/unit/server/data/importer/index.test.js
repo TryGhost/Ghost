@@ -155,32 +155,28 @@ describe('Importer', function () {
 
         // Step 1 of importing is loadFile
         describe('loadFile', function () {
-            it('knows when to process a file', function (done) {
+            it('knows when to process a file', async function () {
                 const testFile = {name: 'myFile.json', path: '/my/path/myFile.json'};
                 const zipSpy = sinon.stub(ImportManager, 'processZip').returns(Promise.resolve({}));
                 const fileSpy = sinon.stub(ImportManager, 'processFile').returns(Promise.resolve({}));
 
-                ImportManager.loadFile(testFile).then(function () {
-                    sinon.assert.notCalled(zipSpy);
-                    sinon.assert.calledOnce(fileSpy);
-                    done();
-                }).catch(done);
+                await ImportManager.loadFile(testFile);
+                sinon.assert.notCalled(zipSpy);
+                sinon.assert.calledOnce(fileSpy);
             });
 
             // We need to make sure we don't actually extract a zip and leave temporary files everywhere!
-            it('knows when to process a zip', function (done) {
+            it('knows when to process a zip', async function () {
                 const testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'};
                 const zipSpy = sinon.stub(ImportManager, 'processZip').resolves({});
                 const fileSpy = sinon.stub(ImportManager, 'processFile').resolves({});
 
-                ImportManager.loadFile(testZip).then(function () {
-                    sinon.assert.calledOnce(zipSpy);
-                    sinon.assert.notCalled(fileSpy);
-                    done();
-                }).catch(done);
+                await ImportManager.loadFile(testZip);
+                sinon.assert.calledOnce(zipSpy);
+                sinon.assert.notCalled(fileSpy);
             });
 
-            it('has same result for zips and files', function (done) {
+            it('has same result for zips and files', async function () {
                 const testFile = {name: 'myFile.json', path: '/my/path/myFile.json'};
                 const testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'};
 
@@ -199,26 +195,24 @@ describe('Importer', function () {
                 getFileSpy.withArgs(JSONHandler, sinon.match.string).returns([{path: '/tmp/dir/myFile.json', name: 'myFile.json'}]);
                 getFileSpy.withArgs(RevueHandler, sinon.match.string).returns([{path: '/tmp/dir/myFile.json', name: 'myFile.json'}]);
 
-                ImportManager.processZip(testZip).then(function (zipResult) {
-                    sinon.assert.calledOnce(extractSpy);
-                    sinon.assert.calledOnce(validSpy);
-                    sinon.assert.calledOnce(baseDirSpy);
-                    sinon.assert.callCount(getFileSpy, 6);
-                    sinon.assert.calledOnce(jsonSpy);
-                    sinon.assert.notCalled(imageSpy);
-                    sinon.assert.notCalled(mdSpy);
-                    sinon.assert.called(revueSpy);
+                const zipResult = await ImportManager.processZip(testZip);
 
-                    ImportManager.processFile(testFile, '.json').then(function (fileResult) {
-                        sinon.assert.calledTwice(jsonSpy);
+                sinon.assert.calledOnce(extractSpy);
+                sinon.assert.calledOnce(validSpy);
+                sinon.assert.calledOnce(baseDirSpy);
+                sinon.assert.callCount(getFileSpy, 6);
+                sinon.assert.calledOnce(jsonSpy);
+                sinon.assert.notCalled(imageSpy);
+                sinon.assert.notCalled(mdSpy);
+                sinon.assert.called(revueSpy);
 
-                        // They should both have data keys, and they should be equivalent
-                        assert('data' in zipResult);
-                        assert('data' in fileResult);
-                        assert.deepEqual(zipResult, fileResult);
-                        done();
-                    });
-                }).catch(done);
+                const fileResult = await ImportManager.processFile(testFile, '.json');
+                sinon.assert.calledTwice(jsonSpy);
+
+                // They should both have data keys, and they should be equivalent
+                assert('data' in zipResult);
+                assert('data' in fileResult);
+                assert.deepEqual(zipResult, fileResult);
             });
 
             describe('Validate Zip', function () {
@@ -383,17 +377,16 @@ describe('Importer', function () {
             });
 
             describe('Zip behavior', function () {
-                it('can call extract and error correctly', function () {
-                    return ImportManager
-                        // Deliberately pass something that can't be extracted just to check this method signature is working
-                        .extractZip('test/utils/fixtures/import/zips/zip-with-base-dir')
-                        .then(() => {
-                            throw new Error('should have failed');
-                        })
-                        .catch((err) => {
+                it('can call extract and error correctly', async function () {
+                    // Deliberately pass something that can't be extracted just to check this method signature is working
+                    await assert.rejects(
+                        ImportManager.extractZip('test/utils/fixtures/import/zips/zip-with-base-dir'),
+                        (err) => {
                             assert.match(err.message, /EISDIR/);
                             assert.match(err.code, /EISDIR/);
-                        });
+                            return true;
+                        }
+                    );
                 });
             });
         });
@@ -401,7 +394,7 @@ describe('Importer', function () {
         // Step 2 of importing is preProcess
         describe('preProcess', function () {
             // preProcess can modify the data prior to importing
-            it('calls the DataImporter preProcess method', function (done) {
+            it('calls the DataImporter preProcess method', async function () {
                 const input = {
                     data: {},
                     images: [],
@@ -416,22 +409,20 @@ describe('Importer', function () {
                 const imageSpy = sinon.spy(ImportManager.importers[0], 'preProcess');
                 const revueSpy = sinon.spy(RevueImporter, 'preProcess');
 
-                ImportManager.preProcess(inputCopy).then(function (output) {
-                    sinon.assert.calledOnce(revueSpy);
-                    sinon.assert.calledWith(revueSpy, inputCopy);
-                    sinon.assert.calledOnce(dataSpy);
-                    sinon.assert.calledWith(dataSpy, inputCopy);
-                    sinon.assert.calledOnce(imageSpy);
-                    sinon.assert.calledWith(imageSpy, inputCopy);
-                    // eql checks for equality
-                    // equal checks the references are for the same object
-                    assert.notEqual(output, input);
-                    assert.equal(output.preProcessedByData, true);
-                    assert.equal(output.preProcessedByImage, true);
-                    assert.equal(output.preProcessedByMedia, true);
-                    assert.equal(output.preProcessedByFiles, true);
-                    done();
-                }).catch(done);
+                const output = await ImportManager.preProcess(inputCopy);
+                sinon.assert.calledOnce(revueSpy);
+                sinon.assert.calledWith(revueSpy, inputCopy);
+                sinon.assert.calledOnce(dataSpy);
+                sinon.assert.calledWith(dataSpy, inputCopy);
+                sinon.assert.calledOnce(imageSpy);
+                sinon.assert.calledWith(imageSpy, inputCopy);
+                // eql checks for equality
+                // equal checks the references are for the same object
+                assert.notEqual(output, input);
+                assert.equal(output.preProcessedByData, true);
+                assert.equal(output.preProcessedByImage, true);
+                assert.equal(output.preProcessedByMedia, true);
+                assert.equal(output.preProcessedByFiles, true);
             });
         });
 
@@ -439,7 +430,7 @@ describe('Importer', function () {
         describe('doImport', function () {
             // doImport calls the real importers and has an effect on the DB. We don't want any of those calls to be made,
             // but to test that the right calls would be made
-            it('calls the DataImporter doImport method with the data object', function (done) {
+            it('calls the DataImporter doImport method with the data object', async function () {
                 const input = {data: {posts: []}, images: []};
 
                 // pass a copy so that input doesn't get modified
@@ -458,18 +449,16 @@ describe('Importer', function () {
 
                 const expectedImages = input.images;
 
-                ImportManager.doImport(inputCopy).then(function (output) {
-                    // eql checks for equality
-                    // equal checks the references are for the same object
-                    sinon.assert.calledOnce(dataSpy);
-                    sinon.assert.calledOnce(imageSpy);
-                    assert.deepEqual(dataSpy.getCall(0).args[0], expectedData);
-                    assert.deepEqual(imageSpy.getCall(0).args[0], expectedImages);
+                const output = await ImportManager.doImport(inputCopy);
+                // eql checks for equality
+                // equal checks the references are for the same object
+                sinon.assert.calledOnce(dataSpy);
+                sinon.assert.calledOnce(imageSpy);
+                assert.deepEqual(dataSpy.getCall(0).args[0], expectedData);
+                assert.deepEqual(imageSpy.getCall(0).args[0], expectedImages);
 
-                    // we stubbed this as a noop but ImportManager calls with sequence, so we should get an array
-                    assert.deepEqual(output, {images: expectedImages, data: expectedData});
-                    done();
-                }).catch(done);
+                // we stubbed this as a noop but ImportManager calls with sequence, so we should get an array
+                assert.deepEqual(output, {images: expectedImages, data: expectedData});
             });
         });
 
@@ -477,33 +466,28 @@ describe('Importer', function () {
         describe('generateReport', function () {
             // generateReport is intended to create a message to show to the user about what has been imported
             // it is currently a noop
-            it('is currently a noop', function (done) {
+            it('is currently a noop', async function () {
                 const input = [{data: {}, images: []}];
-                ImportManager.generateReport(input).then(function (output) {
-                    assert.equal(output, input);
-                    done();
-                }).catch(done);
+                const output = await ImportManager.generateReport(input);
+                assert.equal(output, input);
             });
         });
 
         describe('importFromFile', function () {
-            it('does the import steps in order', function (done) {
+            it('does the import steps in order', async function () {
                 const loadFileSpy = sinon.stub(ImportManager, 'loadFile').returns(Promise.resolve({}));
                 const preProcessSpy = sinon.stub(ImportManager, 'preProcess').returns(Promise.resolve({}));
                 const doImportSpy = sinon.stub(ImportManager, 'doImport').returns(Promise.resolve([]));
                 const generateReportSpy = sinon.spy(ImportManager, 'generateReport');
                 const cleanupSpy = sinon.stub(ImportManager, 'cleanUp').returns(Promise.resolve());
 
-                ImportManager.importFromFile({name: 'test.json', path: '/test.json'}).then(function () {
-                    sinon.assert.calledOnce(loadFileSpy);
-                    sinon.assert.calledOnce(preProcessSpy);
-                    sinon.assert.calledOnce(doImportSpy);
-                    sinon.assert.calledOnce(generateReportSpy);
-                    sinon.assert.calledOnce(cleanupSpy);
-                    sinon.assert.callOrder(loadFileSpy, preProcessSpy, doImportSpy, generateReportSpy, cleanupSpy);
-
-                    done();
-                }).catch(done);
+                await ImportManager.importFromFile({name: 'test.json', path: '/test.json'});
+                sinon.assert.calledOnce(loadFileSpy);
+                sinon.assert.calledOnce(preProcessSpy);
+                sinon.assert.calledOnce(doImportSpy);
+                sinon.assert.calledOnce(generateReportSpy);
+                sinon.assert.calledOnce(cleanupSpy);
+                sinon.assert.callOrder(loadFileSpy, preProcessSpy, doImportSpy, generateReportSpy, cleanupSpy);
             });
         });
     });
@@ -519,30 +503,29 @@ describe('Importer', function () {
             assert.equal(typeof JSONHandler.loadFile, 'function');
         });
 
-        it('correctly handles a valid db api wrapper', function (done) {
+        it('correctly handles a valid db api wrapper', async function () {
             const file = [{
                 path: testUtils.fixtures.getExportFixturePath('valid'),
                 name: 'valid.json'
             }];
-            JSONHandler.loadFile(file).then(function (result) {
-                assert(_.keys(result).includes('meta'));
-                assert(_.keys(result).includes('data'));
-                done();
-            }).catch(done);
+            const result = await JSONHandler.loadFile(file);
+            assert(_.keys(result).includes('meta'));
+            assert(_.keys(result).includes('data'));
         });
 
-        it('correctly errors when given a bad db api wrapper', function (done) {
+        it('correctly errors when given a bad db api wrapper', async function () {
             const file = [{
                 path: testUtils.fixtures.getExportFixturePath('broken'),
                 name: 'broken.json'
             }];
 
-            JSONHandler.loadFile(file).then(function () {
-                done(new Error('Didn\'t error for bad db api wrapper'));
-            }).catch(function (response) {
-                assert.equal(response.errorType, 'BadRequestError');
-                done();
-            }).catch(done);
+            await assert.rejects(
+                JSONHandler.loadFile(file),
+                (response) => {
+                    assert.equal(response.errorType, 'BadRequestError');
+                    return true;
+                }
+            );
         });
     });
 
@@ -560,7 +543,7 @@ describe('Importer', function () {
             assert.equal(typeof MarkdownHandler.loadFile, 'function');
         });
 
-        it('does convert a markdown file into a post object', function (done) {
+        it('does convert a markdown file into a post object', async function () {
             const filename = 'draft-2014-12-19-test-1.md';
 
             const file = [{
@@ -568,20 +551,17 @@ describe('Importer', function () {
                 name: filename
             }];
 
-            MarkdownHandler.loadFile(file).then(function (result) {
-                assert.equal(result.data.posts[0].markdown, 'You\'re live! Nice.');
-                assert.equal(result.data.posts[0].status, 'draft');
-                assert.equal(result.data.posts[0].slug, 'test-1');
-                assert.equal(result.data.posts[0].title, 'test-1');
-                assert.equal(result.data.posts[0].created_at, 1418990400000);
-                assert.equal(moment.utc(result.data.posts[0].created_at).format('DD MM YY HH:mm'), '19 12 14 12:00');
-                assert(!('image' in result.data.posts[0]));
-
-                done();
-            }).catch(done);
+            const result = await MarkdownHandler.loadFile(file);
+            assert.equal(result.data.posts[0].markdown, 'You\'re live! Nice.');
+            assert.equal(result.data.posts[0].status, 'draft');
+            assert.equal(result.data.posts[0].slug, 'test-1');
+            assert.equal(result.data.posts[0].title, 'test-1');
+            assert.equal(result.data.posts[0].created_at, 1418990400000);
+            assert.equal(moment.utc(result.data.posts[0].created_at).format('DD MM YY HH:mm'), '19 12 14 12:00');
+            assert(!('image' in result.data.posts[0]));
         });
 
-        it('can parse a title from a markdown file', function (done) {
+        it('can parse a title from a markdown file', async function () {
             const filename = 'draft-2014-12-19-test-2.md';
 
             const file = [{
@@ -589,19 +569,16 @@ describe('Importer', function () {
                 name: filename
             }];
 
-            MarkdownHandler.loadFile(file).then(function (result) {
-                assert.equal(result.data.posts[0].markdown, 'You\'re live! Nice.');
-                assert.equal(result.data.posts[0].status, 'draft');
-                assert.equal(result.data.posts[0].slug, 'test-2');
-                assert.equal(result.data.posts[0].title, 'Welcome to Ghost');
-                assert.equal(result.data.posts[0].created_at, 1418990400000);
-                assert(!('image' in result.data.posts[0]));
-
-                done();
-            }).catch(done);
+            const result = await MarkdownHandler.loadFile(file);
+            assert.equal(result.data.posts[0].markdown, 'You\'re live! Nice.');
+            assert.equal(result.data.posts[0].status, 'draft');
+            assert.equal(result.data.posts[0].slug, 'test-2');
+            assert.equal(result.data.posts[0].title, 'Welcome to Ghost');
+            assert.equal(result.data.posts[0].created_at, 1418990400000);
+            assert(!('image' in result.data.posts[0]));
         });
 
-        it('can parse a featured image from a markdown file if there is a title', function (done) {
+        it('can parse a featured image from a markdown file if there is a title', async function () {
             const filename = 'draft-2014-12-19-test-3.md';
 
             const file = [{
@@ -609,19 +586,16 @@ describe('Importer', function () {
                 name: filename
             }];
 
-            MarkdownHandler.loadFile(file).then(function (result) {
-                assert.equal(result.data.posts[0].markdown, 'You\'re live! Nice.');
-                assert.equal(result.data.posts[0].status, 'draft');
-                assert.equal(result.data.posts[0].slug, 'test-3');
-                assert.equal(result.data.posts[0].title, 'Welcome to Ghost');
-                assert.equal(result.data.posts[0].created_at, 1418990400000);
-                assert.equal(result.data.posts[0].image, '/images/kitten.jpg');
-
-                done();
-            }).catch(done);
+            const result = await MarkdownHandler.loadFile(file);
+            assert.equal(result.data.posts[0].markdown, 'You\'re live! Nice.');
+            assert.equal(result.data.posts[0].status, 'draft');
+            assert.equal(result.data.posts[0].slug, 'test-3');
+            assert.equal(result.data.posts[0].title, 'Welcome to Ghost');
+            assert.equal(result.data.posts[0].created_at, 1418990400000);
+            assert.equal(result.data.posts[0].image, '/images/kitten.jpg');
         });
 
-        it('can import a published post', function (done) {
+        it('can import a published post', async function () {
             const filename = 'published-2014-12-19-test-1.md';
 
             const file = [{
@@ -629,20 +603,17 @@ describe('Importer', function () {
                 name: filename
             }];
 
-            MarkdownHandler.loadFile(file).then(function (result) {
-                assert.equal(result.data.posts[0].markdown, 'You\'re live! Nice.');
-                assert.equal(result.data.posts[0].status, 'published');
-                assert.equal(result.data.posts[0].slug, 'test-1');
-                assert.equal(result.data.posts[0].title, 'Welcome to Ghost');
-                assert.equal(result.data.posts[0].published_at, 1418990400000);
-                assert.equal(moment.utc(result.data.posts[0].published_at).format('DD MM YY HH:mm'), '19 12 14 12:00');
-                assert(!('image' in result.data.posts[0]));
-
-                done();
-            }).catch(done);
+            const result = await MarkdownHandler.loadFile(file);
+            assert.equal(result.data.posts[0].markdown, 'You\'re live! Nice.');
+            assert.equal(result.data.posts[0].status, 'published');
+            assert.equal(result.data.posts[0].slug, 'test-1');
+            assert.equal(result.data.posts[0].title, 'Welcome to Ghost');
+            assert.equal(result.data.posts[0].published_at, 1418990400000);
+            assert.equal(moment.utc(result.data.posts[0].published_at).format('DD MM YY HH:mm'), '19 12 14 12:00');
+            assert(!('image' in result.data.posts[0]));
         });
 
-        it('does not import deleted posts', function (done) {
+        it('does not import deleted posts', async function () {
             const filename = 'deleted-2014-12-19-test-1.md';
 
             const file = [{
@@ -650,14 +621,11 @@ describe('Importer', function () {
                 name: filename
             }];
 
-            MarkdownHandler.loadFile(file).then(function (result) {
-                assert.equal(result.data.posts.length, 0);
-
-                done();
-            }).catch(done);
+            const result = await MarkdownHandler.loadFile(file);
+            assert.equal(result.data.posts.length, 0);
         });
 
-        it('can import multiple files', function (done) {
+        it('can import multiple files', async function () {
             const files = [{
                 path: testUtils.fixtures.getImportFixturePath('deleted-2014-12-19-test-1.md'),
                 name: 'deleted-2014-12-19-test-1.md'
@@ -669,34 +637,31 @@ describe('Importer', function () {
                 name: 'draft-2014-12-19-test-3.md'
             }];
 
-            MarkdownHandler.loadFile(files).then(function (result) {
-                // deleted-2014-12-19-test-1.md
-                // doesn't get imported ;)
+            const result = await MarkdownHandler.loadFile(files);
+            // deleted-2014-12-19-test-1.md
+            // doesn't get imported ;)
 
-                // loadFile doesn't guarantee order of results
-                const one = result.data.posts[0].status === 'published' ? 0 : 1;
+            // loadFile doesn't guarantee order of results
+            const one = result.data.posts[0].status === 'published' ? 0 : 1;
 
-                const two = one === 0 ? 1 : 0;
+            const two = one === 0 ? 1 : 0;
 
-                // published-2014-12-19-test-1.md
-                assert.equal(result.data.posts[one].markdown, 'You\'re live! Nice.');
-                assert.equal(result.data.posts[one].status, 'published');
-                assert.equal(result.data.posts[one].slug, 'test-1');
-                assert.equal(result.data.posts[one].title, 'Welcome to Ghost');
-                assert.equal(result.data.posts[one].published_at, 1418990400000);
-                assert.equal(moment.utc(result.data.posts[one].published_at).format('DD MM YY HH:mm'), '19 12 14 12:00');
-                assert(!('image' in result.data.posts[one]));
+            // published-2014-12-19-test-1.md
+            assert.equal(result.data.posts[one].markdown, 'You\'re live! Nice.');
+            assert.equal(result.data.posts[one].status, 'published');
+            assert.equal(result.data.posts[one].slug, 'test-1');
+            assert.equal(result.data.posts[one].title, 'Welcome to Ghost');
+            assert.equal(result.data.posts[one].published_at, 1418990400000);
+            assert.equal(moment.utc(result.data.posts[one].published_at).format('DD MM YY HH:mm'), '19 12 14 12:00');
+            assert(!('image' in result.data.posts[one]));
 
-                // draft-2014-12-19-test-3.md
-                assert.equal(result.data.posts[two].markdown, 'You\'re live! Nice.');
-                assert.equal(result.data.posts[two].status, 'draft');
-                assert.equal(result.data.posts[two].slug, 'test-3');
-                assert.equal(result.data.posts[two].title, 'Welcome to Ghost');
-                assert.equal(result.data.posts[two].created_at, 1418990400000);
-                assert.equal(result.data.posts[two].image, '/images/kitten.jpg');
-
-                done();
-            }).catch(done);
+            // draft-2014-12-19-test-3.md
+            assert.equal(result.data.posts[two].markdown, 'You\'re live! Nice.');
+            assert.equal(result.data.posts[two].status, 'draft');
+            assert.equal(result.data.posts[two].slug, 'test-3');
+            assert.equal(result.data.posts[two].title, 'Welcome to Ghost');
+            assert.equal(result.data.posts[two].created_at, 1418990400000);
+            assert.equal(result.data.posts[two].image, '/images/kitten.jpg');
         });
     });
 
