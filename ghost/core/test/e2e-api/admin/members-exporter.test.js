@@ -220,6 +220,44 @@ describe('Members API — exportCSV', function () {
         }, ['filter=status:gift', 'filter=subscribed:false']);
     });
 
+    it('Does not export gift_id for members whose gift is consumed', async function () {
+        const tier = tiers[0];
+        const member = await createMember({
+            name: 'Test ex-gift member',
+            note: 'Gift was consumed',
+            status: 'paid',
+            products: [{id: tier.id}]
+        });
+
+        const now = new Date();
+        await models.Gift.add({
+            token: `exporter-consumed-token-${Date.now()}`,
+            buyer_email: 'buyer@example.com',
+            buyer_member_id: null,
+            redeemer_member_id: member.id,
+            tier_id: tier.id,
+            cadence: 'year',
+            duration: 1,
+            currency: 'usd',
+            amount: 5000,
+            stripe_checkout_session_id: `cs_exporter_consumed_${Date.now()}`,
+            stripe_payment_intent_id: `pi_exporter_consumed_${Date.now()}`,
+            consumes_at: new Date(now.getTime() - 24 * 60 * 60 * 1000),
+            expires_at: new Date(now.getTime() + 10 * 365 * 24 * 60 * 60 * 1000),
+            status: 'consumed',
+            purchased_at: now,
+            redeemed_at: now,
+            consumed_at: now,
+            expired_at: null,
+            refunded_at: null
+        });
+
+        await testOutput(member, (row) => {
+            basicAsserts(member, row);
+            assert.equal(row.gift_id, '');
+        }, [`filter=email:'${member.get('email')}'`, 'filter=subscribed:false']);
+    });
+
     it('Can export newsletters', async function () {
         // Create a new member with a product
         const member = await createMember({

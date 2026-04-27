@@ -114,6 +114,7 @@ async function createExportStream(options) {
 
                     knex('gifts')
                         .select('id', 'redeemer_member_id')
+                        .where('status', 'redeemed')
                         .whereIn('redeemer_member_id', memberIds)
                 ]);
 
